@@ -19,7 +19,6 @@ History:
 
 
 #include "HUDObject.h"
-
 #include "HUD.h"
 
 class CGameFlashAnimation;

@@ -19,7 +19,7 @@
 
 //========================================================================================
 
-#include <platform.h>
+#include "platform.h"  // MATH_H
 #include MATH_H
 #include "Cry_ValidNumber.h"
 

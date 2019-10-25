@@ -12,18 +12,18 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDObject.h"
 #include "HUDScore.h"
 #include "HUD.h"
 #include "HUDRadar.h"
-#include "IGameFramework.h"
-#include "IUIDraw.h"
-#include "Game.h"
-#include "GameRules.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IUIDraw.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameRules.h"
 #include "GameFlashAnimation.h"
 #include "HUDCommon.h"
-#include "Actor.h"
+#include "CryGame/Actor.h"
 
 CHUDScore::ScoreEntry::ScoreEntry(EntityId id, int kills, int deaths, int ping): m_entityId(id), m_team(-1)
 {

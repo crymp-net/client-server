@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-#include <smartptr.h>
+#include "smartptr.h"
 #include <vector>					// STL vector<>
 
 struct IResourceList; 

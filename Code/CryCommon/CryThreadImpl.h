@@ -11,13 +11,13 @@
 #ifndef _CryThreadImpl_h_
 #define _CryThreadImpl_h_ 1
 
-#include <CryThread.h>
+#include "CryThread.h"
 
 // Include architecture specific code.
 #if defined(LINUX)
-#include <CryThreadImpl_pthreads.h>
+#include "CryThreadImpl_pthreads.h"
 #elif defined(WIN32) || defined(WIN64)
-#include <CryThreadImpl_windows.h>
+#include "CryThreadImpl_windows.h"
 
 
 
@@ -26,7 +26,7 @@
 // Put other platform specific includes here!
 #endif
 
-#include <IThreadTask.h>
+#include "IThreadTask.h"
 
 void CryThreadSetName( unsigned int dwThreadId,const char *sThreadName )
 {

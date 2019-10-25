@@ -14,20 +14,20 @@
 #include "Game.h"
 #include "GameCVars.h"
 #include "Alien.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 #include "GameActions.h"
-#include "IDebrisMgr.h"
+#include "CryAction/IDebrisMgr.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <ISerialize.h>
-#include <IRenderAuxGeom.h>
-#include <IEffectSystem.h>
-#include <ISound.h>
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IPhysics.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/IRenderAuxGeom.h"
+#include "CryAction/IEffectSystem.h"
+#include "CryCommon/ISound.h"
 
-#include <IDebugHistory.h>
+#include "CryCommon/IDebugHistory.h"
 
 #include "CompatibilityAlienMovementController.h"
 

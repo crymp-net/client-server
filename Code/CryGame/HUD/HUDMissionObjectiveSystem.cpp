@@ -2,9 +2,9 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "ISerialize.h"
-#include "Game.h"
+#include "CryGame/StdAfx.h"
+#include "CryCommon/ISerialize.h"
+#include "CryGame/Game.h"
 #include "HUD.h"
 #include "HUDRadar.h"
 

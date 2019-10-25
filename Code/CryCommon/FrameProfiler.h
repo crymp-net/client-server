@@ -53,7 +53,7 @@ enum EProfiledSubsystem
 	PROFILE_LAST_SUBSYSTEM // Must always be last.
 };
 
-#include <platform.h>
+#include "platform.h"
 #include "ISystem.h"
 
 class CFrameProfiler;

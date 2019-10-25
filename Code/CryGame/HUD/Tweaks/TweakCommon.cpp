@@ -14,11 +14,11 @@ Notes:	m_bIsInit is a bad idea - only need one in HUDTweak
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "TweakCommon.h"
 #include "TweakMenu.h"
 #include "TweakMetadata.h"
-#include "IScriptSystem.h"
+#include "CryCommon/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

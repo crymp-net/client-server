@@ -21,8 +21,8 @@
 #define DATA_FOLDER "game"
 #endif
 
-#include <ISystem.h>
-#include <ICryPak.h>
+#include "ISystem.h"
+#include "ICryPak.h"
 
 namespace PathUtil
 {

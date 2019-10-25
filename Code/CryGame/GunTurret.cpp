@@ -13,17 +13,17 @@ History:
 #include "StdAfx.h"
 #include "GunTurret.h"
 
-#include <Cry_GeoOverlap.h>
-#include <IActorSystem.h>
-#include <IMovementController.h>
-#include <IGameObjectSystem.h>
-#include <IVehicleSystem.h>
-#include <IMusicSystem.h>
-#include <GameRules.h>
+#include "CryCommon/Cry_GeoOverlap.h"
+#include "CryAction/IActorSystem.h"
+#include "CryAction/IMovementController.h"
+#include "CryAction/IGameObjectSystem.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/IMusicSystem.h"
+#include "GameRules.h"
 #include "Actor.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include <GameUtils.h>
+#include "CryCommon/GameUtils.h"
 #include "WeaponSystem.h"
 #include "Projectile.h"
 #include "Player.h"

@@ -15,7 +15,7 @@ History:
 #define __VEHICLEMOVEMENTHELICOPTER_H__
 
 #include "VehicleMovementBase.h"
-#include "Network/NetActionSync.h"
+#include "CryAction/Network/NetActionSync.h"
 
 class CHelicopterPlayerControls;
 class CVehicleMovementHelicopter;

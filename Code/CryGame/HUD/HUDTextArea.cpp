@@ -2,10 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include <StdAfx.h>
+#include "CryGame/StdAfx.h"
 #include "HUDTextArea.h"
-#include "IUIDraw.h"
-#include "Game.h"
+#include "CryAction/IUIDraw.h"
+#include "CryGame/Game.h"
 
 
 CHUDTextArea::CHUDTextArea() : m_pos(0, 0), m_fadetime (4.0f)

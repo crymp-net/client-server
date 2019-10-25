@@ -17,7 +17,7 @@ History:
 #include "HUD/HUD.h"
 #include "GameCVars.h"
 
-#include "IEntityProxy.h"
+#include "CryCommon/IEntityProxy.h"
 
 //------------------------------------------------------------------------
 CEMPField::CEMPField()

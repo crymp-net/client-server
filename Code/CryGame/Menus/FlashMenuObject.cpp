@@ -12,37 +12,37 @@ History:
 - 2007 : Taken over by Jan Neugebauer
 
 *************************************************************************/
-#include "StdAfx.h"
-#include <StlUtils.h>
+#include "CryGame/StdAfx.h"
+#include "CryCommon/StlUtils.h"
 
-#include <IVideoPlayer.h>
+#include "CryCommon/IVideoPlayer.h"
 #include <time.h>
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "IGameFramework.h"
-#include "IPlayerProfiles.h"
-#include "IUIDraw.h"
-#include "IMusicSystem.h"
-#include "ISound.h"
-#include "Game.h"
-#include "GameCVars.h"
-#include <CryPath.h>
-#include <ISaveGame.h>
-#include <ILoadGame.h>
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IPlayerProfiles.h"
+#include "CryAction/IUIDraw.h"
+#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/ISound.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryCommon/CryPath.h"
+#include "CryAction/ISaveGame.h"
+#include "CryAction/ILoadGame.h"
 #include "MPHub.h"
-#include "HUD/HUD.h"
-#include "HUD/HUDRadar.h"
-#include "HUD/HUDTextChat.h"
+#include "CryGame/HUD/HUD.h"
+#include "CryGame/HUD/HUDRadar.h"
+#include "CryGame/HUD/HUDTextChat.h"
 #include "OptionsManager.h"
-#include "IAVI_Reader.h"
-#include <StringUtils.h>
-#include "IActionMapManager.h"
-#include "GameActions.h"
-#include "IViewSystem.h"
-#include "LaptopUtil.h"
+#include "CryCommon/IAVI_Reader.h"
+#include "CryCommon/StringUtils.h"
+#include "CryAction/IActionMapManager.h"
+#include "CryGame/GameActions.h"
+#include "CryAction/IViewSystem.h"
+#include "CryGame/LaptopUtil.h"
 #include "GameNetworkProfile.h"
-#include "SPAnalyst.h"
+#include "CryGame/SPAnalyst.h"
 
 //both are defined again in FlashMenuObjectOptions
 static const char* scuiControlCodePrefix = "@cc_"; // "@cc_"; // AlexL 03/04/2007: enable this when keys/controls are fully localized

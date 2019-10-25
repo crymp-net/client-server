@@ -19,9 +19,9 @@
 
 #include "IIndexedMesh.h"
 #include "CryHeaders.h"
-#include <CryVertexBinding.h>
-#include <Cry_Color.h>
-#include <CryArray.h>
+#include "CryVertexBinding.h"
+#include "Cry_Color.h"
+#include "CryArray.h"
  
 struct CMaterialCGF;
 

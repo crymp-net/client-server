@@ -15,7 +15,7 @@
 
 #include "Cry_XOptimise.h"
 #ifdef LINUX
-# include <platform.h>
+# include "platform.h"
 #endif
 
 struct IShader;

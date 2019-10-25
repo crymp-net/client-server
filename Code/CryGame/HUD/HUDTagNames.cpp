@@ -13,15 +13,15 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
-#include "Actor.h"
-#include "GameCVars.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Actor.h"
+#include "CryGame/GameCVars.h"
 #include "GameFlashLogic.h"
-#include "GameRules.h"
+#include "CryGame/GameRules.h"
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "HUDTagNames.h"
-#include "IUIDraw.h"
+#include "CryAction/IUIDraw.h"
 
 //-----------------------------------------------------------------------------------------------------
 

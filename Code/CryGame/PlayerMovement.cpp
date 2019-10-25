@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "PlayerMovement.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "PlayerInput.h"

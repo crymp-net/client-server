@@ -16,13 +16,13 @@ History:
 #include "Projectile.h"
 #include "Bullet.h"
 #include "WeaponSystem.h"
-#include "ISerialize.h"
-#include "IGameObject.h"
+#include "CryCommon/ISerialize.h"
+#include "CryAction/IGameObject.h"
 
-#include <IEntitySystem.h>
-#include <ISound.h>
-#include <IItemSystem.h>
-#include <IAgent.h>
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/ISound.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IAgent.h"
 #include "ItemParamReader.h"
 #include "GameRules.h"
 #include "Environment/BattleDust.h"

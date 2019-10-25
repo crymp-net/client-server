@@ -2,11 +2,11 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
-#include "Player.h"
-#include "NanoSuit.h"
-#include "Nodes/G2FlowBaseNode.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
+#include "CryGame/Player.h"
+#include "CryGame/NanoSuit.h"
+#include "G2FlowBaseNode.h"
 
 #if defined(WHOLE_PROJECT)
 	#define GetPlayer GetPlayerNodes

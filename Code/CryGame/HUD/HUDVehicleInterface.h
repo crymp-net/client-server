@@ -19,8 +19,8 @@ History:
 
 
 #include "HUDObject.h"
-#include "IFlashPlayer.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/IFlashPlayer.h"
+#include "CryAction/IVehicleSystem.h"
 #include "GameFlashAnimation.h"
 
 class CHUD;

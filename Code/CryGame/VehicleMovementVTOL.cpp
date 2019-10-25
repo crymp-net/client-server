@@ -15,16 +15,16 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 
-#include "ICryAnimation.h"
-#include "IMovementController.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryAction/IMovementController.h"
 
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleMovementVTOL.h"
 #include "VehicleActionLandingGears.h"
 
-#include "IRenderAuxGeom.h"
+#include "CryCommon/IRenderAuxGeom.h"
 
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 
 //------------------------------------------------------------------------
 CVehicleMovementVTOL::CVehicleMovementVTOL()

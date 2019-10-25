@@ -9,7 +9,7 @@
 #	pragma once
 #endif
 
-#include <IFlowSystem.h>
+#include "CryCommon/IFlowSystem.h"
 
 struct IPlayerProfile;
 struct IActionMap;

@@ -5,9 +5,9 @@
 #ifndef _CRY_RENDERERD3D9
 #define _CRY_RENDERERD3D9
 
-#include <Cry_Math.h>
-#include <Cry_Geo.h>
-#include <Cry_Color.h>
+#include "Cry_Math.h"
+#include "Cry_Geo.h"
+#include "Cry_Color.h"
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////

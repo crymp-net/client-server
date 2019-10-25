@@ -5,8 +5,8 @@
 #ifndef __TARRAY_H__
 #define __TARRAY_H__
 
-#include <ILog.h>
-#include <ICryPak.h> //impl of fxopen
+#include "ILog.h"
+#include "ICryPak.h"  // impl of fxopen
 
 #ifndef CLAMP
 #define CLAMP(X, mn, mx) ((X)<(mn) ? (mn) : ((X)<(mx) ? (X) : (mx)))

@@ -21,7 +21,7 @@ History:
 #endif
 
 
-#include "IGameObject.h"
+#include "CryAction/IGameObject.h"
 
 
 class CScriptControlledPhysics: public CGameObjectExtensionHelper<CScriptControlledPhysics, IGameObjectExtension>,

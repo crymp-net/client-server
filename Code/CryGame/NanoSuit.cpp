@@ -15,7 +15,7 @@
 #include "Game.h"
 #include "GameCVars.h"
 #include "Player.h" 
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 #include "HUD/HUD.h"
 #include "GameRules.h"
 #include "NetInputChainDebug.h"
@@ -24,10 +24,10 @@
 #include "WeaponSystem.h"
 #include "OffHand.h"
 
-#include <ISound.h>
-#include <ISerialize.h>
-#include <IGameTokens.h>
-#include <IMaterialEffects.h>
+#include "CryCommon/ISound.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/IGameTokens.h"
+#include "CryCommon/IMaterialEffects.h"
 
 CNanoSuit::SNanoMaterial g_USNanoMats[NANOMODE_LAST];
 CNanoSuit::SNanoMaterial g_AsianNanoMats[NANOMODE_LAST];

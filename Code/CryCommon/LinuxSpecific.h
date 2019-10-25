@@ -21,7 +21,7 @@
 #include MATH_H
 #include <string.h>
 #include <errno.h>
-#include </usr/include/ctype.h>
+#include <ctype.h>
 #include <algorithm>
 
 typedef void*								LPVOID;

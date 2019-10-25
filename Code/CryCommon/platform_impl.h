@@ -17,8 +17,8 @@
 #define __platform_impl_h__
 #pragma once
 
-#include <platform.h>
-#include <ISystem.h>
+#include "platform.h"
+#include "ISystem.h"
 
 #if defined(_LIB) && !defined(_LAUNCHER)
 	extern CMTRand_int32 g_random_generator;
@@ -28,8 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 // If not in static library.
 
-#include <CryThreadImpl.h>
-#include <CryCommon.cpp>
+#include "CryThreadImpl.h"
 
 // this global environment variable must be initialized in each module!
 SSystemGlobalEnvironment* gEnv = NULL;
@@ -112,7 +111,7 @@ void __stl_debug_terminate(void)
 
 // If we use cry memory manager this should be also included in every module.
 #if defined(USING_CRY_MEMORY_MANAGER) && !defined(__SPU__)
-	#include <CryMemoryManager_impl.h>
+#include "CryMemoryManager_impl.h"
 #endif
 
 #if defined (_WIN32) || defined (XENON)

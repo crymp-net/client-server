@@ -12,9 +12,9 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include "IGame.h"
-#include "IActorSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/IGame.h"
+#include "CryAction/IActorSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleClient.h"
 #include "GameCVars.h"
 #include "Game.h"

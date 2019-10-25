@@ -11,7 +11,7 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include "ICryAnimation.h"
+#include "CryCommon/ICryAnimation.h"
 #include "Item.h"
 #include "Game.h"
 #include "GameCVars.h"

@@ -18,8 +18,8 @@ History:
 #include "WeaponSystem.h"
 #include "Single.h"
 #include "NetInputChainDebug.h"
-#include <IVehicleSystem.h>
-#include <IViewSystem.h>
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/IViewSystem.h"
 
 #define HM_TIME_TO_UPDATE 0.0f
 

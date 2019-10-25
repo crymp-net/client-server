@@ -13,7 +13,7 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleDamageBehaviorCameraShake.h"
 #include "Game.h"
 #include "GameRules.h"

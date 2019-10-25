@@ -19,11 +19,11 @@ History:
 #endif
 
 
-#include <IItemSystem.h>
-#include <IWeapon.h>
-#include <IAgent.h>
-#include <VectorMap.h>
-#include <IMusicSystem.h>
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IWeapon.h"
+#include "CryCommon/IAgent.h"
+#include "CryCommon/VectorMap.h"
+#include "CryCommon/IMusicSystem.h"
 #include "Item.h"
 
 

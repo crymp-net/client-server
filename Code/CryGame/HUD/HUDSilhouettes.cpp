@@ -13,13 +13,13 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
-#include "IActorSystem.h"
-#include "IEntitySystem.h"
-#include "IItemSystem.h"
-#include "IVehicleSystem.h"
+#include "CryGame/StdAfx.h"
+#include "CryAction/IActorSystem.h"
+#include "CryCommon/IEntitySystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "HUDSilhouettes.h"
-#include "Item.h"
+#include "CryGame/Item.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -17,12 +17,12 @@ History:
 # pragma once
 
 
-#include <IItemSystem.h>
+#include "CryAction/IItemSystem.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"
-#include "IShader.h"
-#include "VectorSet.h"
+#include "CryCommon/IShader.h"
+#include "CryCommon/VectorSet.h"
 
 class CLam : public CItem
 {

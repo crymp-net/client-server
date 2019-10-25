@@ -16,7 +16,7 @@
 #define _CRY_COMMON_LINUX64_SPECIFIC_HDR_
 
 #include "LinuxSpecific.h"
-#include </usr/include/stdint.h>
+#include <stdint.h>
 
 #define _CPU_AMD64
 //#define _CPU_SSE

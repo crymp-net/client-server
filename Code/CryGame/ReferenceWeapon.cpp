@@ -6,7 +6,7 @@
 // John Newfield
 
 #include "StdAfx.h"
-#include "ICryAnimation.h"
+#include "CryCommon/ICryAnimation.h"
 #include "ReferenceWeapon.h"
 
 CReferenceWeapon::CReferenceWeapon(void)

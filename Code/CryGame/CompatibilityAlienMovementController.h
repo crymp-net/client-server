@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "IMovementController.h"
+#include "CryAction/IMovementController.h"
 #include "Actor.h"
 
 class CAlien;

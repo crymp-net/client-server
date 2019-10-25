@@ -14,11 +14,11 @@
 #include "StdAfx.h"
 #include "Game.h"
 #include "Observer.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <ISerialize.h>
-#include <IRenderAuxGeom.h>
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IPhysics.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/IRenderAuxGeom.h"

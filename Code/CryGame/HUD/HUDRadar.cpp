@@ -11,25 +11,25 @@ History:
 - 2006/2007: Jan Müller
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IUIDraw.h"
-#include "Actor.h"
-#include "Weapon.h"
+#include "CryGame/StdAfx.h"
+#include "CryAction/IUIDraw.h"
+#include "CryGame/Actor.h"
+#include "CryGame/Weapon.h"
 #include "HUD.h"
 #include "HUDRadar.h"
-#include "Game.h"
-#include "IWorldQuery.h"
-#include "../GameRules.h"
-#include "IVehicleSystem.h"
-#include "IAIGroup.h"
+#include "CryGame/Game.h"
+#include "CryAction/IWorldQuery.h"
+#include "CryGame/GameRules.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/IAIGroup.h"
 #include "HUDSilhouettes.h"
 
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
-#include "GameCVars.h"
+#include "CryGame/GameCVars.h"
 
-#include "HUD/HUDPowerStruggle.h"
-#include "HUD/HUDScopes.h"
+#include "HUDPowerStruggle.h"
+#include "HUDScopes.h"
 
 #define RANDOM() ((((float)cry_rand()/(float)RAND_MAX)*2.0f)-1.0f)
 

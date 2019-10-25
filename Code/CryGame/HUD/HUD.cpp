@@ -18,14 +18,14 @@ History:
 - 2007: Refactored by Jan Müller
 
 *************************************************************************/
-#include "StdAfx.h"
-#include <StlUtils.h>
+#include "CryGame/StdAfx.h"
+#include "CryCommon/StlUtils.h"
 #include <ctype.h>
 
-#include "Game.h"
-#include "GameActions.h"
-#include "GameCVars.h"
-#include "MPTutorial.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameActions.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/MPTutorial.h"
 
 #include "HUD.h"
 #include "HUDObituary.h"
@@ -36,24 +36,24 @@ History:
 
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
-#include "Menus/FlashMenuObject.h"
-#include "IPlayerProfiles.h"
+#include "CryGame/Menus/FlashMenuObject.h"
+#include "CryAction/IPlayerProfiles.h"
 
-#include "IUIDraw.h"
-#include "ISound.h"
-#include "IPlayerInput.h"
-#include "IWorldQuery.h"
-#include "IInput.h"
-#include "IMaterialEffects.h"
-#include "ISaveGame.h"
-#include "ILoadGame.h"
-#include "ICryPak.h"
-#include "IMovieSystem.h"
+#include "CryAction/IUIDraw.h"
+#include "CryCommon/ISound.h"
+#include "CryGame/IPlayerInput.h"
+#include "CryAction/IWorldQuery.h"
+#include "CryCommon/IInput.h"
+#include "CryCommon/IMaterialEffects.h"
+#include "CryAction/ISaveGame.h"
+#include "CryAction/ILoadGame.h"
+#include "CryCommon/ICryPak.h"
+#include "CryCommon/IMovieSystem.h"
 
-#include "GameRules.h"
-#include "Item.h"
-#include "Weapon.h"
-#include "OffHand.h"
+#include "CryGame/GameRules.h"
+#include "CryGame/Item.h"
+#include "CryGame/Weapon.h"
+#include "CryGame/OffHand.h"
 
 #include "Tweaks/HUDTweakMenu.h"
 
@@ -64,11 +64,11 @@ History:
 #include "HUDTagNames.h"
 #include "HUDSilhouettes.h"
 
-#include "Menus/OptionsManager.h"
-#include "WeaponSystem.h"
-#include "Radio.h"
+#include "CryGame/Menus/OptionsManager.h"
+#include "CryGame/WeaponSystem.h"
+#include "CryGame/Radio.h"
 
-#include "LCD/LCDWrapper.h"
+#include "CryGame/LCD/LCDWrapper.h"
 
 static const float NIGHT_VISION_ENERGY = 30.0f;
 

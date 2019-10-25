@@ -19,13 +19,13 @@ History:
 #endif
 
 
-#include <IItemSystem.h>
-#include <ILevelSystem.h>
-#include <IWeapon.h>
-#include <IGameTokens.h>
+#include "CryAction/IItemSystem.h"
+#include "CryAction/ILevelSystem.h"
+#include "CryAction/IWeapon.h"
+#include "CryCommon/IGameTokens.h"
 #include "Item.h"
 #include "TracerManager.h"
-#include "VectorMap.h"
+#include "CryCommon/VectorMap.h"
 #include "AmmoParams.h"
 
 class CGame;

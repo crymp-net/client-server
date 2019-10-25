@@ -9,7 +9,7 @@
 #pragma once
 #endif
 
-#include <functor.h>
+#include "functor.h"
 
 // forward declarations.
 class  ICrySizer;

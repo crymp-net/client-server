@@ -11,12 +11,12 @@ History:
 - 02/6/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "MPLobbyUI.h"
-#include "Game.h"
+#include "CryGame/Game.h"
 #include "OptionsManager.h"
 #include "GameNetworkProfile.h"
-#include "GameCVars.h"
+#include "CryGame/GameCVars.h"
 
 static const char* MPPath = "_root.Root.MainMenu.MultiPlayer.\0";
 

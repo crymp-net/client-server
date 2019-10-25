@@ -12,17 +12,17 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDScopes.h"
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "HUDSilhouettes.h"
 #include "GameFlashAnimation.h"
-#include "../Actor.h"
-#include "IWorldQuery.h"
-#include "GameRules.h"
-#include "GameCVars.h"
-#include "Weapon.h"
+#include "CryGame/Actor.h"
+#include "CryAction/IWorldQuery.h"
+#include "CryGame/GameRules.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/Weapon.h"
 
 //-----------------------------------------------------------------------------------------------------
 

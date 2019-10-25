@@ -29,7 +29,7 @@ struct IMaterial;
 struct IMaterialManager;
 class CCamera;
 
-#include <Tarray.h>
+#include "TArray.h"
 
 #define MAX_SUB_MATERIALS 32
 

@@ -17,7 +17,7 @@ Notes:
 
 #include "StdAfx.h"
 #include "ScriptUtils.h"
-#include "ScriptHelpers.h"
+#include "CryCommon/ScriptHelpers.h"
 
 //-------------------------------------------------------------------------
 

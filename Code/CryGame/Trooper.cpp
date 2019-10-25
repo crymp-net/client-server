@@ -15,16 +15,16 @@ History:
 #include "GameCVars.h"
 
 #include "Trooper.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <ISerialize.h>
-#include <IRenderAuxGeom.h>
-#include <IMaterialEffects.h>
-#include <IEffectSystem.h>
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IPhysics.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/IMaterialEffects.h"
+#include "CryAction/IEffectSystem.h"
 
 const float CTrooper::CTentacle_maxTimeStep = 0.02f;
 const float CTrooper::CMaxHeadFOR = 0.5*3.14159f;

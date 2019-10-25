@@ -12,11 +12,11 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "TweakMetadata.h"
 #include "TweakMetadataCVAR.h"
 #include "TweakMetadataLUA.h"
-#include "IScriptSystem.h"
+#include "CryCommon/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

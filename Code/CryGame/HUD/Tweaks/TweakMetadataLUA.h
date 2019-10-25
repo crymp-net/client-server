@@ -21,7 +21,7 @@ History:
 //-------------------------------------------------------------------------
 
 #include "TweakMetadata.h"
-#include "IScriptSystem.h"
+#include "CryCommon/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

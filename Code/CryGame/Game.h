@@ -18,15 +18,15 @@
 # pragma once
 #endif
 
-#include <IGame.h>
-#include <IGameFramework.h>
-#include <IGameObjectSystem.h>
-#include <IGameObject.h>
-#include <IActorSystem.h>
-#include <StlUtils.h>
+#include "CryCommon/IGame.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IGameObjectSystem.h"
+#include "CryAction/IGameObject.h"
+#include "CryAction/IActorSystem.h"
+#include "CryCommon/StlUtils.h"
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
-#include "Cry_Camera.h"
+#include "CryCommon/Cry_Camera.h"
 
 #define GAME_NAME				"Crysis"
 #define GAME_LONGNAME		"Crysis"

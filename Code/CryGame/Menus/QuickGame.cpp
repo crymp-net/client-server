@@ -11,14 +11,14 @@ History:
 - 03/12/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "INetwork.h"
-#include "INetworkService.h"
+#include "CryGame/StdAfx.h"
+#include "CryCommon/INetwork.h"
+#include "CryCommon/INetworkService.h"
 #include "QuickGame.h"
-#include "ILevelSystem.h"
+#include "CryAction/ILevelSystem.h"
 
-#include "Game.h"
-#include "GameCVars.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
 #include "MPHub.h"
 #include "GameNetworkProfile.h"
 

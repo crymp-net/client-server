@@ -15,7 +15,7 @@ History:
 #define __IEFFECTSYSTEM_H__
 #pragma once
 
-#include "IGameFramework.h"
+#include "CryCommon/IGameFramework.h"
 
 typedef int32 EffectId;
 

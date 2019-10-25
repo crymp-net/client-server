@@ -19,8 +19,8 @@ History:
 #endif
 
 
-#include <IItemSystem.h>
-#include <CryCharAnimationParams.h>
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryCharAnimationParams.h"
 #include "Weapon.h"
 
 struct IVehicle;

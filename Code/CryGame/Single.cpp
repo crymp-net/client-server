@@ -22,17 +22,17 @@ History:
 #include "HUD/HUD.h"
 #include "HUD/HUDRadar.h"
 #include "WeaponSystem.h"
-#include <IEntitySystem.h>
-#include "ISound.h"
-#include <IVehicleSystem.h>
-#include <IMaterialEffects.h>
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/ISound.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/IMaterialEffects.h"
 #include "GameRules.h"
-#include <Cry_GeoDistance.h>
+#include "CryCommon/Cry_GeoDistance.h"
 
 #include "IronSight.h"
 
-#include "IRenderer.h"
-#include "IRenderAuxGeom.h"	
+#include "CryCommon/IRenderer.h"
+#include "CryCommon/IRenderAuxGeom.h"
 
 struct DebugShoot{
 	Vec3 pos;

@@ -18,7 +18,7 @@ History:
 # pragma once
 #endif
 
-#include <NetHelpers.h>
+#include "CryCommon/NetHelpers.h"
 #include "SynchedStorage.h"
 
 #define DECLARE_GLOBAL_MESSAGE(classname) \

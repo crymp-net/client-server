@@ -15,11 +15,11 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
-#include <IGameTokens.h>
-#include <IEffectSystem.h>
-#include "GameUtils.h"
+#include "CryCommon/IGameTokens.h"
+#include "CryAction/IEffectSystem.h"
+#include "CryCommon/GameUtils.h"
 
 
 #define RUNSOUND_FADEIN_TIME 0.5f

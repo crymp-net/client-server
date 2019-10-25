@@ -16,7 +16,7 @@ History:
 
 
 #include "VehicleMovementBase.h"
-#include "Network/NetActionSync.h"
+#include "CryAction/Network/NetActionSync.h"
 
 
 class CVehicleMovementStdBoat;

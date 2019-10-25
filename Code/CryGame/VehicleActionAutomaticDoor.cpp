@@ -12,13 +12,13 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleActionAutomaticDoor.h"
 #include "Game.h"
 
-#include "IScriptSystem.h"
-#include "ScriptHelpers.h"
-#include "GameUtils.h"
+#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/ScriptHelpers.h"
+#include "CryCommon/GameUtils.h"
 
 const float DOOR_OPENED = 0.0f;
 const float DOOR_CLOSED = 1.0f;

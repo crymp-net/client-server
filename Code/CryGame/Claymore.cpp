@@ -20,8 +20,8 @@ History:
 #include "Item.h"
 #include "Player.h"
 
-#include "IEntityProxy.h"
-#include "IRenderAuxGeom.h"
+#include "CryCommon/IEntityProxy.h"
+#include "CryCommon/IRenderAuxGeom.h"
 
 //------------------------------------------------------------------------
 CClaymore::CClaymore()

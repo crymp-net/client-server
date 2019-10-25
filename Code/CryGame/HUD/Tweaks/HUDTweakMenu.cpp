@@ -13,15 +13,14 @@ History:
 *************************************************************************/
 
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDTweakMenu.h"
-//#include "..\HUDDraw.h"
-#include "IUIDraw.h"
-#include "IScriptSystem.h"
-#include "ScriptUtils.h"
-#include "ICryPak.h"
-#include "IGame.h"
-#include "IGameFramework.h"
+#include "CryAction/IUIDraw.h"
+#include "CryCommon/IScriptSystem.h"
+#include "CryGame/ScriptUtils.h"
+#include "CryCommon/ICryPak.h"
+#include "CryCommon/IGame.h"
+#include "CryCommon/IGameFramework.h"
 //-----------------------------------------------------------------------------------------------------
 
 CHUDTweakMenu::CHUDTweakMenu(IScriptSystem *pScriptSystem) //, m_menu(pScriptSystem)

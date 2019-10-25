@@ -24,10 +24,10 @@
 #include "Menus/FlashMenuObject.h"
 #include "Menus/OptionsManager.h"
 	
-#include "IVehicleSystem.h"
-#include "IItemSystem.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/IItemSystem.h"
 #include "WeaponSystem.h"
-#include "IUIDraw.h"
+#include "CryAction/IUIDraw.h"
 
 #include "ServerSynchedStorage.h"
 
@@ -38,10 +38,10 @@
 #include "MPTutorial.h"
 #include "Voting.h"
 #include "SPAnalyst.h"
-#include "IWorldQuery.h"
+#include "CryAction/IWorldQuery.h"
 
-#include <StlUtils.h>
-#include <StringUtils.h>
+#include "CryCommon/StlUtils.h"
+#include "CryCommon/StringUtils.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;

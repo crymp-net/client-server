@@ -11,18 +11,18 @@ History:
 - 10:09:2006: Created by Jan Neugebauer
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "IGameFramework.h"
-#include "IPlayerProfiles.h"
-#include "IUIDraw.h"
-#include "IMusicSystem.h"
-#include "ISound.h"
-#include "IActionMapManager.h"
-#include "Game.h"
-#include "Menus/OptionsManager.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IPlayerProfiles.h"
+#include "CryAction/IUIDraw.h"
+#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/ISound.h"
+#include "CryAction/IActionMapManager.h"
+#include "CryGame/Game.h"
+#include "OptionsManager.h"
 
 static const char* uiControlCodePrefix = "@cc_"; // "@cc_"; // AlexL 03/04/2007: enable this when keys/controls are fully localized
 static const size_t uiControlCodePrefixLen = strlen(uiControlCodePrefix);

@@ -14,11 +14,11 @@ History:
 #include "AmmoPickup.h"
 #include "Weapon.h"
 #include "Actor.h"
-#include "IItemSystem.h"
+#include "CryAction/IItemSystem.h"
 #include "ItemParamReader.h"
 #include "GameCVars.h"
 #include "OffHand.h"
-#include <ISound.h>
+#include "CryCommon/ISound.h"
 
 #define EXPLOSIVE_GRENADE 0
 #define SMOKE_GRENADE			1

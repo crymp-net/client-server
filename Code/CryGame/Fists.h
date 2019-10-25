@@ -19,8 +19,8 @@ History:
 #endif
 
 
-#include <IItemSystem.h>
-#include <IViewSystem.h>
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IViewSystem.h"
 #include "OffHand.h"
 
 

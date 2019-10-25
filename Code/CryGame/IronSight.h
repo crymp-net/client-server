@@ -18,7 +18,7 @@ History:
 # pragma once
 #endif
 
-#include <IViewSystem.h>
+#include "CryAction/IViewSystem.h"
 #include "Weapon.h"
 #include "ItemParamReader.h"
 

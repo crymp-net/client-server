@@ -17,10 +17,10 @@
 #include "StdAfx.h"
 #include "SPAnalyst.h"
 
-#include <ISerialize.h>
-#include <Game.h>
-#include <ISaveGame.h>
-#include <ILoadGame.h>
+#include "CryCommon/ISerialize.h"
+#include "Game.h"
+#include "CryAction/ISaveGame.h"
+#include "CryAction/ILoadGame.h"
 
 #include "GameCVars.h"
 #include "Player.h"

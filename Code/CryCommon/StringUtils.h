@@ -16,7 +16,7 @@
 #ifndef _CRY_ENGINE_STRING_UTILS_HDR_
 #define _CRY_ENGINE_STRING_UTILS_HDR_
 
-#include <CryString.h>
+#include "CryString.h"
 #include <algorithm>				// std::replace
 #include <time.h>
 

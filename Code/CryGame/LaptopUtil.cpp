@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 #include "StdAfx.h"
 
-#include <IGameFramework.h>
+#include "CryCommon/IGameFramework.h"
 
 #include "LaptopUtil.h"
 

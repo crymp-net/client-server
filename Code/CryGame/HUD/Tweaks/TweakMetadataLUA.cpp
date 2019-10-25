@@ -18,10 +18,10 @@ Notes:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "TweakMetadataLUA.h"
-#include "IScriptSystem.h"
-#include "ScriptUtils.h"
+#include "CryCommon/IScriptSystem.h"
+#include "CryGame/ScriptUtils.h"
 
 
 //-------------------------------------------------------------------------

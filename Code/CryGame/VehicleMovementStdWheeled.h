@@ -15,8 +15,8 @@ History:
 #define __VEHICLEMOVEMENTSTDWHEELED_H__
 
 
-#include "Network/NetActionSync.h"
-#include "IVehicleSystem.h"
+#include "CryAction/Network/NetActionSync.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
 
 

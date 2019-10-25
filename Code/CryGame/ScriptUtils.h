@@ -16,7 +16,7 @@ History:
 
 #pragma once
 
-#include "IScriptSystem.h"
+#include "CryCommon/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

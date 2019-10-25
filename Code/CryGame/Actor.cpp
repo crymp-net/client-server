@@ -12,31 +12,31 @@
 
 *************************************************************************/
 #include "StdAfx.h"
-#include <StringUtils.h>
+#include "CryCommon/StringUtils.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "Actor.h"
 #include "ScriptBind_Actor.h"
-#include "ISerialize.h"
-#include "GameUtils.h"
-#include <ICryAnimation.h>
-#include <IGameTokens.h>
-#include <IItemSystem.h>
-#include <IInteractor.h>
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/GameUtils.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/IGameTokens.h"
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IInteractor.h"
 #include "Item.h"
 #include "Weapon.h"
 #include "Player.h"
 #include "GameRules.h"
-#include <IMaterialEffects.h>
+#include "CryCommon/IMaterialEffects.h"
 #include "HUD/HUD.h"
 #include "HUD/HUDRadar.h"
 #include "HUD/HUDTagNames.h"
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "OffHand.h"
-#include "IAgent.h"
+#include "CryCommon/IAgent.h"
 #include "IPlayerInput.h"
 
-#include "IFacialAnimation.h"
+#include "CryCommon/IFacialAnimation.h"
 
 IItemSystem *CActor::m_pItemSystem=0;
 IGameFramework	*CActor::m_pGameFramework=0;

@@ -2,9 +2,9 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
-#include "Nodes/G2FlowBaseNode.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
+#include "G2FlowBaseNode.h"
 
 struct FXParamsGlobal
 {

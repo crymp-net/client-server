@@ -16,7 +16,7 @@ History:
 
 #pragma once
 
-#include "IFlashPlayer.h"
+#include "CryCommon/IFlashPlayer.h"
 #include "MPHub.h"
 
 struct  IServerBrowser;

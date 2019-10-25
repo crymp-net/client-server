@@ -2,13 +2,13 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUD.h"
 #include "GameFlashAnimation.h"
-#include "../Actor.h"
-#include "IVehicleSystem.h"
-#include "IWorldQuery.h"
-#include "Weapon.h"
+#include "CryGame/Actor.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/IWorldQuery.h"
+#include "CryGame/Weapon.h"
 #include "HUDScopes.h"
 #include "HUDSilhouettes.h"
 

@@ -17,8 +17,8 @@
 #ifndef CRYFONT_ICRYFONT_H
 #define CRYFONT_ICRYFONT_H
 
-#include <Cry_Color.h>
-#include <Cry_Math.h>
+#include "Cry_Color.h"
+#include "Cry_Math.h"
 
 #ifdef GetCharWidth
 #undef GetCharWidth

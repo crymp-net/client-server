@@ -19,9 +19,9 @@ History:
 #endif
 
 
-#include <ConfigurableVariant.h>
-#include <INetwork.h>
-#include <IGameFramework.h>
+#include "CryCommon/ConfigurableVariant.h"
+#include "CryCommon/INetwork.h"
+#include "CryCommon/IGameFramework.h"
 
 
 typedef NTypelist::CConstruct<

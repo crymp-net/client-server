@@ -2,10 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDObituary.h"
-#include "IUIDraw.h"
-#include "Game.h"
+#include "CryAction/IUIDraw.h"
+#include "CryGame/Game.h"
 
 CHUDObituary::CHUDObituary()
 :	m_deathHead(0), m_empty(true)

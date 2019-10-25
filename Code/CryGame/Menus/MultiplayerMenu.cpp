@@ -11,16 +11,16 @@ History:
 - 12/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "MultiplayerMenu.h"
-#include "IGameFramework.h"
+#include "CryCommon/IGameFramework.h"
 #include "MPLobbyUI.h"
-#include "INetwork.h"
-#include "INetworkService.h"
-#include "GameCVars.h"
-#include "HUD/GameFlashLogic.h"
+#include "CryCommon/INetwork.h"
+#include "CryCommon/INetworkService.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/HUD/GameFlashLogic.h"
 #include "CreateGame.h"
-#include "Game.h"
+#include "CryGame/Game.h"
 #include "GameNetworkProfile.h"
 
 enum EServerInfoKey

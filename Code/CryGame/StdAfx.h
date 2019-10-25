@@ -24,27 +24,27 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <CryModuleDefs.h>
+#include "CryCommon/CryModuleDefs.h"
 #define eCryModule eCryM_Game
 #define RWI_NAME_TAG "RayWorldIntersection(Game)"
 #define PWI_NAME_TAG "PrimitiveWorldIntersection(Game)"
 
 // Insert your headers here
-#include <platform.h>
+#include "CryCommon/platform.h"
 #include <algorithm>
 #include <vector>
 #include <memory>
 
-#include <smartptr.h>
+#include "CryCommon/smartptr.h"
 
-#include <Cry_Math.h>
-#include <ISystem.h>
-#include <I3DEngine.h>
-#include <IInput.h>
-#include <IConsole.h>
-#include <ITimer.h>
-#include <ILog.h>
-#include <IGameplayRecorder.h>
+#include "CryCommon/Cry_Math.h"
+#include "CryCommon/ISystem.h"
+#include "CryCommon/I3DEngine.h"
+#include "CryCommon/IInput.h"
+#include "CryCommon/IConsole.h"
+#include "CryCommon/ITimer.h"
+#include "CryCommon/ILog.h"
+#include "CryAction/IGameplayRecorder.h"
 
 #ifndef GAMEDLL_EXPORTS
 #define GAMEDLL_EXPORTS

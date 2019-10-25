@@ -17,10 +17,10 @@
 #define __RESOURCECOMPILERIMAGEHELPER_H__
 #pragma once
 
-#include <platform.h>														// string
+#include "platform.h"  // string
 
 #if defined(WIN32) || defined(WIN64)
-#include <windows.h>														// HWND
+#include <windows.h>  // HWND
 #endif
 
 

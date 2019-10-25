@@ -6,7 +6,7 @@
 #define __CRYTHREADIMPL_WINDOWS_H__
 #pragma once
 
-//#include <IThreadTask.h>
+//#include "IThreadTask.h"
 
 #define WIN32_LEAN_AND_MEAN
 #ifndef XENON

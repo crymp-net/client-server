@@ -11,8 +11,8 @@
 	#define CRYINPUT_API DLL_IMPORT
 #endif
 
-#include <platform.h>
-#include <CryName.h>
+#include "platform.h"
+#include "CryName.h"
 #include <vector>
 #include <map>
 

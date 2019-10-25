@@ -8,7 +8,7 @@
 #pragma once 
 
 #include "IRenderer.h"
-#include <IEntitySystem.h>
+#include "IEntitySystem.h"
 
 #define USE_DOT3_ALPHA 
 

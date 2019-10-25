@@ -12,18 +12,18 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDPowerStruggle.h"
 
 #include "HUD.h"
 #include "GameFlashAnimation.h"
-#include "Menus/FlashMenuObject.h"
-#include "../Game.h"
-#include "../GameCVars.h"
-#include "../GameRules.h"
-#include "Weapon.h"
+#include "CryGame/Menus/FlashMenuObject.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/GameRules.h"
+#include "CryGame/Weapon.h"
 #include "HUDVehicleInterface.h"
-#include "Menus/OptionsManager.h"
+#include "CryGame/Menus/OptionsManager.h"
 
 #define HUD_CALL_LISTENERS_PS(func) \
 { \

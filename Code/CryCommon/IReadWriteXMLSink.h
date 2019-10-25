@@ -20,7 +20,7 @@
 #pragma once
 #endif
 
-#include <IXml.h>
+#include "IXml.h"
 #include "ConfigurableVariant.h"
 
 

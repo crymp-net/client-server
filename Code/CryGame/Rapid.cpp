@@ -14,10 +14,10 @@ History:
 #include "Rapid.h"
 #include "Actor.h"
 #include "Player.h"
-#include "ISound.h"
+#include "CryCommon/ISound.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include <IViewSystem.h>
+#include "CryAction/IViewSystem.h"
 
 
 //------------------------------------------------------------------------

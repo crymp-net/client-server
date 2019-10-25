@@ -16,7 +16,7 @@ History:
 
 
 #include "HUDObject.h"
-#include <IInput.h>
+#include "CryCommon/IInput.h"
 
 
 class CHUDObituary : public CHUDObject

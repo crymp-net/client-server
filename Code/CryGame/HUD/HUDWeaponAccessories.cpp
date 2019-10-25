@@ -2,10 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
 #include "HUD.h"
-#include "Weapon.h"
+#include "CryGame/Weapon.h"
 
 //-----------------------------------------------------------------------------------------------------
 

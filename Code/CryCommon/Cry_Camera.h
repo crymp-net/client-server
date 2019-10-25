@@ -21,8 +21,8 @@
 
 
 //DOC-IGNORE-BEGIN
-#include <Cry_Math.h>
-#include <Cry_Geo.h>
+#include "Cry_Math.h"
+#include "Cry_Geo.h"
 //DOC-IGNORE-END
 
 //////////////////////////////////////////////////////////////////////

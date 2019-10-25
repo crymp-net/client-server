@@ -17,8 +17,8 @@
 #define __CryName_h__
 #pragma once
 
-#include <ISystem.h>
-#include <StlUtils.h>
+#include "ISystem.h"
+#include "StlUtils.h"
 
 
 

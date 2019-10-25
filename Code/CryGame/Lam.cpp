@@ -14,11 +14,11 @@ History:
 #include "Lam.h"
 #include "Actor.h"
 #include "Player.h"
-#include "ParticleParams.h"
+#include "CryCommon/ParticleParams.h"
 #include "Weapon.h"
 #include "GameCVars.h"
 
-#include <IMaterialEffects.h>
+#include "CryCommon/IMaterialEffects.h"
 
 #define  CAMERA_DISTANCE_SQR	100
 #define  LASER_UPDATE_TIME		0.1f

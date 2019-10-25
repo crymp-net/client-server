@@ -2,10 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "Shake.h"
-#include "../Game.h"
-#include <IViewSystem.h>
+#include "CryGame/Game.h"
+#include "CryAction/IViewSystem.h"
 
 CShake::CShake()
 {

@@ -19,8 +19,8 @@
 #endif
 
 
-#include <IScriptSystem.h>
-#include <ScriptHelpers.h>
+#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/ScriptHelpers.h"
 
 
 struct IGameFramework;

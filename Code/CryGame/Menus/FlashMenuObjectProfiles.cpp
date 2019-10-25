@@ -11,18 +11,18 @@ History:
 - 09:21:2006: Created by Jan Neugebauer
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "IGameFramework.h"
-#include "IPlayerProfiles.h"
-#include "IUIDraw.h"
-#include "IMusicSystem.h"
-#include "ISound.h"
-#include "Game.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IPlayerProfiles.h"
+#include "CryAction/IUIDraw.h"
+#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/ISound.h"
+#include "CryGame/Game.h"
 #include "OptionsManager.h"
-#include "HUD/GameFlashLogic.h"
+#include "CryGame/HUD/GameFlashLogic.h"
 #include "MPHub.h"
 
 //-----------------------------------------------------------------------------------------------------

@@ -12,10 +12,10 @@
 #include "IGameObjectSystem.h"
 #endif
 
-#include "IEntitySystem.h"
-#include "SerializeFwd.h"
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/SerializeFwd.h"
 #include "IActionMapManager.h"
-#include "PoolAllocator.h"
+#include "CryCommon/PoolAllocator.h"
 
 inline void GameWarning(const char * ,...) PRINTF_PARAMS(1, 2);
 

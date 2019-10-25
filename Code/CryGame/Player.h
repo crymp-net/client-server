@@ -20,7 +20,7 @@
 
 #include "Actor.h"
 #include "NanoSuit.h"
-#include <IActionMapManager.h>
+#include "CryAction/IActionMapManager.h"
 
 
 class CPlayerMovement;

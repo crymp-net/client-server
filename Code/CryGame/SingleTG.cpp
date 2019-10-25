@@ -12,11 +12,11 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "SingleTG.h"
-#include <IGameTokens.h>
+#include "CryCommon/IGameTokens.h"
 #include "Actor.h"
 #include "Player.h"
 #include "HUD/HUD.h"
-#include "IUIDraw.h"
+#include "CryAction/IUIDraw.h"
 
 namespace
 {

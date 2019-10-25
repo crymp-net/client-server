@@ -2,10 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
-#include "INetwork.h"
-#include "INetworkService.h"
+#include "CryCommon/INetwork.h"
+#include "CryCommon/INetworkService.h"
 
 #include "MPHub.h"
 #include "MultiplayerMenu.h"
@@ -13,13 +13,13 @@
 #include "GameNetworkProfile.h"
 
 
-#include "Game.h"
-#include "IGameFramework.h"
-#include "IPlayerProfiles.h"
+#include "CryGame/Game.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IPlayerProfiles.h"
 #include "OptionsManager.h"
 #include "FlashMenuObject.h"
-#include <IVideoPlayer.h>
-#include "CryThread.h"
+#include "CryCommon/IVideoPlayer.h"
+#include "CryCommon/CryThread.h"
 
 static const char* gTSPListFileFullName = "%USER%\\TSP.xml";
 static const char* gTSPListFileURL = "http://www.ea.com/editorial/crysis/crysis.xml";

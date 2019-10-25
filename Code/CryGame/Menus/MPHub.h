@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "INetwork.h"
+#include "CryCommon/INetwork.h"
 
 template<class T, class U>
 struct TKeyValuePair

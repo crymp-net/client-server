@@ -14,7 +14,7 @@ History:
 #ifndef __G2FLOWBASENODE_H__
 #define __G2FLOWBASENODE_H__
 
-#include <IFlowSystem.h>
+#include "CryCommon/IFlowSystem.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Auto registration for flow nodes.

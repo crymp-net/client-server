@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "IActionMapManager.h"
+#include "CryAction/IActionMapManager.h"
 #include "IPlayerInput.h"
 #include "Player.h"
 

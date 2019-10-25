@@ -15,10 +15,10 @@ History:
 - 22:02:2006: Refactored for G04 by Matthew Jack
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDObject.h"
-#include "IGame.h"
-#include "IGameFramework.h"
+#include "CryCommon/IGame.h"
+#include "CryCommon/IGameFramework.h"
 
 //-----------------------------------------------------------------------------------------------------
 

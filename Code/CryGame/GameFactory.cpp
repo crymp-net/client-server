@@ -75,9 +75,9 @@
 
 #include "Environment/BattleDust.h"
 
-#include <IItemSystem.h>
-#include <IVehicleSystem.h>
-#include <IGameRulesSystem.h>
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/IGameRulesSystem.h"
 
 
 

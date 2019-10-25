@@ -12,10 +12,10 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "TweakMenu.h"
 #include "TweakTraverser.h"
-#include "IScriptSystem.h"
+#include "CryCommon/IScriptSystem.h"
 
 
 //-------------------------------------------------------------------------

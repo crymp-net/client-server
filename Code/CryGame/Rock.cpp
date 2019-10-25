@@ -14,8 +14,8 @@ History:
 #include "Game.h"
 #include "Rock.h"
 #include "GameRules.h"
-#include <IEntitySystem.h>
-#include <IGameTokens.h>
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/IGameTokens.h"
 
 #include "WeaponSystem.h"
 

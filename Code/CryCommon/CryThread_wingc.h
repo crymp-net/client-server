@@ -348,7 +348,7 @@ public:
 	void Notify() { CryCondBase::Notify(); }
 };
 
-#include <CryThread_winthread.h>
+#include "CryThread_winthread.h"
 
 #endif
 

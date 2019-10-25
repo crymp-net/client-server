@@ -12,10 +12,10 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "Game.h"
-#include <IEntitySystem.h>
-#include <ICryPak.h>
-#include <IScriptSystem.h>
-#include "IGameObject.h"
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/ICryPak.h"
+#include "CryCommon/IScriptSystem.h"
+#include "CryAction/IGameObject.h"
 #include "Actor.h"
 #include "WeaponSystem.h"
 

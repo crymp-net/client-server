@@ -11,11 +11,11 @@ History:
 - 18:08:2005: Created by Julien Darre
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "GameFlashLogic.h"
-#include "IGame.h"
-#include "IFlashPlayer.h"
-#include "IGameFramework.h"
+#include "CryCommon/IGame.h"
+#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/IGameFramework.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -19,9 +19,9 @@
 #endif
 
 
-#include <IGameObject.h>
-#include <IGameRulesSystem.h>
-#include <IViewSystem.h>
+#include "CryAction/IGameObject.h"
+#include "CryAction/IGameRulesSystem.h"
+#include "CryAction/IViewSystem.h"
 #include "Actor.h"
 #include "SynchedStorage.h"
 #include <queue>

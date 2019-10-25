@@ -29,10 +29,10 @@
 	#define CRYENTITYDLL_API DLL_IMPORT
 #endif
 
-#include <IEntity.h>
-#include <IEntityClass.h>
-#include <smartptr.h>
-#include <Cry_Geo.h>
+#include "IEntity.h"
+#include "IEntityClass.h"
+#include "smartptr.h"
+#include "Cry_Geo.h"
 
 // forward declarations.
 struct ISystem;

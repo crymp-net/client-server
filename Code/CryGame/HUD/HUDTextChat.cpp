@@ -11,15 +11,15 @@ History:
 - 07:03:2006: Created by Jan Müller
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDTextChat.h"
-#include "IGameRulesSystem.h"
-#include "IActorSystem.h"
-#include "IUIDraw.h"
+#include "CryAction/IGameRulesSystem.h"
+#include "CryAction/IActorSystem.h"
+#include "CryAction/IUIDraw.h"
 #include "HUD.h"
-#include "GameActions.h"
-#include "GameRules.h"
-#include "Voting.h"
+#include "CryGame/GameActions.h"
+#include "CryGame/GameRules.h"
+#include "CryGame/Voting.h"
 
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"

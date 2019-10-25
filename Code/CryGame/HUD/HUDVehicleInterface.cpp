@@ -12,15 +12,15 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDVehicleInterface.h"
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
 #include "HUD.h"
 #include "HUDRadar.h"
-#include "Weapon.h"
-#include "IWorldQuery.h"
-#include "GameCVars.h"
+#include "CryGame/Weapon.h"
+#include "CryAction/IWorldQuery.h"
+#include "CryGame/GameCVars.h"
 
 CHUDVehicleInterface::CHUDVehicleInterface(CHUD *pHUD, CGameFlashAnimation *pAmmo) : m_pVehicle(NULL)
 {

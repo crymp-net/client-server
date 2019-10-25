@@ -22,25 +22,25 @@ History:
 
 #include "Player.h"
 #include "PlayerView.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 #include "GameActions.h"
 
 #include "Weapon.h"
 #include "WeaponSystem.h"
 #include "Single.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include "IAISystem.h"
-#include "IAgent.h"
-#include <IVehicleSystem.h>
-#include <ISerialize.h>
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IPhysics.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/IAISystem.h"
+#include "CryCommon/IAgent.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/ISerialize.h"
 
-#include <IRenderAuxGeom.h>
+#include "CryCommon/IRenderAuxGeom.h"
 
-#include <IGameTokens.h>
+#include "CryCommon/IGameTokens.h"
 
 #include "HUD/HUD.h"
 

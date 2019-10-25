@@ -2,11 +2,11 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include <ISound.h>
+#include "CryGame/StdAfx.h"
+#include "CryCommon/ISound.h"
 #include "HUD.h"
-#include "../Actor.h"
-#include "../Game.h"
+#include "CryGame/Actor.h"
+#include "CryGame/Game.h"
 
 void CHUD::PlaySound(ESound eSound, bool play)
 {

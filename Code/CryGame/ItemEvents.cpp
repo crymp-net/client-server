@@ -12,7 +12,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "Item.h"
-#include "IActorSystem.h"
+#include "CryAction/IActorSystem.h"
 #include "Actor.h"
 #include "Game.h"
 #include "OffHand.h"

@@ -16,7 +16,7 @@
 # pragma once
 #endif
 
-#include <CryArray.h>
+#include "CryArray.h"
 
 // If you change this you also have to change Offs Tables in RenderMesh.cpp
 enum eVertexFormat

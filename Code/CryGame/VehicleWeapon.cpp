@@ -13,8 +13,8 @@ History:
 #include "StdAfx.h"
 #include "VehicleWeapon.h"
 #include "Actor.h"
-#include <IViewSystem.h>
-#include <IVehicleSystem.h>
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "Single.h"
 #include "HUD/HUD.h"
 #include "HUD/HUDCrosshair.h"

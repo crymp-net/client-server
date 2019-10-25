@@ -20,11 +20,11 @@ History:
 //-----------------------------------------------------------------------------------------------------
 
 #include <list>
-#include "IGameObject.h"
-#include "IFlashPlayer.h"
+#include "CryAction/IGameObject.h"
+#include "CryCommon/IFlashPlayer.h"
 #include "GameFlashAnimation.h"
-#include "IHardwareMouse.h"
-#include "IMaterialEffects.h"
+#include "CryCommon/IHardwareMouse.h"
+#include "CryCommon/IMaterialEffects.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -16,9 +16,9 @@ History:
 
 #pragma once
 
-#include "IFlashPlayer.h"
-#include "INetwork.h"
-#include "INetworkService.h"
+#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/INetwork.h"
+#include "CryCommon/INetworkService.h"
 #include "MPHub.h"
 
 enum ESortColumn

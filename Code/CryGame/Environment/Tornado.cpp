@@ -2,16 +2,16 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "Tornado.h"
-#include "../Game.h"
-#include "../Actor.h"
-#include "Environment/FlowTornado.h"
-#include <IMaterialEffects.h>
-#include <IEffectSystem.h>
-#include <IVehicleSystem.h>
+#include "CryGame/Game.h"
+#include "CryGame/Actor.h"
+#include "FlowTornado.h"
+#include "CryCommon/IMaterialEffects.h"
+#include "CryAction/IEffectSystem.h"
+#include "CryAction/IVehicleSystem.h"
 
-#include <IRenderAuxGeom.h>
+#include "CryCommon/IRenderAuxGeom.h"
 
 //------------------------------------------------------------------------
 CTornado::CTornado() :

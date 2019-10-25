@@ -16,11 +16,11 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-#include "IGameFramework.h"
-#include "IInput.h"
-#include "IFlashPlayer.h"
-#include "ILevelSystem.h"
-#include "IHardwareMouse.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryCommon/IInput.h"
+#include "CryCommon/IFlashPlayer.h"
+#include "CryAction/ILevelSystem.h"
+#include "CryCommon/IHardwareMouse.h"
 
 //-----------------------------------------------------------------------------------------------------
 

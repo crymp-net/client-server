@@ -19,8 +19,8 @@
 #endif
 
 
-#include <ICmdLine.h>
-#include <INetwork.h>
+#include "ICmdLine.h"
+#include "INetwork.h"
 
 struct IPuppetProxy;
 struct IGameFramework;

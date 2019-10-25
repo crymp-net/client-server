@@ -16,7 +16,7 @@ History:
 #include "GameActions.h"
 #include "Player.h"
 #include "PlayerView.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 
 #include "Weapon.h"
 #include "WeaponSystem.h"
@@ -24,26 +24,26 @@ History:
 #include "Fists.h"
 #include "GameRules.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include "IAISystem.h"
-#include "IAgent.h"
-#include <IVehicleSystem.h>
-#include <ISerialize.h>
-#include <ISound.h>
-#include "IMaterialEffects.h"
+#include "CryAction/IViewSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryCommon/IPhysics.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/IAISystem.h"
+#include "CryCommon/IAgent.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/ISound.h"
+#include "CryCommon/IMaterialEffects.h"
 
-#include <IRenderAuxGeom.h>
-#include <IWorldQuery.h>
+#include "CryCommon/IRenderAuxGeom.h"
+#include "CryAction/IWorldQuery.h"
 
-#include <IGameTokens.h>
+#include "CryCommon/IGameTokens.h"
 
-#include <IDebugHistory.h>
+#include "CryCommon/IDebugHistory.h"
 
-#include <IMusicSystem.h>
-#include <StringUtils.h>
+#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/StringUtils.h"
 
 
 #include "PlayerMovementController.h"
@@ -59,7 +59,7 @@ History:
 #include "NetPlayerInput.h"
 #include "AIDemoInput.h"
 
-#include "CryCharAnimationParams.h"
+#include "CryCommon/CryCharAnimationParams.h"
 
 #include "VehicleClient.h"
 

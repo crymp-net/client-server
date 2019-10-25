@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////
 // 
-#include <CryStructPack.h>
+#include "CryStructPack.h"
 
 #if NEED_STRUCT_PACK
 uint32 StructSize(const CTypeInfo& typeInfo, uint32 limit)

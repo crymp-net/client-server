@@ -19,9 +19,9 @@
 #endif
 
 
-#include <IEntity.h>
-#include <IEntitySystem.h>
-#include <IScriptSystem.h>
+#include "CryCommon/IEntity.h"
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/IScriptSystem.h"
 #include "IGameObjectSystem.h"
 #include "IGameObject.h"
 

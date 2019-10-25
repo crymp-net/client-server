@@ -13,8 +13,8 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "Game.h"
-#include "IVehicleSystem.h"
-#include "IFlowSystem.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/IFlowSystem.h"
 #include "Nodes/G2FlowBaseNode.h"
 #include "VehicleActionEntityAttachment.h"
 #include "GameCVars.h"

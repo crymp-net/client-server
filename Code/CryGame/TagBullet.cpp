@@ -7,7 +7,7 @@
 #include "Game.h"
 #include "GameRules.h"
 #include "HUD/HUD.h"
-#include <IEntitySystem.h>
+#include "CryCommon/IEntitySystem.h"
 
 CTagBullet::CTagBullet(void)
 {

@@ -13,7 +13,7 @@
 #include "StdAfx.h"
 #include "ScriptBind_Actor.h"
 #include "Actor.h"
-#include "IMovementController.h"
+#include "CryAction/IMovementController.h"
 #include "Item.h"
 #include "HUD/HUD.h"
 #include "Game.h"
@@ -21,12 +21,12 @@
 #include "Alien.h"
 #include "GameCVars.h"
 
-#include <IGameFramework.h>
-#include <IVehicleSystem.h>
-#include <IGameObject.h>
-#include <Cry_Geo.h>
-#include <Cry_GeoDistance.h>
-#include <IEntitySystem.h>
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/IGameObject.h"
+#include "CryCommon/Cry_Geo.h"
+#include "CryCommon/Cry_GeoDistance.h"
+#include "CryCommon/IEntitySystem.h"
 
 //------------------------------------------------------------------------
 CScriptBind_Actor::CScriptBind_Actor(ISystem *pSystem)

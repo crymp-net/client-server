@@ -12,8 +12,8 @@
 #ifndef _PARTICLEPARAMS_H_
 #define _PARTICLEPARAMS_H_ 1
 
-#include <ISplines.h>
-#include <Cry_Color.h>
+#include "ISplines.h"
+#include "Cry_Color.h"
 
 #define LOOKUP_SPLINE	1
 

@@ -19,10 +19,10 @@ History:
 # pragma once
 #endif
 
-#include <IItemSystem.h>
+#include "CryAction/IItemSystem.h"
 #include "Weapon.h"
 #include "Player.h"
-#include "IViewSystem.h"
+#include "CryAction/IViewSystem.h"
 
 #define OH_NO_GRAB					0
 #define OH_GRAB_OBJECT			1

@@ -18,9 +18,9 @@
 # pragma once
 #endif
 
-#include "IEntitySystem.h"
-#include "CryName.h"						// CCryName
-#include "smartptr.h"
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryName.h"  // CCryName
+#include "CryCommon/smartptr.h"
 
 typedef CCryName ActionId;
 

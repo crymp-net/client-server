@@ -8,8 +8,8 @@
 #pragma once
 
 #include "Player.h"
-#include "TimeValue.h"
-#include "GameUtils.h"
+#include "CryCommon/TimeValue.h"
+#include "CryCommon/GameUtils.h"
 
 class CPlayerMovementController : public IActorMovementController
 {

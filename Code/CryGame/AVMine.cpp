@@ -19,7 +19,7 @@ History:
 #include "HUD/HUD.h"
 #include "Player.h"
 
-#include "IEntityProxy.h"
+#include "CryCommon/IEntityProxy.h"
 
 
 //------------------------------------------------------------------------

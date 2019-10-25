@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "SerializeFwd.h"
+#include "CryCommon/SerializeFwd.h"
 
 struct ISaveGame
 {

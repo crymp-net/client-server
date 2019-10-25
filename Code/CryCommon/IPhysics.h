@@ -18,7 +18,7 @@
 #define vector_class Vec3_tpl
 
 
-#include <CrySizer.h>
+#include "CrySizer.h"
 
 //////////////////////////////////////////////////////////////////////////
 // IDs that can be used for foreign id.

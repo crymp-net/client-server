@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "PlayerRotation.h"
-#include "GameUtils.h"
+#include "CryCommon/GameUtils.h"
 #include "GameCVars.h"
 #include "Item.h"
 

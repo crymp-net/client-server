@@ -8,8 +8,8 @@
 
 #ifdef _DEBUG
 
-#include <ILog.h>
-#include <ISystem.h>			// CryLogAlways
+#include "ILog.h"
+#include "ISystem.h"  // CryLogAlways
 #include <crtdbg.h>
 #include <algorithm>
 #include <vector>

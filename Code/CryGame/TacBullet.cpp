@@ -5,9 +5,9 @@
 #include "StdAfx.h"
 #include "TacBullet.h"
 #include "Game.h"
-#include <IEntitySystem.h>
-#include <IGameRulesSystem.h>
-#include <IAnimationGraph.h>
+#include "CryCommon/IEntitySystem.h"
+#include "CryAction/IGameRulesSystem.h"
+#include "CryAction/IAnimationGraph.h"
 #include "GameRules.h"
 
 CTacBullet::CTacBullet()

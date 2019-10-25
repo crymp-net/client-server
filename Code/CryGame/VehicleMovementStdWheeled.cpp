@@ -18,11 +18,11 @@ History:
 //#include <platform.h>
 #include "VehicleMovementStdWheeled.h"
 
-#include "IVehicleSystem.h"
-#include "Network/NetActionSync.h"
-#include <IAgent.h>
-#include "GameUtils.h"
-#include "IGameTokens.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryAction/Network/NetActionSync.h"
+#include "CryCommon/IAgent.h"
+#include "CryCommon/GameUtils.h"
+#include "CryCommon/IGameTokens.h"
 #include "Player.h"
 
 #include "NetInputChainDebug.h"

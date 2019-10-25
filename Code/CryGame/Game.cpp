@@ -24,15 +24,15 @@
 #include "HUD/HUD.h"
 #include "WeaponSystem.h"
 
-#include <ICryPak.h>
-#include <CryPath.h>
-#include <IActionMapManager.h>
-#include <IViewSystem.h>
-#include <ILevelSystem.h>
-#include <IItemSystem.h>
-#include <IVehicleSystem.h>
-#include <IMovieSystem.h>
-#include <IPlayerProfiles.h>
+#include "CryCommon/ICryPak.h"
+#include "CryCommon/CryPath.h"
+#include "CryAction/IActionMapManager.h"
+#include "CryAction/IViewSystem.h"
+#include "CryAction/ILevelSystem.h"
+#include "CryAction/IItemSystem.h"
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/IMovieSystem.h"
+#include "CryAction/IPlayerProfiles.h"
 
 #include "ScriptBind_Actor.h"
 #include "ScriptBind_Item.h"
@@ -54,8 +54,8 @@
 
 #include "SPAnalyst.h"
 
-#include "ISaveGame.h"
-#include "ILoadGame.h"
+#include "CryAction/ISaveGame.h"
+#include "CryAction/ILoadGame.h"
 
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM

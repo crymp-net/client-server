@@ -19,7 +19,7 @@
 #endif
 
 #include "Actor.h"
-#include <IActionMapManager.h>
+#include "CryAction/IActionMapManager.h"
 
 struct SViewParams;
 struct IItemSystem;

@@ -16,7 +16,7 @@ History:
 #include "Player.h"
 #include "Alien.h"
 #include "GameCVars.h"
-#include <IViewSystem.h>
+#include "CryAction/IViewSystem.h"
 
 
 //------------------------------------------------------------------------

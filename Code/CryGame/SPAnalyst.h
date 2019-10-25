@@ -21,10 +21,10 @@
 # pragma once
 #endif
 
-#include <IGameFramework.h>
-#include <IGameplayRecorder.h>
-#include <ILevelSystem.h>
-#include <SerializeFwd.h>
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IGameplayRecorder.h"
+#include "CryAction/ILevelSystem.h"
+#include "CryCommon/SerializeFwd.h"
 
 struct ISaveGame;
 

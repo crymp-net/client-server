@@ -11,16 +11,16 @@
 	- 04:04:2006	 17:30 : Extended by Jan Müller
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "ScriptBind_HUD.h"
 #include "HUD.h"
-#include "IGameObject.h"
-#include "Game.h"
-#include "GameRules.h"
+#include "CryAction/IGameObject.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameRules.h"
 #include "HUDRadar.h"
-#include "HUD/HUDPowerStruggle.h"
-#include "HUD/HUDCrosshair.h"
-#include "Menus/FlashMenuObject.h"
+#include "HUDPowerStruggle.h"
+#include "HUDCrosshair.h"
+#include "CryGame/Menus/FlashMenuObject.h"
 
 //------------------------------------------------------------------------
 CScriptBind_HUD::CScriptBind_HUD(ISystem *pSystem, IGameFramework *pGameFramework)

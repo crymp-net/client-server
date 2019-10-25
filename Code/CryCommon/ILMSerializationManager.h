@@ -17,7 +17,7 @@
 #ifndef _CRY_COMMON_LM_SERIALIZATION_MANAGER_HDR_
 #define _CRY_COMMON_LM_SERIALIZATION_MANAGER_HDR_
 
-#include <IEntitySystem.h>
+#include "IEntitySystem.h"
 
 //! \brief Interface for lightmap serialization
 struct ILMSerializationManager

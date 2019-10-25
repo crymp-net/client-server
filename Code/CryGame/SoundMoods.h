@@ -17,8 +17,8 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-#include "ISerialize.h"
-#include "ISoundMoodManager.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/ISoundMoodManager.h"
 
 //-----------------------------------------------------------------------------------------------------
 

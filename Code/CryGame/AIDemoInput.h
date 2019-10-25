@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "IEntitySystem.h"
+#include "CryCommon/IEntitySystem.h"
 #include "IPlayerInput.h"
 
 static const float THETA = 3.14159265358979323f / 180.0f * 30;

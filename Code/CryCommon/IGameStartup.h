@@ -23,7 +23,7 @@
 #endif
 
 
-#include <ISystem.h>
+#include "ISystem.h"
 #include "IGame.h"
 #include "IGameRef.h"
 

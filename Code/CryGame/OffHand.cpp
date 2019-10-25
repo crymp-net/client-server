@@ -17,7 +17,7 @@ History:
 #include "Actor.h"
 #include "Throw.h"
 #include "GameRules.h"
-#include <IWorldQuery.h>
+#include "CryAction/IWorldQuery.h"
 #include "Fists.h"
 #include "GameActions.h"
 #include "Melee.h"

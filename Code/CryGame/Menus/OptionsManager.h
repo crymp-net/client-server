@@ -17,8 +17,8 @@ History:
 
 #pragma once
 
-#include "IGameFramework.h"
-#include "GameCVars.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryGame/GameCVars.h"
 
 //-----------------------------------------------------------------------------------------------------
 

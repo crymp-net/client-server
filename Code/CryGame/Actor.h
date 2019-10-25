@@ -18,16 +18,16 @@
 # pragma once
 #endif
 
-#include <IActorSystem.h>
-#include <IActionMapManager.h>
-#include <CoherentValue.h>
-#include <IMusicSystem.h>
+#include "CryAction/IActorSystem.h"
+#include "CryAction/IActionMapManager.h"
+#include "CryCommon/CoherentValue.h"
+#include "CryCommon/IMusicSystem.h"
 
 #include "Game.h" // for stance enum
-#include "IAgent.h" // for stance enum
-#include "IAnimationGraph.h"
-#include "IAnimatedCharacter.h"
-#include "IMovementController.h"
+#include "CryCommon/IAgent.h" // for stance enum
+#include "CryAction/IAnimationGraph.h"
+#include "CryAction/IAnimatedCharacter.h"
+#include "CryAction/IMovementController.h"
 #include "ScreenEffects.h"
 #include "GrabHandler.h"
 #include "WeaponAttachmentManager.h"

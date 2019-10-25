@@ -14,10 +14,10 @@ History:
 #include "Item.h"
 #include "ItemSharedParams.h"
 
-#include <ICryAnimation.h>
-#include <ISound.h>
-#include <CryPath.h>
-#include <IVehicleSystem.h>
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/ISound.h"
+#include "CryCommon/CryPath.h"
+#include "CryAction/IVehicleSystem.h"
 #include "Actor.h"
 #include "Game.h"
 #include "GameCVars.h"

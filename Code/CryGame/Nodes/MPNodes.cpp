@@ -11,14 +11,14 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
-#include "GameRules.h"
-#include "GameCVars.h"
-#include "Player.h"
-#include "Nodes/G2FlowBaseNode.h"
+#include "CryGame/GameRules.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/Player.h"
+#include "G2FlowBaseNode.h"
 
-#include <IVehicleSystem.h>
+#include "CryAction/IVehicleSystem.h"
 
 class CFlowNode_MP : public CFlowBaseNode, public CGameRules::SGameRulesListener
 {

@@ -14,8 +14,8 @@
 #include "Game.h"
 #include "Actor.h"
 #include "ScriptBind_Actor.h"
-#include "ISerialize.h"
-#include "GameUtils.h"
+#include "CryCommon/ISerialize.h"
+#include "CryCommon/GameUtils.h"
 #include "Player.h"
 #include "GameRules.h"
 

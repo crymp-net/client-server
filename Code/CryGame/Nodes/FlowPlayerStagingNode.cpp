@@ -2,12 +2,12 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
-#include "Player.h"
-#include "PlayerInput.h"
-#include "PlayerMovementController.h"
-#include "Nodes/G2FlowBaseNode.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
+#include "CryGame/Player.h"
+#include "CryGame/PlayerInput.h"
+#include "CryGame/PlayerMovementController.h"
+#include "G2FlowBaseNode.h"
 
 class CFlowPlayerStagingNode : public CFlowBaseNode
 {

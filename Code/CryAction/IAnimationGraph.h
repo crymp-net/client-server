@@ -9,8 +9,8 @@
 #	pragma once
 #endif
 
-#include "ICryAnimation.h"
-#include "TimeValue.h"
+#include "CryCommon/ICryAnimation.h"
+#include "CryCommon/TimeValue.h"
 
 class CCryName;
 struct IGameObject;

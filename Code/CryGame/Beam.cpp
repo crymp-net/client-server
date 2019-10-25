@@ -16,8 +16,8 @@ History:
 #include "Actor.h"
 #include "Game.h"
 #include "GameRules.h"
-#include <ISound.h>
-#include <IEntitySystem.h>
+#include "CryCommon/ISound.h"
+#include "CryCommon/IEntitySystem.h"
 
 
 //------------------------------------------------------------------------

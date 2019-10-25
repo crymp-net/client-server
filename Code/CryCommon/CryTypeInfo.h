@@ -15,10 +15,10 @@
 #define __CRY_TYPEINFO_H
 #pragma once
 
-#include <platform.h>
-#include <CryArray.h>
+#include "platform.h"
+#include "CryArray.h"
 
-#include <ISystem.h>
+#include "ISystem.h"
 
 typedef const char*	cstr;
 

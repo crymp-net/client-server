@@ -2,16 +2,16 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
 
-#include "HUD/HUD.h"
-#include "Nodes/G2FlowBaseNode.h"
-#include "Player.h"
-#include "GameCVars.h"
+#include "CryGame/HUD/HUD.h"
+#include "G2FlowBaseNode.h"
+#include "CryGame/Player.h"
+#include "CryGame/GameCVars.h"
 
-#include <IVehicleSystem.h>
-#include <StringUtils.h>
+#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/StringUtils.h"
 
 #if defined(WHOLE_PROJECT)
 	#define GetPlayer GetPlayerSensor

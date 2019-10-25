@@ -12,15 +12,15 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 
 #include "BattleDust.h"
 
-#include "Game.h"
-#include "GameCVars.h"
-#include "GameRules.h"
-#include "IRenderAuxGeom.h"
-#include "IEntitySystem.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/GameRules.h"
+#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/IEntitySystem.h"
 
 //////////////////////////////////////////////////////////////////////////
 //	CBattleEvent

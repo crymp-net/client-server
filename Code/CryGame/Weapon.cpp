@@ -13,15 +13,15 @@ History:
 #include "StdAfx.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include <IEntitySystem.h>
-#include <IScriptSystem.h>
-#include <IActionMapManager.h>
-#include <IGameObject.h>
-#include <IGameObjectSystem.h>
-#include <IVehicleSystem.h>
+#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/IScriptSystem.h"
+#include "CryAction/IActionMapManager.h"
+#include "CryAction/IGameObject.h"
+#include "CryAction/IGameObjectSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "WeaponSystem.h"
 #include "Weapon.h"
-#include "ISerialize.h"
+#include "CryCommon/ISerialize.h"
 #include "ScriptBind_Weapon.h"
 #include "Player.h"
 #include "BulletTime.h"
@@ -38,10 +38,10 @@ History:
 #include "Single.h"
 #include "Environment/BattleDust.h"
 
-#include "CryCharAnimationParams.h"
+#include "CryCommon/CryCharAnimationParams.h"
 
 #include "IPlayerInput.h"
-#include <IWorldQuery.h>
+#include "CryAction/IWorldQuery.h"
 
 //------------------------------------------------------------------------
 CWeapon::CWeapon()

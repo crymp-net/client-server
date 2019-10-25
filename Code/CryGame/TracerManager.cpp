@@ -15,7 +15,7 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 #include "Actor.h"
-#include <I3DEngine.h>
+#include "CryCommon/I3DEngine.h"
 
 
 #define TRACER_GEOM_SLOT  0

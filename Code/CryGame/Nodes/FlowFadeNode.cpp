@@ -2,14 +2,14 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
-#include "GameCVars.h"
-#include "Item.h"
-#include "GameRules.h"
-#include "Nodes/G2FlowBaseNode.h"
-#include "HUD/HUD.h"
-#include "HUD/HUDObject.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/Item.h"
+#include "CryGame/GameRules.h"
+#include "G2FlowBaseNode.h"
+#include "CryGame/HUD/HUD.h"
+#include "CryGame/HUD/HUDObject.h"
 
 class CHUDFader
 {

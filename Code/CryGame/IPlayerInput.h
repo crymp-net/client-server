@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "IAgent.h" // for EStance
-#include "ISerialize.h"
-#include "IGameObject.h"
+#include "CryCommon/IAgent.h" // for EStance
+#include "CryCommon/ISerialize.h"
+#include "CryAction/IGameObject.h"
 
 struct SSerializedPlayerInput
 {

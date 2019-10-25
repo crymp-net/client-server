@@ -22,9 +22,9 @@
 
 #include "CryHeaders.h"
 
-#include <Range.h>
-#include <AnimKey.h>
-#include <IEntity.h>
+#include "Range.h"
+#include "AnimKey.h"
+#include "IEntity.h"
 
 // forward declaraton.
 struct IAnimTrack;

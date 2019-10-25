@@ -211,19 +211,19 @@ template<class Runnable = CryRunnable> class CryThread;
 
 
 #if defined(LINUX)
-#include <CryThread_pthreads.h>
+#include "CryThread_pthreads.h"
 #elif defined(WIN32) || defined(WIN64)
 
 // Select one of the following implementations:
 
 // Old production implementation.
-#include <CryThread_windows.h>
+#include "CryThread_windows.h"
 
 // Implementation based on generation counters.
-//#include <CryThread_wingc.h>
+//#include "CryThread_wingc.h"
 
 // Implementation based on the PTW32 concept.
-//#include <CryThread_ptw32.h>
+//#include "CryThread_ptw32.h"
 
 
 
@@ -231,7 +231,7 @@ template<class Runnable = CryRunnable> class CryThread;
 
 #else
 // Put other platform specific includes here!
-#include <CryThread_dummy.h>
+#include "CryThread_dummy.h"
 #endif
 
 #if !defined _CRYTHREAD_CONDLOCK_GLITCH

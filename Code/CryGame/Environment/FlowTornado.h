@@ -5,9 +5,9 @@
 #ifndef __FLOWTORNADO_H__
 #define __FLOWTORNADO_H__
 
-#include "../Game.h"
+#include "CryGame/Game.h"
 #include "Tornado.h"
-#include "../Nodes/G2FlowBaseNode.h"
+#include "CryGame/Nodes/G2FlowBaseNode.h"
 
 class CFlowTornadoWander : public CFlowBaseNode
 {

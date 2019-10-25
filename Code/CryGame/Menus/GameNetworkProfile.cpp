@@ -11,16 +11,16 @@ History:
 - 03/2007: Created by Stas Spivakov
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "INetwork.h"
+#include "CryGame/StdAfx.h"
+#include "CryCommon/INetwork.h"
 #include "GameNetworkProfile.h"
 #include "MPHub.h"
 
-#include "Game.h"
-#include "GameCVars.h"
-#include "HUD/HUD.h"
-#include "HUD/HUDRadar.h"
-#include "HUD/HUDTextChat.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/HUD/HUD.h"
+#include "CryGame/HUD/HUDRadar.h"
+#include "CryGame/HUD/HUDTextChat.h"
 
 static const bool DEBUG_VERBOSE = false;
 

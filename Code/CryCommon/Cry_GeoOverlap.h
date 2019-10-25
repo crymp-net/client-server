@@ -22,7 +22,7 @@
 # include <vector>
 #endif
 
-#include <Cry_Geo.h>
+#include "Cry_Geo.h"
 
 namespace Distance
 {

@@ -5,8 +5,8 @@
 #ifndef _CryThread_pthreads_h_
 #define _CryThread_pthreads_h_ 1
 
-#include <ISystem.h>
-#include <ILog.h>
+#include "ISystem.h"
+#include "ILog.h"
 
 
 

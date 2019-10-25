@@ -2,14 +2,14 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "Game.h"
+#include "CryGame/StdAfx.h"
+#include "CryGame/Game.h"
 
-#include "HUD/HUD.h"
-#include "Nodes/G2FlowBaseNode.h"
-#include "Weapon.h"
+#include "CryGame/HUD/HUD.h"
+#include "G2FlowBaseNode.h"
+#include "CryGame/Weapon.h"
 
-#include <StringUtils.h>
+#include "CryCommon/StringUtils.h"
 
 namespace
 {

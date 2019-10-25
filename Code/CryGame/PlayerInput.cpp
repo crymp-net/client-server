@@ -10,15 +10,15 @@
 #include "GameActions.h"
 #include "Weapon.h"
 #include "WeaponSystem.h"
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleClient.h"
 #include "OffHand.h"
 #include "Fists.h"
 #include "HUD/HUD.h"
 #include "GameRules.h"
 
-#include <IWorldQuery.h>
-#include <IInteractor.h>
+#include "CryAction/IWorldQuery.h"
+#include "CryAction/IInteractor.h"
 
 TActionHandler<CPlayerInput>	CPlayerInput::s_actionHandler;
 

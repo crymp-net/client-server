@@ -19,8 +19,8 @@
 # pragma once
 #endif
 
-#include <ISystem.h>
-#include <StlUtils.h>
+#include "CryCommon/ISystem.h"
+#include "CryCommon/StlUtils.h"
 
 namespace SharedString
 {

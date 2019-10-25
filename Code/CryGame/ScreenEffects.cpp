@@ -8,7 +8,7 @@
 #include "StdAfx.h"
 #include "Actor.h"
 #include "Player.h"
-#include "IViewSystem.h"
+#include "CryAction/IViewSystem.h"
 #include "ScreenEffects.h"
 
 //---------------------------------

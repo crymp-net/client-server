@@ -17,7 +17,7 @@
 	//#include "Stream.h"
 	//#include "validator.h"
 #endif
-#include <SerializeFwd.h>
+#include "SerializeFwd.h"
 
 #include "Cry_Geo.h"
 

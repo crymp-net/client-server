@@ -19,7 +19,7 @@
 # pragma once
 #endif
 
-#include <Cry_Geo.h>
+#include "Cry_Geo.h"
 #if defined(__GNUC__)
 #include <limits>
 #endif

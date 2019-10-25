@@ -15,12 +15,12 @@ History:
 #include "Game.h"
 #include "Actor.h"
 #include "GameRules.h"
-#include "IEntityProxy.h"
-#include "IMaterial.h"
+#include "CryCommon/IEntityProxy.h"
+#include "CryCommon/IMaterial.h"
 #include "HUD/HUD.h"
-#include <IFlashPlayer.h>
+#include "CryCommon/IFlashPlayer.h"
 
-#include <ISound.h>
+#include "CryCommon/ISound.h"
 
 
 //------------------------------------------------------------------------

@@ -2,19 +2,19 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUD.h"
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
 #include "HUDObituary.h"
-#include "GameRules.h"
+#include "CryGame/GameRules.h"
 #include "HUDTextChat.h"
-#include "PlayerInput.h"
-#include "StringUtils.h"
-#include "CryPath.h"
-#include "IUIDraw.h"
-#include "GameCVars.h"
-#include "Menus/FlashMenuObject.h"
+#include "CryGame/PlayerInput.h"
+#include "CryCommon/StringUtils.h"
+#include "CryCommon/CryPath.h"
+#include "CryAction/IUIDraw.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/Menus/FlashMenuObject.h"
 
 namespace NSKeyTranslation
 {

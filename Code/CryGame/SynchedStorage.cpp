@@ -12,7 +12,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "SynchedStorage.h"
-#include <IEntitySystem.h>
+#include "CryCommon/IEntitySystem.h"
 
 
 //------------------------------------------------------------------------

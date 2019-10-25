@@ -12,13 +12,13 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "OptionsManager.h"
-#include "IPlayerProfiles.h"
+#include "CryAction/IPlayerProfiles.h"
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "Game.h"
-#include "HUD/HUD.h"
+#include "CryGame/Game.h"
+#include "CryGame/HUD/HUD.h"
 
 //-----------------------------------------------------------------------------------------------------
 

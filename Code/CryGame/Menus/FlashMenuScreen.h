@@ -14,7 +14,7 @@ History:
 #ifndef __FLASHMENUSCREEN_H__
 #define __FLASHMENUSCREEN_H__
 
-#include "FlashAnimation.h"
+#include "CryGame/FlashAnimation.h"
 
 //-----------------------------------------------------------------------------------------------------
 

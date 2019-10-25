@@ -291,7 +291,7 @@ inline void ZeroStruct( T &t ) { memset( &t,0,sizeof(t) ); }
 #include "Endian.h"
 
 // Include array.
-#include <CryArray.h>
+#include "CryArray.h"
 
 // Wrapper code for non-windows builds.
 #if defined(LINUX)

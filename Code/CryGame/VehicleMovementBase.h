@@ -15,15 +15,15 @@ History:
 #define __VEHICLEMOVEMENTBASE_H__
 
 #include <vector>
-#include <ParticleParams.h>
-#include <IVehicleSystem.h>
+#include "CryCommon/ParticleParams.h"
+#include "CryAction/IVehicleSystem.h"
 #include "Actor.h"
-#include "IMaterialEffects.h"
+#include "CryCommon/IMaterialEffects.h"
 #include "VehicleMovementTweaks.h"
 
 #define WIN32_LEAN_AND_MEAN
-#include <platform.h>
-#include "CryThread.h"
+#include "CryCommon/platform.h"
+#include "CryCommon/CryThread.h"
 
 #define ENGINESOUND_MAX_DIST 150.f
 #define ENGINESOUND_IDLE_RATIO 0.2f

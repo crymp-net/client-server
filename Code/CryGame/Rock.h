@@ -20,7 +20,7 @@ History:
 
 
 #include "Projectile.h"
-#include "VectorSet.h"
+#include "CryCommon/VectorSet.h"
 
 #define MAX_SPAWNED_ROCKS	10
 

@@ -14,19 +14,19 @@ History:
 - 22:02:2006: Created by Matthew Jack from original HUD class
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "HUDCommon.h"
 #include "HUD.h"
 
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
-#include "Menus/FlashMenuObject.h"
+#include "CryGame/Menus/FlashMenuObject.h"
 
-#include "Player.h"
-#include "Weapon.h"
-#include "Game.h"
-#include "GameCVars.h"
-#include "GameActions.h"
+#include "CryGame/Player.h"
+#include "CryGame/Weapon.h"
+#include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
+#include "CryGame/GameActions.h"
 
 //-----------------------------------------------------------------------------------------------------
 //-- IConsoleArgs

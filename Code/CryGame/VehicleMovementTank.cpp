@@ -14,9 +14,9 @@ History:
 #include "StdAfx.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include <GameUtils.h>
+#include "CryCommon/GameUtils.h"
 
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleMovementTank.h"
 
 #define THREAD_SAFE 1

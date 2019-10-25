@@ -51,7 +51,7 @@ enum EDataType
 	eDATA_VolumeObject
 };
 
-#include <Cry_Color.h>
+#include "Cry_Color.h"
 
 //=======================================================
 

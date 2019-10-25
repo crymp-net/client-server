@@ -19,8 +19,8 @@ History:
 #endif
 
 
-#include <IScriptSystem.h>
-#include <ScriptHelpers.h>
+#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/ScriptHelpers.h"
 
 
 class CGameRules;

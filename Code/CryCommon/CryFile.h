@@ -17,8 +17,8 @@
 #define __cryfile_h__
 #pragma once
 
-#include <ISystem.h>
-#include <ICryPak.h>
+#include "ISystem.h"
+#include "ICryPak.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Defines for CryEngine filetypes extensions.

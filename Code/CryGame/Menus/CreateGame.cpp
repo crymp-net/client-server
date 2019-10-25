@@ -11,16 +11,16 @@ History:
 - 03/12/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryGame/StdAfx.h"
 #include "MPHub.h"
 #include "MPLobbyUI.h"
 #include "MultiplayerMenu.h"
 #include "CreateGame.h"
 
-#include "IGame.h"
-#include "IGameFramework.h"
-#include "ILevelSystem.h"
-#include "IPlayerProfiles.h"
+#include "CryCommon/IGame.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/ILevelSystem.h"
+#include "CryAction/IPlayerProfiles.h"
 
 enum ECreateGameOptions
 {

@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryAction/IVehicleSystem.h"
 #include "VehicleActionDeployRope.h"
 #include "Game.h"
 

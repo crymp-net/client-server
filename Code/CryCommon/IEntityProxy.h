@@ -17,7 +17,7 @@
 #define __IEntityProxy_h__
 #pragma once
 
-#include <SerializeFwd.h>
+#include "SerializeFwd.h"
 #include "ISound.h" // needed for enum ESoundSemantic
 
 struct SEntitySpawnParams;

@@ -5,7 +5,7 @@
 #ifndef _ILOG_H_
 #define _ILOG_H_
 
-#include <platform.h>
+#include "platform.h"
 
 
 

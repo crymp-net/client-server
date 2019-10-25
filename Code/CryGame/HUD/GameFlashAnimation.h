@@ -17,7 +17,7 @@ History:
 //-----------------------------------------------------------------------------------------------------
 
 #include <list>
-#include "FlashAnimation.h"
+#include "CryGame/FlashAnimation.h"
 
 // Forward declarations
 class CGameFlashLogic;

@@ -20,13 +20,13 @@
 #pragma once
 #endif
 
-#include <platform.h>
-#include <Cry_Math.h>
+#include "platform.h"
+#include "Cry_Math.h"
 #include <vector>
 #include <set>
 
 #ifdef  SANDBOX_API
-#include "Util\GuidUtil.h"
+#include "Util/GuidUtil.h"
 #endif //SANDBOX_API
 
 class IXMLDataSink;

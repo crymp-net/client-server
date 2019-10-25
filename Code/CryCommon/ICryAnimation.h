@@ -30,15 +30,15 @@
 
 
 //DOC-IGNORE-BEGIN
-#include <Cry_Math.h>
-#include <Cry_Geo.h>
+#include "Cry_Math.h"
+#include "Cry_Geo.h"
 
-#include <IRenderer.h>
-#include <IPhysics.h>
-#include <I3DEngine.h>
-#include <IEntityRenderState.h>
-#include <IRenderAuxGeom.h>
-#include <IEntitySystem.h>
+#include "IRenderer.h"
+#include "IPhysics.h"
+#include "I3DEngine.h"
+#include "IEntityRenderState.h"
+#include "IRenderAuxGeom.h"
+#include "IEntitySystem.h"
 
 #include "CryCharAnimationParams.h"
 

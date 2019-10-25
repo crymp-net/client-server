@@ -563,7 +563,7 @@ public:
 	CryCond() { }
 };
 
-#include <CryThread_winthread.h>
+#include "CryThread_winthread.h"
 
 #endif
 
