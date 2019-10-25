@@ -167,14 +167,6 @@
 #include "Win64specific.h"
 #endif
 
-#if defined(LINUX64)
-#include "Linux64Specific.h"
-#endif
-
-#if defined(LINUX32)
-#include "Linux32Specific.h"
-#endif
-
 
 
 
@@ -292,11 +284,6 @@ inline void ZeroStruct( T &t ) { memset( &t,0,sizeof(t) ); }
 
 // Include array.
 #include "CryArray.h"
-
-// Wrapper code for non-windows builds.
-#if defined(LINUX)
-	#include "Linux_Win32Wrapper.h"
-#endif
 
 
 

@@ -267,7 +267,6 @@ private:
 	void MP_ResetProgress	(int iProgress);
 
 	void CloseWaitingScreen();
-	void UpdateLaptop(float fDeltaTime);
 	void UpdateNetwork(float fDeltaTime);
 
 	enum ESound
@@ -310,7 +309,6 @@ private:
 	CFlashMenuScreen *m_apFlashMenuScreens[MENUSCREEN_COUNT];
 	CFlashMenuScreen *m_pCurrentFlashMenuScreen;
 	CFlashMenuScreen *m_pSubtitleScreen;
-	CFlashMenuScreen *m_pAnimLaptopScreen;
 
 	IPlayerProfileManager* m_pPlayerProfileManager;
 
@@ -390,11 +388,6 @@ private:
 	float					m_splashScreenTimer;
 	SInputEvent		m_repeatEvent;
 
-	unsigned long m_ulBatteryLifeTime;
-	int m_iBatteryLifePercent;
-	int m_iWLanSignalStrength;
-	float m_fLaptopUpdateTime;
-	bool m_bForceLaptopUpdate;
 	bool m_bIsEndingGameContext;
 	bool m_textfieldFocus;
 

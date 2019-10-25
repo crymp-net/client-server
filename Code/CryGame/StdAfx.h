@@ -74,7 +74,6 @@ inline void GameWarning( const char *format,... )
 extern struct SCVars *g_pGameCVars;
 
 #if defined(WIN32) && !defined(XENON)
-//#define USE_G15_LCD
 extern void* g_hInst;
 #endif
 

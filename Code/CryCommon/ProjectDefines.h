@@ -73,10 +73,6 @@
 #	define EXCLUDE_GPU_PARTICLE_PHYSICS
 #endif
 
-#define EXCLUDE_ILG_SDK
-
 #define _DATAPROBE
-
-#include "ProjectDefinesInclude.h"
 
 #endif // PROJECTDEFINES_H

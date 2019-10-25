@@ -30,8 +30,6 @@ struct SCVars
 	int		cl_fpBody;
 	int   cl_hud;
 	int		cl_debugSwimming;
-	int   cl_g15lcdEnable;
-	int   cl_g15lcdTick;
 
 	ICVar* 	ca_GameControlledStrafingPtr;
 	float pl_curvingSlowdownSpeedScale;

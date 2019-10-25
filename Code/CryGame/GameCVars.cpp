@@ -153,8 +153,6 @@ void SCVars::InitCVars(IConsole *pConsole)
 	pConsole->RegisterInt("cl_screeneffects", 1, 0, "Enable player screen effects (depth-of-field, motion blur, ...).");
 	
 	pConsole->Register("cl_debugSwimming", &cl_debugSwimming, 0, VF_CHEAT, "enable swimming debugging");
-	pConsole->Register("cl_g15lcdEnable", &cl_g15lcdEnable, 1, VF_DUMPTODISK, "enable support for Logitech G15 LCD");
-	pConsole->Register("cl_g15lcdTick", &cl_g15lcdTick, 250, VF_DUMPTODISK, "milliseconds between lcd updates");
 
 	ca_GameControlledStrafingPtr = pConsole->GetCVar("ca_GameControlledStrafing");
 	pConsole->Register("pl_curvingSlowdownSpeedScale", &pl_curvingSlowdownSpeedScale, 0.5f, VF_CHEAT, "Player only slowdown speedscale when curving/leaning extremely.");

@@ -68,8 +68,6 @@ History:
 #include "CryGame/WeaponSystem.h"
 #include "CryGame/Radio.h"
 
-#include "CryGame/LCD/LCDWrapper.h"
-
 static const float NIGHT_VISION_ENERGY = 30.0f;
 
 //-----------------------------------------------------------------------------------------------------

@@ -40,8 +40,6 @@
 #include "ScriptBind_GameRules.h"
 #include "ScriptBind_Game.h"
 #include "HUD/ScriptBind_HUD.h"
-#include "LaptopUtil.h"
-#include "LCD/LCDWrapper.h"
 
 #include "GameFactory.h"
 
@@ -100,8 +98,7 @@ CGame::CGame()
 	m_pServerSynchedStorage(0),
 	m_pClientSynchedStorage(0),
 	m_uiPlayerID(-1),
-	m_pSPAnalyst(0),
-	m_pLaptopUtil(0)
+	m_pSPAnalyst(0)
 {
 	m_pCVars = new SCVars();
 	g_pGameCVars = m_pCVars;
@@ -126,7 +123,6 @@ CGame::~CGame()
 	ReleaseActionMaps();
 	SAFE_DELETE(m_pFlashMenuObject);
 	SAFE_DELETE(m_pOptionsManager);
-	SAFE_DELETE(m_pLaptopUtil);
 	SAFE_DELETE(m_pBulletTime);
 	SAFE_DELETE(m_pSoundMoods);
 	SAFE_DELETE(m_pHUD);
@@ -304,27 +300,6 @@ bool CGame::Init(IGameFramework *pFramework)
 
 	m_pOptionsManager->SetProfileManager(m_pPlayerProfileManager);
 
-	// CLaptopUtil must be created before CFlashMenuObject as this one relies on it
-	if(!m_pLaptopUtil)
-		m_pLaptopUtil = new CLaptopUtil;
-
-	if (!m_pLCD)
-	{
-#ifdef USE_G15_LCD
-		if(gEnv->pSystem->IsDedicated())
-			m_pLCD = new CNullLCD();
-		else
-			m_pLCD = new CG15LCD();
-#else
-		m_pLCD = new CNullLCD();
-#endif
-
-		if (!m_pLCD->Init())
-		{
-			SAFE_DELETE(m_pLCD);
-		}
-	}
-
 	if (!gEnv->pSystem->IsDedicated())
 	{
 		m_pFlashMenuObject = new CFlashMenuObject;
@@ -412,9 +387,6 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 	m_pFramework->GetIActionMapManager()->EnableActionMap("debug", m_inDevMode);
 
 	CheckReloadLevel();
-
-	if (m_pLCD)
-		m_pLCD->Update(frameTime);
 
 	return bRun ? 1 : 0;
 }
@@ -704,11 +676,6 @@ CBulletTime *CGame::GetBulletTime() const
 CSoundMoods *CGame::GetSoundMoods() const
 {
 	return m_pSoundMoods;
-}
-
-CLaptopUtil *CGame::GetLaptopUtil() const
-{
-	return m_pLaptopUtil;
 }
 
 CHUD *CGame::GetHUD() const

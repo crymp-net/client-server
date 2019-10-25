@@ -34,7 +34,6 @@
 
 struct ISystem;
 struct IConsole;
-struct ILCD;
 
 class	CScriptBind_Actor;
 class CScriptBind_Item;
@@ -60,8 +59,6 @@ struct SItemStrings;
 class CItemSharedParamsList;
 class CSPAnalyst;
 class CSoundMoods;
-class CLaptopUtil;
-class CLCDWrapper;
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -163,7 +160,6 @@ public:
 	CGameRules *GetGameRules() const;
 	CBulletTime *GetBulletTime() const;
 	CSoundMoods *GetSoundMoods() const;
-	CLaptopUtil *GetLaptopUtil() const;
 	CHUD *GetHUD() const;
 	CFlashMenuObject *GetMenu() const;
 	COptionsManager *GetOptions() const;
@@ -279,8 +275,6 @@ protected:
 
 	CBulletTime						*m_pBulletTime;
 	CSoundMoods						*m_pSoundMoods;
-	CLaptopUtil						*m_pLaptopUtil;
-	ILCD									*m_pLCD;
 
 	typedef std::map<string, string, stl::less_stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
@@ -303,12 +297,6 @@ extern CGame *g_pGame;
 
 #define SAFE_HUD_FUNC_RET(func)\
 	((g_pGame && g_pGame->GetHUD()) ? g_pGame->GetHUD()->func : NULL)
-
-#define SAFE_LAPTOPUTIL_FUNC(func)\
-	{	if(g_pGame && g_pGame->GetLaptopUtil()) g_pGame->GetLaptopUtil()->func; }
-
-#define SAFE_LAPTOPUTIL_FUNC_RET(func)\
-	((g_pGame && g_pGame->GetLaptopUtil()) ? g_pGame->GetLaptopUtil()->func : NULL)
 
 #define SAFE_SOUNDMOODS_FUNC(func)\
 	{	if(g_pGame && g_pGame->GetSoundMoods()) g_pGame->GetSoundMoods()->func; }
