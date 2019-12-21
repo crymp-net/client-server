@@ -19,8 +19,8 @@ namespace Util
 		return static_cast<const unsigned char*>(base) + offset;
 	}
 
-	int FillNOP(void *address, size_t length);
-	int FillMem(void *address, const void *data, size_t length);
+	bool FillNOP(void *address, size_t length);
+	bool FillMem(void *address, const void *data, size_t length);
 
 	int GetCrysisGameVersion(void *pDLL);
 }

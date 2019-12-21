@@ -14,22 +14,22 @@
  * @brief Fills read-only memory region with x86 NOP instruction.
  * @param address Address of the memory region.
  * @param length Size of the memory region in bytes.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Util::FillNOP(void *address, size_t length)
+bool Util::FillNOP(void *address, size_t length)
 {
 	DWORD oldProtection;
 
 	if (VirtualProtect(address, length, PAGE_EXECUTE_READWRITE, &oldProtection) == 0)
-		return -1;
+		return false;
 
 	// 0x90 is opcode of NOP instruction on both x86 and x86_64
 	std::memset(address, '\x90', length);
 
 	if (VirtualProtect(address, length, oldProtection, &oldProtection) == 0)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 /**
@@ -38,21 +38,21 @@ int Util::FillNOP(void *address, size_t length)
  * @param address Address of the memory region.
  * @param data Address of the data.
  * @param length Size of the data in bytes.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Util::FillMem(void *address, const void *data, size_t length)
+bool Util::FillMem(void *address, const void *data, size_t length)
 {
 	DWORD oldProtection;
 
 	if (VirtualProtect(address, length, PAGE_EXECUTE_READWRITE, &oldProtection) == 0)
-		return -1;
+		return false;
 
 	std::memcpy(address, data, length);
 
 	if (VirtualProtect(address, length, oldProtection, &oldProtection) == 0)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 /**

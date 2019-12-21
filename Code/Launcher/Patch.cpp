@@ -6,104 +6,106 @@
 #include "Patch.h"
 #include "Util.h"
 
-using namespace Util;
+using Util::RVA;
+using Util::FillNOP;
+using Util::FillMem;
 
 /**
  * @brief Allows connecting to DX10 servers with game running in DX9 mode.
  * @param pCryAction CryAction DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::AllowDX9ImmersiveMultiplayer(void *pCryAction)
+bool Patch::AllowDX9ImmersiveMultiplayer(void *pCryAction)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCryAction, 0x2B394D), 0x1E) < 0
-	 || FillNOP(RVA(pCryAction, 0x2B6860), 0x1A) < 0)
+	if (!FillNOP(RVA(pCryAction, 0x2B394D), 0x1E)
+	 || !FillNOP(RVA(pCryAction, 0x2B6860), 0x1A))
 #else
-	if (FillNOP(RVA(pCryAction, 0x1D698A), 0x1A) < 0
-	 || FillNOP(RVA(pCryAction, 0x1D89FC), 0x15) < 0)
+	if (!FillNOP(RVA(pCryAction, 0x1D698A), 0x1A)
+	 || !FillNOP(RVA(pCryAction, 0x1D89FC), 0x15))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 /**
  * @brief Prevents server from kicking players with the same CD key.
  * This is server-side patch.
  * @param pCryNetwork CryNetwork DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::AllowSameCDKeys(void *pCryNetwork)
+bool Patch::AllowSameCDKeys(void *pCryNetwork)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCryNetwork, 0xE0328), 0x47) < 0)
+	if (!FillNOP(RVA(pCryNetwork, 0xE0328), 0x47))
 #else
-	if (FillNOP(RVA(pCryNetwork, 0x606A5), 0x4) < 0)
+	if (!FillNOP(RVA(pCryNetwork, 0x606A5), 0x4))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 /**
  * @brief Removes the SecuROM crap from 64-bit CrySystem.
  * It does nothing in 32-bit build.
  * @param pCrySystem CrySystem DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::RemoveSecuROM(void *pCrySystem)
+bool Patch::RemoveSecuROM(void *pCrySystem)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCrySystem, 0x470B9), 0x16) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x470B9), 0x16))
 	{
-		return -1;
+		return false;
 	}
 #endif
 
-	return 0;
+	return true;
 }
 
 /**
  * @brief Allows Very High settings in DX9 mode.
  * @param pCrySystem CrySystem DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::AllowDX9VeryHighSpec(void *pCrySystem)
+bool Patch::AllowDX9VeryHighSpec(void *pCrySystem)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCrySystem, 0x46690), 0x54) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x46690), 0x54))
 #else
-	if (FillNOP(RVA(pCrySystem, 0x59DA8), 0x4B) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x59DA8), 0x4B))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 /**
  * @brief Allows running multiple instances of Crysis at once.
  * Note that the first check if any instance is already running is normally done in launcher.
  * @param pCrySystem CrySystem DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::AllowMultipleInstances(void *pCrySystem)
+bool Patch::AllowMultipleInstances(void *pCrySystem)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCrySystem, 0x42BFF), 0x68) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x42BFF), 0x68))
 #else
-	if (FillNOP(RVA(pCrySystem, 0x5794F), 0x58) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x5794F), 0x58))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 /**
@@ -114,44 +116,44 @@ int Patch::AllowMultipleInstances(void *pCrySystem)
  * Even MSDN documentation recommends that applications shouldn't try do such things at their own. Instead, they should let
  * operating system handle fatal errors for them.
  * @param pCrySystem CrySystem DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::UnhandledExceptions(void *pCrySystem)
+bool Patch::UnhandledExceptions(void *pCrySystem)
 {
 #ifdef BUILD_64BIT
-	if (FillNOP(RVA(pCrySystem, 0x22946), 0x6)  < 0
-	 || FillNOP(RVA(pCrySystem, 0x22952), 0x7)  < 0
-	 || FillNOP(RVA(pCrySystem, 0x467A5), 0x16) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x22946), 0x6)
+	 || !FillNOP(RVA(pCrySystem, 0x22952), 0x7)
+	 || !FillNOP(RVA(pCrySystem, 0x467A5), 0x16))
 #else
-	if (FillNOP(RVA(pCrySystem, 0x17D67), 0x5)  < 0
-	 || FillNOP(RVA(pCrySystem, 0x17D72), 0xC)  < 0
-	 || FillNOP(RVA(pCrySystem, 0x59DF8), 0x13) < 0)
+	if (!FillNOP(RVA(pCrySystem, 0x17D67), 0x5)
+	 || !FillNOP(RVA(pCrySystem, 0x17D72), 0xC)
+	 || !FillNOP(RVA(pCrySystem, 0x59DF8), 0x13))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 /**
  * @brief Disables use of 3DNow! instructions.
  * This patch correctly fixes the well known crash of 32-bit Crysis on modern AMD processors.
  * @param pCrySystem CrySystem DLL handle.
- * @return 0 if no error occurred, otherwise -1.
+ * @return True if no error occurred, otherwise false.
  */
-int Patch::Disable3DNow(void *pCrySystem)
+bool Patch::Disable3DNow(void *pCrySystem)
 {
 	const unsigned char flags = 0x18;  // default processor feature flags without CPUF_3DNOW flag
 
 #ifdef BUILD_64BIT
-	if (FillMem(RVA(pCrySystem, 0xA0FF), &flags, sizeof flags) < 0)
+	if (!FillMem(RVA(pCrySystem, 0xA0FF), &flags, sizeof flags))
 #else
-	if (FillMem(RVA(pCrySystem, 0x93E2), &flags, sizeof flags) < 0)
+	if (!FillMem(RVA(pCrySystem, 0x93E2), &flags, sizeof flags))
 #endif
 	{
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
