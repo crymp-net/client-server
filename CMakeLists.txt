@@ -597,8 +597,14 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/WeaponSystem.h
   Code/CryGame/WorkOnTarget.cpp
   Code/CryGame/WorkOnTarget.h
+  Code/Launcher/CPU.cpp
+  Code/Launcher/CPU.h
   Code/Launcher/Main.cpp
+  Code/Launcher/Patch.cpp
+  Code/Launcher/Patch.h
   Code/Launcher/Resources.h
+  Code/Launcher/Util.cpp
+  Code/Launcher/Util.h
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
 )

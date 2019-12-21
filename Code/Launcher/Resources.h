@@ -12,4 +12,3 @@
 #define IDC_CURSOR_GREEN  105
 #define IDC_CURSOR_RED    106
 #define IDC_CURSOR_WHITE  107
-

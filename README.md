@@ -7,7 +7,7 @@ The next generation [Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) 
 
 ## TODO
 
-- [ ] Launcher
+- [x] Launcher
 - [ ] Integrated CryGame
 - [ ] CryMP services
 - [ ] Client updates
