@@ -77,7 +77,7 @@ bool Patch::RemoveSecuROM(void *pCrySystem)
 bool Patch::AllowDX9VeryHighSpec(void *pCrySystem)
 {
 #ifdef BUILD_64BIT
-	if (!FillNOP(RVA(pCrySystem, 0x46690), 0x54))
+	if (!FillNOP(RVA(pCrySystem, 0x4674C), 0x54))
 #else
 	if (!FillNOP(RVA(pCrySystem, 0x59DA8), 0x4B))
 #endif
