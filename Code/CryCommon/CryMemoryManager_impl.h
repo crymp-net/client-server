@@ -601,10 +601,10 @@ void CryCrtFree(void *p)
 // If using CryMemoryManager, redefine new & delete for entire module.
 #if (!defined(_DEBUG) || defined(PS3)) && !defined(NOT_USE_CRY_MEMORY_MANAGER) && !defined(__SPU__)
 	#ifndef _LIB
-		void * __cdecl operator new   (size_t size) { return CryModuleMalloc(size); } 
-		void * __cdecl operator new[] (size_t size) { return CryModuleMalloc(size); }; 
-		void __cdecl operator delete  (void *p) { CryModuleFree(p); };
-		void __cdecl operator delete[](void *p) { CryModuleFree(p); };
+//		void * __cdecl operator new   (size_t size) { return CryModuleMalloc(size); } 
+//		void * __cdecl operator new[] (size_t size) { return CryModuleMalloc(size); }; 
+//		void __cdecl operator delete  (void *p) { CryModuleFree(p); };
+//		void __cdecl operator delete[](void *p) { CryModuleFree(p); };
 	#endif//_LIB
 #endif //!defined(_DEBUG) && !defined(NOT_USE_CRY_MEMORY_MANAGER) && !defined(__SPU__)
 
