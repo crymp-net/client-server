@@ -20,6 +20,7 @@
 #include <vector>
 
 #define USE_HASH_MAP
+#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #if (_MSC_VER >= 1400) && !defined(_STLP_BEGIN_NAMESPACE) // Visual Studio 2005 without STLPort
 #include <hash_map>

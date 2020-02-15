@@ -10,6 +10,8 @@
   - 19:6:2006 : Created by Filippo De Luca
 
 *************************************************************************/
+#include <functional>
+
 #include "StdAfx.h"
 #include "Game.h"
 #include "Actor.h"
