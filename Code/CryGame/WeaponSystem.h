@@ -48,7 +48,7 @@ struct SProjectileQuery
 
 class CWeaponSystem : public ILevelSystemListener
 {
-	typedef struct SAmmoTypeDesc
+	struct SAmmoTypeDesc
 	{
 		SAmmoTypeDesc(): params(0) {};
 		const SAmmoParams *params;

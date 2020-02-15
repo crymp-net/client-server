@@ -579,12 +579,12 @@ public:
 };
 
 
-typedef struct VALUE16 {
+struct VALUE16 {
 	union {
 		struct { unsigned char a,b; } c;
 		unsigned short ab;
 	};
-} VALUE16;
+};
 
 inline unsigned short SWAP16(unsigned short l) {
 	VALUE16 l16;
@@ -597,14 +597,14 @@ inline unsigned short SWAP16(unsigned short l) {
 
 //--------------------------------------------
 
-typedef struct VALUE32 {
+struct VALUE32 {
 	union {
 		struct { unsigned char a,b,c,d; } c;
 		f32 FLOAT;
 		unsigned long abcd;
 		const void* ptr;
 	};
-} VALUE32;
+};
 
 inline unsigned long SWAP32(unsigned long l) {
 	VALUE32 l32;

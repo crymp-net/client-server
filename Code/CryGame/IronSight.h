@@ -27,7 +27,7 @@ History:
 #define ResetValueEx(name, var, defaultValue) if (defaultInit) var=defaultValue; reader.Read(name, var)
 
 //Spread Modifiers (let modify spread per value when zoomed)
-typedef struct SSpreadModParams
+struct SSpreadModParams
 {
 	SSpreadModParams() { Reset(); };
 	void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -64,10 +64,10 @@ typedef struct SSpreadModParams
 	{
 	}
 
-} SSpreadModParams;
+};
 
 //Recoil Modifiers (let modify recoil per value when zoomed)
-typedef struct SRecoilModParams
+struct SRecoilModParams
 {
 	SRecoilModParams() { Reset(); };
 	void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -112,7 +112,7 @@ typedef struct SRecoilModParams
 	{
 	}
 
-} SRecoilModParams;
+};
 
 class CIronSight : public IZoomMode
 {
@@ -122,7 +122,7 @@ public:
 	struct DisableTurnOffAction;
 	struct EnableTurnOffAction;
 
-	typedef struct SZoomParams
+	struct SZoomParams
 	{
 		SZoomParams(){ Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -209,9 +209,9 @@ public:
 		bool								scope_mode;
 		Vec3								scope_offset;		//Hard code offset since we don't have "proper" animation
 		float								scope_nearFov;
-	} SZoomParams;
+	};
 
-	typedef struct SZoomActions
+	struct SZoomActions
 	{
 
 		SZoomActions() { Reset(); };
@@ -233,9 +233,9 @@ public:
 			s->Add(zoom_out);
 			s->Add(idle);
 		}
-	} SZoomActions;
+	};
 
-	typedef struct SZoomSway
+	struct SZoomSway
 	{
 
 		SZoomSway() { Reset(); };
@@ -268,7 +268,7 @@ public:
 		void GetMemoryStatistics(ICrySizer * s)
 		{
 		}
-	} SZoomSway;
+	};
 
 	CIronSight();
 	virtual ~CIronSight();

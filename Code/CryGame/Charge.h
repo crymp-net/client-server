@@ -25,7 +25,7 @@ History:
 class CCharge :
 	public CAutomatic
 {
-	typedef struct SChargeParams
+	struct SChargeParams
 	{
 		SChargeParams() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -41,9 +41,9 @@ class CCharge :
 		int			max_charges;
 		bool		shoot_on_stop;
 		bool		reset_spinup;
-	} SChargeParams;
+	};
 
-	typedef struct SChargeActions
+	struct SChargeActions
 	{
 		SChargeActions() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -56,7 +56,7 @@ class CCharge :
 		ItemString charge;
 		ItemString uncharge;
 
-	} SChargeActions;
+	};
 
 public:
 	CCharge();

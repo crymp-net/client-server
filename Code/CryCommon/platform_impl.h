@@ -358,13 +358,13 @@ THR_INLINE CCryThread::~CCryThread()
 THR_INLINE void CCryThread::SetName( const char * name )
 {
 #if !defined(PS3) && !defined (WIN64) && !defined(LINUX)
-	typedef struct tagTHREADNAME_INFO
+	struct THREADNAME_INFO
 	{
 		DWORD dwType; // must be 0x1000
 		const char *szName; // pointer to name (in user addr space)
 		DWORD dwThreadID; // thread ID (-1=caller thread)
 		DWORD dwFlags; // reserved for future use, must be zero
-	} THREADNAME_INFO;
+	};
 
 	THREADNAME_INFO info;
 	{

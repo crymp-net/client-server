@@ -33,7 +33,7 @@ class CMelee :
 {
 	struct StopAttackingAction;
 
-	typedef struct SMeleeParams
+	struct SMeleeParams
 	{
 		SMeleeParams() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -69,9 +69,9 @@ class CMelee :
 		float		delay;
 		float		duration;
 
-	} SMeleeParams;
+	};
 
-	typedef struct SMeleeActions
+	struct SMeleeActions
 	{
 		SMeleeActions() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -89,7 +89,7 @@ class CMelee :
 
 		ItemString	attack;
 		ItemString	hit;
-	} SMeleeActions;
+	};
 
 public:
 	CMelee();

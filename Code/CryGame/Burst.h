@@ -25,7 +25,7 @@ History:
 class CBurst : public CSingle
 {
 protected:
-	typedef struct SBurstParams
+	struct SBurstParams
 	{
 		SBurstParams() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -40,7 +40,7 @@ protected:
 		short	rate;
 		bool  noSound;
 
-	} SBurstParams;
+	};
 public:
 	CBurst();
 	virtual ~CBurst();

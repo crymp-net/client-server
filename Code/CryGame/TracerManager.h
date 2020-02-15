@@ -58,7 +58,7 @@ public:
 	CTracerManager();
 	virtual ~CTracerManager();
 
-	typedef struct STracerParams
+	struct STracerParams
 	{
 		const char *geometry;
 		const char *effect;

@@ -25,7 +25,7 @@ History:
 class CAutomatic : public CSingle
 {
 protected:
-	typedef struct SAutomaticActions
+	struct SAutomaticActions
 	{
 		SAutomaticActions() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -41,7 +41,7 @@ protected:
 
 		ItemString automatic_fire;
 
-	} SAutomaticActions;
+	};
 
 public:
 	CAutomatic();

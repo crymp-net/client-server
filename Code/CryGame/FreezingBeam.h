@@ -27,7 +27,7 @@ class CFreezingBeam :
 {
 public:
 
-  typedef struct SFreezingBeamParams
+  struct SFreezingBeamParams
   {
     SFreezingBeamParams() { Reset(); };
     void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -42,7 +42,7 @@ public:
     }
     
     float		freeze_speed;    
-  } SFreezingBeamParams;
+  };
 
 	CFreezingBeam();
 	virtual ~CFreezingBeam();

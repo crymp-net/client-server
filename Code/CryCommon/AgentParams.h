@@ -75,7 +75,7 @@ struct AgentPerceptionParameters
 
 };
 
-typedef struct AgentParameters
+struct AgentParameters
 {
 	AgentPerceptionParameters	m_PerceptionParams;
 	//-------------
@@ -178,7 +178,7 @@ typedef struct AgentParameters
 		m_fGrenadeThrowDistScale = 1.0f;
 	}
 	
-} AgentParameters;
+};
 
 
 #endif _AGENTPARAMS_H_

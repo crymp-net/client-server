@@ -273,7 +273,7 @@ enum EPrecacheResult
 };
 
 
-typedef struct 
+struct SSoundGroupProperties
 {
 	float fCurrentVolumeRatio;
 	float fTargetVolumeRatio;
@@ -286,7 +286,7 @@ typedef struct
 	
 	float fTimeleft;
 	bool  bHasChanged;
-} SSoundGroupProperties;
+};
 
 typedef int32 ListenerID;
 
@@ -297,7 +297,7 @@ typedef int32 ListenerID;
 #define MAX_VIS_AREAS 256 // maximum of visarea cache
 
 
-typedef struct IListener 
+struct IListener
 {
 	virtual ListenerID	GetID() const = 0;
 	virtual EntityId		GetEntityID() const = 0;
@@ -325,7 +325,7 @@ typedef struct IListener
 	virtual IVisArea* GetVisArea() const = 0;
 	virtual void SetVisArea(IVisArea* pVArea) = 0;
 
-} IListener;
+};
 
 
 
@@ -378,7 +378,7 @@ enum ESoundSystemCallbackEvent
 
 // struct for sound obstruction
 // a single obstruction test
-typedef struct  
+struct SObstructionTest
 {
 	Vec3 vOrigin;
 	Vec3 vDirection;
@@ -389,10 +389,10 @@ typedef struct
 	float fDistance;
 	bool bDirect;
 	bool bResult;
-} SObstructionTest;
+};
 
 // obstruction test
-typedef struct SObstruction
+struct SObstruction
 {
 	public: 
 
@@ -504,7 +504,7 @@ private:
 	float fReverbOcclusionAccu;		// accumulates level of obstruction from 0 = none, to 1 = full obstructed
 
 
-} SObstruction;
+};
 
 
 //////////////////////////////////////////////////////////////////////////

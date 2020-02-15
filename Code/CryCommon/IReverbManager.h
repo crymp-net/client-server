@@ -67,7 +67,7 @@ enum SOUND_REVERB_PRESETS{
 struct IAudioDevice;
 struct ISound;
 
-typedef struct CRYSOUND_REVERB_PROPERTIES /* MIN     MAX    DEFAULT   DESCRIPTION */
+struct CRYSOUND_REVERB_PROPERTIES /* MIN     MAX    DEFAULT   DESCRIPTION */
 {          
 	int					 Instance;
 	int					 Environment;            /* 0     , 25    , 0      , sets all listener properties (WIN32/PS2 only) */
@@ -96,9 +96,9 @@ typedef struct CRYSOUND_REVERB_PROPERTIES /* MIN     MAX    DEFAULT   DESCRIPTIO
 	float        Diffusion;              /* 0.0   , 100.0 , 100.0  , Value that controls the echo density in the late reverberation decay. (XBOX only) */
 	float        Density;                /* 0.0   , 100.0 , 100.0  , Value that controls the modal density in the late reverberation decay (XBOX only) */
 	unsigned int Flags;                  /* CS_REVERB_FLAGS - modifies the behavior of above properties (WIN32/PS2 only) */
-}CRYSOUND_REVERB_PROPERTIES;
+};
 
-typedef struct CRYSOUND_REVERB_CHANNELPROPERTIES  
+struct CRYSOUND_REVERB_CHANNELPROPERTIES
 {                                      /*          MIN     MAX    DEFAULT  DESCRIPTION */
 	int          Direct;               /* [in/out] -10000, 1000,  0,       direct path level (at low and mid frequencies) (win32/Xbox) */
 	int          DirectHF;             /* [in/out] -10000, 0,     0,       relative direct path level at high frequencies (win32/Xbox) */
@@ -118,7 +118,7 @@ typedef struct CRYSOUND_REVERB_CHANNELPROPERTIES
 	float        RoomRolloffFactor;    /* [in/out] 0.0,    10.0,  0.0,     like DS3D flRolloffFactor but for room effect (win32/Xbox) */
 	float        AirAbsorptionFactor;  /* [in/out] 0.0,    10.0,  1.0,     multiplies AirAbsorptionHF member of FMOD_REVERB_PROPERTIES (win32) */
 	unsigned int Flags;                /* [in/out] FMOD_REVERB_CHANNELFLAGS - modifies the behavior of properties (win32) */
-} CRYSOUND_REVERB_CHANNELPROPERTIES;
+};
 
 
 #define CRYSOUND_REVERB_PRESET_ZERO    {0, 0,		0.0f,		0.0f,		0,			0,			0,	0.0f,		0.0f,		0.0f, 0,			0.0f,		{ 0.0f,0.0f,0.0f },		0,		0.0f,		{ 0.0f,0.0f,0.0f }, 0.0f,		0.0f,		0.0f,		0.0f,		0.0f,		0.0f,			0.0f,		0.0f, 0.0f,		0.0f,		0x3f}

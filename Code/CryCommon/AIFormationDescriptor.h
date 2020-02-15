@@ -29,7 +29,7 @@
 #define	SPECIAL_FORMATION_POINT		(1<<16)
 #define	UNIT_ALL					0xffffffff
 
-typedef struct FormationNode 
+struct FormationNode
 {
 	FormationNode():vOffset(0,0,0),vSightDirection(0,0,0),fFollowDistance(0),
 		fFollowOffset(0),fFollowDistanceAlternate(0),fFollowOffsetAlternate(0),
@@ -46,7 +46,7 @@ typedef struct FormationNode
 
 
 		int eClass;
-} FormationNode;
+};
 
 
 class CFormationDescriptor

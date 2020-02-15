@@ -24,7 +24,7 @@ History:
 
 class CScope : public CIronSight
 {
-	typedef struct SScopeParams
+	struct SScopeParams
 	{
 		SScopeParams() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -44,7 +44,7 @@ class CScope : public CIronSight
 		string	scope;
 		float		dark_out_time;
 		float		dark_in_time;
-	} SScopeParams;
+	};
 
 public:
 

@@ -27,7 +27,7 @@ class CPlant : public IFireMode
 	struct StartPlantAction;
 
 protected:
-	typedef struct SPlantParams
+	struct SPlantParams
 	{
 		SPlantParams() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -77,9 +77,9 @@ protected:
 			s->Add(helper);
 			s->Add(led_layers);
 		}
-	} SPlantParams;
+	};
 
-	typedef struct SPlantActions
+	struct SPlantActions
 	{
 		SPlantActions() { Reset(); };
 		void Reset(const IItemParamsNode *params=0, bool defaultInit=true)
@@ -109,7 +109,7 @@ protected:
 			s->Add(plant);
 			s->Add(refill);
 		}
-	} SPlantActions;
+	};
 
 public:
 	CPlant();

@@ -182,7 +182,7 @@ public:
 		explicit SMovementRequestParams (CMovementRequest& );
 	};
 
-	typedef enum 
+	enum eSharkStatus
 	{
 		S_Sleeping,
 		S_Reaching,
@@ -194,7 +194,7 @@ public:
 		S_Escaping,
 		S_Spawning,
 		S_Last = S_Escaping
-	} eSharkStatus;
+	};
 
 	/// SAIBodyInfo was previously used in place of this struct.
 	struct SBodyInfo {

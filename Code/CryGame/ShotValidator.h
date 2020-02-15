@@ -26,7 +26,7 @@ class CGameRules;
 
 class CShotValidator
 {
-	typedef struct TShot
+	struct TShot
 	{
 		TShot(uint16 seqn, EntityId wpnId, CTimeValue t, uint8 lives): seq(seqn), weaponId(wpnId), time(t), life(lives) {};
 		bool ILINE operator==(const TShot &that) const {
@@ -45,16 +45,16 @@ class CShotValidator
 		CTimeValue	time;
 		uint8				life;
 
-	} TShot;
+	};
 
-	typedef struct THit
+	struct THit
 	{
 		THit(const HitInfo &hit, CTimeValue t): info(hit), time(t) {};
 
 		CTimeValue	time;
 		HitInfo			info;
 
-	} THit;
+	};
 
 	typedef std::set<TShot>																TShots;
 	typedef std::multimap<TShot, THit, std::less<TShot> >	THits;

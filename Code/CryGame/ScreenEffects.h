@@ -16,11 +16,11 @@
 // Defines a curve to be used by the effect
 // Progress is between 0 and 1. Consider it the X, and return the Y.
 // The return should also be between 0 and 1.
-typedef struct IBlendType
+struct IBlendType
 {
 	virtual float Blend(float progress) = 0;
 	virtual void Release() { delete this; };
-} IBlendType;
+};
 
 // Standard linear blend
 class CLinearBlend : public IBlendType
@@ -50,13 +50,13 @@ public:
 
 //-BlendedEffects-----------------------
 // BlendedEffect interface, derive from this.
-typedef struct IBlendedEffect 
+struct IBlendedEffect 
 {
 public:
 	virtual void Init() {}; // called when the effect actually starts rather than when it is created.
 	virtual void Update(float point) = 0; // point is from 0 to 1 and is the "amount" of effect to use.
 	virtual void Release() { delete this; };
-} IBlendedEffect;
+};
 
 // FOV effect
 class CFOVEffect : public IBlendedEffect
@@ -93,7 +93,7 @@ private:
 // Has all of the information for one blend.
 // That is, a blend type, an effect, and a speed.
 // Speed is how fast progress goes from 0 to 1.
-typedef struct SBlendJobNode
+struct SBlendJobNode
 {
 	IBlendedEffect *myEffect;
 	SBlendJobNode *next;
@@ -128,10 +128,10 @@ typedef struct SBlendJobNode
 	{
 		return (progress == 1.0f);
 	}
-} SBlendJobNode;
+};
 
 // A blend group is a queue of blend jobs.
-typedef struct SBlendGroup 
+struct SBlendGroup 
 {
 	SBlendGroup()
 	{
@@ -186,7 +186,7 @@ typedef struct SBlendGroup
 	}
 	SBlendJobNode	*m_tail;
 	SBlendJobNode	*m_head;
-} SBlendGroup;
+};
 
 //-ScreenEffects------------------------
 class CScreenEffects

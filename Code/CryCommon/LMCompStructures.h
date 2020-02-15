@@ -24,12 +24,12 @@
 
 
 //lightmap generation modes
-typedef enum ELMMode
+enum ELMMode
 {
 	ELMMode_ALL = 0,
 	ELMMode_CHANGES,
 	ELMMode_SEL
-}ELMMode;
+};
 
 namespace NSAVE_RESULT
 {
@@ -173,7 +173,7 @@ struct LMStatLightFileHeader
 	UINT iNumDLights;
 };
 
-typedef struct SSharedLMEditorData
+struct SSharedLMEditorData
 {
 	void*			hwnd;				//!< window handle to set the progress 	
 	bool			bCancelled;			//!< if cancel has been pressed, change that to true
@@ -185,19 +185,19 @@ typedef struct SSharedLMEditorData
 
 	SSharedLMEditorData() : ucProgress(0), uiMemUsageMessage(0), bCancelled(false), hwnd(0), uiMemUsageStatic(0), uiGLMNameEdit(0)
 	{}
-}SSharedLMEditorData;
+};
 
 //!< colour corresponding to an stored occlusion index
-typedef enum EOCCLCOLOURASSIGNMENT
+enum EOCCLCOLOURASSIGNMENT
 {
 	EOCCLCOLOURASSIGNMENT_NONE = -1,
 	EOCCLCOLOURASSIGNMENT_RED = 0,
 	EOCCLCOLOURASSIGNMENT_GREEN,
 	EOCCLCOLOURASSIGNMENT_BLUE,
 	EOCCLCOLOURASSIGNMENT_ALPHA,
-}EOCCLCOLOURASSIGNMENT;
+};
 
-typedef struct SOcclusionMapTexel
+struct SOcclusionMapTexel
 {
 	uint16 colour;
 	SOcclusionMapTexel() : colour(0){}
@@ -254,10 +254,10 @@ typedef struct SOcclusionMapTexel
 		}
 		return *this;
 	}
-}SOcclusionMapTexel;
+};
 
 //!< colour channel info for GLM
-typedef struct GLMOcclLightInfo
+struct GLMOcclLightInfo
 {
 	EOCCLCOLOURASSIGNMENT iChannelAssignment[4];					//!< channels assigned, -1 if not used, usually assigned in ascending order 0..3 
 	unsigned int uiLightCount;										//!< number of active lights
@@ -307,7 +307,7 @@ typedef struct GLMOcclLightInfo
 		uiLightCount++;
 		return iChannelAssignment[uiLightCount-1];
 	}
-}GLMOcclLightInfo;
+};
 
 //! \brief Name of the lightmap data file in the level's directory
 #define LM_EXPORT_FILE_NAME "Dot3LM.dat"
