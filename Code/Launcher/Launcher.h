@@ -8,6 +8,8 @@
 #include "CryCommon/ISystem.h"
 #include "Library/DLL.h"
 
+#include "Executor.h"
+
 struct IGameFramework;
 
 class Launcher : public ISystemUserCallback
@@ -15,6 +17,7 @@ class Launcher : public ISystemUserCallback
 	DLL m_libCrySystem;
 	DLL m_libCryAction;
 	DLL m_libCryNetwork;
+	Executor m_executor;
 	ISystem *m_pSystem;
 	IGameFramework *m_pGameFramework;
 	SSystemInitParams *m_pInitParams;
@@ -26,6 +29,7 @@ public:
 	: m_libCrySystem(),
 	  m_libCryAction(),
 	  m_libCryNetwork(),
+	  m_executor(),
 	  m_pSystem(),
 	  m_pGameFramework(),
 	  m_pInitParams()
@@ -58,6 +62,11 @@ public:
 	static const DLL & GetCryNetworkDLL()
 	{
 		return s_pInstance->m_libCryNetwork;
+	}
+
+	static Executor & GetExecutor()
+	{
+		return s_pInstance->m_executor;
 	}
 
 	static ISystem *GetISystem()

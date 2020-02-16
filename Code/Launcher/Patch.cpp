@@ -32,6 +32,25 @@ bool Patch::AllowDX9ImmersiveMultiplayer(void *pCryAction)
 }
 
 /**
+ * @brief Allows connecting to internet servers without GameSpy account.
+ * @param pCryNetwork CryNetwork DLL handle.
+ * @return True if no error occurred, otherwise false.
+ */
+bool Patch::AllowConnectWithoutGS(void *pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	if (!FillNOP(RVA(pCryNetwork, 0x189896), 0x18))
+#else
+	if (!FillNOP(RVA(pCryNetwork, 0x3FB7C), 0xD))
+#endif
+	{
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * @brief Prevents server from kicking players with the same CD key.
  * This is server-side patch.
  * @param pCryNetwork CryNetwork DLL handle.

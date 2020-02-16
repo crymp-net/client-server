@@ -7,6 +7,7 @@
 #include "CryCommon/IConsole.h"
 #include "CrySystem/GameWindow.h"
 #include "CryGame/Game.h"
+#include "Client/Client.h"
 
 #include "Launcher.h"
 #include "Patch.h"
@@ -49,6 +50,9 @@ static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCry
 		return false;
 
 	// CryNetwork
+
+	if (!Patch::AllowConnectWithoutGS(pCryNetwork))
+		return false;
 
 	if (!Patch::AllowSameCDKeys(pCryNetwork))  // useful for non-dedicated servers
 		return false;
@@ -99,13 +103,13 @@ static bool InitWorkingDirectory()
 	{
 		// we are in Bin32 or Bin64 directory
 		path.pop();  // remove Bin32 or Bin64 from the path
+	}
 
-		// set Crysis root directory as working directory
-		if (!Util::SetWorkingDirectory(path))
-		{
-			Util::ErrorBox("Failed to set working directory!");
-			return false;
-		}
+	// set Crysis root directory as working directory
+	if (!Util::SetWorkingDirectory(path))
+	{
+		Util::ErrorBox("Failed to set working directory!");
+		return false;
 	}
 
 	return true;
@@ -198,10 +202,24 @@ bool Launcher::run(SSystemInitParams & params)
 
 	params.pSystem = m_pSystem;  // Launcher::OnInit
 
+	if (!m_executor.init())
+	{
+		Util::ErrorBox("Executor initialization failed!");
+		return false;
+	}
+
+	Client client;
 	CGame game;
+
 	if (!game.Init(m_pGameFramework))
 	{
 		Util::ErrorBox("Game initialization failed!");
+		return false;
+	}
+
+	if (!client.init())
+	{
+		Util::ErrorBox("Client initialization failed!");
 		return false;
 	}
 
@@ -264,6 +282,7 @@ void Launcher::OnShutdown()
 
 void Launcher::OnUpdate()
 {
+	m_executor.onUpdate();
 }
 
 void Launcher::GetMemoryUsage(ICrySizer *pSizer)

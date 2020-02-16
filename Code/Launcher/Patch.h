@@ -11,6 +11,7 @@ namespace Patch
 	bool AllowDX9ImmersiveMultiplayer(void *pCryAction);
 
 	// CryNetwork
+	bool AllowConnectWithoutGS(void *pCryNetwork);
 	bool AllowSameCDKeys(void *pCryNetwork);
 
 	// CrySystem

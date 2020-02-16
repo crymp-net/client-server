@@ -9,7 +9,7 @@ The next generation [Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) 
 
 - [x] Launcher
 - [x] Integrated CryGame
-- [ ] CryMP services
+- [x] CryMP services
 - [ ] Client updates
 - [ ] Map downloader
 - [ ] SDK code cleanup

@@ -19,6 +19,7 @@
 #endif
 
 struct ILevelRotationFile;
+struct IConsoleCmdArgs;
 
 struct ILevelRotation
 {

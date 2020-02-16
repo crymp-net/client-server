@@ -1,14 +1,19 @@
 #pragma once
 
-#include <stddef.h>
+#include <cstddef>
 #include <string>
 
 class DLL
 {
-	void *m_handle;
+public:
+	enum ELoadFlags
+	{
+		NO_LOAD = (1 << 0)  //!< Do not load and unload the library. Only obtain handle to already loaded library.
+	};
 
-	void *getSymbolAddress(const char *name) const;
-	void unload();
+private:
+	void *m_handle;
+	int m_flags;
 
 	// no copies
 	DLL(const DLL &);
@@ -16,7 +21,8 @@ class DLL
 
 public:
 	DLL()
-	: m_handle(NULL)
+	: m_handle(NULL),
+	  m_flags(0)
 	{
 	}
 
@@ -25,19 +31,13 @@ public:
 		release();
 	}
 
-	void release()
-	{
-		if (m_handle)
-		{
-			unload();
-		}
-	}
+	void release();
 
-	bool load(const char *file);
+	bool load(const char *file, int flags = 0);
 
-	bool load(const std::string & file)
+	bool load(const std::string & file, int flags = 0)
 	{
-		return load(file.c_str());
+		return load(file.c_str(), flags);
 	}
 
 	bool isLoaded() const
@@ -48,6 +48,18 @@ public:
 	void *getHandle() const
 	{
 		return m_handle;
+	}
+
+	int getFlags() const
+	{
+		return m_flags;
+	}
+
+	void *getSymbolAddress(const char *name) const;
+
+	void *getSymbolAddress(const std::string & name) const
+	{
+		return getSymbolAddress(name.c_str());
 	}
 
 	template<class T>

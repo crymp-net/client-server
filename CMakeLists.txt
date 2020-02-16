@@ -43,6 +43,18 @@ configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
 
 ########################################
 add_executable(${CRYMP_CLIENT_EXE} WIN32
+  Code/Client/Client.cpp
+  Code/Client/Client.h
+  Code/Client/GSMaster.cpp
+  Code/Client/GSMaster.h
+  Code/Client/HTTP.cpp
+  Code/Client/HTTP.h
+  Code/Client/HTTPClient.cpp
+  Code/Client/HTTPClient.h
+  Code/Client/Log.cpp
+  Code/Client/Log.h
+  Code/Client/Profile.cpp
+  Code/Client/Profile.h
   Code/CryAction/IActionMapManager.h
   Code/CryAction/IActorSystem.h
   Code/CryAction/IAnimatedCharacter.h
@@ -601,6 +613,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CrySystem/GameWindow.h
   Code/Launcher/CPU.cpp
   Code/Launcher/CPU.h
+  Code/Launcher/Executor.cpp
+  Code/Launcher/Executor.h
+  Code/Launcher/IExecutorTask.h
   Code/Launcher/Launcher.cpp
   Code/Launcher/Launcher.h
   Code/Launcher/Main.cpp
@@ -609,14 +624,21 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Launcher/Resources.h
   Code/Launcher/Util.cpp
   Code/Launcher/Util.h
+  Code/Library/Hook/IAT.cpp
+  Code/Library/Hook/IAT.h
+  Code/Library/Hook/VTable.cpp
+  Code/Library/Hook/VTable.h
   Code/Library/DLL.cpp
   Code/Library/DLL.h
   Code/Library/Path.cpp
   Code/Library/Path.h
+  Code/Library/StringBuffer.h
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
 )
 ########################################
+
+target_link_libraries(${CRYMP_CLIENT_EXE} winhttp)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 
