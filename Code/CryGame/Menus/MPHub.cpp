@@ -367,11 +367,11 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 				break;
 			}
     }
-		if(!m_profile.get() || !m_profile->IsLoggedIn())
-    {
-      TryLogin(true);
-    }
-    else
+//		if(!m_profile.get() || !m_profile->IsLoggedIn())
+//    {
+//      TryLogin(true);
+//    }
+//    else
       SwitchToLobby();
     break;
   case eGUC_recordedGames:
