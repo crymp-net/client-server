@@ -924,10 +924,10 @@ void CGame::RegisterConsoleCommands()
   m_pConsole->AddCommand("startNextMapVoting",CmdStartNextMapVoting, VF_RESTRICTEDMODE, "Initiate voting.");
 
 	m_pConsole->AddCommand("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
-	m_pConsole->AddCommand("login",CmdLogin, 0, "Log in to GameSpy using nickname and password as arguments");
-	m_pConsole->AddCommand("login_profile", CmdLoginProfile, 0, "Log in to GameSpy using email, profile and password as arguments");
-	m_pConsole->AddCommand("register", CmdRegisterNick, VF_CHEAT, "Register nickname with email, nickname and password");
-	m_pConsole->AddCommand("connect_crynet",CmdCryNetConnect,0,"Connect to online game server");
+//	m_pConsole->AddCommand("login",CmdLogin, 0, "Log in to GameSpy using nickname and password as arguments");
+//	m_pConsole->AddCommand("login_profile", CmdLoginProfile, 0, "Log in to GameSpy using email, profile and password as arguments");
+//	m_pConsole->AddCommand("register", CmdRegisterNick, VF_CHEAT, "Register nickname with email, nickname and password");
+//	m_pConsole->AddCommand("connect_crynet",CmdCryNetConnect,0,"Connect to online game server");
 	m_pConsole->AddCommand("preloadforstats","PreloadForStats()",VF_CHEAT,"Preload multiplayer assets for memory statistics.");
 }
 
