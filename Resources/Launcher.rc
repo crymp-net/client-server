@@ -5,13 +5,13 @@
 #include "Launcher/Resources.h"
 #include "config.h"
 
-IDI_ICON ICON "Icon.ico"
+LAUNCHER_ICON ICON "Icon.ico"
 
-IDC_CURSOR_AMBER CURSOR "CursorAmber.cur"
-IDC_CURSOR_BLUE  CURSOR "CursorBlue.cur"
-IDC_CURSOR_GREEN CURSOR "CursorGreen.cur"
-IDC_CURSOR_RED   CURSOR "CursorRed.cur"
-IDC_CURSOR_WHITE CURSOR "CursorWhite.cur"
+LAUNCHER_CURSOR_AMBER CURSOR "CursorAmber.cur"
+LAUNCHER_CURSOR_BLUE  CURSOR "CursorBlue.cur"
+LAUNCHER_CURSOR_GREEN CURSOR "CursorGreen.cur"
+LAUNCHER_CURSOR_RED   CURSOR "CursorRed.cur"
+LAUNCHER_CURSOR_WHITE CURSOR "CursorWhite.cur"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     CRYMP_CLIENT_VERSION_MAJOR, CRYMP_CLIENT_VERSION_MINOR, CRYMP_CLIENT_VERSION_PATCH, 0
@@ -23,7 +23,7 @@ BEGIN
 	BEGIN
 		BLOCK "040904E4"
 		BEGIN
-			VALUE "LegalCopyright",   "(C) 2019 CryMP Network"
+			VALUE "LegalCopyright",   "(C) 2020 CryMP Network"
 			VALUE "CompanyName",      "CryMP Network"
 			VALUE "ProductName",      "CryMP Client"
 			VALUE "ProductVersion",   CRYMP_CLIENT_VERSION_STRING
