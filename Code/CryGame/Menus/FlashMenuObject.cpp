@@ -2653,7 +2653,7 @@ bool CFlashMenuObject::Load()
 
 	m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING] = new CFlashMenuScreen;
 
-	if(g_pGameCVars->g_skipIntro==1)
+	//if(g_pGameCVars->g_skipIntro==1)
 	{
 		m_stateEntryMovies = eEMS_Stop;
 	}
