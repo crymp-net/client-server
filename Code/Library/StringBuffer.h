@@ -76,6 +76,17 @@ public:
 		return (m_pos > 0) ? m_buffer[m_pos-1] : m_buffer[0];
 	}
 
+	std::string toString() const
+	{
+		return std::string(m_buffer, m_pos);
+	}
+
+	void clear()
+	{
+		m_pos = 0;
+		m_buffer[0] = '\0';
+	}
+
 	void pop(size_t length = 1)
 	{
 		m_pos -= (length < m_pos) ? length : m_pos;

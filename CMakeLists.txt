@@ -55,6 +55,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Log.h
   Code/Client/Profile.cpp
   Code/Client/Profile.h
+  Code/Client/Telemetry.cpp
+  Code/Client/Telemetry.h
   Code/CryAction/IActionMapManager.h
   Code/CryAction/IActorSystem.h
   Code/CryAction/IAnimatedCharacter.h
@@ -632,6 +634,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/DLL.h
   Code/Library/Path.cpp
   Code/Library/Path.h
+  Code/Library/PicoSHA2.h
   Code/Library/StringBuffer.h
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h

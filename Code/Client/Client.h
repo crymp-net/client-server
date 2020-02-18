@@ -11,15 +11,20 @@
 #include "GSMaster.h"
 #include "HTTPClient.h"
 #include "Profile.h"
+#include "Telemetry.h"
 
-struct ICVar;
+enum struct EProfile
+{
+	AUTO, USER, STATIC
+};
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener
 {
 	GSMaster m_GSMaster;
 	HTTPClient m_HTTPClient;
-	Profile m_profile;
-	ICVar *m_pClAutoValidateCVar;
+	Profile m_userProfile;
+	Profile m_staticProfile;
+	Telemetry m_telemetry;
 
 	static Client *s_pInstance;
 
@@ -27,8 +32,9 @@ public:
 	Client()
 	: m_GSMaster(),
 	  m_HTTPClient(),
-	  m_profile(),
-	  m_pClAutoValidateCVar()
+	  m_userProfile(),
+	  m_staticProfile(),
+	  m_telemetry()
 	{
 		s_pInstance = this;
 	}
@@ -59,8 +65,23 @@ public:
 		return s_pInstance->m_HTTPClient;
 	}
 
-	static Profile & GetProfile()
+	static Profile & GetProfile(EProfile type = EProfile::AUTO)
 	{
-		return s_pInstance->m_profile;
+		Profile & userProfile = s_pInstance->m_userProfile;
+		Profile & staticProfile = s_pInstance->m_staticProfile;
+
+		switch (type)
+		{
+			case EProfile::AUTO:   break;
+			case EProfile::USER:   return userProfile;
+			case EProfile::STATIC: return staticProfile;
+		}
+
+		return userProfile.isLoggedIn() ? userProfile : staticProfile;
+	}
+
+	static Telemetry & GetTelemetry()
+	{
+		return s_pInstance->m_telemetry;
 	}
 };

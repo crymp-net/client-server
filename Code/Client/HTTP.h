@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace HTTP
 {
 	enum EStatusCode
@@ -33,4 +35,11 @@ namespace HTTP
 	};
 
 	const char *StatusCodeToString(int code);
+
+	std::string URLEncode(const char *text);
+
+	inline std::string URLEncode(const std::string & text)
+	{
+		return URLEncode(text.c_str());
+	}
 }

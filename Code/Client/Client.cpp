@@ -38,8 +38,9 @@ static void SendValidate()
 	{
 		StringBuffer<1024> msg;
 
-		msg.append_f("!validate %d ", profile.getID());
-
+		msg += "!validate ";
+		msg += std::to_string(profile.getID());
+		msg += ' ';
 		msg += profile.getToken();
 		msg += ' ';
 		msg += profile.getName();
@@ -72,7 +73,7 @@ static void CmdLogin(IConsoleCmdArgs *args)
 	const char *name = args->GetArg(1);
 	const char *pass = args->GetArg(2);
 
-	Client::GetProfile().login(name, pass);
+	Client::GetProfile(EProfile::USER).login(name, pass);
 
 	LogWarning("The \'login\' command is not secure. Consider using \'secu_login\' command instead.");
 }
@@ -88,23 +89,17 @@ static void CmdSecuLogin(IConsoleCmdArgs *args)
 	const char *name = args->GetArg(1);
 	const char *key  = args->GetArg(2);
 
-	Client::GetProfile().login(name, key);
+	Client::GetProfile(EProfile::USER).login(name, key);
 }
 
 static void CmdAuthLogin(IConsoleCmdArgs *args)
 {
-	if (!Client::GetProfile().isLoggedIn())
-	{
-		LogError("No profile is logged-in!");
-		return;
-	}
-
 	SendValidate();
 }
 
 static void CmdLogout(IConsoleCmdArgs *args)
 {
-	Profile & profile = Client::GetProfile();
+	Profile & profile = Client::GetProfile(EProfile::USER);
 
 	if (!profile.isLoggedIn())
 	{
@@ -117,7 +112,7 @@ static void CmdLogout(IConsoleCmdArgs *args)
 
 static void CmdShowProfile(IConsoleCmdArgs *args)
 {
-	Profile & profile = Client::GetProfile();
+	Profile & profile = Client::GetProfile(EProfile::USER);
 
 	if (!profile.isLoggedIn())
 	{
@@ -131,9 +126,18 @@ static void CmdShowProfile(IConsoleCmdArgs *args)
 	LogDebug("$8Profile Token: %s", profile.getToken().c_str());
 }
 
+static void CmdShowTelemetry(IConsoleCmdArgs *args)
+{
+	Telemetry & telemetry = Client::GetTelemetry();
+
+	LogInfo("$8HWID: %s", telemetry.getHWID().c_str());
+	LogInfo("$8Locale: %s", telemetry.getLocale().c_str());
+	LogInfo("$8Time zone: %+d", -telemetry.getTimeZoneBias());
+}
+
 bool Client::init()
 {
-	if (!m_GSMaster.init())
+	if (!m_GSMaster.init() || !m_telemetry.init())
 	{
 		return false;
 	}
@@ -146,14 +150,14 @@ bool Client::init()
 	pConsole->AddCommand("auth_login", CmdAuthLogin, VF_RESTRICTEDMODE, "Authenticate CryMP profile on server.");
 	pConsole->AddCommand("logout", CmdLogout, VF_RESTRICTEDMODE, "Sign out current CryMP profile.");
 	pConsole->AddCommand("show_profile", CmdShowProfile, VF_RESTRICTEDMODE, "Show information about active CryMP profile.");
-
-	m_pClAutoValidateCVar = pConsole->RegisterInt("cl_autoValidate", 1, VF_RESTRICTEDMODE | VF_NOT_NET_SYNCED,
-	                                              "Enables automatic CryMP profile authentication.");
+	pConsole->AddCommand("show_telemetry", CmdShowTelemetry, VF_RESTRICTEDMODE, "Show all telemetry information.");
 
 	IGameFramework *pGameFramework = Launcher::GetIGameFramework();  // gEnv->pGame is not initialized yet
 
 	pGameFramework->RegisterListener(this, "Client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
 	pGameFramework->GetILevelSystem()->AddListener(this);
+
+	m_staticProfile.initStatic();
 
 	return true;
 }
@@ -181,7 +185,7 @@ void Client::OnActionEvent(const SActionEvent & event)
 		case eAE_resetEnd:
 		case eAE_inGame:
 		{
-			if (gEnv->bMultiplayer && m_pClAutoValidateCVar->GetIVal())
+			if (gEnv->bMultiplayer)
 			{
 				SendValidate();
 			}
@@ -213,9 +217,9 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
-	if (gEnv->bMultiplayer && m_pClAutoValidateCVar->GetIVal())
+	if (gEnv->bMultiplayer)
 	{
-		m_profile.refreshToken();
+		Client::GetProfile().refreshToken();
 	}
 }
 

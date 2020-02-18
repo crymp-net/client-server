@@ -3,6 +3,8 @@
  * @brief Implementation of HTTP common stuff.
  */
 
+#include "Library/StringBuffer.h"
+
 #include "HTTP.h"
 
 const char *HTTP::StatusCodeToString(int code)
@@ -33,4 +35,42 @@ const char *HTTP::StatusCodeToString(int code)
 	}
 
 	return "?";
+}
+
+std::string HTTP::URLEncode(const char *text)
+{
+	if (!text)
+	{
+		return std::string();
+	}
+
+	StringBuffer<2048> buffer;
+
+	for (; *text; text++)
+	{
+		char ch = *text;
+
+		if ((ch >= 'a' && ch <= 'z')
+		 || (ch >= 'A' && ch <= 'Z')
+		 || (ch >= '0' && ch <= '9')
+		 || ch == '.'
+		 || ch == '-'
+		 || ch == '_')
+		{
+			buffer += ch;
+		}
+		else
+		{
+			int code = static_cast<unsigned char>(ch);
+
+			int a = code >> 4;
+			int b = code & 0xF;
+
+			buffer += '%';
+			buffer += (a < 10) ? '0' + a : 'A' + (a - 10);
+			buffer += (b < 10) ? '0' + b : 'A' + (b - 10);
+		}
+	}
+
+	return buffer.toString();
 }

@@ -11,7 +11,7 @@ class Profile
 {
 	enum EState
 	{
-		IDLE, LOGIN, TOKEN_REFRESH
+		IDLE, LOGIN, TOKEN_REFRESH, GET_STATIC_PROFILE
 	};
 
 	int m_id;
@@ -19,6 +19,9 @@ class Profile
 	std::string m_token;
 	std::string m_secret;
 	EState m_state;
+
+	void sendRequest(const char *urlPath, const char *urlParams, const char *data);
+	void doLogin();
 
 	static void RequestCallback(int status, const std::string & result, void *param);
 
@@ -32,6 +35,7 @@ public:
 	{
 	}
 
+	void initStatic();
 	void login(const char *name, const char *secret);
 	void refreshToken();
 	void logout();
