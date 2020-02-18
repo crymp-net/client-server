@@ -209,17 +209,16 @@ bool Launcher::run(SSystemInitParams & params)
 	}
 
 	Client client;
-	CGame game;
-
-	if (!game.Init(m_pGameFramework))
-	{
-		Util::ErrorBox("Game initialization failed!");
-		return false;
-	}
-
 	if (!client.init())
 	{
 		Util::ErrorBox("Client initialization failed!");
+		return false;
+	}
+
+	CGame game;
+	if (!game.Init(m_pGameFramework))
+	{
+		Util::ErrorBox("Game initialization failed!");
 		return false;
 	}
 

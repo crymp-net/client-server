@@ -8,6 +8,7 @@
 #include "CryCommon/I3DEngine.h"  // required by IGameRulesSystem.h
 #include "CryAction/IGameRulesSystem.h"
 #include "Library/StringBuffer.h"
+#include "Launcher/Launcher.h"
 
 #include "Client.h"
 #include "Log.h"
@@ -149,7 +150,7 @@ bool Client::init()
 	m_pClAutoValidateCVar = pConsole->RegisterInt("cl_autoValidate", 1, VF_RESTRICTEDMODE | VF_NOT_NET_SYNCED,
 	                                              "Enables automatic CryMP profile authentication.");
 
-	IGameFramework *pGameFramework = gEnv->pGame->GetIGameFramework();
+	IGameFramework *pGameFramework = Launcher::GetIGameFramework();  // gEnv->pGame is not initialized yet
 
 	pGameFramework->RegisterListener(this, "Client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
 	pGameFramework->GetILevelSystem()->AddListener(this);
