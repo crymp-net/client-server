@@ -23,10 +23,10 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 
 // Debug STL turned off so we can use intermixed debug/release versions of DLL.
-#undef _HAS_ITERATOR_DEBUGGING
-#define _HAS_ITERATOR_DEBUGGING 0
-#undef _SECURE_SCL
-#define _SECURE_SCL 0
+//#undef _HAS_ITERATOR_DEBUGGING
+//#define _HAS_ITERATOR_DEBUGGING 0
+//#undef _SECURE_SCL
+//#define _SECURE_SCL 0
 
 #if defined(_DEBUG) && !defined(PS3) && !defined(LINUX)
 	#include <crtdbg.h>
