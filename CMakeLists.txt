@@ -45,6 +45,8 @@ configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
 add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Client.cpp
   Code/Client/Client.h
+  Code/Client/DisplayInfo.cpp
+  Code/Client/DisplayInfo.h
   Code/Client/GSMaster.cpp
   Code/Client/GSMaster.h
   Code/Client/HTTP.cpp

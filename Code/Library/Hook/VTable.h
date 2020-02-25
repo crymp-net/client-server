@@ -5,4 +5,4 @@
 
 #pragma once
 
-bool VTableHook(void *pVTable, unsigned int index, void *pNewFunc);
+bool VTableHook(void *pVTable, unsigned int index, void *pNewFunc, void **pOldFunc = nullptr);

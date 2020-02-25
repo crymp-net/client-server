@@ -29,7 +29,7 @@ static bool ReplaceVTableEntry(void **pEntry, void *pNewFunc)
 	return true;
 }
 
-bool VTableHook(void *pVTable, unsigned int index, void *pNewFunc)
+bool VTableHook(void *pVTable, unsigned int index, void *pNewFunc, void **pOldFunc)
 {
 	if (!pVTable)
 	{
@@ -37,6 +37,11 @@ bool VTableHook(void *pVTable, unsigned int index, void *pNewFunc)
 	}
 
 	void **pEntry = static_cast<void**>(pVTable) + index;
+
+	if (pOldFunc)
+	{
+		(*pOldFunc) = (*pEntry);
+	}
 
 	if (!ReplaceVTableEntry(pEntry, pNewFunc))
 	{

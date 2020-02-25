@@ -12,6 +12,7 @@
 
 #include "Client.h"
 #include "Log.h"
+#include "DisplayInfo.h"
 
 Client *Client::s_pInstance;
 
@@ -137,7 +138,7 @@ static void CmdShowTelemetry(IConsoleCmdArgs *args)
 
 bool Client::init()
 {
-	if (!m_GSMaster.init() || !m_telemetry.init())
+	if (!m_GSMaster.init() || !m_telemetry.init() || !DisplayInfo::Init())
 	{
 		return false;
 	}
