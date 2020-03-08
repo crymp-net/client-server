@@ -12,6 +12,7 @@ namespace Patch
 
 	// CryNetwork
 	bool AllowConnectWithoutGS(void *pCryNetwork);
+	bool EnablePreordered(void *pCryNetwork);
 	bool AllowSameCDKeys(void *pCryNetwork);
 
 	// CrySystem

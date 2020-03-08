@@ -54,6 +54,9 @@ static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCry
 	if (!Patch::AllowConnectWithoutGS(pCryNetwork))
 		return false;
 
+	if (!Patch::EnablePreordered(pCryNetwork))
+		return false;
+
 	if (!Patch::AllowSameCDKeys(pCryNetwork))  // useful for non-dedicated servers
 		return false;
 

@@ -51,6 +51,34 @@ bool Patch::AllowConnectWithoutGS(void *pCryNetwork)
 }
 
 /**
+ * @brief Unlocks advantages of pre-ordered version for everyone.
+ * This is both server-side and client-side patch.
+ * @param pCryNetwork CryNetwork DLL handle.
+ * @return True if no error occurred, otherwise false.
+ */
+bool Patch::EnablePreordered(void *pCryNetwork)
+{
+	unsigned char code[] = {
+	#ifdef BUILD_64BIT
+		0xC6, 0x83, 0x70, 0xFA, 0x00, 0x00, 0x01  // mov byte ptr ds:[rbx+0xFA70], 0x1
+	#else
+		0xC6, 0x83, 0xC8, 0xF3, 0x00, 0x00, 0x01  // mov byte ptr ds:[ebx+0xF3C8], 0x1
+	#endif
+	};
+
+#ifdef BUILD_64BIT
+	if (!FillMem(RVA(pCryNetwork, 0x17C377), code, sizeof code))
+#else
+	if (!FillMem(RVA(pCryNetwork, 0x43188), code, sizeof code))
+#endif
+	{
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * @brief Prevents server from kicking players with the same CD key.
  * This is server-side patch.
  * @param pCryNetwork CryNetwork DLL handle.
