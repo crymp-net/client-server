@@ -10,6 +10,7 @@
 #include "Client/Client.h"
 
 #include "Launcher.h"
+#include "CmdLine.h"
 #include "Patch.h"
 #include "CPU.h"
 #include "Util.h"
@@ -85,8 +86,19 @@ static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCry
 
 static bool InitWorkingDirectory()
 {
-	// get absolute path to the directory with our executable
-	Path path = Util::GetApplicationDirectory();
+	Path path;
+
+	std::string dirArg = CmdLine::GetArgValue("-dir");
+	if (!dirArg.empty())
+	{
+		path = dirArg;
+	}
+	else
+	{
+		// get absolute path to the directory with our executable
+		path = Util::GetApplicationDirectory();
+	}
+
 	if (path.isEmpty())
 	{
 		Util::ErrorBox("Failed to get application directory!");
