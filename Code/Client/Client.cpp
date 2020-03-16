@@ -5,6 +5,7 @@
 
 #include "CryCommon/ISystem.h"
 #include "CryCommon/IConsole.h"
+#include "CryCommon/IHardwareMouse.h"
 #include "CryCommon/I3DEngine.h"  // required by IGameRulesSystem.h
 #include "CryAction/IGameRulesSystem.h"
 #include "Library/StringBuffer.h"
@@ -136,6 +137,16 @@ static void CmdShowTelemetry(IConsoleCmdArgs *args)
 	LogInfo("$8Time zone: %+d", -telemetry.getTimeZoneBias());
 }
 
+static void CmdCursorIncrement(IConsoleCmdArgs *args)
+{
+	gEnv->pHardwareMouse->IncrementCounter();
+}
+
+static void CmdCursorDecrement(IConsoleCmdArgs *args)
+{
+	gEnv->pHardwareMouse->DecrementCounter();
+}
+
 bool Client::init()
 {
 	if (!m_GSMaster.init() || !m_telemetry.init() || !DisplayInfo::Init())
@@ -152,6 +163,8 @@ bool Client::init()
 	pConsole->AddCommand("logout", CmdLogout, VF_RESTRICTEDMODE, "Sign out current CryMP profile.");
 	pConsole->AddCommand("show_profile", CmdShowProfile, VF_RESTRICTEDMODE, "Show information about active CryMP profile.");
 	pConsole->AddCommand("show_telemetry", CmdShowTelemetry, VF_RESTRICTEDMODE, "Show all telemetry information.");
+	pConsole->AddCommand("cursor_increment", CmdCursorIncrement, VF_RESTRICTEDMODE);
+	pConsole->AddCommand("cursor_decrement", CmdCursorDecrement, VF_RESTRICTEDMODE);
 
 	IGameFramework *pGameFramework = Launcher::GetIGameFramework();  // gEnv->pGame is not initialized yet
 
