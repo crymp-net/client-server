@@ -38,5 +38,5 @@ public:
 		return m_tzBias;
 	}
 
-	std::string generateUUID(const char *salt) const;
+	std::string generateUUID(const char *salt = nullptr) const;
 };

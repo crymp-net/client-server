@@ -75,6 +75,11 @@ bool Telemetry::init()
 
 std::string Telemetry::generateUUID(const char *salt) const
 {
+	if (!salt)
+	{
+		salt = "idsvc";
+	}
+
 	if (getHWID().empty())
 	{
 		return std::string();

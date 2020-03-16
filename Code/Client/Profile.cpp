@@ -28,7 +28,7 @@ void Profile::sendRequest(const char *urlPath, const char *urlParams, const char
 	Telemetry & telemetry = Client::GetTelemetry();
 
 	url += "hwid=";
-	url += telemetry.getHWID();
+	url += telemetry.generateUUID();
 	url += "&lng=";
 	url += telemetry.getLocale();
 	url += "&tz=";
