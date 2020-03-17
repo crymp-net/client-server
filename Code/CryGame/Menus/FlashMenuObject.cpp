@@ -2705,11 +2705,11 @@ void CFlashMenuObject::InitStartMenu()
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("set64Bit",true);
 #endif
 
-		SModInfo info;
-		if(g_pGame->GetIGameFramework()->GetModInfo(&info))
-		{
-			m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("addLoadedModText",info.m_name);
-		}
+		//SModInfo info;
+		//if(g_pGame->GetIGameFramework()->GetModInfo(&info))
+		//{
+			m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("addLoadedModText", "CryMP Client");
+		//}
 
 		//m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", true);
@@ -2802,11 +2802,11 @@ void CFlashMenuObject::InitIngameMenu()
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("set64Bit",true);
 #endif
 
-		SModInfo info;
-		if(g_pGame->GetIGameFramework()->GetModInfo(&info))
-		{
-			m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText",info.m_name);
-		}
+		//SModInfo info;
+		//if(g_pGame->GetIGameFramework()->GetModInfo(&info))
+		//{
+			m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText", "CryMP Client");
+		//}
 
 		if(m_pPlayerProfileManager)
 		{
