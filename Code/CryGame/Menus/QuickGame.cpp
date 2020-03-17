@@ -351,13 +351,13 @@ struct CQuickGame::SQGServerList : public IServerListener
   virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
   {
     string connect;
-    if(neednat)
-    {
-      int cookie = rand() + (rand()<<16);
-			connect.Format("connect <nat>%d|%d.%d.%d.%d:%d",cookie,ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,port);
-      m_qg->m_browser->SendNatCookie(ip,port,cookie);
-    }
-    else
+//    if(neednat)
+//    {
+//      int cookie = rand() + (rand()<<16);
+//			connect.Format("connect <nat>%d|%d.%d.%d.%d:%d",cookie,ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,port);
+//      m_qg->m_browser->SendNatCookie(ip,port,cookie);
+//    }
+//    else
     {
       connect.Format("connect %d.%d.%d.%d:%d",ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,port);
     }
