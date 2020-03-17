@@ -49,7 +49,7 @@ void Profile::doLogin()
 	StringBuffer<256> data;
 
 	data += "a=";
-	data += HTTP::URLEncode(m_name);
+	data += HTTP::URLEncode(isStatic() ? std::string("::tr:") + std::to_string(m_id) : m_name);
 	data += "&b=";
 	data += HTTP::URLEncode(m_secret);
 
@@ -131,8 +131,6 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 			}
 
 			self->m_id = id;
-			self->m_name = "::tr:";
-			self->m_name += std::to_string(id);
 			self->m_secret = keyBuffer;
 
 			self->m_state = LOGIN;

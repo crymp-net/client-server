@@ -45,6 +45,11 @@ public:
 		return m_id > 0;
 	}
 
+	bool isStatic() const
+	{
+		return m_id >= 1000000;
+	}
+
 	int getID() const
 	{
 		return m_id;
