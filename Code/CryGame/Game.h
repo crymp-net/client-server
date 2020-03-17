@@ -27,6 +27,7 @@
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
 #include "CryCommon/Cry_Camera.h"
+#include "CryCommon/IHardwareMouse.h"
 
 #define GAME_NAME				"Crysis"
 #define GAME_LONGNAME		"Crysis"
@@ -184,6 +185,27 @@ public:
 
   ILINE SCVars *GetCVars() {return m_pCVars;}
 	static void DumpMemInfo(const char* format, ...) PRINTF_PARAMS(1, 2);
+
+	bool m_mousePointerVisible;
+	bool ShowMousePointer(bool enable) {
+		if (enable && !m_mousePointerVisible)
+		{
+			if (gEnv->pHardwareMouse)
+			{
+				gEnv->pHardwareMouse->IncrementCounter();
+				m_mousePointerVisible = true;
+				return true;
+			}
+		}
+		else if (!enable && m_mousePointerVisible)
+			if (gEnv->pHardwareMouse)
+			{
+				gEnv->pHardwareMouse->DecrementCounter();
+				m_mousePointerVisible = false;
+				return true;
+			}
+		return false;
+	}
 
 protected:
 	virtual void LoadActionMaps(const char* filename = "libs/config/defaultProfile.xml");

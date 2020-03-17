@@ -937,7 +937,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo *pLevel)
 	if(m_stateEntryMovies!=eEMS_Done)
 	{
 		if (m_stateEntryMovies < eEMS_Done)
-			SAFE_HARDWARE_MOUSE_FUNC(IncrementCounter());
+			g_pGame->ShowMousePointer(true);
 		m_stateEntryMovies=eEMS_Done;
 	}
 
@@ -1526,7 +1526,7 @@ void CFlashMenuObject::PlayTutorialVideo()
 {
 	if(PlayVideo("Localized/Video/PS_Tutorial.sfd",false,0,CFlashMenuObject::VIDEOPLAYER_LOCALIZED_AUDIOCHANNEL,-1,true,true))
 	{
-		SAFE_HARDWARE_MOUSE_FUNC(DecrementCounter());
+		g_pGame->ShowMousePointer(false);
 		if(m_pMusicSystem)
 			m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
 		PlaySound(ESound_MenuAmbience,false);
@@ -1540,7 +1540,7 @@ bool CFlashMenuObject::StopTutorialVideo()
 {
 	if(m_bTutorialVideo)
 	{
-		SAFE_HARDWARE_MOUSE_FUNC(IncrementCounter());
+		g_pGame->ShowMousePointer(true);
 		StopVideo();
 		PlayVideo("Localized/Video/bg.sfd", false, IVideoPlayer::LOOP_PLAYBACK);
 		if(m_pMusicSystem)
@@ -2750,9 +2750,10 @@ void CFlashMenuObject::DestroyStartMenu()
 {
 	if(m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART] && m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->IsLoaded())
 	{
-    if(m_multiplayerMenu)
-      m_multiplayerMenu->SetCurrentFlashScreen(0,false);
-		SAFE_HARDWARE_MOUSE_FUNC(DecrementCounter());
+		if(m_multiplayerMenu)
+			m_multiplayerMenu->SetCurrentFlashScreen(0,false);
+
+		g_pGame->ShowMousePointer(false);
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Unload();
 	}
 
@@ -2776,7 +2777,7 @@ void CFlashMenuObject::InitIngameMenu()
 
 	if(!m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 	{
-		SAFE_HARDWARE_MOUSE_FUNC(IncrementCounter());
+		g_pGame->ShowMousePointer(true);
 
 #ifdef CRYSIS_BETA
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Load("Libs/UI/Menus_IngameMenu_Beta.gfx");
@@ -2851,7 +2852,8 @@ void CFlashMenuObject::DestroyIngameMenu()
 	{
     if(m_multiplayerMenu)
       m_multiplayerMenu->SetCurrentFlashScreen(0,true);
-		SAFE_HARDWARE_MOUSE_FUNC(DecrementCounter());
+		
+		g_pGame->ShowMousePointer(false);
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Unload();
 	}
   if(g_pGame->GetIGameFramework()->IsGameStarted())
@@ -3024,7 +3026,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 	if(m_stateEntryMovies==eEMS_Stop)
 	{
 		m_stateEntryMovies = eEMS_Done;
-		SAFE_HARDWARE_MOUSE_FUNC(IncrementCounter());
+		g_pGame->ShowMousePointer(true);
 		const char* movie = VALUE_BY_KEY(m_stateEntryMovies, gMovies);
 		if(movie)
 			PlayVideo(movie, false, IVideoPlayer::LOOP_PLAYBACK);
