@@ -28,6 +28,7 @@ History:
 #include "CryCommon/IMaterialEffects.h"
 #include "GameRules.h"
 #include "CryCommon/Cry_GeoDistance.h"
+#include "IPlayerInput.h"
 
 #include "IronSight.h"
 
@@ -2731,6 +2732,10 @@ void CSingle::UpdateRecoil(float frameTime)
 				pOwner->SetViewAngleOffset(Vec3(m_recoil_offset.x, 0.0f, m_recoil_offset.y));
 
 				m_pWeapon->RequireUpdate(eIUS_FireMode);
+
+				//CRYMP (CTAO): let server know about any recoil changes..
+				if (gEnv->bMultiplayer && pActor && pActor->IsClient())
+					pActor->GetGameObject()->ChangedNetworkState(IPlayerInput::INPUT_ASPECT); 
 			}
 			else
 				ResetRecoil(false);
