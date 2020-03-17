@@ -538,7 +538,8 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
   }
 
   {
-    m_dx10 = gEnv->pRenderer->GetRenderType() == eRT_DX10;
+    //m_dx10 = gEnv->pRenderer->GetRenderType() == eRT_DX10;
+    m_dx10 = true;
     keyArray.push_back(VALUE_BY_KEY(eCGO_dx10,gCreateGameOptions));
     valueArray.push_back(m_dx10?"1":"0");
   }

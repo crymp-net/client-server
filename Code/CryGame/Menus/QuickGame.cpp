@@ -181,8 +181,8 @@ struct CQuickGame::SQGServerList : public IServerListener
       if(info->m_numPlayers<m_minPlayers)
         return;
 		//drop dx10
-		if(gEnv->pRenderer->GetRenderType() != eRT_DX10 && info->m_dx10)
-			return;
+		//if(gEnv->pRenderer->GetRenderType() != eRT_DX10 && info->m_dx10)
+		//	return;
 		//drop other versions
 		if(m_ver!= info->m_gameVersion)
 			return;

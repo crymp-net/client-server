@@ -2711,7 +2711,8 @@ void CFlashMenuObject::InitStartMenu()
 			m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("addLoadedModText",info.m_name);
 		}
 
-		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
+		//m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
+		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", true);
 		time_t today = time(NULL);
 		struct tm theTime;
 		theTime = *localtime(&today);
@@ -2814,7 +2815,8 @@ void CFlashMenuObject::InitIngameMenu()
 				m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("setActiveProfile", GetMappedProfileName(pProfile->GetName()));
 		}
 
-		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
+		//m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
+		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("Directx10", true);
 		time_t today = time(NULL);
 		struct tm theTime;
 		theTime = *localtime(&today);

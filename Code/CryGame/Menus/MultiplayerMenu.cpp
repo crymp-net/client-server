@@ -169,7 +169,8 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
   m_menu(0),
   m_pendingUpdate(0)
   {
-		m_dx10 = gEnv->pRenderer->GetRenderType() == eRT_DX10;
+		//m_dx10 = gEnv->pRenderer->GetRenderType() == eRT_DX10;
+		m_dx10 = true;
 		char strProductVersion[256];
 		gEnv->pSystem->GetProductVersion().ToString(strProductVersion);
 		m_version = strProductVersion;
