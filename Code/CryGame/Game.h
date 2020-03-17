@@ -285,7 +285,6 @@ protected:
 	CServerSynchedStorage	*m_pServerSynchedStorage;
 	CClientSynchedStorage	*m_pClientSynchedStorage;
 	CSPAnalyst          *m_pSPAnalyst;
-	bool								m_inDevMode;
 
 	EntityId m_uiPlayerID;
 

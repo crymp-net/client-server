@@ -106,7 +106,6 @@ CGame::CGame()
 	g_pGameActions = m_pGameActions;
 	g_pGame = this;
 	m_bReload = false;
-	m_inDevMode = false;
 
 	m_pDebugAM = 0;
 	m_pDefaultAM = 0;
@@ -379,12 +378,6 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 	}
 
 	m_pFramework->PostUpdate( true, updateFlags );
-
-	if(m_inDevMode != gEnv->pSystem->IsDevMode())
-	{
-		m_inDevMode = gEnv->pSystem->IsDevMode();
-	}
-	m_pFramework->GetIActionMapManager()->EnableActionMap("debug", m_inDevMode);
 
 	CheckReloadLevel();
 
@@ -717,7 +710,7 @@ void CGame::LoadActionMaps(const char* filename)
 		pActionMapMan->EnableActionMap("default",true);
 
 		// enable debug
-		pActionMapMan->EnableActionMap("debug",gEnv->pSystem->IsDevMode());
+		pActionMapMan->EnableActionMap("debug",true);
 
 		// enable player action map
 		pActionMapMan->EnableActionMap("player",true);
