@@ -1505,10 +1505,7 @@ bool CPlayerInput::OnActionSuitCloak(EntityId entityId, const ActionId& actionId
 
 bool CPlayerInput::OnActionThirdPerson(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	if (!gEnv->pSystem->IsDevMode())
-		return false;
-
-	if (!m_pPlayer->m_stats.spectatorMode && m_pPlayer->m_pGameFramework->CanCheat())
+	if (!m_pPlayer->m_stats.spectatorMode)
 	{
 		if (!m_pPlayer->GetLinkedVehicle())
 			m_pPlayer->ToggleThirdPerson();
