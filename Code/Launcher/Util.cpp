@@ -9,6 +9,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "Library/StringBuffer.h"
+
 #include "Util.h"
 
 static bool IsDirectorySeparator(char ch)
@@ -239,9 +241,30 @@ int Util::GetCrysisGameVersion(void *pDLL)
 
 /**
  * @brief Shows message box with error message and blocks until user closes it.
+ * It also shows current last-error code and its description.
  * @param msg The error message to show.
  */
 void Util::ErrorBox(const char *msg)
 {
-	MessageBoxA(NULL, msg, "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY);
+	DWORD errorCode = GetLastError();
+
+	StringBuffer<1024> buffer;
+
+	buffer += msg;
+	buffer += '\n';
+
+	if (errorCode)
+	{
+		buffer.append_f("Error %ld", errorCode);
+
+		char errorMsgBuffer[512];
+		if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorCode,
+		                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), errorMsgBuffer, sizeof errorMsgBuffer, NULL))
+		{
+			buffer += ": ";
+			buffer += errorMsgBuffer;
+		}
+	}
+
+	MessageBoxA(NULL, buffer.get(), "Error", MB_OK | MB_ICONERROR);
 }
