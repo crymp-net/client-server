@@ -35,6 +35,8 @@ namespace Util
 	std::string GetApplicationFileName();
 	Path GetApplicationDirectory();
 
+	unsigned long GetCurrentThreadID();
+
 	int GetCrysisGameVersion(void *pDLL);
 
 	void ErrorBox(const char *msg);

@@ -9,11 +9,14 @@
 #include "Library/DLL.h"
 
 #include "Executor.h"
+#include "Util.h"
 
 struct IGameFramework;
 
 class Launcher : public ISystemUserCallback
 {
+	unsigned long m_mainThreadID;
+	Path m_rootDirectory;
 	DLL m_libCrySystem;
 	DLL m_libCryAction;
 	DLL m_libCryNetwork;
@@ -26,7 +29,9 @@ class Launcher : public ISystemUserCallback
 
 public:
 	Launcher()
-	: m_libCrySystem(),
+	: m_mainThreadID(),
+	  m_rootDirectory(),
+	  m_libCrySystem(),
 	  m_libCryAction(),
 	  m_libCryNetwork(),
 	  m_executor(),
@@ -48,6 +53,16 @@ public:
 	void OnShutdown() override;
 	void OnUpdate() override;
 	void GetMemoryUsage(ICrySizer *pSizer) override;
+
+	static bool IsMainThread()
+	{
+		return s_pInstance->m_mainThreadID == Util::GetCurrentThreadID();
+	}
+
+	static const Path & GetRootDirectory()
+	{
+		return s_pInstance->m_rootDirectory;
+	}
 
 	static const DLL & GetCrySystemDLL()
 	{

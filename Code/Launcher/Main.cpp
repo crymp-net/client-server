@@ -10,7 +10,6 @@
 #include "CryCommon/platform_impl.h"
 
 #include "Launcher.h"
-#include "Util.h"
 
 // request discrete graphics card
 extern "C"

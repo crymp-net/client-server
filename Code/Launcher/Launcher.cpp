@@ -6,6 +6,7 @@
 #include "CryCommon/IGameFramework.h"
 #include "CryCommon/IConsole.h"
 #include "CrySystem/GameWindow.h"
+#include "CrySystem/Log.h"
 #include "CryGame/Game.h"
 #include "Client/Client.h"
 
@@ -13,7 +14,6 @@
 #include "CmdLine.h"
 #include "Patch.h"
 #include "CPU.h"
-#include "Util.h"
 
 #include "config.h"
 
@@ -84,7 +84,7 @@ static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCry
 	return true;
 }
 
-static bool InitWorkingDirectory()
+static bool InitWorkingDirectory(Path & rootDirectory)
 {
 	Path path;
 
@@ -127,14 +127,19 @@ static bool InitWorkingDirectory()
 		return false;
 	}
 
+	std::string rootArg = CmdLine::GetArgValue("-root");
+
+	rootDirectory = rootArg.empty() ? std::move(path) : rootArg;
+
 	return true;
 }
 
 bool Launcher::run(SSystemInitParams & params)
 {
+	m_mainThreadID = Util::GetCurrentThreadID();
 	m_pInitParams = &params;
 
-	if (!InitWorkingDirectory())
+	if (!InitWorkingDirectory(m_rootDirectory))
 	{
 		return false;
 	}
@@ -202,6 +207,12 @@ bool Launcher::run(SSystemInitParams & params)
 
 	GameWindow window;
 	if (!window.init())
+	{
+		return false;
+	}
+
+	// initialize the new log
+	if (!CLog::Init(params))
 	{
 		return false;
 	}

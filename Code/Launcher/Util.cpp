@@ -194,6 +194,15 @@ Path Util::GetApplicationDirectory()
 }
 
 /**
+ * @brief Returns calling thread ID.
+ * @return ID of the current thread.
+ */
+unsigned long Util::GetCurrentThreadID()
+{
+	return ::GetCurrentThreadId();
+}
+
+/**
  * @brief Obtains game version from any Crysis DLL.
  * It parses version resource of the specified file.
  * @param pDLL Handle to any loaded Crysis DLL.
