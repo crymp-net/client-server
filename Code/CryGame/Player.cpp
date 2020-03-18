@@ -804,10 +804,13 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		adpm = eADPM_Never;
 	else if (client || (gEnv->bMultiplayer && gEnv->bServer))
 		adpm = eADPM_Never;
+	else if (gEnv->bMultiplayer)
+		adpm = eADPM_Never;  //CryMP: Ghost Bug Fix #1: never disable physics for players in multiplayer
 	else if (IsPlayer())
-		adpm = eADPM_WhenInvisibleAndFarAway;
+		adpm = eADPM_WhenInvisibleAndFarAway; 
 	else
 		adpm = eADPM_WhenAIDeactivated;
+
 	GetGameObject()->SetAutoDisablePhysicsMode(adpm);
 	
 	if (GetHealth()<=0)
@@ -1294,9 +1297,9 @@ void CPlayer::PrePhysicsUpdate()
 
 	}*/
 
-	if (m_pMovementController)
+	if (m_pMovementController && !gEnv->bMultiplayer) //CryMP: Ghost Bug Fix #2, disable this in mp for now
 	{
-		if (g_pGame->GetCVars()->g_enableIdleCheck)
+		if (g_pGame->GetCVars()->g_enableIdleCheck == 1)
 		{
 			IActorMovementController::SStats stats;
 			if (m_pMovementController->GetStats(stats) && stats.idle == true)
