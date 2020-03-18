@@ -3503,6 +3503,21 @@ void CHUD::OnPostUpdate(float frameTime)
 				m_animBuyMenu.GetFlashPlayer()->Advance(frameTime);
 				m_animBuyMenu.GetFlashPlayer()->Render();
 			}
+			if (m_animBattleLog.GetVisible()) //CryMP: battlelog in spectatemode
+			{
+				m_animBattleLog.GetFlashPlayer()->Advance(frameTime);
+				m_animBattleLog.GetFlashPlayer()->Render();
+			}
+			if (m_animKillLog.GetVisible()) //CryMP: killLog in spectatemode
+			{
+				m_animKillLog.GetFlashPlayer()->Advance(frameTime);
+				m_animKillLog.GetFlashPlayer()->Render();
+			}
+			if (m_animMissionObjective.GetVisible() && m_bShowAllOnScreenObjectives) //CryMP: for names in mp spectatemode, update mission objective!
+			{
+				m_animMissionObjective.GetFlashPlayer()->Advance(frameTime);
+				m_animMissionObjective.GetFlashPlayer()->Render();
+			}
 		}
 		else
 		{
