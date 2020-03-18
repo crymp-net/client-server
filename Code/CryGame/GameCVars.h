@@ -429,6 +429,9 @@ struct SCVars
 	int			g_deathCam;
 	int			g_deathEffects;
 
+	//CRYMP
+	int			cl_crymp;
+
 	SCVars()
 	{
 		memset(this,0,sizeof(SCVars));

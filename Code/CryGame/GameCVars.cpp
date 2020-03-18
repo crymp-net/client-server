@@ -554,7 +554,10 @@ void SCVars::InitCVars(IConsole *pConsole)
  
 	pVehicleQuality = pConsole->GetCVar("v_vehicle_quality");		assert(pVehicleQuality);
 
-  NetInputChainInitCVars();
+	NetInputChainInitCVars();
+
+	//CRYMP CVars
+	pConsole->Register("cl_crymp", &cl_crymp, 0);
 }
 
 //------------------------------------------------------------------------
@@ -860,6 +863,8 @@ void SCVars::ReleaseCVars()
 
  pConsole->UnregisterVariable("aim_assistCrosshairSize", true);
   pConsole->UnregisterVariable("aim_assistCrosshairDebug", true);
+
+	pConsole->UnregisterVariable("cl_crymp", true);
 }
 
 //------------------------------------------------------------------------

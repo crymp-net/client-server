@@ -1298,22 +1298,19 @@ void CPlayer::PrePhysicsUpdate()
 	{
 		if (g_pGame->GetCVars()->g_enableIdleCheck)
 		{
-			// if (gEnv->pGame->GetIGameFramework()->IsEditing() == false || pVar->GetIVal() == 2410)
+			IActorMovementController::SStats stats;
+			if (m_pMovementController->GetStats(stats) && stats.idle == true)
 			{
-				IActorMovementController::SStats stats;
-				if (m_pMovementController->GetStats(stats) && stats.idle == true)
+				if (GetGameObject()->IsProbablyVisible()==false && GetGameObject()->IsProbablyDistant() )
 				{
-					if (GetGameObject()->IsProbablyVisible()==false && GetGameObject()->IsProbablyDistant() )
-					{
-						CPlayerMovementController* pMC = static_cast<CPlayerMovementController*> (m_pMovementController);
-						float frameTime = gEnv->pTimer->GetFrameTime();
-						pMC->IdleUpdate(frameTime);
-						return;
-					}
-				}		
+					CPlayerMovementController* pMC = static_cast<CPlayerMovementController*> (m_pMovementController);
+					float frameTime = gEnv->pTimer->GetFrameTime();
+					pMC->IdleUpdate(frameTime);
+					return;
+				}
 			}
 		}
-  }
+	}
 
 	bool client(IsClient());
 	float frameTime = gEnv->pTimer->GetFrameTime();
@@ -4082,7 +4079,12 @@ bool CPlayer::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile
 		if (m_pPlayerInput.get() && ser.IsWriting())
 			m_pPlayerInput->GetState(serializedInput);
 
-		serializedInput.Serialize(ser);
+		//CryMP: improved serialization accuracy for clients with CryMP mod
+		//Smoother weapon dir changes (Server enables it with cl_crymp 1, else default serialization)
+		if (g_pGameCVars->cl_crymp == 1)
+			serializedInput.Serialize_CryMP(ser);
+		else
+			serializedInput.Serialize_Default(ser);
 
 		if (m_pPlayerInput.get() && ser.IsReading())
 		{
