@@ -595,10 +595,14 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 
 	//===========================Stop firing weapon while sprinting/prone moving==============
 
-	if(IItem *pItem = GetCurrentItem())
+	// CRYMP (CTAO) : Fix for StopFire RMI flooding caused by missing IsFiring()
+	//				  This should possibly be moved somewhere else than OnUpdate..
+
+	if(EntityId weaponId = GetCurrentItemId())
 	{
-		if(pItem->GetIWeapon() && !CanFire())
-			pItem->GetIWeapon()->StopFire();
+		CWeapon* pWeapon = GetWeapon(weaponId);
+		if(pWeapon && pWeapon->IsFiring() && !CanFire())
+			pWeapon->StopFire();
 	}
 
 	//========================================================================================
