@@ -383,6 +383,7 @@ protected:
 	float					m_endFoV;
 	bool					m_smooth;
 	int						m_currentStep;
+	int						m_prevStep;
 
 	float					m_initialNearFov;
 

@@ -241,6 +241,7 @@ void CIronSight::Activate(bool activate)
 	m_zoomingIn = false;
 
 	m_currentStep = 0;
+	m_prevStep = 0;
 	m_lastRecoil = 0.0f;
 
 	SetRecoilScale(1.0f);
@@ -283,6 +284,7 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 	if (!m_zoomed || stayZoomed)
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true, zoomStep);
+		m_prevStep = m_currentStep;
 		m_currentStep = zoomStep;
 
 		m_pWeapon->AssistAiming(m_zoomparams.stages[m_currentStep-1], true);
@@ -303,6 +305,7 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 				else
 				{
 					float oFoV = GetZoomFoVScale(currentStep);
+					m_prevStep = m_currentStep;
 					m_currentStep = 0;
 					float tFoV = GetZoomFoVScale(m_currentStep);
 					ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
@@ -317,6 +320,7 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
+			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 
 			m_pWeapon->AssistAiming(m_zoomparams.stages[m_currentStep-1], true);
@@ -330,6 +334,7 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 void CIronSight::StopZoom()
 {
 	LeaveZoom(m_zoomparams.zoom_out_time, true);
+	m_prevStep = m_currentStep;
 	m_currentStep = 0;
 }
 
@@ -339,6 +344,7 @@ void CIronSight::ExitZoom()
 	if (m_zoomed || m_zoomTime>0.0f)
 	{
 		LeaveZoom(m_zoomparams.zoom_out_time, true);
+		m_prevStep = m_currentStep;
 		m_currentStep = 0;
 	}
 }
@@ -352,6 +358,7 @@ void CIronSight::ZoomIn()
 	if (!m_zoomed)
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true);
+		m_prevStep = m_currentStep;
 		m_currentStep = 1;
 	}
 	else
@@ -368,6 +375,7 @@ void CIronSight::ZoomIn()
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
+			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 		}
 	}
@@ -382,6 +390,7 @@ bool CIronSight::ZoomOut()
 	if (!m_zoomed)
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true);
+		m_prevStep = m_currentStep;
 		m_currentStep = 1;
 	}
 	else
@@ -398,6 +407,7 @@ bool CIronSight::ZoomOut()
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
+			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 			return true;
 		}
@@ -489,6 +499,7 @@ void CIronSight::LeaveZoom(float time, bool smooth)
 	
 	m_pWeapon->SetActionSuffix("");
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->idle);
+	m_prevStep = m_currentStep;
 	m_currentStep = 0;
 }
 
@@ -699,7 +710,11 @@ void CIronSight::OnZoomedIn()
 		}
 	}
 
-	ApplyZoomMod(m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode()));
+	// SNH: fix for infinite multiplication of recoil etc... only patch the parameters when first entering zoom.
+	//	(previously this happened when going from 10x to 4x and back for the sniper scope).
+	if(m_currentStep == 1 && m_prevStep == 0)
+		ApplyZoomMod(m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode()));
+
 	m_swayCycle = 0.0f;
 	m_lastRecoil = 0.0f;
 
