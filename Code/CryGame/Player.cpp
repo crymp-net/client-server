@@ -279,8 +279,7 @@ void CPlayer::PostInit( IGameObject * pGameObject )
 
 	if (gEnv->bMultiplayer && !gEnv->bServer)
 	{
-		GetGameObject()->SetUpdateSlotEnableCondition( this, 0, eUEC_VisibleOrInRange );
-		//GetGameObject()->ForceUpdateExtension(this, 0);
+		GetGameObject()->SetUpdateSlotEnableCondition( this, 0, eUEC_WithoutAI ); //CryMP: Ghost Bug Fix #3
 	}
 }
 
