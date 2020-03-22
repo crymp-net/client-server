@@ -21,11 +21,13 @@
 #include "Log.h"
 
 #define LOG_DEFAULT_VERBOSITY 1
+#define LOG_DEFAULT_PREFIX_FILE_ONLY 1
 
 struct LogTask : public IExecutorTask
 {
 	CLog *pLog;
 	std::string msg;
+	size_t prefixLength;
 	int flags;
 
 	LogTask(CLog *pLog)
@@ -43,7 +45,7 @@ struct LogTask : public IExecutorTask
 	// main thread
 	void callback() override
 	{
-		pLog->write(msg.c_str(), flags);
+		pLog->write(msg.c_str(), prefixLength, flags);
 	}
 };
 
@@ -212,7 +214,7 @@ void CLog::closeLogFile()
 	m_fileName.clear();
 }
 
-void CLog::writeLogFile(const char *msg, int flags)
+void CLog::writeLogFile(const char *msg, size_t prefixLength, int flags)
 {
 	if (!m_file)
 	{
@@ -221,10 +223,12 @@ void CLog::writeLogFile(const char *msg, int flags)
 
 	StringBuffer<2048> result;
 
+	result.append(msg, prefixLength);
+
 	// workaround for broken messages from CPU detection
 	bool addEmptyLine = false;
 
-	for (size_t i = 0; msg[i]; i++)
+	for (size_t i = prefixLength; msg[i]; i++)
 	{
 		char ch = msg[i];
 
@@ -278,11 +282,17 @@ void CLog::writeLogFile(const char *msg, int flags)
 	}
 }
 
-void CLog::writeConsole(const char *msg, int flags)
+void CLog::writeConsole(const char *msg, size_t prefixLength, int flags)
 {
 	if (!gEnv)
 	{
 		return;
+	}
+
+	if (m_pLogPrefixFileOnlyCVar && m_pLogPrefixFileOnlyCVar->GetIVal())
+	{
+		// skip prefix
+		msg += prefixLength;
 	}
 
 	const bool isNewLine = !(flags & APPEND);
@@ -302,16 +312,16 @@ void CLog::writeConsole(const char *msg, int flags)
 	}
 }
 
-void CLog::write(const char *msg, int flags)
+void CLog::write(const char *msg, size_t prefixLength, int flags)
 {
 	if (flags & FILE)
 	{
-		writeLogFile(msg, flags);
+		writeLogFile(msg, prefixLength, flags);
 	}
 
 	if (flags & CONSOLE)
 	{
-		writeConsole(msg, flags);
+		writeConsole(msg, prefixLength, flags);
 	}
 }
 
@@ -358,6 +368,149 @@ void CLog::doLog(ELogType msgType, const char *format, va_list args, int flags)
 
 	StringBuffer<2048> buffer;
 
+	const char *prefixFormat = (m_pLogPrefixCVar) ? m_pLogPrefixCVar->GetString() : nullptr;
+	if (prefixFormat)
+	{
+		auto addNumber = [&buffer](int number, unsigned int minWidth = 0) -> void
+		{
+			std::string result = std::to_string(number);
+
+			for (unsigned int i = minWidth; i > result.length(); i--)
+			{
+				buffer += '0';
+			}
+
+			buffer += result;
+		};
+
+		auto addTimeZone = [&buffer, &addNumber]() -> void
+		{
+			TIME_ZONE_INFORMATION tz;
+			if (GetTimeZoneInformation(&tz) == TIME_ZONE_ID_INVALID)
+			{
+				return;
+			}
+
+			long bias = tz.Bias;
+
+			if (bias == 0)
+			{
+				buffer += 'Z';  // UTC
+			}
+			else
+			{
+				if (bias < 0)
+				{
+					bias = -bias;
+					buffer += '+';
+				}
+				else
+				{
+					buffer += '-';
+				}
+
+				addNumber(bias / 60, 2);  // hours
+				addNumber(bias % 60, 2);  // minutes
+			}
+		};
+
+		SYSTEMTIME time;
+		GetLocalTime(&time);
+
+		for (size_t i = 0; prefixFormat[i]; i++)
+		{
+			char ch = prefixFormat[i];
+
+			if (ch == '%')
+			{
+				switch (prefixFormat[i+1])
+				{
+					case '%':
+					{
+						buffer += '%';
+						break;
+					}
+					case 't':
+					{
+						buffer.append_f("%04lX", GetCurrentThreadId());
+						break;
+					}
+					case 'd':
+					{
+						addNumber(time.wDay, 2);
+						break;
+					}
+					case 'm':
+					{
+						addNumber(time.wMonth, 2);
+						break;
+					}
+					case 'Y':
+					{
+						addNumber(time.wYear, 4);
+						break;
+					}
+					case 'F':
+					{
+						addNumber(time.wYear, 4);
+						buffer += '-';
+						addNumber(time.wMonth, 2);
+						buffer += '-';
+						addNumber(time.wDay, 2);
+						break;
+					}
+					case 'H':
+					{
+						addNumber(time.wHour, 2);
+						break;
+					}
+					case 'M':
+					{
+						addNumber(time.wMinute, 2);
+						break;
+					}
+					case 'S':
+					{
+						addNumber(time.wSecond, 2);
+						break;
+					}
+					case 'T':
+					{
+						addNumber(time.wHour, 2);
+						buffer += ':';
+						addNumber(time.wMinute, 2);
+						buffer += ':';
+						addNumber(time.wSecond, 2);
+						break;
+					}
+					case 'N':
+					{
+						addNumber(time.wMilliseconds, 3);
+						break;
+					}
+					case 'z':
+					{
+						addTimeZone();
+						break;
+					}
+				}
+
+				i++;
+			}
+			else
+			{
+				buffer += ch;
+			}
+		}
+
+		if (buffer.getLength() > 0)
+		{
+			buffer += ' ';
+		}
+	}
+
+	size_t prefixLength = buffer.getLength();
+
 	switch (msgType)
 	{
 		case ILog::eWarning:
@@ -390,12 +543,13 @@ void CLog::doLog(ELogType msgType, const char *format, va_list args, int flags)
 
 	if (Launcher::IsMainThread())
 	{
-		write(buffer.get(), flags);
+		write(buffer.get(), prefixLength, flags);
 	}
 	else
 	{
 		LogTask *pTask = new LogTask(this);
 		pTask->msg = buffer.toString();
+		pTask->prefixLength = prefixLength;
 		pTask->flags = flags;
 
 		Launcher::GetExecutor().addTaskCallback(pTask);
@@ -410,9 +564,10 @@ bool CLog::Init(SSystemInitParams & params)
 	}
 
 	const std::string fileName = CmdLine::GetArgValue("-logfile", params.sLogFileName);
+	const std::string prefix = CmdLine::GetArgValue("-logprefix");
 	const int verbosity = CmdLine::GetArgValueInt("-verbosity", LOG_DEFAULT_VERBOSITY);
 
-	CLog *pLog = new CLog(verbosity);
+	CLog *pLog = new CLog(verbosity, prefix.c_str());
 
 	params.pLog = pLog;
 
@@ -475,6 +630,31 @@ void CLog::RegisterConsoleVariables()
 
 	// maintain compatibility with legacy servers
 	m_pLogIncludeTimeCVar = pConsole->RegisterInt("log_IncludeTime", 0, 0, "This CVar is not used.");
+
+	const int flags = VF_NOT_NET_SYNCED;
+
+	m_pLogPrefixCVar = pConsole->RegisterString("log_Prefix", m_defaultPrefix.c_str(), flags,
+	  "Defines prefix of each log message.\n"
+	  "Usage: log_Prefix FORMAT\n"
+	  "The format string consists of normal characters and the following conversion specifiers:\n"
+	  "  %% = %\n"
+	  "  %d = Day of the month (01..31)\n"
+	  "  %m = Month (01..12)\n"
+	  "  %Y = Year (e.g. 2007)\n"
+	  "  %H = Hour (00..23)\n"
+	  "  %M = Minute (00..59)\n"
+	  "  %S = Second (00..60)\n"
+	  "  %N = Millisecond (000..999)\n"
+	  "  %z = Offset from UTC (time zone) in the ISO 8601 format (e.g. +0100)\n"
+	  "  %F = Equivalent to \"%Y-%m-%d\" (the ISO 8601 date format)\n"
+	  "  %T = Equivalent to \"%H:%M:%S\" (the ISO 8601 time format)\n"
+	  "  %t = Thread ID where the message was logged"
+	);
+
+	m_pLogPrefixFileOnlyCVar = pConsole->RegisterInt("log_PrefixFileOnly", LOG_DEFAULT_PREFIX_FILE_ONLY, flags,
+	  "Defines whether the log prefix is added only when writing to the log file.\n"
+	  "Usage: log_PrefixFileOnly [0/1]"
+	);
 }
 
 void CLog::UnregisterConsoleVariables()
@@ -482,6 +662,8 @@ void CLog::UnregisterConsoleVariables()
 	m_pLogVerbosityCVar = nullptr;
 	m_pLogFileVerbosityCVar = nullptr;
 	m_pLogIncludeTimeCVar = nullptr;
+	m_pLogPrefixCVar = nullptr;
+	m_pLogPrefixFileOnlyCVar = nullptr;
 }
 
 void CLog::SetVerbosity(int verbosity)

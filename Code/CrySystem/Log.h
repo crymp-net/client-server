@@ -26,28 +26,34 @@ class CLog : public ILog
 	ICVar *m_pLogVerbosityCVar;
 	ICVar *m_pLogFileVerbosityCVar;
 	ICVar *m_pLogIncludeTimeCVar;
+	ICVar *m_pLogPrefixCVar;
+	ICVar *m_pLogPrefixFileOnlyCVar;
 	int m_defaultVerbosity;
 	void *m_file;
 	std::string m_fileName;
+	std::string m_defaultPrefix;
 	std::vector<ILogCallback*> m_callbacks;
 
 	bool openLogFile(const char *fileName, bool showError);
 	void closeLogFile();
-	void writeLogFile(const char *msg, int flags);
-	void writeConsole(const char *msg, int flags);
-	void write(const char *msg, int flags);
+	void writeLogFile(const char *msg, size_t prefixLength, int flags);
+	void writeConsole(const char *msg, size_t prefixLength, int flags);
+	void write(const char *msg, size_t prefixLength, int flags);
 	void doLog(ELogType msgType, const char *format, va_list args, int flags);
 
 	friend struct LogTask;
 
 public:
-	CLog(int verbosity)
+	CLog(int verbosity, const char *prefix = "")
 	: m_pLogVerbosityCVar(),
 	  m_pLogFileVerbosityCVar(),
 	  m_pLogIncludeTimeCVar(),
+	  m_pLogPrefixCVar(),
+	  m_pLogPrefixFileOnlyCVar(),
 	  m_defaultVerbosity(verbosity),
 	  m_file(),
 	  m_fileName(),
+	  m_defaultPrefix(prefix),
 	  m_callbacks()
 	{
 	}
