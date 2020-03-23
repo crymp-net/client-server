@@ -6,6 +6,7 @@
 #include "CryCommon/IGameFramework.h"
 #include "CryCommon/IConsole.h"
 #include "CrySystem/GameWindow.h"
+#include "CrySystem/CrashLogger.h"
 #include "CrySystem/Log.h"
 #include "CryGame/Game.h"
 #include "Client/Client.h"
@@ -216,6 +217,8 @@ bool Launcher::run(SSystemInitParams & params)
 	{
 		return false;
 	}
+
+	CrashLogger::Init();
 
 	params.pUserCallback = this;
 

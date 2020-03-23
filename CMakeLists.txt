@@ -613,6 +613,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/WeaponSystem.h
   Code/CryGame/WorkOnTarget.cpp
   Code/CryGame/WorkOnTarget.h
+  Code/CrySystem/CrashLogger.cpp
+  Code/CrySystem/CrashLogger.h
   Code/CrySystem/GameWindow.cpp
   Code/CrySystem/GameWindow.h
   Code/CrySystem/Log.cpp
@@ -647,7 +649,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 )
 ########################################
 
-target_link_libraries(${CRYMP_CLIENT_EXE} winhttp)
+target_link_libraries(${CRYMP_CLIENT_EXE} winhttp dbghelp)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 

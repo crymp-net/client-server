@@ -68,6 +68,16 @@ public:
 		UnregisterConsoleVariables();
 	}
 
+	void LogToFileV(ELogType type, const char *format, va_list args)
+	{
+		doLog(type, format, args, FILE);
+	}
+
+	void LogToConsoleV(ELogType type, const char *format, va_list args)
+	{
+		doLog(type, format, args, CONSOLE);
+	}
+
 	static bool Init(SSystemInitParams & params);
 
 	// IMiniLog
