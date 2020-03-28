@@ -3278,8 +3278,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 	}
 
 	// TODO: just some quick code from Craig to get connection state displayed; please move to a suitable location later
-	/*IGameFramework * pGFW = g_pGame->GetIGameFramework();
-	if (INetChannel * pNC = pGFW->GetClientChannel())
+	if (INetChannel *pNC = g_pGame->GetIGameFramework()->GetClientChannel())
 	{
 		bool show = true;
 		char status[512];
@@ -3319,7 +3318,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			}
 			break;
 		case eCCS_InGame:
-			show = false;
+			show = m_bInLoading;
 			strcpy(status, "In Game");
 			break;
 		case eCCS_Disconnecting:
@@ -3332,8 +3331,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 		float white[] = {1,1,1,1};
 		if (show)
-			gEnv->pRenderer->Draw2dLabel( 10, 750, 1, white, false, "Connection State: %s", status );
-	}*/
+			gEnv->pRenderer->Draw2dLabel( width / 2, height / 4, 4, white, true, "Connection State: %s", status );
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------
