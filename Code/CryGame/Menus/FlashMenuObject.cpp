@@ -3329,9 +3329,15 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			break;
 		}
 
-		float white[] = {1,1,1,1};
 		if (show)
-			gEnv->pRenderer->Draw2dLabel( width / 2, height / 4, 4, white, true, "Connection State: %s", status );
+		{
+			float posX = width / 2;
+			float posY = height / 4;
+			float size = 1.0 + (1.0 / (800.0 / width));
+			float color[] = { 1.0, 1.0, 1.0, 1.0 };
+
+			gEnv->pRenderer->Draw2dLabel(posX, posY, size, color, true, "Connection State: %s", status);
+		}
 	}
 }
 
