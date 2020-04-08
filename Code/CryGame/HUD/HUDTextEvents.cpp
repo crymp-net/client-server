@@ -876,7 +876,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	if (targetId == shooterId)
 		bSuicide = true;
 
-	if(!stricmp(weaponClassName, "AutoTurret"))
+	if(!stricmp(weaponClassName, "AutoTurret") || !stricmp(weaponClassName, "AutoTurretAA") || !stricmp(weaponClassName, "AlienTurret"))
 	{
 		bTurret = true;
 	}
@@ -910,11 +910,13 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	int shooterFriendly = 0;
 	int targetFriendly = 0;
 
+	const EntityId pClientActorId = g_pGame->GetIGameFramework()->GetClientActorId();
+
 	if (CGameRules *pGameRules=g_pGame->GetGameRules())
 	{
-		if(pGameRules->GetEntity() && pGameRules->GetEntity()->GetClass() && pGameRules->GetEntity()->GetClass()->GetName() && !stricmp(pGameRules->GetEntity()->GetClass()->GetName(),"PowerStruggle"))
+		if (pGameRules->GetTeamCount() > 1)
 		{
-			int ownteam = pGameRules->GetTeam(g_pGame->GetIGameFramework()->GetClientActorId());
+			int ownteam = pGameRules->GetTeam(pClientActorId);
 			if(shooterId)
 			{
 				int team = pGameRules->GetTeam(shooterId);
@@ -936,6 +938,21 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 					else
 						targetFriendly = 2;
 				}
+			}
+		}
+		else
+		{
+			//CryMP IA kill log colors
+			if (shooterId == pClientActorId)
+			{
+				if (targetId != shooterId)
+					targetFriendly = 2;
+			}
+			else
+			{
+				shooterFriendly = 2;
+				if (targetId != pClientActorId)
+					targetFriendly = 2;
 			}
 		}
 	}
