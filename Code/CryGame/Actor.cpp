@@ -379,6 +379,17 @@ void CActor::PostInit( IGameObject * pGameObject )
 	}
 
 	InitActorAttachments();
+
+	//CryMP: Fix Ghost #4
+	if (IsPlayer())
+	{
+		IEntityRenderProxy* pProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+		if (pProxy && pProxy->GetRenderNode())
+		{
+			pProxy->GetRenderNode()->SetViewDistUnlimited();
+			pProxy->GetRenderNode()->SetLodRatio(255);
+		}
+	}
 }
 
 //----------------------------------------------------------------------
