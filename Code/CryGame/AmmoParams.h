@@ -144,6 +144,8 @@ private:
 	void LoadExplosion();
 	void LoadFlashbang();
 	void LoadTrailsAndWhizzes();
+
+	const IEntityClass* pTankAAClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("tankaa");
 };
 
 #endif//__AMMOPARAMS_H__

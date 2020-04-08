@@ -242,10 +242,14 @@ void SAmmoParams::LoadFlagsAndParams()
 	const IItemParamsNode* flagsNode = pItemParams->GetChild("flags");
 	if (flagsNode)
 	{
-		int flag=0;
+		int flag = 0;
 		CItemParamReader reader(flagsNode);
-		reader.Read("ClientOnly", flag); flags |= flag?ENTITY_FLAG_CLIENT_ONLY:0; flag=0;
-		reader.Read("ServerOnly", flag); flags |= flag?ENTITY_FLAG_SERVER_ONLY:0; flag=0;
+		reader.Read("ClientOnly", flag);
+		if (pEntityClass == pTankAAClass) //CryMP hack : fix Anti-Air FPS bug (TankAA.xml)
+			flag = 1;
+
+		flags |= flag ? ENTITY_FLAG_CLIENT_ONLY : 0; flag = 0;
+		reader.Read("ServerOnly", flag); flags |= flag ? ENTITY_FLAG_SERVER_ONLY : 0; flag = 0;
 		reader.Read("ServerSpawn", serverSpawn);
 		if (serverSpawn)
 			reader.Read("PredictSpawn", predictSpawn);
