@@ -147,6 +147,93 @@ static void CmdCursorDecrement(IConsoleCmdArgs *args)
 	gEnv->pHardwareMouse->DecrementCounter();
 }
 
+struct CVarDumpListener : public ICVarDumpSink
+{
+	using Buffer = StringBuffer<256>;
+
+	int filterFlags = -1;  // cvars without these flags are not listed at all
+	int skippedFlags = 0;  // cvars with these flags are not listed at all
+	int ignoredFlags = 0;  // these flags are not listed in the dump
+
+	void addFlag(Buffer & buffer, bool & isNextFlag, int flags, int flag, const char *name)
+	{
+		if (!(flag & flags) || flag & ignoredFlags)
+		{
+			return;
+		}
+
+		if (isNextFlag)
+		{
+			buffer += ", ";
+		}
+		else
+		{
+			isNextFlag = true;
+		}
+
+		buffer += name;
+	}
+
+	void OnElementFound(ICVar *pCVar) override
+	{
+		const int flags = pCVar->GetFlags();
+
+		if (!(filterFlags & flags) || skippedFlags & flags)
+		{
+			return;
+		}
+
+		Buffer buffer;
+
+		buffer += "$3";  // green
+		buffer += pCVar->GetName();
+
+		switch (pCVar->GetType())
+		{
+			case CVAR_INT:
+			{
+				buffer += " = $6";  // yellow
+				buffer += std::to_string(pCVar->GetIVal());
+				break;
+			}
+			case CVAR_FLOAT:
+			{
+				buffer += " = $6";  // yellow
+				buffer += std::to_string(pCVar->GetFVal());
+				break;
+			}
+			case CVAR_STRING:
+			{
+				buffer += " = $6\"";  // yellow
+				buffer += pCVar->GetString();
+				buffer += "\"";
+				break;
+			}
+		}
+
+		buffer += " $5[";  // cyan
+
+		bool isNextFlag = false;
+		addFlag(buffer, isNextFlag, flags, VF_CHEAT, "CHEAT");
+		addFlag(buffer, isNextFlag, flags, VF_NOT_NET_SYNCED, "NOT_NET_SYNCED");
+		addFlag(buffer, isNextFlag, flags, VF_READONLY, "READONLY");
+		addFlag(buffer, isNextFlag, flags, VF_BITFIELD, "BITFIELD");
+		addFlag(buffer, isNextFlag, flags, VF_RESTRICTEDMODE, "RESTRICTEDMODE");
+
+		buffer += "]";
+
+		LogInfo("%s", buffer.get());
+	}
+};
+
+static void CmdDumpClientCVars(IConsoleCmdArgs *args)
+{
+	CVarDumpListener listener;
+	listener.filterFlags  = VF_NOT_NET_SYNCED;
+	listener.ignoredFlags = VF_NOT_NET_SYNCED;
+	gEnv->pConsole->DumpCVars(&listener);
+}
+
 bool Client::init()
 {
 	if (!m_GSMaster.init() || !m_telemetry.init() || !DisplayInfo::Init())
@@ -165,6 +252,7 @@ bool Client::init()
 	pConsole->AddCommand("show_telemetry", CmdShowTelemetry, VF_RESTRICTEDMODE, "Show all telemetry information.");
 	pConsole->AddCommand("cursor_increment", CmdCursorIncrement, VF_RESTRICTEDMODE);
 	pConsole->AddCommand("cursor_decrement", CmdCursorDecrement, VF_RESTRICTEDMODE);
+	pConsole->AddCommand("dump_client_cvars", CmdDumpClientCVars, VF_RESTRICTEDMODE, "Show all client-side cvars.");
 
 	IGameFramework *pGameFramework = Launcher::GetIGameFramework();  // gEnv->pGame is not initialized yet
 
