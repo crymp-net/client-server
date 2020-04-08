@@ -4826,6 +4826,10 @@ void CPlayer::UpdateFootSteps(float frameTime)
 	if (GetLinkedEntity())
 		return;
 
+	//CryMP optimization
+	if (GetGameObject()->IsProbablyVisible() == false || GetGameObject()->IsProbablyDistant())
+		return;
+
 	SActorStats *pStats = GetActorStats();
 
 	if(!pStats || (!pStats->onGround && !pStats->inZeroG))
