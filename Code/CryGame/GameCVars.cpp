@@ -1249,9 +1249,9 @@ void CGame::CmdVote(IConsoleCmdArgs* pArgs)
   if (!gEnv->bClient)
     return;
 
-  IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-  if (!pClientActor)
-    return;
+	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
+	if (!pClientActor)
+		return;
 
   if (CGameRules *pGameRules = g_pGame->GetGameRules())
     pGameRules->Vote(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), true);
@@ -1259,6 +1259,10 @@ void CGame::CmdVote(IConsoleCmdArgs* pArgs)
 
 void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 {
+	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+	if (!pClientActor)
+		return;
+
 	if (CGameRules *pGameRules = g_pGame->GetGameRules())
 	{
 		CGameRules::TPlayers players;
@@ -1266,12 +1270,48 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 
 		if (!players.empty())
 		{
-			CryLogAlways("  [id]  [name]");
+			const Vec3 clientPos = pClientActor->GetEntity()->GetWorldPos();
+			CryLogAlways("  [chan] [name]               [dist]  [physDist]  [profile] [viewDist]   [team]");
 
 			for (CGameRules::TPlayers::iterator it=players.begin(); it!=players.end(); ++it)
 			{
 				if (CActor *pActor=pGameRules->GetActorByEntityId(*it))
-					CryLogAlways(" %5d  %s", pActor->GetChannelId(), pActor->GetEntity()->GetName());
+				{ 
+					float PhysDistance = -1.0f;
+					uint8 profile = pActor->GetGameObject()->GetAspectProfile(eEA_Physics);
+					const char* profileName;
+					if (profile == eAP_Alive)
+						profileName = "alive";
+					else if (profile == eAP_NotPhysicalized)
+						profileName = "unragdoll";
+					else if (profile == eAP_Ragdoll)
+						profileName = "ragdoll";
+					else if (profile == eAP_Sleep)
+						profileName = "sleep";
+					else if (profile == eAP_Spectator)
+						profileName = "spectator";
+					else
+						profileName = "none";
+
+					int ViewDist = -1;
+					IEntityRenderProxy* pProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+					if (pProxy && pProxy->GetRenderNode())
+					{
+						ViewDist = pProxy->GetRenderNode()->GetViewDistRatio();
+					}
+
+					if (IPhysicalEntity* pPhysics = pActor->GetEntity()->GetPhysics())
+					{
+						pe_status_pos pos;
+						if (pPhysics->GetStatus(&pos))
+						{
+							PhysDistance = (clientPos - pos.pos).len2();
+						}
+					}
+
+					const float WorldDistance = (clientPos - pActor->GetEntity()->GetWorldPos()).len2();
+					CryLogAlways("  %5d  %-19s $6%6i$9m     $8%6i$9m  $3%-10s    $7%4i       $9%i", pActor->GetChannelId(), pActor->GetEntity()->GetName(), (int)WorldDistance, (int)PhysDistance, profileName, ViewDist, pGameRules->GetTeam(pActor->GetEntityId()));
+				}
 			}
 		}
 	}

@@ -998,6 +998,10 @@ public:
 
 	typedef std::vector<IHitListener*> THitListenerVec;
 
+	//CryMP
+	void AddChannel(int channelId) { m_channelIds.push_back(channelId); }
+	void RemoveChannel(int channelId) { stl::find_and_erase(m_channelIds, channelId); }
+
 protected:
 	static void CmdDebugSpawns(IConsoleCmdArgs *pArgs);
 	static void CmdDebugMinimap(IConsoleCmdArgs *pArgs);

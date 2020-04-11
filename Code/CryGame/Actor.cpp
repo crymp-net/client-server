@@ -295,6 +295,12 @@ CActor::~CActor()
 	SAFE_DELETE(m_screenEffects);
 	SAFE_DELETE(m_pGrabHandler);
 	SAFE_DELETE(m_pWeaponAM);
+
+	if (!gEnv->bServer && g_pGame && g_pGame->GetGameRules())
+	{
+		const int channelId = GetChannelId();
+		g_pGame->GetGameRules()->RemoveChannel(channelId);
+	}
 }
 
 void CActor::ClearExtensionCache()
@@ -376,20 +382,17 @@ void CActor::PostInit( IGameObject * pGameObject )
 		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(0);
 		if (pCharacter)
 			pCharacter->GetISkeletonPose()->SetAimIKFadeOut(0);
-	}
 
-	InitActorAttachments();
-
-	//CryMP: Fix Ghost #4
-	if (IsPlayer())
-	{
+		//CryMP: Fix Ghost #4
 		IEntityRenderProxy* pProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 		if (pProxy && pProxy->GetRenderNode())
 		{
-			pProxy->GetRenderNode()->SetViewDistUnlimited();
+			pProxy->GetRenderNode()->SetViewDistUnlimited(); //default is 100m
 			pProxy->GetRenderNode()->SetLodRatio(255);
 		}
 	}
+
+	InitActorAttachments();
 }
 
 //----------------------------------------------------------------------
@@ -1666,6 +1669,11 @@ void CActor::PostSerialize()
 
 void CActor::SetChannelId(uint16 id)
 {
+	if (!gEnv->bServer && g_pGame->GetGameRules())
+	{
+		const int channelId = GetChannelId();
+		g_pGame->GetGameRules()->AddChannel(channelId);
+	}
 }
 
 void CActor::SetHealth( int health )

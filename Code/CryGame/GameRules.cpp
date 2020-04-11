@@ -541,7 +541,7 @@ bool CGameRules::OnClientConnect(int channelId, bool isReset)
 {
 	if (!isReset)
 	{
-		m_channelIds.push_back(channelId);
+		AddChannel(channelId);
 		g_pGame->GetServerSynchedStorage()->OnClientConnect(channelId);
 
 		if (m_pShotValidator)
@@ -627,11 +627,9 @@ void CGameRules::OnClientDisconnect(int channelId, EDisconnectionCause cause, co
 	if(pActor->GetActorClass() == CPlayer::GetActorClassType())
 		static_cast<CPlayer*>(pActor)->RemoveAllExplosives(0.0f);
 
-  SetTeam(0, pActor->GetEntityId());
+    SetTeam(0, pActor->GetEntityId());
 
-	std::vector<int>::iterator channelit=std::find(m_channelIds.begin(), m_channelIds.end(), channelId);
-	if (channelit!=m_channelIds.end())
-		m_channelIds.erase(channelit);
+	RemoveChannel(channelId);
 
 	CallScript(m_serverStateScript, "OnClientDisconnect", channelId);
 
