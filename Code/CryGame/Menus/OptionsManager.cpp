@@ -12,6 +12,8 @@ History:
 
 *************************************************************************/
 
+#include <cstring>
+
 #include "CryGame/StdAfx.h"
 #include "OptionsManager.h"
 #include "CryAction/IPlayerProfiles.h"
@@ -19,14 +21,15 @@ History:
 #include "FlashMenuScreen.h"
 #include "CryGame/Game.h"
 #include "CryGame/HUD/HUD.h"
+#include "CrySystem/GameWindow.h"
 
 //-----------------------------------------------------------------------------------------------------
 
-#define CRYSIS_PROFILE_COLOR_AMBER	"12612932"
-#define CRYSIS_PROFILE_COLOR_BLUE		"5079987"
-#define CRYSIS_PROFILE_COLOR_GREEN	"4481854"
-#define CRYSIS_PROFILE_COLOR_RED		"7474188"
-#define CRYSIS_PROFILE_COLOR_WHITE	"13553087"
+#define CRYSIS_PROFILE_COLOR_AMBER "12612932"
+#define CRYSIS_PROFILE_COLOR_BLUE  "5079987"
+#define CRYSIS_PROFILE_COLOR_GREEN "4481854"
+#define CRYSIS_PROFILE_COLOR_RED   "7474188"
+#define CRYSIS_PROFILE_COLOR_WHITE "13553087"
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -50,9 +53,34 @@ COptionsManager::COptionsManager() : m_pPlayerProfileManager(NULL)
 
 //-----------------------------------------------------------------------------------------------------
 
-void COptionsManager::SetCrysisProfileColor(const char *szValue)
+void COptionsManager::SetCrysisProfileColor(const char *color)
 {
+	if (!color)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_Default;
+	}
+	else if (std::strcmp(color, CRYSIS_PROFILE_COLOR_AMBER) == 0)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_Amber;
+	}
+	else if (std::strcmp(color, CRYSIS_PROFILE_COLOR_BLUE) == 0)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_Blue;
+	}
+	else if (std::strcmp(color, CRYSIS_PROFILE_COLOR_GREEN) == 0)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_Green;
+	}
+	else if (std::strcmp(color, CRYSIS_PROFILE_COLOR_RED) == 0)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_Red;
+	}
+	else if (std::strcmp(color, CRYSIS_PROFILE_COLOR_WHITE) == 0)
+	{
+		m_eCrysisProfileColor = CrysisProfileColor_White;
+	}
 
+	GameWindow::UpdateCursorColor();
 }
 
 //-----------------------------------------------------------------------------------------------------

@@ -17,4 +17,6 @@ public:
 	bool update();
 
 	void onQuit();
+
+	static void UpdateCursorColor();
 };

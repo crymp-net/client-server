@@ -25,6 +25,8 @@
 
 #include "GameWindow.h"
 
+static HCURSOR g_customCursor;
+
 static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// NOTE: original code contains many additional useless NULL checks (gEnv, gEnv->pSystem, ...)
@@ -73,50 +75,13 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		}
 		case WM_SETCURSOR:  // 0x20
 		{
-			if (g_pGame && g_pGame->GetOptions())
+			if (g_customCursor)
 			{
-				HMODULE exe = GetModuleHandleA(NULL);
-
-				HCURSOR cursor;
-
-				switch (g_pGame->GetOptions()->GetCrysisProfileColor())
-				{
-					case CrysisProfileColor_Amber:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_AMBER));
-						break;
-					}
-					case CrysisProfileColor_Blue:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_BLUE));
-						break;
-					}
-					case CrysisProfileColor_Green:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
-						break;
-					}
-					case CrysisProfileColor_Red:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_RED));
-						break;
-					}
-					case CrysisProfileColor_White:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_WHITE));
-						break;
-					}
-					default:
-					{
-						cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
-						break;
-					}
-				}
-
-				SetCursor(cursor);
+				SetCursor(g_customCursor);
+				return TRUE;
 			}
 
-			return 0;
+			break;
 		}
 		case WM_WINDOWPOSCHANGED:  // 0x47
 		{
@@ -337,6 +302,8 @@ bool GameWindow::init()
 	windowClass.lpszMenuName = NULL;
 	windowClass.lpszClassName = "CryENGINE";
 
+	g_customCursor = NULL;
+
 	m_classID = RegisterClassA(&windowClass);
 	if (!m_classID)
 	{
@@ -374,4 +341,42 @@ void GameWindow::onQuit()
 		TranslateMessage(&msg);
 		DispatchMessageA(&msg);
 	}
+}
+
+void GameWindow::UpdateCursorColor()
+{
+	HMODULE exe = GetModuleHandleA(NULL);
+
+	switch (g_pGame->GetOptions()->GetCrysisProfileColor())
+	{
+		case CrysisProfileColor_Amber:
+		{
+			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_AMBER));
+			break;
+		}
+		case CrysisProfileColor_Blue:
+		{
+			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_BLUE));
+			break;
+		}
+		case CrysisProfileColor_Red:
+		{
+			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_RED));
+			break;
+		}
+		case CrysisProfileColor_White:
+		{
+			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_WHITE));
+			break;
+		}
+		default:
+		{
+			g_customCursor = NULL;  // default green cursor
+			break;
+		}
+	}
+
+	HCURSOR cursor = (g_customCursor) ? g_customCursor : LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
+
+	SetCursor(cursor);
 }
