@@ -175,15 +175,23 @@ void CHUDRadar::AddEntityTemporarily(EntityId id, float time)
 
 void CHUDRadar::ShowEntityTemporarily(FlashRadarType type, EntityId id, float timeLimit)
 {
-	if(IsOnRadar(id, 0, m_entitiesOnRadar.size()-1))	//already scanned ?
-		return;
-
-	for(int e = 0; e < m_tempEntitiesOnRadar.size(); ++e)
+	for (TempRadarEntity & entity : m_tempEntitiesOnRadar)
 	{
-		if(id == m_tempEntitiesOnRadar[e].m_id)
+		if (entity.m_id == id)
+		{
+			entity.m_type = type;
+			entity.m_spawnTime = gEnv->pTimer->GetFrameStartTime().GetSeconds();;
+
+			if (timeLimit > entity.m_timeLimit)
+			{
+				entity.m_timeLimit = timeLimit;
+			}
+
 			return;
+		}
 	}
-	m_tempEntitiesOnRadar.push_back(TempRadarEntity(id, type, timeLimit));
+
+	m_tempEntitiesOnRadar.emplace_back(id, type, timeLimit);
 }
 
 void CHUDRadar::AddStoryEntity(EntityId id, FlashRadarType type /* = EWayPoint */, const char* text /* = NULL */)
