@@ -1124,6 +1124,11 @@ void CFlashMenuObject::OnLoadingComplete(ILevel *pLevel)
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setLoadingDone");
 	}
 
+	//CryMP : Stop loading music
+	m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
+
+	g_pGame->ShowMousePointer(false);
+
 	m_bInLoading = false;
 }
 
