@@ -16,6 +16,7 @@ History:
 #include "GameCVars.h"
 #include "Single.h"
 #include "BulletTime.h"
+#include "IPlayerInput.h"
 
 #define PHYS_FOREIGN_ID_DOF_QUERY PHYS_FOREIGN_ID_USER+3
 
@@ -1155,6 +1156,9 @@ void CIronSight::ZoomSway(float time, float &x, float&y)
 			stanceScale = m_zoomsway.crouchScale;
 		else if(pPlayer->GetStance()==STANCE_PRONE)
 			stanceScale = m_zoomsway.proneScale;
+
+		//CryMP: let server know about zoom sway
+		pPlayer->GetGameObject()->ChangedNetworkState(IPlayerInput::INPUT_ASPECT); 
 	}
 
 	//Time factor
