@@ -1144,7 +1144,7 @@ void CHUD::UpdateCrosshairVisibility()
 
   bool forceVehicleCrosshair = m_pHUDVehicleInterface->GetVehicle() && m_pHUDVehicleInterface->ForceCrosshair();
 	
-	if(!m_iCursorVisibilityCounter && !m_bAutosnap && !m_bHideCrosshair && (!m_bThirdPerson || forceVehicleCrosshair) && !m_pHUDScopes->IsBinocularsShown())
+	if(!g_pGame->IsMousePointerVisible() && !m_bAutosnap && !m_bHideCrosshair && (!m_bThirdPerson || forceVehicleCrosshair) && !m_pHUDScopes->IsBinocularsShown())
 	{
 		// Do not show crosshair while in vehicle
 		if((!m_pHUDVehicleInterface->GetVehicle() && !m_pHUDVehicleInterface->IsParachute()) || forceVehicleCrosshair)

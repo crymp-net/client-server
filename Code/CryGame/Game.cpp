@@ -111,6 +111,8 @@ CGame::CGame()
 	m_pDefaultAM = 0;
 	m_pMultiplayerAM = 0;
 
+	m_isMousePointerVisible = true;
+
 	GetISystem()->SetIGame( this );
 }
 

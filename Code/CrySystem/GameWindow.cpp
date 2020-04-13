@@ -229,36 +229,40 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		}
 		case WM_ENTERMENULOOP:  // 0x211
 		{
-			if (gEnv->pHardwareMouse)
+			if (g_pGame)
 			{
-				gEnv->pHardwareMouse->IncrementCounter();
+				g_pGame->ShowMousePointer(true);
 			}
 
 			return 0;
 		}
 		case WM_EXITMENULOOP:  // 0x212
 		{
-			if (gEnv->pHardwareMouse)
+			if (g_pGame)
 			{
-				gEnv->pHardwareMouse->DecrementCounter();
+				g_pGame->ShowMousePointer(false);
 			}
 
 			return 0;
 		}
 		case WM_ENTERSIZEMOVE:  // 0x231
 		{
-			if (gEnv->pHardwareMouse)
+			if (g_pGame)
 			{
-				gEnv->pHardwareMouse->IncrementCounter();
+				g_pGame->ShowMousePointer(true);
 			}
 
 			return 0;
 		}
 		case WM_EXITSIZEMOVE:  // 0x232
 		{
+			if (g_pGame)
+			{
+				g_pGame->ShowMousePointer(false);
+			}
+
 			if (gEnv->pHardwareMouse)
 			{
-				gEnv->pHardwareMouse->DecrementCounter();
 				gEnv->pHardwareMouse->ConfineCursor(true);
 			}
 

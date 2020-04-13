@@ -525,10 +525,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent &rInputEvent)
 	{
 		if(rInputEvent.deviceId==eDI_Keyboard || rInputEvent.deviceId==eDI_Mouse)
 		{
-			if (gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->IncrementCounter();
-			}
+			g_pGame->ShowMousePointer(true);
 			m_bVirtualKeyboardFocus = false;
 			//user is using keyboard, we don't need the virtual keyboard anymore
 			m_pCurrentFlashMenuScreen->Invoke("enableVirtualKeyboard",false);
@@ -2198,14 +2195,7 @@ void CFlashMenuObject::HandleFSCommand(const char *szCommand,const char *szArgs)
 		m_bVirtualKeyboardFocus = strcmp(szArgs,"On")?false:true;
 		if (m_bVirtualKeyboardFocus!=prevVal)
 		{
-			if (m_bVirtualKeyboardFocus && gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->DecrementCounter();
-			}
-			else
-			{
-				gEnv->pHardwareMouse->IncrementCounter();
-			}
+			g_pGame->ShowMousePointer(!m_bVirtualKeyboardFocus);
 		}
 		if(!m_bVirtualKeyboardFocus && m_pCurrentFlashMenuScreen)
 		{
@@ -2231,9 +2221,9 @@ void CFlashMenuObject::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand,"Resume"))
 	{
-		if (m_bVirtualKeyboardFocus && gEnv->pHardwareMouse)
+		if (m_bVirtualKeyboardFocus)
 		{
-			gEnv->pHardwareMouse->IncrementCounter();
+			g_pGame->ShowMousePointer(true);
 		}
 
 		gEnv->pConsole->EnableActivationKey(true);

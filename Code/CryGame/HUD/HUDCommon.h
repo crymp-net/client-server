@@ -96,9 +96,6 @@ protected:
 	float					m_fLastGodModeUpdate;
 	char					m_strGODMode[32];
 
-	// Cursor state
-	int m_iCursorVisibilityCounter;
-
 	// Cached sizes
 	int						m_width;
 	int						m_height;

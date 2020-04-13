@@ -186,25 +186,42 @@ public:
   ILINE SCVars *GetCVars() {return m_pCVars;}
 	static void DumpMemInfo(const char* format, ...) PRINTF_PARAMS(1, 2);
 
-	bool m_mousePointerVisible;
-	bool ShowMousePointer(bool enable) {
-		if (enable && !m_mousePointerVisible)
+	bool ShowMousePointer(bool show)
+	{
+		if (show == m_isMousePointerVisible)
 		{
-			if (gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->IncrementCounter();
-				m_mousePointerVisible = true;
-				return true;
-			}
+			return false;
 		}
-		else if (!enable && m_mousePointerVisible)
+
+		if (m_isMousePointerVisible)
+		{
+			// hide mouse cursor
+
 			if (gEnv->pHardwareMouse)
 			{
 				gEnv->pHardwareMouse->DecrementCounter();
-				m_mousePointerVisible = false;
-				return true;
 			}
-		return false;
+
+			m_isMousePointerVisible = false;
+		}
+		else
+		{
+			// show mouse cursor
+
+			if (gEnv->pHardwareMouse)
+			{
+				gEnv->pHardwareMouse->IncrementCounter();
+			}
+
+			m_isMousePointerVisible = true;
+		}
+
+		return true;
+	}
+
+	bool IsMousePointerVisible() const
+	{
+		return m_isMousePointerVisible;
 	}
 
 protected:
@@ -299,6 +316,9 @@ protected:
 
 	typedef std::map<string, string, stl::less_stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
+
+private:
+	bool m_isMousePointerVisible;
 };
 
 extern CGame *g_pGame;

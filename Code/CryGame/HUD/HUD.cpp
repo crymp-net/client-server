@@ -792,10 +792,7 @@ void CHUD::SwitchToModalHUD(CGameFlashAnimation* pModalHUD,bool bNeedMouse)
 	}
 	else
 	{
-		CRY_ASSERT(m_iCursorVisibilityCounter >= 0);
-
-		while(m_iCursorVisibilityCounter)
-			CursorDecrementCounter();
+		CursorDecrementCounter();
 	}
 	m_pModalHUD = pModalHUD;
 }
@@ -929,15 +926,7 @@ void CHUD::Serialize(TSerialize ser)
 			// Reset cursor
 			m_bScoreboardCursor = false;
 			m_pSwitchScoreboardHUD = NULL;
-			if(1 == m_iCursorVisibilityCounter)
-			{
-				CursorDecrementCounter();
-			}
-			else if(1 < m_iCursorVisibilityCounter)
-			{
-				CRY_ASSERT_MESSAGE(0,"This is not possible !");
-				m_iCursorVisibilityCounter = 0;
-			}
+			CursorDecrementCounter();
 			if (IPlayerInput * pInput = pPlayer->GetPlayerInput())
 				pInput->DisableXI(false);
 			g_pGameActions->FilterNoMouse()->Enable(false);
@@ -2042,7 +2031,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 	else if(action == rGameActions.xi_rotatepitch || action == rGameActions.xi_v_rotatepitch)
 	{
-		if(m_iCursorVisibilityCounter)
+		if(g_pGame->IsMousePointerVisible())
 		{
 			m_fAutosnapCursorControllerY = value*value*(-value);
 		}
@@ -2055,7 +2044,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if(action == rGameActions.xi_rotateyaw || action == rGameActions.xi_v_rotateyaw)
 	{
-		if(m_iCursorVisibilityCounter)
+		if(g_pGame->IsMousePointerVisible())
 		{
 			m_fAutosnapCursorControllerX = value*value*value;
 		}
@@ -2816,7 +2805,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 
 void CHUD::OnHardwareMouseEvent(int iX,int iY,EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
-	if(!m_iCursorVisibilityCounter)
+	if(!g_pGame->IsMousePointerVisible())
 	{
 		return;
 	}

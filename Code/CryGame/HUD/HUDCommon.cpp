@@ -103,8 +103,6 @@ CHUDCommon::CHUDCommon()
 	m_distortionY = 0;
 	m_alpha	= 100;
 
-	m_iCursorVisibilityCounter = 0;
-
 	m_bShow = true;
 
 	gEnv->pConsole->AddCommand("ShowGODMode",ShowGODMode);
@@ -119,12 +117,8 @@ CHUDCommon::CHUDCommon()
 
 CHUDCommon::~CHUDCommon()
 {
-	if(m_iCursorVisibilityCounter)
+	if(g_pGame->ShowMousePointer(false))
 	{
-		if(gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->DecrementCounter();
-		}
 		if(g_pGameActions && g_pGameActions->FilterNoMouse())
 		{
 			g_pGameActions->FilterNoMouse()->Enable(false);
@@ -182,15 +176,8 @@ void CHUDCommon::SetGODMode(uint8 ucGodMode, bool forceUpdate)
 
 void CHUDCommon::CursorIncrementCounter()
 {
-	m_iCursorVisibilityCounter++;
-	assert(m_iCursorVisibilityCounter >= 0);
-
-	if(1 == m_iCursorVisibilityCounter)
+	if(g_pGame->ShowMousePointer(true))
 	{
-		if(gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->IncrementCounter();
-		}
 		if(g_pGameActions && g_pGameActions->FilterNoMouse())
 		{
 			g_pGameActions->FilterNoMouse()->Enable(true);
@@ -203,15 +190,8 @@ void CHUDCommon::CursorIncrementCounter()
 
 void CHUDCommon::CursorDecrementCounter()
 {
-	m_iCursorVisibilityCounter--;
-	assert(m_iCursorVisibilityCounter >= 0);
-
-	if(0 == m_iCursorVisibilityCounter)
+	if(g_pGame->ShowMousePointer(false))
 	{
-		if(gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->DecrementCounter();
-		}
 		if(g_pGameActions && g_pGameActions->FilterNoMouse())
 		{
 			g_pGameActions->FilterNoMouse()->Enable(false);
