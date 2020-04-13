@@ -1,37 +1,54 @@
 #pragma once
 
-#include <cstddef>
 #include <string>
 
-class DLL
+struct DLL
 {
-public:
 	enum ELoadFlags
 	{
-		NO_LOAD = (1 << 0)  //!< Do not load and unload the library. Only obtain handle to already loaded library.
+		NO_RELEASE = (1 << 0),  //!< Do not unload the library.
+		NO_LOAD    = (1 << 1)   //!< Do not load and unload the library. Only obtain handle to it.
 	};
 
 private:
 	void *m_handle;
 	int m_flags;
 
-	// no copies
-	DLL(const DLL &);
-	DLL & operator=(const DLL &);
+	void release();
 
 public:
-	DLL()
-	: m_handle(NULL),
-	  m_flags(0)
+	DLL() = default;
+
+	DLL(const DLL &) = delete;
+
+	DLL(DLL && other)
+	: m_handle(other.m_handle),
+	  m_flags(other.m_flags)
 	{
+		other.m_handle = nullptr;
+		other.m_flags = 0;
+	}
+
+	DLL & operator=(const DLL &) = delete;
+
+	DLL & operator=(DLL && other)
+	{
+		if (this != &other)
+		{
+			m_handle = other.m_handle;
+			m_flags = other.m_flags;
+
+			other.m_handle = nullptr;
+			other.m_flags = 0;
+		}
+
+		return *this;
 	}
 
 	~DLL()
 	{
-		release();
+		unload();
 	}
-
-	void release();
 
 	bool load(const char *file, int flags = 0);
 
@@ -40,9 +57,25 @@ public:
 		return load(file.c_str(), flags);
 	}
 
+	void unload()
+	{
+		if (isLoaded() && !(m_flags & NO_RELEASE) && !(m_flags & NO_LOAD))
+		{
+			release();
+		}
+
+		m_handle = nullptr;
+		m_flags = 0;
+	}
+
 	bool isLoaded() const
 	{
-		return m_handle != NULL;
+		return m_handle != nullptr;
+	}
+
+	explicit operator bool() const
+	{
+		return isLoaded();
 	}
 
 	void *getHandle() const

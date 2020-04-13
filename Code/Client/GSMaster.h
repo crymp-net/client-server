@@ -11,10 +11,10 @@
 
 struct ICVar;
 
-typedef void *(__stdcall *TGetHostByName)(const char *name);
-
 class GSMaster
 {
+	using TGetHostByName = void *(__stdcall *)(const char *name);
+
 	std::string m_hostname;
 	ICVar *m_pHostnameCVar;
 	DLL m_libGetHostByName;

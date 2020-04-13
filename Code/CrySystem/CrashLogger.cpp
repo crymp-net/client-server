@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <dbghelp.h>
 
-#include "Launcher/Launcher.h"
 #include "Library/StringBuffer.h"
 
 #include "CrashLogger.h"
@@ -15,13 +14,13 @@
 
 #include "config.h"
 
+static CLog *g_pLog;
+
 static void LogWrite(const char *format, ...)
 {
-	CLog *pLog = static_cast<CLog*>(Launcher::GetInitParams()->pLog);
-
 	va_list args;
 	va_start(args, format);
-	pLog->LogToFileV(ILog::eAlways, format, args);
+	g_pLog->LogToFileV(ILog::eAlways, format, args);
 	va_end(args);
 }
 
@@ -233,7 +232,9 @@ static LONG __stdcall CrashHandler(_EXCEPTION_POINTERS *pExceptionInfo)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-void CrashLogger::Init()
+void CrashLogger::Init(CLog & log)
 {
+	g_pLog = &log;
+
 	SetUnhandledExceptionFilter(CrashHandler);
 }

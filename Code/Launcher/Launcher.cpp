@@ -100,13 +100,13 @@ static bool InitWorkingDirectory(Path & rootDirectory)
 		path = Util::GetApplicationDirectory();
 	}
 
-	if (path.isEmpty())
+	if (!path)
 	{
 		Util::ErrorBox("Failed to get application directory!");
 		return false;
 	}
 
-	if ((path.getSize() == 0 || path.getLast() != BIN_DIRECTORY) && Util::DirectoryExists(path + "Game"))
+	if (!path.endsWith(BIN_DIRECTORY) && Util::DirectoryExists(path + "Game"))
 	{
 		// we are in Crysis root directory
 		if (!Util::AddDLLDirectory(path + BIN_DIRECTORY))
@@ -131,6 +131,26 @@ static bool InitWorkingDirectory(Path & rootDirectory)
 	std::string rootArg = CmdLine::GetArgValue("-root");
 
 	rootDirectory = rootArg.empty() ? std::move(path) : rootArg;
+
+	return true;
+}
+
+static bool InitLog(SSystemInitParams & params)
+{
+	const std::string fileName = CmdLine::GetArgValue("-logfile", params.sLogFileName);  // default log file name
+	const std::string prefix = CmdLine::GetArgValue("-logprefix", "");
+	const int verbosity = CmdLine::GetArgValueInt("-verbosity", 1);  // default verbosity
+
+	std::unique_ptr<CLog> pLog = CLog::Create(verbosity, fileName.c_str(), prefix.c_str());
+	if (!pLog)
+	{
+		return false;
+	}
+
+	CrashLogger::Init(*pLog);
+
+	// store the log in the engine parameters
+	params.pLog = pLog.release();
 
 	return true;
 }
@@ -206,19 +226,20 @@ bool Launcher::run(SSystemInitParams & params)
 		return false;
 	}
 
+	// create worker thread for asynchronous tasks
+	m_executor.init();
+
+	// initialize the new log
+	if (!InitLog(params))
+	{
+		return false;
+	}
+
 	GameWindow window;
 	if (!window.init())
 	{
 		return false;
 	}
-
-	// initialize the new log
-	if (!CLog::Init(params))
-	{
-		return false;
-	}
-
-	CrashLogger::Init();
 
 	params.pUserCallback = this;
 
@@ -230,12 +251,6 @@ bool Launcher::run(SSystemInitParams & params)
 	}
 
 	params.pSystem = m_pSystem;  // Launcher::OnInit
-
-	if (!m_executor.init())
-	{
-		Util::ErrorBox("Executor initialization failed!");
-		return false;
-	}
 
 	Client client;
 	if (!client.init())

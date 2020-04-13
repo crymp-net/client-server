@@ -58,7 +58,7 @@ const char *Util::FindStringNoCase(const char *buffer, const char *string)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /**

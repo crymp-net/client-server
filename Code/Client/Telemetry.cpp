@@ -80,10 +80,10 @@ std::string Telemetry::generateUUID(const char *salt) const
 		salt = "idsvc";
 	}
 
-	if (getHWID().empty())
+	if (m_hwid.empty())
 	{
 		return std::string();
 	}
 
-	return getHWID() + ':' + picosha2::hash256_hex_string(getHWID() + salt);
+	return m_hwid + ':' + picosha2::hash256_hex_string(m_hwid + salt);
 }

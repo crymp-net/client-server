@@ -1,6 +1,8 @@
 #pragma once
 
+class CLog;
+
 namespace CrashLogger
 {
-	void Init();
+	void Init(CLog & log);
 }

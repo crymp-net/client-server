@@ -7,6 +7,11 @@
 
 #include <string>
 
+enum struct EProfile
+{
+	AUTO, USER, STATIC
+};
+
 class Profile
 {
 	enum EState

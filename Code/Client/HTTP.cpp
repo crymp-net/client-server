@@ -37,6 +37,11 @@ const char *HTTP::StatusCodeToString(int code)
 	return "?";
 }
 
+static char HexDigitToChar(int digit)
+{
+	return (digit < 10) ? '0' + digit : 'A' + (digit - 10);
+}
+
 std::string HTTP::URLEncode(const char *text)
 {
 	if (!text)
@@ -61,14 +66,12 @@ std::string HTTP::URLEncode(const char *text)
 		}
 		else
 		{
+			// percent-encoded character
 			int code = static_cast<unsigned char>(ch);
 
-			int a = code >> 4;
-			int b = code & 0xF;
-
 			buffer += '%';
-			buffer += (a < 10) ? '0' + a : 'A' + (a - 10);
-			buffer += (b < 10) ? '0' + b : 'A' + (b - 10);
+			buffer += HexDigitToChar(code >> 4);   // first digit
+			buffer += HexDigitToChar(code & 0xF);  // second digit
 		}
 	}
 

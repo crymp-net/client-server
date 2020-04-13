@@ -90,9 +90,9 @@ public:
 		return m_handle;
 	}
 
-	operator bool() const
+	explicit operator bool() const
 	{
-		return m_handle != NULL;
+		return m_handle != nullptr;
 	}
 };
 

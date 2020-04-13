@@ -1,8 +1,8 @@
 /**
  * @file
  * @brief Implementation of game window.
- * In Crysis the following code is in CryGame, but Crytek removed it from the Mod SDK. The code is mostly reverse engineered and
- * slightly optimized version of the original code. The actual window is created in renderer DLL using the window class
+ * In Crysis the following code is in CryGame, but Crytek removed it from the Mod SDK. The code is mostly reverse engineered
+ * and slightly optimized version of the original code. The actual window is created in renderer DLL using the window class
  * registered here.
  */
 
@@ -24,8 +24,6 @@
 #include "Launcher/Util.h"  // Util::ErrorBox
 
 #include "GameWindow.h"
-
-static HCURSOR g_customCursor;
 
 static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -51,28 +49,11 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 
 			break;
 		}
-		case WM_ACTIVATE:  // 0x6
-		case WM_SETFOCUS:  // 0x7
-		case WM_KILLFOCUS:  // 0x8
-		{
-			// no meaningful code here for some reason
-			break;
-		}
 		case WM_CLOSE:  // 0x10
 		{
 			gEnv->pSystem->Quit();
 
 			return 0;
-		}
-		case WM_SETCURSOR:  // 0x20
-		{
-			if (g_customCursor)
-			{
-				SetCursor(g_customCursor);
-				return TRUE;
-			}
-
-			break;
 		}
 		case WM_INPUTLANGCHANGE:  // 0x51
 		{
@@ -126,8 +107,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 				{
 					if (gEnv->pRenderer && gEnv->pRenderer->GetRenderType() != eRT_DX10)
 					{
-						// TODO: maybe store the pointer somewhere, original code uses static variable
-						ICVar *pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen");
+						static ICVar *pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen");
 
 						if (pFullscreenCVar)
 						{
@@ -277,8 +257,6 @@ bool GameWindow::init()
 	windowClass.lpszMenuName = NULL;
 	windowClass.lpszClassName = "CryENGINE";
 
-	g_customCursor = NULL;
-
 	m_classID = RegisterClassA(&windowClass);
 	if (!m_classID)
 	{
@@ -322,36 +300,48 @@ void GameWindow::UpdateCursorColor()
 {
 	HMODULE exe = GetModuleHandleA(NULL);
 
+	HCURSOR cursor = NULL;
+
 	switch (g_pGame->GetOptions()->GetCrysisProfileColor())
 	{
 		case CrysisProfileColor_Amber:
 		{
-			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_AMBER));
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_AMBER));
 			break;
 		}
 		case CrysisProfileColor_Blue:
 		{
-			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_BLUE));
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_BLUE));
+			break;
+		}
+		case CrysisProfileColor_Green:
+		{
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
 			break;
 		}
 		case CrysisProfileColor_Red:
 		{
-			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_RED));
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_RED));
 			break;
 		}
 		case CrysisProfileColor_White:
 		{
-			g_customCursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_WHITE));
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_WHITE));
 			break;
 		}
 		default:
 		{
-			g_customCursor = NULL;  // default green cursor
+			// default green cursor
+			cursor = LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
 			break;
 		}
 	}
 
-	HCURSOR cursor = (g_customCursor) ? g_customCursor : LoadCursorA(exe, MAKEINTRESOURCEA(LAUNCHER_CURSOR_GREEN));
+	if (cursor)
+	{
+		HWND window = static_cast<HWND>(gEnv->pRenderer->GetHWND());
 
-	SetCursor(cursor);
+		SetClassLongPtrA(window, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
+		SetCursor(cursor);
+	}
 }

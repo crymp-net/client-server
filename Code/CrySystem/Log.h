@@ -7,11 +7,11 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "CryCommon/ILog.h"
 
 struct ICVar;
-struct SSystemInitParams;
 
 class CLog : public ILog
 {
@@ -44,7 +44,7 @@ class CLog : public ILog
 	friend struct LogTask;
 
 public:
-	CLog(int verbosity, const char *prefix = "")
+	CLog(int verbosity, const char *prefix)
 	: m_pLogVerbosityCVar(),
 	  m_pLogFileVerbosityCVar(),
 	  m_pLogIncludeTimeCVar(),
@@ -68,6 +68,18 @@ public:
 		UnregisterConsoleVariables();
 	}
 
+	static std::unique_ptr<CLog> Create(int verbosity, const char *fileName, const char *prefix = "")
+	{
+		std::unique_ptr<CLog> pLog = std::make_unique<CLog>(verbosity, prefix);
+
+		if (fileName && !pLog->openLogFile(fileName, true))
+		{
+			return nullptr;
+		}
+
+		return pLog;
+	}
+
 	void LogToFileV(ELogType type, const char *format, va_list args)
 	{
 		doLog(type, format, args, FILE);
@@ -77,8 +89,6 @@ public:
 	{
 		doLog(type, format, args, CONSOLE);
 	}
-
-	static bool Init(SSystemInitParams & params);
 
 	// IMiniLog
 

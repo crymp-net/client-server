@@ -13,11 +13,6 @@
 #include "Profile.h"
 #include "Telemetry.h"
 
-enum struct EProfile
-{
-	AUTO, USER, STATIC
-};
-
 class Client : public IGameFrameworkListener, public ILevelSystemListener
 {
 	GSMaster m_GSMaster;

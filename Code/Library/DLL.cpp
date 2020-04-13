@@ -5,18 +5,12 @@
 
 void DLL::release()
 {
-	if (m_handle && !(m_flags & NO_LOAD))
-	{
-		FreeLibrary(static_cast<HMODULE>(m_handle));
-	}
-
-	m_handle = NULL;
-	m_flags = 0;
+	FreeLibrary(static_cast<HMODULE>(m_handle));
 }
 
 bool DLL::load(const char *file, int flags)
 {
-	release();
+	unload();
 
 	m_flags = flags;
 	m_handle = (flags & NO_LOAD) ? GetModuleHandleA(file) : LoadLibraryA(file);
@@ -28,7 +22,7 @@ void *DLL::getSymbolAddress(const char *name) const
 {
 	if (!isLoaded())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	return reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_handle), name));

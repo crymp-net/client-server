@@ -1,12 +1,10 @@
 #pragma once
 
-#include <stddef.h>
 #include <string>
 #include <vector>
 
-class Path
+struct Path
 {
-public:
 	enum EPathStyle
 	{
 		UNIX, WINDOWS
@@ -23,6 +21,32 @@ public:
 	  m_parentCount(),
 	  m_diskLetter()
 	{
+	}
+
+	Path(const Path &) = default;
+
+	Path(Path && other)
+	: m_path(std::move(other.m_path)),
+	  m_parentCount(other.m_parentCount),
+	  m_diskLetter(other.m_diskLetter)
+	{
+		other.clear();
+	}
+
+	Path & operator=(const Path &) = default;
+
+	Path & operator=(Path && other)
+	{
+		if (this != &other)
+		{
+			m_path = std::move(other.m_path);
+			m_parentCount = other.m_parentCount;
+			m_diskLetter = other.m_diskLetter;
+
+			other.clear();
+		}
+
+		return *this;
 	}
 
 	Path(const char *path)
@@ -82,6 +106,11 @@ public:
 		return m_path.empty() && m_parentCount == 0 && m_diskLetter == '\0';
 	}
 
+	explicit operator bool() const
+	{
+		return !isEmpty();
+	}
+
 	bool isRelative() const
 	{
 		return !isAbsolute();
@@ -125,6 +154,46 @@ public:
 	const std::vector<std::string> & get() const
 	{
 		return m_path;
+	}
+
+	bool endsWith(const char *name) const
+	{
+		if (m_path.empty())
+		{
+			return false;
+		}
+
+		return m_path.back() == name;
+	}
+
+	bool endsWith(const std::string & name) const
+	{
+		if (m_path.empty())
+		{
+			return false;
+		}
+
+		return m_path.back() == name;
+	}
+
+	bool beginsWith(const char *name) const
+	{
+		if (m_path.empty())
+		{
+			return false;
+		}
+
+		return m_path.front() == name;
+	}
+
+	bool beginsWith(const std::string & name) const
+	{
+		if (m_path.empty())
+		{
+			return false;
+		}
+
+		return m_path.front() == name;
 	}
 
 	int compare(const Path & other) const;

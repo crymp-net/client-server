@@ -13,7 +13,7 @@ bool Path::assign(const char *path)
 {
 	clear();
 
-	if (path == NULL)
+	if (!path)
 	{
 		return false;
 	}

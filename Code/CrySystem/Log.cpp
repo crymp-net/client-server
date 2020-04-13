@@ -14,14 +14,10 @@
 #include "CryCommon/IConsole.h"
 #include "Launcher/Launcher.h"
 #include "Launcher/IExecutorTask.h"
-#include "Launcher/CmdLine.h"
 #include "Launcher/Util.h"
 #include "Library/StringBuffer.h"
 
 #include "Log.h"
-
-#define LOG_DEFAULT_VERBOSITY 1
-#define LOG_DEFAULT_PREFIX_FILE_ONLY 1
 
 struct LogTask : public IExecutorTask
 {
@@ -556,24 +552,6 @@ void CLog::doLog(ELogType msgType, const char *format, va_list args, int flags)
 	}
 }
 
-bool CLog::Init(SSystemInitParams & params)
-{
-	if (params.pLog)
-	{
-		return true;
-	}
-
-	const std::string fileName = CmdLine::GetArgValue("-logfile", params.sLogFileName);
-	const std::string prefix = CmdLine::GetArgValue("-logprefix");
-	const int verbosity = CmdLine::GetArgValueInt("-verbosity", LOG_DEFAULT_VERBOSITY);
-
-	CLog *pLog = new CLog(verbosity, prefix.c_str());
-
-	params.pLog = pLog;
-
-	return pLog->openLogFile(fileName.c_str(), true);
-}
-
 void CLog::Release()
 {
 }
@@ -651,7 +629,7 @@ void CLog::RegisterConsoleVariables()
 	  "  %t = Thread ID where the message was logged"
 	);
 
-	m_pLogPrefixFileOnlyCVar = pConsole->RegisterInt("log_PrefixFileOnly", LOG_DEFAULT_PREFIX_FILE_ONLY, flags,
+	m_pLogPrefixFileOnlyCVar = pConsole->RegisterInt("log_PrefixFileOnly", 1, flags,
 	  "Defines whether the log prefix is added only when writing to the log file.\n"
 	  "Usage: log_PrefixFileOnly [0/1]"
 	);

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <stddef.h>  // size_t
 #include <string>
 
 #include "Library/Path.h"

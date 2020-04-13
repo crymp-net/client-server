@@ -21,7 +21,7 @@ static const char *GetCmdLineWithoutAppName()
 	}
 	else
 	{
-		for (cmdLine++; *cmdLine && ! std::isspace(*cmdLine); cmdLine++);
+		for (cmdLine++; *cmdLine && !std::isspace(*cmdLine); cmdLine++);
 	}
 
 	if (*cmdLine)
@@ -55,10 +55,10 @@ static const char *GetArgValueBegin(const char *arg)
 				}
 			}
 
-			if (! *a)
+			if (!*a)
 			{
 				// reached end of argument name
-				if (! *cmdLine || std::isspace(*cmdLine))
+				if (!*cmdLine || std::isspace(*cmdLine))
 				{
 					return cmdLine;
 				}
@@ -108,7 +108,7 @@ std::string CmdLine::GetArgValue(const char *arg, const char *defaultValue)
 			}
 			else
 			{
-				while (valueBegin[i] && ! std::isspace(valueBegin[i]))
+				while (valueBegin[i] && !std::isspace(valueBegin[i]))
 				{
 					i++;
 				}

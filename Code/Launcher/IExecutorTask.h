@@ -7,9 +7,7 @@
 
 struct IExecutorTask
 {
-	virtual ~IExecutorTask()
-	{
-	}
+	virtual ~IExecutorTask() = default;
 
 	// worker thread
 	virtual void execute() = 0;

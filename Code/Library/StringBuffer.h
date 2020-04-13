@@ -6,8 +6,6 @@
 #include <string>
 #include <new>
 
-using std::size_t;
-
 template<size_t DefaultSize>
 class StringBuffer
 {
