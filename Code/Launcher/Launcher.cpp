@@ -141,7 +141,9 @@ static bool InitLog(SSystemInitParams & params)
 	const std::string prefix = CmdLine::GetArgValue("-logprefix", "");
 	const int verbosity = CmdLine::GetArgValueInt("-verbosity", 1);  // default verbosity
 
-	std::unique_ptr<CLog> pLog = CLog::Create(verbosity, fileName.c_str(), prefix.c_str());
+	const char *logFileName = CmdLine::HasArg("-nologfile") ? nullptr : fileName.c_str();
+
+	std::unique_ptr<CLog> pLog = CLog::Create(verbosity, logFileName, prefix.c_str());
 	if (!pLog)
 	{
 		return false;
