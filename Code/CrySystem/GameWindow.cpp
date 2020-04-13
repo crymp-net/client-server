@@ -64,31 +64,12 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 
 			return 0;
 		}
-		case WM_ACTIVATEAPP:  // 0x1C
-		{
-			if (wParam == FALSE && gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->ConfineCursor(false);
-			}
-
-			break;
-		}
 		case WM_SETCURSOR:  // 0x20
 		{
 			if (g_customCursor)
 			{
 				SetCursor(g_customCursor);
 				return TRUE;
-			}
-
-			break;
-		}
-		case WM_WINDOWPOSCHANGED:  // 0x47
-		{
-			if (gEnv->pHardwareMouse)
-			{
-				// TODO: this should be called only during resizing or moving
-				gEnv->pHardwareMouse->ConfineCursor(true);
 			}
 
 			break;
@@ -153,11 +134,6 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 							int isFullscreen = pFullscreenCVar->GetIVal();
 
 							pFullscreenCVar->Set(isFullscreen ? 0 : 1);
-
-							if (isFullscreen && gEnv->pHardwareMouse)
-							{
-								gEnv->pHardwareMouse->ConfineCursor(false);
-							}
 						}
 					}
 
@@ -259,11 +235,6 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 			if (g_pGame)
 			{
 				g_pGame->ShowMousePointer(false);
-			}
-
-			if (gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->ConfineCursor(true);
 			}
 
 			return 0;
