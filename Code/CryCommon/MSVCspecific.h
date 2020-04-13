@@ -28,6 +28,11 @@
 #pragma warning(disable: 4996)	// 'stricmp' was declared deprecated
 #pragma warning(disable: 4503)  // decorated name length exceeded, name was truncated
 
+#pragma warning(disable: 4302)
+#pragma warning(disable: 4305)
+#pragma warning(disable: 4311)
+#pragma warning(disable: 4312)
+
 // Turn on the following very useful warnings.
 #pragma warning(3: 4264)				// no override available for virtual member function from base 'class'; function is hidden
 #pragma warning(3: 4266)				// no override available for virtual member function from base 'type'; function is hidden
