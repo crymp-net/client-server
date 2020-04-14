@@ -2338,12 +2338,15 @@ void CPlayer::UpdateUWBreathing(float frameTime, Vec3 worldBreathPos)
 
 				PlaySound(ESound_Drowning, true);
 
-				IMaterialEffects* pMaterialEffects = gEnv->pGame->GetIGameFramework()->GetIMaterialEffects();
-				SMFXRunTimeEffectParams params;
-				params.pos = GetEntity()->GetWorldPos();
-				params.soundSemantic = eSoundSemantic_HUD;
-				TMFXEffectId id = pMaterialEffects->GetEffectIdByName("player_fx", "player_damage_armormode");
-				pMaterialEffects->ExecuteEffect(id, params);
+				if (IsClient())
+				{
+					IMaterialEffects* pMaterialEffects = gEnv->pGame->GetIGameFramework()->GetIMaterialEffects();
+					SMFXRunTimeEffectParams params;
+					params.pos = GetEntity()->GetWorldPos();
+					params.soundSemantic = eSoundSemantic_HUD;
+					TMFXEffectId id = pMaterialEffects->GetEffectIdByName("player_fx", "player_damage_armormode");
+					pMaterialEffects->ExecuteEffect(id, params);
+				}
 			}
 		}
 	}
@@ -3165,8 +3168,6 @@ void CPlayer::Revive( bool fromInit )
 	m_FPWeaponAngleOffset.Set(0,0,0);
 	m_FPWeaponLastDirVec.Set(0,0,0);
 
-	m_feetWpos[0] = ZERO;
-	m_feetWpos[1] = ZERO;
 	m_lastAnimContPos = ZERO;
 
 	m_angleOffset.Set(0,0,0);
@@ -4111,8 +4112,6 @@ void CPlayer::FullSerialize( TSerialize ser )
 	//ser.EnumValue("stance", this, &CPlayer::GetStance, &CPlayer::SetStance, STANCE_NULL, STANCE_LAST);		
 	// skip matrices... not supported
 	ser.Value( "velocity", m_velocity );
-	ser.Value( "feetWpos0", m_feetWpos[0] );
-	ser.Value( "feetWpos1", m_feetWpos[1] );
 	// skip animation to play for now
 	// skip currAnimW
 	ser.Value( "eyeOffset", m_eyeOffset );
@@ -4582,73 +4581,9 @@ void CPlayer::ProcessBonesRotation(ICharacterInstance *pCharacter,float frameTim
 	}
 }
 
-//TODO: clean it up, less redundancy, more efficiency etc..
 void CPlayer::ProcessIKLegs(ICharacterInstance *pCharacter,float frameTime)
 {
-	if (GetGameObject()->IsProbablyDistant() && !GetGameObject()->IsProbablyVisible())
-		return;
-
-	static bool bOnce = true;
-	static int nDrawIK = 0;
-	static int nNoIK = 0;
-	if (bOnce)
-	{
-		bOnce = false;
-		gEnv->pConsole->Register( "player_DrawIK",&nDrawIK,0 );
-		gEnv->pConsole->Register( "player_NoIK",&nNoIK,0 );
-	}
-
-	if (nNoIK)
-	{
-		//pCharacter->SetLimbIKGoal(LIMB_LEFT_LEG);
-		//pCharacter->SetLimbIKGoal(LIMB_RIGHT_LEG);
-		return;
-	}
-
-	float stretchLen(0.9f);
-
-	switch(m_stance)
-	{
-	default: break;
-	case STANCE_STAND: stretchLen = 1.1f;break;
-	}
-
-	//Vec3 localCenter(GetEntity()->GetSlotLocalTM(0,false).GetTranslation());
-	int32 id = GetBoneID(BONE_BIP01);
-	Vec3 localCenter(0,0,0);
-	if (id>=0)
-		//localCenter = bip01->GetBonePosition();
-		localCenter = pCharacter->GetISkeletonPose()->GetAbsJointByID(id).t;
-
-	Vec3 feetLpos[2];
-
-	Matrix33 transMtx(GetEntity()->GetSlotWorldTM(0));
-	transMtx.Invert();
-
-	for (int i=0;i<2;++i)
-	{
-	//	int limb = (i==0)?LIMB_LEFT_LEG:LIMB_RIGHT_LEG;
-		feetLpos[i] = Vec3(ZERO); //pCharacter->GetLimbEndPos(limb);
-
-		Vec3 feetWpos = GetEntity()->GetSlotWorldTM(0) * feetLpos[i];
-		ray_hit hit;
-
-		float testExcursion(localCenter.z);
-
-		int rayFlags = (COLLISION_RAY_PIERCABILITY & rwi_pierceability_mask);
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(feetWpos + m_baseQuat.GetColumn2()*testExcursion, m_baseQuat.GetColumn2()*(testExcursion*-0.95f), ent_terrain|ent_static/*|ent_rigid*/, rayFlags, &hit, 1))
-		{		
-			m_feetWpos[i] = hit.pt; 
-			Vec3 footDelta = transMtx * (m_feetWpos[i] - feetWpos);
-			Vec3 newLPos(feetLpos[i] + footDelta);
-
-			//pCharacter->SetLimbIKGoal(limb,newLPos,ik_leg,0,transMtx * hit.n);
-
-			//CryLogAlways("%.1f,%.1f,%.1f",hit.n.x,hit.n.y,hit.n.z);
-		}
-		//else
-		//pCharacter->SetLimbIKGoal(limb);
-	}
+	CryLogAlways("CPlayer::ProcessIKLegs called");
 }
 
 void CPlayer::ChangeParachuteState(int8 newState)

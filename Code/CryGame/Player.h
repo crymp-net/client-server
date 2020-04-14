@@ -781,9 +781,6 @@ protected:
 	
 	std::auto_ptr<IPlayerInput> m_pPlayerInput;
 
-	// for foot/leg ik
-	Vec3 m_feetWpos[2];
-
 	// compatibility with old code: which actions are set
 	int m_actions;
 
