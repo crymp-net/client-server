@@ -1283,13 +1283,17 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 					if (profile == eAP_Alive)
 						profileName = "alive";
 					else if (profile == eAP_NotPhysicalized)
-						profileName = "unragdoll";
+						profileName = "not physicalized";
 					else if (profile == eAP_Ragdoll)
 						profileName = "ragdoll";
 					else if (profile == eAP_Sleep)
 						profileName = "sleep";
 					else if (profile == eAP_Spectator)
 						profileName = "spectator";
+					else if (profile == eAP_Linked)
+						profileName = "vehicle";
+					else if (profile == eAP_Frozen)
+						profileName = "frozen";
 					else
 						profileName = "none";
 
@@ -1305,11 +1309,11 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 						pe_status_pos pos;
 						if (pPhysics->GetStatus(&pos))
 						{
-							PhysDistance = (clientPos - pos.pos).len2();
+							PhysDistance = (clientPos - pos.pos).len();
 						}
 					}
 
-					const float WorldDistance = (clientPos - pActor->GetEntity()->GetWorldPos()).len2();
+					const float WorldDistance = (clientPos - pActor->GetEntity()->GetWorldPos()).len();
 					CryLogAlways("  %5d  %-19s $6%6i$9m     $8%6i$9m  $3%-10s    $7%4i       $9%i", pActor->GetChannelId(), pActor->GetEntity()->GetName(), (int)WorldDistance, (int)PhysDistance, profileName, ViewDist, pGameRules->GetTeam(pActor->GetEntityId()));
 				}
 			}
