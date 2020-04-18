@@ -431,6 +431,7 @@ struct SCVars
 
 	//CRYMP
 	int			cl_crymp;
+	int			cl_usePostProcessAimDir;
 
 	SCVars()
 	{

@@ -558,6 +558,7 @@ void SCVars::InitCVars(IConsole *pConsole)
 
 	//CRYMP CVars
 	pConsole->Register("cl_crymp", &cl_crymp, 0);
+	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 0, VF_NOT_NET_SYNCED, "");
 }
 
 //------------------------------------------------------------------------

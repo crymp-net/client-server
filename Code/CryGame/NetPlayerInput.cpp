@@ -71,7 +71,7 @@ void CNetPlayerInput::PreUpdate()
 	{
 		Vec3 distantTarget = moveState.eyePosition + 1000.0f * m_curInput.lookDirection;
 		Vec3 lookTarget = distantTarget;
-		if (gEnv->bClient && m_pPlayer->GetGameObject()->IsProbablyVisible())
+		if (gEnv->bClient && g_pGameCVars->cl_usePostProcessAimDir && m_pPlayer->GetGameObject()->IsProbablyVisible())
 		{
 			// post-process aim direction	
 			ray_hit hit;
