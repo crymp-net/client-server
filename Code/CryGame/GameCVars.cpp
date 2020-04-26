@@ -558,6 +558,7 @@ void SCVars::InitCVars(IConsole *pConsole)
 
 	//CRYMP CVars
 	pConsole->Register("cl_crymp", &cl_crymp, 0);
+	pConsole->Register("cl_circleJump", &cl_circleJump, 0, VF_NOT_NET_SYNCED);
 	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 0, VF_NOT_NET_SYNCED, "");
 }
 
@@ -866,6 +867,7 @@ void SCVars::ReleaseCVars()
   pConsole->UnregisterVariable("aim_assistCrosshairDebug", true);
 
 	pConsole->UnregisterVariable("cl_crymp", true);
+	pConsole->UnregisterVariable("cl_circleJump", true);
 }
 
 //------------------------------------------------------------------------
