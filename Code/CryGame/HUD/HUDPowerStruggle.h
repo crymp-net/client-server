@@ -28,7 +28,7 @@ class CHUDPowerStruggle : public CHUDObject
 	friend class CHUD;
 public:
 
-	CHUDPowerStruggle(CHUD *pHUD, CGameFlashAnimation *pBuyMenu, CGameFlashAnimation *pHexIcon);
+	CHUDPowerStruggle(CHUD *pHUD, CGameRules *pGameRules, CGameFlashAnimation *pBuyMenu, CGameFlashAnimation *pHexIcon);
 	~CHUDPowerStruggle();
 
 	void Update(float fDeltaTime);
@@ -181,6 +181,8 @@ private:
 	CGameFlashAnimation m_animSwingOMeter;
 	//the main hud
 	CHUD *g_pHUD;
+	//gamerules
+	CGameRules *m_pGameRules;
 	//currently available buy menu pages
 	std::vector<bool> m_factoryTypes;
 	std::vector<bool> m_serviceZoneTypes;

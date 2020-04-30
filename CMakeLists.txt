@@ -646,7 +646,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/StringBuffer.h
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
-)
+  "Code/CryGame/HUD/HUDHealthEnergyWeapon.cpp")
 ########################################
 
 target_link_libraries(${CRYMP_CLIENT_EXE} winhttp dbghelp)

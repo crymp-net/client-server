@@ -102,12 +102,12 @@ public:
 	virtual	~	CHUD();
 
 	//HUD initialisation
-	bool Init();
+	bool Init(IActor* pActor);
 	//setting local actor / player id
 	void ResetPostSerElements();
 	void PlayerIdSet(EntityId playerId);
 	void PostSerialize();
-  void GameRulesSet(const char* name);
+	void GameRulesSet(const char* name);
 	//handle game events
 	void HandleEvent(const SGameObjectEvent &rGameObjectEvent);
 	void WeaponAccessoriesInterface(bool visible, bool force = false);
@@ -124,6 +124,8 @@ public:
 	void ActorRevive(IActor* pActor);
 	void VehicleDestroyed(EntityId id);
 	void TextMessage(const char* message);
+
+	void SetSpectatorMode(int mode, EntityId old, EntityId targetId);
 
 	void UpdateHUDElements();
 	void UpdateCrosshair(IItem *pItem = NULL);
@@ -479,6 +481,8 @@ public:
 	// marcok: I know it's bad to even have this in the HUD, but the way gamerulessystem is currently used I don't want to duplicate this elsewhere
 	EHUDGAMERULES GetCurrentGameRules()	{	return m_currentGameRules;	}
 
+	void CheckSpectatorTarget(float deltaTime);
+
 private:
 
 	//some Update functions
@@ -541,6 +545,12 @@ private:
 	//cached pointer to renderer
 	IRenderer			*m_pRenderer;
 	IUIDraw				*m_pUIDraw;
+
+	IActor				*m_pClientActor;
+	CGameRules          *m_pGameRules;
+	IActor				*GetSpectatorTarget();
+	EntityId			m_pCurrentSpecTarget;
+	IItemSystem			*m_pItemSystem;
 
 	IFFont *m_pDefaultFont;
 
@@ -609,7 +619,6 @@ private:
 	int m_bigOverlayTextX; // serialized
 	int m_bigOverlayTextY; // serialized
 
-	int m_iOpenTextChat;
 	bool m_bNoMiniMap;
 	int m_iProgressBar;
 	int m_iProgressBarX, m_iProgressBarY;

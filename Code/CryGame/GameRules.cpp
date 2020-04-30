@@ -85,6 +85,7 @@ CGameRules::~CGameRules()
 		gEnv->pScriptSystem->ReleaseFunc(m_onCollisionFunc);
 		m_onCollisionFunc = 0;
 	}
+	g_pGame->DestroyHUD(); 
 
 	g_pGame->GetWeaponSystem()->GetTracerManager().Reset();
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(0);
@@ -95,7 +96,7 @@ CGameRules::~CGameRules()
 	delete m_pShotValidator;
 	delete m_pRadio;
 	delete m_pBattleDust;
-  delete m_pVotingSystem;
+    delete m_pVotingSystem;
 }
 
 //------------------------------------------------------------------------
@@ -1077,7 +1078,7 @@ void CGameRules::KillPlayer(CActor *pActor, bool dropItem, bool ragdoll, EntityI
 		if (pItem && pItem->IsMounted() && pItem->IsUsed())
 			pItem->StopUse(pActor->GetEntityId());
 		else if (pItem && dropItem)
-			pActor->DropItem(itemId, 1.0f, false, true);
+		    pActor->DropItem(itemId, 1.0f, false, true);
 	}
 
 	uint16 weaponClassId=0;

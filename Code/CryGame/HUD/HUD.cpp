@@ -137,7 +137,6 @@ CHUD::CHUD()
 
 	m_iVoiceMode = 0;
 	m_lastPlayerPPSet = -1;
-	m_iOpenTextChat = 0;
 	m_deathFxId = InvalidEffectId;
 
 	m_pNanoSuit = NULL;
@@ -287,7 +286,7 @@ CHUD::CHUD()
 
 CHUD::~CHUD()
 {
-  ShowDeathFX(0);
+	ShowDeathFX(0);
 
 	if (m_bCutscenePlaying)
 	{
@@ -356,10 +355,9 @@ void CHUD::MP_ResetBegin()
 	OnAction(g_pGame->Actions().hud_hide_multiplayer_scoreboard,eIS_Released,1);
 	OnAction(g_pGame->Actions().hud_suit_menu,eIS_Released,1);
 
-	IActor *pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
-	if(pActor)
+	if(m_pClientActor)
 	{
-		m_pHUDVehicleInterface->OnExitVehicle(pActor);
+		m_pHUDVehicleInterface->OnExitVehicle(m_pClientActor);
 	}
 
 	if(m_pModalHUD == &m_animWeaponAccessories)
@@ -389,7 +387,7 @@ void CHUD::MP_ResetEnd()
 
 CWeapon * CHUD::GetCurrentWeapon()
 {
-	IItemSystem * pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
+	IItemSystem * pItemSystem = m_pItemSystem;
 	if (IItem * pItem = pItemSystem->GetItem(m_uiWeapondID))
 		if (IWeapon * pWeapon = pItem->GetIWeapon())
 			return (CWeapon*)pWeapon;
@@ -398,8 +396,16 @@ CWeapon * CHUD::GetCurrentWeapon()
 
 //-----------------------------------------------------------------------------------------------------
 
-bool CHUD::Init()
+bool CHUD::Init(IActor *pActor)
 {
+	//no HUD without client..
+	m_pClientActor = pActor;
+	m_pCurrentSpecTarget = 0;
+	m_pGameRules = g_pGame->GetGameRules();
+	m_pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
+
+	PlayerIdSet(pActor->GetEntityId());
+
 	m_pRenderer = gEnv->pRenderer;
 	m_pUIDraw = gEnv->pGame->GetIGameFramework()->GetIUIDraw();
 	m_pDefaultFont = gEnv->pCryFont->GetFont("default");
@@ -508,8 +514,8 @@ bool CHUD::Init()
 	//reload mission objectives
 	m_missionObjectiveSystem.LoadLevelObjectives(true);
 
-	g_pGame->GetIGameFramework()->GetIItemSystem()->RegisterListener(this);
-	g_pGame->GetIGameFramework()->GetIItemSystem()->GetIEquipmentManager()->RegisterListener(this);
+	m_pItemSystem->RegisterListener(this);
+	m_pItemSystem->GetIEquipmentManager()->RegisterListener(this);
 	g_pGame->GetIGameFramework()->GetIViewSystem()->AddListener(this);
 
 	// apply subtitle mode
@@ -523,14 +529,17 @@ bool CHUD::Init()
 
 	if(gEnv->bMultiplayer)
 	{
-		m_pHUDPowerStruggle = new CHUDPowerStruggle(this, &m_animBuyMenu, &m_animHexIcons);
-		m_hudObjectsList.push_back(m_pHUDPowerStruggle);
-
-		if(g_pGame->GetGameRules()->GetTeamCount() > 1)
+		if(m_pGameRules && m_pGameRules->GetTeamCount() > 1)
 		{
+			//CryMP: Let's load PowerStruggle only when needed..
+			m_pHUDPowerStruggle = new CHUDPowerStruggle(this, m_pGameRules, &m_animBuyMenu, &m_animHexIcons);
+			m_hudObjectsList.push_back(m_pHUDPowerStruggle);
+
 			m_animTeamSelection.Load("Libs/UI/HUD_TeamSelection.gfx", eFD_Center, eFAF_ManualRender|eFAF_ThisHandler);
 			m_animTeamSelection.GetFlashPlayer()->SetVisible(false);
 		}
+		else
+			m_pHUDPowerStruggle = NULL;
 	}
 	else
 		m_pHUDPowerStruggle = NULL;
@@ -538,8 +547,8 @@ bool CHUD::Init()
 	m_lastPlayerPPSet = -1;
 	m_buyMenuKeyLog.Clear();
   
-	if(g_pGame && g_pGame->GetGameRules() && g_pGame->GetGameRules()->GetEntity())
-		GameRulesSet(g_pGame->GetGameRules()->GetEntity()->GetClass()->GetName());
+	if(m_pGameRules && m_pGameRules->GetEntity())
+		GameRulesSet(m_pGameRules->GetEntity()->GetClass()->GetName());
 
 	//if wanted, load everything that will be loaded later on
 	if(loadEverything)
@@ -616,11 +625,9 @@ void CHUD::ShowBootSequence()
 	{
 		if(m_pHUDScopes->IsBinocularsShown())
 		{
-			CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+			CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 			if(pPlayer)
-			{
 				pPlayer->SelectLastItem(false);
-			}
 		}
 		m_pHUDScopes->ShowBinoculars(false,false,true);
 	}
@@ -677,7 +684,7 @@ void CHUD::SetHUDColor()
 	//necessary in new hud design only
 	m_fHealth = -1.0f;
 	UpdateHealth();
-	if(CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
+	if(CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor))
 		EnergyChanged(pPlayer->GetNanoSuit()->GetSuitEnergy());
 }
 
@@ -711,8 +718,8 @@ void CHUD::SetTACWeapon(bool hasTACWeapon)
 
 void CHUD::PlayerIdSet(EntityId playerId)
 {
-	CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId));
-	if(pPlayer)
+	CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
+	if(pPlayer && playerId != 0)
 	{
 		m_pNanoSuit = pPlayer->GetNanoSuit();
 		assert(m_pNanoSuit); //the player requires to have a nanosuit!
@@ -747,37 +754,52 @@ void CHUD::PlayerIdSet(EntityId playerId)
 	}
 	else
 	{
-		pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		pPlayer = static_cast<CPlayer *>(g_pGame->GetIGameFramework()->GetClientActor());
 		if(pPlayer)
 		{
-      pPlayer->UnregisterPlayerEventListener(this);
+			pPlayer->UnregisterPlayerEventListener(this);
 			if(CNanoSuit *pSuit=pPlayer->GetNanoSuit())
 				pSuit->RemoveListener(this);
 		}
+
+		if (gEnv->pInput) gEnv->pInput->RemoveEventListener(this);
 	}
 }
 
+//-----------------------------------------------------------------------------------------------------
+
+IActor *CHUD::GetSpectatorTarget()
+{
+	CPlayer* pPlayer = static_cast<CPlayer*>(m_pClientActor);
+	if (pPlayer && pPlayer->GetSpectatorTarget())
+		return gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pPlayer->GetSpectatorTarget());
+
+	return 0;
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void CHUD::GameRulesSet(const char* name)
 {
-  EHUDGAMERULES gameRules = EHUD_SINGLEPLAYER;
+	EHUDGAMERULES gameRules = EHUD_SINGLEPLAYER;
 
-  if(gEnv->bMultiplayer)
-  {
-    if(!stricmp(name, "InstantAction"))
-      gameRules = EHUD_INSTANTACTION;
-    else if(!stricmp(name, "PowerStruggle"))
-      gameRules = EHUD_POWERSTRUGGLE;
-		else if(!stricmp(name, "TeamAction"))
-			gameRules = EHUD_TEAMACTION;
-  }
+	if(gEnv->bMultiplayer)
+	{
+		if(!stricmp(name, "InstantAction"))
+			gameRules = EHUD_INSTANTACTION;
+		else if(!stricmp(name, "PowerStruggle"))
+			gameRules = EHUD_POWERSTRUGGLE;
+			else if(!stricmp(name, "TeamAction"))
+				gameRules = EHUD_TEAMACTION;
+	}
 
-  if(m_currentGameRules != gameRules)//unload stuff
-  {
-    LoadGameRulesHUD(false);
-    m_currentGameRules = gameRules;
-  }
+	if(m_currentGameRules != gameRules)//unload stuff
+	{
+		LoadGameRulesHUD(false);
+		m_currentGameRules = gameRules;
+	}
 
-  LoadGameRulesHUD(true);
+	LoadGameRulesHUD(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -910,7 +932,7 @@ void CHUD::Serialize(TSerialize ser)
 		// QuickMenu is a push holder thing, when we load, we don't hold
 		// the middle click so we have to disable this menu !
 
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if (pPlayer)
 		{
 			// This will show/hide vehicles/scopes interfaces
@@ -1072,7 +1094,7 @@ void CHUD::OnSetActorItem(IActor *pActor, IItem *pItem )
 		{
 			// We can't use GetCurrentWeapon()->RemoveEventListener because sometimes the IItem is destroyed before
 			// we reach that point. So let's try to retrieve the weapon by its ID with the IItemSystem
-			IItem *pLocalItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(m_uiWeapondID);
+			IItem *pLocalItem = m_pItemSystem->GetItem(m_uiWeapondID);
 			if(pLocalItem)
 			{
 				IWeapon *pWeapon = pLocalItem->GetIWeapon();
@@ -1104,7 +1126,7 @@ void CHUD::OnSetActorItem(IActor *pActor, IItem *pItem )
 						{
 							curClass = "C4";
 						}
-						curCategory = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItemCategory(curClass);
+						curCategory = m_pItemSystem->GetItemCategory(curClass);
 					}
 				}
 				if(curCategory && curClass)
@@ -1165,65 +1187,6 @@ void CHUD::OnStopTargetting(IWeapon *pWeapon)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::ModeChanged(ENanoMode mode)
-{
-	IAISignalExtraData* pData = NULL;
-	CPlayer *pPlayer = NULL;
-	switch(mode)
-	{
-	case NANOMODE_SPEED:
-		m_animPlayerStats.Invoke("setMode", "Speed");
-		m_fSpeedTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fSpeedTimer;
-		break;
-	case NANOMODE_STRENGTH:
-		m_animPlayerStats.Invoke("setMode", "Strength");
-		m_fStrengthTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fStrengthTimer;
-		break;
-	case NANOMODE_DEFENSE:
-		m_animPlayerStats.Invoke("setMode", "Armor");
-		m_fDefenseTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fDefenseTimer;
-		break;
-	case NANOMODE_CLOAK:
-		m_animPlayerStats.Invoke("setMode", "Cloak");
-
-		PlaySound(ESound_PresetNavigationBeep);
-		if(m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_SPEED, true) != 50 ||
-			m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_MEDICAL, true) != 50)
-		{
-			TextMessage("suit_modification_engaged");
-		}
-
-		m_fSuitChangeSoundTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-
-		if (gEnv->pAISystem)
-		{
-			pData = gEnv->pAISystem->CreateSignalExtraData();//AI System will be the owner of this data
-			pData->iValue = NANOMODE_CLOAK;
-			pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-			if(pPlayer && pPlayer->GetEntity() && pPlayer->GetEntity()->GetAI())
-				gEnv->pAISystem->SendSignal(SIGNALFILTER_SENDER,1,"OnNanoSuitMode",pPlayer->GetEntity()->GetAI(),pData);
-		}
-		break;
-	default:
-		break;
-	}
-
-	if(gEnv->pSystem->IsSerializingFile()) //don't play sounds etc. when it's loaded
-		m_fSuitChangeSoundTimer = 0.0f;
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void CHUD::EnergyChanged(float energy)
-{
-	m_animPlayerStats.Invoke("setEnergy", energy*0.5f+1.0f);
-}
-
-//-----------------------------------------------------------------------------------------------------
-
 void CHUD::HideInventoryOverview()
 {
 	m_animWeaponSelection.Invoke("clearLogs");
@@ -1236,7 +1199,7 @@ void CHUD::ShowInventoryOverview(const char* curCategory, const char* curItem, b
 	if(!curCategory || !curItem)
 		return;
 
-	IActor *pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
+	IActor *pActor = m_pClientActor;
 	if(!pActor)
 		return;
 
@@ -1279,11 +1242,11 @@ void CHUD::ShowInventoryOverview(const char* curCategory, const char* curItem, b
 		for(int i=0; i<count; ++i)
 		{
 			IEntity *pItemEntity = gEnv->pEntitySystem->GetEntity(pInventory->GetItem(i));
-			IItem *pItemItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pInventory->GetItem(i));
+			IItem *pItemItem = m_pItemSystem->GetItem(pInventory->GetItem(i));
 			if(pItemEntity && pItemEntity->GetClass() && pItemItem && pItemItem->CanSelect())
 			{
 				const char *className = pItemEntity->GetClass()->GetName();
-				const char *categoryName = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItemCategory(className);
+				const char *categoryName = m_pItemSystem->GetItemCategory(className);
 
 				if(!strcmp(categoryName, curCategory))
 				{
@@ -1347,7 +1310,7 @@ void CHUD::OnLoadingComplete(ILevel *pLevel)
 void CHUD::OnPlayerVehicleBuilt(EntityId playerId, EntityId vehicleId)
 {
 	if(!playerId || !vehicleId) return;
-	EntityId localActor = gEnv->pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
+	EntityId localActor = m_pClientActor->GetEntityId();
 	if(playerId == localActor)
 	{
 		m_iPlayerOwnedVehicle = vehicleId;
@@ -1395,7 +1358,7 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 				IAISignalExtraData* pData = gEnv->pAISystem->CreateSignalExtraData();//AI System will be the owner of this data
 				pData->SetObjectName(szArgs);
 				pData->iValue = bAddAccessory; // unmount/mount
-				CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+				CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 				if(pPlayer && pPlayer->GetEntity() && pPlayer->GetEntity()->GetAI())
 					gEnv->pAISystem->SendSignal(SIGNALFILTER_SENDER,10,"OnSwitchWeaponAccessory",pPlayer->GetEntity()->GetAI(),pData);
 			}
@@ -1404,8 +1367,7 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!stricmp(szCommand, "Suicide"))
 	{
-		IActor *pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
-		if(pClientActor && pClientActor->GetHealth() > 0)
+		if (m_pClientActor && m_pClientActor->GetHealth() > 0)
 			ShowWarningMessage(EHUD_SUICIDE);
 	}
 	else if(!strcmp(szCommand, "FlashGetKeyFocus"))
@@ -1440,7 +1402,8 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand, "RepeatLastPurchase"))
 	{
-		m_pHUDPowerStruggle->BuyPackage(-1);
+		if (m_pHUDPowerStruggle)
+			m_pHUDPowerStruggle->BuyPackage(-1);
 	}
 	
 	else if(!strcmp(szCommand, "JoinGame"))
@@ -1450,14 +1413,14 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand, "Autojoin"))
 	{
-		if (CGameRules *pGameRules=g_pGame->GetGameRules())
+		if (m_pGameRules)
 		{
 			int lt=0;
 			int ltn=0;
-			int nteams=pGameRules->GetTeamCount();
+			int nteams= m_pGameRules->GetTeamCount();
 			for (int i=1;i<=nteams;i++)
 			{
-				int n=pGameRules->GetTeamPlayerCount(i);
+				int n= m_pGameRules->GetTeamPlayerCount(i);
 				if (!lt || ltn>n)
 				{
 					lt=i;
@@ -1469,7 +1432,7 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 				lt=1;
 
 			CryFixedStringT<64> cmd("team ");
-			cmd.append(pGameRules->GetTeamName(lt));
+			cmd.append(m_pGameRules->GetTeamName(lt));
 			gEnv->pConsole->ExecuteString(cmd);
 
 			if(GetModalHUD() == &m_animTeamSelection)
@@ -1482,10 +1445,9 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand, "Spectate"))
 	{
-		CGameRules* pRules = g_pGame->GetGameRules();
-		if(pRules)
+		if(m_pGameRules)
 		{
-			if(pRules->GetCurrentStateId() != 2 && GetModalHUD() != &m_animTeamSelection)
+			if(m_pGameRules->GetCurrentStateId() != 2 && GetModalHUD() != &m_animTeamSelection)
 				ShowWarningMessage(EHUD_SPECTATOR);
 			else
 			{
@@ -1495,12 +1457,11 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand, "SwitchTeam"))
 	{
-		CGameRules* pRules = g_pGame->GetGameRules();
-		if(pRules)
+		if(m_pGameRules)
 		{
-			if(pRules->GetCurrentStateId() != 2)
+			if(m_pGameRules->GetCurrentStateId() != 2)
 			{
-				if(pRules->GetTeamId("black") == pRules->GetTeam(gEnv->pGame->GetIGameFramework()->GetClientActor()->GetEntityId()))
+				if(m_pGameRules->GetTeamId("black") == m_pGameRules->GetTeam(m_pClientActor->GetEntityId()))
 					ShowWarningMessage(EHUD_SWITCHTOTAN);
 				else
 					ShowWarningMessage(EHUD_SWITCHTOBLACK);
@@ -1518,11 +1479,9 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 	}
 	else if(!strcmp(szCommand, "ChangeTeam"))
 	{
-		CGameRules* pRules = g_pGame->GetGameRules();
-		IActor *pTempActor = g_pGame->GetIGameFramework()->GetClientActor();
-		if(pRules && pRules->GetTeamCount() > 1 && pTempActor)
+		if(m_pGameRules && m_pGameRules->GetTeamCount() > 1)
 		{
-			if(pRules->GetTeamId(szArgs) != pRules->GetTeam(pTempActor->GetEntityId()))
+			if(m_pGameRules->GetTeamId(szArgs) != m_pGameRules->GetTeam(m_pClientActor->GetEntityId()))
 			{
 				string command("team ");
 				command.append(szArgs);
@@ -1656,20 +1615,19 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 			if(szArgs)
 				id = EntityId(atoi(szArgs));
 
-			CActor *pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+			CActor *pActor = static_cast<CActor*>(m_pClientActor);
 
-			CGameRules *pGameRules = (CGameRules*)(gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules());
 			EntityId iCurrentSpawnPoint = 0;
-			if(pGameRules)
-				iCurrentSpawnPoint = pGameRules->GetPlayerSpawnGroup(pActor);
+			if(m_pGameRules)
+				iCurrentSpawnPoint = m_pGameRules->GetPlayerSpawnGroup(pActor);
 
 			if(iCurrentSpawnPoint && iCurrentSpawnPoint==id)
 			{
 				SetOnScreenObjective(id);
 			}
-			else if (pGameRules)
+			else if (m_pGameRules)
 			{
-				pGameRules->RequestSpawnGroup(id);
+				m_pGameRules->RequestSpawnGroup(id);
 				m_changedSpawnGroup=true;
 			}
 		}
@@ -1685,7 +1643,8 @@ void CHUD::HandleFSCommand(const char *szCommand,const char *szArgs)
 			if(m_pModalHUD == &m_animBuyMenu)
 			{
 				string name;
-				m_pHUDPowerStruggle->RequestNewLoadoutName(name, "");
+				if (m_pHUDPowerStruggle)
+					m_pHUDPowerStruggle->RequestNewLoadoutName(name, "");
 				m_animBuyMenu.SetVariable("_root.POPUP.POPUP_NewPackage.m_modifyPackageName", SFlashVarValue(name));
 			}
 		}
@@ -1865,17 +1824,14 @@ bool CHUD::OnInputEvent(const SInputEvent &rInputEvent)
 	if (m_hitAssistanceAvailable != assistance)
 	{
 		// Notify server on the change
-		IActor *pSelfActor=g_pGame->GetIGameFramework()->GetClientActor();
-		if (pSelfActor)
-			pSelfActor->GetGameObject()->InvokeRMI(CPlayer::SvRequestHitAssistance(), CPlayer::HitAssistanceParams(assistance), eRMI_ToServer);
+		m_pClientActor->GetGameObject()->InvokeRMI(CPlayer::SvRequestHitAssistance(), CPlayer::HitAssistanceParams(assistance), eRMI_ToServer);
 
 		m_hitAssistanceAvailable=assistance;
 	}
 
 	bool sittingInVehicle = false;
 
-	IActor *pSelfActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (pSelfActor && pSelfActor->GetLinkedVehicle())
+	if (m_pClientActor->GetLinkedVehicle())
 	{
 		sittingInVehicle = true;
 	}
@@ -2125,7 +2081,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	{
 		if(m_pModalHUD == &m_animQuickMenu)
 		{
-			CPlayer *pPlayer = static_cast<CPlayer *>(g_pGame->GetIGameFramework()->GetClientActor());
+			CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 			if(pPlayer && !pPlayer->GetLinkedVehicle() && !pPlayer->GetActorStats()->inFreefall.Value())
 			{
 				IItem *pItem = pPlayer->GetCurrentItem();
@@ -2138,8 +2094,8 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	if(action == rGameActions.hud_buy_weapons)
 	{
 		// don't show buy menu if spectating.
-		CActor *pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-		if(pActor && g_pGame->GetGameRules() && g_pGame->GetGameRules()->IsPlayerActivelyPlaying(pActor->GetEntityId()))
+		CActor *pActor = static_cast<CActor*>(m_pClientActor);
+		if(pActor && m_pGameRules && m_pGameRules->IsPlayerActivelyPlaying(pActor->GetEntityId()))
 		{
 			if(m_pModalHUD == &m_animBuyMenu)
 				ShowBuyMenu(false);
@@ -2160,7 +2116,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 		else if(IsModalHUDAvailable())
 		{
-			CActor *pActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+			CActor *pActor = static_cast<CActor *>(m_pClientActor);
 			if(pActor && (pActor->GetHealth() > 0) && !pActor->GetSpectatorMode())
 			{
 				CPlayer *pPlayer = static_cast<CPlayer *>(pActor);
@@ -2204,7 +2160,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 		else if(&m_animQuickMenu == m_pModalHUD || &m_animQuickMenu == m_pSwitchScoreboardHUD)
 		{
-			CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+			CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 			if (pPlayer && pPlayer->GetPlayerInput())
 				pPlayer->GetPlayerInput()->DisableXI(false);
 			g_pGameActions->FilterSuitMenu()->Enable(false);
@@ -2242,12 +2198,17 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if(action == rGameActions.hud_openchat || action == rGameActions.hud_openteamchat)
 	{
-		m_iOpenTextChat = (action == rGameActions.hud_openchat)? 1 : 2;
-		if(m_iOpenTextChat == 2) //don't team chat while not having joined a team...
+		//CryMP direction action..
+		if (m_pGameRules)
 		{
-			IActor* pPlayer = gEnv->pGame->GetIGameFramework()->GetClientActor();
-			if(pPlayer && !g_pGame->GetGameRules()->IsPlayerActivelyPlaying(pPlayer->GetEntityId()))
-				m_iOpenTextChat = 0;
+			auto mode = (action == rGameActions.hud_openchat)? 1 : 2;
+			if(mode == 2) //don't team chat while not having joined a team...
+			{
+				if(!m_pGameRules->IsPlayerActivelyPlaying(m_pClientActor->GetEntityId()))
+					mode = 0;
+			}
+			if (GetMPChat())
+				GetMPChat()->OpenChat(mode);
 		}
 		return true;
 	}
@@ -2260,8 +2221,9 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				m_bScoreboardCursor = true;
 				CursorIncrementCounter();
 				g_pGameActions->FilterNoMove()->Enable(true);
-				CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-				pPlayer->GetPlayerInput()->DisableXI(true);
+				CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
+				if (pPlayer)
+					pPlayer->GetPlayerInput()->DisableXI(true);
 			}
 			else if(activationMode == eIS_Released)
 			{
@@ -2270,8 +2232,9 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 					m_bScoreboardCursor = false;
 					CursorDecrementCounter();
 					g_pGameActions->FilterNoMove()->Enable(false);
-					CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-					pPlayer->GetPlayerInput()->DisableXI(false);
+					CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
+					if (pPlayer)
+						pPlayer->GetPlayerInput()->DisableXI(false);
 				}
 			}
 		}
@@ -2281,9 +2244,9 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	{
 		if(gEnv->bMultiplayer)
 		{
-			if(m_animScoreBoard.IsLoaded() && m_pHUDScore && !m_pHUDScore->m_bShow && GetModalHUD() != &m_animWarningMessages)
+			if(m_pGameRules && m_animScoreBoard.IsLoaded() && m_pHUDScore && !m_pHUDScore->m_bShow && GetModalHUD() != &m_animWarningMessages)
 			{
-				g_pGame->GetGameRules()->ShowScores(true);
+				m_pGameRules->ShowScores(true);
 				m_pSwitchScoreboardHUD = m_pModalHUD;
 				if(m_pSwitchScoreboardHUD && m_pSwitchScoreboardHUD != &m_animQuickMenu)
 				{
@@ -2294,8 +2257,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				SwitchToModalHUD(&m_animScoreBoard,false);
 				PlaySound(ESound_MapOpen);
 				m_animScoreBoard.Invoke("Root.setVisible", 1);
-				if(IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
-					m_animScoreBoard.Invoke("setOwnTeam", g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId()));
+				m_animScoreBoard.Invoke("setOwnTeam", m_pGameRules->GetTeam(m_pClientActor->GetEntityId()));
 				m_pHUDScore->SetVisible(true, &m_animScoreBoard);
 				m_bShow = false;
 
@@ -2317,15 +2279,15 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	{
 		if(gEnv->bMultiplayer)
 		{
-			if(m_animScoreBoard.IsLoaded() && m_pHUDScore && m_pHUDScore->m_bShow)
+			if(m_pGameRules && m_animScoreBoard.IsLoaded() && m_pHUDScore && m_pHUDScore->m_bShow)
 			{
-				g_pGame->GetGameRules()->ShowScores(false);
+				m_pGameRules->ShowScores(false);
 				if(m_bScoreboardCursor)
 				{
 					m_bScoreboardCursor = false;
 					CursorDecrementCounter();
 					g_pGameActions->FilterNoMove()->Enable(false);
-					CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+					CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 					pPlayer->GetPlayerInput()->DisableXI(false);
 				}
 				if(m_pSwitchScoreboardHUD && m_pSwitchScoreboardHUD != &m_animQuickMenu)
@@ -2420,7 +2382,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		float now = gEnv->pTimer->GetFrameStartTime().GetSeconds();
 		if(now - m_fNightVisionTimer > 0.2f)	//strange bug - action is produces twice "onPress" (even when set to onRelease)
 		{
-			CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+			CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 			CNanoSuit *pSuit=pPlayer?pPlayer->GetNanoSuit():0;
 
 			if ((!(pPlayer->GetHealth()<0 && !m_bNightVisionActive))  && (m_bNightVisionActive || (pSuit && pSuit->IsNightVisionEnabled())))
@@ -2484,7 +2446,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	else if(action == rGameActions.hud_select1)
 	{
 		if(m_animRadioButtons.GetVisible()) return false;
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer && pPlayer->GetFrozenAmount(true)>0.0f) return false;
 		if(m_pModalHUD == &m_animWeaponAccessories)
 			m_animWeaponAccessories.Invoke("toggleAttachment", 1);
@@ -2498,7 +2460,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	else if(action == rGameActions.hud_select2)
 	{
 		if(m_animRadioButtons.GetVisible()) return false;
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer && pPlayer->GetFrozenAmount(true)>0.0f) return false;
 		if(m_pModalHUD == &m_animWeaponAccessories)
 			m_animWeaponAccessories.Invoke("toggleAttachment", 2);
@@ -2512,7 +2474,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	else if(action == rGameActions.hud_select3)
 	{
 		if(m_animRadioButtons.GetVisible()) return false;
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer && pPlayer->GetFrozenAmount(true)>0.0f) return false;
 		if(m_pModalHUD == &m_animWeaponAccessories)
 			m_animWeaponAccessories.Invoke("toggleAttachment", 3);
@@ -2526,7 +2488,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	else if(action == rGameActions.hud_select4)
 	{
 		if(m_animRadioButtons.GetVisible()) return false;
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer && pPlayer->GetFrozenAmount(true)>0.0f) return false;
 		if(m_pModalHUD == &m_animWeaponAccessories)
 			m_animWeaponAccessories.Invoke("toggleAttachment", 4);
@@ -2540,7 +2502,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	else if(action == rGameActions.hud_select5)
 	{
 		if(m_animRadioButtons.GetVisible()) return false;
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer && pPlayer->GetFrozenAmount(true)>0.0f) return false;
 		if(m_pModalHUD == &m_animWeaponAccessories)
 			m_animWeaponAccessories.Invoke("toggleAttachment", 5);
@@ -2554,7 +2516,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if(action == rGameActions.hud_mptutorial_disable)
 	{
-		if(CMPTutorial* pTutorial = g_pGame->GetGameRules()->GetMPTutorial())
+		if(CMPTutorial* pTutorial = m_pGameRules ? m_pGameRules->GetMPTutorial() : 0)
 		{
 			if(pTutorial->IsEnabled())
 			{
@@ -2627,17 +2589,16 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 	if(buyMenu && !m_pHUDPowerStruggle)
 		return false;
 
-	CActor *pActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CActor *pActor = static_cast<CActor *>(m_pClientActor);
 	if(!pActor)
 		return false;
 
-	CGameRules *pGameRules=g_pGame->GetGameRules();
-	if(!pGameRules)
+	if(!m_pGameRules)
 		return false;
 
-	if(gEnv->bMultiplayer && pGameRules->GetTeamCount() > 1)
+	if(gEnv->bMultiplayer && m_pGameRules->GetTeamCount() > 1)
 	{
-		if(pGameRules->GetTeam(pActor->GetEntityId()) == 0) //show team selection
+		if(m_pGameRules->GetTeam(pActor->GetEntityId()) == 0) //show team selection
 		{
 			if(buyMenu)
 				return false;
@@ -2660,7 +2621,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 		{
 			if(!buyMenu && show && m_pModalHUD == NULL)
 			{
-				if (!pActor || pGameRules->GetTeam(pActor->GetEntityId())!=0)
+				if (!pActor || m_pGameRules->GetTeam(pActor->GetEntityId())!=0)
 					ShowObjectives(true);
 			}
 			else if(!show)
@@ -2707,7 +2668,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 	{
 		if(gEnv->bMultiplayer && m_animRadioButtons.GetVisible())
 		{
-			pGameRules->GetRadio()->CancelRadio();
+			m_pGameRules->GetRadio()->CancelRadio();
 			SetRadioButtons(false);
 		}
 
@@ -2729,15 +2690,15 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 		{
 			m_pHUDRadar->SetRenderMapOverlay(true);
 			anim->Invoke("setDisconnect", (m_bNoMiniMap || m_pHUDRadar->GetJamming() > 0.5f)?true:false);
-			if(pGameRules->GetTeamId("black") == pGameRules->GetTeam(pActor->GetEntityId()))
+			if(m_pGameRules->GetTeamId("black") == m_pGameRules->GetTeam(pActor->GetEntityId()))
 				anim->SetVariable("PlayerTeam",SFlashVarValue("US"));
 			else
 				anim->SetVariable("PlayerTeam",SFlashVarValue("KOREAN"));
 			CPlayer *pPlayer = static_cast<CPlayer *>(pActor);
 			anim->SetVariable("SpectatorMode",SFlashVarValue(pActor->GetSpectatorMode() != CActor::eASM_None));
-			anim->SetVariable("GameRules",SFlashVarValue(pGameRules->GetEntity()->GetClass()->GetName()));
+			anim->SetVariable("GameRules",SFlashVarValue(m_pGameRules->GetEntity()->GetClass()->GetName()));
 
-			if (!pActor || pGameRules->GetTeam(pActor->GetEntityId())!=0)
+			if (!pActor || m_pGameRules->GetTeam(pActor->GetEntityId())!=0)
 				ShowObjectives(true);
 
 		}
@@ -2756,7 +2717,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 		}
 		anim->CheckedInvoke("destroy", m_iBreakHUD);
 
-		CPlayer *pPlayer = static_cast<CPlayer *>(pActor);
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer->GetPlayerInput())
 			pPlayer->GetPlayerInput()->DisableXI(true);
 
@@ -2768,7 +2729,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 	else if(!show && ((buyMenu)?m_pModalHUD == &m_animBuyMenu:m_pModalHUD == &m_animPDA))
 	{
 		SwitchToModalHUD(NULL,false);
-		if (CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
+		if (CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor))
 			if (IPlayerInput * pPlayerInput = pPlayer->GetPlayerInput())
 				pPlayerInput->DisableXI(false);
 
@@ -3017,7 +2978,7 @@ void CHUD::OnPostUpdate(float frameTime)
 
 	if (gEnv->bMultiplayer)
 	{
-		UpdateTeamActionHUD();
+		//UpdateTeamActionHUD(); //No TeamAction supported.. yet? :D
 
 		//MP team selection is always rendered if available
 		if(!m_bInMenu && !IsScoreboardActive() && m_animTeamSelection.GetVisible())
@@ -3027,7 +2988,7 @@ void CHUD::OnPostUpdate(float frameTime)
 		}
 	}
 
-	CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 
 	if (g_pGameCVars->cl_hud <= 0 || m_cineHideHUD)
 	{
@@ -3105,26 +3066,6 @@ void CHUD::OnPostUpdate(float frameTime)
 	//updates ammo display
 	UpdatePlayerAmmo();
 
-	if(m_iOpenTextChat)
-	{
-		if(GetMPChat())
-			GetMPChat()->OpenChat(m_iOpenTextChat);
-		m_iOpenTextChat = 0;
-	}
-
-	if(m_pHUDPowerStruggle)
-	{
-		int pp = m_pHUDPowerStruggle->GetPlayerPP();
-		if(m_lastPlayerPPSet != pp)
-		{
-			m_animPlayerPP.Invoke("setPPoints", pp);
-			m_lastPlayerPPSet = pp;
-		}
-
-		if(m_pModalHUD == &m_animBuyMenu)
-			m_animBuyMenu.Invoke("setPP", pp);
-	}
-
 	if(m_pModalHUD == &m_animQuickMenu)
 	{
 		SPlayerStats *stats = static_cast<SPlayerStats*>(pPlayer->GetActorStats());
@@ -3139,12 +3080,11 @@ void CHUD::OnPostUpdate(float frameTime)
 
 	if(m_pModalHUD == &m_animPDA)
 	{
-		CGameRules *pGameRules=g_pGame->GetGameRules();
-		if(pGameRules)
+		if(m_pGameRules)
 		{
 			if(g_pGame && g_pGame->GetIGameFramework())
 			{
-				bool isDead = pGameRules->IsDead(g_pGame->GetIGameFramework()->GetClientActorId());
+				bool isDead = m_pGameRules->IsDead(g_pGame->GetIGameFramework()->GetClientActorId());
 				m_animPDA.Invoke("setPlayerIsDead",isDead);
 			}
 		}
@@ -3157,30 +3097,29 @@ void CHUD::OnPostUpdate(float frameTime)
 		UpdateBattleStatus();
 		//////////////////////////////////////////////////////////////////////////
 
-		CGameRules *pGameRules=g_pGame->GetGameRules();
-		if(pGameRules)
+		if(m_pGameRules)
 		{
 			if(m_animSpawnCycle.IsLoaded())
 			{
 				IActorSystem *pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 				if(pActorSystem)
 				{
-					CActor *pActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+					CActor *pActor = static_cast<CActor *>(m_pClientActor);
 					if(pActor)
 					{
 						//get players that will spawn with you
 						static std::vector<string> players;
 						players.resize(0);
 						
-						int clientTeam = pGameRules->GetTeam(pPlayer->GetEntityId());
-						EntityId spawnID = pGameRules->GetPlayerSpawnGroup(pActor);
+						int clientTeam = m_pGameRules->GetTeam(pPlayer->GetEntityId());
+						EntityId spawnID = m_pGameRules->GetPlayerSpawnGroup(pActor);
 
 						if (spawnID)
 						{
 							static std::vector<EntityId> teamMates;
 							teamMates.resize(0);
 
-							pGameRules->GetTeamPlayers(clientTeam, teamMates);
+							m_pGameRules->GetTeamPlayers(clientTeam, teamMates);
 
 							std::vector<EntityId>::const_iterator it = teamMates.begin();
 							std::vector<EntityId>::const_iterator end = teamMates.end();
@@ -3190,7 +3129,7 @@ void CHUD::OnPostUpdate(float frameTime)
 								CActor *pTempActor = static_cast<CActor *>(pActorSystem->GetActor(*it));
 								if(pTempActor && pTempActor != pActor)
 								{
-									if((pTempActor->GetHealth()<=0) && (pGameRules->GetPlayerSpawnGroup(pTempActor)==spawnID))
+									if((pTempActor->GetHealth()<=0) && (m_pGameRules->GetPlayerSpawnGroup(pTempActor)==spawnID))
 										players.push_back(pTempActor->GetEntity()->GetName());
 								}
 							}
@@ -3208,7 +3147,7 @@ void CHUD::OnPostUpdate(float frameTime)
 					}
 				}
 
-				float remaining = pGameRules->GetRemainingReviveCycleTime();
+				float remaining = m_pGameRules->GetRemainingReviveCycleTime();
 				// Because of net lag, it can happens that the time value is reset from 0 g_revivetime
 				// To prevent this, just ignore these values (it should be a matter of a second)
 				if(-1.0f == m_fRemainingReviveCycleTime)
@@ -3388,12 +3327,12 @@ void CHUD::OnPostUpdate(float frameTime)
 			m_animAirStrike.GetFlashPlayer()->Render();
 		}
 
-		CGameRules *pGameRules=g_pGame->GetGameRules();
-		if(gEnv->bMultiplayer && pPlayer->GetSpectatorMode() /*|| (pGameRules && pGameRules->GetTeamCount() > 1 && pGameRules->GetTeam(pPlayer->GetEntityId()) == 0))*/) //SPECTATOR Mode
+		if(gEnv->bMultiplayer && m_pGameRules && pPlayer->GetSpectatorMode()) //SPECTATOR Mode
 		{
 			if(!m_animSpectate.IsLoaded())
 			{
 				m_animSpectate.Load("Libs/UI/HUD_Spectate.gfx", eFD_Center, eFAF_Visible|eFAF_ManualRender);
+				
 				FadeCinematicBars(3);
 
 				// SNH: moved text setting to further down (with player name display)
@@ -3405,6 +3344,8 @@ void CHUD::OnPostUpdate(float frameTime)
 				uint8 specMode = pPlayer->GetSpectatorMode();
 				if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
 				{
+					CheckSpectatorTarget(frameTime);
+
 					m_animSpectate.GetFlashPlayer()->Advance(frameTime);
 					m_animSpectate.GetFlashPlayer()->Render();
 
@@ -3416,10 +3357,10 @@ void CHUD::OnPostUpdate(float frameTime)
 						m_prevSpectatorMode = specMode;
 						m_prevSpectatorTarget = pPlayer->GetSpectatorTarget();
 						m_prevSpectatorHealth = pPlayer->GetSpectatorHealth();
-					
+
 						wstring mapText, functionalityText;
 						// don't want the 'press m to...' text if waiting to respawn
-						if(!pGameRules->IsPlayerActivelyPlaying(pPlayer->GetEntityId()))
+						if(!m_pGameRules->IsPlayerActivelyPlaying(pPlayer->GetEntityId()))
 						{
 							if(m_currentGameRules == EHUD_POWERSTRUGGLE)
 							{
@@ -3458,7 +3399,7 @@ void CHUD::OnPostUpdate(float frameTime)
 								text += " (%d)";
 								int health = max(0, pPlayer->GetSpectatorHealth());
 								text.Format(text.c_str(), health);
-								SFlashVarValue args[2] = {text.c_str(),pGameRules?pGameRules->GetTeam(pTarget->GetEntityId()):0};
+								SFlashVarValue args[2] = {text.c_str(),m_pGameRules->GetTeam(pTarget->GetEntityId())};
 								m_animSpectate.Invoke("setPlayer",args,2);
 							}
 						}
@@ -3600,24 +3541,20 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			if(gEnv->bMultiplayer)
 			{
-				if (CGameRules *pGameRules=g_pGame->GetGameRules())
+				if (m_pGameRules)
 				{
-					IEntityScriptProxy *pScriptProxy=static_cast<IEntityScriptProxy *>(pGameRules->GetEntity()->GetProxy(ENTITY_PROXY_SCRIPT));
-					if (pScriptProxy)
+					if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ && m_pGameRules->IsTimeLimited())
 					{
-						if (!stricmp(pScriptProxy->GetState(), "InGame") && pGameRules->IsTimeLimited())
-						{
-							int time = (int)(pGameRules->GetRemainingGameTime());
+						int time = (int)(m_pGameRules->GetRemainingGameTime());
 
-							int minutes=time/60;
-							int seconds=time-(minutes*60);
-							CryFixedStringT<32> msg;
-							msg.Format("%02d:%02d", minutes, seconds);
-							m_animScoreBoard.Invoke("setCountdown", msg.c_str());
-						}
-						else
-							m_animScoreBoard.Invoke("setCountdown", "");
+						int minutes=time/60;
+						int seconds=time-(minutes*60);
+						CryFixedStringT<32> msg;
+						msg.Format("%02d:%02d", minutes, seconds);
+						m_animScoreBoard.Invoke("setCountdown", msg.c_str());
 					}
+					else
+						m_animScoreBoard.Invoke("setCountdown", "");
 				}
 			}
 			m_animScoreBoard.GetFlashPlayer()->Advance(frameTime);
@@ -3776,34 +3713,13 @@ void CHUD::RebootHUD()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::UpdateHealth()
-{
-	CActor *pActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if(pActor)
-	{
-		float fHealth = (pActor->GetHealth() / (float) pActor->GetMaxHealth()) * 100.0f + 1.0f;
-
-		if(m_fHealth != fHealth || m_bFirstFrame)
-		{
-			m_animPlayerStats.Invoke("setHealth", (int)fHealth);
-		}
-
-		if(m_bFirstFrame)
-			m_fHealth = fHealth;
-
-		m_fHealth = fHealth;
-	}
-}
-
-//-----------------------------------------------------------------------------------------------------
-
 bool CHUD::UpdateTimers(float frameTime)
 {
 	if(g_pGame->GetIGameFramework()->IsGamePaused())
 		return false;
 
 	CTimeValue now = gEnv->pTimer->GetFrameStartTime();
-	CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 
 	if(m_fPlayerDeathTime && m_animWarningMessages.IsLoaded())
 	{
@@ -3986,17 +3902,6 @@ bool CHUD::UpdateTimers(float frameTime)
 		}
 	}
 
-	// FIXME: this should be moved to ::EnergyChanged
-	if(m_fSuitEnergy > (NANOSUIT_ENERGY*0.25f) && m_pNanoSuit->GetSuitEnergy() < (NANOSUIT_ENERGY*0.25f))
-	{
-		//DisplayFlashMessage("@energy_critical", 3, ColorF(1.0,0,0));
-		if(now.GetMilliSeconds() - m_fLastSoundPlayedCritical > 30000)
-		{
-			m_fLastSoundPlayedCritical = now.GetMilliSeconds();
-			PlayStatusSound("energy_critical");
-		}
-	}
-
 	//check if airstrike has been done
 	if(m_fAirStrikeStarted>0.0f && now.GetSeconds()-m_fAirStrikeStarted > 5.0f)
 	{
@@ -4110,87 +4015,6 @@ void CHUD::WeaponAccessoriesInterface(bool visible, bool force)
 	}
 }
 
-//-----------------------------------------------------------------------------------------------------
-
-void CHUD::SetFireMode(IItem *pItem, IFireMode *pFM, bool forceUpdate)
-{
-	if(forceUpdate)
-	{
-		m_curFireMode = 0;
-		m_pHUDVehicleInterface->ShowVehicleInterface(m_pHUDVehicleInterface->GetHUDType(), forceUpdate);
-	}
-
-	if(!pItem || !pFM)
-	{
-		if(!pItem)
-		{
-			if(IActor *pClient = g_pGame->GetIGameFramework()->GetClientActor())
-				pItem = pClient->GetCurrentItem(false);
-			if(!pItem)
-				return;
-		}
-
-		IWeapon *pWeapon = pItem->GetIWeapon();
-		if (!pWeapon)
-			return;
-
-		pFM = pWeapon->GetFireMode(pWeapon->GetCurrentFireMode());
-	}
-
-	int iFireMode = stl::find_in_map(m_hudFireModes, CONST_TEMP_STRING(pItem->GetEntity()->GetClass()->GetName()), 0);
-
-	if(iFireMode == 0 || iFireMode == 9) //Shotgun has the firemode "Shotgun"
-	{
-		if(pFM)
-		{
-			const char* name = pFM->GetName();
-			iFireMode = stl::find_in_map(m_hudFireModes, CONST_TEMP_STRING(name), 0);
-
-			if(pFM->GetAmmoType() && !strcmp(pFM->GetAmmoType()->GetName(), "incendiarybullet"))
-			{
-				if(iFireMode == 1)
-					iFireMode = 18;
-				else if(iFireMode == 3)
-					iFireMode = 19;
-			}
-
-			if(pFM->GetClipSize() == -1 && iFireMode != 6)
-				iFireMode = 8;
-		}
-	}
-
-	if(m_curFireMode != iFireMode)
-	{
-		m_animPlayerStats.Invoke("setFireMode", iFireMode);
-
-		m_curFireMode = iFireMode;
-		UpdateCrosshair(pItem);
-
-		int heat = 0;
-		m_animPlayerStats.Invoke("setOverheatBar", heat);
-		m_pHUDVehicleInterface->m_iLastReloadBarValue = heat;
-
-		if(m_animProgressLocking.GetVisible())
-			SAFE_HUD_FUNC(ShowProgress(-1));
-	}
-
-	if(pItem->GetIWeapon() && pItem->GetIWeapon()->IsZoomed() && !g_pGameCVars->g_enableAlternateIronSight)
-	{
-		if(m_pHUDCrosshair->GetCrosshairType() != 0)
-			m_pHUDCrosshair->SetCrosshair(0);
-	}
-	else if(m_pHUDCrosshair->GetCrosshairType() == 0 && g_pGameCVars->g_difficultyLevel < 4)
-		m_pHUDCrosshair->SelectCrosshair(pItem);
-
-	if(iFireMode == 6)
-	{
-		float fFireRate = 60.0f / pFM->GetFireRate();
-		float fNextShotTime = pFM->GetNextShotTime();
-		float fDuration = 100.0f-(((fFireRate-fNextShotTime)/fFireRate)*100.0f+1.0f);
-		m_animPlayerStats.Invoke("setOverheatBar", fDuration);
-	}
-}
-
 //------------------------------------------------------------------------
 void CHUD::AddTrackedProjectile(EntityId id)
 {
@@ -4252,14 +4076,14 @@ void CHUD::ActorDeath(IActor* pActor)
 
 	// for MP and for SP local player
 	// remove any progress bar and close suit menu if it was open
-	if(pActor == g_pGame->GetIGameFramework()->GetClientActor())
+	if(pActor == m_pClientActor)
 	{
 		ShowProgress(); // hide any leftover progress bar
 		if(m_pModalHUD == &m_animQuickMenu)
 			OnAction(g_pGame->Actions().hud_suit_menu, eIS_Released, 1);
 
 		if(m_currentGameRules == EHUD_SINGLEPLAYER)
-    {
+		{
 			ShowPDA(false);
 			ShowBuyMenu(false);
 			m_fPlayerDeathTime = gEnv->pTimer->GetFrameStartTime().GetSeconds();
@@ -4267,13 +4091,14 @@ void CHUD::ActorDeath(IActor* pActor)
 		else if(m_currentGameRules == EHUD_POWERSTRUGGLE)
 		{
 			ShowPDA(true);
-    } 
+		} 
 
 		m_pHUDCrosshair->SetUsability(0);
 
 		if(m_animRadioButtons.GetVisible())
 		{
-			g_pGame->GetGameRules()->GetRadio()->CancelRadio();
+			if (m_pGameRules)
+				m_pGameRules->GetRadio()->CancelRadio();
 			SetRadioButtons(false);
 		}
 
@@ -4298,7 +4123,7 @@ void CHUD::ActorRevive(IActor* pActor)
 	if(pActor->IsGod())
 		return;
 
-	if(pActor == g_pGame->GetIGameFramework()->GetClientActor())
+	if(pActor == m_pClientActor)
 	{
 		if (m_bNightVisionActive)
 		{
@@ -4310,6 +4135,12 @@ void CHUD::ActorRevive(IActor* pActor)
 		{
 			m_animHexIcons.Invoke("setHexIcon", m_pHUDPowerStruggle->GetCurrentIconState());
 		}
+
+		//cryMP make sure hud hasn't been hidden by spectator
+		if (!m_animPlayerStats.GetVisible())
+			m_animPlayerStats.SetVisible(true);
+
+		m_bFirstFrame = true; //Update HUD
 	}
 }
 
@@ -4355,6 +4186,30 @@ void CHUD::TextMessage(const char* message)
 	//display message
 	//m_onScreenText[string(message)] = gEnv->pTimer->GetCurrTime();
 }
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid)
+{
+	if (oldTargetId != 0)
+	{
+		CPlayer* pOldTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(oldTargetId));
+		if (pOldTarget)
+		{
+			if (pOldTarget && pOldTarget->GetNanoSuit())
+				pOldTarget->GetNanoSuit()->RemoveListener(this);
+		}
+	}
+	if (newTargetid)
+	{
+		CPlayer* pNewTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(newTargetid));
+		if (pNewTarget && pNewTarget->GetNanoSuit())
+		{
+			pNewTarget->GetNanoSuit()->AddListener(this);
+			EnergyChanged(pNewTarget->GetNanoSuit()->GetSuitEnergy());
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------------------------------
 
 void CHUD::UpdateObjective(CHUDMissionObjective *pObjective)
@@ -4676,7 +4531,7 @@ void CHUD::StartPlayerFallAndPlay()
 { 
 	if(!m_fPlayerFallAndPlayTimer)
 	{
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+		CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 		if(pPlayer)
 		{
 			m_fPlayerFallAndPlayTimer = gEnv->pTimer->GetFrameStartTime().GetSeconds();
@@ -5052,7 +4907,7 @@ void CHUD::UpdateTeamActionHUD()
 				}
 				if (pGameRules->IsRoundTimeLimited() && !stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "TeamAction"))
 				{
-					IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
+					IActor *pClientActor= m_pClientActor;
 					if(!pClientActor)
 						return;
 					int clientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
@@ -5116,107 +4971,16 @@ void CHUD::UpdateTeamActionHUD()
 
 void CHUD::RequestRevive()
 {
-	CPlayer *pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = static_cast<CPlayer*>(m_pClientActor);
 	if(pPlayer && pPlayer->GetHealth()<=0)
 		pPlayer->GetPlayerInput()->OnAction(g_pGame->Actions().attack1, eAAM_OnPress, 1.0f);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::UpdatePlayerAmmo()
-{
-	if(!m_animPlayerStats.GetVisible())
-	{
-		m_playerAmmo = m_playerRestAmmo = -1; //forces update next time loaded
-		return;
-	}
-
-	if(!(m_pHUDVehicleInterface && m_pHUDVehicleInterface->GetHUDType() != CHUDVehicleInterface::EHUD_NONE))
-	{
-		int ammo = 0;
-		int clipSize = 0;
-		int restAmmo = 0;
-		CryFixedStringT<128> grenadeType;
-		int grenades = 0;
-
-		CPlayer *pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-		if(pPlayer)
-		{
-			IItem *pItem = pPlayer->GetCurrentItem(false);
-			if(pItem)
-			{
-				if(CWeapon *pWeapon = static_cast<CWeapon*>(pItem->GetIWeapon()))
-				{
-					int fm = pWeapon->GetCurrentFireMode();
-					if(IFireMode *pFM = pWeapon->GetFireMode(fm))
-					{
-						ammo = pFM->GetAmmoCount();
-						if(IItem *pSlave = pWeapon->GetDualWieldSlave())
-						{
-							if(IWeapon *pSlaveWeapon = pSlave->GetIWeapon())
-								if(IFireMode *pSlaveFM = pSlaveWeapon->GetFireMode(pSlaveWeapon->GetCurrentFireMode()))
-									ammo += pSlaveFM->GetAmmoCount();
-						}
-						clipSize = pFM->GetClipSize();
-						restAmmo = pPlayer->GetInventory()->GetAmmoCount(pFM->GetAmmoType());
-
-						if(pFM->CanOverheat())
-						{
-							int heat = int(pFM->GetHeat()*100.0f);
-							m_animPlayerStats.Invoke("setOverheatBar", heat);
-						}
-					}
-				}
-			}
-
-			IItem *pOffhand = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItemByClass(CItem::sOffHandClass));
-			if(pOffhand)
-			{
-				int firemode = pOffhand->GetIWeapon()->GetCurrentFireMode();
-				if(IFireMode *pFm = pOffhand->GetIWeapon()->GetFireMode(firemode))
-				{
-					if(pFm->GetAmmoType())
-					{
-						grenadeType = pFm->GetAmmoType()->GetName();
-						if(pPlayer)
-							grenades = pPlayer->GetInventory()->GetAmmoCount(pFm->GetAmmoType());
-					}
-					else //can happen during object pickup/throw
-					{
-						grenadeType.assign(m_sGrenadeType, m_sGrenadeType.length());
-						grenades = m_iGrenadeAmmo;
-					}
-				}
-			}
-		}
-
-		if(m_playerAmmo == -1) //probably good to update fireMode
-		{
-			SetFireMode(NULL, NULL);
-			m_animPlayerStats.Invoke("setAmmoMode", 0);
-		}
-
-		if(m_playerAmmo != ammo || m_playerClipSize != clipSize || m_playerRestAmmo != restAmmo || 
-			m_iGrenadeAmmo != grenades || grenadeType.compare(m_sGrenadeType) != 0)
-		{
-			SFlashVarValue args[7] = {0, ammo, clipSize, restAmmo, grenades, grenadeType.c_str(), true};
-			m_animPlayerStats.Invoke("setAmmo", args, 7);
-			m_playerAmmo = ammo;
-			m_playerClipSize = clipSize;
-			m_playerRestAmmo = restAmmo;
-			m_iGrenadeAmmo = grenades;
-			m_sGrenadeType.assign(grenadeType.c_str()); // will alloc
-		}
-	}
-	else
-		m_playerAmmo = m_playerRestAmmo = -1; //forces update next time outside vehicle
-}
-
-//-----------------------------------------------------------------------------------------------------
-
 bool CHUD::ShowWeaponAccessories(bool enable)
 {
-	CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = static_cast<CPlayer *>(m_pClientActor);
 	if (!pPlayer)
 		return false;
 

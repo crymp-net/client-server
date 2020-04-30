@@ -228,6 +228,8 @@ CPlayer::~CPlayer()
 		InitInterference();
 
 		SAFE_HUD_FUNC(PlayerIdSet(0));
+
+		g_pGame->DestroyHUD(); //CryMP
 	}
 
 	m_pPlayerInput.reset();
@@ -4994,8 +4996,7 @@ void CPlayer::SetFlyMode(uint8 flyMode)
 
 void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 {
-	//CryLog("%s setting spectator mode %d, target %d", GetEntity()->GetName(), mode, targetId);
-
+	const EntityId oldSpectatorTarget = m_stats.spectatorTarget;
 	uint8 oldSpectatorMode=m_stats.spectatorMode;
 	bool server=gEnv->bServer;
 	if(server)
@@ -5063,11 +5064,9 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 		if(mode == CActor::eASM_Follow)
 			MoveToSpectatorTargetPosition();
 	}
-	/*
-	// switch on/off spectator HUD
+
 	if (IsClient())
-	SAFE_HUD_FUNC(Show(mode==0));
-	*/
+		SAFE_HUD_FUNC(SetSpectatorMode(mode, oldSpectatorTarget, m_stats.spectatorTarget));
 }
 
 void CPlayer::MoveToSpectatorTargetPosition()

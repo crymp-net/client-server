@@ -399,6 +399,8 @@ void CGame::ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder)
 
 void CGame::EditorResetGame(bool bStart)
 {
+	//Editor not supported 
+	/*
 	CRY_ASSERT(gEnv->pSystem->IsEditor());
 
 	if(bStart)
@@ -416,26 +418,26 @@ void CGame::EditorResetGame(bool bStart)
 	else
 	{
 		SAFE_DELETE(m_pHUD);
-	}
+	}*/
 }
 
 void CGame::PlayerIdSet(EntityId playerId)
 {
-	if(!gEnv->pSystem->IsEditor() && playerId != 0 && !gEnv->pSystem->IsDedicated())
+	if (!gEnv->pSystem->IsEditor() && playerId != 0 && !gEnv->pSystem->IsDedicated())
 	{
-		//this is NEVER allowed to come directly from a flash callback, if it is - change the callback
-		GetMenu()->DestroyIngameMenu();	//else the memory pool gets too big
-    GetMenu()->DestroyStartMenu();	//else the memory pool gets too big
+		GetMenu()->DestroyIngameMenu();
+		GetMenu()->DestroyStartMenu();	
+		IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId);
 		if (m_pHUD == 0)
 		{
 			m_pHUD = new CHUD();
-			m_pHUD->Init();
+			m_pHUD->Init(pActor);
 		}
 	}
 
-	if(m_pHUD)
+	if (m_pHUD)
 	{
-		m_pHUD->PlayerIdSet(playerId);	
+		//m_pHUD->PlayerIdSet(playerId);
 	}
 	else
 	{
@@ -638,6 +640,8 @@ void CGame::GameChannelDestroyed(bool isServer)
 void CGame::DestroyHUD()
 {
   SAFE_DELETE(m_pHUD);
+
+  g_pGame->ShowMousePointer(true); //CryMP making sure pointer is visible after disco..
 }
 
 void CGame::BlockingProcess(BlockingConditionFunction f)

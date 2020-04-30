@@ -42,8 +42,8 @@ static inline bool SortByPrice(const CHUDPowerStruggle::SItem &rItem1,const CHUD
 
 //-----------------------------------------------------------------------------------------------------
 
-CHUDPowerStruggle::CHUDPowerStruggle(CHUD *pHUD, CGameFlashAnimation *pBuyMenu, CGameFlashAnimation *pHexIcon) : 
-g_pHUD(pHUD), g_pBuyMenu(pBuyMenu), g_pHexIcon(pHexIcon)
+CHUDPowerStruggle::CHUDPowerStruggle(CHUD *pHUD, CGameRules *pGameRules, CGameFlashAnimation *pBuyMenu, CGameFlashAnimation *pHexIcon) : 
+g_pHUD(pHUD), m_pGameRules(pGameRules), g_pBuyMenu(pBuyMenu), g_pHexIcon(pHexIcon)
 {
 	Reset();
 	m_animSwingOMeter.Load("Libs/UI/HUD_Swing-O-Meter.gfx", eFD_Center, eFAF_ManualRender|eFAF_Visible);
@@ -107,21 +107,29 @@ void DrawBar(float x, float y, float width, float height, float border, float pr
 
 void CHUDPowerStruggle::Update(float fDeltaTime)
 {
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-
-	if (pGameRules && m_animSwingOMeter.IsLoaded() && !stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "PowerStruggle"))
+	if (m_animSwingOMeter.IsLoaded() && m_pGameRules->GetTeamCount() > 1)
 	{
+		int pp = GetPlayerPP();
+		if (g_pHUD->m_lastPlayerPPSet != pp)
+		{
+			g_pHUD->m_animPlayerPP.Invoke("setPPoints", pp);
+			g_pHUD->m_lastPlayerPPSet = pp;
+		}
+
+		if (g_pHUD->m_pModalHUD == &g_pHUD->m_animBuyMenu)
+			g_pHUD->m_animBuyMenu.Invoke("setPP", pp);
+
 		int teamId=0;
 		IActor *pLocalActor=g_pGame->GetIGameFramework()->GetClientActor();
 		if (pLocalActor)
 		{
-			teamId=pGameRules->GetTeam(pLocalActor->GetEntityId());
+			teamId= m_pGameRules->GetTeam(pLocalActor->GetEntityId());
 
 			// if local actor is currently spectating another player, use the team of the player we're watching...
 			CActor* pCActor = static_cast<CActor*>(pLocalActor);
 			if(pCActor && pCActor->GetSpectatorMode() == CActor::eASM_Follow)
 			{
-				teamId = pGameRules->GetTeam(pCActor->GetSpectatorTarget());
+				teamId = m_pGameRules->GetTeam(pCActor->GetSpectatorTarget());
 			}
 		}
 
@@ -239,23 +247,19 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 			}
 		}
 
-		IEntityScriptProxy *pScriptProxy=static_cast<IEntityScriptProxy *>(pGameRules->GetEntity()->GetProxy(ENTITY_PROXY_SCRIPT));
-		if (pScriptProxy)
+		if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ && m_pGameRules->IsTimeLimited())
 		{
-			if (!stricmp(pScriptProxy->GetState(), "InGame") && pGameRules->IsTimeLimited())
-			{
-				int time = (int)(pGameRules->GetRemainingGameTime());
+			int time = (int)(m_pGameRules->GetRemainingGameTime());
 
-				int mins=time/60;
-				int secs=time-(mins*60);
-				CryFixedStringT<32> timeFormatter;
-				timeFormatter.Format("%02d:%02d", mins, secs);
-				SFlashVarValue timearg(timeFormatter.c_str());
-				m_animSwingOMeter.Invoke("setTimer", &timearg, 1);
-			}
-			else
-				m_animSwingOMeter.Invoke("setTimer", "");
+			int mins=time/60;
+			int secs=time-(mins*60);
+			CryFixedStringT<32> timeFormatter;
+			timeFormatter.Format("%02d:%02d", mins, secs);
+			SFlashVarValue timearg(timeFormatter.c_str());
+			m_animSwingOMeter.Invoke("setTimer", &timearg, 1);
 		}
+		else
+			m_animSwingOMeter.Invoke("setTimer", "");
 
 		m_animSwingOMeter.GetFlashPlayer()->Advance(fDeltaTime);
 		m_animSwingOMeter.GetFlashPlayer()->Render();
@@ -333,13 +337,11 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 int CHUDPowerStruggle::GetPlayerPP()
 {
 	int pp = 0;
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	IScriptTable *pScriptTable = pGameRules->GetEntity()->GetScriptTable();
-	if(pScriptTable)
+	if (m_pGameRules)
 	{
-		int key = 0;
-		pScriptTable->GetValue("PP_AMOUNT_KEY", key);
-		pGameRules->GetSynchedEntityValue(g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId(), TSynchedKey(key), pp);
+		auto *pActor = g_pGame->GetIGameFramework()->GetClientActor();
+		if (pActor)
+			m_pGameRules->GetSynchedEntityValue(pActor->GetEntityId(), TSynchedKey(200), pp); //PP_AMOUNT_KEY (200)
 	}
 	return pp;
 }
@@ -348,16 +350,13 @@ int CHUDPowerStruggle::GetPlayerPP()
 
 int CHUDPowerStruggle::GetPlayerTeamScore()
 {
-	int iTeamScore = 0;
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	IScriptTable *pScriptTable = pGameRules->GetEntity()->GetScriptTable();
-	if(pScriptTable)
+	int iTeamScore = 1;
+	if(m_pGameRules)
 	{
-		int key = 0;
-		pScriptTable->GetValue("TEAMSCORE_TEAM0_KEY", key);
-		EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
-		int iTeamID = pGameRules->GetTeam(uiPlayerID);
-		pGameRules->GetSynchedGlobalValue(TSynchedKey(key+iTeamID), iTeamScore);
+		int key = 10; //TEAMSCORE_TEAM0_KEY
+		EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActorId();
+		int iTeamID = m_pGameRules->GetTeam(uiPlayerID);
+		m_pGameRules->GetSynchedGlobalValue(TSynchedKey(key+iTeamID), iTeamScore);
 	}
 	return iTeamScore;
 }
@@ -682,7 +681,7 @@ void CHUDPowerStruggle::InitEquipmentPacks()
 //-----------------------------------------------------------------------------------------------------
 bool CHUDPowerStruggle::GetItemFromName(const char *name, SItem &item)
 {
-	IScriptTable *pGameRulesScriptTable = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
+	IScriptTable *pGameRulesScriptTable = m_pGameRules->GetEntity()->GetScriptTable();
 	SmartScriptTable pItemListScriptTable;
 
 	float scale = g_pGameCVars->g_pp_scale_price;
@@ -936,7 +935,7 @@ void CHUDPowerStruggle::GetItemList(EBuyMenuPage itemType, std::vector<SItem> &i
 
 	SmartScriptTable pItemListScriptTable;
 
-	IScriptTable *pGameRulesScriptTable = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
+	IScriptTable *pGameRulesScriptTable = m_pGameRules->GetEntity()->GetScriptTable();
 
 	IActor *pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
 	if(!pActor)
@@ -1097,13 +1096,12 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 	IActor *pActor=g_pGame->GetIGameFramework()->GetClientActor();
 	if(!pActor) return;
 	
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if(!pGameRules) return;
+	if(!m_pGameRules) return;
 
 	EntityId uiPlayerID = pActor->GetEntityId();
 
-	int playerTeam = pGameRules->GetTeam(uiPlayerID);
-	bool isDead = pGameRules->IsDead(uiPlayerID);
+	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
+	bool isDead = m_pGameRules->IsDead(uiPlayerID);
 
 	EBuyMenuPage factory = E_LOADOUT;
 
@@ -1116,7 +1114,7 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		std::vector<EntityId>::const_iterator it = m_currentBuyZones.begin();
 		for(; it != m_currentBuyZones.end(); ++it)
 		{
-			if(pGameRules->GetTeam(*it) == playerTeam)
+			if(m_pGameRules->GetTeam(*it) == playerTeam)
 			{
 				if(IsFactoryType(*it,E_PROTOTYPES))
 				{
@@ -1145,7 +1143,7 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 			std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
 			for(; it != m_currentServiceZones.end(); ++it)
 			{
-				if(pGameRules->GetTeam(*it) == playerTeam)
+				if(m_pGameRules->GetTeam(*it) == playerTeam)
 				{
 					if(m_eCurBuyMenuPage!=E_LOADOUT)
 						factory = E_AMMO;
@@ -1221,8 +1219,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 	if(!g_pHUD->IsBuyMenuActive())
 		return;
 
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if(!pGameRules)
+	if(!m_pGameRules)
 		return;
 
 	EBuyMenuPage itemType = m_eCurBuyMenuPage;
@@ -1238,7 +1235,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 	IEntity *pFirstVehicleFactory = NULL;
 
 	EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
-	int playerTeam = pGameRules->GetTeam(uiPlayerID);
+	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 	bool bInvalidBuyZone = true;
 	float CurBuyZoneLevel = 0.0f;
 	{
@@ -1247,7 +1244,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 			std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
 			for(; it != m_currentServiceZones.end(); ++it)
 			{
-				if(pGameRules->GetTeam(*it) == playerTeam)
+				if(m_pGameRules->GetTeam(*it) == playerTeam)
 				{
 					IEntity *pEntity = gEnv->pEntitySystem->GetEntity(*it);
 					if(IsFactoryType(*it, itemType))
@@ -1267,7 +1264,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 		std::vector<EntityId>::const_iterator it = m_currentBuyZones.begin();
 		for(; it != m_currentBuyZones.end(); ++it)
 		{
-			if(pGameRules->GetTeam(*it) == playerTeam)
+			if(m_pGameRules->GetTeam(*it) == playerTeam)
 			{
 				IEntity *pEntity = gEnv->pEntitySystem->GetEntity(*it);
 				if(IsFactoryType(*it, itemType))
@@ -1285,7 +1282,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 		}
 	}
 
-	bool isDead = pGameRules->IsDead(uiPlayerID);
+	bool isDead = m_pGameRules->IsDead(uiPlayerID);
 
 	//std::sort(itemList.begin(),itemList.end(),SortByPrice);
 	std::vector<string> itemArray;
@@ -1340,7 +1337,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 		if(item.strName == "")
 		{
 			// Retrieve its current price, which depends on the weapon the player has
-			IScriptTable *pGameRulesScriptTable = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
+			IScriptTable *pGameRulesScriptTable = m_pGameRules->GetEntity()->GetScriptTable();
 			HSCRIPTFUNCTION hGetAutoBuyPrice = NULL;
 			if(pGameRulesScriptTable && pGameRulesScriptTable->GetValue("GetAutoBuyPrice",hGetAutoBuyPrice))
 			{
@@ -1400,15 +1397,14 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 void CHUDPowerStruggle::ActivateBuyMenuTabs()
 {
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if(!pGameRules) return;
+	if(!m_pGameRules) return;
 
 	IActor *pLocalActor=g_pGame->GetIGameFramework()->GetClientActor();
 	if (!pLocalActor) return;
 
 	EntityId id=pLocalActor->GetEntityId();
 	
-	bool isDead = pGameRules->IsDead(id);
+	bool isDead = m_pGameRules->IsDead(id);
 	bool inVehicle = g_pHUD->GetVehicleInterface()->IsAbleToBuy();
 
 	bool b0, b1, b2, b3, b4;
@@ -1567,8 +1563,7 @@ void CHUDPowerStruggle::UpdatePackageItemList(const char *page)
 	GetItemList(itemType, itemList, false);
 
 	EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
-	int playerTeam = g_pGame->GetGameRules()->GetTeam(uiPlayerID);
-	CGameRules *pGameRules = g_pGame->GetGameRules();
+	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 
 	std::vector<string> itemArray;
 	char tempBuf[256];
@@ -1659,12 +1654,11 @@ void CHUDPowerStruggle::UpdateBuyZone(bool trespassing, EntityId zone)
 		EntityId uiPlayerID = pActor->GetEntityId();
 		int playerTeam = g_pGame->GetGameRules()->GetTeam(uiPlayerID);
 		int inBuyZone = false;
-		CGameRules *pGameRules = g_pGame->GetGameRules();
 		{
 			std::vector<EntityId>::const_iterator it = m_currentBuyZones.begin();
 			for(; it != m_currentBuyZones.end(); ++it)
 			{
-				if(pGameRules->GetTeam(*it) == playerTeam)
+				if(m_pGameRules->GetTeam(*it) == playerTeam)
 				{
 					if(IsFactoryType(*it,E_WEAPONS))
 						m_factoryTypes[0] = true;
@@ -1756,31 +1750,19 @@ void CHUDPowerStruggle::UpdateServiceZone(bool trespassing, EntityId zone)
 	{
 		//check whether the player is in a buy zone, he can use ...
 		EntityId uiPlayerID = pActor->GetEntityId();
-		int playerTeam = g_pGame->GetGameRules()->GetTeam(uiPlayerID);
+		int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 		int inBuyZone = false;
-		CGameRules *pGameRules = g_pGame->GetGameRules();
+		
+		std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
+		for(; it != m_currentServiceZones.end(); ++it)
 		{
-			std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
-			for(; it != m_currentServiceZones.end(); ++it)
+			if(m_pGameRules->GetTeam(*it) == playerTeam)
 			{
-				if(pGameRules->GetTeam(*it) == playerTeam)
-				{
-					m_serviceZoneTypes[1] = true;
-/*					if(IsFactoryType(*it,E_WEAPONS))
-						m_serviceZoneTypes[0] = true;
-					if(IsFactoryType(*it,E_AMMO))
-						m_serviceZoneTypes[1] = true;
-					if(IsFactoryType(*it,E_EQUIPMENT))
-						m_serviceZoneTypes[2] = true;
-					if(IsFactoryType(*it,E_VEHICLES))
-						m_serviceZoneTypes[3] = true;
-					if(IsFactoryType(*it,E_PROTOTYPES))
-						m_serviceZoneTypes[4] = true;
-*/					inBuyZone = true;
-				}
+				m_serviceZoneTypes[1] = true;
+				inBuyZone = true;
 			}
 		}
-
+		
 		if(inBuyZone)
 		{
 			if(g_pHUD->GetVehicleInterface()->IsAbleToBuy())
@@ -1880,22 +1862,20 @@ void CHUDPowerStruggle::HideSOM(bool hide)
 
 void CHUDPowerStruggle::GetTeamStatus(int teamId, float &power, float &hq, int &controlledAliens, EntityId &prototypeFactoryId)
 {
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-
 	power=0.0f;
-	if (pGameRules->GetSynchedGlobalValueType(300+teamId)==eSVT_Int)
+	if (m_pGameRules->GetSynchedGlobalValueType(300+teamId)==eSVT_Int)
 	{
 		int p;
-		pGameRules->GetSynchedGlobalValue(300+teamId, p);
+		m_pGameRules->GetSynchedGlobalValue(300+teamId, p);
 		power=(float)p;
 	}
 	else
-		pGameRules->GetSynchedGlobalValue(300+teamId, power);
+		m_pGameRules->GetSynchedGlobalValue(300+teamId, power);
 
 	int owned=0;
 	for (std::vector<EntityId>::iterator it=m_powerpoints.begin(); it!=m_powerpoints.end(); it++)
 	{
-		if (pGameRules->GetTeam(*it)==teamId)
+		if (m_pGameRules->GetTeam(*it)==teamId)
 			owned++;
 	}
 
@@ -1905,7 +1885,7 @@ void CHUDPowerStruggle::GetTeamStatus(int teamId, float &power, float &hq, int &
 	float currentHP=0.0f;
 	for (int h=0;h<m_hqs.size();h++)
 	{
-		if (pGameRules->GetTeam(m_hqs[h])!=teamId)
+		if (m_pGameRules->GetTeam(m_hqs[h])!=teamId)
 			continue;
 
 		if (IEntity *pEntity=gEnv->pEntitySystem->GetEntity(m_hqs[h]))
@@ -1930,7 +1910,7 @@ void CHUDPowerStruggle::GetTeamStatus(int teamId, float &power, float &hq, int &
 
 	// draw proto factory ownership indicator
 	prototypeFactoryId=0;
-	if (m_protofactory && pGameRules->GetTeam(m_protofactory)==teamId)
+	if (m_protofactory && m_pGameRules->GetTeam(m_protofactory)==teamId)
 		prototypeFactoryId=m_protofactory;
 }
 
