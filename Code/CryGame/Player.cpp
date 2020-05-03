@@ -1887,29 +1887,17 @@ void CPlayer::StanceChanged(EStance last)
 
 	bool player(IsPlayer());
 
-/*
-	//TODO:move the dive impulse in the processmovement function, I want all the movement related there.
-	//and remove the client check!
-	if (pPhysEnt && player && m_stance == STANCE_PRONE && m_stats.speedFlat>1.0)
-	{
-		pe_action_impulse actionImp;
-
-		Vec3 diveDir(m_stats.velocity.GetNormalized());
-		diveDir += m_baseQuat.GetColumn2() * 0.35f;
-
-		actionImp.impulse = diveDir.GetNormalized() * m_stats.mass * 3.0f;
-		actionImp.iApplyTime = 0;
-		pPhysEnt->Action(&actionImp);
-	}
-*/
-
 	CALL_PLAYER_EVENT_LISTENERS(OnStanceChanged(this, m_stance));
-/*
-	if (!player)
-		m_stats.waitStance = 1.0f;
-	else if (m_stance == STANCE_PRONE || last == STANCE_PRONE)
-		m_stats.waitStance = 0.5f;
-*/
+
+	// lets stop upper-body animations (reloading, etc) when changing stance
+	// to fix bug pointing weapon up when prone-reload, standUp while reloading
+	if (IsThirdPerson())
+	{
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+		ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
+		if(pSkeletonAnim)
+			pSkeletonAnim->StopAnimationInLayer(1, .1f);
+	}
 }
 
 float CPlayer::CalculatePseudoSpeed(bool wantSprint) const
@@ -2171,8 +2159,15 @@ void CPlayer::UpdateSwimStats(float frameTime)
 	float headWaterLevel = worldHeadPos.z - surfacePos.z;
 
 	// when inside a vehicle (like a boat or amphibious APC) we always assume to be 'above water'
-	if (GetLinkedVehicle())
+	//	 so long as the vehicle allows it.
+	if (IVehicle* pVehicle = GetLinkedVehicle())
+	{
+		const SVehicleStatus& status = pVehicle->GetStatus();
+		const SVehicleDamageParams& damageParams = pVehicle->GetDamageParams();
+		
+		if(status.submergedRatio < damageParams.submergedRatioMax)
 		headWaterLevel = 0.3f;
+	}
 
 	if (headWaterLevel < 0.0f)
 	{
@@ -2181,7 +2176,10 @@ void CPlayer::UpdateSwimStats(float frameTime)
 			PlaySound(ESound_DiveIn);
 			m_stats.headUnderWaterTimer = 0.0f;
 		}
-		m_stats.headUnderWaterTimer += frameTime;
+		else
+		{
+			m_stats.headUnderWaterTimer += frameTime;
+		}
 	}
 	else
 	{
@@ -2190,7 +2188,10 @@ void CPlayer::UpdateSwimStats(float frameTime)
 			PlaySound(ESound_DiveOut);
 			m_stats.headUnderWaterTimer = 0.0f;
 		}
-		m_stats.headUnderWaterTimer -= frameTime;
+		else
+		{
+			m_stats.headUnderWaterTimer -= frameTime;
+		}
 	}
 
 	UpdateUWBreathing(frameTime, referencePos /*worldHeadPos*/);
@@ -3157,8 +3158,9 @@ void CPlayer::Revive( bool fromInit )
 	}
 
 	m_headAngles.Set(0,0,0);
-	m_eyeOffset.Set(0,0,0);
-	m_eyeOffsetView.Set(0,0,0);
+	// default to standing, to prevent the 'spawning in the floor' feeling
+	m_eyeOffset = GetStanceInfo(STANCE_STAND)->viewOffset;
+	m_eyeOffsetView = GetStanceInfo(STANCE_STAND)->viewOffset;
 	m_modelOffset.Set(0,0,0);
 	m_weaponOffset.Set(0,0,0);
 	m_groundElevation = 0.0f;
@@ -3180,7 +3182,7 @@ void CPlayer::Revive( bool fromInit )
 
 	m_turnTarget = GetEntity()->GetRotation();
 	m_lastRequestedVelocity.Set(0,0,0);
-  m_lastAnimControlled = 0.f;
+	m_lastAnimControlled = 0.f;
 
 	m_viewRoll = 0;
 	m_upVector.Set(0,0,1);
