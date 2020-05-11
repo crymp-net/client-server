@@ -11,7 +11,6 @@
 
 #include "GSMaster.h"
 #include "Client.h"
-#include "Log.h"
 
 #define GS_MASTER_DEFAULT_HOSTNAME "m.crymp.net"
 
@@ -29,12 +28,12 @@ void* __stdcall GSMaster::CryNetwork_gethostbyname_hook(const char *name)
 		buffer.append(name, prefixLength);
 		buffer.append(self.getHostname());
 
-		LogDebug("GSMaster::CryNetwork_gethostbyname_hook: %s => %s", name, buffer.get());
+		CryLog("GSMaster::CryNetwork_gethostbyname_hook: %s => %s", name, buffer.get());
 
 		return self.m_pGetHostByName(buffer.get());
 	}
 
-	LogDebug("GSMaster::CryNetwork_gethostbyname_hook: %s", name);
+	CryLog("GSMaster::CryNetwork_gethostbyname_hook: %s", name);
 
 	return self.m_pGetHostByName(name);
 }

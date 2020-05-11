@@ -68,7 +68,7 @@ protected:
 		if (g_nMessages == MAX_STATIC_MESSAGES)
 		{
 			assert(!"Maximum static messages exceeded");
-			CryError("Maximum static messages exceeded");
+			//CryError("Maximum static messages exceeded");
 			((void(*)())NULL)();
 		}
 		SNetMessageDef * def = &g_vMessages[g_nMessages++];

@@ -849,89 +849,62 @@ extern bool g_bProfilerEnabled;
 extern bool g_bTraceAllocations;
 
 
-
-//////////////////////////////////////////////////////////////////////////
-// Display error message.
-// Logs it to console and file and error message box.
-// Then terminates execution.
-void CryError(const char *, ...) PRINTF_PARAMS(1, 2);
-inline void CryError( const char *format,... )
-{ 
-	if (!gEnv || !gEnv->pSystem)
-		return;
-
-	va_list	ArgList;
-	char szBuffer[MAX_WARNING_LENGTH];
-	va_start(ArgList, format);
-	vsprintf(szBuffer, format, ArgList);
-	va_end(ArgList);
-
-	gEnv->pSystem->Error( "%s",szBuffer );
-}
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Display warning message.
-// Logs it to console and file and display a warning message box.
-// Not terminates execution.
-void CryWarning(EValidatorModule, EValidatorSeverity, const char *, ...) PRINTF_PARAMS(3, 4);
-inline void CryWarning( EValidatorModule module,EValidatorSeverity severity,const char *format,... )
+inline void CryLog(const char *format, ...)
 {
-	if (!gEnv || !gEnv->pSystem)
-		return;
-
-	if (!GetISystem() || !format)
-		return;
-	va_list	ArgList;
-	char		szBuffer[MAX_WARNING_LENGTH];
-	va_start(ArgList, format);
-	vsprintf(szBuffer, format, ArgList);
-	va_end(ArgList);
-	GetISystem()->Warning( module,severity,0,0,szBuffer );
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eMessage, format, args);
+	va_end(args);
 }
-//////////////////////////////////////////////////////////////////////////
-// Simple log of data with low verbosity.
-void CryLog(const char *, ...) PRINTF_PARAMS(1, 2);
-inline void CryLog( const char *format,... )
+
+inline void CryLogWarning(const char *format, ...)
 {
-//	return;
-	if (gEnv && gEnv->pSystem)
-	{
-		va_list args;
-		va_start(args,format);
-		gEnv->pLog->LogV( ILog::eMessage,format,args );
-		va_end(args);
-	}
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eWarning, format, args);
+	va_end(args);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Very rarely used log comment.
-void CryComment(const char *, ...) PRINTF_PARAMS(1, 2);
-inline void CryComment( const char *format,... )
+inline void CryLogError(const char *format, ...)
 {
-	if (gEnv && gEnv->pSystem)
-	{
-		va_list args;
-		va_start(args,format);
-		gEnv->pLog->LogV( ILog::eComment,format,args );
-		va_end(args);
-	}
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eError, format, args);
+	va_end(args);
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// Logs important data that must be printed regardless verbosity.
-void CryLogAlways(const char *, ...) PRINTF_PARAMS(1, 2);
-inline void CryLogAlways( const char *format,... )
+inline void CryLogAlways(const char *format, ...)
 {
-	if (gEnv && gEnv->pSystem)
-	{
-		va_list args;
-		va_start(args,format);
-		gEnv->pLog->LogV( ILog::eAlways,format,args );
-		va_end(args);
-	}
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eAlways, format, args);
+	va_end(args);
 }
+
+inline void CryLogWarningAlways(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eWarningAlways, format, args);
+	va_end(args);
+}
+
+inline void CryLogErrorAlways(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eErrorAlways, format, args);
+	va_end(args);
+}
+
+inline void CryLogComment(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	gEnv->pLog->LogV(ILog::eComment, format, args);
+	va_end(args);
+}
+
 
 // Allocation functor, for use in templates.
 struct FSystemAlloc

@@ -5,11 +5,11 @@
 
 #include <cstdio>
 
+#include "CryCommon/ISystem.h"
 #include "Library/StringBuffer.h"
 
 #include "Profile.h"
 #include "Client.h"
-#include "Log.h"
 
 void Profile::sendRequest(const char *urlPath, const char *urlParams, const char *data)
 {
@@ -76,13 +76,14 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 		{
 			if (status != HTTP::STATUS_OK)
 			{
-				LogError("Login request failed: %d (%s)", status, HTTP::StatusCodeToString(status));
+				const char *description = HTTP::StatusCodeToString(status);
+				CryLogErrorAlways("Login request failed: %d (%s)", status, description);
 				return;
 			}
 
 			if (result == "FAIL")
 			{
-				LogError("Incorrect login credentials!");
+				CryLogErrorAlways("Incorrect login credentials!");
 				return;
 			}
 
@@ -93,7 +94,7 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 			int count = std::sscanf(result.c_str(), "%d,%255[0-9a-zA-Z_],%127s", &id, tokenBuffer, nameBuffer);
 			if (count != 3 || id <= 0)
 			{
-				LogError("Received invalid login data!");
+				CryLogErrorAlways("Received invalid login data!");
 				return;
 			}
 
@@ -103,11 +104,11 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 
 			if (state == LOGIN)
 			{
-				LogInfo("$3Successfully logged-in as %s (%d)", nameBuffer, id);
+				CryLogAlways("$3Successfully logged-in as %s (%d)", nameBuffer, id);
 			}
 			else if (state == TOKEN_REFRESH)
 			{
-				LogInfo("$3Profile token successfully updated");
+				CryLogAlways("$3Profile token successfully updated");
 			}
 
 			break;
@@ -116,7 +117,8 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 		{
 			if (status != HTTP::STATUS_OK)
 			{
-				LogError("Failed to get static profile: %d (%s)", status, HTTP::StatusCodeToString(status));
+				const char *description = HTTP::StatusCodeToString(status);
+				CryLogErrorAlways("Failed to get static profile: %d (%s)", status, description);
 				return;
 			}
 
@@ -126,7 +128,7 @@ void Profile::RequestCallback(int status, const std::string & result, void *para
 			int count = std::sscanf(result.c_str(), "%d/%255[0-9a-zA-Z]", &id, keyBuffer);
 			if (count != 2 || id <= 0)
 			{
-				LogError("Received invalid static profile data!");
+				CryLogErrorAlways("Received invalid static profile data!");
 				return;
 			}
 
@@ -160,7 +162,7 @@ void Profile::login(const char *name, const char *secret)
 {
 	if (m_state != IDLE)
 	{
-		LogError("Another login request is already in progress!");
+		CryLogErrorAlways("Another login request is already in progress!");
 		return;
 	}
 
@@ -183,7 +185,7 @@ void Profile::refreshToken()
 
 	m_state = TOKEN_REFRESH;
 
-	LogInfo("Obtaining new profile token...");
+	CryLogAlways("Obtaining new profile token...");
 
 	doLogin();
 }

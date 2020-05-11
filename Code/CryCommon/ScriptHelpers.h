@@ -216,22 +216,22 @@ protected:
 
 #define SCRIPT_CHECK_PARAMETERS(_n) \
 	if (pH->GetParamCount() != _n) \
-{ CryWarning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,"[%s] %d arguments passed, " #_n " expected)", __FUNCTION__,pH->GetParamCount()); \
+{ gEnv->pSystem->Warning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,0,nullptr,"[%s] %d arguments passed, " #_n " expected)", __FUNCTION__,pH->GetParamCount()); \
 	return pH->EndFunction(); }
 
 #define SCRIPT_CHECK_PARAMETERS_MIN(_n) \
 	if (pH->GetParamCount() < _n) \
-{ CryWarning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,"[%s] %d arguments passed, at least " #_n " expected)", __FUNCTION__,pH->GetParamCount()); \
+{ gEnv->pSystem->Warning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,0,nullptr,"[%s] %d arguments passed, at least " #_n " expected)", __FUNCTION__,pH->GetParamCount()); \
 	return pH->EndFunction(); }
 
 #define SCRIPT_CHECK_PARAMETERS2(_n, _n2) \
 	if ((pH->GetParamCount() != _n) && (pH->GetParamCount() != _n2)) \
-{ CryWarning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,"[%s] %d arguments passed, " #_n " or " #_n2 " expected)", __FUNCTION__,pH->GetParamCount()); \
+{ gEnv->pSystem->Warning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,0,nullptr,"[%s] %d arguments passed, " #_n " or " #_n2 " expected)", __FUNCTION__,pH->GetParamCount()); \
 	return pH->EndFunction(); }
 
 #define SCRIPT_CHECK_PARAMETERS3(_n, _n2, _n3) \
 	if ((pH->GetParamCount() != _n) && (pH->GetParamCount() != _n2) && (pH->GetParamCount() != _n3)) \
-{ CryWarning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,"[%s] %d arguments passed, " #_n ", " #_n2 " or " #_n3 " expected)", __FUNCTION__,pH->GetParamCount()); \
+{ gEnv->pSystem->Warning(VALIDATOR_MODULE_SCRIPTSYSTEM,VALIDATOR_WARNING,0,nullptr,"[%s] %d arguments passed, " #_n ", " #_n2 " or " #_n3 " expected)", __FUNCTION__,pH->GetParamCount()); \
 	return pH->EndFunction(); }
 
 //////////////////////////////////////////////////////////////////////////

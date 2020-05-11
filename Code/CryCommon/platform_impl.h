@@ -46,7 +46,7 @@ wstring::StrHeader* wstring::m_emptyStringData = (wstring::StrHeader*)&sEmptyStr
 #if defined(WIN32) || defined(WIN64)
 void CryPureCallHandler()
 {
-	CryError("Pure function call");
+	gEnv->pSystem->Error("Pure function call");
 }
 
 void InitPureCallHandler()
@@ -94,7 +94,7 @@ float cry_frand()
 #ifdef _STLP_DEBUG_TERMINATE
 void __stl_debug_terminate(void)
 {
-	CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_ERROR, "STL Debug Error" );
+	gEnv->pSystem->Warning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_ERROR, 0, nullptr, "STL Debug Error");
 }
 #endif
 
@@ -208,7 +208,7 @@ void  CryDeleteCriticalSection( void *cs )
 {
 	CRITICAL_SECTION *pCS = (CRITICAL_SECTION*)cs;
 	if (pCS->LockCount >= 0)
-		CryError("Critical Section hanging lock" );
+		gEnv->pSystem->Error("Critical Section hanging lock");
 	DeleteCriticalSection(pCS);
 	delete pCS;
 }

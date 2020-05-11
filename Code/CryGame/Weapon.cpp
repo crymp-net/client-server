@@ -656,7 +656,7 @@ void CWeapon::FullSerialize( TSerialize ser )
 		{
 			assert ( numFiremodes == GetNumOfFireModes() );
 			if(numFiremodes != GetNumOfFireModes())
-				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Num of firemodes changed - loading will be corrupted.");
+				GameWarning("Num of firemodes changed - loading will be corrupted.");
 		}
 		for(int i = 0; i < numFiremodes; ++i)
 			m_firemodes[i]->Serialize(ser);
@@ -772,7 +772,7 @@ void CWeapon::SerializeLTL(TSerialize ser)
 		{
 			assert ( numFiremodes == GetNumOfFireModes() );
 			if(numFiremodes != GetNumOfFireModes())
-				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Num of firemodes changed - loading will be corrupted.");
+				GameWarning("Num of firemodes changed - loading will be corrupted.");
 		}
 		for(int i = 0; i < numFiremodes; ++i)
 			m_firemodes[i]->Serialize(ser);

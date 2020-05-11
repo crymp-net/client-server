@@ -58,17 +58,22 @@
 
 //////////////////////////////////////////////////////////////////////////
 //! Reports a Game Warning to validator with WARNING severity.
-inline void GameWarning( const char *format,... ) PRINTF_PARAMS(1, 2);
-inline void GameWarning( const char *format,... )
+inline void GameWarning(const char *format, ...) PRINTF_PARAMS(1, 2);
+inline void GameWarning(const char *format, ...)
 {
 	if (!format)
+	{
 		return;
+	}
+
 	char buffer[MAX_WARNING_LENGTH];
+
 	va_list args;
 	va_start(args, format);
-	vsprintf(buffer, format, args);
+	vsnprintf(buffer, sizeof buffer, format, args);
 	va_end(args);
-	CryWarning( VALIDATOR_MODULE_GAME,VALIDATOR_WARNING,buffer );
+
+	gEnv->pSystem->Warning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, 0, nullptr, "%s", buffer);
 }
 
 extern struct SCVars *g_pGameCVars;

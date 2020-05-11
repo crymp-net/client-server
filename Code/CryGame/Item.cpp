@@ -830,7 +830,7 @@ void CItem::PostSerialize()
 			//}
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Item %s has ownerId %i but owner actor does not exist!", GetEntity()->GetName(), m_ownerId);
+			GameWarning("Item %s has ownerId %i but owner actor does not exist!", GetEntity()->GetName(), m_ownerId);
 	}
 
 	if (m_stats.mounted && !m_hostId)

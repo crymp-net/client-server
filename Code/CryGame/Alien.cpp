@@ -1864,7 +1864,7 @@ void CAlien::RagDollize( bool fallAndPlay )
 		sp.mass = m_stats.mass;
 		if(sp.mass <= 0)
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Tried ragdollizing alien with 0 mass.");
+			GameWarning("Tried ragdollizing alien with 0 mass.");
 			sp.mass = 200.0f;
 		}
 		pPhysEnt->SetParams(&sp);

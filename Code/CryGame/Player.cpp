@@ -3375,7 +3375,7 @@ void CPlayer::RagDollize( bool fallAndPlay )
 		sp.mass = m_stats.mass * 2.0f;
 		if(sp.mass <= 0.0f)
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Tried ragdollizing player with 0 mass.");
+			GameWarning("Tried ragdollizing player with 0 mass.");
 			sp.mass = 80.0f;
 		}
 

@@ -12,7 +12,6 @@
 #include "Launcher/Launcher.h"
 
 #include "Client.h"
-#include "Log.h"
 #include "DisplayInfo.h"
 
 Client *Client::s_pInstance;
@@ -25,7 +24,7 @@ static void SendChatMessageToSelf(const char *message)
 	EntityId localActorID = pGameFramework->GetClientActorId();
 	if (!pGameRules || !localActorID)
 	{
-		LogError("Unable to send chat message!");
+		CryLogErrorAlways("Unable to send chat message!");
 		return;
 	}
 
@@ -55,7 +54,7 @@ static void CmdSay(IConsoleCmdArgs *args)
 {
 	if (args->GetArgCount() <= 1)
 	{
-		LogInfo("$9Usage: say <text>");
+		CryLogAlways("$9Usage: say <text>");
 		return;
 	}
 
@@ -68,7 +67,7 @@ static void CmdLogin(IConsoleCmdArgs *args)
 {
 	if (args->GetArgCount() <= 2)
 	{
-		LogInfo("$9Usage: login <name or e-mail> <password>");
+		CryLogAlways("$9Usage: login <name or e-mail> <password>");
 		return;
 	}
 
@@ -77,14 +76,14 @@ static void CmdLogin(IConsoleCmdArgs *args)
 
 	Client::GetProfile(EProfile::USER).login(name, pass);
 
-	LogWarning("The \'login\' command is not secure. Consider using \'secu_login\' command instead.");
+	CryLogWarningAlways("The \'login\' command is not secure. Consider using \'secu_login\' command instead.");
 }
 
 static void CmdSecuLogin(IConsoleCmdArgs *args)
 {
 	if (args->GetArgCount() <= 2)
 	{
-		LogInfo("$9Usage: secu_login <name> <key>");
+		CryLogAlways("$9Usage: secu_login <name> <key>");
 		return;
 	}
 
@@ -105,7 +104,7 @@ static void CmdLogout(IConsoleCmdArgs *args)
 
 	if (!profile.isLoggedIn())
 	{
-		LogError("No profile is logged-in!");
+		CryLogErrorAlways("No profile is logged-in!");
 		return;
 	}
 
@@ -118,23 +117,23 @@ static void CmdShowProfile(IConsoleCmdArgs *args)
 
 	if (!profile.isLoggedIn())
 	{
-		LogError("No profile is logged-in!");
+		CryLogErrorAlways("No profile is logged-in!");
 		return;
 	}
 
-	LogInfo("$8Profile Name: %s", profile.getName().c_str());
-	LogInfo("$8Profile ID: %d", profile.getID());
+	CryLogAlways("$8Profile Name: %s", profile.getName().c_str());
+	CryLogAlways("$8Profile ID: %d", profile.getID());
 
-	LogDebug("$8Profile Token: %s", profile.getToken().c_str());
+	CryLog("$8Profile Token: %s", profile.getToken().c_str());
 }
 
 static void CmdShowTelemetry(IConsoleCmdArgs *args)
 {
 	Telemetry & telemetry = Client::GetTelemetry();
 
-	LogInfo("$8HWID: %s", telemetry.getHWID().c_str());
-	LogInfo("$8Locale: %s", telemetry.getLocale().c_str());
-	LogInfo("$8Time zone: %+d", -telemetry.getTimeZoneBias());
+	CryLogAlways("$8HWID: %s", telemetry.getHWID().c_str());
+	CryLogAlways("$8Locale: %s", telemetry.getLocale().c_str());
+	CryLogAlways("$8Time zone: %+d", -telemetry.getTimeZoneBias());
 }
 
 static void CmdCursorIncrement(IConsoleCmdArgs *args)
@@ -222,7 +221,7 @@ struct CVarDumpListener : public ICVarDumpSink
 
 		buffer += "]";
 
-		LogInfo("%s", buffer.get());
+		CryLogAlways("%s", buffer.get());
 	}
 };
 

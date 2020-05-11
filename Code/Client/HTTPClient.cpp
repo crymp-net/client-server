@@ -15,7 +15,6 @@
 #include "Launcher/IExecutorTask.h"
 
 #include "HTTPClient.h"
-#include "Log.h"
 
 #define HTTP_CLIENT_USER_AGENT L"CryMP-Client"
 #define HTTP_CLIENT_TIMEOUT_MS 5000
@@ -139,7 +138,7 @@ void HTTPClientRequestTask::execute()
 
 	if (!WinHttpCrackUrl(urlW.c_str(), urlW.length(), 0, &urlComponents))
 	{
-		LogError("HTTPClient: WinHttpCrackUrl error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpCrackUrl error code %lu", GetLastError());
 		return;
 	}
 
@@ -149,7 +148,7 @@ void HTTPClientRequestTask::execute()
 	                                       WINHTTP_NO_PROXY_BYPASS, 0);
 	if (!hSession)
 	{
-		LogError("HTTPClient: WinHttpOpen error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpOpen error code %lu", GetLastError());
 		return;
 	}
 
@@ -159,7 +158,7 @@ void HTTPClientRequestTask::execute()
 	                        HTTP_CLIENT_TIMEOUT_MS,
 	                        HTTP_CLIENT_TIMEOUT_MS))
 	{
-		LogError("HTTPClient: WinHttpSetTimeouts error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpSetTimeouts error code %lu", GetLastError());
 		return;
 	}
 
@@ -168,7 +167,7 @@ void HTTPClientRequestTask::execute()
 	HTTPHandleGuard hConnect = WinHttpConnect(hSession, serverNameW.c_str(), urlComponents.nPort, 0);
 	if (!hConnect)
 	{
-		LogError("HTTPClient: WinHttpConnect error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpConnect error code %lu", GetLastError());
 		return;
 	}
 
@@ -185,7 +184,7 @@ void HTTPClientRequestTask::execute()
 	                                              WINHTTP_DEFAULT_ACCEPT_TYPES, requestFlags);
 	if (!hRequest)
 	{
-		LogError("HTTPClient: WinHttpOpenRequest error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpOpenRequest error code %lu", GetLastError());
 		return;
 	}
 
@@ -193,7 +192,7 @@ void HTTPClientRequestTask::execute()
 	{
 		if (!WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0))
 		{
-			LogError("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
+			CryLogErrorAlways("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
 			return;
 		}
 	}
@@ -210,14 +209,14 @@ void HTTPClientRequestTask::execute()
 		if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
 		                        const_cast<char*>(data.c_str()), data.length(), data.length(), 0))
 		{
-			LogError("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
+			CryLogErrorAlways("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
 			return;
 		}
 	}
 
 	if (!WinHttpReceiveResponse(hRequest, NULL))
 	{
-		LogError("HTTPClient: WinHttpReceiveResponse error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpReceiveResponse error code %lu", GetLastError());
 		return;
 	}
 
@@ -228,7 +227,7 @@ void HTTPClientRequestTask::execute()
 		char buffer[4096];
 		if (!WinHttpReadData(hRequest, buffer, sizeof buffer, &chunkLength))
 		{
-			LogError("HTTPClient: WinHttpReadData error code %lu", GetLastError());
+			CryLogErrorAlways("HTTPClient: WinHttpReadData error code %lu", GetLastError());
 			return;
 		}
 
@@ -241,7 +240,7 @@ void HTTPClientRequestTask::execute()
 	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
 	                         WINHTTP_HEADER_NAME_BY_INDEX, &statusCode, &statusCodeLength, WINHTTP_NO_HEADER_INDEX))
 	{
-		LogError("HTTPClient: WinHttpQueryHeaders error code %lu", GetLastError());
+		CryLogErrorAlways("HTTPClient: WinHttpQueryHeaders error code %lu", GetLastError());
 		return;
 	}
 

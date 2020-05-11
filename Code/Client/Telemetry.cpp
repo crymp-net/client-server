@@ -6,10 +6,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "CryCommon/ISystem.h"
 #include "Library/PicoSHA2.h"
 
 #include "Telemetry.h"
-#include "Log.h"
 
 static std::string GetMachineGUID()
 {
@@ -44,7 +44,7 @@ bool Telemetry::init()
 	}
 	else
 	{
-		LogError("Telemetry: Failed to get machine GUID - error code %lu", GetLastError());
+		CryLogErrorAlways("Telemetry: Failed to get machine GUID - error code %lu", GetLastError());
 		m_hwid.clear();
 	}
 
@@ -55,7 +55,7 @@ bool Telemetry::init()
 	}
 	else
 	{
-		LogError("Telemetry: Failed to get locale information - error code %lu", GetLastError());
+		CryLogErrorAlways("Telemetry: Failed to get locale information - error code %lu", GetLastError());
 		m_locale.clear();
 	}
 
@@ -66,7 +66,7 @@ bool Telemetry::init()
 	}
 	else
 	{
-		LogError("Telemetry: Failed to get time zone information - error code %lu", GetLastError());
+		CryLogErrorAlways("Telemetry: Failed to get time zone information - error code %lu", GetLastError());
 		m_tzBias = 0;
 	}
 

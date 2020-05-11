@@ -433,7 +433,7 @@ void COffHand::PostPostSerialize()
 			IEntity *pEntity = gEnv->pEntitySystem->GetEntity(m_heldEntityId);
 			if(!pEntity)
 			{
-				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "Offhand held entity did not exist anymore! Perhaps it was a boid ... ");
+				GameWarning("Offhand held entity did not exist anymore! Perhaps it was a boid ... ");
 				needsReset = true;
 			}
 			else

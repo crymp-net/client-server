@@ -1530,7 +1530,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 
 		if(!gEnv->pGame->GetIGameFramework()->GetClientActor())
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Tried loading a map without having a client.");
+			GameWarning("Tried loading a map without having a client.");
 			return;
 		}
 
@@ -1629,7 +1629,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 								mapNr = n;
 							else
 							{
-								CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Couldn't read map index correctly : %s.",keyString.c_str());
+								GameWarning("Couldn't read map index correctly : %s.", keyString.c_str());
 								return;
 							}
 						}
@@ -2817,7 +2817,7 @@ void CHUDRadar::SetMiniMapTexture(int mapId, bool forceUpdate)
 {
 	if(mapId < 0 || mapId >= NUM_MAP_TEXTURES)
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Failed loading map texture id %i. (out of id space, current maximum are %i)", mapId, NUM_MAP_TEXTURES);
+		GameWarning("Failed loading map texture id %i. (out of id space, current maximum are %i)", mapId, NUM_MAP_TEXTURES);
 		return;
 	}
 
@@ -2836,7 +2836,7 @@ void CHUDRadar::SetMiniMapTexture(int mapId, bool forceUpdate)
 
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Failed loading map texture id %i.", mapId);
+		GameWarning("Failed loading map texture id %i.", mapId);
 }
 
 bool CHUDRadar::RadarBounds_Inside(const Vec2 &pos, Vec2 &intersectionPoint)

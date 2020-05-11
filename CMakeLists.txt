@@ -53,8 +53,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/HTTP.h
   Code/Client/HTTPClient.cpp
   Code/Client/HTTPClient.h
-  Code/Client/Log.cpp
-  Code/Client/Log.h
   Code/Client/Profile.cpp
   Code/Client/Profile.h
   Code/Client/Telemetry.cpp

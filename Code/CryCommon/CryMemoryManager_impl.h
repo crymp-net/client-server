@@ -342,7 +342,7 @@ struct _CryMemoryManagerPoolHelper
     numAllocations[eCM]++;
     if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM]/(1024*1024) > CM_MaxMemSize[eCM])
     {
-      CryError("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
+      gEnv->pSystem->Error("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
     }
 #endif
 
@@ -447,7 +447,7 @@ struct _CryMemoryManagerPoolHelper
     freedMemory[eCM] += oldsize &= ~DEBUG_ALLOC_FLAG;
     if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM]/(1024*1024) > CM_MaxMemSize[eCM])
     {
-      CryError("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
+      gEnv->pSystem->Error("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
     }
 #endif
 /*
