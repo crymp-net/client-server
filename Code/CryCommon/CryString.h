@@ -620,7 +620,7 @@ inline void CryStringT<T>::_AllocData( size_type nLen )
 	else
 	{
 		size_type allocLen = sizeof(StrHeader) + (nLen+1)*sizeof(value_type);
-		StrHeader* pData = (StrHeader*)CryModuleMalloc( allocLen );
+		StrHeader* pData = (StrHeader*) malloc(allocLen);
 
 		_usedMemory( allocLen ); // For statistics.
 
@@ -655,7 +655,7 @@ inline void CryStringT<T>::_FreeData( StrHeader* pData )
 			int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			_usedMemory( -allocLen ); // For statistics.
 
-			CryModuleFree((void*)pData);
+			free(pData);
 			//int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			//string_alloc::deallocate( (value_type*)pData,allocLen );
 		}

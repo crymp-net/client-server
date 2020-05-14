@@ -55,9 +55,6 @@
 #include "CryAction/ISaveGame.h"
 #include "CryAction/ILoadGame.h"
 
-#define GAME_DEBUG_MEM  // debug memory usage
-#undef  GAME_DEBUG_MEM
-
 #if defined(CRYSIS_BETA)
 	#define CRYSIS_GUID "{CDC82B4A-7540-45A5-B92E-9A7C7033DBF4}"
 #elif defined(SP_DEMO)
@@ -140,10 +137,6 @@ CGame::~CGame()
 bool CGame::Init(IGameFramework *pFramework)
 {
   LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-#ifdef GAME_DEBUG_MEM
-	DumpMemInfo("CGame::Init start");
-#endif
 
 	m_pFramework = pFramework;
 	assert(m_pFramework);
@@ -338,10 +331,6 @@ bool CGame::Init(IGameFramework *pFramework)
 
   m_pFramework->RegisterListener(this,"Game", FRAMEWORKLISTENERPRIORITY_GAME);
 
-#ifdef GAME_DEBUG_MEM
-	DumpMemInfo("CGame::Init end");
-#endif
-
 	return true;
 }
 
@@ -360,9 +349,6 @@ bool CGame::CompleteInit()
 		}
 	}
 
-#ifdef GAME_DEBUG_MEM
-	DumpMemInfo("CGame::CompleteInit");
-#endif
 	return true;
 }
 
@@ -883,20 +869,6 @@ void CGame::OnClearPlayerIds()
 		if(pPlayer->GetNanoSuit())
 			pPlayer->GetNanoSuit()->RemoveListener(m_pHUD);
 	}
-}
-
-void CGame::DumpMemInfo(const char* format, ...)
-{
-	CryModuleMemoryInfo memInfo;
-	CryGetMemoryInfoForModule(&memInfo);
-
-	va_list args;
-	va_start(args,format);
-	gEnv->pSystem->GetILog()->LogV( ILog::eAlways,format,args );
-	va_end(args);
-
-	gEnv->pSystem->GetILog()->LogWithType( ILog::eAlways, "Alloc=%I64d kb  String=%I64d kb  STL-alloc=%I64d kb  STL-wasted=%I64d kb", (memInfo.allocated - memInfo.freed) >> 10 , memInfo.CryString_allocated >> 10, memInfo.STL_allocated >> 10 , memInfo.STL_wasted >> 10);
-	// gEnv->pSystem->GetILog()->LogV( ILog::eAlways, "%s alloc=%llu kb  instring=%llu kb  stl-alloc=%llu kb  stl-wasted=%llu kb", text, memInfo.allocated >> 10 , memInfo.CryString_allocated >> 10, memInfo.STL_allocated >> 10 , memInfo.STL_wasted >> 10);
 }
 
 

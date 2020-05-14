@@ -184,7 +184,6 @@ public:
 	const string& GetLastSaveGame() { string tmp; return GetLastSaveGame(tmp); }
 
   ILINE SCVars *GetCVars() {return m_pCVars;}
-	static void DumpMemInfo(const char* format, ...) PRINTF_PARAMS(1, 2);
 
 	bool ShowMousePointer(bool show)
 	{

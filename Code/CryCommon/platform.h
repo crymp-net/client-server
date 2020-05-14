@@ -177,32 +177,20 @@
 
 #include <stdio.h>
 
-/////////////////////////////////////////////////////////////////////////
-// CryModule memory manager routines must always be included.
-// They are used by any module which doesn't define NOT_USE_CRY_MEMORY_MANAGER
-// No Any STL includes must be before this line.
-//////////////////////////////////////////////////////////////////////////
-#if 1  //#ifndef NOT_USE_CRY_MEMORY_MANAGER
-#define USE_NEWPOOL
-#include "CryMemoryManager.h"
-#else
-inline int IsHeapValid()
+inline void *ModuleAlloc(void *ptr, size_t size)
 {
-#if defined(_DEBUG) && !defined(RELEASE_RUNTIME) && !defined(XENON) && !defined(PS3)
-	return _CrtCheckMemory();
+	if (size)
+	{
+		return (ptr) ? realloc(ptr, size) : malloc(size);
+	}
 
+	if (ptr)
+	{
+		free(ptr);
+	}
 
-#endif
+	return 0;
 }
-#endif // NOT_USE_CRY_MEMORY_MANAGER
-
-// Memory manager breaks strdup
-// Use something higher level, like CryString
-// PS3 headers require this, does not compile otherwise
-#if !defined(PS3)
-	#define strdup dont_use_strdup
-#endif
-
 
 
 

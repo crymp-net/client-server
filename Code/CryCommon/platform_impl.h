@@ -109,11 +109,6 @@ void __stl_debug_terminate(void)
 #include <intrin.h>
 #endif
 
-// If we use cry memory manager this should be also included in every module.
-#if defined(USING_CRY_MEMORY_MANAGER) && !defined(__SPU__)
-#include "CryMemoryManager_impl.h"
-#endif
-
 #if defined (_WIN32) || defined (XENON)
 
 #include "CryAssert_impl.h"

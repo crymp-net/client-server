@@ -67,7 +67,7 @@ struct FModuleAlloc
 
 struct FSafeModuleAlloc
 {
-	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize ) { return SafeAlloc( ModuleAlloc, oldptr, newsize ); }
+	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize ) { return ModuleAlloc( oldptr, newsize ); }
 };
 
 //---------------------------------------------------------------------------

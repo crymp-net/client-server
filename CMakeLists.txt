@@ -114,8 +114,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/Cry_Math.h
   Code/CryCommon/Cry_Matrix.h
   Code/CryCommon/CryMemoryAllocator.h
-  Code/CryCommon/CryMemoryManager.h
-  Code/CryCommon/CryMemoryManager_impl.h
   Code/CryCommon/CryModuleDefs.h
   Code/CryCommon/CryName.h
   Code/CryCommon/CryParticleSpawnInfo.h
