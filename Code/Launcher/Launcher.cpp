@@ -5,6 +5,7 @@
 
 #include "CryCommon/IGameFramework.h"
 #include "CryCommon/IConsole.h"
+#include "CrySystem/CryMemoryManager.h"
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/CrashLogger.h"
 #include "CrySystem/Log.h"
@@ -172,6 +173,9 @@ bool Launcher::run(SSystemInitParams & params)
 		Util::ErrorBox("Failed to load the CrySystem DLL!");
 		return false;
 	}
+
+	// redirect all memory allocation calls from that broken CryEngine memory manager to our code
+	CryMemoryManager::Init(m_libCrySystem);
 
 	if (!m_libCryAction.load("CryAction.dll"))
 	{

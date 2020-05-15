@@ -611,6 +611,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/WorkOnTarget.h
   Code/CrySystem/CrashLogger.cpp
   Code/CrySystem/CrashLogger.h
+  Code/CrySystem/CryMemoryManager.cpp
+  Code/CrySystem/CryMemoryManager.h
   Code/CrySystem/GameWindow.cpp
   Code/CrySystem/GameWindow.h
   Code/CrySystem/Log.cpp
