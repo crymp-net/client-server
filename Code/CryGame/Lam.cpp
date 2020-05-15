@@ -537,6 +537,16 @@ void CLam::UpdateAILightAndLaser(const Vec3& pos, const Vec3& dir, float lightRa
 //------------------------------------------------------------------
 void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 {
+	CActor* pActor = parent->GetOwnerActor();
+	if (!pActor)
+		return;
+	
+	if (!pActor->IsClient())
+	{
+		if (!pActor->GetGameObject()->IsProbablyVisible() && pActor->GetGameObject()->IsProbablyDistant())
+			return;
+	}
+
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	const int frameId = gEnv->pRenderer->GetFrameID();
@@ -596,12 +606,10 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 	//If character not visible, laser is not correctly updated
 	if(parent)
 	{
-		if(CActor* pOwner = parent->GetOwnerActor())
-		{
-			ICharacterInstance* pCharacter = pOwner->GetEntity()->GetCharacter(0);
-			if(pCharacter && !pCharacter->IsCharacterVisible())
-				charNotVisible = true;
-		}
+		ICharacterInstance* pCharacter = pActor->GetEntity()->GetCharacter(0);
+		if(pCharacter && !pCharacter->IsCharacterVisible())
+			charNotVisible = true;
+		
 		if(parent->GetEntity()->GetClass()==CItem::sDSG1Class)
 			dsg1Scale = 3.0f;
 	}
@@ -614,8 +622,7 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 
 	// workaround??: Use player movement controller locations, or else the laser
 	// pops all over the place when character out of the screen.
-	CActor *pActor = parent->GetOwnerActor();
-	if (pActor && (!pActor->IsPlayer() || charNotVisible))
+	if (!pActor->IsPlayer() || charNotVisible)
 	{
 		if (IMovementController* pMC = pActor->GetMovementController())
 		{
