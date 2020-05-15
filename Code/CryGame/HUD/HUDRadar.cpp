@@ -2052,9 +2052,14 @@ void CHUDRadar::RenderMapOverlay()
 					}
 					else
 					{
+						bool underAttack = false;
+						if(g_pGame->GetHUD())
+						{
+							underAttack = g_pGame->GetHUD()->IsUnderAttack(pEntity) && friendly==EFriend;
+						}
 						if(friendly!=2)
 						{
-							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f-RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective==locations[i], iCurrentSpawnPoint==locations[i]);
+							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f-RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective==locations[i], iCurrentSpawnPoint==locations[i], underAttack);
 							m_possibleOnScreenObjectives.push_back(pEntity->GetId());
 						}
 						else
@@ -2065,7 +2070,7 @@ void CHUDRadar::RenderMapOverlay()
 								int capturable=0;
 								if (props->GetValue("bCapturable", capturable) && capturable)
 								{
-									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f-RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective==locations[i], iCurrentSpawnPoint==locations[i]);
+									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f-RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective==locations[i], iCurrentSpawnPoint==locations[i], underAttack);
 									m_possibleOnScreenObjectives.push_back(pEntity->GetId());
 								}
 							}
