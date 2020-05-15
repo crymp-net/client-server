@@ -7,10 +7,8 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "HUDSpectatorInfo.h"
 #include "HUDVehicleInterface.h"
 #include "HUDCrosshair.h"
-#include "HUDHealthEnergyWeapon.h"
 #include "HUD.h"
 #include "GameFlashAnimation.h"
 #include "CryGame/Menus/FlashMenuObject.h"
