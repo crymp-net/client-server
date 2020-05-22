@@ -43,6 +43,7 @@ public:
 	void initStatic();
 	void login(const char *name, const char *secret);
 	void refreshToken();
+	void sendAuth();
 	void logout();
 
 	bool isLoggedIn() const

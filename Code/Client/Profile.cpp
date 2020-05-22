@@ -6,6 +6,8 @@
 #include <cstdio>
 
 #include "CryCommon/ISystem.h"
+#include "CryCommon/IGameFramework.h"
+#include "CryAction/IGameRulesSystem.h"
 #include "Library/StringBuffer.h"
 
 #include "Profile.h"
@@ -188,6 +190,35 @@ void Profile::refreshToken()
 	CryLogAlways("Obtaining new profile token...");
 
 	doLogin();
+}
+
+void Profile::sendAuth()
+{
+	if (!isLoggedIn())
+	{
+		return;
+	}
+
+	StringBuffer<128> msg;
+
+	msg += "!validate ";
+	msg += std::to_string(m_id);
+	msg += ' ';
+	msg += m_token;
+	msg += ' ';
+	msg += m_name;
+
+	IGameFramework *pGameFramework = gEnv->pGame->GetIGameFramework();
+
+	IGameRules *pGameRules = pGameFramework->GetIGameRulesSystem()->GetCurrentGameRules();
+	EntityId localActorID = pGameFramework->GetClientActorId();
+	if (!pGameRules || !localActorID)
+	{
+		CryLogErrorAlways("Failed to authenticate profile on server: Unable to send chat message!");
+		return;
+	}
+
+	pGameRules->SendChatMessage(eChatToTarget, localActorID, localActorID, msg.get());
 }
 
 void Profile::logout()

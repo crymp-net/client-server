@@ -6,7 +6,6 @@
 #include "CryCommon/ISystem.h"
 #include "CryCommon/IConsole.h"
 #include "CryCommon/IHardwareMouse.h"
-#include "CryCommon/I3DEngine.h"  // required by IGameRulesSystem.h
 #include "CryAction/IGameRulesSystem.h"
 #include "Library/StringBuffer.h"
 #include "Launcher/Launcher.h"
@@ -29,25 +28,6 @@ static void SendChatMessageToSelf(const char *message)
 	}
 
 	pGameRules->SendChatMessage(eChatToTarget, localActorID, localActorID, message);
-}
-
-static void SendValidate()
-{
-	Profile & profile = Client::GetProfile();
-
-	if (profile.isLoggedIn())
-	{
-		StringBuffer<1024> msg;
-
-		msg += "!validate ";
-		msg += std::to_string(profile.getID());
-		msg += ' ';
-		msg += profile.getToken();
-		msg += ' ';
-		msg += profile.getName();
-
-		SendChatMessageToSelf(msg.get());
-	}
 }
 
 static void CmdSay(IConsoleCmdArgs *args)
@@ -95,7 +75,7 @@ static void CmdSecuLogin(IConsoleCmdArgs *args)
 
 static void CmdAuthLogin(IConsoleCmdArgs *args)
 {
-	SendValidate();
+	Client::GetProfile().sendAuth();
 }
 
 static void CmdLogout(IConsoleCmdArgs *args)
@@ -284,11 +264,10 @@ void Client::OnActionEvent(const SActionEvent & event)
 	switch (event.m_event)
 	{
 		case eAE_resetEnd:
-		case eAE_inGame:
 		{
-			if (gEnv->bMultiplayer)
+			if (gEnv->bMultiplayer && !gEnv->bServer)
 			{
-				SendValidate();
+				Client::GetProfile().sendAuth();
 			}
 
 			break;
@@ -303,6 +282,7 @@ void Client::OnActionEvent(const SActionEvent & event)
 		case eAE_resetProgress:
 		case eAE_preSaveGame:
 		case eAE_postSaveGame:
+		case eAE_inGame:
 		case eAE_serverName:
 		case eAE_serverIp:
 		case eAE_earlyPreUpdate:
@@ -318,7 +298,7 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
-	if (gEnv->bMultiplayer)
+	if (gEnv->bMultiplayer && !gEnv->bServer)
 	{
 		Client::GetProfile().refreshToken();
 	}
