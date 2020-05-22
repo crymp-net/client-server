@@ -493,6 +493,11 @@ void CLog::doLog(ELogType msgType, const char *format, va_list args, int flags)
 
 				i++;
 			}
+			else if (ch == '0' && i == 0 && !prefixFormat[i+1])  // log_prefix = 0
+			{
+				// no prefix
+				break;
+			}
 			else
 			{
 				buffer += ch;
