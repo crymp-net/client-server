@@ -758,6 +758,24 @@ void Color_tpl<T>::grey(const Color_tpl<T> &c)
 #define Col_Yellow					ColorF (1.0f, 1.0f, 0.0f)
 #define Col_YellowGreen			ColorF (0.6f, 0.8f, 0.196078f)
 
+inline ColorF DecodeConsoleColorCode(int color)
+{
+	switch (color)
+	{
+		case 0: return Col_Black;
+		case 1: return Col_White;
+		case 2: return Col_Blue;
+		case 3: return Col_Green;
+		case 4: return Col_Red;
+		case 5: return Col_Cyan;
+		case 6: return Col_Yellow;
+		case 7: return Col_Magenta;
+		case 8: return ColorF(1.0f, 0.5f, 0.0f);  // orange
+		case 9: return ColorF(0.5f, 0.5f, 0.5f);  // gray
+	}
+
+	return Col_White;
+}
 
 #endif // CRYTEK_CRYCOLOR_H
 

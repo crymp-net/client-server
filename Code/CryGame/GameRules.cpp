@@ -702,7 +702,7 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char *msg,
 		break;
 	case eTextMessageCenter:
 	{
-		const ColorF color(static_cast<unsigned>(g_pGameCVars->cl_messageCenterColor));
+		const ColorF color = DecodeConsoleColorCode(g_pGameCVars->cl_messageCenterColor);
 		SAFE_HUD_FUNC(DisplayFlashMessage(msg, 2, color, p0!=0, p0, p1, p2, p3));
 		break;
 	}
