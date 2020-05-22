@@ -701,9 +701,11 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char *msg,
 		SAFE_HUD_FUNC(DisplayFlashMessage(msg, 1, ColorF(1,1,1), p0!=0, p0, p1, p2, p3));
 		break;
 	case eTextMessageCenter:
-		//SAFE_HUD_FUNC(DisplayFlashMessage(msg, 2, ColorF(1,1,1), p0!=0, p0, p1, p2, p3));
-		SAFE_HUD_FUNC(DisplayFlashMessage(msg, 2, ColorF(0.2f, 0.9f, 0), p0 != 0, p0, p1, p2, p3)); //green center message
+	{
+		const ColorF color(static_cast<unsigned>(g_pGameCVars->cl_messageCenterColor));
+		SAFE_HUD_FUNC(DisplayFlashMessage(msg, 2, color, p0!=0, p0, p1, p2, p3));
 		break;
+	}
 	}
 }
 

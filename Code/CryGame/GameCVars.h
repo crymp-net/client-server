@@ -433,6 +433,7 @@ struct SCVars
 	int			cl_crymp;
 	int			cl_circleJump;
 	int			cl_usePostProcessAimDir;
+	int			cl_messageCenterColor;
 
 	SCVars()
 	{
