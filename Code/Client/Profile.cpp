@@ -30,11 +30,11 @@ void Profile::sendRequest(const char *urlPath, const char *urlParams, const char
 	Telemetry & telemetry = Client::GetTelemetry();
 
 	url += "hwid=";
-	url += telemetry.generateUUID();
+	url += HTTP::URLEncode(telemetry.generateUUID());
 	url += "&lng=";
-	url += telemetry.getLocale();
+	url += HTTP::URLEncode(telemetry.getLocale());
 	url += "&tz=";
-	url += std::to_string(telemetry.getTimeZoneBias());
+	url += HTTP::URLEncode(std::to_string(telemetry.getTimeZoneBias()));
 
 	if (data)
 	{
