@@ -3,6 +3,9 @@
  * @brief Implementation of CryMP client telemetry services.
  */
 
+#include <cctype>
+#include <algorithm>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -41,6 +44,9 @@ bool Telemetry::init()
 	{
 		// use SHA-256 hash of machine GUID as HWID
 		m_hwid = picosha2::hash256_hex_string(machineGUID);
+
+		// uppercase
+		std::transform(m_hwid.begin(), m_hwid.end(), m_hwid.begin(), std::toupper);
 	}
 	else
 	{
@@ -85,5 +91,10 @@ std::string Telemetry::generateUUID(const char *salt) const
 		return std::string();
 	}
 
-	return m_hwid + ':' + picosha2::hash256_hex_string(m_hwid + salt);
+	std::string result = picosha2::hash256_hex_string(m_hwid + salt);
+
+	// uppercase
+	std::transform(result.begin(), result.end(), result.begin(), std::toupper);
+
+	return m_hwid + ':' + result;
 }
