@@ -478,17 +478,44 @@ void CPlayerInput::OnAction( const ActionId& actionId, int activationMode, float
 				}
 			}
 		}
-		else if(gEnv->bMultiplayer && m_pPlayer->GetSpectatorMode() == CActor::eASM_Follow && g_pGame->GetHUD() && !g_pGame->GetHUD()->IsPDAActive())
+		else if(gEnv->bMultiplayer)
 		{
-			if(actions.zoom_in == actionId)
+			if (m_pPlayer->GetSpectatorMode() == CActor::eASM_Follow && g_pGame->GetHUD() && !g_pGame->GetHUD()->IsPDAActive())
 			{
-				m_pPlayer->ChangeSpectatorZoom(-1);
+				if (actions.zoom_in == actionId)
+				{
+					m_pPlayer->ChangeSpectatorZoom(-1);
+				}
+				else if (actions.zoom_out == actionId)
+				{
+					m_pPlayer->ChangeSpectatorZoom(1);
+				}
 			}
-			else if(actions.zoom_out == actionId)
+			//CryMP: IA right click to spectate player works now without having to press 'space' 2 x
+			else if (m_pPlayer->GetSpectatorMode() > CActor::eASM_None && g_pGame->GetGameRules())
 			{
-				m_pPlayer->ChangeSpectatorZoom(1);
+				if (actions.next_spectator_target == actionId && activationMode == eAAM_OnPress && g_pGame->GetGameRules()->GetTeamCount() == 0)
+				{
+					IScriptTable* scriptTbl = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
+					if (scriptTbl)
+					{
+						SmartScriptTable server;
+						if (scriptTbl->GetValue("server", server))
+						{
+							if (!server->HaveValue("RequestSpectatorTarget"))
+								return;
+
+							gEnv->pScriptSystem->BeginCall(server, "RequestSpectatorTarget");
+							gEnv->pScriptSystem->PushFuncParam(server);
+							gEnv->pScriptSystem->PushFuncParam(ScriptHandle(m_pPlayer->GetEntityId()));
+							gEnv->pScriptSystem->PushFuncParam(1);
+							gEnv->pScriptSystem->EndCall();
+						}
+					}
+				}
 			}
 		}
+	}
 	}
 
 
