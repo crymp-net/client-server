@@ -516,7 +516,6 @@ void CPlayerInput::OnAction( const ActionId& actionId, int activationMode, float
 			}
 		}
 	}
-	}
 
 
 	bool hudFilterOut = true;
