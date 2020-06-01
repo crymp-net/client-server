@@ -35,8 +35,6 @@ History:
 
 #include "CryCommon/StlUtils.h"
 
-#include "Client/Client.h"
-
 
 //------------------------------------------------------------------------
 void CGameRules::ValidateShot(EntityId playerId, EntityId weaponId, uint16 seq, uint8 seqr)
@@ -1195,11 +1193,6 @@ IMPLEMENT_RMI(CGameRules, ClEnteredGame)
 			status[0] = GetTeam(pActor->GetEntityId());
 			status[1] = pActor->GetSpectatorMode();
 			m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Connected, 0, 0, (void*)status));
-		}
-
-		if (gEnv->bMultiplayer)
-		{
-			Client::GetProfile().sendAuth();
 		}
 	}
 

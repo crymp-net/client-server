@@ -38,6 +38,8 @@
 
 #include "CryCommon/IFacialAnimation.h"
 
+#include "Client/Client.h"
+
 IItemSystem *CActor::m_pItemSystem=0;
 IGameFramework	*CActor::m_pGameFramework=0;
 IGameplayRecorder	*CActor::m_pGameplayRecorder=0;
@@ -2189,6 +2191,11 @@ void CActor::HandleEvent( const SGameObjectEvent& event )
 		// always update client's character
 		if (ICharacterInstance * pCharacter = GetEntity()->GetCharacter(0))
 			pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
+
+		if (gEnv->bMultiplayer)
+		{
+			Client::GetProfile().sendAuth();
+		}
 	}
 }
 
