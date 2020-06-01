@@ -2192,7 +2192,7 @@ void CActor::HandleEvent( const SGameObjectEvent& event )
 		if (ICharacterInstance * pCharacter = GetEntity()->GetCharacter(0))
 			pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
 
-		if (gEnv->bMultiplayer)
+		if (gEnv->bMultiplayer && !gEnv->bServer)
 		{
 			Client::GetProfile().sendAuth();
 		}
