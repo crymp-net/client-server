@@ -612,6 +612,9 @@ void CNanoSuit::Balance(float energy)
 
 void CNanoSuit::SetSuitEnergy(float value, bool playerInitiated /* = false */)
 {
+	if (!gEnv->bServer)
+		return;
+
 	value = clamp(value, 0.0f, NANOSUIT_ENERGY);
 	if (m_pOwner && value!=m_energy && gEnv->bServer)
 		m_pOwner->GetGameObject()->ChangedNetworkState(CPlayer::ASPECT_NANO_SUIT_ENERGY);
@@ -714,13 +717,23 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 	if (!m_active)
 		return false;
 
-	/*if(m_pOwner && (!stricmp("Kyong1", m_pOwner->GetEntity()->GetName()) || !stricmp("ai_kyong", m_pOwner->GetEntity()->GetName())))
-	{
-		mode = NANOMODE_STRENGTH;
-	}*/
-
 	if(m_currentMode == mode && !forceUpdate)
 		return false;
+
+	// CryMP: control character animation speed
+	ICharacterInstance* pCharacter = m_pOwner->GetEntity()->GetCharacter(0);
+	ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
+	if (pSkeletonAnim)
+	{
+		const float multWeapon = g_pGameCVars->cl_animationWeaponMult;
+		const float multWeaponSpeed = g_pGameCVars->cl_animationWeaponMultSpeed;
+		const float multModel = g_pGameCVars->cl_animationModelMult;
+		const float multModelSpeed = g_pGameCVars->cl_animationModelMultSpeed;
+		//Weapon Animations
+		pSkeletonAnim->SetLayerUpdateMultiplier(1, ((mode == NANOMODE_SPEED) ? multWeaponSpeed : multWeapon)); //Speed up 3rd person weapon animation to match 1st person 
+		//Character Animations
+		pSkeletonAnim->SetLayerUpdateMultiplier(0, ((mode == NANOMODE_SPEED) ? multModelSpeed : multModel));
+	}
 
 	if(!(m_featureMask & (1<<mode)) && !forceUpdate)
 		return false;

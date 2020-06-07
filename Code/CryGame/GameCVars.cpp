@@ -561,6 +561,11 @@ void SCVars::InitCVars(IConsole *pConsole)
 	pConsole->Register("cl_circleJump", &cl_circleJump, 0, VF_NOT_NET_SYNCED);
 	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 0, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("cl_messageCenterColor", &cl_messageCenterColor, 1, VF_NOT_NET_SYNCED);
+
+	pConsole->Register("cl_animationWeaponMult", &cl_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
+	pConsole->Register("cl_animationWeaponMultSpeed", &cl_animationWeaponMultSpeed, 3.0f, VF_NOT_NET_SYNCED);
+	pConsole->Register("cl_animationModelMult", &cl_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
+	pConsole->Register("cl_animationModelMultSpeed", &cl_animationModelMultSpeed, 1.3f, VF_NOT_NET_SYNCED);
 }
 
 //------------------------------------------------------------------------

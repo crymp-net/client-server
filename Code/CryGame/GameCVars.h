@@ -434,6 +434,10 @@ struct SCVars
 	int			cl_circleJump;
 	int			cl_usePostProcessAimDir;
 	int			cl_messageCenterColor;
+	float		cl_animationWeaponMult;
+	float		cl_animationWeaponMultSpeed;
+	float		cl_animationModelMult;
+	float		cl_animationModelMultSpeed;
 
 	SCVars()
 	{
