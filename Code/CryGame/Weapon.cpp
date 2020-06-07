@@ -1265,8 +1265,8 @@ Vec3 CWeapon::GetFiringDir(const Vec3 &probableHit, const Vec3& firingPos) const
 void CWeapon::StartFire()
 {
 	CActor *pOwner = GetOwnerActor();
-  if (IsDestroyed())
-    return;
+	if (IsDestroyed())
+		return;
 
 	if(pOwner)
 	{
@@ -1276,6 +1276,20 @@ void CWeapon::StartFire()
 		//Dual socoms for AI
 		if(!gEnv->bMultiplayer && !isPlayer && IsDualWieldMaster() && FireSlave(GetOwnerId(),true))
 			return;
+
+		// lets stop upper-body animations (reloading, etc) - the animation length might be more than reload time
+		// to fix bug shooting with reload animation in 3rd per
+		if (!IsOwnerFP() && IsReloading())
+		{
+			ICharacterInstance* pCharacter = pOwner->GetEntity()->GetCharacter(0);
+			ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
+			if (pSkeletonAnim)
+			{
+				pSkeletonAnim->StopAnimationInLayer(1, .1f);
+				//if (static_cast<CPlayer*>(pOwner)->IsSprinting())
+				//	pSkeletonAnim->StopAnimationInLayer(0, .1f);
+			}
+		}
 	}
 
 	if (m_fm)
