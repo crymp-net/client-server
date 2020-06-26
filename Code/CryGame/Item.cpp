@@ -61,15 +61,14 @@ IEntityClass* CItem::sTACGunClass = 0;
 IEntityClass* CItem::sTACGunFleetClass = 0;
 IEntityClass* CItem::sAlienMountClass = 0;
 IEntityClass* CItem::sRocketLauncherClass = 0;
-
 IEntityClass* CItem::sFlashbangGrenade = 0;
 IEntityClass* CItem::sExplosiveGrenade = 0;
 IEntityClass* CItem::sEMPGrenade = 0;
 IEntityClass* CItem::sSmokeGrenade = 0;
-
 IEntityClass* CItem::sIncendiaryAmmo = 0;
-
-IEntityClass*	CItem::sScarGrenadeClass = 0;
+IEntityClass* CItem::sScarGrenadeClass = 0;
+IEntityClass* CItem::sDoorClass = 0;
+IEntityClass* CItem::sFlagClass = 0;
 
 //------------------------------------------------------------------------
 CItem::CItem()
@@ -183,6 +182,9 @@ bool CItem::Init( IGameObject *pGameObject )
 		sIncendiaryAmmo   = gEnv->pEntitySystem->GetClassRegistry()->FindClass("incendiarybullet");
 
 		sScarGrenadeClass   = gEnv->pEntitySystem->GetClassRegistry()->FindClass("scargrenade");
+
+		sDoorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Door");
+		sFlagClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Flag");
 	}
 
 	if (!GetGameObject()->CaptureProfileManager(this))

@@ -945,6 +945,13 @@ public:
 	void ResetRenderFlags();
   virtual void UseManualBlending(bool enable);
   virtual bool GetAimBlending(OldBlendSpace& params);
+
+   void UpdateGunnerLocation(IEntity* pParent, const Vec3& bodyDirection);
+   Vec3 GetMountDirection(IEntity* pParent) const;
+   void Update(float frameTime);
+
+   int m_CheckFrames;
+
   virtual void UpdateIKMounted(IActor* pActor, const Vec3& vGunXAxis);
 
 	// character attachments
@@ -1351,9 +1358,13 @@ public:
 	static IEntityClass*	sEMPGrenade;
 	static IEntityClass*	sSmokeGrenade;
 
-	static IEntityClass*  sIncendiaryAmmo;
+	static IEntityClass*    sIncendiaryAmmo;
 
-	static IEntityClass*  sScarGrenadeClass;
+	static IEntityClass*    sScarGrenadeClass;
+
+	//CryMP
+	static IEntityClass*	sDoorClass;
+	static IEntityClass*	sFlagClass;
 
 };
 

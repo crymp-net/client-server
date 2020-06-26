@@ -3338,16 +3338,23 @@ namespace
 	bool raycast(CActor* pActor, Vec3 pos, Vec3 dir, float length)
 	{
 		const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (8 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
-
 		ray_hit hit;
-		int hits=gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir * length, ent_static|ent_rigid|ent_sleeping_rigid,flags,
+		const int hits=gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir * length, ent_static | ent_rigid | ent_sleeping_rigid, flags,
 																												&hit, 1, pActor->GetEntity()->GetPhysics());
 
 		// Only raise the weapon when ray hits a nearly-vertical surface
-		if (hits && hit.pCollider && (abs(hit.n.z) < 0.15f))
+		if (hits && hit.pCollider)
 		{
+			if (abs(hit.n.z) > 0.15f)
+				return false;
+
 			if(hit.pCollider->GetType()==PE_RIGID)
 			{
+				//CryMP: Raise weapon near Doors
+				IEntity *pEntity = gEnv->pEntitySystem->GetEntityFromPhysics(hit.pCollider);
+				if (pEntity && (pEntity->GetClass() == CItem::sDoorClass))
+					return true;
+
 				//Prevent raising in front of small rigid
 				pe_params_part part;
 				part.ipart = 0;
