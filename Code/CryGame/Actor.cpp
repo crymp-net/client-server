@@ -453,19 +453,19 @@ void CActor::Revive( bool fromInit )
 
 	Freeze(false);
 
-  if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
-  {
-    pe_action_move actionMove;    
-    actionMove.dir.zero();
-    actionMove.iJump = 1;
+	if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
+	{
+		pe_action_move actionMove;    
+		actionMove.dir.zero();
+		actionMove.iJump = 1;
 
 		pe_action_set_velocity actionVel;
 		actionVel.v.zero();
 		actionVel.w.zero();
     
-    pPhysics->Action(&actionMove);
+		pPhysics->Action(&actionMove);
 		pPhysics->Action(&actionVel);
-  }
+	}
 
 	m_zoomSpeedMultiplier = 1.0f;
 
@@ -1909,61 +1909,58 @@ bool CActor::SetAspectProfile( EEntityAspects aspect, uint8 profile )
 		case eAP_Spectator:
 		case eAP_Alive:
 			{
+				// if we were asleep, we just want to wakeup
+				if (profile == eAP_Alive && (m_currentPhysProfile == eAP_Sleep))
+				{
+					ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+					if (pCharacter && pCharacter->GetISkeletonAnim())
+					{
+						IPhysicalEntity* pPhysicalEntity = 0;
+						Matrix34 delta(IDENTITY);
+
+						pCharacter->GetISkeletonPose()->StandUp(GetEntity()->GetWorldTM(), false, pPhysicalEntity, delta);
+
+						if (pPhysicalEntity)
+						{
+							IEntityPhysicalProxy* pPhysicsProxy = static_cast<IEntityPhysicalProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS));
+							if (pPhysicsProxy)
+							{
+								GetEntity()->SetWorldTM(delta);
+								pPhysicsProxy->AssignPhysicalEntity(pPhysicalEntity);
+							}
+						}
+						m_pAnimatedCharacter->ForceTeleportAnimationToEntity();
+						m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
+					}
+				}
 				//CryMP: Fix player model glitching inside walls after leaving vehicle, by disablig this code in MP
 				if (!gEnv->bMultiplayer)
 				{
-					// if we were asleep, we just want to wakeup
-					if (profile == eAP_Alive && (m_currentPhysProfile == eAP_Sleep))
+					Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
+
+					if (profile == eAP_Spectator) 
 					{
-						ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
-						if (pCharacter && pCharacter->GetISkeletonAnim())
-						{
-							IPhysicalEntity* pPhysicalEntity = 0;
-							Matrix34 delta(IDENTITY);
-
-							pCharacter->GetISkeletonPose()->StandUp(GetEntity()->GetWorldTM(), false, pPhysicalEntity, delta);
-
-							if (pPhysicalEntity)
-							{
-								IEntityPhysicalProxy* pPhysicsProxy = static_cast<IEntityPhysicalProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS));
-								if (pPhysicsProxy)
-								{
-									GetEntity()->SetWorldTM(delta);
-									pPhysicsProxy->AssignPhysicalEntity(pPhysicalEntity);
-								}
-							}
-							m_pAnimatedCharacter->ForceTeleportAnimationToEntity();
-							m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
-						}
+						if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+							pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(1);
+						m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
+						m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::SetAspectProfile");
 					}
-					else
+					else if (profile == eAP_Alive)
 					{
-						Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
-
-						if (profile == eAP_Spectator) 
+						if (m_currentPhysProfile == eAP_Spectator)
 						{
-							if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
-								pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(1);
-							m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
-							m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::SetAspectProfile");
-						}
-						else if (profile == eAP_Alive)
-						{
-							if (m_currentPhysProfile == eAP_Spectator)
+							m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Undefined, eColliderModeLayer_Game, "Actor::SetAspectProfile");
+							if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
 							{
-								m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Undefined, eColliderModeLayer_Game, "Actor::SetAspectProfile");
-								if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
+								if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
 								{
-									if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
-									{
-										pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(2);
+									pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(2);
 
-										if (IPhysicalEntity* pCharPhysics = pCharacter->GetISkeletonPose()->GetCharacterPhysics())
-										{
-											pe_params_articulated_body body;
-											body.pHost = pPhysics;
-											pCharPhysics->SetParams(&body);
-										}
+									if (IPhysicalEntity* pCharPhysics = pCharacter->GetISkeletonPose()->GetCharacterPhysics())
+									{
+										pe_params_articulated_body body;
+										body.pHost = pPhysics;
+										pCharPhysics->SetParams(&body);
 									}
 								}
 							}
@@ -1981,6 +1978,11 @@ bool CActor::SetAspectProfile( EEntityAspects aspect, uint8 profile )
 
 						m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
 						m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::SetAspectProfile");
+					}
+					//CryMP: Physicalize only OnRevive
+					if (m_stance == STANCE_NULL && gEnv->bClient)
+					{
+						Physicalize(STANCE_NULL);
 					}
 				}
 			}
