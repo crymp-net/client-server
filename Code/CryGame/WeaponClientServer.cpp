@@ -376,31 +376,9 @@ IMPLEMENT_RMI(CWeapon, SvRequestShoot)
 			pActor->GetGameObject()->Pulse('bang');
 		GetGameObject()->Pulse('bang');
 
-		static ray_hit rh;
-
-		IEntity* pEntity = NULL;
-		if ( gEnv->pPhysicalWorld->RayWorldIntersection(params.pos, params.dir*4096.0f, ent_all & ~ent_terrain, rwi_stop_at_pierceable|rwi_ignore_back_faces, &rh, 1) )
-			pEntity = gEnv->pEntitySystem->GetEntityFromPhysics(rh.pCollider);
-		if (pEntity)
-		{
-			if(INetContext* pNC = gEnv->pGame->GetIGameFramework()->GetNetContext())
-			{
-				if(pNC->IsBound(pEntity->GetId()))
-				{
-					AABB bbox; pEntity->GetWorldBounds(bbox);
-					bool hit0 = bbox.GetRadius() < 1.0f; // this (radius*2) must match the value in CompressionPolicy.xml ("hit0")
-					Vec3 hitLocal = pEntity->GetWorldTM().GetInvertedFast() * rh.pt;
-					//GetGameObject()->InvokeRMI(CWeapon::ClShootX(), ClShootXParams(pEntity->GetId(), hit0, hitLocal, params.predictionHandle),
-					//	eRMI_ToOtherClients|eRMI_NoLocalCalls, m_pGameFramework->GetGameChannelId(pNetChannel));
-					GetGameObject()->InvokeRMIWithDependentObject(CWeapon::ClShootX(), ClShootXParams(pEntity->GetId(), hit0, hitLocal, params.predictionHandle),
-						eRMI_ToOtherClients|eRMI_NoLocalCalls, pEntity->GetId(), m_pGameFramework->GetGameChannelId(pNetChannel));
-
-				}
-			}
-		}
-		else
-			GetGameObject()->InvokeRMI(CWeapon::ClShoot(), ClShootParams(params.hit, params.predictionHandle), 
-				eRMI_ToOtherClients|eRMI_NoLocalCalls, m_pGameFramework->GetGameChannelId(pNetChannel));
+		//CryMP : Server side accuracy fix for First person spectator 
+		GetGameObject()->InvokeRMI(CWeapon::ClShoot(), ClShootParams(params.hit, params.predictionHandle), 
+			eRMI_ToOtherClients|eRMI_NoLocalCalls, m_pGameFramework->GetGameChannelId(pNetChannel));
 
 		IActor *pLocalActor=m_pGameFramework->GetClientActor();
 		bool isLocal = pLocalActor && (pLocalActor->GetChannelId() == pActor->GetChannelId());
@@ -639,7 +617,6 @@ IMPLEMENT_RMI(CWeapon, ClReload)
 		else
 			m_fm->Reload(false);
 	}
-
 	return true;
 }
 
