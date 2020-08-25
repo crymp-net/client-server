@@ -381,13 +381,32 @@ void CLog::doLog(ELogType msgType, const char *format, va_list args, int flags)
 
 		auto addTimeZone = [&buffer, &addNumber]() -> void
 		{
-			TIME_ZONE_INFORMATION tz;
-			if (GetTimeZoneInformation(&tz) == TIME_ZONE_ID_INVALID)
-			{
-				return;
-			}
+			long bias = 0;
 
-			long bias = tz.Bias;
+			TIME_ZONE_INFORMATION tz;
+			switch (GetTimeZoneInformation(&tz))
+			{
+				case TIME_ZONE_ID_UNKNOWN:
+				{
+					bias = tz.Bias;
+					break;
+				}
+				case TIME_ZONE_ID_STANDARD:
+				{
+					bias = tz.Bias + tz.StandardBias;
+					break;
+				}
+				case TIME_ZONE_ID_DAYLIGHT:
+				{
+					bias = tz.Bias + tz.DaylightBias;
+					break;
+				}
+				case TIME_ZONE_ID_INVALID:
+				{
+					// failed to get time zone information
+					return;
+				}
+			}
 
 			if (bias == 0)
 			{

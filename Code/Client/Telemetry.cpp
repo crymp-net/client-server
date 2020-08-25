@@ -66,14 +66,29 @@ bool Telemetry::init()
 	}
 
 	TIME_ZONE_INFORMATION tz;
-	if (GetTimeZoneInformation(&tz) != TIME_ZONE_ID_INVALID)
+	switch (GetTimeZoneInformation(&tz))
 	{
-		m_tzBias = tz.Bias;
-	}
-	else
-	{
-		CryLogErrorAlways("Telemetry: Failed to get time zone information - error code %lu", GetLastError());
-		m_tzBias = 0;
+		case TIME_ZONE_ID_UNKNOWN:
+		{
+			m_tzBias = tz.Bias;
+			break;
+		}
+		case TIME_ZONE_ID_STANDARD:
+		{
+			m_tzBias = tz.Bias + tz.StandardBias;
+			break;
+		}
+		case TIME_ZONE_ID_DAYLIGHT:
+		{
+			m_tzBias = tz.Bias + tz.DaylightBias;
+			break;
+		}
+		case TIME_ZONE_ID_INVALID:
+		{
+			CryLogErrorAlways("Telemetry: Failed to get timezone information - error code %lu", GetLastError());
+			m_tzBias = 0;
+			break;
+		}
 	}
 
 	return true;
