@@ -518,7 +518,7 @@ public:
 
 	virtual int  IsGod();
 	
-	virtual void Revive( bool fromInit );
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 	virtual void Kill();
 
 	//stances

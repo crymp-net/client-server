@@ -233,7 +233,7 @@ public:
 	virtual void Update(SEntityUpdateContext&, int updateSlot);
 	virtual void PrePhysicsUpdate();
 	virtual void Kill();
-	virtual void Revive(bool fromInit = false);
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 	virtual void RagDollize( bool fallAndPlay );
 	virtual void BindInputs( IAnimationGraphState * pAGState );
 	virtual void Reset(bool toGame);

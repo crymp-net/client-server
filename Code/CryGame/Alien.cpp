@@ -1728,9 +1728,9 @@ void CAlien::Kill()
 
 }
 
-void CAlien::Revive(bool fromInit)
+void CAlien::Revive(ReasonForRevive reason)
 {
-	CActor::Revive(fromInit);
+	CActor::Revive(reason);
 
 	m_stats = SAlienStats();
 	

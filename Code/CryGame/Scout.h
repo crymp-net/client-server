@@ -32,7 +32,7 @@ public:
 
 	virtual bool CreateCodeEvent(SmartScriptTable &rTable);
 
-	virtual void Revive(bool fromInit = false);
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 
 	virtual void ProcessRotation(float frameTime);
 	virtual void ProcessSwimming(float frameTime);

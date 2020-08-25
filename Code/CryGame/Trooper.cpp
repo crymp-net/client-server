@@ -32,7 +32,7 @@ const float CTrooper::ClandDuration = 1.f;
 const float CTrooper::ClandStiffnessMultiplier = 10;
 
 
-void CTrooper::Revive(bool fromInit)
+void CTrooper::Revive(ReasonForRevive reason)
 {
 	m_customLookIKBlends[0] = 0;
 	m_customLookIKBlends[1] = 0;
@@ -42,7 +42,7 @@ void CTrooper::Revive(bool fromInit)
 	
 	m_steerInertia = 0;
 
-	CAlien::Revive(fromInit);
+	CAlien::Revive(reason);
 
 	m_modelQuat.SetIdentity();
 	//m_modelAddQuat.SetIdentity();

@@ -763,6 +763,12 @@ public:
 	CActor();
 	virtual ~CActor();
 
+	//CryMP:
+	enum class ReasonForRevive
+	{
+		NONE, FROM_INIT, START_SPECTATING, SPAWN, SCRIPT_BIND
+	};
+
 	// IActor
 	virtual void ProcessEvent(SEntityEvent& event);
 	virtual void Release() { delete this; };
@@ -837,7 +843,7 @@ public:
 	virtual Vec3 GetViewAngleOffset() { return Vec3(0, 0, 0); };
 
 	//------------------------------------------------------------------------
-	virtual void Revive( bool fromInit = false );
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
   virtual void Reset(bool toGame) {};
 	//physicalization
 	virtual void Physicalize(EStance stance=STANCE_NULL);

@@ -1575,7 +1575,7 @@ bool CPlayerInput::OnActionGodMode(EntityId entityId, const ActionId& actionId, 
 		if(godMode && m_pPlayer->GetHealth() <= 0)
 		{
 			m_pPlayer->StandUp();
-			m_pPlayer->Revive(false);
+			m_pPlayer->Revive();
 			m_pPlayer->SetHealth(100);
 		}
 

@@ -1548,7 +1548,7 @@ void CHUD::FakeDeath(bool revive)
 			if(m_bRespawningFromFakeDeath)
 			{
 				pPlayer->StandUp();
-				pPlayer->Revive(false);
+				pPlayer->Revive();
 				RebootHUD();
 				pPlayer->HolsterItem(false);
 				if (g_pGameCVars->g_godMode == 3)

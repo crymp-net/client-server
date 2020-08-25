@@ -259,7 +259,7 @@ bool CPlayer::Init(IGameObject * pGameObject)
 	if (!CActor::Init(pGameObject))
 		return false;
 
-	Revive(true);
+	Revive(ReasonForRevive::FROM_INIT);
 
 	if(GetEntityId() == LOCAL_PLAYER_ENTITY_ID && !m_pNanoSuit) //client player always has a nanosuit (else the HUD doesn't work)
 		m_pNanoSuit = new CNanoSuit();
@@ -3109,13 +3109,13 @@ bool CPlayer::IsThirdPerson() const
 }
 
 
-void CPlayer::Revive( bool fromInit )
+void CPlayer::Revive(ReasonForRevive reason)
 {
-	CActor::Revive(fromInit);
+	CActor::Revive(reason);
 
 	ResetScreenFX();
 
-  InitInterference();
+	InitInterference();
 
 	if (CNanoSuit *pSuit=GetNanoSuit())
 	{
@@ -3217,6 +3217,8 @@ void CPlayer::Revive( bool fromInit )
 
 	//	m_nanoSuit.Reset(this);
 	//	m_nanoSuit.Activate(m_params.nanoSuitActive);
+
+	const bool fromInit = reason == ReasonForRevive::FROM_INIT;
 
 	if (!fromInit || GetISystem()->IsSerializingFile() == 1)
 		ResetAnimGraph();
@@ -5015,7 +5017,7 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 				pSeat->Exit(false);
 		}
 
-		Revive(false);
+		Revive(ReasonForRevive::START_SPECTATING);
 
 		if (server)
 		{

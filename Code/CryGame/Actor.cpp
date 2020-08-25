@@ -428,11 +428,11 @@ void CActor::InitClient(int channelId)
 }
 
 //------------------------------------------------------------------------
-void CActor::Revive( bool fromInit )
+void CActor::Revive(ReasonForRevive reason)
 {
 	ClearExtensionCache();
 
-	if (fromInit)
+	if (reason == ReasonForRevive::FROM_INIT)
 		g_pGame->GetGameRules()->OnRevive(this, GetEntity()->GetWorldPos(), GetEntity()->GetWorldRotation(), m_teamId);
 
 	//set the actor game parameters
@@ -536,6 +536,8 @@ IGrabHandler *CActor::CreateGrabHanlder()
 //------------------------------------------------------------------------
 void CActor::Physicalize(EStance stance)
 {
+	CryLogAlways("$3physicalizing $9%s", GetEntity()->GetName());
+
 	//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
 	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
   assert(pScriptTable);
@@ -1585,7 +1587,7 @@ void CActor::FullSerialize( TSerialize ser )
 	ser.Value("health", m_health);		
 	ser.Value("maxHealth", m_maxHealth);
 	if(ser.IsReading() && oldHealth <= 0 && m_health > 0)
-		Revive(true);
+		Revive(ReasonForRevive::FROM_INIT);
 	if(ser.IsReading() && m_health <= 0 && oldHealth > 0)
 	{
 		Kill();
@@ -3294,7 +3296,7 @@ void CActor::NetReviveAt(const Vec3 &pos, const Quat &rot, int teamId)
 	m_teamId=teamId;
 	g_pGame->GetGameRules()->OnRevive(this, pos, rot, m_teamId);
 
-	Revive();
+	Revive(ReasonForRevive::SPAWN);
 
 	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1,1,1), rot, pos));
 
@@ -3343,7 +3345,7 @@ void CActor::NetReviveInVehicle(EntityId vehicleId, int seatId, int teamId)
 	m_teamId=teamId;
 	g_pGame->GetGameRules()->OnReviveInVehicle(this, vehicleId, seatId, m_teamId);
 
-	Revive();
+	Revive(ReasonForRevive::SPAWN);
 
 	// fix our physicalization, since it's need for some vehicle stuff, and it will be set correctly before the end of the frame
 	// make sure we are alive, for when we transition from ragdoll to linked...

@@ -31,7 +31,7 @@ public:
 
 	virtual IGrabHandler *CreateGrabHanlder();
 
-	virtual void Revive(bool fromInit);
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 	virtual bool CreateCodeEvent(SmartScriptTable &rTable);
 
 	virtual void ProcessRotation(float frameTime);

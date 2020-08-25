@@ -306,7 +306,6 @@ bool CShark::Init( IGameObject * pGameObject )
 	if (!CActor::Init(pGameObject))
 		return false;
 
-
 	Revive();
 
 	return true;
@@ -1606,9 +1605,9 @@ void CShark::Kill()
 		m_pTrailAttachment->ClearBinding();    */
 }
 
-void CShark::Revive(bool fromInit)
+void CShark::Revive(ReasonForRevive reason)
 {
-	CActor::Revive(fromInit);
+	CActor::Revive(reason);
 
 	ResetValues();
 

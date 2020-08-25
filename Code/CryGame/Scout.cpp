@@ -130,9 +130,9 @@ IGrabHandler *CScout::CreateGrabHanlder()
 	return m_pGrabHandler;
 }
 
-void CScout::Revive(bool fromInit)
+void CScout::Revive(ReasonForRevive reason)
 {
-	CAlien::Revive(fromInit);
+	CAlien::Revive(reason);
 
 	//FIXME:deactivate transrot2k until the assets gets fixed
 	if (m_pAnimatedCharacter)

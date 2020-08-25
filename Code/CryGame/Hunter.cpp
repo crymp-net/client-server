@@ -183,9 +183,9 @@ void CHunter::ProcessEvent(SEntityEvent& event)
 	CAlien::ProcessEvent (event);
 }
 
-void CHunter::Revive(bool fromInit)
+void CHunter::Revive(ReasonForRevive reason)
 {
-	CAlien::Revive(fromInit);
+	CAlien::Revive(reason);
 
 	memset(m_footGroundPos,0,sizeof(m_footGroundPos));
 	memset(m_footGroundPosLast,0,sizeof(m_footGroundPosLast));

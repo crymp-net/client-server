@@ -153,7 +153,7 @@ public:
 		m_modelQuat.SetIdentity();
 	}
 
-	virtual void Revive(bool fromInit = false);
+	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 
 	virtual void Update(SEntityUpdateContext&, int updateSlot);
 

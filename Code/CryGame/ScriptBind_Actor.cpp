@@ -250,7 +250,7 @@ int CScriptBind_Actor::Revive(IFunctionHandler *pH)
 	if (!pActor)
 		return pH->EndFunction();
 
-	pActor->Revive();
+	pActor->Revive(CActor::ReasonForRevive::SCRIPT_BIND);
 
 	return pH->EndFunction();
 }
