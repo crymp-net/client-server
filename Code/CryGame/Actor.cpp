@@ -440,7 +440,16 @@ void CActor::Revive( bool fromInit )
 	if (GetEntity()->GetScriptTable() && GetEntity()->GetScriptTable()->GetValue("gameParams", gameParams))
 		SetParams(gameParams,true);
 
+	const EntityId currentItemId = GetCurrentItemId(false);
+
 	SetActorModel(); // set the model before physicalizing
+
+	//CryMP: fix missing weapon in hands?
+	if (currentItemId && gEnv->bClient && !gEnv->bServer)
+	{
+		m_pItemSystem->SetActorItem(this, (EntityId)0, false);
+		SelectItem(currentItemId, false);
+	}
 
 	m_stance = STANCE_NULL;
 	m_desiredStance = STANCE_NULL;
@@ -1934,7 +1943,7 @@ bool CActor::SetAspectProfile( EEntityAspects aspect, uint8 profile )
 					}
 				}
 				//CryMP: Fix player model glitching inside walls after leaving vehicle, by disablig this code in MP
-				if (!gEnv->bMultiplayer)
+				if (gEnv->bMultiplayer || wasFrozen)
 				{
 					Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
 
@@ -1966,6 +1975,9 @@ bool CActor::SetAspectProfile( EEntityAspects aspect, uint8 profile )
 							}
 						}
 					}
+
+					m_stance = STANCE_NULL;
+					SetStance(STANCE_STAND);
 				}
 				else
 				{
@@ -1980,9 +1992,12 @@ bool CActor::SetAspectProfile( EEntityAspects aspect, uint8 profile )
 						m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::SetAspectProfile");
 					}
 					//CryMP: Physicalize only OnRevive
-					if (m_stance == STANCE_NULL && gEnv->bClient)
+					if (gEnv->bClient)
 					{
-						Physicalize(STANCE_NULL);
+						if (m_stance == STANCE_NULL || wasFrozen)
+						{
+							Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
+						}
 					}
 				}
 			}
