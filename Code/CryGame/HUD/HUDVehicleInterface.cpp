@@ -757,7 +757,9 @@ void CHUDVehicleInterface::ShowVehicleInterface(EVehicleHud type, bool forceFlas
 	if(!m_pVehicle && !m_bParachute)
 		return;
 
-	CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor()); //crash hard?
+	if (!pPlayerActor)
+		return;
 
 	IVehicleSeat *pSeat = NULL;
 	if(m_pVehicle)
@@ -886,7 +888,7 @@ void CHUDVehicleInterface::ShowVehicleInterface(EVehicleHud type, bool forceFlas
 	sprintf(szAltitude,"%.0f",0.f);
 	sprintf(szDistance,"%.0f",0.f);
 
-	float fAltitude;
+	float fAltitude = 0.0f;
 
 	if(((int)fSpeed) != m_statsSpeed)
 	{
