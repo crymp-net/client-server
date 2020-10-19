@@ -3283,7 +3283,13 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 	//Restore near fov to default value (60.0f) and FP weapon position, just in case
 	if (IsClient())
+	{
 		ResetFPView();
+
+		//CryMP if spectatorTarget still exists..
+		if (m_stats.spectatorTarget && reason == ReasonForRevive::SPAWN)
+			SAFE_HUD_FUNC(SetSpectatorMode(0, m_stats.spectatorTarget, 0));
+	}
 }
 
 void CPlayer::Kill()

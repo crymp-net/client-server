@@ -413,12 +413,6 @@ void CGame::PlayerIdSet(EntityId playerId)
 	{
 		GetMenu()->DestroyIngameMenu();
 		GetMenu()->DestroyStartMenu();	
-		IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId);
-		if (m_pHUD == 0)
-		{
-			m_pHUD = new CHUD();
-			m_pHUD->Init(pActor);
-		}
 	}
 
 	if (m_pHUD)
@@ -623,11 +617,20 @@ void CGame::GameChannelDestroyed(bool isServer)
   }
 }
 
+void CGame::InitHUD(IActor *pActor)
+{
+	if (pActor && m_pHUD == 0)
+	{
+		m_pHUD = new CHUD();
+		m_pHUD->Init(pActor);
+	}
+}
+
 void CGame::DestroyHUD()
 {
-  SAFE_DELETE(m_pHUD);
+	SAFE_DELETE(m_pHUD);
 
-  g_pGame->ShowMousePointer(true); //CryMP making sure pointer is visible after disco..
+	g_pGame->ShowMousePointer(true); //CryMP making sure pointer is visible after disco..
 }
 
 void CGame::BlockingProcess(BlockingConditionFunction f)
@@ -867,7 +870,7 @@ void CGame::OnClearPlayerIds()
 	{
 		CPlayer *pPlayer = static_cast<CPlayer*>(pClient);
 		if(pPlayer->GetNanoSuit())
-			pPlayer->GetNanoSuit()->RemoveListener(m_pHUD);
+			pPlayer->GetNanoSuit()->RemoveListener(GetHUD());
 	}
 }
 

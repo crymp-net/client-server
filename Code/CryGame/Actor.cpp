@@ -1680,12 +1680,15 @@ void CActor::PostSerialize()
       pSkelPose->SetForceSkeletonUpdate(2);
 }
 
-void CActor::SetChannelId(uint16 id)
+void CActor::SetChannelId(uint16 channelId)
 {
-	if (!gEnv->bServer && g_pGame->GetGameRules())
+	if (!gEnv->bServer)
 	{
-		const int channelId = GetChannelId();
-		g_pGame->GetGameRules()->AddChannel(channelId);
+		auto* pRules = g_pGame->GetGameRules();
+		if (pRules)
+		{
+			pRules->AddChannel(channelId);
+		}
 	}
 }
 
@@ -2232,6 +2235,9 @@ void CActor::HandleEvent( const SGameObjectEvent& event )
 		{
 			Client::GetProfile().sendAuth();
 		}
+
+		//Init HUD
+		g_pGame->InitHUD((IActor*)(this));
 	}
 }
 

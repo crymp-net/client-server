@@ -381,6 +381,14 @@ void CHUD::MP_ResetEnd()
 
 	//resets most of the hud
 	ResetPostSerElements();
+
+	//CryMP for Radar after sv_restart
+	ILevelSystem* pLevelSystem = g_pGame->GetIGameFramework()->GetILevelSystem();
+	ILevel* pLevel = pLevelSystem->GetCurrentLevel();
+	if (pLevel)
+	{
+		OnLoadingComplete(pLevel);
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -4192,20 +4200,26 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 {
 	if (oldTargetId != 0)
 	{
+		//Leaving spectator target
 		CPlayer* pOldTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(oldTargetId));
 		if (pOldTarget)
 		{
-			if (pOldTarget && pOldTarget->GetNanoSuit())
-				pOldTarget->GetNanoSuit()->RemoveListener(this);
+			auto* pOldSuit = pOldTarget->GetNanoSuit();
+			if (pOldSuit)
+				pOldSuit->RemoveListener(this);
 		}
 	}
 	if (newTargetid)
 	{
 		CPlayer* pNewTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(newTargetid));
-		if (pNewTarget && pNewTarget->GetNanoSuit())
+		if (pNewTarget)
 		{
-			pNewTarget->GetNanoSuit()->AddListener(this);
-			EnergyChanged(pNewTarget->GetNanoSuit()->GetSuitEnergy());
+			auto* pNewSuit = pNewTarget->GetNanoSuit();
+			if (pNewSuit)
+			{
+				pNewSuit->AddListener(this);
+				EnergyChanged(pNewSuit->GetSuitEnergy());
+			}
 		}
 	}
 }

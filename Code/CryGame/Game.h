@@ -146,6 +146,8 @@ public:
 
   void BlockingProcess(BlockingConditionFunction f);
   void GameChannelDestroyed(bool isServer);
+
+  void InitHUD(IActor* pActor);
   void DestroyHUD();
 
 	virtual CScriptBind_Actor *GetActorScriptBind() { return m_pScriptBindActor; }
@@ -296,7 +298,8 @@ protected:
 	IActionMap					*m_pMultiplayerAM;
 	CGameActions				*m_pGameActions;	
 	IPlayerProfileManager* m_pPlayerProfileManager;
-	CHUD								*m_pHUD;
+
+	CHUD* m_pHUD;
 
 	CServerSynchedStorage	*m_pServerSynchedStorage;
 	CClientSynchedStorage	*m_pClientSynchedStorage;
