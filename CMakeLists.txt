@@ -19,7 +19,7 @@ endif()
 if(BUILD_64BIT)
 	set(CRYMP_CLIENT_EXE "CryMP-Client64")
 else()
-	set(CRYMP_CLIENT_EXE "CryMP-Client")
+	set(CRYMP_CLIENT_EXE "CryMP-Client32")
 endif()
 
 # prevent modern MSVC from enabling ASLR
