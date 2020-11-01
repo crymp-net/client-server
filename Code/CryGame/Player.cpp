@@ -5006,6 +5006,13 @@ void CPlayer::SetFlyMode(uint8 flyMode)
 
 void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 {
+	//CryMP: Crash fix
+	if (targetId == GetEntityId()) //never allow to spectate yourself, causes CryPhysics crash
+	{
+		CryLogAlways("$3Server Admin attempted to crash your client (blocked)");
+		return;
+	}
+
 	const EntityId oldSpectatorTarget = m_stats.spectatorTarget;
 	uint8 oldSpectatorMode=m_stats.spectatorMode;
 	bool server=gEnv->bServer;
@@ -5081,6 +5088,9 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 
 void CPlayer::MoveToSpectatorTargetPosition()
 {
+	if (!IsClient())
+		return;
+
 	// called when our target entity moves.
 	IEntity* pTarget = gEnv->pEntitySystem->GetEntity(m_stats.spectatorTarget);
 	if(!pTarget)
