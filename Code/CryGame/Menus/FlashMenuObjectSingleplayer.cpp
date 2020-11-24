@@ -39,38 +39,38 @@ enum EDifficulty
 
 void CFlashMenuObject::UpdateSingleplayerDifficulties()
 {
-	if(!m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART])
+	if (!m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART])
 		return;
 
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	string sGeneralPath = "Singleplayer.Difficulty";
 	int iDifficulties = 8;
-/*	for(int i=0; i<EDifficulty_END; ++i)
-	{
-		string sPath = sGeneralPath;
-		char c[5];
-		itoa(i, c, 10);
-		sPath.append(c);
-		sPath.append(".available");
-
-		TFlowInputData data;
-		pProfile->GetAttribute(sPath, data, false);
-		bool bDone = false;
-		data.GetValueWithConversion(bDone);
-		if(bDone)
+	/*	for(int i=0; i<EDifficulty_END; ++i)
 		{
-			iDifficulties += i*2;
+			string sPath = sGeneralPath;
+			char c[5];
+			itoa(i, c, 10);
+			sPath.append(c);
+			sPath.append(".available");
+
+			TFlowInputData data;
+			pProfile->GetAttribute(sPath, data, false);
+			bool bDone = false;
+			data.GetValueWithConversion(bDone);
+			if(bDone)
+			{
+				iDifficulties += i*2;
+			}
 		}
-	}
-*/
+	*/
 	int iDifficultiesDone = 0;
-	for(int i=0; i<EDifficulty_END; ++i)
+	for (int i = 0; i < EDifficulty_END; ++i)
 	{
 		string sPath = sGeneralPath;
 		char c[5];
@@ -82,9 +82,9 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 		pProfile->GetAttribute(sPath, data, false);
 		bool bDone = false;
 		data.GetValueWithConversion(bDone);
-		if(bDone)
+		if (bDone)
 		{
-			iDifficultiesDone += std::max(i*2,1);
+			iDifficultiesDone += std::max(i * 2, 1);
 		}
 	}
 
@@ -93,7 +93,7 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 	int iDiff = 2;
 	data.GetValueWithConversion(iDiff);
 
-	if(iDiff<=0)
+	if (iDiff <= 0)
 	{
 		iDiff = 2;
 	}
@@ -105,22 +105,22 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::StartSingleplayerGame(const char *strDifficulty)
+void CFlashMenuObject::StartSingleplayerGame(const char* strDifficulty)
 {
 	int iDifficulty = 0;
-	if(!strcmp(strDifficulty,"Easy"))
+	if (!strcmp(strDifficulty, "Easy"))
 	{
 		iDifficulty = 1;
 	}
-	else if(!strcmp(strDifficulty,"Normal"))
+	else if (!strcmp(strDifficulty, "Normal"))
 	{
 		iDifficulty = 2;
 	}
-	else if(!strcmp(strDifficulty,"Realistic"))
+	else if (!strcmp(strDifficulty, "Realistic"))
 	{
 		iDifficulty = 3;
 	}
-	else if(!strcmp(strDifficulty,"Delta"))
+	else if (!strcmp(strDifficulty, "Delta"))
 	{
 		iDifficulty = 4;
 	}
@@ -129,12 +129,12 @@ void CFlashMenuObject::StartSingleplayerGame(const char *strDifficulty)
 	if (iDifficulty != 0)
 		LoadDifficultyConfig(iDifficulty);
 
-	if(m_pPlayerProfileManager)
+	if (m_pPlayerProfileManager)
 	{
-		IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-		if(pProfile)
+		IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+		if (pProfile)
 		{
-			pProfile->SetAttribute("Singleplayer.LastSelectedDifficulty",(TFlowInputData)iDifficulty);
+			pProfile->SetAttribute("Singleplayer.LastSelectedDifficulty", (TFlowInputData)iDifficulty);
 			IPlayerProfileManager::EProfileOperationResult result;
 			m_pPlayerProfileManager->SaveProfile(m_pPlayerProfileManager->GetCurrentUser(), result);
 		}
@@ -142,14 +142,14 @@ void CFlashMenuObject::StartSingleplayerGame(const char *strDifficulty)
 	StopVideo();
 	m_bDestroyStartMenuPending = true;
 	m_stateEntryMovies = eEMS_GameStart;
-	if(m_pMusicSystem)
+	if (m_pMusicSystem)
 		m_pMusicSystem->EndTheme(EThemeFade_StopAtOnce, 0, true);
-	PlaySound(ESound_MenuAmbience,false);
+	PlaySound(ESound_MenuAmbience, false);
 }
 
 ILINE void expandSeconds(int secs, int& days, int& hours, int& minutes, int& seconds)
 {
-	days  = secs / 86400;
+	days = secs / 86400;
 	secs -= days * 86400;
 	hours = secs / 3600;
 	secs -= hours * 3600;
@@ -159,7 +159,7 @@ ILINE void expandSeconds(int secs, int& days, int& hours, int& minutes, int& sec
 
 void secondsToString(int secs, wstring& outString)
 {
-	int d,h,m,s;
+	int d, h, m, s;
 	expandSeconds(secs, d, h, m, s);
 	string str;
 	if (d > 1)
@@ -176,19 +176,19 @@ void secondsToString(int secs, wstring& outString)
 void CFlashMenuObject::UpdateSaveGames()
 {
 	CFlashMenuScreen* pScreen = m_pCurrentFlashMenuScreen;
-	if(!pScreen)
+	if (!pScreen)
 		return;
 
 	//*************************************************************************
 
 	std::vector<SaveGameMetaData> saveGameData;
-	
+
 	//*************************************************************************
 
 	//get current mod info
 	SModInfo info;
 	string modName, modVersion;
-	if(g_pGame->GetIGameFramework()->GetModInfo(&info))
+	if (g_pGame->GetIGameFramework()->GetModInfo(&info))
 	{
 		modName = info.m_name;
 		modVersion = info.m_version;
@@ -199,28 +199,28 @@ void CFlashMenuObject::UpdateSaveGames()
 	// TODO: find a better place for this as it needs to be set only once -- CW
 	gEnv->pSystem->SetFlashLoadMovieHandler(this);
 
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
- 
+
 	ILocalizationManager* pLocMgr = gEnv->pSystem->GetLocalizationManager();
 	ISaveGameEnumeratorPtr pSGE = pProfile->CreateSaveGameEnumerator();
-	ISaveGameEnumerator::SGameDescription desc;	
+	ISaveGameEnumerator::SGameDescription desc;
 
 	//get the meta data into the struct
-	for (int i=0; i<pSGE->GetCount(); ++i)
+	for (int i = 0; i < pSGE->GetCount(); ++i)
 	{
 		pSGE->GetDescription(i, desc);
 
 		//check mod version
-		const char *tempModName = desc.metaData.xmlMetaDataNode->getAttr("ModName");
-		const char *tempModVersion = desc.metaData.xmlMetaDataNode->getAttr("ModVersion");
-		if(tempModName && tempModVersion )
+		const char* tempModName = desc.metaData.xmlMetaDataNode->getAttr("ModName");
+		const char* tempModVersion = desc.metaData.xmlMetaDataNode->getAttr("ModVersion");
+		if (tempModName && tempModVersion)
 		{
-			if(strcmp(modName.c_str(),tempModName) || strcmp(modVersion.c_str(),tempModVersion))
+			if (strcmp(modName.c_str(), tempModName) || strcmp(modVersion.c_str(), tempModVersion))
 				continue;
 		}
 
@@ -249,16 +249,16 @@ void CFlashMenuObject::UpdateSaveGames()
 		saveGameData.push_back(data);
 	}
 
-	if(saveGameData.size())
+	if (saveGameData.size())
 	{
 		//sort by the set sorting rules
 		std::sort(saveGameData.begin(), saveGameData.end(), SaveGameDataCompare(m_eSaveGameCompareMode));
 
 		//send sorted data to flash
-		int start = (m_bSaveGameSortUp)?0:saveGameData.size()-1;
-		int end = (m_bSaveGameSortUp)?saveGameData.size():-1;
-		int inc = (m_bSaveGameSortUp)?1:-1;
-		for(int i = start; i != end; i+=inc)
+		int start = (m_bSaveGameSortUp) ? 0 : saveGameData.size() - 1;
+		int end = (m_bSaveGameSortUp) ? saveGameData.size() : -1;
+		int inc = (m_bSaveGameSortUp) ? 1 : -1;
+		for (int i = start; i != end; i += inc)
 		{
 			SaveGameMetaData data = saveGameData[i];
 
@@ -274,26 +274,26 @@ void CFlashMenuObject::UpdateSaveGames()
 			wstring timeString;
 			pLocMgr->LocalizeTime(data.saveTime, true, false, timeString);
 
-			dateString+=L" ";
-			dateString+=timeString;
+			dateString += L" ";
+			dateString += timeString;
 
-			bool levelStart = (ValidateName(data.name))?true:false;
+			bool levelStart = (ValidateName(data.name)) ? true : false;
 
 			SFlashVarValue args[12] =
 			{
-				data.name, 
-				data.description, 
-				data.humanName, 
-				data.levelName, 
-				data.gameRules, 
-				data.fileVersion, 
-				data.buildVersion, 
+				data.name,
+				data.description,
+				data.humanName,
+				data.levelName,
+				data.gameRules,
+				data.fileVersion,
+				data.buildVersion,
 				levelPlayTimeString.c_str(),
 				dateString.c_str(),
 				levelStart,
 				data.kills,
 				data.difficulty
-			};		
+			};
 			pScreen->CheckedInvoke("addGameToList", args, sizeof(args) / sizeof(args[0]));
 		}
 	}
@@ -301,55 +301,55 @@ void CFlashMenuObject::UpdateSaveGames()
 	pScreen->CheckedInvoke("updateGameList");
 }
 
-void CFlashMenuObject::LoadGame(const char *fileName)
+void CFlashMenuObject::LoadGame(const char* fileName)
 {
 	//overwrite the last savegame with the to be loaded one
 	m_sLastSaveGame = fileName;
 	gEnv->pGame->GetIGameFramework()->LoadGame(fileName, false, true);
 }
 
-void CFlashMenuObject::DeleteSaveGame(const char *fileName)
+void CFlashMenuObject::DeleteSaveGame(const char* fileName)
 {
 
-	const char *reason = ValidateName(fileName);
-	if(reason)
+	const char* reason = ValidateName(fileName);
+	if (reason)
 	{
 		ShowMenuMessage(reason);
 		return;
 	}
 	else
 	{
-		if(!m_pPlayerProfileManager)
+		if (!m_pPlayerProfileManager)
 			return;
 
-		IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-		if(!pProfile)
+		IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+		if (!pProfile)
 			return;
 		pProfile->DeleteSaveGame(fileName);
 		UpdateSaveGames();
 	}
 }
 
-bool CFlashMenuObject::SaveGame(const char *fileName)
+bool CFlashMenuObject::SaveGame(const char* fileName)
 {
 	string sSaveFileName = fileName;
-	const char *reason = ValidateName(fileName);
-	if(reason)
+	const char* reason = ValidateName(fileName);
+	if (reason)
 	{
 		ShowMenuMessage(reason);
 		return false;
 	}
 	else
 	{
-		IActor *pActor = g_pGame->GetIGameFramework()->GetClientActor();
-		if(pActor && pActor->GetHealth() <= 0)
+		IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor();
+		if (pActor && pActor->GetHealth() <= 0)
 		{
 			ShowMenuMessage("@ui_dead_no_save");
 			return false;
 		}
 
 		sSaveFileName.append(".CRYSISJMSF");
-		const bool bSuccess =	gEnv->pGame->GetIGameFramework()->SaveGame(sSaveFileName,true, true, eSGR_QuickSave, true);
+		const bool bSuccess = gEnv->pGame->GetIGameFramework()->SaveGame(sSaveFileName, true, true, eSGR_QuickSave, true);
 		if (!bSuccess)
 			return false;
 
@@ -358,20 +358,20 @@ bool CFlashMenuObject::SaveGame(const char *fileName)
 	return true;
 }
 
-const char* CFlashMenuObject::ValidateName(const char *fileName)
+const char* CFlashMenuObject::ValidateName(const char* fileName)
 {
 	string sFileName(fileName);
 	int index = sFileName.rfind('.');
-	if(index>=0)
+	if (index >= 0)
 	{
-		sFileName = sFileName.substr(0,index);
+		sFileName = sFileName.substr(0, index);
 	}
 	index = sFileName.rfind('_');
-	if(index>=0)
+	if (index >= 0)
 	{
-		string check(sFileName.substr(index+1,sFileName.length()-(index+1)));
+		string check(sFileName.substr(index + 1, sFileName.length() - (index + 1)));
 		//if(!stricmp(check, "levelstart")) //because of the french law we can't do this ...
-		if(!stricmp(check, "crysis"))
+		if (!stricmp(check, "crysis"))
 			return "@ui_error_levelstart";
 	}
 	return NULL;
@@ -386,37 +386,36 @@ void CFlashMenuObject::UpdateMods()
 	SModInfo info;
 	string currentMod;
 	bool currentModExists = g_pGame->GetIGameFramework()->GetModInfo(&info);
-	if(currentModExists)
+	if (currentModExists)
 		currentMod = info.m_name;
 
 	m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.resetMods");
 
-	ICryPak *pPak = gEnv->pSystem->GetIPak();
+	ICryPak* pPak = gEnv->pSystem->GetIPak();
 	_finddata_t fd;
 	intptr_t handle = pPak->FindFirst(search.c_str(), &fd, ICryPak::FLAGS_NO_MASTER_FOLDER_MAPPING);
 	if (handle > -1)
 	{
 		do
 		{
-			if(fd.attrib & _A_SUBDIR)
+			if (fd.attrib & _A_SUBDIR)
 			{
-				if(!stricmp("..",fd.name)) continue;
+				if (!stricmp("..", fd.name)) continue;
 				string subDir(dir);
 				subDir.append(fd.name);
 				subDir += "\\";
-				if(g_pGame->GetIGameFramework()->GetModInfo(&info, subDir.c_str()))
+				if (g_pGame->GetIGameFramework()->GetModInfo(&info, subDir.c_str()))
 				{
 					string screenshot = subDir;
 					screenshot += "\\";
 					screenshot += info.m_screenshot;
 					bool isCurrent = false;
-					if(currentModExists)
-						isCurrent = (!strcmp(info.m_name,currentMod.c_str()))?true:false;
-					SFlashVarValue args[8] = {info.m_name, info.m_name, info.m_name, info.m_version, info.m_url, info.m_description, screenshot.c_str(), isCurrent};
-					m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.addModToList",args, 8);
+					if (currentModExists)
+						isCurrent = (!strcmp(info.m_name, currentMod.c_str())) ? true : false;
+					SFlashVarValue args[8] = { info.m_name, info.m_name, info.m_name, info.m_version, info.m_url, info.m_description, screenshot.c_str(), isCurrent };
+					m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.addModToList", args, 8);
 				}
 			}
-		}
-		while (pPak->FindNext(handle, &fd) >= 0);
+		} while (pPak->FindNext(handle, &fd) >= 0);
 	}
 }

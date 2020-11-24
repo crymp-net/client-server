@@ -29,38 +29,38 @@ static const size_t uiControlCodePrefixLen = strlen(uiControlCodePrefix);
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::SaveActionToMap(const char* actionmap, const char* action, const char *uiKey)
+void CFlashMenuObject::SaveActionToMap(const char* actionmap, const char* action, const char* uiKey)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 	IActionMap* pMap = pProfile->GetActionMap(actionmap);
-	if(pMap)
+	if (pMap)
 	{
 		const char* key = uiKey;
 		if (strstr(key, uiControlCodePrefix) == key)
-			key+=uiControlCodePrefixLen;
+			key += uiControlCodePrefixLen;
 		// else
 		// 	assert(false);
 		pMap->BindAction(action, key, 0);
 
-//START workarounds
-		if(strcmp("hud_show_multiplayer_scoreboard", action) == 0)
+		//START workarounds
+		if (strcmp("hud_show_multiplayer_scoreboard", action) == 0)
 		{
 			pMap->BindAction("hud_hide_multiplayer_scoreboard", key, 0);
 		}
-		if(strcmp("landvehicle", actionmap) == 0)
+		if (strcmp("landvehicle", actionmap) == 0)
 		{
 			IActionMap* pSeaMap = pProfile->GetActionMap("seavehicle");
-			if(pSeaMap)
+			if (pSeaMap)
 			{
 				pSeaMap->BindAction(action, key, 0);
 			}
 		}
-//END workarounds
+		//END workarounds
 
 		IPlayerProfileManager::EProfileOperationResult result;
 		m_pPlayerProfileManager->SaveProfile(m_pPlayerProfileManager->GetCurrentUser(), result);
@@ -69,7 +69,7 @@ void CFlashMenuObject::SaveActionToMap(const char* actionmap, const char* action
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::SetCVar(const char *command, const string& value)
+void CFlashMenuObject::SetCVar(const char* command, const string& value)
 {
 	string sCommand = command;
 
@@ -86,14 +86,14 @@ void CFlashMenuObject::SetCVar(const char *command, const string& value)
 
 void CFlashMenuObject::UpdateKeyMenu()
 {
-	if(!m_pCurrentFlashMenuScreen)
+	if (!m_pCurrentFlashMenuScreen)
 		return;
 
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	IActionMapManager* pAM = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
@@ -104,25 +104,25 @@ void CFlashMenuObject::UpdateKeyMenu()
 		IActionMapBindInfoIteratorPtr pIter = pMap->CreateBindInfoIterator();
 		while (const SActionMapBindInfo* pInfo = pIter->Next())
 		{
-			for (int i=0; i<pInfo->nKeys; ++i)
+			for (int i = 0; i < pInfo->nKeys; ++i)
 			{
 				const char* sKey = pInfo->keys[i];
 				if (*sKey)
 				{
-					if(strcmp(sKey,"<unknown>") != 0)
+					if (strcmp(sKey, "<unknown>") != 0)
 					{
-						if(strncmp(sKey, "xi_", 3) != 0)
+						if (strncmp(sKey, "xi_", 3) != 0)
 						{
-							CryFixedStringT<64> ui_key (uiControlCodePrefix, uiControlCodePrefixLen);
-							ui_key+=sKey;
-							SFlashVarValue args[3] = {actionMapName, pInfo->action, ui_key.c_str()};
+							CryFixedStringT<64> ui_key(uiControlCodePrefix, uiControlCodePrefixLen);
+							ui_key += sKey;
+							SFlashVarValue args[3] = { actionMapName, pInfo->action, ui_key.c_str() };
 							m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Options.setActionmapKey", args, 3);
 						}
 					}
 				}
 			}
 		}
-	}	
+	}
 	m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Options.updateContent");
 	string sCrosshair;
 	g_pGame->GetOptions()->GetProfileValue("Crosshair", sCrosshair);
@@ -131,7 +131,7 @@ void CFlashMenuObject::UpdateKeyMenu()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::UpdateCVar(const char *command)
+void CFlashMenuObject::UpdateCVar(const char* command)
 {
 	string sCommand = command;
 
@@ -139,9 +139,9 @@ void CFlashMenuObject::UpdateCVar(const char *command)
 	ICVar* state = gEnv->pConsole->GetCVar(sCommand);
 	string sValue = state->GetString();
 
-	if(m_pCurrentFlashMenuScreen)
+	if (m_pCurrentFlashMenuScreen)
 	{
-		SFlashVarValue args[2] = {(const char *)sCommand, (const char *)sValue};
+		SFlashVarValue args[2] = { (const char*)sCommand, (const char*)sValue };
 		m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Options.updateCVar", args, 2);
 	}
 }
@@ -155,7 +155,7 @@ void CFlashMenuObject::RestoreDefaults()
 	XmlNodeRef root = GetISystem()->LoadXmlFile("libs/config/defaultProfile.xml");
 	pAmMgr->LoadFromXML(root);
 
-	if(m_pCurrentFlashMenuScreen)
+	if (m_pCurrentFlashMenuScreen)
 	{
 		m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Options.clearKeyChanges");
 	}

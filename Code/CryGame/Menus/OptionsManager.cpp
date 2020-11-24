@@ -53,7 +53,7 @@ COptionsManager::COptionsManager() : m_pPlayerProfileManager(NULL)
 
 //-----------------------------------------------------------------------------------------------------
 
-void COptionsManager::SetCrysisProfileColor(const char *color)
+void COptionsManager::SetCrysisProfileColor(const char* color)
 {
 	if (!color)
 	{
@@ -94,7 +94,7 @@ ECrysisProfileColor COptionsManager::GetCrysisProfileColor()
 
 void COptionsManager::SetProfileManager(IPlayerProfileManager* pProfileMgr)
 {
-	if(gEnv->pSystem->IsEditor() || gEnv->pSystem->IsDedicated()) 
+	if (gEnv->pSystem->IsEditor() || gEnv->pSystem->IsDedicated())
 		return;
 
 	m_pPlayerProfileManager = pProfileMgr;
@@ -108,15 +108,15 @@ void COptionsManager::SetProfileManager(IPlayerProfileManager* pProfileMgr)
 
 const char* COptionsManager::GetProfileName()
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return "Nomad";
 	const char* user = m_pPlayerProfileManager->GetCurrentUser();
-	if(!user)
+	if (!user)
 		return "Nomad";
 	IPlayerProfile* profile = m_pPlayerProfileManager->GetCurrentProfile(user);
-	if(!profile)
+	if (!profile)
 		return "Nomad";
-	if(!stricmp(profile->GetName(),"default"))
+	if (!stricmp(profile->GetName(), "default"))
 		return "Nomad";
 	return profile->GetName();
 
@@ -126,7 +126,7 @@ const char* COptionsManager::GetProfileName()
 
 bool COptionsManager::IgnoreProfile()
 {
-	return GetISystem()->IsDevMode() && (g_pGameCVars->g_useProfile==0);
+	return GetISystem()->IsDevMode() && (g_pGameCVars->g_useProfile == 0);
 }
 
 
@@ -134,17 +134,17 @@ ILINE bool IsOption(const char* attribName, const char*& cVarName, bool& bWriteT
 {
 	const char optionPrefix[] = "Option.";
 	const char optionPrefixConfig[] = "OptionCfg.";
-	const size_t optionPrefixLen = sizeof(optionPrefix)-1;
-	const size_t optionPrefixConfigLen = sizeof(optionPrefixConfig)-1;
+	const size_t optionPrefixLen = sizeof(optionPrefix) - 1;
+	const size_t optionPrefixConfigLen = sizeof(optionPrefixConfig) - 1;
 	if (strncmp(attribName, optionPrefix, optionPrefixLen) == 0)
 	{
-		cVarName = attribName+optionPrefixLen;
+		cVarName = attribName + optionPrefixLen;
 		bWriteToCfg = false;
 		return true;
 	}
 	if (strncmp(attribName, optionPrefixConfig, optionPrefixConfigLen) == 0)
 	{
-		cVarName = attribName+optionPrefixConfigLen;
+		cVarName = attribName + optionPrefixConfigLen;
 		bWriteToCfg = true;
 		return true;
 	}
@@ -155,32 +155,32 @@ ILINE bool IsOption(const char* attribName, const char*& cVarName, bool& bWriteT
 
 void COptionsManager::InitProfileOptions(bool switchProfiles)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	if(g_pGameCVars->g_useProfile==0) return;
+	if (g_pGameCVars->g_useProfile == 0) return;
 
-	if(g_pGameCVars->g_startFirstTime==1)
+	if (g_pGameCVars->g_startFirstTime == 1)
 	{
-		ICVar *pCVar = gEnv->pConsole->GetCVar("g_startFirstTime");
-		if(pCVar && pCVar->GetIVal()==1)
+		ICVar* pCVar = gEnv->pConsole->GetCVar("g_startFirstTime");
+		if (pCVar && pCVar->GetIVal() == 1)
 		{
 			pCVar->Set(0);
 			m_firstStart = true;
 		}
-		switchProfiles=true;
+		switchProfiles = true;
 	}
 
 	const char* user = m_pPlayerProfileManager->GetCurrentUser();
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
+	if (!pProfile)
 		return;
 
 	IAttributeEnumeratorPtr attribEnum = pProfile->CreateAttributeEnumerator();
 	IAttributeEnumerator::SAttributeDescription attrib;
 
 	m_profileOptions.clear();
-	while(attribEnum->Next(attrib))
+	while (attribEnum->Next(attrib))
 	{
 		bool bWriteToCfg = false;
 		const char* attribCVar = "";
@@ -188,15 +188,15 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 
 		if (bIsOption)
 		{
-			SOptionEntry entry (attrib.name, bWriteToCfg);
+			SOptionEntry entry(attrib.name, bWriteToCfg);
 			m_profileOptions[attribCVar] = entry;
-			if(!bWriteToCfg || switchProfiles)
+			if (!bWriteToCfg || switchProfiles)
 			{
 				string value;
-				if(!strcmp(attribCVar, "pb_client"))
+				if (!strcmp(attribCVar, "pb_client"))
 				{
 					GetProfileValue(attrib.name, value);
-					if(atoi(value)==0)
+					if (atoi(value) == 0)
 					{
 						m_pbEnabled = false;
 						gEnv->pConsole->ExecuteString("net_pb_cl_enable false");
@@ -208,21 +208,21 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 					}
 					continue;
 				}
-				else if(!strcmp(attribCVar, "fsaa_mode"))
+				else if (!strcmp(attribCVar, "fsaa_mode"))
 				{
 					GetProfileValue(attrib.name, value);
 					SetAntiAliasingMode(value.c_str());
 				}
-				else if(!strcmp(attribCVar, "g_difficultyLevel"))
+				else if (!strcmp(attribCVar, "g_difficultyLevel"))
 				{
 					GetProfileValue(attrib.name, value);
 					SetDifficulty(value);
 				}
-				
-				ICVar *pCVar = gEnv->pConsole->GetCVar(attribCVar);
-				if(pCVar && GetProfileValue(attrib.name, value))
+
+				ICVar* pCVar = gEnv->pConsole->GetCVar(attribCVar);
+				if (pCVar && GetProfileValue(attrib.name, value))
 				{
-					if(stricmp(pCVar->GetString(), value.c_str()))
+					if (stricmp(pCVar->GetString(), value.c_str()))
 					{
 						//CryLogAlways("Inited, loaded and changed: %s = %s (was %s)", attrib.name, value, pCVar->GetString());
 						pCVar->Set(value.c_str());
@@ -231,7 +231,7 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 					{
 						//CryLogAlways("Inited, loaded, but not changed: %s = %s", attrib.name, value);
 					}
-					if(!stricmp(attrib.name,"Option.hud_colorLine"))
+					if (!stricmp(attrib.name, "Option.hud_colorLine"))
 					{
 						SetCrysisProfileColor(value.c_str());
 					}
@@ -241,53 +241,53 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 	}
 
 	WriteGameCfg();
-	
+
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void COptionsManager::ResetDefaults(const char* option)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
 	const char* user = m_pPlayerProfileManager->GetCurrentUser();
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
+	if (!pProfile)
 		return;
 	XmlNodeRef root = GetISystem()->LoadXmlFile("libs/config/profiles/default/attributes.xml");
-	bool resetAll = (option==NULL);
+	bool resetAll = (option == NULL);
 	bool detectHardware = false;
 	for (int i = 0; i < root->getChildCount(); ++i)
 	{
 		XmlNodeRef enumNameNode = root->getChild(i);
-		const char *name = enumNameNode->getAttr("name");
-		const char *value = enumNameNode->getAttr("value");
-		if(name && value)
+		const char* name = enumNameNode->getAttr("name");
+		const char* value = enumNameNode->getAttr("value");
+		if (name && value)
 		{
 			const char* attribCVar = "";
 			bool bWriteToCfg = false;
 			const bool bIsOption = IsOption(name, attribCVar, bWriteToCfg);
-			if(bIsOption)
+			if (bIsOption)
 			{
-				if(!resetAll && strcmp(attribCVar,option))
+				if (!resetAll && strcmp(attribCVar, option))
 					continue;
 
-				if(!strcmp(attribCVar, "sys_spec_Shadows"))
+				if (!strcmp(attribCVar, "sys_spec_Shadows"))
 				{
 					detectHardware = true;
 				}
 
-				if(!strcmp(attribCVar, "hud_colorLine"))
+				if (!strcmp(attribCVar, "hud_colorLine"))
 				{
 					CryFixedStringT<32> color;
 					color.Format("%d", g_pGameCVars->hud_colorLine);
 					SetCrysisProfileColor(color.c_str());
 				}
 
-				if(!strcmp(attribCVar,"pb_client"))
+				if (!strcmp(attribCVar, "pb_client"))
 				{
-					if(atoi(value)==0)
+					if (atoi(value) == 0)
 					{
 						m_pbEnabled = false;
 						gEnv->pConsole->ExecuteString("net_pb_cl_enable false");
@@ -298,24 +298,24 @@ void COptionsManager::ResetDefaults(const char* option)
 						gEnv->pConsole->ExecuteString("net_pb_cl_enable true");
 					}
 				}
-				else if(!strcmp(attribCVar, "g_difficultyLevel"))
+				else if (!strcmp(attribCVar, "g_difficultyLevel"))
 				{
 					SetDifficulty(value);
 				}
 				else
 				{
-					ICVar *pCVar = gEnv->pConsole->GetCVar(attribCVar);
-					if(pCVar)
+					ICVar* pCVar = gEnv->pConsole->GetCVar(attribCVar);
+					if (pCVar)
 					{
 						pCVar->Set(value);
 					}
 				}
-				if(!resetAll)
+				if (!resetAll)
 					break;
 			}
 		}
 	}
-	if(detectHardware)
+	if (detectHardware)
 		AutoDetectHardware("");
 }
 
@@ -323,91 +323,91 @@ void COptionsManager::ResetDefaults(const char* option)
 
 void COptionsManager::UpdateFlashOptions()
 {
-	std::map<string,SOptionEntry>::const_iterator it = m_profileOptions.begin();
-	std::map<string,SOptionEntry>::const_iterator end = m_profileOptions.end();
+	std::map<string, SOptionEntry>::const_iterator it = m_profileOptions.begin();
+	std::map<string, SOptionEntry>::const_iterator end = m_profileOptions.end();
 
-	CFlashMenuScreen *pMainMenu		= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
-	CFlashMenuScreen *pInGameMenu	= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
+	CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
+	CFlashMenuScreen* pInGameMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
 
-	CFlashMenuScreen *pCurrentMenu = NULL;
-	if(pMainMenu && pMainMenu->IsLoaded())
+	CFlashMenuScreen* pCurrentMenu = NULL;
+	if (pMainMenu && pMainMenu->IsLoaded())
 		pCurrentMenu = pMainMenu;
-	else if(pInGameMenu && pInGameMenu->IsLoaded())
+	else if (pInGameMenu && pInGameMenu->IsLoaded())
 		pCurrentMenu = pInGameMenu;
 
-	if(!pCurrentMenu) return;
+	if (!pCurrentMenu) return;
 
-	for(;it!=end;++it)
+	for (;it != end;++it)
 	{
-		if(!strcmp(it->first.c_str(),"pb_client"))
+		if (!strcmp(it->first.c_str(), "pb_client"))
 		{
-			SFlashVarValue option[3] = {"pb_client", m_pbEnabled, true};
+			SFlashVarValue option[3] = { "pb_client", m_pbEnabled, true };
 			pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 		}
-		else if(!stricmp(it->first.c_str(), "fsaa_mode"))
+		else if (!stricmp(it->first.c_str(), "fsaa_mode"))
 		{
-			if(g_pGame->GetMenu())
+			if (g_pGame->GetMenu())
 			{
-				if(!gEnv->pConsole->GetCVar("r_FSAA")->GetIVal())
+				if (!gEnv->pConsole->GetCVar("r_FSAA")->GetIVal())
 				{
-					SFlashVarValue option[3] = {"fsaa_mode", "0", true};
+					SFlashVarValue option[3] = { "fsaa_mode", "0", true };
 					pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 				}
 				else
 				{
 					int samples = gEnv->pConsole->GetCVar("r_FSAA_samples")->GetIVal();
 					int quality = gEnv->pConsole->GetCVar("r_FSAA_quality")->GetIVal();
-					SFlashVarValue option[3] = {"fsaa_mode", g_pGame->GetMenu()->GetFSAAMode(samples, quality).c_str(), true};
+					SFlashVarValue option[3] = { "fsaa_mode", g_pGame->GetMenu()->GetFSAAMode(samples, quality).c_str(), true };
 					pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 				}
 			}
 		}
 		else
 		{
-			ICVar *pCVar = gEnv->pConsole->GetCVar(it->first);
-			if(pCVar)
+			ICVar* pCVar = gEnv->pConsole->GetCVar(it->first);
+			if (pCVar)
 			{
 				const char* name = pCVar->GetName();
 				const char* value = pCVar->GetString();
 
-				bool bIsValid = pCVar->GetIVal()==pCVar->GetRealIVal();
+				bool bIsValid = pCVar->GetIVal() == pCVar->GetRealIVal();
 
-				if(!stricmp(name, "r_fsaa_samples")) //fsaa workaround for RnD
+				if (!stricmp(name, "r_fsaa_samples")) //fsaa workaround for RnD
 				{
-					ICVar *pFSAA = gEnv->pConsole->GetCVar("r_fsaa");
-					if(pFSAA && pFSAA->GetIVal() == 0)
+					ICVar* pFSAA = gEnv->pConsole->GetCVar("r_fsaa");
+					if (pFSAA && pFSAA->GetIVal() == 0)
 						value = pFSAA->GetString();
 				}
 
-				SFlashVarValue option[3] = {name, value, bIsValid};
+				SFlashVarValue option[3] = { name, value, bIsValid };
 				pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 			}
 		}
-		
+
 	}
-	pCurrentMenu->CheckedInvoke("_root.Root.MainMenu.Options.updateOptions");  
+	pCurrentMenu->CheckedInvoke("_root.Root.MainMenu.Options.updateOptions");
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void COptionsManager::UpdateToProfile()
 {
-	std::map<string,SOptionEntry>::const_iterator it = m_profileOptions.begin();
-	std::map<string,SOptionEntry>::const_iterator end = m_profileOptions.end();
+	std::map<string, SOptionEntry>::const_iterator it = m_profileOptions.begin();
+	std::map<string, SOptionEntry>::const_iterator end = m_profileOptions.end();
 
-	for(;it!=end;++it)
+	for (;it != end;++it)
 	{
 		const SOptionEntry& entry = it->second;
-		if(!strcmp(it->first.c_str(),"pb_client"))
+		if (!strcmp(it->first.c_str(), "pb_client"))
 		{
-			SaveValueToProfile(entry.name.c_str(), m_pbEnabled?1:0);
+			SaveValueToProfile(entry.name.c_str(), m_pbEnabled ? 1 : 0);
 		}
-		else if(!strcmp(it->first.c_str(), "fsaa_mode"))
+		else if (!strcmp(it->first.c_str(), "fsaa_mode"))
 		{
 			string value("");
-			if(g_pGame->GetMenu())
+			if (g_pGame->GetMenu())
 			{
-				if(gEnv->pConsole->GetCVar("r_FSAA")->GetIVal())
+				if (gEnv->pConsole->GetCVar("r_FSAA")->GetIVal())
 				{
 					int samples = gEnv->pConsole->GetCVar("r_FSAA_samples")->GetIVal();
 					int quality = gEnv->pConsole->GetCVar("r_FSAA_quality")->GetIVal();
@@ -418,8 +418,8 @@ void COptionsManager::UpdateToProfile()
 		}
 		else
 		{
-			ICVar *pCVAR = gEnv->pConsole->GetCVar(it->first);
-			if(pCVAR)
+			ICVar* pCVAR = gEnv->pConsole->GetCVar(it->first);
+			if (pCVAR)
 			{
 				string value(pCVAR->GetString());
 				SaveValueToProfile(entry.name.c_str(), value);
@@ -430,75 +430,75 @@ void COptionsManager::UpdateToProfile()
 }
 
 //-----------------------------------------------------------------------------------------------------
-bool COptionsManager::HandleFSCommand(const char *szCommand,const char *szArgs)
+bool COptionsManager::HandleFSCommand(const char* szCommand, const char* szArgs)
 {
-	
-	if(!m_pPlayerProfileManager)
+
+	if (!m_pPlayerProfileManager)
 		return false;
 
 	const char* user = m_pPlayerProfileManager->GetCurrentUser();
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(user);
+	if (!pProfile)
 		return false;
 
-	if(!stricmp(szCommand, "SaveProfile"))
+	if (!stricmp(szCommand, "SaveProfile"))
 	{
 		UpdateToProfile();
 		SaveProfile();
 		return true;
 	}
 
-	if(!stricmp(szCommand, "RestoreDefaultProfile"))
+	if (!stricmp(szCommand, "RestoreDefaultProfile"))
 	{
-		if(szArgs && szArgs[0])
+		if (szArgs && szArgs[0])
 			ResetDefaults(szArgs);
 		else
 			ResetDefaults(NULL);
 		return true;
 	}
 
-	if(!stricmp(szCommand, "UpdateCVars"))
+	if (!stricmp(szCommand, "UpdateCVars"))
 	{
 		UpdateFlashOptions();
 		return true;
 	}
 
-	if(!stricmp(szCommand, "hud_showAllObjectives"))
+	if (!stricmp(szCommand, "hud_showAllObjectives"))
 	{
-		if(szArgs)
+		if (szArgs)
 		{
-			SAFE_HUD_FUNC(SetShowAllOnScreenObjectives(atoi(szArgs)?true:false));
+			SAFE_HUD_FUNC(SetShowAllOnScreenObjectives(atoi(szArgs) ? true : false));
 		}
 	}
-	else if(!stricmp(szCommand,"hud_colorLine"))
+	else if (!stricmp(szCommand, "hud_colorLine"))
 	{
 		SetCrysisProfileColor(szArgs);
 	}
-	else if(gEnv->bMultiplayer && !stricmp(szCommand,"g_psTutorial_Enabled"))
+	else if (gEnv->bMultiplayer && !stricmp(szCommand, "g_psTutorial_Enabled"))
 	{
-		if(atoi(szArgs)==1)
+		if (atoi(szArgs) == 1)
 		{
 			gEnv->pConsole->ExecuteString("g_psTutorial_Reset");
 		}
 	}
 
-	std::map<string,SOptionEntry>::iterator it = m_profileOptions.find(szCommand);
-	if(it!=m_profileOptions.end())
+	std::map<string, SOptionEntry>::iterator it = m_profileOptions.find(szCommand);
+	if (it != m_profileOptions.end())
 	{
-		ICVar *pCVAR = gEnv->pConsole->GetCVar(szCommand);
-		if(pCVAR)
+		ICVar* pCVAR = gEnv->pConsole->GetCVar(szCommand);
+		if (pCVAR)
 		{
-			if(pCVAR->GetType()==1)	//int
+			if (pCVAR->GetType() == 1)	//int
 			{
 				int value = atoi(szArgs);
 				pCVAR->Set(value);
 			}
-			else if(pCVAR->GetType()==2)	//float
+			else if (pCVAR->GetType() == 2)	//float
 			{
 				float value = atof(szArgs);
 				pCVAR->Set(value);
 			}
-			else if(pCVAR->GetType()==3)	//string
+			else if (pCVAR->GetType() == 3)	//string
 				pCVAR->Set(szArgs);
 			return true; // it's a CVAR, we are done!
 		}
@@ -506,7 +506,7 @@ bool COptionsManager::HandleFSCommand(const char *szCommand,const char *szArgs)
 	//else //does this map to an options function? even if it is inside m_profileOptions, but not a console variable (e.g. pb_client), we want to see if it's a registered command
 	{
 		TOpFuncMapIt iter = m_opFuncMap.find(szCommand);
-		if(iter!=m_opFuncMap.end())
+		if (iter != m_opFuncMap.end())
 		{
 			(this->*(iter->second))(szArgs);
 			return true;
@@ -520,10 +520,10 @@ bool COptionsManager::HandleFSCommand(const char *szCommand,const char *szArgs)
 
 void COptionsManager::SaveCVarToProfile(const char* key, const string& value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	pProfile->SetAttribute(key, value);
@@ -533,23 +533,23 @@ void COptionsManager::SaveCVarToProfile(const char* key, const string& value)
 
 //-----------------------------------------------------------------------------------------------------
 
-bool COptionsManager::GetProfileValue(const char* key, int &value)
+bool COptionsManager::GetProfileValue(const char* key, int& value)
 {
-	if(!m_pPlayerProfileManager) return false;
+	if (!m_pPlayerProfileManager) return false;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile) return false;
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile) return false;
 
 	return pProfile->GetAttribute(key, value);
 }
 //-----------------------------------------------------------------------------------------------------
 
-bool COptionsManager::GetProfileValue(const char* key, bool &value)
+bool COptionsManager::GetProfileValue(const char* key, bool& value)
 {
-	if(!m_pPlayerProfileManager) return false;
+	if (!m_pPlayerProfileManager) return false;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile) return false;
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile) return false;
 
 	return pProfile->GetAttribute(key, value);
 }
@@ -557,33 +557,33 @@ bool COptionsManager::GetProfileValue(const char* key, bool &value)
 
 //-----------------------------------------------------------------------------------------------------
 
-bool COptionsManager::GetProfileValue(const char* key, float &value)
+bool COptionsManager::GetProfileValue(const char* key, float& value)
 {
-	if(!m_pPlayerProfileManager) return false;
+	if (!m_pPlayerProfileManager) return false;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile) return false;
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile) return false;
 
 	return pProfile->GetAttribute(key, value);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-bool COptionsManager::GetProfileValue(const char* key, string &value)
+bool COptionsManager::GetProfileValue(const char* key, string& value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 	{
-		if(gEnv->pSystem->IsEditor())
+		if (gEnv->pSystem->IsEditor())
 		{
-			if(strcmp(key, "ColorLine") == 0)
+			if (strcmp(key, "ColorLine") == 0)
 			{
 				value = m_defaultColorLine;
 			}
-			else if(strcmp(key, "ColorOver") == 0)
+			else if (strcmp(key, "ColorOver") == 0)
 			{
 				value = m_defaultColorOver;
 			}
-			else if(strcmp(key, "ColorText") == 0)
+			else if (strcmp(key, "ColorText") == 0)
 			{
 				value = m_defaultColorText;
 			}
@@ -596,8 +596,8 @@ bool COptionsManager::GetProfileValue(const char* key, string &value)
 		return false;
 	}
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile) return false;
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile) return false;
 
 	return pProfile->GetAttribute(key, value);
 }
@@ -606,11 +606,11 @@ bool COptionsManager::GetProfileValue(const char* key, string &value)
 
 void COptionsManager::SaveValueToProfile(const char* key, const string& value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	pProfile->SetAttribute(key, value);
@@ -621,11 +621,11 @@ void COptionsManager::SaveValueToProfile(const char* key, const string& value)
 
 void COptionsManager::SaveValueToProfile(const char* key, bool value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	pProfile->SetAttribute(key, value);
@@ -636,11 +636,11 @@ void COptionsManager::SaveValueToProfile(const char* key, bool value)
 
 void COptionsManager::SaveValueToProfile(const char* key, int value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	pProfile->SetAttribute(key, value);
@@ -651,11 +651,11 @@ void COptionsManager::SaveValueToProfile(const char* key, int value)
 
 void COptionsManager::SaveValueToProfile(const char* key, float value)
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 
-	IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-	if(!pProfile)
+	IPlayerProfile* pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
+	if (!pProfile)
 		return;
 
 	pProfile->SetAttribute(key, value);
@@ -666,7 +666,7 @@ void COptionsManager::SaveValueToProfile(const char* key, float value)
 
 void COptionsManager::SaveProfile()
 {
-	if(!m_pPlayerProfileManager)
+	if (!m_pPlayerProfileManager)
 		return;
 	IPlayerProfileManager::EProfileOperationResult result;
 	m_pPlayerProfileManager->SaveProfile(m_pPlayerProfileManager->GetCurrentUser(), result);
@@ -674,17 +674,17 @@ void COptionsManager::SaveProfile()
 }
 //-----------------------------------------------------------------------------------------------------
 
-void COptionsManager::OnElementFound(ICVar *pCVar)
+void COptionsManager::OnElementFound(ICVar* pCVar)
 {
-	if(pCVar)
+	if (pCVar)
 	{
-		CFlashMenuScreen *pMainMenu		= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
-		CFlashMenuScreen *pInGameMenu	= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
+		CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
+		CFlashMenuScreen* pInGameMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
 
-		CFlashMenuScreen *pCurrentMenu = NULL;
-		if(pMainMenu && pMainMenu->IsLoaded())
+		CFlashMenuScreen* pCurrentMenu = NULL;
+		if (pMainMenu && pMainMenu->IsLoaded())
 			pCurrentMenu = pMainMenu;
-		else if(pInGameMenu && pInGameMenu->IsLoaded())
+		else if (pInGameMenu && pInGameMenu->IsLoaded())
 			pCurrentMenu = pInGameMenu;
 		else
 			return;
@@ -694,10 +694,10 @@ void COptionsManager::OnElementFound(ICVar *pCVar)
 
 		bool bIsValid = true;
 
-		if(pCVar)
-			bIsValid = pCVar->GetIVal()==pCVar->GetRealIVal();
+		if (pCVar)
+			bIsValid = pCVar->GetIVal() == pCVar->GetRealIVal();
 
-		SFlashVarValue option[3] = {name, value, bIsValid};
+		SFlashVarValue option[3] = { name, value, bIsValid };
 		pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 	}
 }
@@ -715,12 +715,12 @@ void COptionsManager::SetVideoMode(const char* params)
 {
 	CryFixedStringT<64> resolution(params);
 	int pos = resolution.find('x');
-	if(pos != CryFixedStringT<64>::npos)
+	if (pos != CryFixedStringT<64>::npos)
 	{
 		CryFixedStringT<64> width = "r_width ";
 		width.append(resolution.substr(0, pos));
 		CryFixedStringT<64> height = "r_height ";
-		height.append(resolution.substr(pos+1, resolution.size()));
+		height.append(resolution.substr(pos + 1, resolution.size()));
 
 		g_pGame->GetMenu()->StartResolutionCountDown();
 		gEnv->pConsole->ExecuteString(width);
@@ -732,12 +732,12 @@ void COptionsManager::SetVideoMode(const char* params)
 
 void COptionsManager::SetAntiAliasingMode(const char* params)
 {
-	if(params)
+	if (params)
 	{
-		if(g_pGame->GetMenu())
+		if (g_pGame->GetMenu())
 		{
 			CFlashMenuObject::FSAAMode mode = g_pGame->GetMenu()->GetFSAAMode(params);
-			if(mode.samples == 0)
+			if (mode.samples == 0)
 			{
 				gEnv->pConsole->ExecuteString("r_fsaa 0");
 				gEnv->pConsole->ExecuteString("r_fsaa_samples 0");
@@ -745,7 +745,7 @@ void COptionsManager::SetAntiAliasingMode(const char* params)
 			}
 			else
 			{
-				gEnv->pConsole->ExecuteString("r_fsaa 1");	
+				gEnv->pConsole->ExecuteString("r_fsaa 1");
 				CryFixedStringT<32> command = "r_fsaa_samples ";
 				char buffer[16];
 				itoa(mode.samples, buffer, 10);
@@ -759,13 +759,13 @@ void COptionsManager::SetAntiAliasingMode(const char* params)
 				// FSAA requires HDR mode on, to get consistent menu settings we switch sys_spec_shading to 3 or 4
 				// search for #LABEL_FSAA_HDR
 				{
-					bool bHDREnabled = gEnv->pRenderer->EF_Query(EFQ_HDRModeEnabled)!=0;
+					bool bHDREnabled = gEnv->pRenderer->EF_Query(EFQ_HDRModeEnabled) != 0;
 
-					if(!bHDREnabled)		// no HDR so we either have sys_spec_Shading in 1 or 2 or user
+					if (!bHDREnabled)		// no HDR so we either have sys_spec_Shading in 1 or 2 or user
 					{										// (it cannot be the machine is not capable of HDR as we have a list of FSAA modes)
-						ICVar *pSpecShading = gEnv->pConsole->GetCVar("sys_spec_Shading");			assert(pSpecShading);
+						ICVar* pSpecShading = gEnv->pConsole->GetCVar("sys_spec_Shading");			assert(pSpecShading);
 
-						if(pSpecShading)
+						if (pSpecShading)
 							pSpecShading->Set(3);		// starting with mode 3 we have HDR on
 					}
 				}
@@ -778,7 +778,7 @@ void COptionsManager::SetAntiAliasingMode(const char* params)
 
 void COptionsManager::SetDifficulty(const char* params)
 {
-	if(params && params[0])
+	if (params && params[0])
 		g_pGame->GetMenu()->LoadDifficultyConfig(atoi(params));
 }
 
@@ -786,10 +786,10 @@ void COptionsManager::SetDifficulty(const char* params)
 
 void COptionsManager::PBClient(const char* params)
 {
-	if(params)
+	if (params)
 	{
 		int value = atoi(params);
-		if(value==0)
+		if (value == 0)
 		{
 			m_pbEnabled = false;
 			gEnv->pConsole->ExecuteString("net_pb_cl_enable false");
@@ -822,15 +822,15 @@ void COptionsManager::SystemConfigChanged(bool silent)
 	//gEnv->pSystem->SaveConfiguration();
 	//gEnv->pConsole->ExecuteString("sys_SaveCVars 0");
 
-	if(m_pPlayerProfileManager)
+	if (m_pPlayerProfileManager)
 	{
 		UpdateToProfile();
 		SaveProfile();
 	}
-	
-	if(!silent)
+
+	if (!silent)
 	{
-		if(CFlashMenuScreen *pCurrentMenu = GetCurrentMenu())
+		if (CFlashMenuScreen* pCurrentMenu = GetCurrentMenu())
 		{
 			pCurrentMenu->Invoke("showErrorMessage", "Box1");
 			CryFixedStringT<128> text = "@system_spec_";
@@ -847,15 +847,15 @@ void COptionsManager::SystemConfigChanged(bool silent)
 
 //-----------------------------------------------------------------------------------------------------
 
-CFlashMenuScreen *COptionsManager::GetCurrentMenu()
+CFlashMenuScreen* COptionsManager::GetCurrentMenu()
 {
-	CFlashMenuScreen *pMainMenu		= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
-	CFlashMenuScreen *pInGameMenu	= SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
+	CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
+	CFlashMenuScreen* pInGameMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
 
-	CFlashMenuScreen *pCurrentMenu = NULL;
-	if(pMainMenu && pMainMenu->IsLoaded())
+	CFlashMenuScreen* pCurrentMenu = NULL;
+	if (pMainMenu && pMainMenu->IsLoaded())
 		pCurrentMenu = pMainMenu;
-	else if(pInGameMenu && pInGameMenu->IsLoaded())
+	else if (pInGameMenu && pInGameMenu->IsLoaded())
 		pCurrentMenu = pInGameMenu;
 
 	return pCurrentMenu;
@@ -869,17 +869,17 @@ bool COptionsManager::WriteGameCfg()
 	if (pFile == 0)
 		return false;
 
-	fputs("-- [Game-Configuration]\r\n",pFile);
-	fputs("-- Attention: This file is re-generated by the system! Editing is not recommended! \r\n\r\n",pFile);
+	fputs("-- [Game-Configuration]\r\n", pFile);
+	fputs("-- Attention: This file is re-generated by the system! Editing is not recommended! \r\n\r\n", pFile);
 
-	CCVarSink sink (this, pFile);
+	CCVarSink sink(this, pFile);
 	gEnv->pConsole->DumpCVars(&sink);
 
 	fclose(pFile);
 	return true;
 }
 
-void COptionsManager::CCVarSink::OnElementFound(ICVar *pCVar)
+void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 {
 	if (pCVar == 0)
 		return;
@@ -899,7 +899,7 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar *pCVar)
 
 	// replace \ with \\ 
 	pos = 1;
-	for(;;)
+	for (;;)
 	{
 		pos = szValue.find_first_of("\\", pos);
 
@@ -909,12 +909,12 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar *pCVar)
 		}
 
 		szValue.replace(pos, 1, "\\\\", 2);
-		pos+=2;
+		pos += 2;
 	}
 
 	// replace " with \" 
 	pos = 1;
-	for(;;)
+	for (;;)
 	{
 		pos = szValue.find_first_of("\"", pos);
 
@@ -924,10 +924,10 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar *pCVar)
 		}
 
 		szValue.replace(pos, 1, "\\\"", 2);
-		pos+=2;
+		pos += 2;
 	}
 
-	if(pCVar->GetType()==CVAR_STRING)
+	if (pCVar->GetType() == CVAR_STRING)
 		szLine += " = \"" + szValue + "\"\r\n";
 	else
 		szLine += " = " + szValue + "\r\n";

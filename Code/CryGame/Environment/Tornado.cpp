@@ -32,7 +32,7 @@ CTornado::~CTornado()
 }
 
 //------------------------------------------------------------------------
-bool CTornado::Init(IGameObject *pGameObject)
+bool CTornado::Init(IGameObject* pGameObject)
 {
 	SetGameObject(pGameObject);
 
@@ -41,7 +41,7 @@ bool CTornado::Init(IGameObject *pGameObject)
 	if (!Reset())
 		return false;
 
-	if(!GetGameObject()->BindToNetwork())
+	if (!GetGameObject()->BindToNetwork())
 		return false;
 
 	return true;
@@ -62,23 +62,23 @@ bool CTornado::Reset()
 
 	SmartScriptTable props;
 	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
-	if(!pScriptTable || !pScriptTable->GetValue("Properties", props))
+	if (!pScriptTable || !pScriptTable->GetValue("Properties", props))
 		return false;
 
 	props->GetValue("fWanderSpeed", m_wanderSpeed);
 	props->GetValue("fCloudHeight", m_cloudHeight);
 	props->GetValue("Radius", m_radius);
-		
+
 	props->GetValue("fSpinImpulse", m_spinImpulse);
 	props->GetValue("fAttractionImpulse", m_attractionImpulse);
 	props->GetValue("fUpImpulse", m_upImpulse);
-  
+
 	props->GetValue("FunnelEffect", funnelEffect);
 	if (!UseFunnelEffect(funnelEffect))
 		return false;
 
 	Matrix34 m = GetEntity()->GetWorldTM();
-	m_wanderDir = m.GetColumn(1)*0.414214f;
+	m_wanderDir = m.GetColumn(1) * 0.414214f;
 
 	m_isOnWater = false;
 	m_isInAir = false;
@@ -88,22 +88,22 @@ bool CTornado::Reset()
 	Vec3 pos = GetEntity()->GetWorldPos();
 	gEnv->pLog->Log("TORNADO INIT POS: %f %f %f", pos.x, pos.y, pos.z);
 	m_points[0] = pos;
-	m_points[1] = pos + Vec3(0,0,m_cloudHeight/8.0f);
-	m_points[2] = pos + Vec3(0,0,m_cloudHeight/2.0f);
-	m_points[3] = pos + Vec3(0,0,m_cloudHeight);
-	for (int i=0; i<4; ++i)
+	m_points[1] = pos + Vec3(0, 0, m_cloudHeight / 8.0f);
+	m_points[2] = pos + Vec3(0, 0, m_cloudHeight / 2.0f);
+	m_points[3] = pos + Vec3(0, 0, m_cloudHeight);
+	for (int i = 0; i < 4; ++i)
 		m_oldPoints[i] = m_points[i];
 
 	m_currentPos = GetEntity()->GetWorldPos();
 	GetGameObject()->ChangedNetworkState(POSITION_ASPECT);
-	
+
 	UpdateTornadoSpline();
 
 	return true;
 }
 
 //------------------------------------------------------------------------
-void CTornado::PostInit(IGameObject *pGameObject)
+void CTornado::PostInit(IGameObject* pGameObject)
 {
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
@@ -124,7 +124,7 @@ void CTornado::FullSerialize(TSerialize ser)
 }
 
 //------------------------------------------------------------------------
-bool CTornado::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags )
+bool CTornado::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags)
 {
 	if (aspect == POSITION_ASPECT)
 	{
@@ -134,7 +134,7 @@ bool CTornado::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profil
 }
 
 //------------------------------------------------------------------------
-void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
+void CTornado::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
 	if (g_pGame->GetIGameFramework()->IsEditing())
 		return;
@@ -144,7 +144,7 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 	Vec3 dir(m.GetColumn(1));
 	Vec3 pos(GetEntity()->GetWorldPos());
 
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		pos = m_currentPos;
 
 	Vec3 wanderPos(dir * 1.414214f);
@@ -153,15 +153,15 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 	Vec3 wanderOffset;
 	wanderOffset.SetRandomDirection();
 	wanderOffset.z = 0.0f;
-	wanderOffset.NormalizeSafe(Vec3(1,0,0));
+	wanderOffset.NormalizeSafe(Vec3(1, 0, 0));
 	m_wanderDir += wanderOffset * wanderRate + (m_wanderDir - wanderPos) * wanderStrength;
 	m_wanderDir = (m_wanderDir - wanderPos).GetNormalized() + wanderPos;
 
 	Vec3 wanderSteer = (dir + m_wanderDir * gEnv->pTimer->GetFrameTime());
 	wanderSteer.z = 0;
-	wanderSteer.NormalizeSafe(Vec3(1,0,0));
+	wanderSteer.NormalizeSafe(Vec3(1, 0, 0));
 
-	Vec3 targetSteer(0,0,0);
+	Vec3 targetSteer(0, 0, 0);
 	// go to target
 	if (m_pTargetEntity)
 	{
@@ -169,12 +169,12 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 		if (target.GetLength() < 10.0f)
 		{
 			// emit target reached event
-			SEntityEvent event( ENTITY_EVENT_SCRIPT_EVENT );
+			SEntityEvent event(ENTITY_EVENT_SCRIPT_EVENT);
 			event.nParam[0] = (INT_PTR)"TargetReached";
 			event.nParam[1] = IEntityClass::EVT_BOOL;
 			bool bValue = true;
 			event.nParam[2] = (INT_PTR)&bValue;
-			GetEntity()->SendEvent( event );
+			GetEntity()->SendEvent(event);
 			if (m_pTargetCallback)
 				m_pTargetCallback->Done();
 
@@ -184,7 +184,7 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 
 		targetSteer = (target - dir);
 		targetSteer.z = 0;
-		targetSteer.NormalizeSafe(Vec3(1,0,0));
+		targetSteer.NormalizeSafe(Vec3(1, 0, 0));
 	}
 
 	Vec3 steerDir = (0.4f * wanderSteer + 0.6f * targetSteer).GetNormalized();
@@ -203,16 +203,16 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 	// raycast does not work for oceans
 	if (prevIsOnWater != m_isOnWater && m_isOnWater)
 	{
-			m_pGroundEffect->SetParticleEffect("wind.tornado.water");
+		m_pGroundEffect->SetParticleEffect("wind.tornado.water");
 	}
 	else if (!m_isOnWater)
-	{		
-		IMaterialEffects *mfx = gEnv->pGame->GetIGameFramework()->GetIMaterialEffects();
-		Vec3 down = Vec3(0,0,-1.0f);
+	{
+		IMaterialEffects* mfx = gEnv->pGame->GetIGameFramework()->GetIMaterialEffects();
+		Vec3 down = Vec3(0, 0, -1.0f);
 		int matID = mfx->GetDefaultSurfaceIndex();
 
-		static const int objTypes = ent_all;    
-		static const unsigned int flags = rwi_stop_at_pierceable|rwi_colltype_any;
+		static const int objTypes = ent_all;
+		static const unsigned int flags = rwi_stop_at_pierceable | rwi_colltype_any;
 		ray_hit hit;
 		int col = gEnv->pPhysicalWorld->RayWorldIntersection(pos, (down * 5.0f), objTypes, flags, &hit, 1, GetEntity()->GetPhysics());
 		if (col)
@@ -223,7 +223,7 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 		if (m_curMatID != matID)
 		{
 			TMFXEffectId effectId = mfx->GetEffectId("tornado", matID);
-			
+
 			SMFXResourceListPtr pList = mfx->GetResources(effectId);
 			if (pList && pList->m_particleList)
 			{
@@ -233,7 +233,7 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 		}
 	}
 
-	if(gEnv->bServer)
+	if (gEnv->bServer)
 	{
 		tm.SetTranslation(pos);
 		m_currentPos = pos;
@@ -253,12 +253,12 @@ void CTornado::Update(SEntityUpdateContext &ctx, int updateSlot)
 }
 
 //------------------------------------------------------------------------
-void CTornado::HandleEvent(const SGameObjectEvent &event)
+void CTornado::HandleEvent(const SGameObjectEvent& event)
 {
 }
 
 //------------------------------------------------------------------------
-void CTornado::ProcessEvent(SEntityEvent &event)
+void CTornado::ProcessEvent(SEntityEvent& event)
 {
 	switch (event.event)
 	{
@@ -273,7 +273,7 @@ void CTornado::SetAuthority(bool auth)
 {
 }
 
-void CTornado::SetTarget(IEntity *pTargetEntity, CFlowTornadoWander *pCallback)
+void CTornado::SetTarget(IEntity* pTargetEntity, CFlowTornadoWander* pCallback)
 {
 	m_pTargetEntity = pTargetEntity;
 	m_pTargetCallback = pCallback;
@@ -289,9 +289,9 @@ bool CTornado::UseFunnelEffect(const char* effectName)
 
 	// move particle slot to the helper position+offset
 	GetEntity()->LoadParticleEmitter(0, m_pFunnelEffect, 0, false);
-	Matrix34 tm = IParticleEffect::ParticleLoc(Vec3(0,0,0));
+	Matrix34 tm = IParticleEffect::ParticleLoc(Vec3(0, 0, 0));
 	GetEntity()->SetSlotLocalTM(0, tm);
-	GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0)|ENTITY_SLOT_RENDER);
+	GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) | ENTITY_SLOT_RENDER);
 	IParticleEmitter* pEmitter = GetEntity()->GetParticleEmitter(0);
 	assert(pEmitter);
 	pEmitter->Prime();
@@ -327,7 +327,7 @@ bool CTornado::UseFunnelEffect(const char* effectName)
 void CTornado::UpdateParticleEmitters()
 {
 	Matrix34 tm;
-	Vec3 pos(0,0,0);
+	Vec3 pos(0, 0, 0);
 	pos.z = (GetEntity()->GetWorldPos()).z;
 	Vec3 cloudOffset(pos);
 
@@ -336,7 +336,7 @@ void CTornado::UpdateParticleEmitters()
 		cloudOffset.z = m_cloudHeight - pos.z;
 		tm = IParticleEffect::ParticleLoc(cloudOffset);
 		GetEntity()->SetSlotLocalTM(1, tm);
-		GetEntity()->SetSlotFlags(1, GetEntity()->GetSlotFlags(1)|ENTITY_SLOT_RENDER);
+		GetEntity()->SetSlotFlags(1, GetEntity()->GetSlotFlags(1) | ENTITY_SLOT_RENDER);
 	}
 
 	if (m_pTopEffect)
@@ -346,7 +346,7 @@ void CTornado::UpdateParticleEmitters()
 
 		tm = IParticleEffect::ParticleLoc(topOffset);
 		GetEntity()->SetSlotLocalTM(2, tm);
-		GetEntity()->SetSlotFlags(2, GetEntity()->GetSlotFlags(2)|ENTITY_SLOT_RENDER);
+		GetEntity()->SetSlotFlags(2, GetEntity()->GetSlotFlags(2) | ENTITY_SLOT_RENDER);
 	}
 
 	m_pGroundEffect->Update();
@@ -361,19 +361,19 @@ void CTornado::UpdateTornadoSpline()
 	Vec3 pos = GetEntity()->GetWorldPos();
 	//gEnv->pLog->Log("TORNADO DELTA: %f %f %f", deltaPos.x, deltaPos.y, deltaPos.z);
 	float fac = 0.0f;
-	
+
 	m_points[0] = pos;
 	fac = 0.5f * gEnv->pTimer->GetFrameTime();
-	m_points[1] = m_oldPoints[1] + fac * (pos + Vec3(0,0,m_cloudHeight/8.0f) - m_oldPoints[1]);
+	m_points[1] = m_oldPoints[1] + fac * (pos + Vec3(0, 0, m_cloudHeight / 8.0f) - m_oldPoints[1]);
 	fac = 0.2f * gEnv->pTimer->GetFrameTime();
-	m_points[2] = m_oldPoints[2] + fac * (pos + Vec3(0,0,m_cloudHeight/2.0f) - m_oldPoints[2]);
+	m_points[2] = m_oldPoints[2] + fac * (pos + Vec3(0, 0, m_cloudHeight / 2.0f) - m_oldPoints[2]);
 	fac = 0.05f * gEnv->pTimer->GetFrameTime();
-	m_points[3] = m_oldPoints[3] + fac * (pos + Vec3(0,0,m_cloudHeight) - m_oldPoints[3]);
+	m_points[3] = m_oldPoints[3] + fac * (pos + Vec3(0, 0, m_cloudHeight) - m_oldPoints[3]);
 
 	//for (int i=0; i<4; ++i)
 	//	gEnv->pLog->Log("TORNADO %d: %f %f %f", i, m_points[i].x, m_points[i].y, m_points[i].z);
 
-	for (int i=0; i<4; ++i)
+	for (int i = 0; i < 4; ++i)
 		m_oldPoints[i] = m_points[i];
 
 
@@ -384,11 +384,11 @@ void CTornado::UpdateTornadoSpline()
 	areaDef.nNumPoints = 4;
 	areaDef.pPoints = m_points;
 	areaDef.pGravityParams = &gravityParams;
-	gravityParams.gravity.Set(0,0,-9.81f);
+	gravityParams.gravity.Set(0, 0, -9.81f);
 	gravityParams.size = ZERO;
 	gravityParams.falloff0 = -1.0f;	// ?: was NAN. CPhysicalProxy::PhysicalizeArea sets to 'unused' if less than zero...
 	//gravityParams.gravity.Set(0,0,0);
-	
+
 	gravityParams.bUniform = 1;
 	gravityParams.bUseCallback = 0;
 	gravityParams.damping = 0.0f;
@@ -403,29 +403,29 @@ void CTornado::UpdateFlow()
 
 	float frameTime(gEnv->pTimer->GetFrameTime());
 
-	IPhysicalWorld *ppWorld = gEnv->pPhysicalWorld;
+	IPhysicalWorld* ppWorld = gEnv->pPhysicalWorld;
 
 	Vec3 pos(GetEntity()->GetWorldPos());
 
 	//first, check the entities in range
 	m_nextEntitiesCheck -= frameTime;
-	if (m_nextEntitiesCheck<0.0f)
+	if (m_nextEntitiesCheck < 0.0f)
 	{
 		m_nextEntitiesCheck = 1.0f;
-		
-		Vec3 radiusVec(m_radius,m_radius,0);
-		
-		IPhysicalEntity **ppList = NULL;
 
-		int	numEnts = ppWorld->GetEntitiesInBox(pos-radiusVec,pos+radiusVec+Vec3(0,0,m_cloudHeight*0.5f),ppList,ent_sleeping_rigid|ent_rigid|ent_living);
+		Vec3 radiusVec(m_radius, m_radius, 0);
+
+		IPhysicalEntity** ppList = NULL;
+
+		int	numEnts = ppWorld->GetEntitiesInBox(pos - radiusVec, pos + radiusVec + Vec3(0, 0, m_cloudHeight * 0.5f), ppList, ent_sleeping_rigid | ent_rigid | ent_living);
 
 		m_spinningEnts.clear();
-		for (int i=0;i<numEnts;++i)
+		for (int i = 0;i < numEnts;++i)
 		{
 			// add check for spectating players...
 			EntityId id = ppWorld->GetPhysicalEntityId(ppList[i]);
 			CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id));
-			if(!pActor || !pActor->GetSpectatorMode())
+			if (!pActor || !pActor->GetSpectatorMode())
 			{
 				m_spinningEnts.push_back(id);
 			}
@@ -434,9 +434,9 @@ void CTornado::UpdateFlow()
 	}
 
 	//mess entities around
-	for (int i=0;i<m_spinningEnts.size();++i)
+	for (int i = 0;i < m_spinningEnts.size();++i)
 	{
-		IPhysicalEntity *ppEnt = ppWorld->GetPhysicalEntityById(m_spinningEnts[i]);
+		IPhysicalEntity* ppEnt = ppWorld->GetPhysicalEntityById(m_spinningEnts[i]);
 		if (ppEnt)
 		{
 			pe_status_pos spos;
@@ -444,21 +444,21 @@ void CTornado::UpdateFlow()
 
 			if (!ppEnt->GetStatus(&spos) || !ppEnt->GetStatus(&sdyn))
 				continue;
-		
+
 			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(spos.pos,2.0f,ColorB(255,0,255,255));
-						
+
 			Vec3 delta(pos - spos.pos);
 			delta.z = 0.0f;
 
 			float dLen(delta.len());
-			float forceMult(max(0.0f,(m_radius-dLen)/m_radius));
+			float forceMult(max(0.0f, (m_radius - dLen) / m_radius));
 
-			if (dLen>0.001f)
+			if (dLen > 0.001f)
 				delta /= dLen;
 			else
 				delta.zero();
 
-			Vec3 upVector(0,0,1);
+			Vec3 upVector(0, 0, 1);
 
 			float spinImpulse(m_spinImpulse);
 			float attractionImpulse(m_attractionImpulse);
@@ -472,7 +472,7 @@ void CTornado::UpdateFlow()
 				spinImpulse *= 1.5f;
 			}
 
-			
+
 			if (IVehicle* pVehicle = pVehicleSystem->GetVehicle(m_spinningEnts[i]))
 			{
 				IVehicleMovement* pMovement = pVehicle->GetMovement();
@@ -485,9 +485,9 @@ void CTornado::UpdateFlow()
 				}
 			}
 
-			Vec3 spinForce( (delta % upVector) * spinImpulse );
+			Vec3 spinForce((delta % upVector) * spinImpulse);
 			Vec3 attractionForce(delta * attractionImpulse);
-			Vec3 upForce(0,0,upImpulse);
+			Vec3 upForce(0, 0, upImpulse);
 
 			pe_action_impulse aimpulse;
 
@@ -504,14 +504,14 @@ void CTornado::UpdateFlow()
 
 void CTornado::OutputDistance()
 {
-	IActor *pClient = g_pGame->GetIGameFramework()->GetClientActor();
+	IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor();
 	if (!pClient)
 		return;
 
-	IEntity *pEntity = GetEntity(); 
+	IEntity* pEntity = GetEntity();
 
-	HSCRIPTFUNCTION scriptEvent(NULL);	
-	if(pEntity->GetScriptTable())
+	HSCRIPTFUNCTION scriptEvent(NULL);
+	if (pEntity->GetScriptTable())
 		pEntity->GetScriptTable()->GetValue("ScriptEvent", scriptEvent);
 
 	if (scriptEvent)
@@ -519,13 +519,13 @@ void CTornado::OutputDistance()
 		Vec3 deltaToClient(pClient->GetEntity()->GetWorldPos() - pEntity->GetWorldPos());
 		deltaToClient.z = 0;
 
-		Script::Call(gEnv->pScriptSystem,scriptEvent,pEntity->GetScriptTable(),"outputDistance",deltaToClient.len(),0);
+		Script::Call(gEnv->pScriptSystem, scriptEvent, pEntity->GetScriptTable(), "outputDistance", deltaToClient.len(), 0);
 	}
 
 	gEnv->pScriptSystem->ReleaseFunc(scriptEvent);
 }
 
-void CTornado::GetMemoryStatistics(ICrySizer * s)
+void CTornado::GetMemoryStatistics(ICrySizer* s)
 {
 	s->Add(*this);
 	s->AddContainer(m_spinningEnts);

@@ -48,13 +48,13 @@ void CItem::OnEnterFirstPerson()
 	AttachArms(true, true);
 	RestoreLayers();
 
-/*
-	if(m_stats.mounted)
-	{
-		ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
-		if(pChar)
-			pChar->HideMaster(1);
-	}*/
+	/*
+		if(m_stats.mounted)
+		{
+			ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
+			if(pChar)
+				pChar->HideMaster(1);
+		}*/
 
 }
 
@@ -66,31 +66,31 @@ void CItem::OnEnterThirdPerson()
 	AttachArms(false, false);
 	SetViewMode(eIVM_ThirdPerson);
 
-	if(CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave()))
+	if (CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave()))
 		pSlave->OnEnterThirdPerson();
-/*
-	if(m_stats.mounted)
-	{
-		ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
-		if(pChar)
-			pChar->HideMaster(0);
-	}*/
+	/*
+		if(m_stats.mounted)
+		{
+			ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
+			if(pChar)
+				pChar->HideMaster(0);
+		}*/
 }
 
 //------------------------------------------------------------------------
 void CItem::OnReset()
 {
 	//Hidden entities must have physics disabled
-	if(!GetEntity()->IsHidden())
+	if (!GetEntity()->IsHidden())
 		GetEntity()->EnablePhysics(true);
 
-	DestroyedGeometry(false);  
+	DestroyedGeometry(false);
 	m_stats.health = m_properties.hitpoints;
 
 	UpdateDamageLevel();
 
-	if(m_params.scopeAttachment)
-		DrawSlot(CItem::eIGS_Aux1,false); //Hide secondary FP scope
+	if (m_params.scopeAttachment)
+		DrawSlot(CItem::eIGS_Aux1, false); //Hide secondary FP scope
 
 	if (m_properties.mounted && m_params.mountable)
 	{
@@ -120,27 +120,27 @@ void CItem::OnReset()
 
 //------------------------------------------------------------------------
 void CItem::OnHit(float damage, const char* damageType)
-{  
-	if(!m_properties.hitpoints)
+{
+	if (!m_properties.hitpoints)
 		return;
 
-	if(damageType && !stricmp(damageType, "repair"))
+	if (damageType && !stricmp(damageType, "repair"))
 	{
 		if (m_stats.health < m_properties.hitpoints) //repair only to maximum 
 		{
-			bool destroyed = m_stats.health<=0.f;
-			m_stats.health = min(float(m_properties.hitpoints),m_stats.health+damage);
+			bool destroyed = m_stats.health <= 0.f;
+			m_stats.health = min(float(m_properties.hitpoints), m_stats.health + damage);
 
 			UpdateDamageLevel();
 
-			if(destroyed && m_stats.health>0.f)
+			if (destroyed && m_stats.health > 0.f)
 				OnRepaired();
 		}
 	}
 	else
 	{
 		if (m_stats.health > 0.0f)
-		{ 
+		{
 			m_stats.health -= damage;
 
 			UpdateDamageLevel();
@@ -150,15 +150,15 @@ void CItem::OnHit(float damage, const char* damageType)
 				m_stats.health = 0.0f;
 				OnDestroyed();
 
-				int n=(int)m_damageLevels.size();
-				for (int i=0;i<n; ++i)
+				int n = (int)m_damageLevels.size();
+				for (int i = 0;i < n; ++i)
 				{
-					SDamageLevel &level=m_damageLevels[i];
-					if (level.min_health==0 && level.max_health==0)
+					SDamageLevel& level = m_damageLevels[i];
+					if (level.min_health == 0 && level.max_health == 0)
 					{
-						int slot=(m_stats.viewmode&eIVM_FirstPerson)?eIGS_FirstPerson:eIGS_ThirdPerson;
+						int slot = (m_stats.viewmode & eIVM_FirstPerson) ? eIGS_FirstPerson : eIGS_ThirdPerson;
 
-						SpawnEffect(slot, level.effect, level.helper, Vec3Constants<float>::fVec3_Zero, 
+						SpawnEffect(slot, level.effect, level.helper, Vec3Constants<float>::fVec3_Zero,
 							Vec3Constants<float>::fVec3_OneZ, level.scale);
 					}
 				}
@@ -170,47 +170,47 @@ void CItem::OnHit(float damage, const char* damageType)
 //------------------------------------------------------------------------
 void CItem::UpdateDamageLevel()
 {
-	if (m_properties.hitpoints<=0 || m_damageLevels.empty())
+	if (m_properties.hitpoints <= 0 || m_damageLevels.empty())
 		return;
 
-	int slot=(m_stats.viewmode&eIVM_FirstPerson)?eIGS_FirstPerson:eIGS_ThirdPerson;
+	int slot = (m_stats.viewmode & eIVM_FirstPerson) ? eIGS_FirstPerson : eIGS_ThirdPerson;
 
-	int n=(int)m_damageLevels.size();
-	int health=(int)((100.0f*MAX(0.0f, m_stats.health))/m_properties.hitpoints);
-	for (int i=0;i<n; ++i)
+	int n = (int)m_damageLevels.size();
+	int health = (int)((100.0f * MAX(0.0f, m_stats.health)) / m_properties.hitpoints);
+	for (int i = 0;i < n; ++i)
 	{
-		SDamageLevel &level=m_damageLevels[i];
-		if (level.min_health==0 && level.max_health==0)
+		SDamageLevel& level = m_damageLevels[i];
+		if (level.min_health == 0 && level.max_health == 0)
 			continue;
 
-		if (level.min_health<=health && health<level.max_health)
+		if (level.min_health <= health && health < level.max_health)
 		{
-			if (level.effectId==-1)
-				level.effectId=AttachEffect(slot, 0, true, level.effect.c_str(), level.helper.c_str(), 
+			if (level.effectId == -1)
+				level.effectId = AttachEffect(slot, 0, true, level.effect.c_str(), level.helper.c_str(),
 					Vec3Constants<float>::fVec3_Zero, Vec3Constants<float>::fVec3_OneZ, level.scale, true);
 		}
-		else if (level.effectId!=-1)
+		else if (level.effectId != -1)
 		{
 			AttachEffect(0, level.effectId, false);
-			level.effectId=-1;
+			level.effectId = -1;
 		}
 	}
 }
 
 //------------------------------------------------------------------------
 void CItem::OnDestroyed()
-{ 
-  /* MR, 2007-02-09: shouldn't be needed 
-	for (int i=0; i<eIGS_Last; i++)
-	{
-		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
-		if (pCharacter)
-			pCharacter->SetAnimationSpeed(0);
-	}*/
+{
+	/* MR, 2007-02-09: shouldn't be needed
+	  for (int i=0; i<eIGS_Last; i++)
+	  {
+		  ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
+		  if (pCharacter)
+			  pCharacter->SetAnimationSpeed(0);
+	  }*/
 
 	DestroyedGeometry(true);
 
-	if(!gEnv->pSystem->IsSerializingFile()) //don't replay destroy animations/effects
+	if (!gEnv->pSystem->IsSerializingFile()) //don't replay destroy animations/effects
 		PlayAction(g_pItemStrings->destroy);
 
 	EnableUpdate(false);
@@ -219,9 +219,9 @@ void CItem::OnDestroyed()
 //------------------------------------------------------------------------
 void CItem::OnRepaired()
 {
-	for (int i=0; i<eIGS_Last; i++)
+	for (int i = 0; i < eIGS_Last; i++)
 	{
-		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(i);
 		if (pCharacter)
 			pCharacter->SetAnimationSpeed(1.0f);
 	}
@@ -240,17 +240,17 @@ void CItem::OnDropped(EntityId actorId)
 //------------------------------------------------------------------------
 void CItem::OnPickedUp(EntityId actorId, bool destroyed)
 {
-	if(GetISystem()->IsSerializingFile() == 1)
+	if (GetISystem()->IsSerializingFile() == 1)
 		return;
 
-	CActor *pActor=GetActor(actorId);
+	CActor* pActor = GetActor(actorId);
 	if (!pActor)
 		return;
 
-	if(gEnv->bMultiplayer && pActor->IsClient() && IsSelected())
+	if (gEnv->bMultiplayer && pActor->IsClient() && IsSelected())
 	{
 		COffHand* pOffHand = static_cast<COffHand*>(pActor->GetWeaponByClass(CItem::sOffHandClass));
-		if(pOffHand && pOffHand->GetOffHandState()==eOHS_HOLDING_GRENADE)
+		if (pOffHand && pOffHand->GetOffHandState() == eOHS_HOLDING_GRENADE)
 			pOffHand->FinishAction(eOHA_RESET);
 	}
 
@@ -261,11 +261,11 @@ void CItem::OnPickedUp(EntityId actorId, bool destroyed)
 	{
 		if (!m_bonusAccessoryAmmo.empty())
 		{
-			for (TAccessoryAmmoMap::iterator it=m_bonusAccessoryAmmo.begin(); it!=m_bonusAccessoryAmmo.end(); ++it)
+			for (TAccessoryAmmoMap::iterator it = m_bonusAccessoryAmmo.begin(); it != m_bonusAccessoryAmmo.end(); ++it)
 			{
-				int count=it->second;
+				int count = it->second;
 
-				AddAccessoryAmmoToInventory(it->first,count,pActor);
+				AddAccessoryAmmoToInventory(it->first, count, pActor);
 			}
 
 			m_bonusAccessoryAmmo.clear();

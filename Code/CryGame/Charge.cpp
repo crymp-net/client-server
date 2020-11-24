@@ -20,10 +20,10 @@ History:
 
 //------------------------------------------------------------------------
 CCharge::CCharge()
-: m_charged(0)
-, m_chId(0)
-, m_chlightId(0)
-, m_chTimer(0.0f)
+	: m_charged(0)
+	, m_chId(0)
+	, m_chlightId(0)
+	, m_chTimer(0.0f)
 {
 }
 
@@ -37,10 +37,10 @@ void CCharge::Update(float frameTime, uint frameId)
 {
 	if (m_charging)
 	{
-		if (m_chargeTimer>0.0f)
+		if (m_chargeTimer > 0.0f)
 		{
 			m_chargeTimer -= frameTime;
-			if (m_chargeTimer<=0.0f)
+			if (m_chargeTimer <= 0.0f)
 			{
 				m_charged++;
 				if (m_charged >= m_chargeparams.max_charges)
@@ -71,7 +71,7 @@ void CCharge::Update(float frameTime, uint frameId)
 	}
 
 	// update spinup effect
-	if (m_chTimer>0.0f)
+	if (m_chTimer > 0.0f)
 	{
 		m_chTimer -= frameTime;
 		if (m_chTimer <= 0.0f)
@@ -86,13 +86,13 @@ void CCharge::Update(float frameTime, uint frameId)
 }
 
 //------------------------------------------------------------------------
-void CCharge::ResetParams(const struct IItemParamsNode *params)
+void CCharge::ResetParams(const struct IItemParamsNode* params)
 {
 	CAutomatic::ResetParams(params);
 
-	const IItemParamsNode *charge = params?params->GetChild("charge"):0;
-	const IItemParamsNode *actions = params?params->GetChild("actions"):0;
-	const IItemParamsNode *effect = params?params->GetChild("effect"):0;
+	const IItemParamsNode* charge = params ? params->GetChild("charge") : 0;
+	const IItemParamsNode* actions = params ? params->GetChild("actions") : 0;
+	const IItemParamsNode* effect = params ? params->GetChild("effect") : 0;
 
 	m_chargeparams.Reset(charge);
 	m_chargeactions.Reset(actions);
@@ -100,13 +100,13 @@ void CCharge::ResetParams(const struct IItemParamsNode *params)
 }
 
 //------------------------------------------------------------------------
-void CCharge::PatchParams(const struct IItemParamsNode *patch)
+void CCharge::PatchParams(const struct IItemParamsNode* patch)
 {
 	CAutomatic::PatchParams(patch);
 
-	const IItemParamsNode *charge = patch->GetChild("charge");
-	const IItemParamsNode *actions = patch->GetChild("actions");
-	const IItemParamsNode *effect = patch->GetChild("effect");
+	const IItemParamsNode* charge = patch->GetChild("charge");
+	const IItemParamsNode* actions = patch->GetChild("actions");
+	const IItemParamsNode* effect = patch->GetChild("effect");
 
 	m_chargeparams.Reset(charge, false);
 	m_chargeactions.Reset(actions, false);
@@ -120,9 +120,9 @@ void CCharge::Activate(bool activate)
 
 	ChargeEffect(0);
 
-	m_charged=0;
-	m_charging=false;
-	m_chargeTimer=0.0;
+	m_charged = 0;
+	m_charging = false;
+	m_chargeTimer = 0.0;
 }
 
 //------------------------------------------------------------------------
@@ -152,7 +152,7 @@ bool CCharge::Shoot(bool resetAnimation, bool autoreload /* =true */, bool noSou
 	{
 		m_charging = true;
 		m_chargeTimer = m_chargeparams.time;
-		m_pWeapon->PlayAction(m_chargeactions.charge.c_str(),  0, false, CItem::eIPAF_Default|CItem::eIPAF_RepeatLastFrame);
+		m_pWeapon->PlayAction(m_chargeactions.charge.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
 
 		ChargeEffect(true);
 	}
@@ -169,9 +169,9 @@ void CCharge::ChargedShoot()
 {
 	CAutomatic::Shoot(true, m_autoreload);
 
-	m_charged=0;
+	m_charged = 0;
 
-	if(m_chargeparams.reset_spinup)
+	if (m_chargeparams.reset_spinup)
 		StopFire();
 }
 
@@ -180,16 +180,16 @@ void CCharge::ChargeEffect(bool attach)
 {
 	m_pWeapon->AttachEffect(0, m_chId, false);
 	m_pWeapon->AttachLight(0, m_chlightId, false);
-	m_chId=0;
-	m_chlightId=0;
+	m_chId = 0;
+	m_chlightId = 0;
 
 	if (attach)
 	{
 		int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
 		int id = m_pWeapon->GetStats().fp ? 0 : 1;
 
-		m_chId = m_pWeapon->AttachEffect(slot, 0, true, m_chargeeffect.effect[id].c_str(), 
-			m_chargeeffect.helper[id].c_str(), Vec3(0,0,0), Vec3(0,1,0), 1.0f, false);
+		m_chId = m_pWeapon->AttachEffect(slot, 0, true, m_chargeeffect.effect[id].c_str(),
+			m_chargeeffect.helper[id].c_str(), Vec3(0, 0, 0), Vec3(0, 1, 0), 1.0f, false);
 
 		m_chlightId = m_pWeapon->AttachLight(slot, 0, true, m_chargeeffect.light_radius[id], m_chargeeffect.light_color[id], 1.0f, 0, 0,
 			m_chargeeffect.light_helper[id].c_str());

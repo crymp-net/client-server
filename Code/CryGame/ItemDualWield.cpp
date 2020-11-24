@@ -28,7 +28,7 @@ int CItem::TwoHandMode() const
 }
 
 //------------------------------------------------------------------------
-bool CItem::SupportsDualWield(const char *itemName) const
+bool CItem::SupportsDualWield(const char* itemName) const
 {
 	if (m_params.two_hand)
 		return false;
@@ -44,7 +44,7 @@ void CItem::ResetDualWield()
 {
 	if (m_dualWieldSlaveId)
 	{
-		IItem *pSlave = GetDualWieldSlave();
+		IItem* pSlave = GetDualWieldSlave();
 		if (pSlave)
 			pSlave->ResetDualWield();
 	}
@@ -57,7 +57,7 @@ void CItem::ResetDualWield()
 }
 
 //------------------------------------------------------------------------
-IItem *CItem::GetDualWieldSlave() const
+IItem* CItem::GetDualWieldSlave() const
 {
 	return m_pItemSystem->GetItem(m_dualWieldSlaveId);
 }
@@ -70,7 +70,7 @@ EntityId CItem::GetDualWieldSlaveId() const
 }
 
 //------------------------------------------------------------------------
-IItem *CItem::GetDualWieldMaster() const
+IItem* CItem::GetDualWieldMaster() const
 {
 	return m_pItemSystem->GetItem(m_dualWieldMasterId);
 }
@@ -113,7 +113,7 @@ void CItem::SetDualWieldMaster(EntityId masterId)
 void CItem::SetDualWieldSlave(EntityId slaveId)
 {
 	m_dualWieldSlaveId = slaveId;
-	CItem *pSlave = static_cast<CItem *>(GetDualWieldSlave());
+	CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave());
 	if (!pSlave)
 		return;
 
@@ -129,26 +129,26 @@ void CItem::SetDualWieldSlave(EntityId slaveId)
 //------------------------------------------------------------------------
 void CItem::SetDualSlaveAccessory(bool noNetwork)
 {
-	if(!gEnv->bMultiplayer || (GetOwnerActor() && GetOwnerActor()->IsClient()))
+	if (!gEnv->bMultiplayer || (GetOwnerActor() && GetOwnerActor()->IsClient()))
 	{
-		CItem *pSlave = static_cast<CItem *>(GetDualWieldSlave());
+		CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave());
 		if (!pSlave)
 			return;
 
 		//Detach current accessories of the slave
 		TAccessoryMap temp = pSlave->m_accessories;
-		for (TAccessoryMap::const_iterator it=temp.begin(); it!=temp.end(); ++it)
+		for (TAccessoryMap::const_iterator it = temp.begin(); it != temp.end(); ++it)
 		{
-			if(m_accessories.find(it->first)==m_accessories.end())
+			if (m_accessories.find(it->first) == m_accessories.end())
 				pSlave->SwitchAccessory(it->first.c_str()); //Only remove if not in the master
 		}
 
 		//Attach on the slave same accessories as "parent"
-		for (TAccessoryMap::const_iterator it=m_accessories.begin(); it!=m_accessories.end(); ++it)
+		for (TAccessoryMap::const_iterator it = m_accessories.begin(); it != m_accessories.end(); ++it)
 		{
-			if(pSlave->m_accessories.find(it->first)==pSlave->m_accessories.end())
+			if (pSlave->m_accessories.find(it->first) == pSlave->m_accessories.end())
 			{
-				if(noNetwork)
+				if (noNetwork)
 					pSlave->AttachAccessory(it->first.c_str(), true, true, true);
 				else
 					pSlave->SwitchAccessory(it->first.c_str()); //Only add if not already attached

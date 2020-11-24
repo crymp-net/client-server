@@ -15,7 +15,7 @@ CShake::~CShake()
 {
 }
 
-bool CShake::Init(IGameObject *pGameObject)
+bool CShake::Init(IGameObject* pGameObject)
 {
 	SetGameObject(pGameObject);
 
@@ -25,7 +25,7 @@ bool CShake::Init(IGameObject *pGameObject)
 
 	SmartScriptTable props;
 	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
-	if(!pScriptTable || !pScriptTable->GetValue("Properties", props))
+	if (!pScriptTable || !pScriptTable->GetValue("Properties", props))
 		return false;
 
 	props->GetValue("Radius", m_radius);
@@ -35,7 +35,7 @@ bool CShake::Init(IGameObject *pGameObject)
 }
 
 //------------------------------------------------------------------------
-void CShake::PostInit(IGameObject *pGameObject)
+void CShake::PostInit(IGameObject* pGameObject)
 {
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
@@ -54,33 +54,33 @@ void CShake::FullSerialize(TSerialize ser)
 }
 
 //------------------------------------------------------------------------
-void CShake::Update(SEntityUpdateContext &ctx, int updateSlot)
+void CShake::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
-	IActor *pClient = g_pGame->GetIGameFramework()->GetClientActor();
+	IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor();
 	if (pClient)
 	{
 		float dist2ToClient((pClient->GetEntity()->GetWorldPos() - GetEntity()->GetWorldPos()).len2());
 		float maxRange(m_radius * m_radius);
-		if (dist2ToClient<maxRange)
+		if (dist2ToClient < maxRange)
 		{
-			IView *pView = g_pGame->GetIGameFramework()->GetIViewSystem()->GetViewByEntityId(pClient->GetEntityId());
-			IView *pViewActive = g_pGame->GetIGameFramework()->GetIViewSystem()->GetActiveView();
+			IView* pView = g_pGame->GetIGameFramework()->GetIViewSystem()->GetViewByEntityId(pClient->GetEntityId());
+			IView* pViewActive = g_pGame->GetIGameFramework()->GetIViewSystem()->GetActiveView();
 			if (pView)
 			{
-				float strength = (1.0f - (dist2ToClient/maxRange)) * 0.5;
-				pView->SetViewShake(ZERO,Vec3(m_shake*strength,0,m_shake*strength),0.1f,0.0225f,1.5f,1);
+				float strength = (1.0f - (dist2ToClient / maxRange)) * 0.5;
+				pView->SetViewShake(ZERO, Vec3(m_shake * strength, 0, m_shake * strength), 0.1f, 0.0225f, 1.5f, 1);
 			}
 		}
 	}
 }
 
 //------------------------------------------------------------------------
-void CShake::HandleEvent(const SGameObjectEvent &event)
+void CShake::HandleEvent(const SGameObjectEvent& event)
 {
 }
 
 //------------------------------------------------------------------------
-void CShake::ProcessEvent(SEntityEvent &event)
+void CShake::ProcessEvent(SEntityEvent& event)
 {
 }
 

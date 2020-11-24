@@ -56,11 +56,11 @@ static const float IDLE_CHECK_TIME_TO_IDLE = 5.0f;
 static const float IDLE_CHECK_MOVEMENT_TIMEOUT = 3.0f;
 // ~IDLE Checking stuff
 
-CPlayerMovementController::CPlayerMovementController( CPlayer * pPlayer ) : m_pPlayer(pPlayer), m_animTargetSpeed(-1.0f), m_animTargetSpeedCounter(0)
+CPlayerMovementController::CPlayerMovementController(CPlayer* pPlayer) : m_pPlayer(pPlayer), m_animTargetSpeed(-1.0f), m_animTargetSpeedCounter(0)
 {
-	m_lookTarget=Vec3(ZERO);
-	m_aimTarget=Vec3(ZERO);
-	m_fireTarget=Vec3(ZERO);
+	m_lookTarget = Vec3(ZERO);
+	m_aimTarget = Vec3(ZERO);
+	m_fireTarget = Vec3(ZERO);
 	Reset();
 
 
@@ -85,24 +85,24 @@ void CPlayerMovementController::Reset()
 	m_strengthJump = false;
 	m_idleChecker.Reset(this);
 
-	if(!GetISystem()->IsSerializingFile() == 1)
-		UpdateMovementState( m_currentMovementState );
+	if (!GetISystem()->IsSerializingFile() == 1)
+		UpdateMovementState(m_currentMovementState);
 
 	//
 	m_aimTargets.resize(1);
 	uint32 numAimTargets = m_aimTargets.size();
-	for (uint32 i=0; i<numAimTargets; i++)
+	for (uint32 i = 0; i < numAimTargets; i++)
 	{
-		m_aimTargets[i]=Vec3(ZERO);
+		m_aimTargets[i] = Vec3(ZERO);
 	}
 
-	m_lookTarget=Vec3(ZERO);
-	m_aimTarget=Vec3(ZERO);
-	m_fireTarget=Vec3(ZERO);
+	m_lookTarget = Vec3(ZERO);
+	m_aimTarget = Vec3(ZERO);
+	m_fireTarget = Vec3(ZERO);
 
 }
 
-bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
+bool CPlayerMovementController::RequestMovement(CMovementRequest& request)
 {
 	if (!m_pPlayer->IsPlayer())
 	{
@@ -110,9 +110,9 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 		{
 			if (IMovementController* pController = pVehicle->GetPassengerMovementController(m_pPlayer->GetEntityId()))
 			{
-        IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(m_pPlayer->GetEntityId());
-        if (!pSeat->IsDriver())
-				  pController->RequestMovement(request);
+				IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(m_pPlayer->GetEntityId());
+				if (!pSeat->IsDriver())
+					pController->RequestMovement(request);
 			}
 		}
 	}
@@ -129,11 +129,11 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 	if (request.HasMoveTarget())
 	{
 		// TODO: check validity of getting to that target
-		state.SetMoveTarget( request.GetMoveTarget() );
+		state.SetMoveTarget(request.GetMoveTarget());
 		m_atTarget = false;
 
 		float distanceToEnd(request.GetDistanceToPathEnd());
-		if (distanceToEnd>0.001f)
+		if (distanceToEnd > 0.001f)
 			state.SetDistanceToPathEnd(distanceToEnd);
 	}
 	else if (request.RemoveMoveTarget())
@@ -145,7 +145,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasStance())
 	{
-		state.SetStance( request.GetStance() );
+		state.SetStance(request.GetStance());
 	}
 	else if (request.RemoveStance())
 	{
@@ -161,7 +161,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 		}
 		else
 		{
-			state.SetDesiredSpeed( request.GetDesiredSpeed() );
+			state.SetDesiredSpeed(request.GetDesiredSpeed());
 		}
 	}
 	else if (request.RemoveDesiredSpeed())
@@ -171,7 +171,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasAimTarget())
 	{
-		state.SetAimTarget( request.GetAimTarget() );
+		state.SetAimTarget(request.GetAimTarget());
 	}
 	else if (request.RemoveAimTarget())
 	{
@@ -181,7 +181,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasBodyTarget())
 	{
-		state.SetBodyTarget( request.GetBodyTarget() );
+		state.SetBodyTarget(request.GetBodyTarget());
 	}
 	else if (request.RemoveBodyTarget())
 	{
@@ -191,7 +191,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasFireTarget())
 	{
-		state.SetFireTarget( request.GetFireTarget() );
+		state.SetFireTarget(request.GetFireTarget());
 		//forcing fire target here, can not wait for it to be set in the dateNormalate.
 		//if don't do it - first shot of the weapon might be in some undefined direction (ProsessShooting is done right after this 
 		//call in AIProxy). This is particularly problem for RPG shooting
@@ -208,7 +208,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 	if (request.HasLookTarget())
 	{
 		// TODO: check against move direction to validate request
-		state.SetLookTarget( request.GetLookTarget(), request.GetLookImportance() );
+		state.SetLookTarget(request.GetLookTarget(), request.GetLookImportance());
 	}
 	else if (request.RemoveLookTarget())
 	{
@@ -217,7 +217,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasStance())
 	{
-		state.SetStance( request.GetStance() );
+		state.SetStance(request.GetStance());
 	}
 	else if (request.RemoveStance())
 	{
@@ -226,7 +226,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 	if (request.HasLean())
 	{
-		state.SetLean( request.GetLean() );
+		state.SetLean(request.GetLean());
 	}
 	else if (request.RemoveLean())
 	{
@@ -242,9 +242,9 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 		state.SetNoAiming();
 
 	if (request.HasDeltaMovement())
-		state.AddDeltaMovement( request.GetDeltaMovement() );
+		state.AddDeltaMovement(request.GetDeltaMovement());
 	if (request.HasDeltaRotation())
-		state.AddDeltaRotation( request.GetDeltaRotation() );
+		state.AddDeltaRotation(request.GetDeltaRotation());
 
 	if (request.HasPseudoSpeed())
 		state.SetPseudoSpeed(request.GetPseudoSpeed());
@@ -252,7 +252,7 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 		state.ClearPseudoSpeed();
 
 	if (request.HasPrediction())
-		state.SetPrediction( request.GetPrediction() );
+		state.SetPrediction(request.GetPrediction());
 	else if (request.RemovePrediction())
 		state.ClearPrediction();
 
@@ -264,32 +264,32 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 		m_state = state;
 	}
 
-//	if (ICharacterInstance * pChar = m_pPlayer->GetEntity()->GetCharacter(0))
-//		pChar->GetISkeleton()->SetFuturePathAnalyser( (m_state.HasPathTarget() || m_state.HasMoveTarget())? 1 : 0 );
+	//	if (ICharacterInstance * pChar = m_pPlayer->GetEntity()->GetCharacter(0))
+	//		pChar->GetISkeleton()->SetFuturePathAnalyser( (m_state.HasPathTarget() || m_state.HasMoveTarget())? 1 : 0 );
 
-/*
-	if (m_state.HasPathTarget())
-	{
-		SAnimationTargetRequest req;
-		if (m_state.HasDesiredBodyDirectionAtTarget())
+	/*
+		if (m_state.HasPathTarget())
 		{
-			req.direction = m_state.GetDesiredBodyDirectionAtTarget();
-			req.directionRadius = DEG2RAD(1.0f);
-		}
-		else
-		{
-			req.direction = FORWARD_DIRECTION;
-			req.directionRadius = DEG2RAD(180.0f);
-		}
-		req.position = m_state.GetPathTarget();
+			SAnimationTargetRequest req;
+			if (m_state.HasDesiredBodyDirectionAtTarget())
+			{
+				req.direction = m_state.GetDesiredBodyDirectionAtTarget();
+				req.directionRadius = DEG2RAD(1.0f);
+			}
+			else
+			{
+				req.direction = FORWARD_DIRECTION;
+				req.directionRadius = DEG2RAD(180.0f);
+			}
+			req.position = m_state.GetPathTarget();
 
-		IAnimationSpacialTrigger * pTrigger = m_pPlayer->GetAnimationGraphState()->SetTrigger( req );
-		if (m_state.HasDesiredSpeedAtTarget())
-			pTrigger->SetInput("DesiredSpeed", m_state.GetDesiredSpeedAtTarget());
-		else
-			pTrigger->SetInput("DesiredSpeed", 0.0f); // TODO: workaround to test
-	}
-*/
+			IAnimationSpacialTrigger * pTrigger = m_pPlayer->GetAnimationGraphState()->SetTrigger( req );
+			if (m_state.HasDesiredSpeedAtTarget())
+				pTrigger->SetInput("DesiredSpeed", m_state.GetDesiredSpeedAtTarget());
+			else
+				pTrigger->SetInput("DesiredSpeed", 0.0f); // TODO: workaround to test
+		}
+	*/
 
 	if (request.HasActorTarget())
 	{
@@ -297,107 +297,107 @@ bool CPlayerMovementController::RequestMovement( CMovementRequest& request )
 
 		SAnimationTargetRequest req;
 		req.position = p.location;
-		req.positionRadius = std::max( p.locationRadius, DEG2RAD(0.05f) );
+		req.positionRadius = std::max(p.locationRadius, DEG2RAD(0.05f));
 		static float minRadius = 0.05f;
-		req.startRadius = std::max(minRadius, 2.0f*p.locationRadius);
+		req.startRadius = std::max(minRadius, 2.0f * p.locationRadius);
 		if (p.startRadius > minRadius)
 			req.startRadius = p.startRadius;
 		req.direction = p.direction;
-		req.directionRadius = std::max( p.directionRadius, DEG2RAD(0.05f) );
+		req.directionRadius = std::max(p.directionRadius, DEG2RAD(0.05f));
 		req.prepareRadius = 3.0f;
 		req.projectEnd = p.projectEnd;
 		req.navSO = p.navSO;
 
-		IAnimationSpacialTrigger * pTrigger = m_pPlayer->GetAnimationGraphState()->SetTrigger(req, p.triggerUser, p.pQueryStart, p.pQueryEnd);
+		IAnimationSpacialTrigger* pTrigger = m_pPlayer->GetAnimationGraphState()->SetTrigger(req, p.triggerUser, p.pQueryStart, p.pQueryEnd);
 		if (pTrigger)
 		{
 			if (!p.vehicleName.empty())
 			{
-				pTrigger->SetInput( "Vehicle", p.vehicleName.c_str() );
-				pTrigger->SetInput( "VehicleSeat", p.vehicleSeat );
+				pTrigger->SetInput("Vehicle", p.vehicleName.c_str());
+				pTrigger->SetInput("VehicleSeat", p.vehicleSeat);
 			}
 			if (p.speed >= 0.0f)
 			{
-				pTrigger->SetInput( m_inputDesiredSpeed, p.speed );
+				pTrigger->SetInput(m_inputDesiredSpeed, p.speed);
 			}
 			m_animTargetSpeed = p.speed;
-			pTrigger->SetInput( m_inputDesiredTurnAngleZ, 0 );
+			pTrigger->SetInput(m_inputDesiredTurnAngleZ, 0);
 			if (!p.animation.empty())
 			{
-				pTrigger->SetInput( p.signalAnimation? "Signal" : "Action", p.animation.c_str() );
+				pTrigger->SetInput(p.signalAnimation ? "Signal" : "Action", p.animation.c_str());
 			}
 			if (p.stance != STANCE_NULL)
 			{
 				m_targetStance = p.stance;
-				pTrigger->SetInput( m_inputStance, m_pPlayer->GetStanceInfo(p.stance)->name );
+				pTrigger->SetInput(m_inputStance, m_pPlayer->GetStanceInfo(p.stance)->name);
 			}
 		}
 	}
 	else if (request.RemoveActorTarget())
 	{
-		if(m_pPlayer->GetAnimationGraphState())
+		if (m_pPlayer->GetAnimationGraphState())
 			m_pPlayer->GetAnimationGraphState()->ClearTrigger(eAGTU_AI);
 	}
 
 	return ok;
 }
 
-ILINE static f32 GetYaw( const Vec3& v0, const Vec3& v1 )
+ILINE static f32 GetYaw(const Vec3& v0, const Vec3& v1)
 {
-  float a0 = atan2f(v0.y, v0.x);
-  float a1 = atan2f(v1.y, v1.x);
-  float a = a1 - a0;
-  if (a > gf_PI) a -= gf_PI2;
-  else if (a < -gf_PI) a += gf_PI2;
-  return a;
+	float a0 = atan2f(v0.y, v0.x);
+	float a1 = atan2f(v1.y, v1.x);
+	float a = a1 - a0;
+	if (a > gf_PI) a -= gf_PI2;
+	else if (a < -gf_PI) a += gf_PI2;
+	return a;
 }
 
-ILINE static Quat GetTargetRotation( Vec3 oldTarget, Vec3 newTarget, Vec3 origin )
+ILINE static Quat GetTargetRotation(Vec3 oldTarget, Vec3 newTarget, Vec3 origin)
 {
 	Vec3 oldDir = (oldTarget - origin).GetNormalizedSafe(FORWARD_DIRECTION);
 	Vec3 newDir = (newTarget - origin).GetNormalizedSafe(ZERO);
 	if (newDir.GetLength() < 0.001f)
 		return Quat::CreateIdentity();
 	else
-		return Quat::CreateRotationV0V1( oldDir, newDir );
+		return Quat::CreateRotationV0V1(oldDir, newDir);
 }
 
-static void DrawArrow( Vec3 from, Vec3 to, float length, float * clr )
+static void DrawArrow(Vec3 from, Vec3 to, float length, float* clr)
 {
 	float r = clr[0];
 	float g = clr[1];
 	float b = clr[2];
-	float color[] = {r,g,b,1};
-	gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine( from, ColorF(r,g,b,1), to, ColorF(r,g,b,1) );
-	gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere( to, 0.05f, ColorF(r,g,b,1) );
+	float color[] = { r,g,b,1 };
+	gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(from, ColorF(r, g, b, 1), to, ColorF(r, g, b, 1));
+	gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(to, 0.05f, ColorF(r, g, b, 1));
 }
 
-static float bias( float b, float t )
+static float bias(float b, float t)
 {
 	if (b == 0.0f)
 		return 0.0f;
-	return cry_powf( b, cry_logf(b)/cry_logf(0.5f) );
+	return cry_powf(b, cry_logf(b) / cry_logf(0.5f));
 }
 
-static float gain( float g, float t )
+static float gain(float g, float t)
 {
 	if (t < 0.5f)
-		return bias( 1.0f-g, 2.0f*t );
+		return bias(1.0f - g, 2.0f * t);
 	else
-		return 1.0f - bias( 1.0f-g, 2.0f-2.0f*t );
+		return 1.0f - bias(1.0f - g, 2.0f - 2.0f * t);
 }
 
-static float white[4] = {1,1,1,1};
-static float blue[4] = {0,0,1,1};
-static float red[4] = {1,0,0,1};
-static float yellow[4] = {1,1,0,1};
-static float green[4] = {0,1,0,1};
+static float white[4] = { 1,1,1,1 };
+static float blue[4] = { 0,0,1,1 };
+static float red[4] = { 1,0,0,1 };
+static float yellow[4] = { 1,1,0,1 };
+static float green[4] = { 0,1,0,1 };
 static CTimeValue lastTime;
 static int y = 100;
 
-void CPlayerMovementController::BindInputs( IAnimationGraphState * pAGState )
+void CPlayerMovementController::BindInputs(IAnimationGraphState* pAGState)
 {
-	if ( pAGState )
+	if (pAGState)
 	{
 		m_inputDesiredSpeed = pAGState->GetInputId("DesiredSpeed");
 		m_inputDesiredTurnAngleZ = pAGState->GetInputId("DesiredTurnAngleZ");
@@ -406,36 +406,36 @@ void CPlayerMovementController::BindInputs( IAnimationGraphState * pAGState )
 	}
 }
 
-bool CPlayerMovementController::Update( float frameTime, SActorFrameMovementParams& params )
+bool CPlayerMovementController::Update(float frameTime, SActorFrameMovementParams& params)
 {
 	bool ok = false;
 
-	params.lookTarget = Vec3(-1,-1,-1);
-	params.aimTarget = Vec3(-1,-1,-1);
+	params.lookTarget = Vec3(-1, -1, -1);
+	params.aimTarget = Vec3(-1, -1, -1);
 
-/*
-	if (m_pPlayer->IsFrozen())
-	{
-		params.lookTarget = Vec3(-2,-2,-2);
-		params.aimTarget = Vec3(-2,-2,-2);
-
-		if (m_state.HasAimTarget())
+	/*
+		if (m_pPlayer->IsFrozen())
 		{
-			Vec3 aimTarget = m_state.GetAimTarget();
-			if (!aimTarget.IsValid())
-				CryError("");
-			m_state.ClearAimTarget();
-		}
+			params.lookTarget = Vec3(-2,-2,-2);
+			params.aimTarget = Vec3(-2,-2,-2);
 
-		if (m_state.HasLookTarget())
-		{
-			Vec3 lookTarget = m_state.GetLookTarget();
-			if (!lookTarget.IsValid())
-				CryError("");
-			m_state.ClearLookTarget();
+			if (m_state.HasAimTarget())
+			{
+				Vec3 aimTarget = m_state.GetAimTarget();
+				if (!aimTarget.IsValid())
+					CryError("");
+				m_state.ClearAimTarget();
+			}
+
+			if (m_state.HasLookTarget())
+			{
+				Vec3 lookTarget = m_state.GetLookTarget();
+				if (!lookTarget.IsValid())
+					CryError("");
+				m_state.ClearLookTarget();
+			}
 		}
-	}
-*/
+	*/
 
 	if (m_updateFunc)
 	{
@@ -443,40 +443,40 @@ bool CPlayerMovementController::Update( float frameTime, SActorFrameMovementPara
 	}
 
 
-//	m_state.RemoveDeltaMovement();
-//	m_state.RemoveDeltaRotation();
+	//	m_state.RemoveDeltaMovement();
+	//	m_state.RemoveDeltaRotation();
 
 	return ok;
 }
 
 void CPlayerMovementController::CTargetInterpolator::TargetValue(
-	const Vec3& value, 
-	CTimeValue now, 
-	CTimeValue timeout, 
-	float frameTime, 
-	bool updateLastValue, 
-	const Vec3& playerPos, 
-	float maxAngularVelocity )
+	const Vec3& value,
+	CTimeValue now,
+	CTimeValue timeout,
+	float frameTime,
+	bool updateLastValue,
+	const Vec3& playerPos,
+	float maxAngularVelocity)
 {
 	m_target = value;
 	if (updateLastValue)
 		m_lastValue = now;
 }
 
-static Vec3 ClampDirectionToCone( const Vec3& dir, const Vec3& forward, float maxAngle )
+static Vec3 ClampDirectionToCone(const Vec3& dir, const Vec3& forward, float maxAngle)
 {
-//	float angle = cry_acosf( dir.Dot(forward) );
-	float angle = cry_acosf( clamp_tpl(dir.Dot(forward),-1.0f,1.0f) );
+	//	float angle = cry_acosf( dir.Dot(forward) );
+	float angle = cry_acosf(clamp_tpl(dir.Dot(forward), -1.0f, 1.0f));
 	if (angle > maxAngle)
 	{
 		Quat fromForwardToDir = Quat::CreateRotationV0V1(forward, dir);
-		Quat rotate = Quat::CreateSlerp( Quat::CreateIdentity(), fromForwardToDir, min(maxAngle/angle, 1.0f) );
+		Quat rotate = Quat::CreateSlerp(Quat::CreateIdentity(), fromForwardToDir, min(maxAngle / angle, 1.0f));
 		return rotate * forward;
 	}
 	return dir;
 }
 
-static Vec3 FlattenVector( Vec3 x )
+static Vec3 FlattenVector(Vec3 x)
 {
 	x.z = 0;
 	return x;
@@ -489,19 +489,19 @@ void CPlayerMovementController::CTargetInterpolator::Update(float frameTime)
 }
 
 bool CPlayerMovementController::CTargetInterpolator::GetTarget(
-	Vec3& target, 
-	Vec3& rotateTarget, 
-	const Vec3& playerPos, 
-	const Vec3& moveDirection, 
+	Vec3& target,
+	Vec3& rotateTarget,
+	const Vec3& playerPos,
+	const Vec3& moveDirection,
 	const Vec3& bodyDirection,
 	const Vec3& entityDirection,
-	float maxAngle, 
-	float distToEnd, 
-	float viewFollowMovement, 
-	ColorB * clr,
-	const char ** bodyTargetType )
+	float maxAngle,
+	float distToEnd,
+	float viewFollowMovement,
+	ColorB* clr,
+	const char** bodyTargetType)
 {
-  bool retVal = true;
+	bool retVal = true;
 	Vec3 desiredTarget = GetTarget();
 	Vec3 desiredDirection = desiredTarget - playerPos;
 	float	targetDist = desiredDirection.GetLength();
@@ -518,7 +518,7 @@ bool CPlayerMovementController::CTargetInterpolator::GetTarget(
 	Vec3 clampedDirection = desiredDirection;
 
 	// clamp yaw rotation into acceptable bounds
-	float yawFromBodyToDesired = GetYaw( bodyDirection, desiredDirection );
+	float yawFromBodyToDesired = GetYaw(bodyDirection, desiredDirection);
 	if (fabsf(yawFromBodyToDesired) > maxAngle)
 	{
 		float clampAngle = (yawFromBodyToDesired < 0) ? -maxAngle : maxAngle;
@@ -528,18 +528,18 @@ bool CPlayerMovementController::CTargetInterpolator::GetTarget(
 
 		if (viewFollowMovement > 0.1f)
 		{
-			clampedDirection = Quat::CreateSlerp( 
-			Quat::CreateIdentity(), 
-			Quat::CreateRotationV0V1(clampedDirection, moveDirection), 
-			min(viewFollowMovement, 1.0f)) * clampedDirection;
-      // return false to indicate that the direction is out of range. This stops the gun
-      // being held up in the aiming pose, but not pointing at the target, whilst running
-      retVal = false;
+			clampedDirection = Quat::CreateSlerp(
+				Quat::CreateIdentity(),
+				Quat::CreateRotationV0V1(clampedDirection, moveDirection),
+				min(viewFollowMovement, 1.0f)) * clampedDirection;
+			// return false to indicate that the direction is out of range. This stops the gun
+			// being held up in the aiming pose, but not pointing at the target, whilst running
+			retVal = false;
 		}
 		// Clamped, rotate the body until it is facing towards the target.
 	}
 
-	if(viewFollowMovement > 0.5f)
+	if (viewFollowMovement > 0.5f)
 	{
 		// Rotate the body towards the movement direction while moving and strafing is not specified.
 		rotateTarget = playerPos + 5.0f * moveDirection.GetNormalizedSafe();
@@ -573,7 +573,7 @@ static void DebugDrawWireFOVCone(IRenderer* pRend, const Vec3& pos, const Vec3& 
 	float coneRadius = sinf(fov) * rad;
 	float coneHeight = cosf(fov) * rad;
 
-	for(unsigned i = 0; i < npts; i++)
+	for (unsigned i = 0; i < npts; i++)
 	{
 		float	a = ((float)i / (float)npts) * gf_PI2;
 		float rx = cosf(a) * coneRadius;
@@ -581,9 +581,9 @@ static void DebugDrawWireFOVCone(IRenderer* pRend, const Vec3& pos, const Vec3& 
 		points[i] = pos + base.TransformVector(Vec3(rx, coneHeight, ry));
 	}
 
-	for(unsigned i = 0; i < npts2; i++)
+	for (unsigned i = 0; i < npts2; i++)
 	{
-		float	a = -fov + ((float)i / (float)(npts2-1)) * (fov*2);
+		float	a = -fov + ((float)i / (float)(npts2 - 1)) * (fov * 2);
 		float rx = sinf(a) * rad;
 		float ry = cosf(a) * rad;
 		pointsx[i] = pos + base.TransformVector(Vec3(rx, ry, 0));
@@ -595,9 +595,9 @@ static void DebugDrawWireFOVCone(IRenderer* pRend, const Vec3& pos, const Vec3& 
 	pRend->GetIRenderAuxGeom()->DrawPolyline(pointsy, npts2, false, col);
 
 	pRend->GetIRenderAuxGeom()->DrawLine(points[0], col, pos, col);
-	pRend->GetIRenderAuxGeom()->DrawLine(points[npts/4], col, pos, col);
-	pRend->GetIRenderAuxGeom()->DrawLine(points[npts/2], col, pos, col);
-	pRend->GetIRenderAuxGeom()->DrawLine(points[npts/2+npts/4], col, pos, col);
+	pRend->GetIRenderAuxGeom()->DrawLine(points[npts / 4], col, pos, col);
+	pRend->GetIRenderAuxGeom()->DrawLine(points[npts / 2], col, pos, col);
+	pRend->GetIRenderAuxGeom()->DrawLine(points[npts / 2 + npts / 4], col, pos, col);
 }
 
 
@@ -637,41 +637,41 @@ static bool ClampTargetPointToCone(Vec3& target, const Vec3& pos, const Vec3& di
 }
 
 
-bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMovementParams& params )
+bool CPlayerMovementController::UpdateNormal(float frameTime, SActorFrameMovementParams& params)
 {
 	// TODO: Don't update all this mess when a character is dead.
 
-	ITimer * pTimer = gEnv->pTimer;
+	ITimer* pTimer = gEnv->pTimer;
 
-	IRenderer * pRend = gEnv->pRenderer;
+	IRenderer* pRend = gEnv->pRenderer;
 	if (g_pGame->GetCVars()->g_debugaimlook)
 	{
-		if (pTimer->GetFrameStartTime()!=lastTime)
+		if (pTimer->GetFrameStartTime() != lastTime)
 		{
 			y = 100;
 			lastTime = pTimer->GetFrameStartTime();
 		}
 	}
 
-	IEntity * pEntity = m_pPlayer->GetEntity();
+	IEntity* pEntity = m_pPlayer->GetEntity();
 	Vec3 playerPos = pEntity->GetWorldPos();
 
-	params.desiredVelocity = Vec3(0,0,0);
+	params.desiredVelocity = Vec3(0, 0, 0);
 	params.lookTarget = m_currentMovementState.eyePosition + m_currentMovementState.eyeDirection * 10.0f;
-//	params.aimTarget = m_currentMovementState.handPosition + m_currentMovementState.aimDirection * 10.0f;
-	if(m_state.HasAimTarget())
+	//	params.aimTarget = m_currentMovementState.handPosition + m_currentMovementState.aimDirection * 10.0f;
+	if (m_state.HasAimTarget())
 		params.aimTarget = m_state.GetAimTarget();
 	else
 		params.aimTarget = m_currentMovementState.weaponPosition + m_currentMovementState.aimDirection * 10.0f;
 	params.lookIK = false;
 	params.aimIK = false;
-	params.deltaAngles = Ang3(0,0,0);
+	params.deltaAngles = Ang3(0, 0, 0);
 
 	static bool forceStrafe = false;	// [mikko] For testing, should be 'false'.
 	bool allowStrafing = m_state.AllowStrafing();
 	params.allowStrafe = allowStrafing || forceStrafe;
 
-	if(gEnv->bMultiplayer && m_state.HasStance() && m_state.GetStance() == STANCE_PRONE)
+	if (gEnv->bMultiplayer && m_state.HasStance() && m_state.GetStance() == STANCE_PRONE)
 	{
 		// send a ray backwards to check we're not intersecting a wall. If we are, go to crouch instead.
 		if (gEnv->bClient && m_pPlayer->GetGameObject()->IsProbablyVisible())
@@ -686,20 +686,20 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 			//pRend->GetIRenderAuxGeom()->DrawLine( pos, ColorF(1,1,1,0.5f), pos + dir, ColorF(1,1,1,0.5f) );
 
 			ray_hit hit;
-			static const int obj_types = ent_static|ent_rigid|ent_sleeping_rigid|ent_living;
-			static const unsigned int flags = rwi_stop_at_pierceable|rwi_colltype_any;
-			bool rayHitAny = 0 != gEnv->pPhysicalWorld->RayWorldIntersection( pos, dir, obj_types, flags, &hit, 1, pEntity->GetPhysics() );
+			static const int obj_types = ent_static | ent_rigid | ent_sleeping_rigid | ent_living;
+			static const unsigned int flags = rwi_stop_at_pierceable | rwi_colltype_any;
+			bool rayHitAny = 0 != gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir, obj_types, flags, &hit, 1, pEntity->GetPhysics());
 			if (rayHitAny)
 			{
 				m_state.SetStance(STANCE_CROUCH);
-			}				
+			}
 
 			// also don't allow prone for hurricane/LAW type weapons.
-			if(g_pGameCVars->g_proneNotUsableWeapon_FixType == 2)
+			if (g_pGameCVars->g_proneNotUsableWeapon_FixType == 2)
 			{
-				if(CItem* pItem = (CItem*)(m_pPlayer->GetCurrentItem()))
+				if (CItem* pItem = (CItem*)(m_pPlayer->GetCurrentItem()))
 				{
-					if(pItem->GetParams().prone_not_usable)
+					if (pItem->GetParams().prone_not_usable)
 						m_state.SetStance(STANCE_CROUCH);
 				}
 			}
@@ -715,7 +715,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		}
 	}
 
-	ICharacterInstance * pCharacter = pEntity->GetCharacter(0);
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(0);
 	if (!pCharacter)
 		return true;
 
@@ -736,15 +736,15 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 	float viewFollowMovement = 0.0f;
 
-	const char * bodyTargetType = "none";
-	const char * moveTargetType = "none";
+	const char* bodyTargetType = "none";
+	const char* moveTargetType = "none";
 	if (m_state.HasMoveTarget())
 	{
 		hasMoveTarget = true;
 		moveTarget = m_state.GetMoveTarget();
 		moveTargetType = "steering";
 	}
-	const SAnimationTarget * pAnimTarget = m_pPlayer->GetAnimationGraphState()->GetAnimationTarget();
+	const SAnimationTarget* pAnimTarget = m_pPlayer->GetAnimationGraphState()->GetAnimationTarget();
 	if ((pAnimTarget != NULL) && pAnimTarget->preparing)
 	{
 		float distanceToTarget = (pAnimTarget->position - playerPos).GetLength2D();
@@ -758,17 +758,17 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		float deltaAngleDot = animTargetFwdDir.Dot(moveDirection2d);
 		float fraction = (distanceToTarget - 0.2f) / 1.8f;
 		float blend = CLAMP(fraction, 0.0f, 1.0f);
-		animTargetFwdDir.SetSlerp(animTargetFwdDir, moveDirection2d, blend );
+		animTargetFwdDir.SetSlerp(animTargetFwdDir, moveDirection2d, blend);
 
 		float animTargetFwdDepthFraction = max(0.0f, animTargetFwdDir.Dot(moveDirection2d));
 		float animTargetFwdDepth = LERP(1.0f, 3.0f, animTargetFwdDepthFraction);
 
-/*
-		Vec3 bump(0,0,0.1f);
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(pAnimTarget->position+bump, 0.05f, ColorB(255,255,255,255), true);
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(pAnimTarget->position+bump, ColorB(255,255,255,255), 
-			pAnimTarget->position+bump + animTargetFwdDepth * animTargetFwdDir, ColorB(255,255,255,255), 4.0f);
-*/
+		/*
+				Vec3 bump(0,0,0.1f);
+				gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(pAnimTarget->position+bump, 0.05f, ColorB(255,255,255,255), true);
+				gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(pAnimTarget->position+bump, ColorB(255,255,255,255),
+					pAnimTarget->position+bump + animTargetFwdDepth * animTargetFwdDir, ColorB(255,255,255,255), 4.0f);
+		*/
 
 		bodyTarget = pAnimTarget->position + animTargetFwdDepth * animTargetFwdDir;
 		bodyTargetType = "animation";
@@ -785,15 +785,15 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	}
 	if (pAnimTarget != NULL)
 	{
-    static float criticalDistance = 5.0f;
-    float distance = (pAnimTarget->position - playerPos).GetLength();
+		static float criticalDistance = 5.0f;
+		float distance = (pAnimTarget->position - playerPos).GetLength();
 		// workaround: DistanceToPathEnd is bogus values. Using true distance to anim target pos instead.
 		pAnimTarget->allowActivation = m_state.GetDistanceToPathEnd() < criticalDistance && distance < criticalDistance;
 	}
 
-	m_animTargetSpeedCounter -= m_animTargetSpeedCounter!=0;
+	m_animTargetSpeedCounter -= m_animTargetSpeedCounter != 0;
 
- 	// speed control
+	// speed control
 	if (hasMoveTarget)
 	{
 		Vec3 desiredMovement = moveTarget - playerPos;
@@ -807,14 +807,14 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		if (distance > 0.01f) // need to have somewhere to move, to actually move :)
 		{
 			// speed at which things are "guaranteed" to stop... 0.03f is a fudge factor to ensure this
-			static const float STOP_SPEED = MIN_DESIRED_SPEED-0.03f;
+			static const float STOP_SPEED = MIN_DESIRED_SPEED - 0.03f;
 
 			desiredMovement /= distance;
 			float desiredSpeed = 1.0f;
 			if (m_state.HasDesiredSpeed())
 				desiredSpeed = m_state.GetDesiredSpeed();
 
-			if (pAnimTarget && pAnimTarget->preparing)  
+			if (pAnimTarget && pAnimTarget->preparing)
 			{
 				desiredSpeed = std::max(desiredSpeed, m_desiredSpeed);
 				desiredSpeed = std::max(1.0f, desiredSpeed);
@@ -828,25 +828,25 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 				float antiOscilationSpeedFraction = 1.0f - CLAMP(distance / 1.0f, 0.0f, 1.0f);
 				float antiOscilationSpeed = LERP(desiredSpeed, finalSpeed, antiOscilationSpeedFraction);
 				float approachSpeed = iszero(frameTime) ? 0.0f : (distance / frameTime) * 0.4f;
-/*
-				if (isNavigationalSO)
-					approachSpeed = max(approachSpeed, 2.0f);
-*/
+				/*
+								if (isNavigationalSO)
+									approachSpeed = max(approachSpeed, 2.0f);
+				*/
 				desiredSpeed = std::min(desiredSpeed, approachSpeed);
 				//desiredSpeed = antiOscilationSpeed;
 			}
 			if (pAnimTarget && (pAnimTarget->activated || m_animTargetSpeedCounter) && m_animTargetSpeed >= 0.0f)
 			{
 				desiredSpeed = m_animTargetSpeed;
-        if (pAnimTarget->activated)
-  				m_animTargetSpeedCounter = 4;
+				if (pAnimTarget->activated)
+					m_animTargetSpeedCounter = 4;
 			}
 
-			float stanceSpeed=m_pPlayer->GetStanceMaxSpeed(m_pPlayer->GetStance());
+			float stanceSpeed = m_pPlayer->GetStanceMaxSpeed(m_pPlayer->GetStance());
 			NETINPUT_TRACE(m_pPlayer->GetEntityId(), desiredSpeed);
 			NETINPUT_TRACE(m_pPlayer->GetEntityId(), stanceSpeed);
 			NETINPUT_TRACE(m_pPlayer->GetEntityId(), desiredMovement);
-			if ((desiredSpeed > MIN_DESIRED_SPEED) && stanceSpeed>0.001f)
+			if ((desiredSpeed > MIN_DESIRED_SPEED) && stanceSpeed > 0.001f)
 			{
 				//pRend->GetIRenderAuxGeom()->DrawLine( playerPos, ColorF(1,1,1,1), playerPos + desiredMovement, ColorF(1,1,1,1) );
 
@@ -861,16 +861,16 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		}
 	}
 
-/*	if (m_state.HasAimTarget())
-	{
-		float aimLength = (m_currentMovementState.weaponPosition - m_state.GetAimTarget()).GetLengthSquared();
-		float aimLimit = 9.0f * 9.0f;
-		if (aimLength < aimLimit)
+	/*	if (m_state.HasAimTarget())
 		{
-			float mult = aimLength / aimLimit;
-			viewFollowMovement *= mult * mult;
-		}
-	}*/
+			float aimLength = (m_currentMovementState.weaponPosition - m_state.GetAimTarget()).GetLengthSquared();
+			float aimLimit = 9.0f * 9.0f;
+			if (aimLength < aimLimit)
+			{
+				float mult = aimLength / aimLimit;
+				viewFollowMovement *= mult * mult;
+			}
+		}*/
 	float distanceToEnd(m_state.GetDistanceToPathEnd()); // TODO: Warning, a comment above say this function returns incorrect values.
 /*	if (distanceToEnd>0.001f)
 	{
@@ -913,7 +913,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 	bool hasLookTarget = false;
 	tgt = eyePosition + 5.0f * currentBodyDirection;
-	const char * lookType = "current";
+	const char* lookType = "current";
 	if (pAnimTarget && pAnimTarget->preparing)
 	{
 		hasLookTarget = false;
@@ -959,15 +959,15 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		tgt = m_lookInterpolator.GetTarget();
 		lookType = "lastLook";
 	}
-//	AdjustForMovement( tgt, moveTarget, playerPos, viewFollowMovement );
+	//	AdjustForMovement( tgt, moveTarget, playerPos, viewFollowMovement );
 
 	Vec3 lookTarget = tgt;
 
 	// Not all of these arguments are used (stupid function).
-	m_lookInterpolator.TargetValue( tgt, now, LOOK_TIME, frameTime, hasLookTarget, playerPos, MAX_LOOK_AT_ANGULAR_VELOCITY );
+	m_lookInterpolator.TargetValue(tgt, now, LOOK_TIME, frameTime, hasLookTarget, playerPos, MAX_LOOK_AT_ANGULAR_VELOCITY);
 
 	bool hasAimTarget = false;
-	const char * aimType = lookType;
+	const char* aimType = lookType;
 	if (pAnimTarget && pAnimTarget->preparing)
 	{
 		hasAimTarget = true;
@@ -979,17 +979,17 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 		hasAimTarget = true;
 		tgt = m_state.GetAimTarget();
 		aimType = "aim";
-//		AdjustForMovement( tgt, moveTarget, playerPos, viewFollowMovement );
+		//		AdjustForMovement( tgt, moveTarget, playerPos, viewFollowMovement );
 	}
 
 	Vec3 aimTarget = tgt;
 
 	//if ((pAnimTarget == NULL) || (!pAnimTarget->activated)) // (Dejan was not sure about this yet, for leaning and such stuff.)
-		m_aimInterpolator.TargetValue( tgt, now, AIM_TIME, frameTime, hasAimTarget, playerPos, MAX_AIM_AT_ANGULAR_VELOCITY );
+	m_aimInterpolator.TargetValue(tgt, now, AIM_TIME, frameTime, hasAimTarget, playerPos, MAX_AIM_AT_ANGULAR_VELOCITY);
 
-	const char * ikType = "none";
-	ColorB dbgClr(0,255,0,255);
-	ColorB * pDbgClr = g_pGame->GetCVars()->g_debugaimlook? &dbgClr : NULL;
+	const char* ikType = "none";
+	ColorB dbgClr(0, 255, 0, 255);
+	ColorB* pDbgClr = g_pGame->GetCVars()->g_debugaimlook ? &dbgClr : NULL;
 	//if (!m_state.HasNoAiming() && m_aimInterpolator.HasTarget( now, AIM_TIME ))	// AIM IK
 
 	bool swimming = (m_pPlayer->GetStance() == STANCE_SWIM);
@@ -1011,12 +1011,12 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 			// Luciano - prevent snapping of aim direction out of existing horizontal angle limits
 			float limitH = m_pPlayer->GetActorParams()->vLimitRangeH;
-			IEntity *pWeaponEntity = GetISystem()->GetIEntitySystem()->GetEntity(m_pPlayer->GetActorStats()->mountedWeaponID);
+			IEntity* pWeaponEntity = GetISystem()->GetIEntitySystem()->GetEntity(m_pPlayer->GetActorStats()->mountedWeaponID);
 
 			// m_currentMovementState.weaponPosition is offset to the real weapon position
-			Vec3 weaponPosition (pWeaponEntity ? pWeaponEntity->GetWorldPos() : m_currentMovementState.weaponPosition); 
-			
-			if(limitH > 0 && limitH < gf_PI)
+			Vec3 weaponPosition(pWeaponEntity ? pWeaponEntity->GetWorldPos() : m_currentMovementState.weaponPosition);
+
+			if (limitH > 0 && limitH < gf_PI)
 			{
 				Vec3 aimDirection(params.aimTarget - weaponPosition);//m_currentMovementState.weaponPosition);
 				Vec3 limitAxisY(m_pPlayer->GetActorParams()->vLimitDir);
@@ -1027,14 +1027,14 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 				float x = limitAxisX.Dot(aimDirection);
 				float y = limitAxisY.Dot(aimDirection);
 				float len = cry_sqrtf(sqr(x) + sqr(y));
-				len = max(len,2.f);// bring the aimTarget away for degenerated cases when it's between firepos and weaponpos
+				len = max(len, 2.f);// bring the aimTarget away for degenerated cases when it's between firepos and weaponpos
 				float angle = cry_atan2f(x, y);
 				if (angle < -limitH || angle > limitH)
 				{
 					Limit(angle, -limitH, limitH);
 					x = sinf(angle) * len;
 					y = cosf(angle) * len;
-					params.aimTarget = weaponPosition + x* limitAxisX + y * limitAxisY + Vec3(0,0, aimDirection.z);
+					params.aimTarget = weaponPosition + x * limitAxisX + y * limitAxisY + Vec3(0, 0, aimDirection.z);
 					m_aimClamped = true;
 				}
 
@@ -1042,7 +1042,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 			float limitUp = m_pPlayer->GetActorParams()->vLimitRangeVUp;
 			float limitDown = m_pPlayer->GetActorParams()->vLimitRangeVDown;
-			if(limitUp!=0 || limitDown != 0)
+			if (limitUp != 0 || limitDown != 0)
 			{
 				Vec3 aimDirection(params.aimTarget - weaponPosition);//m_currentMovementState.weaponPosition);
 				Vec3 limitAxisXY(aimDirection);
@@ -1053,14 +1053,14 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 				float z = limitAxisZ.Dot(aimDirection);
 				float x = limitAxisXY.Dot(aimDirection);
 				float len = cry_sqrtf(sqr(z) + sqr(x));
-				len = max(len,2.f); // bring the aimTarget away for degenerated cases when it's between firepos and weaponpos
+				len = max(len, 2.f); // bring the aimTarget away for degenerated cases when it's between firepos and weaponpos
 				float angle = cry_atan2f(z, x);
-				if (angle < limitDown && limitDown!=0 || angle > limitUp && limitUp !=0)
+				if (angle < limitDown && limitDown != 0 || angle > limitUp && limitUp != 0)
 				{
 					Limit(angle, limitDown, limitUp);
 					z = sinf(angle) * len;
 					x = cosf(angle) * len;
-					params.aimTarget = weaponPosition + z* limitAxisZ + x * limitAxisXY;
+					params.aimTarget = weaponPosition + z * limitAxisZ + x * limitAxisXY;
 					m_aimClamped = true;
 				}
 			}
@@ -1079,8 +1079,8 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 			if (g_pGame->GetCVars()->g_debugaimlook)
 			{
-				DebugDrawWireFOVCone(gEnv->pRenderer, weaponPos, limitDirection, 2.0f, AIM_CONE_FOV, ColorB(255,255,255));
-				DebugDrawWireFOVCone(gEnv->pRenderer, eyePosition, limitDirection, 3.0f, LOOK_CONE_FOV, ColorB(0,196,255));
+				DebugDrawWireFOVCone(gEnv->pRenderer, weaponPos, limitDirection, 2.0f, AIM_CONE_FOV, ColorB(255, 255, 255));
+				DebugDrawWireFOVCone(gEnv->pRenderer, eyePosition, limitDirection, 3.0f, LOOK_CONE_FOV, ColorB(0, 196, 255));
 			}
 
 			if (hasLookTarget)
@@ -1114,42 +1114,42 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 					bodyTargetType = "aim";
 				}
 			}
-		
-/*
-		if (!m_state.HasNoAiming() && m_aimInterpolator.HasTarget( now, AIM_TIME ) && !swimming)
-		{
-			params.aimIK = m_aimInterpolator.GetTarget( 
-				params.aimTarget, 
-				bodyTarget, 
-				Vec3( playerPos.x, playerPos.y, m_currentMovementState.weaponPosition.z ),
-				moveDirection, 
-				animBodyDirection, 
-				entDirection,
-				MAX_AIM_TURN_ANGLE, 
-				m_state.GetDistanceToPathEnd(), 
-				viewFollowMovement, 
-				pDbgClr,
-				&bodyTargetType );
-			ikType = "aim";
+
+			/*
+					if (!m_state.HasNoAiming() && m_aimInterpolator.HasTarget( now, AIM_TIME ) && !swimming)
+					{
+						params.aimIK = m_aimInterpolator.GetTarget(
+							params.aimTarget,
+							bodyTarget,
+							Vec3( playerPos.x, playerPos.y, m_currentMovementState.weaponPosition.z ),
+							moveDirection,
+							animBodyDirection,
+							entDirection,
+							MAX_AIM_TURN_ANGLE,
+							m_state.GetDistanceToPathEnd(),
+							viewFollowMovement,
+							pDbgClr,
+							&bodyTargetType );
+						ikType = "aim";
+					}
+					else if (m_lookInterpolator.HasTarget( now, LOOK_TIME ))	// Look IK
+					{
+						params.lookIK = m_lookInterpolator.GetTarget(
+							params.lookTarget,
+							bodyTarget,
+							Vec3( playerPos.x, playerPos.y, m_currentMovementState.eyePosition.z ),
+							moveDirection,
+							animBodyDirection,
+							entDirection,
+							MAX_HEAD_TURN_ANGLE,
+							m_state.GetDistanceToPathEnd(),
+							viewFollowMovement,
+							pDbgClr,
+							&bodyTargetType );
+						ikType = "look";
+					}
+			*/
 		}
-		else if (m_lookInterpolator.HasTarget( now, LOOK_TIME ))	// Look IK
-		{
-			params.lookIK = m_lookInterpolator.GetTarget( 
-				params.lookTarget, 
-				bodyTarget, 
-				Vec3( playerPos.x, playerPos.y, m_currentMovementState.eyePosition.z ),
-				moveDirection, 
-				animBodyDirection, 
-				entDirection,
-				MAX_HEAD_TURN_ANGLE, 
-				m_state.GetDistanceToPathEnd(), 
-				viewFollowMovement, 
-				pDbgClr,
-				&bodyTargetType );
-			ikType = "look";
-		}
-*/
-		}	
 	}
 
 
@@ -1158,13 +1158,13 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	{
 		//Vec3 localVDir(m_pPlayer->GetEntity()->GetWorldRotation().GetInverted() * viewDir);
 		Vec3 localVDir(m_pPlayer->GetViewQuat().GetInverted() * viewDir);
-		
+
 		CHECKQNAN_VEC(localVDir);
 
 		if ((pAnimTarget == NULL) || (!pAnimTarget->activated))
 		{
-			params.deltaAngles.x += asin(CLAMP(localVDir.z,-1,1));
-			params.deltaAngles.z += cry_atan2f(-localVDir.x,localVDir.y);
+			params.deltaAngles.x += asin(CLAMP(localVDir.z, -1, 1));
+			params.deltaAngles.z += cry_atan2f(-localVDir.x, localVDir.y);
 		}
 
 		CHECKQNAN_VEC(params.deltaAngles);
@@ -1191,7 +1191,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 			}
 		}
 
-		for (int i=0; i<3; i++)
+		for (int i = 0; i < 3; i++)
 			Limit(params.deltaAngles[i], -maxDeltaAngleRate * frameTime, maxDeltaAngleRate * frameTime);
 
 		CHECKQNAN_VEC(params.deltaAngles);
@@ -1207,21 +1207,21 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 
 	if (g_pGame->GetCVars()->g_debugaimlook)
 	{
-		pRend->Draw2dLabel( 10, y, 1.5f, white, false, 
-			"%s:  body=%s   look=%s   aim=%s   rotik=%s   move=%s   delta ang=(%3.2f, %3.2f, %3.2f)", 
-			pEntity->GetName(), bodyTargetType, aimType, lookType, ikType, moveTargetType, 
-			params.deltaAngles.x, params.deltaAngles.y, params.deltaAngles.z );
+		pRend->Draw2dLabel(10, y, 1.5f, white, false,
+			"%s:  body=%s   look=%s   aim=%s   rotik=%s   move=%s   delta ang=(%3.2f, %3.2f, %3.2f)",
+			pEntity->GetName(), bodyTargetType, aimType, lookType, ikType, moveTargetType,
+			params.deltaAngles.x, params.deltaAngles.y, params.deltaAngles.z);
 		y += 15;
 		if (m_state.GetDistanceToPathEnd() >= 0.0f)
 		{
-			pRend->Draw2dLabel( 10, y, 1.5f, yellow, false, "distanceToEnd: %f (%f)", m_state.GetDistanceToPathEnd(), moveTarget.GetDistance(playerPos) );
+			pRend->Draw2dLabel(10, y, 1.5f, yellow, false, "distanceToEnd: %f (%f)", m_state.GetDistanceToPathEnd(), moveTarget.GetDistance(playerPos));
 			y += 15;
 		}
 
 		if (m_state.HasAimTarget())
 		{
-			pRend->GetIRenderAuxGeom()->DrawLine( m_currentMovementState.weaponPosition, ColorF(1,1,1,1), params.aimTarget+Vec3(0,0,0.05f), ColorF(1,1,1,1), 3.0f);
-			pRend->GetIRenderAuxGeom()->DrawLine( m_currentMovementState.weaponPosition, ColorF(1,1,1,0.3f), m_state.GetAimTarget(), ColorF(1,1,1,0.3f));
+			pRend->GetIRenderAuxGeom()->DrawLine(m_currentMovementState.weaponPosition, ColorF(1, 1, 1, 1), params.aimTarget + Vec3(0, 0, 0.05f), ColorF(1, 1, 1, 1), 3.0f);
+			pRend->GetIRenderAuxGeom()->DrawLine(m_currentMovementState.weaponPosition, ColorF(1, 1, 1, 0.3f), m_state.GetAimTarget(), ColorF(1, 1, 1, 0.3f));
 		}
 	}
 
@@ -1234,7 +1234,7 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	// stance control
 	if (pAnimTarget && pAnimTarget->activated && m_targetStance != STANCE_NULL)
 	{
-		m_state.SetStance( m_targetStance );
+		m_state.SetStance(m_targetStance);
 	}
 
 	if (m_state.HasStance())
@@ -1251,36 +1251,36 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	params.jump = m_state.ShouldJump();
 	m_state.ClearJump();
 
-	params.strengthJump=ShouldStrengthJump();
+	params.strengthJump = ShouldStrengthJump();
 	ClearStrengthJump();
 
 	// TODO: This should probably be calculate BEFORE it is used (above), or the previous frame's value is used.
-	m_desiredSpeed = params.desiredVelocity.GetLength() * m_pPlayer->GetStanceMaxSpeed( m_pPlayer->GetStance() );
+	m_desiredSpeed = params.desiredVelocity.GetLength() * m_pPlayer->GetStanceMaxSpeed(m_pPlayer->GetStance());
 
 	m_state.RemoveDeltaRotation();
 	m_state.RemoveDeltaMovement();
 
-  if (params.aimIK)
-  {
-    m_aimTarget = params.aimTarget;
-    // if aiming force looking as well
-    // In spite of what it may look like with eye/look IK, the look/aim target tends
-    // to be right on/in the target's head so doesn't need any extra offset
-    params.lookTarget = params.aimTarget;
-    params.lookIK = true;
-    m_lookTarget = params.lookTarget;
-  }
-  else
-  {
-    m_aimTarget = m_lookTarget;
-    if (params.lookIK)
-		  m_lookTarget = params.lookTarget;
-	  else
-		  m_lookTarget = m_currentMovementState.eyePosition + m_pPlayer->GetEntity()->GetRotation() * FORWARD_DIRECTION * 10.0f;
-  }
+	if (params.aimIK)
+	{
+		m_aimTarget = params.aimTarget;
+		// if aiming force looking as well
+		// In spite of what it may look like with eye/look IK, the look/aim target tends
+		// to be right on/in the target's head so doesn't need any extra offset
+		params.lookTarget = params.aimTarget;
+		params.lookIK = true;
+		m_lookTarget = params.lookTarget;
+	}
+	else
+	{
+		m_aimTarget = m_lookTarget;
+		if (params.lookIK)
+			m_lookTarget = params.lookTarget;
+		else
+			m_lookTarget = m_currentMovementState.eyePosition + m_pPlayer->GetEntity()->GetRotation() * FORWARD_DIRECTION * 10.0f;
+	}
 
-  m_usingAimIK = params.aimIK;
-  m_usingLookIK = params.lookIK;
+	m_usingAimIK = params.aimIK;
+	m_usingLookIK = params.lookIK;
 
 	if (m_state.HasFireTarget())
 	{
@@ -1308,22 +1308,22 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	}
 	else
 	{
-    params.prediction.nStates = 0;
-	 }
-
-/*
-#ifdef USER_dejan
-	// Debug Render & Text
-	{
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(moveTarget, 0.2f, ColorB(128,255,0, 255), true);
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(playerPos, ColorB(255,255,255, 128), moveTarget, ColorB(128,255,0, 128), 0.4f);
-
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(bodyTarget, 0.2f, ColorB(255,128,0, 128), true);
-		//gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(moveTarget, ColorB(255,255,255, 128), bodyTarget, ColorB(255,128,0, 128), 0.2f);
-		gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(playerPos, ColorB(255,255,255, 128), bodyTarget, ColorB(255,128,0, 128), 0.4f);
+		params.prediction.nStates = 0;
 	}
-#endif
-*/
+
+	/*
+	#ifdef USER_dejan
+		// Debug Render & Text
+		{
+			gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(moveTarget, 0.2f, ColorB(128,255,0, 255), true);
+			gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(playerPos, ColorB(255,255,255, 128), moveTarget, ColorB(128,255,0, 128), 0.4f);
+
+			gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(bodyTarget, 0.2f, ColorB(255,128,0, 128), true);
+			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(moveTarget, ColorB(255,255,255, 128), bodyTarget, ColorB(255,128,0, 128), 0.2f);
+			gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(playerPos, ColorB(255,255,255, 128), bodyTarget, ColorB(255,128,0, 128), 0.4f);
+		}
+	#endif
+	*/
 
 	NETINPUT_TRACE(m_pPlayer->GetEntityId(), params.desiredVelocity);
 	NETINPUT_TRACE(m_pPlayer->GetEntityId(), params.desiredLean);
@@ -1333,10 +1333,10 @@ bool CPlayerMovementController::UpdateNormal( float frameTime, SActorFrameMoveme
 	return true;
 }
 
-void CPlayerMovementController::UpdateMovementState( SMovementState& state )
+void CPlayerMovementController::UpdateMovementState(SMovementState& state)
 {
-	IEntity * pEntity = m_pPlayer->GetEntity();
-	ICharacterInstance * pCharacter = pEntity->GetCharacter(0);
+	IEntity* pEntity = m_pPlayer->GetEntity();
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(0);
 	if (!pCharacter)
 		return;
 	ISkeletonAnim* pSkeletonAnim = pCharacter->GetISkeletonAnim();
@@ -1349,7 +1349,7 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 	int boneHead = m_pPlayer->GetBoneID(BONE_HEAD);
 	int boneWeapon = m_pPlayer->GetBoneID(BONE_WEAPON);
 
-	Vec3	forward(1,0,0);
+	Vec3	forward(1, 0, 0);
 	bool isCharacterVisible = pCharacter->IsCharacterVisible() != 0;
 
 	if (m_pPlayer->IsPlayer())
@@ -1360,12 +1360,12 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 		state.eyePosition = pEntity->GetWorldPos() + m_pPlayer->GetBaseQuat() * viewOfs;
 
 		// E3HAX E3HAX E3HAX
-		if (((SPlayerStats *)m_pPlayer->GetActorStats())->mountedWeaponID)
+		if (((SPlayerStats*)m_pPlayer->GetActorStats())->mountedWeaponID)
 			state.eyePosition = GetISystem()->GetViewCamera().GetPosition();
 
 		if (!m_pPlayer->IsClient()) // marcio: fixes the eye direction for remote players
-			state.eyeDirection = (m_lookTarget-state.eyePosition).GetNormalizedSafe(state.eyeDirection);
-		else if(((SPlayerStats *)m_pPlayer->GetActorStats())->FPWeaponSwayOn) // Beni - Fixes aim direction when zoom sway applies
+			state.eyeDirection = (m_lookTarget - state.eyePosition).GetNormalizedSafe(state.eyeDirection);
+		else if (((SPlayerStats*)m_pPlayer->GetActorStats())->FPWeaponSwayOn) // Beni - Fixes aim direction when zoom sway applies
 			state.eyeDirection = GetISystem()->GetViewCamera().GetViewdir();
 		else
 			state.eyeDirection = m_pPlayer->GetViewQuatFinal().GetColumn1();
@@ -1383,7 +1383,7 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 		Quat	orientation = pEntity->GetWorldRotation();
 		forward = orientation.GetColumn1();
 		Vec3	entityPos = pEntity->GetWorldPos();
-		assert( entityPos.IsValid() );
+		assert(entityPos.IsValid());
 		Vec3	constrainedLookDir = m_lookTarget - entityPos;
 		Vec3	constrainedAimDir = m_aimTarget - entityPos;
 		constrainedLookDir.z = 0.0f;
@@ -1392,7 +1392,7 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 		constrainedAimDir = constrainedAimDir.GetNormalizedSafe(constrainedLookDir.GetNormalizedSafe(forward));
 		constrainedLookDir = constrainedLookDir.GetNormalizedSafe(forward);
 
-		const SStanceInfo*	stanceInfo = m_pPlayer->GetStanceInfo(m_pPlayer->GetStance());
+		const SStanceInfo* stanceInfo = m_pPlayer->GetStanceInfo(m_pPlayer->GetStance());
 
 		Matrix33	lookRot;
 		lookRot.SetRotationVDir(constrainedLookDir);
@@ -1401,7 +1401,7 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 		Matrix33	aimRot;
 		aimRot.SetRotationVDir(constrainedAimDir);
 		state.weaponPosition = entityPos + aimRot.TransformVector(m_pPlayer->GetWeaponOffset());
-			
+
 		state.upDirection = orientation.GetColumn2();
 
 		state.eyeDirection = (m_lookTarget - state.eyePosition).GetNormalizedSafe(forward); //(lEyePos - posHead).GetNormalizedSafe(FORWARD_DIRECTION);
@@ -1424,24 +1424,24 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 	// [kirill] when AI at MG need to update body/movementDirection coz entity is not moved/rotated AND set AIPos/weaponPs to weapon
 	if (!m_pPlayer->IsPlayer() && m_pPlayer->GetActorStats() && m_pPlayer->GetActorStats()->mountedWeaponID)
 	{
-		
-		IEntity *pWeaponEntity = GetISystem()->GetIEntitySystem()->GetEntity(m_pPlayer->GetActorStats()->mountedWeaponID);
-		if(pWeaponEntity)
+
+		IEntity* pWeaponEntity = GetISystem()->GetIEntitySystem()->GetEntity(m_pPlayer->GetActorStats()->mountedWeaponID);
+		if (pWeaponEntity)
 		{
 			state.eyePosition.x = pWeaponEntity->GetWorldPos().x;
 			state.eyePosition.y = pWeaponEntity->GetWorldPos().y;
 			state.weaponPosition = state.eyePosition;
-			if(	m_pPlayer->GetEntity()->GetAI() &&
-					m_pPlayer->GetEntity()->GetAI()->GetProxy() &&
-					m_pPlayer->GetEntity()->GetAI()->GetProxy()->GetCurrentWeapon() )
+			if (m_pPlayer->GetEntity()->GetAI() &&
+				m_pPlayer->GetEntity()->GetAI()->GetProxy() &&
+				m_pPlayer->GetEntity()->GetAI()->GetProxy()->GetCurrentWeapon())
 			{
-				IWeapon * pMG = m_pPlayer->GetEntity()->GetAI()->GetProxy()->GetCurrentWeapon();
-				state.weaponPosition = pMG->GetFiringPos( m_fireTarget ); //pWeaponEntity->GetWorldPos();
+				IWeapon* pMG = m_pPlayer->GetEntity()->GetAI()->GetProxy()->GetCurrentWeapon();
+				state.weaponPosition = pMG->GetFiringPos(m_fireTarget); //pWeaponEntity->GetWorldPos();
 			}
 			// need to recalculate aimDirection, since weaponPos is changed
 			state.aimDirection = (m_aimTarget - state.weaponPosition).GetNormalizedSafe((m_lookTarget - state.weaponPosition).GetNormalizedSafe(forward)); //pEntity->GetRotation() * dirWeapon;
 		}
-		
+
 		state.bodyDirection = state.aimDirection;
 		state.movementDirection = state.aimDirection;
 	}
@@ -1454,27 +1454,27 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 	state.desiredSpeed = m_desiredSpeed;
 	state.stance = m_pPlayer->GetStance();
 	state.upDirection = pEntity->GetWorldRotation().GetColumn2();
-//	state.minSpeed = MIN_DESIRED_SPEED;
-//	state.normalSpeed = m_pPlayer->GetStanceNormalSpeed(state.stance);
-//	state.maxSpeed = m_pPlayer->GetStanceMaxSpeed(state.stance); 
+	//	state.minSpeed = MIN_DESIRED_SPEED;
+	//	state.normalSpeed = m_pPlayer->GetStanceNormalSpeed(state.stance);
+	//	state.maxSpeed = m_pPlayer->GetStanceMaxSpeed(state.stance); 
 
-	/*
-  Vec2 minmaxSpeed = Vec2(0, 0);
-	if(m_pPlayer->GetAnimationGraphState())	//might get here during loading before AG is serialized
-		minmaxSpeed = m_pPlayer->GetAnimationGraphState()->GetQueriedStateMinMaxSpeed();
-  state.minSpeed = minmaxSpeed[0];
-  state.maxSpeed = minmaxSpeed[1];
-  state.normalSpeed = 0.5f*(state.minSpeed + state.maxSpeed);
-	if (state.maxSpeed < state.minSpeed)
-	{
-//		assert(state.stance == STANCE_NULL);
-		state.maxSpeed = state.minSpeed;
-		//if (!g_pGame->GetIGameFramework()->IsEditing())
-		//	GameWarning("%s In STANCE_NULL - movement speed is clamped", pEntity->GetName());
-	}
-	if (state.normalSpeed < state.minSpeed)
-		state.normalSpeed = state.minSpeed;
-*/
+		/*
+	  Vec2 minmaxSpeed = Vec2(0, 0);
+		if(m_pPlayer->GetAnimationGraphState())	//might get here during loading before AG is serialized
+			minmaxSpeed = m_pPlayer->GetAnimationGraphState()->GetQueriedStateMinMaxSpeed();
+	  state.minSpeed = minmaxSpeed[0];
+	  state.maxSpeed = minmaxSpeed[1];
+	  state.normalSpeed = 0.5f*(state.minSpeed + state.maxSpeed);
+		if (state.maxSpeed < state.minSpeed)
+		{
+	//		assert(state.stance == STANCE_NULL);
+			state.maxSpeed = state.minSpeed;
+			//if (!g_pGame->GetIGameFramework()->IsEditing())
+			//	GameWarning("%s In STANCE_NULL - movement speed is clamped", pEntity->GetName());
+		}
+		if (state.normalSpeed < state.minSpeed)
+			state.normalSpeed = state.minSpeed;
+	*/
 
 	state.minSpeed = -1.0f;
 	state.maxSpeed = -1.0f;
@@ -1496,31 +1496,31 @@ void CPlayerMovementController::UpdateMovementState( SMovementState& state )
 	else
 		state.isAiming = true;
 
-	state.isFiring = (m_pPlayer->GetActorStats()->inFiring>=10.f);
+	state.isFiring = (m_pPlayer->GetActorStats()->inFiring >= 10.f);
 
 	// TODO: remove this
 	//if (m_state.HasAimTarget())
 	//	state.aimDirection = (m_state.GetAimTarget() - state.handPosition).GetNormalizedSafe();
 
-	state.isAlive = (m_pPlayer->GetHealth()>0);
+	state.isAlive = (m_pPlayer->GetHealth() > 0);
 
-	IVehicle *pVehicle = m_pPlayer->GetLinkedVehicle();
+	IVehicle* pVehicle = m_pPlayer->GetLinkedVehicle();
 	if (pVehicle)
 	{
-		IMovementController *pVehicleMovementController = pVehicle->GetPassengerMovementController(m_pPlayer->GetEntityId());
+		IMovementController* pVehicleMovementController = pVehicle->GetPassengerMovementController(m_pPlayer->GetEntityId());
 		if (pVehicleMovementController)
 			pVehicleMovementController->GetMovementState(state);
-	}	
+	}
 
 	const IAnimatedCharacter* pAC = m_pPlayer->GetAnimatedCharacter();
 	state.slopeAngle = (pAC != NULL) ? pAC->GetGroundSlopeAngle() : 0.0f;
 }
 
-bool CPlayerMovementController::GetStanceState( EStance stance, float lean, bool defaultPose, SStanceState& state )
+bool CPlayerMovementController::GetStanceState(EStance stance, float lean, bool defaultPose, SStanceState& state)
 {
-	IEntity * pEntity = m_pPlayer->GetEntity();
-	const SStanceInfo*	stanceInfo = m_pPlayer->GetStanceInfo(stance);
-	if(!stanceInfo)
+	IEntity* pEntity = m_pPlayer->GetEntity();
+	const SStanceInfo* stanceInfo = m_pPlayer->GetStanceInfo(stance);
+	if (!stanceInfo)
 		return false;
 
 	Quat	orientation = pEntity->GetWorldRotation();
@@ -1532,11 +1532,11 @@ bool CPlayerMovementController::GetStanceState( EStance stance, float lean, bool
 	state.m_ColliderSize = stanceInfo->GetColliderBounds();
 	state.lean = lean;	// pass through
 
-	if(defaultPose)
+	if (defaultPose)
 	{
 		state.eyePosition = entityPos + stanceInfo->GetViewOffsetWithLean(lean);
 		state.weaponPosition = entityPos + m_pPlayer->GetWeaponOffsetWithLean(stance, lean, m_pPlayer->GetEyeOffset());
-		state.upDirection.Set(0,0,1);
+		state.upDirection.Set(0, 0, 1);
 		state.eyeDirection = FORWARD_DIRECTION;
 		state.aimDirection = FORWARD_DIRECTION;
 		state.fireDirection = FORWARD_DIRECTION;
@@ -1571,10 +1571,10 @@ bool CPlayerMovementController::GetStanceState( EStance stance, float lean, bool
 	return true;
 }
 
-Vec3 CPlayerMovementController::ProcessAimTarget(const Vec3 &newTarget,float frameTime)
+Vec3 CPlayerMovementController::ProcessAimTarget(const Vec3& newTarget, float frameTime)
 {
 	Vec3 delta(m_aimTargets[0] - newTarget);
-	m_aimTargets[0] = Vec3::CreateLerp(m_aimTargets[0],newTarget,min(1.0f,frameTime*max(1.0f,delta.len2()*1.0f)));
+	m_aimTargets[0] = Vec3::CreateLerp(m_aimTargets[0], newTarget, min(1.0f, frameTime * max(1.0f, delta.len2() * 1.0f)));
 
 	//gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine( newTarget, ColorF(1,0,0,1), m_aimTargets[0], ColorF(1,0,0,1) );
 
@@ -1663,7 +1663,7 @@ void CPlayerMovementController::CIdleChecker::Update(float frameTime)
 	}
 	else
 	{
-		m_movementTimeOut-= frameTime;
+		m_movementTimeOut -= frameTime;
 		if (m_movementTimeOut <= 0.0f)
 		{
 			goToIdle = true;
@@ -1713,8 +1713,8 @@ void CPlayerMovementController::CIdleChecker::Update(float frameTime)
 		int frameId = gEnv->pRenderer->GetFrameID(false);
 		if (frameId != sCurFrame)
 		{
-			float fColor[4] = {1,0,0,1};
-			gEnv->pRenderer->Draw2dLabel( 1,22, 1.3f, fColor, false,"Idles=%d Awake=%d", sIdles, sAwake );
+			float fColor[4] = { 1,0,0,1 };
+			gEnv->pRenderer->Draw2dLabel(1, 22, 1.3f, fColor, false, "Idles=%d Awake=%d", sIdles, sAwake);
 			sCurFrame = frameId;
 			sIdles = sAwake = 0;
 		}
@@ -1725,9 +1725,9 @@ void CPlayerMovementController::CIdleChecker::Update(float frameTime)
 	}
 }
 
-bool CPlayerMovementController::CIdleChecker::Process(SMovementState& movementState, 
-																										  CMovementRequest& currentReq,
-																										  CMovementRequest& newReq)
+bool CPlayerMovementController::CIdleChecker::Process(SMovementState& movementState,
+	CMovementRequest& currentReq,
+	CMovementRequest& newReq)
 {
 	if (m_pMC->m_pPlayer->IsPlayer())
 		return false;
@@ -1760,9 +1760,9 @@ bool CPlayerMovementController::CIdleChecker::Process(SMovementState& movementSt
 	{
 		m_bHaveValidMove = true;
 	}
-	else if (newReq.HasMoveTarget() && 
-		( (newReq.HasDesiredSpeed() && newReq.GetDesiredSpeed() > 0.001f)
-		||(newReq.HasPseudoSpeed() && newReq.GetPseudoSpeed() > 0.001f) ))
+	else if (newReq.HasMoveTarget() &&
+		((newReq.HasDesiredSpeed() && newReq.GetDesiredSpeed() > 0.001f)
+			|| (newReq.HasPseudoSpeed() && newReq.GetPseudoSpeed() > 0.001f)))
 	{
 		m_bHaveValidMove = true;
 	}
@@ -1770,7 +1770,7 @@ bool CPlayerMovementController::CIdleChecker::Process(SMovementState& movementSt
 	return m_bHaveValidMove;
 }
 
-void CPlayerMovementController::CIdleChecker::Serialize(TSerialize &ser)
+void CPlayerMovementController::CIdleChecker::Serialize(TSerialize& ser)
 {
 	ser.Value("m_timeToIdle", m_timeToIdle);
 	ser.Value("m_movementTimeOut", m_movementTimeOut);
@@ -1780,9 +1780,9 @@ void CPlayerMovementController::CIdleChecker::Serialize(TSerialize &ser)
 	ser.Value("m_bHaveValidMove", m_bHaveValidMove);
 }
 
-void CPlayerMovementController::Serialize(TSerialize &ser)
+void CPlayerMovementController::Serialize(TSerialize& ser)
 {
-	if(ser.GetSerializationTarget() != eST_Network)	//basic serialization
+	if (ser.GetSerializationTarget() != eST_Network)	//basic serialization
 	{
 		ser.Value("DesiredSpeed", m_desiredSpeed);
 		ser.Value("atTarget", m_atTarget);
@@ -1799,12 +1799,12 @@ void CPlayerMovementController::Serialize(TSerialize &ser)
 		ser.Value("NumAimTarget", m_aimTargetsCount);
 		int numTargets = m_aimTargets.size();
 		ser.Value("ActualNumTarget", numTargets);
-		if(ser.IsReading())
+		if (ser.IsReading())
 		{
 			m_aimTargets.clear();
 			m_aimTargets.resize(numTargets);
 		}
-		for(int i = 0; i < numTargets; ++i)
+		for (int i = 0; i < numTargets; ++i)
 			ser.Value("aimTarget", m_aimTargets[i]);
 
 		ser.Value("m_aimTargetIterator", m_aimTargetsIterator);
@@ -1855,11 +1855,11 @@ void CPlayerMovementController::Serialize(TSerialize &ser)
 		ser.Value("inputStance", m_inputStance);
 		ser.Value("inputPseudoSpeed", m_inputPseudoSpeed);
 
-		if(ser.IsReading())
+		if (ser.IsReading())
 			m_idleChecker.Reset(this);
 		m_idleChecker.Serialize(ser);
 
-		if(ser.IsReading())
+		if (ser.IsReading())
 			UpdateMovementState(m_currentMovementState);
 	}
 }

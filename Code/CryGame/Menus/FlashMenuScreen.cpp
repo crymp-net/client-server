@@ -17,11 +17,11 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-bool CFlashMenuScreen::Load(const char *strFile)
+bool CFlashMenuScreen::Load(const char* strFile)
 {
 	if (LoadAnimation(strFile))
 	{
-		IRenderer *pRenderer = gEnv->pRenderer;
+		IRenderer* pRenderer = gEnv->pRenderer;
 		UpdateRatio();
 		//m_pFlashPlayer->SetViewport(0,0,pRenderer->GetWidth(),pRenderer->GetHeight());
 		GetFlashPlayer()->SetBackgroundAlpha(0.0f);
@@ -35,26 +35,26 @@ bool CFlashMenuScreen::Load(const char *strFile)
 
 void CFlashMenuScreen::UpdateRatio()
 {
-	if(IsLoaded())
+	if (IsLoaded())
 	{
 		IFlashPlayer* pFlashPlayer = GetFlashPlayer();
 		IRenderer* pRenderer = gEnv->pRenderer;
 
 		// Native width/height/ratio
-		float fMovieWidth			= (float) pFlashPlayer->GetWidth();
-		float fMovieHeight		= (float) pFlashPlayer->GetHeight();
-		float fMovieRatio			=	fMovieWidth / fMovieHeight;
+		float fMovieWidth = (float)pFlashPlayer->GetWidth();
+		float fMovieHeight = (float)pFlashPlayer->GetHeight();
+		float fMovieRatio = fMovieWidth / fMovieHeight;
 
 		// Current renderer width/height/ratio
-		float fRendererWidth	=	(float) pRenderer->GetWidth();
-		float fRendererHeight	=	(float) pRenderer->GetHeight();
-		float fRendererRatio	=	fRendererWidth / fRendererHeight;
+		float fRendererWidth = (float)pRenderer->GetWidth();
+		float fRendererHeight = (float)pRenderer->GetHeight();
+		float fRendererRatio = fRendererWidth / fRendererHeight;
 
 		// Compute viewport so that it fits
-		float fViewportX			= 0.0f;
-		float fViewportY			= 0.0f;
-		float fViewportWidth	= 0.0f;
-		float fViewportHeight	= 0.0f;
+		float fViewportX = 0.0f;
+		float fViewportY = 0.0f;
+		float fViewportWidth = 0.0f;
+		float fViewportHeight = 0.0f;
 
 		/*
 			All the Flash files have been designed either in 4/3 or 16/9 aspect ratios in resolutions
@@ -64,9 +64,9 @@ void CFlashMenuScreen::UpdateRatio()
 			vertical and horizontal areas but this is the only way to fits right.
 		*/
 
-		if(fRendererRatio >= 4.0f/3.0f)
+		if (fRendererRatio >= 4.0f / 3.0f)
 		{
-			fViewportHeight	= fRendererHeight;
+			fViewportHeight = fRendererHeight;
 
 			fViewportX = (fRendererWidth - (fRendererHeight * fMovieRatio)) * 0.5f;
 			fViewportWidth = fRendererHeight * fMovieRatio;
@@ -80,13 +80,13 @@ void CFlashMenuScreen::UpdateRatio()
 			fViewportHeight = fRendererWidth * 3.0f / 4.0f;
 		}
 
-		pFlashPlayer->SetViewport((int)fViewportX,(int)fViewportY,(int)fViewportWidth,(int)fViewportHeight);
+		pFlashPlayer->SetViewport((int)fViewportX, (int)fViewportY, (int)fViewportWidth, (int)fViewportHeight);
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuScreen::GetMemoryStatistics(ICrySizer * s)
+void CFlashMenuScreen::GetMemoryStatistics(ICrySizer* s)
 {
 	s->Add(*this);
 }

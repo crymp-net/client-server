@@ -20,13 +20,13 @@ TActionHandler<CC4Detonator>	CC4Detonator::s_actionHandler;
 
 CC4Detonator::CC4Detonator()
 {
-	if(s_actionHandler.GetNumHandlers() == 0)
+	if (s_actionHandler.GetNumHandlers() == 0)
 	{
 #define ADD_HANDLER(action, func) s_actionHandler.AddHandler(actions.action, &CC4Detonator::func)
 		const CGameActions& actions = g_pGame->Actions();
 
-		ADD_HANDLER(zoom,OnActionSelectC4);
-		ADD_HANDLER(xi_zoom,OnActionSelectC4);
+		ADD_HANDLER(zoom, OnActionSelectC4);
+		ADD_HANDLER(xi_zoom, OnActionSelectC4);
 #undef ADD_HANDLER
 	}
 }
@@ -34,22 +34,22 @@ CC4Detonator::CC4Detonator()
 //----------------------------------------------
 void CC4Detonator::OnAction(EntityId actorId, const ActionId& actionId, int activationMode, float value)
 {
-	if(!s_actionHandler.Dispatch(this,actorId,actionId,activationMode,value))
+	if (!s_actionHandler.Dispatch(this, actorId, actionId, activationMode, value))
 		CWeapon::OnAction(actorId, actionId, activationMode, value);
 }
 
 //----------------------------------------------
 void CC4Detonator::SelectC4()
 {
-	if (CActor *pOwner=GetOwnerActor())
+	if (CActor* pOwner = GetOwnerActor())
 	{
 		EntityId c4Id = pOwner->GetInventory()->GetItemByClass(CItem::sC4Class);
 		if (c4Id)
 		{
 			//Do not reselect C4 is there's no ammo
 			IItem* pItem = m_pItemSystem->GetItem(c4Id);
-			CWeapon *pWep = pItem?static_cast<CWeapon*>(pItem->GetIWeapon()):NULL;
-			if(pWep && pWep->OutOfAmmo(false))
+			CWeapon* pWep = pItem ? static_cast<CWeapon*>(pItem->GetIWeapon()) : NULL;
+			if (pWep && pWep->OutOfAmmo(false))
 				return;
 
 			pOwner->SelectItemByName("C4", false);
@@ -60,7 +60,7 @@ void CC4Detonator::SelectC4()
 //----------------------------------------------
 bool CC4Detonator::OnActionSelectC4(EntityId actorId, const ActionId& actionId, int activationMode, float value)
 {
-	if(activationMode == eAAM_OnPress)
+	if (activationMode == eAAM_OnPress)
 		SelectC4();
 
 	return true;

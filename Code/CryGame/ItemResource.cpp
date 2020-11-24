@@ -34,18 +34,18 @@ void CItem::RemoveEntity(bool force)
 }
 
 //------------------------------------------------------------------------
-bool CItem::CreateCharacterAttachment(int slot, const char *name, int type, const char *bone)
+bool CItem::CreateCharacterAttachment(int slot, const char* name, int type, const char* bone)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return false;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (pAttachment)
 	{
-//		GameWarning("Item '%s' trying to create attachment '%s' which already exists!", GetEntity()->GetName(), name);
+		//		GameWarning("Item '%s' trying to create attachment '%s' which already exists!", GetEntity()->GetName(), name);
 		return false;
 	}
 
@@ -62,25 +62,25 @@ bool CItem::CreateCharacterAttachment(int slot, const char *name, int type, cons
 }
 
 //------------------------------------------------------------------------
-void CItem::DestroyCharacterAttachment(int slot, const char *name)
+void CItem::DestroyCharacterAttachment(int slot, const char* name)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
 	pAttachmentManager->RemoveAttachmentByName(name);
 }
 
 //------------------------------------------------------------------------
-void CItem::ResetCharacterAttachment(int slot, const char *name)
+void CItem::ResetCharacterAttachment(int slot, const char* name)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -92,14 +92,14 @@ void CItem::ResetCharacterAttachment(int slot, const char *name)
 }
 
 //------------------------------------------------------------------------
-const char *CItem::GetCharacterAttachmentBone(int slot, const char *name)
+const char* CItem::GetCharacterAttachmentBone(int slot, const char* name)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return 0;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -111,14 +111,14 @@ const char *CItem::GetCharacterAttachmentBone(int slot, const char *name)
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachment(int slot, const char *name, IEntity *pEntity, int flags)
+void CItem::SetCharacterAttachment(int slot, const char* name, IEntity* pEntity, int flags)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -126,7 +126,7 @@ void CItem::SetCharacterAttachment(int slot, const char *name, IEntity *pEntity,
 		return;
 	}
 
-	CEntityAttachment *pEntityAttachment = new CEntityAttachment();
+	CEntityAttachment* pEntityAttachment = new CEntityAttachment();
 	pEntityAttachment->SetEntityId(pEntity->GetId());
 
 	pAttachment->AddBinding(pEntityAttachment);
@@ -134,14 +134,14 @@ void CItem::SetCharacterAttachment(int slot, const char *name, IEntity *pEntity,
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachment(int slot, const char *name, IStatObj *pObj, int flags)
+void CItem::SetCharacterAttachment(int slot, const char* name, IStatObj* pObj, int flags)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -149,21 +149,21 @@ void CItem::SetCharacterAttachment(int slot, const char *name, IStatObj *pObj, i
 		return;
 	}
 
-	CCGFAttachment *pStatAttachment = new CCGFAttachment();
-	pStatAttachment->pObj  = pObj;
+	CCGFAttachment* pStatAttachment = new CCGFAttachment();
+	pStatAttachment->pObj = pObj;
 
 	pAttachment->AddBinding(pStatAttachment);
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachment(int slot, const char *name, ICharacterInstance *pAttachedCharacter, int flags)
+void CItem::SetCharacterAttachment(int slot, const char* name, ICharacterInstance* pAttachedCharacter, int flags)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -171,8 +171,8 @@ void CItem::SetCharacterAttachment(int slot, const char *name, ICharacterInstanc
 		return;
 	}
 
-	CCHRAttachment *pCharacterAttachment = new CCHRAttachment();
-	pCharacterAttachment->m_pCharInstance  = pAttachedCharacter;
+	CCHRAttachment* pCharacterAttachment = new CCHRAttachment();
+	pCharacterAttachment->m_pCharInstance = pAttachedCharacter;
 
 	// sub skin ?
 	if (pAttachment->GetType() == CA_SKIN)
@@ -186,14 +186,14 @@ void CItem::SetCharacterAttachment(int slot, const char *name, ICharacterInstanc
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachment(int slot, const char *name, CDLight &light, int flags)
+void CItem::SetCharacterAttachment(int slot, const char* name, CDLight& light, int flags)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -201,7 +201,7 @@ void CItem::SetCharacterAttachment(int slot, const char *name, CDLight &light, i
 		return;
 	}
 
-	CLightAttachment *pLightAttachment = new CLightAttachment();
+	CLightAttachment* pLightAttachment = new CLightAttachment();
 	pLightAttachment->LoadLight(light);
 
 	pAttachment->AddBinding(pLightAttachment);
@@ -209,7 +209,7 @@ void CItem::SetCharacterAttachment(int slot, const char *name, CDLight &light, i
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachment(int slot, const char *name, IEntity *pEntity, int objSlot, int flags)
+void CItem::SetCharacterAttachment(int slot, const char* name, IEntity* pEntity, int objSlot, int flags)
 {
 	SEntitySlotInfo info;
 	if (!pEntity->GetSlotInfo(objSlot, info))
@@ -222,14 +222,14 @@ void CItem::SetCharacterAttachment(int slot, const char *name, IEntity *pEntity,
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachmentLocalTM(int slot, const char *name, const Matrix34 &tm)
+void CItem::SetCharacterAttachmentLocalTM(int slot, const char* name, const Matrix34& tm)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -237,18 +237,18 @@ void CItem::SetCharacterAttachmentLocalTM(int slot, const char *name, const Matr
 		return;
 	}
 
-	pAttachment->SetAttRelativeDefault( QuatT(tm));
+	pAttachment->SetAttRelativeDefault(QuatT(tm));
 }
 
 //------------------------------------------------------------------------
-void CItem::SetCharacterAttachmentWorldTM(int slot, const char *name, const Matrix34 &tm)
+void CItem::SetCharacterAttachmentWorldTM(int slot, const char* name, const Matrix34& tm)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -256,22 +256,22 @@ void CItem::SetCharacterAttachmentWorldTM(int slot, const char *name, const Matr
 		return;
 	}
 
-//	Matrix34 boneWorldMatrix = GetEntity()->GetSlotWorldTM(slot) *	pCharacter->GetISkeleton()->GetAbsJMatrixByID(pAttachment->GetBoneID());
-	Matrix34 boneWorldMatrix = GetEntity()->GetSlotWorldTM(slot) *	Matrix34(pCharacter->GetISkeletonPose()->GetAbsJointByID(pAttachment->GetBoneID()) );
+	//	Matrix34 boneWorldMatrix = GetEntity()->GetSlotWorldTM(slot) *	pCharacter->GetISkeleton()->GetAbsJMatrixByID(pAttachment->GetBoneID());
+	Matrix34 boneWorldMatrix = GetEntity()->GetSlotWorldTM(slot) * Matrix34(pCharacter->GetISkeletonPose()->GetAbsJointByID(pAttachment->GetBoneID()));
 
-	Matrix34 localAttachmentMatrix = (boneWorldMatrix.GetInverted()*tm);
+	Matrix34 localAttachmentMatrix = (boneWorldMatrix.GetInverted() * tm);
 	pAttachment->SetAttRelativeDefault(QuatT(localAttachmentMatrix));
 }
 
 //------------------------------------------------------------------------
-Matrix34 CItem::GetCharacterAttachmentLocalTM(int slot, const char *name)
+Matrix34 CItem::GetCharacterAttachmentLocalTM(int slot, const char* name)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return Matrix34::CreateIdentity();;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -283,14 +283,14 @@ Matrix34 CItem::GetCharacterAttachmentLocalTM(int slot, const char *name)
 }
 
 //------------------------------------------------------------------------
-Matrix34 CItem::GetCharacterAttachmentWorldTM(int slot, const char *name)
+Matrix34 CItem::GetCharacterAttachmentWorldTM(int slot, const char* name)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return Matrix34::CreateIdentity();
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -302,14 +302,14 @@ Matrix34 CItem::GetCharacterAttachmentWorldTM(int slot, const char *name)
 }
 
 //------------------------------------------------------------------------
-void CItem::HideCharacterAttachment(int slot, const char *name, bool hide)
+void CItem::HideCharacterAttachment(int slot, const char* name, bool hide)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	IAttachmentManager *pAttachmentManager = pCharacter->GetIAttachmentManager();
-	IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(name);
+	IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(name);
 
 	if (!pAttachment)
 	{
@@ -317,17 +317,17 @@ void CItem::HideCharacterAttachment(int slot, const char *name, bool hide)
 		return;
 	}
 
-	pAttachment->HideAttachment(hide?1:0);
+	pAttachment->HideAttachment(hide ? 1 : 0);
 }
 
 //------------------------------------------------------------------------
-void CItem::HideCharacterAttachmentMaster(int slot, const char *name, bool hide)
+void CItem::HideCharacterAttachmentMaster(int slot, const char* name, bool hide)
 {
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (!pCharacter)
 		return;
 
-	pCharacter->HideMaster(hide?1:0);
+	pCharacter->HideMaster(hide ? 1 : 0);
 }
 
 //------------------------------------------------------------------------
@@ -366,96 +366,96 @@ const CItem::THelperVector& CItem::GetAttachmentHelpers()
 //------------------------------------------------------------------------
 bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, const Ang3& aoffset, float scale, bool forceReload)
 {
-	bool changedfp=false;
-	switch(slot)
+	bool changedfp = false;
+	switch (slot)
 	{
 	case eIGS_Arms:
+	{
+		if (!name || forceReload)
 		{
-			if (!name || forceReload)
-			{
-				GetEntity()->FreeSlot(slot);
+			GetEntity()->FreeSlot(slot);
 #ifndef ITEM_USE_SHAREDSTRING
-				m_geometry[slot].resize(0);
+			m_geometry[slot].resize(0);
 #else
-				m_geometry[slot].reset();
+			m_geometry[slot].reset();
 #endif
-			}
-
-			ResetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME);
-
-			ICharacterInstance *pCharacter=0;
-
-			if (name && name[0])
-			{
-				if (name != m_geometry[slot])
-					GetEntity()->LoadCharacter(slot, name);
-				DrawSlot(eIGS_Arms, false);
-
-				pCharacter = GetEntity()->GetCharacter(eIGS_Arms);
-			}
-			else if (m_pForcedArms)
-			{
-				pCharacter = m_pForcedArms;
-			}
-			else
-			{
-				int armsId=m_stats.hand==eIH_Right?0:1;
-				pCharacter = GetOwnerActor()?GetOwnerActor()->GetFPArms(armsId):0;
-			}
-
-			if (pCharacter)
-			{
-				pCharacter->SetFlags(pCharacter->GetFlags()&(~CS_FLAG_UPDATE));
-				SetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME, pCharacter, 0);
-			}
 		}
-		break;
+
+		ResetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME);
+
+		ICharacterInstance* pCharacter = 0;
+
+		if (name && name[0])
+		{
+			if (name != m_geometry[slot])
+				GetEntity()->LoadCharacter(slot, name);
+			DrawSlot(eIGS_Arms, false);
+
+			pCharacter = GetEntity()->GetCharacter(eIGS_Arms);
+		}
+		else if (m_pForcedArms)
+		{
+			pCharacter = m_pForcedArms;
+		}
+		else
+		{
+			int armsId = m_stats.hand == eIH_Right ? 0 : 1;
+			pCharacter = GetOwnerActor() ? GetOwnerActor()->GetFPArms(armsId) : 0;
+		}
+
+		if (pCharacter)
+		{
+			pCharacter->SetFlags(pCharacter->GetFlags() & (~CS_FLAG_UPDATE));
+			SetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME, pCharacter, 0);
+		}
+	}
+	break;
 	case eIGS_FirstPerson:
 	case eIGS_ThirdPerson:
 	default:
+	{
+		if (!name || forceReload)
 		{
-			if (!name || forceReload)
-			{
-				GetEntity()->FreeSlot(slot);
+			GetEntity()->FreeSlot(slot);
 #ifndef ITEM_USE_SHAREDSTRING
-				m_geometry[slot].resize(0);
+			m_geometry[slot].resize(0);
 #else
-				m_geometry[slot].reset();
+			m_geometry[slot].reset();
 #endif
-			}
-	
-			DestroyAttachmentHelpers(slot);
-
-			if (name && name[0])
-			{
-				if (m_geometry[slot] != name)
-				{
-					const char* ext = PathUtil::GetExt(name.c_str());
-					if ((stricmp(ext, "chr") == 0) || (stricmp(ext, "cdf") == 0) || (stricmp(ext, "cga") == 0) )
-						GetEntity()->LoadCharacter(slot, name, 0);
-					else
-						GetEntity()->LoadGeometry(slot, name, 0, 0);
-
-					changedfp=slot==eIGS_FirstPerson;
-				}
-				
-				CreateAttachmentHelpers(slot);
-
-				SetDefaultIdleAnimation(slot, g_pItemStrings->idle);
-			}
-
-			if (slot == eIGS_FirstPerson)
-			{
-				ICharacterInstance *pCharacter = GetEntity()->GetCharacter(eIGS_FirstPerson);
-				if (pCharacter)
-				{
-					pCharacter->SetFlags(pCharacter->GetFlags()&(~CS_FLAG_UPDATE));
-				}
-			}
-      else if (slot == eIGS_Destroyed)
-        DrawSlot(eIGS_Destroyed, false);
 		}
-		break;
+
+		DestroyAttachmentHelpers(slot);
+
+		if (name && name[0])
+		{
+			if (m_geometry[slot] != name)
+			{
+				const char* ext = PathUtil::GetExt(name.c_str());
+				if ((stricmp(ext, "chr") == 0) || (stricmp(ext, "cdf") == 0) || (stricmp(ext, "cga") == 0))
+					GetEntity()->LoadCharacter(slot, name, 0);
+				else
+					GetEntity()->LoadGeometry(slot, name, 0, 0);
+
+				changedfp = slot == eIGS_FirstPerson;
+			}
+
+			CreateAttachmentHelpers(slot);
+
+			SetDefaultIdleAnimation(slot, g_pItemStrings->idle);
+		}
+
+		if (slot == eIGS_FirstPerson)
+		{
+			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(eIGS_FirstPerson);
+			if (pCharacter)
+			{
+				pCharacter->SetFlags(pCharacter->GetFlags() & (~CS_FLAG_UPDATE));
+			}
+		}
+		else if (slot == eIGS_Destroyed)
+			DrawSlot(eIGS_Destroyed, false);
+	}
+	break;
 	}
 
 	Matrix34 slotTM;
@@ -471,7 +471,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 
 		if (!m_mountparams.pivot.empty())
 		{
-			Matrix34 tm=GetEntity()->GetSlotLocalTM(eIGS_FirstPerson, false);
+			Matrix34 tm = GetEntity()->GetSlotLocalTM(eIGS_FirstPerson, false);
 			Vec3 pivot = GetSlotHelperPos(eIGS_FirstPerson, m_mountparams.pivot.c_str(), false);
 			tm.AddTranslation(pivot);
 
@@ -494,13 +494,13 @@ void CItem::SetDefaultIdleAnimation(int slot, const ItemString& actionName)
 	TActionMap::iterator it = m_sharedparams->actions.find(CONST_TEMPITEM_STRING(actionName));
 	if (it == m_sharedparams->actions.end())
 	{
-//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
+		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
 		return;
 	}
 
-	SAction &action = it->second;
+	SAction& action = it->second;
 
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 	if (pCharacter)
 	{
 		if (action.animation[slot].size() > 0)
@@ -517,19 +517,19 @@ void CItem::SetDefaultIdleAnimation(int slot, const ItemString& actionName)
 //------------------------------------------------------------------------
 void CItem::ForceSkinning(bool always)
 {
-	for (int slot=0; slot<eIGS_Last; slot++)
+	for (int slot = 0; slot < eIGS_Last; slot++)
 	{
-		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 		if (pCharacter)
 		{
-			Matrix34 m34=GetEntity()->GetSlotWorldTM(slot);
+			Matrix34 m34 = GetEntity()->GetSlotWorldTM(slot);
 			QuatT renderLocation = QuatT(m34);
 
-			Vec3 CharOffset = GetEntity()->GetSlotLocalTM(slot,false).GetTranslation();
+			Vec3 CharOffset = GetEntity()->GetSlotLocalTM(slot, false).GetTranslation();
 
 			pCharacter->GetISkeletonPose()->SetForceSkeletonUpdate(7);
-			pCharacter->SkeletonPreProcess(renderLocation, renderLocation, GetISystem()->GetViewCamera(),0x55 );
-			pCharacter->SkeletonPostProcess(renderLocation, renderLocation, 0, 0.0f, 0x55 );
+			pCharacter->SkeletonPreProcess(renderLocation, renderLocation, GetISystem()->GetViewCamera(), 0x55);
+			pCharacter->SkeletonPostProcess(renderLocation, renderLocation, 0, 0.0f, 0x55);
 			if (!always)
 				pCharacter->GetISkeletonPose()->SetForceSkeletonUpdate(0);
 		}
@@ -555,7 +555,7 @@ void CItem::EnableHiddenSkinning(bool enable)
 }
 
 //------------------------------------------------------------------------
-void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, int flags, const char *hand, const char *suffix, const char *pose, const char *pov, const char *env)
+void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, int flags, const char* hand, const char* suffix, const char* pose, const char* pov, const char* env)
 {
 	// the whole thing of fixing is not nice, but at least we don't allocate too often
 	// StringHelper<TempResourceName::SIZE> name (inName.c_str(), inName.length());
@@ -590,7 +590,7 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 
 	if (!pov)
 	{
-		if ((m_stats.fp || flags&eIPAF_ForceFirstPerson) && !(flags&eIPAF_ForceThirdPerson))
+		if ((m_stats.fp || flags & eIPAF_ForceFirstPerson) && !(flags & eIPAF_ForceThirdPerson))
 			pov = ITEM_FIRST_PERSON_TOKEN;
 		else
 			pov = ITEM_THIRD_PERSON_TOKEN;
@@ -605,10 +605,10 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 		{
 			if (pOwner)
 			{
-				IEntitySoundProxy *pSoundProxy = (IEntitySoundProxy *)pOwner->GetProxy(ENTITY_PROXY_SOUND);
+				IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*)pOwner->GetProxy(ENTITY_PROXY_SOUND);
 
 				if (!pSoundProxy)
-					pSoundProxy = (IEntitySoundProxy *)pOwner->CreateProxy(ENTITY_PROXY_SOUND);
+					pSoundProxy = (IEntitySoundProxy*)pOwner->CreateProxy(ENTITY_PROXY_SOUND);
 
 				if (pSoundProxy)
 				{
@@ -628,8 +628,8 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 			static const size_t MAX_LEN = 256;
 			char envstr[MAX_LEN];
 			envstr[0] = '_';
-			strncpy(envstr+1, env, MAX_LEN-1); // no 0 pad, if MAX_LEN-1 are copied
-			envstr[MAX_LEN-1] = '\0'; // always zero-terminate
+			strncpy(envstr + 1, env, MAX_LEN - 1); // no 0 pad, if MAX_LEN-1 are copied
+			envstr[MAX_LEN - 1] = '\0'; // always zero-terminate
 			name.replace("%env%", envstr);
 		}
 	}
@@ -646,46 +646,46 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 	TActionMap::iterator it = m_sharedparams->actions.find(CONST_TEMPITEM_STRING(actionName));
 	if (it == m_sharedparams->actions.end())
 	{
-//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
+		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
 
-		for (int i=0;i<eIGS_Last;i++)
+		for (int i = 0;i < eIGS_Last;i++)
 		{
-			m_animationTime[i]=0;
-			m_animationSpeed[i]=1.0f;
-			m_animationEnd[i]=0;
+			m_animationTime[i] = 0;
+			m_animationSpeed[i] = 1.0f;
+			m_animationEnd[i] = 0;
 		}
 		return 0;
 	}
 
 	bool fp = m_stats.fp;
-	
+
 	if (m_parentId)
 	{
-		CItem *pParent=static_cast<CItem *>(m_pItemSystem->GetItem(m_parentId));
+		CItem* pParent = static_cast<CItem*>(m_pItemSystem->GetItem(m_parentId));
 		if (pParent)
-			fp=pParent->GetStats().fp;
+			fp = pParent->GetStats().fp;
 	}
-	
-	if (flags&eIPAF_ForceFirstPerson)
+
+	if (flags & eIPAF_ForceFirstPerson)
 		fp = true;
-	if (flags&eIPAF_ForceThirdPerson)
+	if (flags & eIPAF_ForceThirdPerson)
 		fp = false;
 
-	int sid=fp?eIGS_FirstPerson:eIGS_ThirdPerson;
-	SAction &action = it->second;
-	
+	int sid = fp ? eIGS_FirstPerson : eIGS_ThirdPerson;
+	SAction& action = it->second;
+
 	tSoundID result = INVALID_SOUNDID;
-	if ((flags&eIPAF_Sound) && !action.sound[sid].name.empty() && IsSoundEnabled() && g_pGameCVars->i_soundeffects)
+	if ((flags & eIPAF_Sound) && !action.sound[sid].name.empty() && IsSoundEnabled() && g_pGameCVars->i_soundeffects)
 	{
 		int nSoundFlags = FLAG_SOUND_DEFAULT_3D;
-		nSoundFlags |= flags&eIPAF_SoundStartPaused?FLAG_SOUND_START_PAUSED:0;
-		IEntitySoundProxy *pSoundProxy = GetSoundProxy(true);
+		nSoundFlags |= flags & eIPAF_SoundStartPaused ? FLAG_SOUND_START_PAUSED : 0;
+		IEntitySoundProxy* pSoundProxy = GetSoundProxy(true);
 
 		//GetSound proxy from dualwield master if neccesary
-		if(IsDualWieldSlave())
+		if (IsDualWieldSlave())
 		{
 			CItem* pMaster = static_cast<CItem*>(GetDualWieldMaster());
-			if(pMaster)
+			if (pMaster)
 			{
 				pSoundProxy = pMaster->GetSoundProxy(true);
 			}
@@ -710,36 +710,36 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 
 		if (pSoundProxy)
 		{
-			
+
 			TempResourceName name;
 			FixResourceName(action.sound[sid].name, name, flags);
 			//nSoundFlags = nSoundFlags | (fp?FLAG_SOUND_DEFAULT_3D|FLAG_SOUND_RELATIVE:FLAG_SOUND_DEFAULT_3D);
-			Vec3 vOffset(0,0,0);
+			Vec3 vOffset(0, 0, 0);
 			if (fp)
 				vOffset.x = 0.3f; // offset for first person weapon to the front
 
 			if (!g_pGameCVars->i_staticfiresounds)
 			{
 				result = pSoundProxy->PlaySoundEx(name, vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
-				ISound *pSound = pSoundProxy->GetSound(result);
+				ISound* pSound = pSoundProxy->GetSound(result);
 
-				if (pSound && action.sound[sid].sphere>0.0f)
+				if (pSound && action.sound[sid].sphere > 0.0f)
 					pSound->SetSphereSpec(action.sound[sid].sphere);
 			}
 			else
 			{
-				SInstanceAudio *pInstanceAudio=0;
+				SInstanceAudio* pInstanceAudio = 0;
 
 				if (action.sound[sid].isstatic)
 				{
 					TInstanceActionMap::iterator iit = m_instanceActions.find(CONST_TEMPITEM_STRING(actionName));
 					if (iit == m_instanceActions.end())
 					{
-						std::pair<TInstanceActionMap::iterator, bool> insertion=m_instanceActions.insert(TInstanceActionMap::value_type(actionName, SInstanceAction()));
-						pInstanceAudio=&insertion.first->second.sound[sid];
+						std::pair<TInstanceActionMap::iterator, bool> insertion = m_instanceActions.insert(TInstanceActionMap::value_type(actionName, SInstanceAction()));
+						pInstanceAudio = &insertion.first->second.sound[sid];
 					}
 					else
-						pInstanceAudio=&iit->second.sound[sid];
+						pInstanceAudio = &iit->second.sound[sid];
 				}
 
 				if (pInstanceAudio && (pInstanceAudio->id != INVALID_SOUNDID) && (name != pInstanceAudio->static_name))
@@ -747,10 +747,10 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 
 				if (!pInstanceAudio || pInstanceAudio->id == INVALID_SOUNDID)
 				{
-          result = pSoundProxy->PlaySoundEx(name, vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
-					ISound *pSound = pSoundProxy->GetSound(result);
-					
-					if (pSound && action.sound[sid].sphere>0.0f)
+					result = pSoundProxy->PlaySoundEx(name, vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
+					ISound* pSound = pSoundProxy->GetSound(result);
+
+					if (pSound && action.sound[sid].sphere > 0.0f)
 						pSound->SetSphereSpec(action.sound[sid].sphere);
 				}
 
@@ -758,7 +758,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 				{
 					if (pInstanceAudio->id == INVALID_SOUNDID)
 					{
-						if(pSoundProxy->SetStaticSound(result, true))
+						if (pSoundProxy->SetStaticSound(result, true))
 						{
 							pInstanceAudio->id = result;
 							pInstanceAudio->static_name = name;
@@ -767,23 +767,23 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					}
 					else
 					{
-						ISound *pSound = pSoundProxy->GetSound(pInstanceAudio->id);
+						ISound* pSound = pSoundProxy->GetSound(pInstanceAudio->id);
 						if (pSound)
 							pSound->Play(1.0, true, true, pSoundProxy);
 					}
 				}
 			}
-			
+
 			if (action.sound[sid].airadius > 0.0f)
 			{
-				IEntity	*pOwner = GetOwner();
+				IEntity* pOwner = GetOwner();
 				// associate sound event with vehicle if the shooter is in a vehicle (tank cannon shot, etc)
-				IAIObject	*pAIOwner = pOwner ? pOwner->GetAI() : NULL;
-				CActor *pOwnerActor = GetOwnerActor();
-				if(pOwnerActor)
+				IAIObject* pAIOwner = pOwner ? pOwner->GetAI() : NULL;
+				CActor* pOwnerActor = GetOwnerActor();
+				if (pOwnerActor)
 				{
 					IVehicle* pOvnerVehicle = pOwnerActor->GetLinkedVehicle();
-					if(pOvnerVehicle && pOvnerVehicle->GetEntity() && pOvnerVehicle->GetEntity()->GetAI())
+					if (pOvnerVehicle && pOvnerVehicle->GetEntity() && pOvnerVehicle->GetEntity()->GetAI())
 						pAIOwner = pOvnerVehicle->GetEntity()->GetAI();
 				}
 				if (gEnv->pAISystem)
@@ -793,20 +793,20 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 	}
 
 
-	if (flags&eIPAF_Animation)
+	if (flags & eIPAF_Animation)
 	{
 		TempResourceName name;
 		// generate random number only once per call to allow animations to
 		// match across geometry slots (like first person and third person)
 		float randomNumber = Random();
-		for (int i=0; i<eIGS_Last; i++)
+		for (int i = 0; i < eIGS_Last; i++)
 		{
-			if (!(flags&(1<<i)))
+			if (!(flags & (1 << i)))
 				continue;
-			int nanimations=action.animation[i].size();
+			int nanimations = action.animation[i].size();
 			if (nanimations <= 0)
 				continue;
-			int anim = int( randomNumber * float(nanimations) );
+			int anim = int(randomNumber * float(nanimations));
 			if (action.animation[i][anim].name.empty())
 				continue;
 
@@ -816,9 +816,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 			{
 				if (!action.animation[i][anim].name.empty())
 				{
-					bool looping=(eIGS_OwnerLooped==i);
+					bool looping = (eIGS_OwnerLooped == i);
 
-					CActor *pOwner = GetOwnerActor();
+					CActor* pOwner = GetOwnerActor();
 					if (pOwner)
 					{
 						if (IsDualWield() && !m_params.dual_wield_pose.empty())
@@ -833,15 +833,15 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 			{
 				if (!action.animation[eIGS_OffHand][anim].name.empty())
 				{
-					CActor *pOwner = GetOwnerActor();
+					CActor* pOwner = GetOwnerActor();
 					if (pOwner)
 					{
-						CItem *pOffHand = pOwner->GetItemByClass(CItem::sOffHandClass);
-						if (pOffHand && pOffHand!=this)
+						CItem* pOffHand = pOwner->GetItemByClass(CItem::sOffHandClass);
+						if (pOffHand && pOffHand != this)
 						{
-							uint ohflags=eIPAF_Default;
-							if (action.animation[eIGS_OffHand][anim].blend==0.0f)
-								ohflags|=eIPAF_NoBlend;
+							uint ohflags = eIPAF_Default;
+							if (action.animation[eIGS_OffHand][anim].blend == 0.0f)
+								ohflags |= eIPAF_NoBlend;
 							pOffHand->PlayAction(action.animation[eIGS_OffHand][anim].name, 0, false, ohflags);
 						}
 					}
@@ -850,11 +850,11 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 				continue;
 			}
 
-			SAnimation &animation=action.animation[i][anim];
+			SAnimation& animation = action.animation[i][anim];
 			if (!animation.name.empty())
 			{
 				float blend = animation.blend;
-				if (flags&eIPAF_NoBlend)
+				if (flags & eIPAF_NoBlend)
 					blend = 0.0f;
 				if (speedOverride > 0.0f)
 					PlayAnimationEx(name, i, layer, loop, blend, speedOverride, flags);
@@ -862,32 +862,32 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					PlayAnimationEx(name, i, layer, loop, blend, animation.speed, flags);
 			}
 
-			if ((m_stats.fp || m_stats.viewmode&eIVM_FirstPerson) && i==eIGS_FirstPerson && !animation.camera_helper.empty())
+			if ((m_stats.fp || m_stats.viewmode & eIVM_FirstPerson) && i == eIGS_FirstPerson && !animation.camera_helper.empty())
 			{
-				m_camerastats.animating=true;
-				m_camerastats.helper=animation.camera_helper;
-				m_camerastats.position=animation.camera_pos;
-				m_camerastats.rotation=animation.camera_rot;
-				m_camerastats.follow=animation.camera_follow;
-				m_camerastats.reorient=animation.camera_reorient;
+				m_camerastats.animating = true;
+				m_camerastats.helper = animation.camera_helper;
+				m_camerastats.position = animation.camera_pos;
+				m_camerastats.rotation = animation.camera_rot;
+				m_camerastats.follow = animation.camera_follow;
+				m_camerastats.reorient = animation.camera_reorient;
 			}
 			else if (m_camerastats.animating)
-				m_camerastats=SCameraAnimationStats();
+				m_camerastats = SCameraAnimationStats();
 		}
 	}
 
-  if (flags&eIPAF_Effect && !action.effect[sid].name.empty())
-  {
-    // change this to attach, if needed
-    SpawnEffect(sid, action.effect[sid].name.c_str(), action.effect[sid].helper.c_str());
-  }
+	if (flags & eIPAF_Effect && !action.effect[sid].name.empty())
+	{
+		// change this to attach, if needed
+		SpawnEffect(sid, action.effect[sid].name.c_str(), action.effect[sid].helper.c_str());
+	}
 
 	if (action.children)
 	{
-		for (TAccessoryMap::iterator ait=m_accessories.begin(); ait!=m_accessories.end(); ait++)
+		for (TAccessoryMap::iterator ait = m_accessories.begin(); ait != m_accessories.end(); ait++)
 		{
-			EntityId aId=(EntityId)ait->second;
-			CItem *pAccessory=static_cast<CItem *>(m_pItemSystem->GetItem(aId));
+			EntityId aId = (EntityId)ait->second;
+			CItem* pAccessory = static_cast<CItem*>(m_pItemSystem->GetItem(aId));
 			if (pAccessory)
 				pAccessory->PlayAction(actionName, layer, loop, flags, speedOverride);
 		}
@@ -899,9 +899,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 //------------------------------------------------------------------------
 void CItem::PlayAnimation(const char* animationName, int layer, bool loop, uint flags)
 {
-	for (int i=0; i<eIGS_Last; i++)
+	for (int i = 0; i < eIGS_Last; i++)
 	{
-		if (!(flags&1<<i))
+		if (!(flags & 1 << i))
 			continue;
 
 		PlayAnimationEx(animationName, i, layer, loop, 0.175f, 1.0f, flags);
@@ -911,13 +911,13 @@ void CItem::PlayAnimation(const char* animationName, int layer, bool loop, uint 
 //------------------------------------------------------------------------
 void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool loop, float blend, float speed, uint flags)
 {
-	bool start=true;
+	bool start = true;
 
-	ICharacterInstance *pCharacter = GetEntity()->GetCharacter(slot);
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(slot);
 
-	if (!pCharacter && slot==eIGS_FirstPerson && ((m_stats.viewmode&eIVM_FirstPerson)==0))
+	if (!pCharacter && slot == eIGS_FirstPerson && ((m_stats.viewmode & eIVM_FirstPerson) == 0))
 	{
-		start=false;
+		start = false;
 
 		int idx = 0;
 		if (m_stats.hand == eIH_Right)
@@ -934,16 +934,16 @@ void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharacter->GetISkeletonAnim();
 
-		if (flags&eIPAF_CleanBlending)
+		if (flags & eIPAF_CleanBlending)
 		{
-			while(pSkeletonAnim->GetNumAnimsInFIFO(layer)>1)
+			while (pSkeletonAnim->GetNumAnimsInFIFO(layer) > 1)
 			{
-				if (!pSkeletonAnim->RemoveAnimFromFIFO(layer, pSkeletonAnim->GetNumAnimsInFIFO(layer)-1))
+				if (!pSkeletonAnim->RemoveAnimFromFIFO(layer, pSkeletonAnim->GetNumAnimsInFIFO(layer) - 1))
 					break;
 			}
 		}
 
-		if (flags&eIPAF_NoBlend)
+		if (flags & eIPAF_NoBlend)
 			blend = 0.0f;
 
 		if (start)
@@ -951,20 +951,20 @@ void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool
 			CryCharAnimationParams params;
 			params.m_fTransTime = blend;
 			params.m_nLayerID = layer;
-			params.m_nFlags = (loop?CA_LOOP_ANIMATION:0)|(flags&eIPAF_RestartAnimation?CA_ALLOW_ANIM_RESTART:0)|(flags&eIPAF_RepeatLastFrame?CA_REPEAT_LAST_KEY:0);
-			pSkeletonAnim->StartAnimation(animationName, 0, 0,0,  params);
+			params.m_nFlags = (loop ? CA_LOOP_ANIMATION : 0) | (flags & eIPAF_RestartAnimation ? CA_ALLOW_ANIM_RESTART : 0) | (flags & eIPAF_RepeatLastFrame ? CA_REPEAT_LAST_KEY : 0);
+			pSkeletonAnim->StartAnimation(animationName, 0, 0, 0, params);
 			pSkeletonAnim->SetLayerUpdateMultiplier(layer, speed);
 
 			//pCharacter->GetISkeleton()->SetDebugging( true );
 		}
 
-		float duration=0.0f;
+		float duration = 0.0f;
 		int animationId = pCharacter->GetIAnimationSet()->GetAnimIDByName(animationName);
-		if (animationId>=0)
+		if (animationId >= 0)
 			duration = pCharacter->GetIAnimationSet()->GetDuration_sec(animationId);
-		
-		m_animationTime[slot] = (uint)(duration*1000.0f/speed);
-		m_animationEnd[slot] = (uint)(gEnv->pTimer->GetCurrTime()*1000.0f)+m_animationTime[slot];
+
+		m_animationTime[slot] = (uint)(duration * 1000.0f / speed);
+		m_animationEnd[slot] = (uint)(gEnv->pTimer->GetCurrTime() * 1000.0f) + m_animationTime[slot];
 		m_animationSpeed[slot] = speed;
 	}
 }
@@ -979,32 +979,32 @@ void CItem::PlayLayer(const ItemString& layerName, int flags, bool record)
 		return;
 
 	TempResourceName tempResourceName;
-	for (int i=0; i<eIGS_Last; i++)
+	for (int i = 0; i < eIGS_Last; i++)
 	{
-		if (!(flags&1<<i))
+		if (!(flags & 1 << i))
 			continue;
 
-		SLayer &layer = it->second;
+		SLayer& layer = it->second;
 
 		if (!layer.name[i].empty())
 		{
-			ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
+			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(i);
 			if (pCharacter)
 			{
 				CryCharAnimationParams params;
 				float blend = 0.125f;
-				if (flags&eIPAF_NoBlend)
+				if (flags & eIPAF_NoBlend)
 					blend = 0.0f;
 				params.m_fTransTime = blend;
 				params.m_fLayerBlendIn = 0;
 				params.m_nLayerID = layer.id[i];
 				params.m_nFlags = CA_LOOP_ANIMATION;
-				
+
 				FixResourceName(layer.name[i], tempResourceName, flags);
 
-				ISkeletonAnim* pSkeletonAnim=pCharacter->GetISkeletonAnim();
-			//	pSkeleton->SetRedirectToLayer0(1);
-				pSkeletonAnim->StartAnimation(tempResourceName, 0, 0,0,  params);
+				ISkeletonAnim* pSkeletonAnim = pCharacter->GetISkeletonAnim();
+				//	pSkeleton->SetRedirectToLayer0(1);
+				pSkeletonAnim->StartAnimation(tempResourceName, 0, 0, 0, params);
 
 				if (layer.bones.empty())
 				{
@@ -1035,14 +1035,14 @@ void CItem::StopLayer(const ItemString& layerName, int flags, bool record)
 	if (it == m_sharedparams->layers.end())
 		return;
 
-	for (int i=0; i<eIGS_Last; i++)
+	for (int i = 0; i < eIGS_Last; i++)
 	{
-		if (!(flags&1<<i))
+		if (!(flags & 1 << i))
 			continue;
 
-		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(i);
 		if (pCharacter)
-			pCharacter->GetISkeletonAnim()->StopAnimationInLayer(it->second.id[i],0.0f);
+			pCharacter->GetISkeletonAnim()->StopAnimationInLayer(it->second.id[i], 0.0f);
 	}
 
 	if (record)
@@ -1069,15 +1069,15 @@ void CItem::RestoreLayers()
 //------------------------------------------------------------------------
 void CItem::ResetAnimation(int layer, uint flags)
 {
-	for (int i=0; i<eIGS_Last; i++)
+	for (int i = 0; i < eIGS_Last; i++)
 	{
-		if (!(flags&1<<i))
+		if (!(flags & 1 << i))
 			continue;
 
 		if ((i == eIGS_Owner) || (i == eIGS_OwnerLooped))
 			continue;
 
-		ICharacterInstance *pCharacter = GetEntity()->GetCharacter(i);
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(i);
 		if (pCharacter)
 			pCharacter->GetISkeletonAnim()->StopAnimationsAllLayers();
 	}
@@ -1098,7 +1098,7 @@ uint CItem::GetCurrentAnimationEnd(int slot)
 //------------------------------------------------------------------------
 uint CItem::GetCurrentAnimationStart(int slot)
 {
-	return m_animationEnd[slot]-m_animationTime[slot];
+	return m_animationEnd[slot] - m_animationTime[slot];
 }
 
 //------------------------------------------------------------------------
@@ -1114,31 +1114,31 @@ void CItem::DrawSlot(int slot, bool bDraw, bool bNear)
 		flags |= ENTITY_SLOT_RENDER_NEAREST;
 	else
 		flags &= ~ENTITY_SLOT_RENDER_NEAREST;
-	
+
 	GetEntity()->SetSlotFlags(slot, flags);
 }
 
 //------------------------------------------------------------------------
-Vec3 CItem::GetSlotHelperPos(int slot, const char *helper, bool worldSpace, bool relative)
+Vec3 CItem::GetSlotHelperPos(int slot, const char* helper, bool worldSpace, bool relative)
 {
-	Vec3 position(0,0,0);
+	Vec3 position(0, 0, 0);
 
 	// if mounted force the slot to be 1st person
 	if (m_stats.mounted)
-		slot=eIGS_FirstPerson;
+		slot = eIGS_FirstPerson;
 
 	SEntitySlotInfo info;
 	if (GetEntity()->GetSlotInfo(slot, info))
 	{
 		if (info.pStatObj)
 		{
-			IStatObj *pStatsObj = info.pStatObj;
+			IStatObj* pStatsObj = info.pStatObj;
 			position = pStatsObj->GetHelperPos(helper);
 			position = GetEntity()->GetSlotLocalTM(slot, false).TransformPoint(position);
 		}
 		else if (info.pCharacter)
 		{
-			ICharacterInstance *pCharacter = info.pCharacter;
+			ICharacterInstance* pCharacter = info.pCharacter;
 			int16 id = pCharacter->GetISkeletonPose()->GetJointIDByName(helper);
 			if (id > -1)
 			{
@@ -1160,36 +1160,36 @@ Vec3 CItem::GetSlotHelperPos(int slot, const char *helper, bool worldSpace, bool
 }
 
 //------------------------------------------------------------------------
-const Matrix33 &CItem::GetSlotHelperRotation(int slot, const char *helper, bool worldSpace, bool relative)
+const Matrix33& CItem::GetSlotHelperRotation(int slot, const char* helper, bool worldSpace, bool relative)
 {
 	// if mounted force the slot to be 1st person
 	if (m_stats.mounted)
-		slot=eIGS_FirstPerson;
+		slot = eIGS_FirstPerson;
 
 	static Matrix33 rotation;
 	rotation.SetIdentity();
 
 	IEntity* pEntity = GetEntity();
-	if(!pEntity)
+	if (!pEntity)
 		return rotation;
 
 	SEntitySlotInfo info;
 	if (pEntity->GetSlotInfo(slot, info))
 	{
-    if (info.pStatObj)
-    {
-      IStatObj *pStatObj = info.pStatObj;
-      rotation = Matrix33(pStatObj->GetHelperTM(helper));
-      rotation.OrthonormalizeFast();
-      rotation = Matrix33(GetEntity()->GetSlotLocalTM(slot, false))*rotation;        
-    }
+		if (info.pStatObj)
+		{
+			IStatObj* pStatObj = info.pStatObj;
+			rotation = Matrix33(pStatObj->GetHelperTM(helper));
+			rotation.OrthonormalizeFast();
+			rotation = Matrix33(GetEntity()->GetSlotLocalTM(slot, false)) * rotation;
+		}
 		else if (info.pCharacter)
 		{
-			ICharacterInstance *pCharacter = info.pCharacter;
-			if(!pCharacter)
+			ICharacterInstance* pCharacter = info.pCharacter;
+			if (!pCharacter)
 				return rotation;
 			int16 id = pCharacter->GetISkeletonPose()->GetJointIDByName(helper);
-		//	if (id > -1) rotation = Matrix33(pCharacter->GetISkeleton()->GetAbsJMatrixByID(id));
+			//	if (id > -1) rotation = Matrix33(pCharacter->GetISkeleton()->GetAbsJMatrixByID(id));
 			if (id > -1)
 			{
 				if (relative)
@@ -1199,12 +1199,12 @@ const Matrix33 &CItem::GetSlotHelperRotation(int slot, const char *helper, bool 
 			}
 
 			if (!relative)
-				rotation = Matrix33(pEntity->GetSlotLocalTM(slot, false))*rotation;
-		}    
+				rotation = Matrix33(pEntity->GetSlotLocalTM(slot, false)) * rotation;
+		}
 	}
 
 	if (worldSpace)
-		rotation=Matrix33(pEntity->GetWorldTM())*rotation;
+		rotation = Matrix33(pEntity->GetWorldTM()) * rotation;
 
 	return rotation;
 }
@@ -1212,17 +1212,17 @@ const Matrix33 &CItem::GetSlotHelperRotation(int slot, const char *helper, bool 
 //------------------------------------------------------------------------
 void CItem::StopSound(tSoundID id)
 {
-  if (id == INVALID_SOUNDID)
-    return;
+	if (id == INVALID_SOUNDID)
+		return;
 
 	bool synchSound = false;
-	IEntitySoundProxy *pSoundProxy = GetSoundProxy(false);
+	IEntitySoundProxy* pSoundProxy = GetSoundProxy(false);
 	if (pSoundProxy)
 	{
 		for (TInstanceActionMap::iterator it = m_instanceActions.begin(); it != m_instanceActions.end(); ++it)
 		{
-			SInstanceAction &action = it->second;
-			for (int i=0;i<2;i++)
+			SInstanceAction& action = it->second;
+			for (int i = 0;i < 2;i++)
 			{
 				if (action.sound[i].id == id)
 				{
@@ -1233,7 +1233,7 @@ void CItem::StopSound(tSoundID id)
 				}
 			}
 		}
-		if(synchSound)
+		if (synchSound)
 			pSoundProxy->StopSound(id, ESoundStopMode_OnSyncPoint);
 		else
 			pSoundProxy->StopSound(id);
@@ -1243,13 +1243,13 @@ void CItem::StopSound(tSoundID id)
 //------------------------------------------------------------------------
 void CItem::Quiet()
 {
-	IEntitySoundProxy *pSoundProxy = GetSoundProxy(false);
+	IEntitySoundProxy* pSoundProxy = GetSoundProxy(false);
 	if (pSoundProxy)
 	{
 		for (TInstanceActionMap::iterator it = m_instanceActions.begin(); it != m_instanceActions.end(); ++it)
 		{
-			SInstanceAction &action = it->second;
-			for (int i=0;i<2;i++)
+			SInstanceAction& action = it->second;
+			for (int i = 0;i < 2;i++)
 			{
 				if (action.sound[i].id != INVALID_SOUNDID)
 				{
@@ -1264,9 +1264,9 @@ void CItem::Quiet()
 }
 
 //------------------------------------------------------------------------
-ISound *CItem::GetISound(tSoundID id)
+ISound* CItem::GetISound(tSoundID id)
 {
-	IEntitySoundProxy *pSoundProxy = GetSoundProxy(false);
+	IEntitySoundProxy* pSoundProxy = GetSoundProxy(false);
 	if (pSoundProxy)
 		return pSoundProxy->GetSound(id);
 
@@ -1274,16 +1274,16 @@ ISound *CItem::GetISound(tSoundID id)
 }
 
 //------------------------------------------------------------------------
-void CItem::ReleaseStaticSound(SInstanceAudio *sound)
+void CItem::ReleaseStaticSound(SInstanceAudio* sound)
 {
 	if (sound->id != INVALID_SOUNDID)
 	{
-		IEntitySoundProxy *pSoundProxy = GetSoundProxy(false);
+		IEntitySoundProxy* pSoundProxy = GetSoundProxy(false);
 		if (pSoundProxy)
 		{
 			pSoundProxy->SetStaticSound(sound->id, false);
-			if(sound->synch)
-				pSoundProxy->StopSound(sound->id,ESoundStopMode_OnSyncPoint);
+			if (sound->synch)
+				pSoundProxy->StopSound(sound->id, ESoundStopMode_OnSyncPoint);
 			else
 				pSoundProxy->StopSound(sound->id);
 			sound->id = INVALID_SOUNDID;
@@ -1307,31 +1307,31 @@ void CItem::ReleaseStaticSounds()
 }
 
 //------------------------------------------------------------------------
-IEntitySoundProxy *CItem::GetSoundProxy(bool create)
+IEntitySoundProxy* CItem::GetSoundProxy(bool create)
 {
-	IEntitySoundProxy *pSoundProxy = (IEntitySoundProxy *)GetEntity()->GetProxy(ENTITY_PROXY_SOUND);
+	IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*)GetEntity()->GetProxy(ENTITY_PROXY_SOUND);
 	if (!pSoundProxy && create)
-		pSoundProxy = (IEntitySoundProxy *)GetEntity()->CreateProxy(ENTITY_PROXY_SOUND);
+		pSoundProxy = (IEntitySoundProxy*)GetEntity()->CreateProxy(ENTITY_PROXY_SOUND);
 
 	return pSoundProxy;
 }
 
 //------------------------------------------------------------------------
-IEntityRenderProxy *CItem::GetRenderProxy(bool create)
+IEntityRenderProxy* CItem::GetRenderProxy(bool create)
 {
-	IEntityRenderProxy *pRenderProxy = (IEntityRenderProxy *)GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
+	IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
 	if (!pRenderProxy && create)
-		pRenderProxy = (IEntityRenderProxy *)GetEntity()->CreateProxy(ENTITY_PROXY_RENDER);
+		pRenderProxy = (IEntityRenderProxy*)GetEntity()->CreateProxy(ENTITY_PROXY_RENDER);
 
 	return pRenderProxy;
 }
 
 //------------------------------------------------------------------------
-IEntityPhysicalProxy *CItem::GetPhysicalProxy(bool create)
+IEntityPhysicalProxy* CItem::GetPhysicalProxy(bool create)
 {
-	IEntityPhysicalProxy *pPhysicalProxy = (IEntityPhysicalProxy *)GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS);
+	IEntityPhysicalProxy* pPhysicalProxy = (IEntityPhysicalProxy*)GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS);
 	if (!pPhysicalProxy && create)
-		pPhysicalProxy = (IEntityPhysicalProxy *)GetEntity()->CreateProxy(ENTITY_PROXY_PHYSICS);
+		pPhysicalProxy = (IEntityPhysicalProxy*)GetEntity()->CreateProxy(ENTITY_PROXY_PHYSICS);
 
 	return pPhysicalProxy;
 }
@@ -1339,15 +1339,15 @@ IEntityPhysicalProxy *CItem::GetPhysicalProxy(bool create)
 //------------------------------------------------------------------------
 void CItem::DestroyedGeometry(bool use)
 {
-  if (!m_geometry[eIGS_Destroyed].empty())
-  {    
-    DrawSlot(eIGS_Destroyed, use);
-		if (m_stats.viewmode&eIVM_FirstPerson)
+	if (!m_geometry[eIGS_Destroyed].empty())
+	{
+		DrawSlot(eIGS_Destroyed, use);
+		if (m_stats.viewmode & eIVM_FirstPerson)
 			DrawSlot(eIGS_FirstPerson, !use);
 		else
 			DrawSlot(eIGS_ThirdPerson, !use);
 
-    if (use)
-      GetEntity()->SetSlotLocalTM(eIGS_Destroyed, GetEntity()->GetSlotLocalTM(eIGS_ThirdPerson, false));
-  }  
+		if (use)
+			GetEntity()->SetSlotLocalTM(eIGS_Destroyed, GetEntity()->GetSlotLocalTM(eIGS_ThirdPerson, false));
+	}
 }

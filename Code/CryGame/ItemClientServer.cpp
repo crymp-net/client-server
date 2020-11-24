@@ -25,10 +25,10 @@ EntityId CItem::NetGetOwnerId() const
 //------------------------------------------------------------------------
 void CItem::NetSetOwnerId(EntityId id)
 {
-	if (id==m_ownerId)
+	if (id == m_ownerId)
 		return;
 
-	CryLogAlways("%s::NetSetOwnerId(%s)", GetEntity()->GetName(), GetActor(id)?GetActor(id)->GetEntity()->GetName():"null");
+	CryLogAlways("%s::NetSetOwnerId(%s)", GetEntity()->GetName(), GetActor(id) ? GetActor(id)->GetEntity()->GetName() : "null");
 
 	if (id)
 		PickUp(id, true);
@@ -36,7 +36,7 @@ void CItem::NetSetOwnerId(EntityId id)
 	{
 		Drop();
 
-		CActor *pActor=GetOwnerActor();
+		CActor* pActor = GetOwnerActor();
 		if (pActor)
 			pActor->GetInventory()->SetCurrentItem(0);
 	}
@@ -46,21 +46,21 @@ void CItem::NetSetOwnerId(EntityId id)
 void CItem::InitClient(int channelId)
 {
 	// send the differences between the current, and the initial setup
-	for (TAccessoryMap::iterator it=m_accessories.begin(); it != m_accessories.end(); ++it)
+	for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); ++it)
 		GetGameObject()->InvokeRMI(ClAttachAccessory(), RequestAttachAccessoryParams(it->first.c_str()), eRMI_ToClientChannel, channelId);
 
-	IActor *pOwner=GetOwnerActor();
+	IActor* pOwner = GetOwnerActor();
 	if (!pOwner)
 		return;
 
 	// only send the pickup message if the player is connecting
 	// for items spawned during gameplay, CItem::PickUp is already sending the pickup message
-	INetChannel *pNetChannel=m_pGameFramework->GetNetChannel(channelId);
-	if (pNetChannel && pNetChannel->GetContextViewState()<eCVS_InGame)
+	INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(channelId);
+	if (pNetChannel && pNetChannel->GetContextViewState() < eCVS_InGame)
 	{
 		if (!m_stats.mounted && !m_stats.used)
 		{
-			pOwner->GetGameObject()->InvokeRMIWithDependentObject(CActor::ClPickUp(), 
+			pOwner->GetGameObject()->InvokeRMIWithDependentObject(CActor::ClPickUp(),
 				CActor::PickItemParams(GetEntityId(), m_stats.selected, false), eRMI_ToClientChannel, GetEntityId(), channelId);
 			//GetOwnerActor()->GetGameObject()->InvokeRMI(CActor::ClPickUp(), 
 			//	CActor::PickItemParams(GetEntityId(), m_stats.selected, false), eRMI_ToClientChannel, channelId);
@@ -69,7 +69,7 @@ void CItem::InitClient(int channelId)
 
 	if (m_stats.mounted && m_stats.used)
 	{
-		pOwner->GetGameObject()->InvokeRMIWithDependentObject(CActor::ClStartUse(), 
+		pOwner->GetGameObject()->InvokeRMIWithDependentObject(CActor::ClStartUse(),
 			CActor::ItemIdParam(GetEntityId()), eRMI_ToClientChannel, GetEntityId(), channelId);
 	}
 }
@@ -82,17 +82,17 @@ void CItem::PostInitClient(int channelId)
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CItem, SvRequestAttachAccessory)
 {
-	if (IInventory *pInventory=GetActorInventory(GetOwnerActor()))
+	if (IInventory* pInventory = GetActorInventory(GetOwnerActor()))
 	{
-		if (pInventory->GetCountOfClass(params.accessory.c_str())>0)
+		if (pInventory->GetCountOfClass(params.accessory.c_str()) > 0)
 		{
 			DoSwitchAccessory(params.accessory.c_str());
-			GetGameObject()->InvokeRMI(ClAttachAccessory(), params, eRMI_ToAllClients|eRMI_NoLocalCalls);
+			GetGameObject()->InvokeRMI(ClAttachAccessory(), params, eRMI_ToAllClients | eRMI_NoLocalCalls);
 
 			return true;
 		}
 	}
-	
+
 	return true; // set this to false later
 }
 

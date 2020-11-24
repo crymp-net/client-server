@@ -8,13 +8,13 @@
 #include "GameRules.h"
 
 SScaledEffectParams::SScaledEffectParams(const IItemParamsNode* scaledEffect)
-: ppname(0)
-, radius(0.0f)
-, delay(2.0f)
-, fadeInTime(1.0f)
-, fadeOutTime(1.0f)
-, maxValue(1.0f)
-, aiObstructionRadius(5.0f)
+	: ppname(0)
+	, radius(0.0f)
+	, delay(2.0f)
+	, fadeInTime(1.0f)
+	, fadeOutTime(1.0f)
+	, maxValue(1.0f)
+	, aiObstructionRadius(5.0f)
 {
 	CItemParamReader reader(scaledEffect);
 	reader.Read("postEffect", ppname);
@@ -30,9 +30,9 @@ SScaledEffectParams::SScaledEffectParams(const IItemParamsNode* scaledEffect)
 }
 
 SCollisionParams::SCollisionParams(const IItemParamsNode* collision)
-: pParticleEffect(0)
-, sound(0)
-, scale(1.0f)
+	: pParticleEffect(0)
+	, sound(0)
+	, scale(1.0f)
 {
 	CItemParamReader reader(collision);
 
@@ -56,18 +56,18 @@ SCollisionParams::~SCollisionParams()
 }
 
 SExplosionParams::SExplosionParams(const IItemParamsNode* explosion)
-: minRadius(2.5f)
-, maxRadius(5.0f)
-, minPhysRadius(2.5f)
-, maxPhysRadius(5.0f)
-, pressure(200.0f)
-, holeSize(0.0f)
-, terrainHoleSize(3.0f)
-, effectScale(1)
-, effectName(0)
-, maxblurdist(10)
-, hitTypeId(0)
-, pParticleEffect(0)
+	: minRadius(2.5f)
+	, maxRadius(5.0f)
+	, minPhysRadius(2.5f)
+	, maxPhysRadius(5.0f)
+	, pressure(200.0f)
+	, holeSize(0.0f)
+	, terrainHoleSize(3.0f)
+	, effectScale(1)
+	, effectName(0)
+	, maxblurdist(10)
+	, hitTypeId(0)
+	, pParticleEffect(0)
 {
 	const char* effect = 0;
 
@@ -88,13 +88,13 @@ SExplosionParams::SExplosionParams(const IItemParamsNode* explosion)
 	reader.Read("radialblurdist", maxblurdist);
 	reader.Read("type", type);
 
-	CGameRules *pGameRules = g_pGame->GetGameRules();
+	CGameRules* pGameRules = g_pGame->GetGameRules();
 	if (pGameRules)
 		hitTypeId = pGameRules->GetHitTypeId(type.c_str());
 
 	if (effect && effect[0])
 	{
-		effectName=effect;
+		effectName = effect;
 		pParticleEffect = gEnv->p3DEngine->FindParticleEffect(effect);
 		if (pParticleEffect)
 			pParticleEffect->AddRef();
@@ -107,9 +107,9 @@ SExplosionParams::~SExplosionParams()
 }
 
 SFlashbangParams::SFlashbangParams(const IItemParamsNode* flashbang)
-: maxRadius(25.0f),
-blindAmount(0.7f),
-flashbangBaseTime(2.5f)
+	: maxRadius(25.0f),
+	blindAmount(0.7f),
+	flashbangBaseTime(2.5f)
 {
 	CItemParamReader reader(flashbang);
 	reader.Read("max_radius", maxRadius);
@@ -118,11 +118,11 @@ flashbangBaseTime(2.5f)
 }
 
 STrailParams::STrailParams(const IItemParamsNode* trail)
-:	sound(0)
-, effect(0)
-, effect_fp(0)
-, scale(1.0f)
-, prime(true)
+	: sound(0)
+	, effect(0)
+	, effect_fp(0)
+	, scale(1.0f)
+	, prime(true)
 {
 	CItemParamReader reader(trail);
 	reader.Read("sound", sound);
@@ -141,8 +141,8 @@ STrailParams::STrailParams(const IItemParamsNode* trail)
 }
 
 SWhizParams::SWhizParams(const IItemParamsNode* whiz)
-: sound(0)
-, speed(20.0f)
+	: sound(0)
+	, speed(20.0f)
 {
 	CItemParamReader reader(whiz);
 	reader.Read("sound", sound);
@@ -153,37 +153,37 @@ SWhizParams::SWhizParams(const IItemParamsNode* whiz)
 }
 
 SAmmoParams::SAmmoParams(const IItemParamsNode* pItemParams_, const IEntityClass* pEntityClass_)
-: flags(0)
-, serverSpawn(0)
-, predictSpawn(0)
-, lifetime(0.0f)
-, showtime(0.0f)
-, aiType(AIOBJECT_NONE)
-, bulletType(-1)
-, hitPoints(-1)
-, noBulletHits(false)
-, quietRemoval(false)
-, physicalizationType(ePT_None)
-, mass(1.0f)
-, speed(0.0f)
-, maxLoggedCollisions(1)
-, traceable(0)
-, spin(ZERO)
-, spinRandom(ZERO)
-, pSurfaceType(0)
-, pParticleParams(0)
-, fpGeometry(0)
-, pScaledEffect(0)
-, pCollision(0)
-, pExplosion(0)
-, pFlashbang(0)
-, pWhiz(0)
-, pRicochet(0)
-, pTrail(0)
-, pTrailUnderWater(0)
-, pItemParams(0)
-, pEntityClass(0)
-, sleepTime(0.0f)
+	: flags(0)
+	, serverSpawn(0)
+	, predictSpawn(0)
+	, lifetime(0.0f)
+	, showtime(0.0f)
+	, aiType(AIOBJECT_NONE)
+	, bulletType(-1)
+	, hitPoints(-1)
+	, noBulletHits(false)
+	, quietRemoval(false)
+	, physicalizationType(ePT_None)
+	, mass(1.0f)
+	, speed(0.0f)
+	, maxLoggedCollisions(1)
+	, traceable(0)
+	, spin(ZERO)
+	, spinRandom(ZERO)
+	, pSurfaceType(0)
+	, pParticleParams(0)
+	, fpGeometry(0)
+	, pScaledEffect(0)
+	, pCollision(0)
+	, pExplosion(0)
+	, pFlashbang(0)
+	, pWhiz(0)
+	, pRicochet(0)
+	, pTrail(0)
+	, pTrailUnderWater(0)
+	, pItemParams(0)
+	, pEntityClass(0)
+	, sleepTime(0.0f)
 {
 	Init(pItemParams_, pEntityClass_);
 }
@@ -261,33 +261,33 @@ void SAmmoParams::LoadFlagsAndParams()
 		CItemParamReader reader(paramsNode);
 		reader.Read("lifetime", lifetime);
 		reader.Read("showtime", showtime);
-		reader.Read("bulletType",bulletType);
-		reader.Read("hitPoints",hitPoints);
-		reader.Read("noBulletHits",noBulletHits);
-		reader.Read("quietRemoval",quietRemoval);
+		reader.Read("bulletType", bulletType);
+		reader.Read("hitPoints", hitPoints);
+		reader.Read("noBulletHits", noBulletHits);
+		reader.Read("quietRemoval", quietRemoval);
 		reader.Read("sleepTime", sleepTime);
 
-		const char* typeName=0;
+		const char* typeName = 0;
 		reader.Read("aitype", typeName);
-		
+
 		if (typeName && typeName[0])
 		{
 			if (!stricmp(typeName, "grenade"))
-				aiType=AIOBJECT_GRENADE;
+				aiType = AIOBJECT_GRENADE;
 			else if (!stricmp(typeName, "rpg"))
-				aiType=AIOBJECT_RPG;
+				aiType = AIOBJECT_RPG;
 		}
 	}
 }
 
 void SAmmoParams::LoadPhysics()
 {
-	const IItemParamsNode *physics = pItemParams->GetChild("physics");
+	const IItemParamsNode* physics = pItemParams->GetChild("physics");
 
 	if (!physics)
 		return;
 
-	const char *typ=physics->GetAttribute("type");
+	const char* typ = physics->GetAttribute("type");
 	if (typ)
 	{
 		if (!strcmpi(typ, "particle"))
@@ -298,7 +298,7 @@ void SAmmoParams::LoadPhysics()
 		{
 			physicalizationType = ePT_Rigid;
 		}
-		else if(!strcmpi(typ, "static"))
+		else if (!strcmpi(typ, "static"))
 		{
 			physicalizationType = ePT_Static;
 		}
@@ -309,7 +309,7 @@ void SAmmoParams::LoadPhysics()
 	}
 
 	CItemParamReader reader(physics);
-	if(physicalizationType != ePT_Static)
+	if (physicalizationType != ePT_Static)
 	{
 		reader.Read("mass", mass);
 		reader.Read("speed", speed);
@@ -320,7 +320,7 @@ void SAmmoParams::LoadPhysics()
 	}
 
 	// material
-	const char *material=0;
+	const char* material = 0;
 	reader.Read("material", material);
 	if (material)
 	{
@@ -330,10 +330,10 @@ void SAmmoParams::LoadPhysics()
 	if (physicalizationType == ePT_Particle)
 	{
 		pParticleParams = new pe_params_particle();
-		float radius=0.005f;
+		float radius = 0.005f;
 		reader.Read("radius", radius);
-		pParticleParams->thickness = radius*2.0f;
-		pParticleParams->size = radius*2.0f;
+		pParticleParams->thickness = radius * 2.0f;
+		pParticleParams->size = radius * 2.0f;
 		reader.Read("air_resistance", pParticleParams->kAirResistance);
 		reader.Read("water_resistance", pParticleParams->kWaterResistance);
 		reader.Read("gravity", pParticleParams->gravity);
@@ -346,38 +346,38 @@ void SAmmoParams::LoadPhysics()
 		if (pSurfaceType)
 			pParticleParams->surface_idx = pSurfaceType->GetId();
 
-		int flag=0;
+		int flag = 0;
 		reader.Read("single_contact", flag);
-		pParticleParams->flags = flag?particle_single_contact:0; flag=0;
+		pParticleParams->flags = flag ? particle_single_contact : 0; flag = 0;
 		reader.Read("no_roll", flag);
-		pParticleParams->flags |= flag?particle_no_roll:0; flag=0;
+		pParticleParams->flags |= flag ? particle_no_roll : 0; flag = 0;
 		reader.Read("no_spin", flag);
-		pParticleParams->flags |= flag?particle_no_spin:0; flag=0;
+		pParticleParams->flags |= flag ? particle_no_spin : 0; flag = 0;
 		reader.Read("no_path_alignment", flag);
-		pParticleParams->flags |= flag?particle_no_path_alignment:0; flag=0;
+		pParticleParams->flags |= flag ? particle_no_path_alignment : 0; flag = 0;
 
-		pParticleParams->mass= mass;
+		pParticleParams->mass = mass;
 	}
 }
 
 void SAmmoParams::LoadGeometry()
 {
-	const IItemParamsNode *geometry = pItemParams->GetChild("geometry");
+	const IItemParamsNode* geometry = pItemParams->GetChild("geometry");
 	if (!geometry)
 		return;
 
-	const IItemParamsNode *firstperson = geometry->GetChild("firstperson");
+	const IItemParamsNode* firstperson = geometry->GetChild("firstperson");
 	if (firstperson)
 	{
-		const char *modelName = firstperson->GetAttribute("name");
+		const char* modelName = firstperson->GetAttribute("name");
 
 		if (modelName && modelName[0])
 		{
 			IStatObj* oldGeom = fpGeometry;
 
-			Ang3 angles(0,0,0);
-			Vec3 position(0,0,0);
-			float scale=1.0f;
+			Ang3 angles(0, 0, 0);
+			Vec3 position(0, 0, 0);
+			float scale = 1.0f;
 			firstperson->GetAttribute("position", position);
 			firstperson->GetAttribute("angles", angles);
 			firstperson->GetAttribute("scale", scale);
@@ -450,7 +450,7 @@ void SAmmoParams::LoadTrailsAndWhizzes()
 			pWhiz = 0;
 		}
 	}
-	
+
 	const IItemParamsNode* ricochet = pItemParams->GetChild("ricochet");
 	if (ricochet)
 	{

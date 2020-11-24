@@ -27,14 +27,14 @@ History:
 //////////////////////////////////////////////////////////////////////////
 
 CBattleEvent::CBattleEvent()
-: m_worldPos(Vec3(0,0,0))
-, m_radius(0)
-, m_peakRadius(0)
-, m_lifetime(1)
-, m_lifeRemaining(1)
-, m_numParticles(0)
-, m_pParticleEffect(NULL)
-, m_entityId(0)
+	: m_worldPos(Vec3(0, 0, 0))
+	, m_radius(0)
+	, m_peakRadius(0)
+	, m_lifetime(1)
+	, m_lifeRemaining(1)
+	, m_numParticles(0)
+	, m_pParticleEffect(NULL)
+	, m_entityId(0)
 {
 }
 
@@ -42,27 +42,27 @@ CBattleEvent::~CBattleEvent()
 {
 }
 
-bool CBattleEvent::Init(IGameObject *pGameObject)
+bool CBattleEvent::Init(IGameObject* pGameObject)
 {
 	SetGameObject(pGameObject);
 
-	if(!GetGameObject()->BindToNetwork())
+	if (!GetGameObject()->BindToNetwork())
 		return false;
 
-	if(GetEntity())
+	if (GetEntity())
 		m_entityId = GetEntity()->GetId();
 
-	if(gEnv->bServer && g_pGame->GetGameRules())
+	if (gEnv->bServer && g_pGame->GetGameRules())
 	{
 		CBattleDust* pBD = g_pGame->GetGameRules()->GetBattleDust();
-		if(pBD)
+		if (pBD)
 			pBD->NewBattleArea(this);
 	}
 
 	return true;
 }
 //------------------------------------------------------------------------
-void CBattleEvent::PostInit(IGameObject *pGameObject)
+void CBattleEvent::PostInit(IGameObject* pGameObject)
 {
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
@@ -71,11 +71,11 @@ void CBattleEvent::PostInit(IGameObject *pGameObject)
 void CBattleEvent::Release()
 {
 	// once this object is released it must also be removed from the list in CBattleDust
-	if(gEnv->bServer && g_pGame && g_pGame->GetGameRules())
+	if (gEnv->bServer && g_pGame && g_pGame->GetGameRules())
 	{
 		CBattleDust* pBD = g_pGame->GetGameRules()->GetBattleDust();
-		if(pBD)
-			pBD->RemoveBattleArea(this);		
+		if (pBD)
+			pBD->RemoveBattleArea(this);
 	}
 	delete this;
 }
@@ -91,14 +91,14 @@ void CBattleEvent::FullSerialize(TSerialize ser)
 	ser.Value("m_lifetime", m_lifetime);
 	ser.Value("m_lifeRemaining", m_lifeRemaining);
 	ser.EndGroup();
-	if(ser.IsReading())
+	if (ser.IsReading())
 	{
 		m_pParticleEffect = NULL;
 		m_entityId = (GetEntity() != NULL) ? GetEntity()->GetId() : 0;
 	}
 }
 
-bool CBattleEvent::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags )
+bool CBattleEvent::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags)
 {
 	if (aspect == PROPERTIES_ASPECT)
 	{
@@ -108,61 +108,61 @@ bool CBattleEvent::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 pr
 	return true;
 }
 
-void CBattleEvent::Update(SEntityUpdateContext &ctx, int updateSlot)
+void CBattleEvent::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
 	IEntity* pEntity = GetEntity();
-	if(pEntity)
+	if (pEntity)
 	{
 		Matrix34 tm = pEntity->GetWorldTM();
 		tm.SetTranslation(m_worldPos);
 		pEntity->SetWorldTM(tm);
 
-		if(m_numParticles > 0 && !m_pParticleEffect)
+		if (m_numParticles > 0 && !m_pParticleEffect)
 		{
 			// attach the particle effect to this entity now
 			m_pParticleEffect = gEnv->p3DEngine->FindParticleEffect(g_pGameCVars->g_battleDust_effect->GetString());
 			if (m_pParticleEffect)
 			{
 				pEntity->LoadParticleEmitter(0, m_pParticleEffect, 0, true, true);
-				Matrix34 tm = IParticleEffect::ParticleLoc(Vec3(0,0,0));
+				Matrix34 tm = IParticleEffect::ParticleLoc(Vec3(0, 0, 0));
 				pEntity->SetSlotLocalTM(0, tm);
 			}
 		}
 
-		if(m_pParticleEffect)
+		if (m_pParticleEffect)
 		{
 			SEntitySlotInfo info;
 			pEntity->GetSlotInfo(0, info);
-			if(info.pParticleEmitter)
+			if (info.pParticleEmitter)
 			{
 				SpawnParams sp;
-				sp.fCountScale = (float)m_numParticles/60.0f;
+				sp.fCountScale = (float)m_numParticles / 60.0f;
 				info.pParticleEmitter->SetSpawnParams(sp);
 			}
 		}
 
-		if(g_pGameCVars->g_battleDust_debug != 0)
+		if (g_pGameCVars->g_battleDust_debug != 0)
 		{
-			if(g_pGameCVars->g_battleDust_debug >= 2)
+			if (g_pGameCVars->g_battleDust_debug >= 2)
 			{
-				if(m_numParticles > 0)
+				if (m_numParticles > 0)
 				{
-					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, m_numParticles, ColorF(0.0f,1.0f,0.0f,0.2f));
+					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, m_numParticles, ColorF(0.0f, 1.0f, 0.0f, 0.2f));
 				}
 				else
 				{
-					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(1.0f,0.0f,0.0f,0.2f));
+					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(1.0f, 0.0f, 0.0f, 0.2f));
 				}
 			}
 			else
 			{
-				if(m_numParticles > 0)
+				if (m_numParticles > 0)
 				{
-					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(0.0f,1.0f,0.0f,0.2f));
+					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(0.0f, 1.0f, 0.0f, 0.2f));
 				}
 				else
 				{
-					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(1.0f,0.0f,0.0f,0.2f));
+					gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(m_worldPos, 0.5f, ColorF(1.0f, 0.0f, 0.0f, 0.2f));
 				}
 			}
 		}
@@ -171,7 +171,7 @@ void CBattleEvent::Update(SEntityUpdateContext &ctx, int updateSlot)
 
 //-------------------------------------------------------------------------
 
-void CBattleEvent::GetMemoryStatistics(ICrySizer * s)
+void CBattleEvent::GetMemoryStatistics(ICrySizer* s)
 {
 	s->Add(*this);
 }
@@ -196,7 +196,7 @@ CBattleDust::CBattleDust()
 
 	// load xml file and process it
 
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return;
 
 	ReloadXml();
@@ -214,16 +214,16 @@ void CBattleDust::ReloadXml()
 	m_vehicleExplosionPower.clear();
 	m_bulletImpactPower.clear();
 
-	IXmlParser*	pxml = g_pGame->GetIGameFramework()->GetISystem()->GetXmlUtils()->CreateXmlParser();
-	if(!pxml)
+	IXmlParser* pxml = g_pGame->GetIGameFramework()->GetISystem()->GetXmlUtils()->CreateXmlParser();
+	if (!pxml)
 		return;
 
 	XmlNodeRef node = GetISystem()->LoadXmlFile("Game/Scripts/GameRules/BattleDust.xml");
-	if(!node)
+	if (!node)
 		return;
 
 	XmlNodeRef paramsNode = node->findChild("params");
-	if(paramsNode)
+	if (paramsNode)
 	{
 		paramsNode->getAttr("fogspawnpower", m_entitySpawnPower);
 		paramsNode->getAttr("defaultlifetime", m_defaultLifetime);
@@ -235,16 +235,16 @@ void CBattleDust::ReloadXml()
 	}
 
 	XmlNodeRef eventsNode = node->findChild("events");
-	if(eventsNode)
+	if (eventsNode)
 	{
 		// corresponds to the eBDET_ShotFired event
 		XmlNodeRef shotNode = eventsNode->findChild("shotfired");
-		if(shotNode)
+		if (shotNode)
 		{
 			for (int i = 0; i < shotNode->getChildCount(); ++i)
 			{
 				XmlNodeRef weaponNode = shotNode->getChild(i);
-				if(weaponNode)
+				if (weaponNode)
 				{
 					XmlString name;
 					float power = 1.0f;
@@ -253,7 +253,7 @@ void CBattleDust::ReloadXml()
 					weaponNode->getAttr("power", power);
 					weaponNode->getAttr("lifetime", lifetime);
 
-					if(!strcmp(name, "default"))
+					if (!strcmp(name, "default"))
 					{
 						m_defaultWeapon.m_power = power;
 						m_defaultWeapon.m_lifetime = lifetime;
@@ -272,12 +272,12 @@ void CBattleDust::ReloadXml()
 		}
 
 		XmlNodeRef explodeNode = eventsNode->findChild("explosion");
-		if(explodeNode)
+		if (explodeNode)
 		{
-			for(int i=0; i < explodeNode->getChildCount(); ++i)
+			for (int i = 0; i < explodeNode->getChildCount(); ++i)
 			{
 				XmlNodeRef explosiveNode = explodeNode->getChild(i);
-				if(explosiveNode)
+				if (explosiveNode)
 				{
 					XmlString name;
 					float power = 1.0f;
@@ -286,7 +286,7 @@ void CBattleDust::ReloadXml()
 					explosiveNode->getAttr("power", power);
 					explosiveNode->getAttr("lifetime", lifetime);
 
-					if(!strcmp(name, "default"))
+					if (!strcmp(name, "default"))
 					{
 						m_defaultExplosion.m_power = power;
 						m_defaultExplosion.m_lifetime = lifetime;
@@ -305,12 +305,12 @@ void CBattleDust::ReloadXml()
 		}
 
 		XmlNodeRef vehicleExplodeNode = eventsNode->findChild("vehicleexplosion");
-		if(vehicleExplodeNode)
+		if (vehicleExplodeNode)
 		{
-			for(int i=0; i < vehicleExplodeNode->getChildCount(); ++i)
+			for (int i = 0; i < vehicleExplodeNode->getChildCount(); ++i)
 			{
 				XmlNodeRef vehicleNode = vehicleExplodeNode->getChild(i);
-				if(vehicleNode)
+				if (vehicleNode)
 				{
 					XmlString name;
 					float power = 1.0f;
@@ -319,7 +319,7 @@ void CBattleDust::ReloadXml()
 					vehicleNode->getAttr("power", power);
 					vehicleNode->getAttr("lifetime", lifetime);
 
-					if(!strcmp(name, "default"))
+					if (!strcmp(name, "default"))
 					{
 						m_defaultVehicleExplosion.m_power = power;
 						m_defaultVehicleExplosion.m_lifetime = lifetime;
@@ -338,12 +338,12 @@ void CBattleDust::ReloadXml()
 		}
 
 		XmlNodeRef impactNode = eventsNode->findChild("bulletimpact");
-		if(impactNode)
+		if (impactNode)
 		{
-			for(int i=0; i < impactNode->getChildCount(); ++i)
+			for (int i = 0; i < impactNode->getChildCount(); ++i)
 			{
 				XmlNodeRef impact = impactNode->getChild(i);
-				if(impact)
+				if (impact)
 				{
 					XmlString name;
 					float power = 1.0f;
@@ -352,7 +352,7 @@ void CBattleDust::ReloadXml()
 					impact->getAttr("power", power);
 					impact->getAttr("lifetime", lifetime);
 
-					if(!strcmp(name, "default"))
+					if (!strcmp(name, "default"))
 					{
 						m_defaultBulletImpact.m_power = power;
 						m_defaultBulletImpact.m_lifetime = lifetime;
@@ -376,33 +376,33 @@ void CBattleDust::RecordEvent(EBattleDustEventType event, Vec3 worldPos, const I
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	if(!g_pGameCVars->g_battleDust_enable)
+	if (!g_pGameCVars->g_battleDust_enable)
 		return;
 
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return;
 
 	// this typically means the xml file failed to load. Turn off the dust.
-	if(m_maxParticleCount == 0)
+	if (m_maxParticleCount == 0)
 		return;
 
 	SBattleEventParameter param;
-	if(!GetEventParams(event, pClass, param))
-		return;
-	
-	if(param.m_power == 0 || worldPos.IsEquivalent(Vec3(0,0,0)))
+	if (!GetEventParams(event, pClass, param))
 		return;
 
-	if(m_pBattleEventClass == NULL)
-		m_pBattleEventClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass( "BattleEvent" );
+	if (param.m_power == 0 || worldPos.IsEquivalent(Vec3(0, 0, 0)))
+		return;
+
+	if (m_pBattleEventClass == NULL)
+		m_pBattleEventClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("BattleEvent");
 
 	// first check if we need a new event
 	bool newEvent = true;
-	for(std::list<EntityId>::iterator it = m_eventIdList.begin(); it != m_eventIdList.end(); ++it)
+	for (std::list<EntityId>::iterator it = m_eventIdList.begin(); it != m_eventIdList.end(); ++it)
 	{
 		EntityId areaId = (*it);
-		CBattleEvent *pBattleArea = FindEvent(areaId);
-		if(pBattleArea && CheckIntersection(pBattleArea, worldPos, param.m_power))
+		CBattleEvent* pBattleArea = FindEvent(areaId);
+		if (pBattleArea && CheckIntersection(pBattleArea, worldPos, param.m_power))
 		{
 			// don't need a new event as this one is within an existing one. Just merge them.
 			MergeAreas(pBattleArea, worldPos, param.m_power);
@@ -410,34 +410,34 @@ void CBattleDust::RecordEvent(EBattleDustEventType event, Vec3 worldPos, const I
 			pBattleArea->m_lifetime = pBattleArea->m_lifeRemaining;
 			pBattleArea->m_lifetime = CLAMP(pBattleArea->m_lifetime, 0.0f, m_maxLifetime);
 			pBattleArea->m_lifeRemaining = CLAMP(pBattleArea->m_lifeRemaining, 0.0f, m_maxLifetime);
-			newEvent = false;			
+			newEvent = false;
 			break;
 		}
 	}
- 
-	if(newEvent)
+
+	if (newEvent)
 	{
-		IEntitySystem * pEntitySystem = gEnv->pEntitySystem;
- 		SEntitySpawnParams esp;
- 		esp.id = 0;
- 		esp.nFlags = 0;
- 		esp.pClass = m_pBattleEventClass;
- 		if (!esp.pClass)
- 			return;
- 		esp.pUserData = NULL;
- 		esp.sName = "BattleDust";
- 		esp.vPosition	= worldPos;
-	
+		IEntitySystem* pEntitySystem = gEnv->pEntitySystem;
+		SEntitySpawnParams esp;
+		esp.id = 0;
+		esp.nFlags = 0;
+		esp.pClass = m_pBattleEventClass;
+		if (!esp.pClass)
+			return;
+		esp.pUserData = NULL;
+		esp.sName = "BattleDust";
+		esp.vPosition = worldPos;
+
 		// when CBattleEvent is created it will add itself to the list
-		IEntity * pEntity = pEntitySystem->SpawnEntity( esp );
-		if(pEntity)
+		IEntity* pEntity = pEntitySystem->SpawnEntity(esp);
+		if (pEntity)
 		{
 			// find the just-added entity in the list, and set it's properties
 			IGameObject* pGO = g_pGame->GetIGameFramework()->GetGameObject(pEntity->GetId());
-			if(pGO)
+			if (pGO)
 			{
 				CBattleEvent* pNewEvent = static_cast<CBattleEvent*>(pGO->QueryExtension("BattleEvent"));
-				if(pNewEvent)
+				if (pNewEvent)
 				{
 					pNewEvent->m_radius = param.m_power;
 					pNewEvent->m_peakRadius = param.m_power;
@@ -457,12 +457,12 @@ void CBattleDust::RecordEvent(EBattleDustEventType event, Vec3 worldPos, const I
 
 void CBattleDust::NewBattleArea(CBattleEvent* pEvent)
 {
-	if(!g_pGameCVars->g_battleDust_enable)
+	if (!g_pGameCVars->g_battleDust_enable)
 		return;
 
 	int num = 0;
 	if (pEvent)
- 	{
+	{
 		m_eventIdList.push_back(pEvent->GetEntityId());
 		num = m_eventIdList.size();
 	}
@@ -471,7 +471,7 @@ void CBattleDust::NewBattleArea(CBattleEvent* pEvent)
 void CBattleDust::RemoveBattleArea(CBattleEvent* pEvent)
 {
 	int numRemain = 0;
-	if(pEvent)
+	if (pEvent)
 	{
 		stl::find_and_erase(m_eventIdList, pEvent->GetEntityId());
 
@@ -483,18 +483,18 @@ void CBattleDust::Update()
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	if(!g_pGameCVars->g_battleDust_enable)
+	if (!g_pGameCVars->g_battleDust_enable)
 	{
 		RemoveAllEvents();
 		return;
 	}
 
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return;
 
-	if(g_pGameCVars->g_battleDust_debug != 0)
+	if (g_pGameCVars->g_battleDust_debug != 0)
 	{
-		float col[] = {1,1,1,1};
+		float col[] = { 1,1,1,1 };
 		gEnv->pRenderer->Draw2dLabel(50, 40, 2.0f, col, false, "Num BD areas: %d (max %d)", m_eventIdList.size(), m_maxBattleEvents);
 	}
 	float ypos = 60.0f;
@@ -503,35 +503,35 @@ void CBattleDust::Update()
 	m_maxBattleEvents = MAX(m_maxBattleEvents, m_eventIdList.size());
 	std::list<EntityId>::iterator next;
 	std::list<EntityId>::iterator it = m_eventIdList.begin();
-	for(; it != m_eventIdList.end(); it = next)
+	for (; it != m_eventIdList.end(); it = next)
 	{
 		next = it; ++next;
 		EntityId areaId = (*it);
-		CBattleEvent *pBattleArea = FindEvent(areaId);
-		if(!pBattleArea)
+		CBattleEvent* pBattleArea = FindEvent(areaId);
+		if (!pBattleArea)
 			continue;
 
-		if(pBattleArea->m_lifetime > 0.0f)
+		if (pBattleArea->m_lifetime > 0.0f)
 		{
 			pBattleArea->m_lifeRemaining -= gEnv->pTimer->GetFrameTime();
 			pBattleArea->m_radius = pBattleArea->m_peakRadius * (pBattleArea->m_lifeRemaining / pBattleArea->m_lifetime);
 		}
 
-		if(g_pGameCVars->g_battleDust_debug != 0)
+		if (g_pGameCVars->g_battleDust_debug != 0)
 		{
-			float col[] = {1,1,1,1};
+			float col[] = { 1,1,1,1 };
 			gEnv->pRenderer->Draw2dLabel(50, ypos, 1.4f, col, false, "Area: (%.2f, %.2f, %.2f), Radius: %.2f/%.2f, Particles: %.0f, Lifetime: %.2f/%.2f", pBattleArea->m_worldPos.x, pBattleArea->m_worldPos.y, pBattleArea->m_worldPos.z, pBattleArea->m_radius, pBattleArea->m_peakRadius, pBattleArea->m_numParticles, pBattleArea->m_lifeRemaining, pBattleArea->m_lifetime);
 			ypos += 10.0f;
 		}
 
-		if(pBattleArea->m_lifeRemaining < 0.0f)
+		if (pBattleArea->m_lifeRemaining < 0.0f)
 		{
 			// remove it (NB this will also call RemoveBattleArea(), which will remove it from the list)
 			gEnv->pEntitySystem->RemoveEntity(areaId);
 		}
 		else
 		{
-			if(pBattleArea->GetEntity())
+			if (pBattleArea->GetEntity())
 			{
 				UpdateParticlesForArea(pBattleArea);
 			}
@@ -544,7 +544,7 @@ void CBattleDust::RemoveAllEvents()
 	// go through the list and remove all entities (eg if user switches off battledust)
 	std::list<EntityId>::iterator next;
 	std::list<EntityId>::iterator it = m_eventIdList.begin();
-	for(; it != m_eventIdList.end(); it = next)
+	for (; it != m_eventIdList.end(); it = next)
 	{
 		next = it; ++next;
 		EntityId areaId = (*it);
@@ -556,74 +556,74 @@ void CBattleDust::RemoveAllEvents()
 
 bool CBattleDust::GetEventParams(EBattleDustEventType event, const IEntityClass* pClass, SBattleEventParameter& out)
 {
-	if(!g_pGameCVars->g_battleDust_enable)
+	if (!g_pGameCVars->g_battleDust_enable)
 		return false;
 
-	switch(event)
+	switch (event)
 	{
-		case eBDET_ShotFired:
-			out = m_defaultWeapon;
-			if(pClass != NULL)
+	case eBDET_ShotFired:
+		out = m_defaultWeapon;
+		if (pClass != NULL)
+		{
+			// find weapon name in list.
+			for (int i = 0; i < m_weaponPower.size(); ++i)
 			{
-				// find weapon name in list.
-				for(int i=0; i<m_weaponPower.size(); ++i)
+				if (pClass == m_weaponPower[i].m_pClass)
 				{
-					if(pClass == m_weaponPower[i].m_pClass)
-					{
-						out = m_weaponPower[i];
-						return true;
-					}
+					out = m_weaponPower[i];
+					return true;
 				}
 			}
-			break;
+		}
+		break;
 
-		case eBDET_Explosion:
-			out = m_defaultExplosion;
-			if(pClass != NULL)
+	case eBDET_Explosion:
+		out = m_defaultExplosion;
+		if (pClass != NULL)
+		{
+			for (int i = 0; i < m_explosionPower.size(); ++i)
 			{
-				for(int i=0; i<m_explosionPower.size(); ++i)
+				if (pClass == m_explosionPower[i].m_pClass)
 				{
-					if(pClass == m_explosionPower[i].m_pClass)
-					{
-						out = m_explosionPower[i];
-						return true;
-					}
+					out = m_explosionPower[i];
+					return true;
 				}
 			}
-			break;
+		}
+		break;
 
-		case eBDET_VehicleExplosion:
-			out = m_defaultVehicleExplosion;
-			if(pClass != NULL)
+	case eBDET_VehicleExplosion:
+		out = m_defaultVehicleExplosion;
+		if (pClass != NULL)
+		{
+			for (int i = 0; i < m_vehicleExplosionPower.size(); ++i)
 			{
-				for(int i=0; i<m_vehicleExplosionPower.size(); ++i)
+				if (pClass == m_vehicleExplosionPower[i].m_pClass)
 				{
-					if(pClass == m_vehicleExplosionPower[i].m_pClass)
-					{
-						out = m_vehicleExplosionPower[i];
-						return true;
-					}
+					out = m_vehicleExplosionPower[i];
+					return true;
 				}
 			}
-			break;
+		}
+		break;
 
-		case eBDET_ShotImpact:
-			out = m_defaultBulletImpact;
-			if(pClass != NULL)
+	case eBDET_ShotImpact:
+		out = m_defaultBulletImpact;
+		if (pClass != NULL)
+		{
+			for (int i = 0; i < m_bulletImpactPower.size(); ++i)
 			{
-				for(int i=0; i<m_bulletImpactPower.size(); ++i)
+				if (pClass == m_bulletImpactPower[i].m_pClass)
 				{
-					if(pClass == m_bulletImpactPower[i].m_pClass)
-					{
-						out = m_bulletImpactPower[i];
-						return true;
-					}
+					out = m_bulletImpactPower[i];
+					return true;
 				}
 			}
-			break;
+		}
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 	return (out.m_power != 0);
@@ -633,24 +633,24 @@ bool CBattleDust::CheckForMerging(CBattleEvent* pEvent)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	if(!g_pGameCVars->g_battleDust_enable)
+	if (!g_pGameCVars->g_battleDust_enable)
 		return false;
 
-	if(!pEvent)
+	if (!pEvent)
 		return false;
 
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return false;
 
 	// check if area can merge with nearby areas
-	for(std::list<EntityId>::iterator it = m_eventIdList.begin(); it != m_eventIdList.end(); ++it)
+	for (std::list<EntityId>::iterator it = m_eventIdList.begin(); it != m_eventIdList.end(); ++it)
 	{
 		EntityId areaId = (*it);
-		CBattleEvent *pBattleArea = FindEvent(areaId);
-		if(!pBattleArea)
+		CBattleEvent* pBattleArea = FindEvent(areaId);
+		if (!pBattleArea)
 			continue;
 
-		if(CheckIntersection(pEvent, pBattleArea->m_worldPos, pBattleArea->m_radius) && pBattleArea->m_radius > 0 && (pBattleArea != pEvent) && pBattleArea->GetEntity())
+		if (CheckIntersection(pEvent, pBattleArea->m_worldPos, pBattleArea->m_radius) && pBattleArea->m_radius > 0 && (pBattleArea != pEvent) && pBattleArea->GetEntity())
 		{
 			MergeAreas(pBattleArea, pEvent->m_worldPos, pEvent->m_radius);
 			return true;
@@ -662,7 +662,7 @@ bool CBattleDust::CheckForMerging(CBattleEvent* pEvent)
 
 bool CBattleDust::MergeAreas(CBattleEvent* pExisting, Vec3& pos, float radius)
 {
-	if(!pExisting)
+	if (!pExisting)
 		return false;
 
 	// increase the size of existing area to take into account toAdd which overlaps.
@@ -680,7 +680,7 @@ bool CBattleDust::MergeAreas(CBattleEvent* pExisting, Vec3& pos, float radius)
 	pExisting->m_peakRadius = pExisting->m_radius;
 
 	// position has moved, so need to serialize
-	if(pExisting->GetGameObject())
+	if (pExisting->GetGameObject())
 	{
 		pExisting->GetGameObject()->ChangedNetworkState(CBattleEvent::PROPERTIES_ASPECT);
 	}
@@ -694,7 +694,7 @@ void CBattleDust::UpdateParticlesForArea(CBattleEvent* pEvent)
 	float fraction = CLAMP((pEvent->m_radius - m_entitySpawnPower) / (m_maxEventPower - m_entitySpawnPower), 0.0f, 1.0f);
 	pEvent->m_numParticles = LERP(m_minParticleCount, m_maxParticleCount, fraction);
 
-	if(pEvent->GetGameObject() && oldParticleCount != pEvent->m_numParticles)
+	if (pEvent->GetGameObject() && oldParticleCount != pEvent->m_numParticles)
 	{
 		pEvent->GetGameObject()->ChangedNetworkState(CBattleEvent::PROPERTIES_ASPECT);
 	}
@@ -704,19 +704,19 @@ bool CBattleDust::CheckIntersection(CBattleEvent* pEventOne, Vec3& pos, float ra
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	if(!pEventOne)
+	if (!pEventOne)
 		return false;
 
 	Vec3 centreToCentre = pos - pEventOne->m_worldPos;
 	float sumRadiiSquared = (radius * radius) + (pEventOne->m_radius * pEventOne->m_radius);
 	float distanceSquared = centreToCentre.GetLengthSquared();
 
-	return ((distanceSquared < sumRadiiSquared) && (distanceSquared < m_distanceBetweenEvents*m_distanceBetweenEvents));
+	return ((distanceSquared < sumRadiiSquared) && (distanceSquared < m_distanceBetweenEvents* m_distanceBetweenEvents));
 }
 
 void CBattleDust::Serialize(TSerialize ser)
 {
-	if(ser.GetSerializationTarget() != eST_Network)
+	if (ser.GetSerializationTarget() != eST_Network)
 	{
 		ser.BeginGroup("BattleDust");
 		int amount = m_eventIdList.size();
@@ -724,10 +724,10 @@ void CBattleDust::Serialize(TSerialize ser)
 		std::list<EntityId>::iterator begin = m_eventIdList.begin();
 		std::list<EntityId>::iterator end = m_eventIdList.end();
 
-		if(ser.IsReading())
+		if (ser.IsReading())
 		{
 			m_eventIdList.clear();
-			for(int i = 0; i < amount; ++i)
+			for (int i = 0; i < amount; ++i)
 			{
 				EntityId id = 0;
 				ser.BeginGroup("BattleEventId");
@@ -738,7 +738,7 @@ void CBattleDust::Serialize(TSerialize ser)
 		}
 		else
 		{
-			for(; begin != end; ++begin)
+			for (; begin != end; ++begin)
 			{
 				EntityId id = (*begin);
 				ser.BeginGroup("BattleEventId");
@@ -752,9 +752,9 @@ void CBattleDust::Serialize(TSerialize ser)
 }
 
 CBattleEvent* CBattleDust::FindEvent(EntityId id)
-{		
-	IGameObject *pBattleEventGameObject = g_pGame->GetIGameFramework()->GetGameObject(id);
-	if(pBattleEventGameObject)
+{
+	IGameObject* pBattleEventGameObject = g_pGame->GetIGameFramework()->GetGameObject(id);
+	if (pBattleEventGameObject)
 	{
 		return static_cast<CBattleEvent*>(pBattleEventGameObject->QueryExtension("BattleEvent"));
 	}
