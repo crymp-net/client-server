@@ -450,65 +450,76 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 		m_io.viewQuatFinal = viewParams.rotation;
 	}
 
-	if (g_pGameCVars->goc_enable)
+	Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
+	Vec3 current(target);
+
+	float yOffsetTarget = current.y;
+
+	// make sure we don't clip through stuff that much
+	Vec3 offsetX(0, 0, 0);
+	Vec3 offsetY(0, 0, 0);
+	Vec3 offsetZ(0, 0, 0);
+	offsetX = m_io.viewQuatFinal.GetColumn0() * current.x;
+	offsetY = m_io.viewQuatFinal.GetColumn1() * current.y;
+	offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
+
+	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
+	if (pActor)
 	{
-		Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
-		static Vec3 current(target);
-
-		Interpolate(current, target, 5.0f, m_in.frameTime);
-
-		// make sure we don't clip through stuff that much
-		Vec3 offsetX(0, 0, 0);
-		Vec3 offsetY(0, 0, 0);
-		Vec3 offsetZ(0, 0, 0);
-		offsetX = m_io.viewQuatFinal.GetColumn0() * current.x;
-		offsetY = m_io.viewQuatFinal.GetColumn1() * current.y;
-		offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
-
-		IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
-		if (pActor)
+		static ray_hit hit;
+		IPhysicalEntity* pSkipEntities[10];
+		int nSkip = 0;
+		IItem* pItem = pActor->GetCurrentItem();
+		if (pItem)
 		{
-			static ray_hit hit;
-			IPhysicalEntity* pSkipEntities[10];
-			int nSkip = 0;
-			IItem* pItem = pActor->GetCurrentItem();
-			if (pItem)
-			{
-				CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-				if (pWeapon)
-					nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
-			}
-
-			float oldLen = offsetY.len();
-
-			Vec3 start = m_io.baseQuat * m_io.eyeOffsetView + viewParams.position + offsetX + offsetZ;
-			if (gEnv->pPhysicalWorld->RayWorldIntersection(start, offsetY, ent_static | ent_terrain | ent_rigid,
-				rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
-			{
-				offsetY = hit.pt - start;
-				if (offsetY.len() > 0.25f)
-				{
-					offsetY -= offsetY.GetNormalized() * 0.25f;
-				}
-				current.y = current.y * (hit.dist / oldLen);
-			}
+			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
+			if (pWeapon)
+				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
 		}
 
-		//viewParams.position += m_io.viewQuatFinal.GetColumn0() * current.x;		// right 
-		//viewParams.position += m_io.viewQuatFinal.GetColumn1() * current.y;	// back
-		//viewParams.position += m_io.viewQuatFinal.GetColumn2() * current.z;	// up
-		viewParams.position += offsetX + offsetY + offsetZ;
-	}
-	else
-	{
-		if (m_io.bUsePivot)
-			viewParams.position += m_io.viewQuatFinal.GetColumn1() * m_in.params_viewDistance + m_io.viewQuatFinal.GetColumn2() * (0.25f + m_in.params_viewHeightOffset);
-		else
+		float oldLen = offsetY.len();
+		Vec3 start = pActor->GetEntity()->GetWorldPos();
+		SMovementState sMovementState;
+		if (IMovementController* pMC = pActor->GetMovementController())
 		{
-			viewParams.position += m_io.viewQuatFinal.GetColumn1() * -m_in.thirdPersonDistance + m_io.viewQuatFinal.GetColumn2() * (0.25f + m_in.params_viewHeightOffset);
+			pMC->GetMovementState(sMovementState);
+			start = sMovementState.eyePosition;
 		}
+		Vec3 cameraPos = (start + offsetX + offsetY + offsetZ);
+		Vec3 newDir = cameraPos - start;
+		//if (gEnv->pPhysicalWorld->RayWorldIntersection(start, newDir, ent_static|ent_terrain|ent_rigid,
+		//	rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
+
+		static float minDist = 0.4f;	// how close we're allowed to get to the target
+		static float wallSafeDistance = 0.3f; // how far to keep camera from walls
+		primitives::sphere sphere;
+		sphere.center = start;
+		sphere.r = wallSafeDistance;
+
+		geom_contact* pContact = 0;
+		float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir, ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid,
+			&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
+		if (hitDist > 0 && pContact)
+		{
+			MAX(hitDist, minDist);
+			yOffsetTarget = yOffsetTarget * (hitDist / oldLen);
+
+			//static float color[] = { 1,1,1,1 };
+			//gEnv->pRenderer->Draw2dLabel(200, 200, 1.5, color, false, "Hit dist: %f", hitDist);
+			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(start, ColorB(200, 0, 0, 200), pContact->pt, ColorB(200, 0, 0, 200));
+		}
+
 	}
+	Vec3 currentPos = viewParams.position;
+	currentPos += m_io.viewQuatFinal.GetColumn0() * target.x;		// right 
+	currentPos += m_io.viewQuatFinal.GetColumn2() * target.z;	// up
+
+	Vec3 targetPos = currentPos + m_io.viewQuatFinal.GetColumn1() * yOffsetTarget; //back
+	//Interpolate(currentPos, targetPos, 1.0f, m_in.frameTime);
+
+	viewParams.position = targetPos;
 }
+
 
 #if 0
 void CPlayerView::ViewThirdPersonDirected(SViewParams& viewParams)

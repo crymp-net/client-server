@@ -102,7 +102,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("cl_fpBody", &cl_fpBody, 2, 0, "first person body");
 	//FIXME:just for testing
 	pConsole->Register("cl_strengthscale", &cl_strengthscale, 1.0f, 0, "nanosuit strength scale");
-
+	
 	//CryMP: enable improved TP camera (might remove some of these later)
 	pConsole->Register("goc_tpcrosshair", &goc_tpcrosshair, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "keep crosshair in third person");
 	pConsole->Register("goc_targetx", &goc_targetx, 0.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
@@ -110,12 +110,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 
 	/*
-	// GOC
 	pConsole->Register("goc_enable", &goc_enable, 0, VF_CHEAT, "gears of crysis");
-	pConsole->Register("goc_tpcrosshair", &goc_tpcrosshair, 0, VF_CHEAT, "keep crosshair in third person");
-	pConsole->Register("goc_targetx", &goc_targetx, 0.5f, VF_CHEAT, "target position of camera");
-	pConsole->Register("goc_targety", &goc_targety, -2.5f, VF_CHEAT, "target position of camera");
-	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_CHEAT, "target position of camera");
 	pConsole->AddCommand("GOCMode", CmdGOCMode, VF_CHEAT, "Enable GOC mode");
 
 	// BulletTime
