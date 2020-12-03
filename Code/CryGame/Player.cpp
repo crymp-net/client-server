@@ -3146,6 +3146,14 @@ void CPlayer::Revive(ReasonForRevive reason)
 	if (IsClient() && IsThirdPerson())
 		ToggleThirdPerson();
 
+	if (IsClient())
+	{
+		//CryMP if spectatorTarget still exists..
+		//Edit: Move it up here before m_stats are reset to prevent bugs..
+		if (m_stats.spectatorTarget && reason == ReasonForRevive::SPAWN)
+			SAFE_HUD_FUNC(SetSpectatorMode(0, m_stats.spectatorTarget, 0));
+	}
+
 	// HAX: to fix player spawning and floating in dedicated server: Marcio fix me?
 	if (gEnv->pSystem->IsEditor() == false)  // AlexL: in editor, we never keep spectator mode
 	{
@@ -3286,10 +3294,6 @@ void CPlayer::Revive(ReasonForRevive reason)
 	if (IsClient())
 	{
 		ResetFPView();
-
-		//CryMP if spectatorTarget still exists..
-		if (m_stats.spectatorTarget && reason == ReasonForRevive::SPAWN)
-			SAFE_HUD_FUNC(SetSpectatorMode(0, m_stats.spectatorTarget, 0));
 	}
 }
 
