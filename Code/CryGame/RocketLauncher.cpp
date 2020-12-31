@@ -74,17 +74,6 @@ void CRocketLauncher::ProcessEvent(SEntityEvent& event)
 
 	if (event.event == ENTITY_EVENT_RESET)
 	{
-		//Exiting game mode
-		if (gEnv->pSystem->IsEditor() && !event.nParam[0])
-		{
-			if (!GetOwner())
-			{
-				DrawSlot(eIGS_ThirdPerson, false);
-				DrawSlot(eIGS_ThirdPersonAux, true);
-				m_auxSlotUsed = true;
-			}
-			ActivateLaserDot(false, false);
-		}
 	}
 }
 //========================================
@@ -168,7 +157,7 @@ void CRocketLauncher::Select(bool select)
 
 	if (select)
 	{
-		if (IsOwnerFP())
+		if (GetStats().fp)
 		{
 			ActivateLaserDot(true, true);
 			m_laserFPOn = true;
@@ -189,7 +178,6 @@ void CRocketLauncher::Select(bool select)
 //========================================
 void CRocketLauncher::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 {
-
 	CWeapon::PickUp(pickerId, sound, select, keepHistory);
 
 	if (m_auxSlotUsed)
@@ -280,6 +268,51 @@ void CRocketLauncher::UpdateFPView(float frameTime)
 		UpdateDotEffect(frameTime);
 }
 
+/*//=======================================
+void CRocketLauncher::SetViewMode(int mode)
+{
+	//CryMP: Check 1st/3rd person transition
+	if (mode == eIVM_FirstPerson || mode == eIVM_ThirdPerson)
+	{
+		const bool bFirstPerson = (mode == eIVM_FirstPerson);
+		m_laserFPOn = bFirstPerson;
+		m_laserTPOn = !m_laserFPOn;
+
+		ActivateTPLaser(m_laserTPOn);
+		ActivateLaserDot(true, bFirstPerson);
+
+		CItem::SetViewMode(mode);
+	}
+}*/
+
+//=======================================
+void CRocketLauncher::OnEnterFirstPerson()
+{
+	//CryMP: Check 1st/3rd person transition
+	m_laserFPOn = true;
+	m_laserTPOn = !m_laserFPOn;
+
+	ActivateTPLaser(m_laserTPOn);
+	ActivateLaserDot(false, false);
+	ActivateLaserDot(true, true);
+
+	CItem::OnEnterFirstPerson();
+}
+
+//=======================================
+void CRocketLauncher::OnEnterThirdPerson()
+{
+	//CryMP: Check 1st/3rd person transition
+	m_laserFPOn = false;
+	m_laserTPOn = !m_laserFPOn;
+
+	ActivateTPLaser(m_laserTPOn);
+	ActivateLaserDot(false, false);
+	ActivateLaserDot(true, false);
+
+	CItem::OnEnterThirdPerson();
+}
+
 //=======================================
 void CRocketLauncher::Update(SEntityUpdateContext& ctx, int slot)
 {
@@ -356,7 +389,6 @@ bool CRocketLauncher::CanPickUp(EntityId userId) const
 //=========================================
 void CRocketLauncher::UpdateDotEffect(float frameTime)
 {
-
 	Vec3 laserPos, dir;
 
 	laserPos = GetSlotHelperPos(eIGS_FirstPerson, "scope", true);
@@ -446,8 +478,6 @@ void CRocketLauncher::UpdateDotEffect(float frameTime)
 		localMatrix.Scale(Vec3(dotScale, dotScale, dotScale));
 		GetEntity()->SetSlotLocalTM(m_dotEffectSlot, localMatrix);
 	}
-
-
 }
 
 //----------------------------------------------------

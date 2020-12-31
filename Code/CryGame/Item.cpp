@@ -2533,44 +2533,13 @@ void CItem::Cloak(bool cloak, IMaterial* cloakMat)
 	if (!pOwner->GetEntity())
 		return;
 
-	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pOwner->GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
-	IEntityRenderProxy* pItemRP = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
-
-	if (pItemRP && pOwnerRP)
-	{
-		IRenderNode* pOwnerRN = pOwnerRP->GetRenderNode();
-		IRenderNode* pItemRN = pItemRP->GetRenderNode();
-
-		//pItemRP->SetMaterialLayersMask( pOwnerRP->GetMaterialLayersMask() );
-		//pItemRP->SetMaterialLayersBlend( pOwnerRP->GetMaterialLayersBlend() );
-	}
-
 	for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); ++it)
 	{
 		if (CItem* pAccessory = static_cast<CItem*>(m_pItemSystem->GetItem(it->second)))
 			pAccessory->Cloak(cloak, cloakMat);
 	}
 
-	/*
-		if(cloak)	//when switching view there are some errors without this check
-		{
-		CActor* pActor = GetOwnerActor();
-		if (pActor && pActor->GetActorClass() == CPlayer::GetActorClassType())
-		{
-		  CPlayer *plr = (CPlayer *)pActor;
-		  if(plr->GetNanoSuit() && plr->GetNanoSuit()->GetMode() != NANOMODE_CLOAK)
-				{
-					if (CItem *pSlave=static_cast<CItem *>(GetDualWieldSlave()))
-						pSlave->Cloak(cloak, cloakMat);
-			return;
-				}
-		}
-		}
-	*/
-
 	SEntitySlotInfo slotInfo;
-
-
 	if (GetEntity()->GetSlotInfo(CItem::eIGS_FirstPerson, slotInfo))
 	{
 		if (slotInfo.pCharacter)
@@ -2594,6 +2563,9 @@ void CItem::Cloak(bool cloak, IMaterial* cloakMat)
 
 void CItem::CloakEnable(bool enable, bool fade)
 {
+	if (m_cloaked == enable)
+		return;
+	
 	IEntityRenderProxy* pItemRP = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
 	if (pItemRP)
 	{
@@ -2620,16 +2592,17 @@ void CItem::CloakEnable(bool enable, bool fade)
 void CItem::CloakSync(bool fade)
 {
 	// check if the actor is cloaked
-	CActor* pOwner = GetOwnerActor();
-
-	if (!pOwner)
+	//CryMP: Attachments: Need to check parent too because attachments don't have ownerId..
+	IEntity* pParent = GetOwnerId() ? m_pEntitySystem->GetEntity(GetOwnerId()) : GetEntity()->GetParent();
+	if (!pParent)
+	{
 		return;
+	}
 
-	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pOwner->GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
+	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pParent->GetProxy(ENTITY_PROXY_RENDER);
 	if (pOwnerRP)
 	{
 		uint8 ownerMask = pOwnerRP->GetMaterialLayersMask();
-		uint32 ownerBlend = pOwnerRP->GetMaterialLayersBlend();
 		bool isCloaked = (ownerMask & MTL_LAYER_CLOAK) != 0;
 		CloakEnable(isCloaked, fade);
 	}
@@ -2660,19 +2633,19 @@ void CItem::FrostEnable(bool enable, bool fade)
 
 void CItem::FrostSync(bool fade)
 {
-	// check if the actor is cloaked
-	CActor* pOwner = GetOwnerActor();
-
-	if (!pOwner)
+	//CryMP: Attachments: Need to check parent too because attachments don't have ownerId..
+	IEntity* pParent = GetOwnerId() ? m_pEntitySystem->GetEntity(GetOwnerId()) : GetEntity()->GetParent();
+	if (!pParent)
+	{
 		return;
+	}
 
-	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pOwner->GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
+	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pParent->GetProxy(ENTITY_PROXY_RENDER);
 	if (pOwnerRP)
 	{
 		uint8 ownerMask = pOwnerRP->GetMaterialLayersMask();
-		uint32 ownerBlend = pOwnerRP->GetMaterialLayersBlend();
-		bool isCloaked = (ownerMask & MTL_LAYER_DYNAMICFROZEN) != 0;
-		FrostEnable(isCloaked, fade);
+		bool isFrozen = (ownerMask & MTL_LAYER_DYNAMICFROZEN) != 0;
+		FrostEnable(isFrozen, fade);
 	}
 
 	if (CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave()))
@@ -2701,17 +2674,17 @@ void CItem::WetEnable(bool enable, bool fade)
 
 void CItem::WetSync(bool fade)
 {
-	// check if the actor is cloaked
-	CActor* pOwner = GetOwnerActor();
-
-	if (!pOwner)
+	//CryMP: Attachments: Need to check parent too because attachments don't have ownerId..
+	IEntity* pParent = GetOwnerId() ? m_pEntitySystem->GetEntity(GetOwnerId()) : GetEntity()->GetParent();
+	if (!pParent)
+	{
 		return;
+	}
 
-	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pOwner->GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
+	IEntityRenderProxy* pOwnerRP = (IEntityRenderProxy*)pParent->GetProxy(ENTITY_PROXY_RENDER);
 	if (pOwnerRP)
 	{
 		uint8 ownerMask = pOwnerRP->GetMaterialLayersMask();
-		uint32 ownerBlend = pOwnerRP->GetMaterialLayersBlend();
 		bool isCloaked = (ownerMask & MTL_LAYER_WET) != 0;
 		WetEnable(isCloaked, fade);
 	}

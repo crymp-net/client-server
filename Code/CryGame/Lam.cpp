@@ -21,20 +21,18 @@ History:
 #include "CryCommon/IMaterialEffects.h"
 
 #define  CAMERA_DISTANCE_SQR	100
-#define  LASER_UPDATE_TIME		0.1f
+#define  LASER_UPDATE_TIME		0.15f
 #define  LASER_UPDATE_TIME_FP 0.15f
 
 uint CLam::s_lightCount = 0;		//Init light count
-VectorSet<CLam*> CLam::s_lasers;
-uint CLam::s_curLaser = 0;
-float CLam::s_laserUpdateTimeError = 0.0f;
-int CLam::s_lastUpdateFrameId = 0;
 
 
 CLam::CLam()
 {
 	m_laserActivated = false;
 	m_lightActivated = false;
+	m_laserWasOn = false;
+	m_lightID[0] = m_lightID[1] = 0;
 	m_lightWasOn = false;
 	m_lightWasOn = false;
 	m_lightSoundId = INVALID_SOUNDID;
@@ -49,12 +47,15 @@ CLam::CLam()
 	m_smoothLaserLength = -1.0f;
 	m_lastZPos = 0.0f;
 	m_lightActiveSerialize = m_laserActiveSerialize = false;
-	s_lasers.insert(this);
+	m_pParent = 0;
+	m_lastUpdate = 0.0f;
+	m_FPMode = false;
+	m_DotHidden = false;
 }
 
 CLam::~CLam()
 {
-	s_lasers.erase(this);
+	m_pParent = 0;
 	OnReset();
 }
 
@@ -64,17 +65,7 @@ bool CLam::Init(IGameObject* pGameObject)
 	if (!CItem::Init(pGameObject))
 		return false;
 
-	//Initialize light/laser info
-	m_laserActivated = false;
-
-	if (m_lightActivated)
-		s_lightCount--;
-
-	m_lightActivated = false;
-	m_lightID[0] = m_lightID[1] = 0;
-
-	m_lightWasOn = false;
-	m_lightWasOn = false;
+	m_pParent = static_cast<CItem*>(m_pItemSystem->GetItem(GetParentId()));
 
 	return true;
 }
@@ -121,12 +112,12 @@ void CLam::ActivateLaser(bool activate, bool aiRequest /* = false */)
 	EntityId ownerId = 0;
 	bool ok = false;
 
-	if (IItem* pOwnerItem = m_pItemSystem->GetItem(GetParentId()))
+	if (m_pParent)
 	{
-		pParent = (CItem*)pOwnerItem;
-		IWeapon* pWeapon = pOwnerItem->GetIWeapon();
+		pParent = m_pParent;
+		IWeapon* pWeapon = m_pParent->GetIWeapon();
 		if (pWeapon)
-			ownerId = pOwnerItem->GetOwnerId();
+			ownerId = m_pParent->GetOwnerId();
 
 		ok = true;
 	}
@@ -143,13 +134,11 @@ void CLam::ActivateLaser(bool activate, bool aiRequest /* = false */)
 	if (activate && !aiRequest && !pOwnerActor->IsPlayer())
 		return;
 
-	//Special FP stuff
-	if (pOwnerActor->IsPlayer() && !m_lamparams.isLaser)
-		return;
+	if (activate)
+		RequireUpdate(eIUS_General);
 
 	m_laserActivated = activate;
 
-	//Activate or deactivate effect??
 	if (!m_laserActivated)
 	{
 		AttachLAMLaser(false, eIGS_FirstPerson);
@@ -158,39 +147,34 @@ void CLam::ActivateLaser(bool activate, bool aiRequest /* = false */)
 	else
 	{
 		bool tp = pOwnerActor->IsThirdPerson();
-		if (!tp && ok)
+		if (m_laserHelperFP.empty())
 		{
 			SAccessoryParams* params = pParent->GetAccessoryParams(GetEntity()->GetClass()->GetName());
 			if (!params)
 				return;
-
 			m_laserHelperFP.clear();
 			m_laserHelperFP = params->attach_helper.c_str();
 			m_laserHelperFP.replace("_LAM", "");
 		}
 		AttachLAMLaser(true, tp ? eIGS_ThirdPerson : eIGS_FirstPerson);
 	}
-
-	if (m_laserActivated || m_lightActivated)
-		GetGameObject()->EnablePostUpdates(this);
-	if (!m_laserActivated && !m_lightActivated)
-		GetGameObject()->DisablePostUpdates(this);
 }
 
 //-------------------------------------------------------------------------
 void CLam::ActivateLight(bool activate, bool aiRequest /* = false */)
 {
-	//GameWarning("CLam::ActivateLight(%i)", activate);
-
 	CItem* pParent = NULL;
 	EntityId ownerId = 0;
 
-	if (IItem* pOwnerItem = m_pItemSystem->GetItem(GetParentId()))
+	if (m_pParent)
 	{
-		pParent = (CItem*)pOwnerItem;
-		IWeapon* pWeapon = pOwnerItem->GetIWeapon();
+		//if (!activate && m_pParent->GetStats().dropped)
+		//	return;
+
+		pParent = m_pParent;
+		IWeapon* pWeapon = m_pParent->GetIWeapon();
 		if (pWeapon)
-			ownerId = pOwnerItem->GetOwnerId();
+			ownerId = m_pParent->GetOwnerId();
 	}
 	else
 	{
@@ -202,13 +186,12 @@ void CLam::ActivateLight(bool activate, bool aiRequest /* = false */)
 	if (activate && !pOwnerActor)
 		return;
 
-	//Special FP stuff
-	if (pOwnerActor && pOwnerActor->IsPlayer() && !m_lamparams.isFlashLight)
-		return;
-
 	//For AI must be deactivated by default (if they don't request)
 	if (activate && !m_lightWasOn && !aiRequest && !pOwnerActor->IsPlayer())
 		return;
+
+	if (activate)
+		RequireUpdate(eIUS_General);
 
 	m_lightActivated = activate;
 
@@ -216,9 +199,7 @@ void CLam::ActivateLight(bool activate, bool aiRequest /* = false */)
 	if (!m_lightActivated)
 	{
 		AttachLAMLight(false, pParent, eIGS_FirstPerson);
-		AttachLAMLight(false, pParent, eIGS_ThirdPerson);
-
-		//GameWarning("Global light count = %d", s_lightCount);		
+		AttachLAMLight(false, pParent, eIGS_ThirdPerson);	
 	}
 	else
 	{
@@ -228,12 +209,6 @@ void CLam::ActivateLight(bool activate, bool aiRequest /* = false */)
 			AttachLAMLight(true, pParent, id ? eIGS_ThirdPerson : eIGS_FirstPerson);
 		}
 	}
-
-	if (m_laserActivated || m_lightActivated)
-		GetGameObject()->EnablePostUpdates(this);
-	if (!m_laserActivated && !m_lightActivated)
-		GetGameObject()->DisablePostUpdates(this);
-
 }
 
 //-------------------------------------------------------------------------
@@ -241,12 +216,85 @@ void CLam::OnAttach(bool attach)
 {
 	CItem::OnAttach(attach);
 
-	if (CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(GetParentId())))
+	m_pParent = static_cast<CItem*>(m_pItemSystem->GetItem(GetParentId()));
+
+	if (m_pParent)
 	{
-		if (pItem->GetOwnerActor() && pItem->GetOwnerActor()->IsPlayer())
+		auto* pOwner = m_pParent->GetOwnerActor();
+		if (pOwner && pOwner->IsPlayer())
 		{
-			ActivateLaser(attach);
-			ActivateLight(attach);
+			if (attach)
+				m_FPMode = !pOwner->IsThirdPerson();
+
+			if (m_lamparams.isLaser)
+				ActivateLaser(attach);
+
+			if (m_lamparams.isFlashLight)
+				ActivateLight(attach);
+		}
+	}
+}
+
+//=======================================
+void CLam::OnEnterFirstPerson()
+{
+	const bool lightActive = IsLightActivated();
+	const bool laserActive = IsLaserActivated();
+
+	//CryMP: Check 1st/3rd person transition
+	if (lightActive)
+	{
+		ActivateLight(false);
+		ActivateLight(true);
+	}
+	else if (laserActive)
+	{
+		ActivateTPLaser(false);
+		ActivateLaserDot(false, false);
+		ActivateLaserDot(true, true);
+	}
+	m_FPMode = true;
+}
+
+//=======================================
+void CLam::OnEnterThirdPerson()
+{
+	const bool lightActive = IsLightActivated();
+	const bool laserActive = IsLaserActivated();
+
+	//CryMP: Check 1st/3rd person transition
+	if (lightActive)
+	{
+		ActivateLight(false);
+		ActivateLight(true);
+	}
+	else if (laserActive)
+	{
+		ActivateTPLaser(true);
+		ActivateLaserDot(false, false);
+		ActivateLaserDot(true, false);
+	}
+	m_FPMode = false;
+}
+
+//=======================================
+void CLam::Update(SEntityUpdateContext& ctx, int slot)
+{
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
+
+	if (slot == eIUS_General)
+	{
+		if (m_pParent && m_pParent->IsSelected())
+		{
+			RequireUpdate(eIUS_General);
+
+			const bool pFirstPerson = m_FPMode;
+			if (!pFirstPerson && m_pParent->IsSelected())
+			{
+				UpdateTPLaser(ctx.fFrameTime, m_pParent);
+			}
+			else if (pFirstPerson)
+				UpdateFPLaser(ctx.fFrameTime, m_pParent);
 		}
 	}
 }
@@ -255,14 +303,16 @@ void CLam::OnAttach(bool attach)
 void CLam::OnParentSelect(bool select)
 {
 	CItem::OnParentSelect(select);
+	
+	if (m_lamparams.isLaser)
+		ActivateLaser(select);
 
-	ActivateLaser(select);
-	ActivateLight(select);
+	if (m_lamparams.isFlashLight)
+		ActivateLight(select);
 
 	//Track previous state if deselected
 	if (!select)
 		SaveLastState();
-
 }
 
 //-------------------------------------------------------------------------
@@ -274,34 +324,11 @@ void CLam::OnSelect(bool select)
 //-------------------------------------------------------------------------
 void CLam::AttachLAMLaser(bool attach, eGeometrySlot slot)
 {
+	ActivateLaserDot(attach, slot == eIGS_FirstPerson);
+
 	if (slot == eIGS_ThirdPerson)
 	{
-		if (attach)
-		{
-			CreateLaserEntity();
-			SetLaserGeometry(m_lamparams.laser_geometry_tp);
-			UpdateLaserScale(1.0f, m_pEntitySystem->GetEntity(m_pLaserEntityId));
-			m_lastLaserHitPt.Set(0, 0, 0);
-			m_lastLaserHitSolid = false;
-			CreateLaserDot(m_lamparams.laser_dot[slot], slot);
-
-		}
-		else
-		{
-			DestroyLaserEntity();
-		}
-	}
-	else if (slot == eIGS_FirstPerson)
-	{
-		if (attach)
-		{
-			CreateLaserEntity();
-			CreateLaserDot(m_lamparams.laser_dot[slot], slot);
-		}
-		else
-		{
-			DestroyLaserEntity();
-		}
+		ActivateTPLaser(attach);
 	}
 }
 
@@ -398,8 +425,6 @@ void CLam::AttachLAMLight(bool attach, CItem* pLightAttach, eGeometrySlot slot)
 			m_lightSoundId = INVALID_SOUNDID;
 		}
 	}
-
-	//GameWarning("Global light count = %d", s_lightCount);
 }
 
 
@@ -417,90 +442,26 @@ void CLam::SaveLastState()
 		m_laserWasOn = false;
 }
 
-//---------------------------------------------------------------------------
-void CLam::CreateLaserEntity()
-{
-	if (m_pLaserEntityId)
-	{
-		//Check if entity is valid
-		IEntity* pEntity = m_pEntitySystem->GetEntity(m_pLaserEntityId);
-		if (!pEntity)
-			m_pLaserEntityId = 0;
-	}
-
-	if (!m_pLaserEntityId)
-	{
-		SEntitySpawnParams spawnParams;
-		spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass();
-		spawnParams.sName = "LAMLaser";
-		spawnParams.nFlags = (GetEntity()->GetFlags() | ENTITY_FLAG_NO_SAVE) & ~ENTITY_FLAG_CASTSHADOW;
-
-		IEntity* pNewEntity = gEnv->pEntitySystem->SpawnEntity(spawnParams);
-		//assert(pNewEntity && "Laser entity could no be spawned!!");
-
-		if (pNewEntity)
-		{
-			pNewEntity->FreeSlot(0);
-			pNewEntity->FreeSlot(1);
-
-			m_pLaserEntityId = pNewEntity->GetId();
-
-			if (IEntity* pEntity = GetEntity())
-				pEntity->AttachChild(pNewEntity);
-
-			IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)pNewEntity->GetProxy(ENTITY_PROXY_RENDER);
-			IRenderNode* pRenderNode = pRenderProxy ? pRenderProxy->GetRenderNode() : NULL;
-
-			if (pRenderNode)
-				pRenderNode->SetRndFlags(ERF_RENDER_ALWAYS, true);
-
-		}
-	}
-}
-
 //-------------------------------------------------------------------------
 void CLam::DestroyLaserEntity()
 {
-	if (m_pLaserEntityId)
-		gEnv->pEntitySystem->RemoveEntity(m_pLaserEntityId);
-	m_pLaserEntityId = 0;
-}
-
-//--------------------------------------------------------------------------
-void CLam::SetLaserGeometry(const char* name)
-{
-	IEntity* pEntity = m_pEntitySystem->GetEntity(m_pLaserEntityId);
-	//assert(pEntity && "CLam::SetLaserGeometry : Laser entity not found in entity system");
-	if (pEntity)
-		m_laserEffectSlot = pEntity->LoadGeometry(-1, name);
-}
-
-//------------------------------------------------------------------------
-void CLam::CreateLaserDot(const char* name, eGeometrySlot slot)
-{
-	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(name);
-
-	if (pEffect)
+	/*if (m_pParent)
 	{
-		IEntity* pEntity = m_pEntitySystem->GetEntity(m_pLaserEntityId);
-		//assert(pEntity && "CLam::CreateLaserDot : Laser entity not found!!");
-		if (pEntity)
-			m_dotEffectSlot = pEntity->LoadParticleEmitter(-1, pEffect);
-	}
-}
-
-//---------------------------------------------------------------------------
-void CLam::PostUpdate(float frameTime)
-{
-	if (IItem* pOwnerItem = m_pItemSystem->GetItem(GetParentId()))
+		//CryLogAlways("Destroy $8%s | %s", GetEntity()->GetName(), m_pParent->GetStats().dropped ? "DROPPED" : "nope");
+		if (m_pParent->GetStats().dropped)
+			return;
+	}*/
+	if (m_laserEffectSlot > 0)
 	{
-		CItem* pParentItem = (CItem*)pOwnerItem;
-		if (!pParentItem->IsOwnerFP() && pParentItem->IsSelected())
-			UpdateTPLaser(frameTime, pParentItem);
-		else if (pParentItem->IsOwnerFP())
-			UpdateFPLaser(frameTime, pParentItem);
+		GetEntity()->FreeSlot(m_laserEffectSlot);
+		m_laserEffectSlot = -1;
 	}
 
+	if (m_dotEffectSlot > 0)
+	{
+		GetEntity()->FreeSlot(m_dotEffectSlot);
+		m_dotEffectSlot = -1;
+	}
 }
 
 //------------------------------------------------------------------
@@ -510,10 +471,9 @@ void CLam::UpdateAILightAndLaser(const Vec3& pos, const Vec3& dir, float lightRa
 		return;
 
 	IAIObject* pUserAI = 0;
-	if (IItem* pOwnerItem = m_pItemSystem->GetItem(GetParentId()))
+	if (m_pParent)
 	{
-		CItem* pParentItem = (CItem*)pOwnerItem;
-		CActor* pActor = pParentItem->GetOwnerActor();
+		CActor* pActor = m_pParent->GetOwnerActor();
 		if (pActor && pActor->GetEntity())
 			pUserAI = pActor->GetEntity()->GetAI();
 	}
@@ -524,154 +484,149 @@ void CLam::UpdateAILightAndLaser(const Vec3& pos, const Vec3& dir, float lightRa
 		if (pUserAI)
 			gEnv->pAISystem->DynOmniLightEvent(pUserAI->GetPos() + dir * 0.75f, 1.5f, AILE_FLASH_LIGHT, pUserAI, 2.0f);
 	}
+}
 
-	// [Mikko] 4.10.2007 Removed as per design request.
-/*	if (laserRange > 0.0001f)
+//------------------------------------------------------------------
+bool CLam::CanUpdate(CActor* pActor)
+{
+	if (!pActor)
+		return false;
+
+	if (pActor && !pActor->IsClient() && m_pParent)
 	{
-		gEnv->pAISystem->DynSpotLightEvent(pos, dir, max(0.0f, laserRange - 0.1f), DEG2RAD(0.25f), AILE_LASER, pUserAI, 2.0f);
-	}*/
+		if (!pActor->GetGameObject()->IsProbablyVisible() || pActor->GetGameObject()->IsProbablyDistant())
+		{
+			if (!m_DotHidden)
+			{
+				if (IParticleEmitter* pEmitter = GetEntity()->GetParticleEmitter(m_dotEffectSlot))
+				{
+					m_DotHidden = true;
+					pEmitter->Activate(false);
+				}
+			}
+			return false;
+		}
+		else if (m_DotHidden)
+		{
+			if (IParticleEmitter* pEmitter = GetEntity()->GetParticleEmitter(m_dotEffectSlot))
+			{
+				m_DotHidden = false;
+				pEmitter->Activate(true);
+			}
+		}
+	}
+	return true;
+}
+
+//=========================================
+void CLam::ActivateLaserDot(bool activate, bool fp)
+{
+	if (activate)
+	{
+		/*const char* custom = g_pGameCVars->cl_laserDotParticle->GetString();
+		const char* name = strlen(custom) > 0 ? custom : m_lamparams.laser_dot[slot];*/
+		IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect("muzzleflash.LAM.aimdot_FP");
+
+		if (pEffect)
+		{
+			if (m_dotEffectSlot < 1)
+			{
+				m_dotEffectSlot = GetEntity()->LoadParticleEmitter(CItem::eIGS_Aux0, pEffect);
+				if (IParticleEmitter* pEmitter = GetEntity()->GetParticleEmitter(m_dotEffectSlot))
+				{
+					pEmitter->SetRndFlags(pEmitter->GetRndFlags() | ERF_RENDER_ALWAYS);
+					pEmitter->SetViewDistUnlimited();
+					pEmitter->SetLodRatio(10000);
+				}
+			}
+		}
+	}
+	else if (m_dotEffectSlot > -1)
+	{
+		GetEntity()->FreeSlot(m_dotEffectSlot);
+		m_dotEffectSlot = -1;
+	}
+}
+
+//----------------------------------------------------
+void CLam::ActivateTPLaser(bool activate)
+{
+	if (activate)
+	{
+		//Force first update
+		m_lastUpdate = 0.0f;
+		m_smoothLaserLength = -1.0f;
+		UpdateTPLaser(0.0f, m_pParent);
+
+		//laser geometry
+		if (m_laserEffectSlot > 0)
+			DrawSlot(m_laserEffectSlot, true);
+		else
+			m_laserEffectSlot = GetEntity()->LoadGeometry(eIGS_ThirdPersonAux, m_lamparams.laser_geometry_tp);
+	}
+	else
+	{
+		//hide laser geometry
+		if (m_laserEffectSlot > 0)
+		{
+			DrawSlot(m_laserEffectSlot, false);
+			return;
+		}
+	}
 }
 
 //------------------------------------------------------------------
 void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 {
 	CActor* pActor = parent->GetOwnerActor();
-	if (!pActor)
+	if (!CanUpdate(pActor))
 		return;
-
-	if (!pActor->IsClient())
-	{
-		if (!pActor->GetGameObject()->IsProbablyVisible() && pActor->GetGameObject()->IsProbablyDistant())
-			return;
-	}
+	
+	//f32 fColor[4] = { 1,1,0,1 };
+	//gEnv->pRenderer->Draw2dLabel(1, 130.0f, 1.3f, fColor, false, "UpdateTPLaser %s ", GetEntity()->GetName());
 
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	const int frameId = gEnv->pRenderer->GetFrameID();
+	m_lastUpdate -= frameTime;
 
-	if (s_lastUpdateFrameId != frameId)
-	{
-		// Check how many LAMs to update this frame.
-		float dt = frameTime; // + s_laserUpdateTimeError;
-
-		const int n = s_lasers.size();
-
-		int nActive = 0;
-		for (int i = 0; i < n; ++i)
-		{
-			if (!s_lasers[i]->IsLaserActivated() && !s_lasers[i]->IsLightActivated())
-				continue;
-			nActive++;
-		}
-
-		float updatedPerSecond = (nActive / LASER_UPDATE_TIME) + s_laserUpdateTimeError;
-		int updateCount = (int)floorf(updatedPerSecond * dt);
-		if (dt == 0.0f)
-			s_laserUpdateTimeError = 0.0f;
-		else
-			s_laserUpdateTimeError = updatedPerSecond - updateCount / dt;
-
-		s_curLaser %= n;
-		for (int i = 0, j = 0; i < n && j < updateCount; ++i)
-		{
-			s_curLaser = (s_curLaser + 1) % n;
-			if (!s_lasers[s_curLaser]->IsLaserActivated() && !s_lasers[s_curLaser]->IsLightActivated())
-				continue;
-			s_lasers[s_curLaser]->SetAllowUpdate();
-			++j;
-		}
-
-		s_lastUpdateFrameId = frameId;
-	}
-
-	IEntity* pRootEnt = GetEntity();
-	if (!pRootEnt)
-		return;
-
-	IEntity* pLaserEntity = m_pEntitySystem->GetEntity(m_pLaserEntityId);
-	//	if(!pLaserEntity)
-	//		return;
-
-	const CCamera& camera = gEnv->pRenderer->GetCamera();
-
-	Vec3   lamPos = pRootEnt->GetWorldPos(); //pLaserEntity->GetParent()->GetWorldPos();
-	Vec3   dir = pRootEnt->GetWorldRotation().GetColumn1(); //pLaserEntity->GetParent()->GetWorldRotation().GetColumn1();
-
-	bool charNotVisible = false;
+	bool allowUpdate = true;
+	if (m_lastUpdate <= 0.0f)
+		m_lastUpdate = pActor->IsClient() ? 0.05f : LASER_UPDATE_TIME;
+	else
+		allowUpdate = false;
 
 	float  dsg1Scale = 1.0f;
 
 	//If character not visible, laser is not correctly updated
 	if (parent)
 	{
-		ICharacterInstance* pCharacter = pActor->GetEntity()->GetCharacter(0);
+		ICharacterInstance* pCharacter = pActor ? pActor->GetEntity()->GetCharacter(0) : 0;
 		if (pCharacter && !pCharacter->IsCharacterVisible())
-			charNotVisible = true;
+			return;
 
 		if (parent->GetEntity()->GetClass() == CItem::sDSG1Class)
 			dsg1Scale = 3.0f;
 	}
 
-	//	if (!pLaserEntity->GetParent())
-	//		return;
+	Vec3   pos = GetEntity()->GetWorldPos();
+	Vec3   dir = GetEntity()->GetWorldRotation().GetColumn1();
 
 	Vec3 hitPos(0, 0, 0);
 	float laserLength = 0.0f;
+	const float range = m_lamparams.laser_range[eIGS_ThirdPerson] * dsg1Scale;
 
-	// workaround??: Use player movement controller locations, or else the laser
-	// pops all over the place when character out of the screen.
-	if (!pActor->IsPlayer() || charNotVisible)
+	if (allowUpdate)
 	{
-		if (IMovementController* pMC = pActor->GetMovementController())
-		{
-			SMovementState state;
-			pMC->GetMovementState(state);
-			if (!charNotVisible)
-				lamPos = state.weaponPosition;
-			else
-			{
-				float oldZPos = lamPos.z;
-				lamPos = state.weaponPosition;
-				if (m_lastZPos > 0.0f)
-					lamPos.z = m_lastZPos; //Stabilize somehow z position (even if not accurate)
-				else
-					lamPos.z = oldZPos;
-			}
-			const float angleMin = DEG2RAD(3.0f);
-			const float angleMax = DEG2RAD(7.0f);
-			const float thr = cosf(angleMax);
-			float dot = dir.Dot(state.aimDirection);
-			if (dot > thr)
-			{
-				float a = acos_tpl(dot);
-				float u = 1.0f - clamp((a - angleMin) / (angleMax - angleMin), 0.0f, 1.0f);
-				dir = dir + u * (state.aimDirection - dir);
-				dir.Normalize();
-			}
-		}
-	}
-
-	if (!charNotVisible)
-		m_lastZPos = lamPos.z;
-
-	lamPos += (dir * 0.10f);
-
-	if (m_allowUpdate)
-	{
-		m_allowUpdate = false;
-
 		IPhysicalEntity* pSkipEntity = NULL;
 		if (parent->GetOwner())
 			pSkipEntity = parent->GetOwner()->GetPhysics();
 
-		const float range = m_lamparams.laser_range[eIGS_ThirdPerson] * dsg1Scale;
-
-		// Use the same flags as the AI system uses for visbility.
+		// Use the same flags as the AI system uses for visibility.
 		const int objects = ent_terrain | ent_static | ent_rigid | ent_sleeping_rigid | ent_independent; //ent_living;
 		const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (10 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
 
 		ray_hit hit;
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(lamPos, dir * range, objects, flags,
+		if (gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir * range, objects, flags,
 			&hit, 1, &pSkipEntity, pSkipEntity ? 1 : 0))
 		{
 			laserLength = hit.dist;
@@ -681,22 +636,23 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 		else
 		{
 			m_lastLaserHitSolid = false;
-			m_lastLaserHitPt = lamPos + dir * range;
+			m_lastLaserHitPt = pos + dir * range;
 			laserLength = range + 0.1f;
 		}
 
 		// Hit near plane
+		const CCamera& camera = gEnv->pRenderer->GetCamera();
 		if (dir.Dot(camera.GetViewdir()) < 0.0f)
 		{
 			Plane nearPlane;
 			nearPlane.SetPlane(camera.GetViewdir(), camera.GetPosition());
 			nearPlane.d -= camera.GetNearPlane() + 0.15f;
-			Ray ray(lamPos, dir);
+			Ray ray(pos, dir);
 			Vec3 out;
 			m_lastLaserHitViewPlane = false;
 			if (Intersect::Ray_Plane(ray, nearPlane, out))
 			{
-				float dist = Distance::Point_Point(lamPos, out);
+				float dist = Distance::Point_Point(pos, out);
 				if (dist < laserLength)
 				{
 					laserLength = dist;
@@ -711,8 +667,8 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 	}
 	else
 	{
-		laserLength = Distance::Point_Point(m_lastLaserHitPt, lamPos);
-		hitPos = lamPos + dir * laserLength;
+		laserLength = Distance::Point_Point(m_lastLaserHitPt, pos);
+		hitPos = pos + dir * laserLength;
 	}
 
 	if (m_smoothLaserLength < 0.0f)
@@ -725,53 +681,9 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 			m_smoothLaserLength += (laserLength - m_smoothLaserLength) * min(1.0f, 10.0f * frameTime);
 	}
 
-	float laserAIRange = 0.0f;
-	if (m_laserActivated && pLaserEntity)
-	{
-		// Orient the laser towards the point point.
-		Matrix34 parentTMInv;
-		parentTMInv = pRootEnt->GetWorldTM().GetInverted();
-
-		Vec3 localDir = parentTMInv.TransformPoint(hitPos);
-		float finalLaserLen = localDir.NormalizeSafe();
-		Matrix33 rot;
-		rot.SetIdentity();
-		rot.SetRotationVDir(localDir);
-		pLaserEntity->SetLocalTM(rot);
-
-		laserAIRange = finalLaserLen;
-
-		const float assetLength = 2.0f;
-		finalLaserLen = CLAMP(finalLaserLen, 0.01f, m_lamparams.laser_max_len * dsg1Scale);
-		float scale = finalLaserLen / assetLength;
-
-		// Scale the laser based on the distance.
-		if (m_laserEffectSlot >= 0)
-		{
-			Matrix33 scl;
-			scl.SetIdentity();
-			scl.SetScale(Vec3(1, scale, 1));
-			pLaserEntity->SetSlotLocalTM(m_laserEffectSlot, scl);
-		}
-
-		if (m_dotEffectSlot >= 0)
-		{
-			if (m_lastLaserHitSolid)
-			{
-				Matrix34 mt = Matrix34::CreateTranslationMat(Vec3(0, finalLaserLen, 0));
-				if (m_lastLaserHitViewPlane)
-					mt.Scale(Vec3(0.2f, 0.2f, 0.2f));
-				pLaserEntity->SetSlotLocalTM(m_dotEffectSlot, mt);
-			}
-			else
-			{
-				Matrix34 scaleMatrix;
-				scaleMatrix.SetIdentity();
-				scaleMatrix.SetScale(Vec3(0.001f, 0.001f, 0.001f));
-				pLaserEntity->SetSlotLocalTM(m_dotEffectSlot, scaleMatrix);
-			}
-		}
-	}
+	const float assetLength = 2.0f;
+	m_smoothLaserLength = CLAMP(m_smoothLaserLength, 0.01f, range);
+	float scale = m_smoothLaserLength / assetLength;
 
 	float lightAIRange = 0.0f;
 	if (m_lightActivated)
@@ -781,35 +693,55 @@ void CLam::UpdateTPLaser(float frameTime, CItem* parent)
 
 		if (m_lightID[eIGS_ThirdPerson] && m_smoothLaserLength > 0.0f)
 		{
-			CItem* pLightEffect = this;
-			if (IItem* pOwnerItem = m_pItemSystem->GetItem(GetParentId()))
-				pLightEffect = (CItem*)pOwnerItem;
-			pLightEffect->SetLightRadius(range, m_lightID[eIGS_ThirdPerson]);
+			if (m_pParent)
+				m_pParent->SetLightRadius(range, m_lightID[eIGS_ThirdPerson]);
 		}
 	}
 
+	if (m_laserEffectSlot > 0)
+	{
+		// Scale the laser based on the distance.
+		Matrix34 scl;
+		scl.SetIdentity();
+		scl.SetScale(Vec3(1, scale, 1));
 
-	if (laserAIRange > 0.0001f || lightAIRange > 0.0001f)
-		UpdateAILightAndLaser(lamPos, dir, lightAIRange, m_lamparams.light_fov[eIGS_ThirdPerson], laserAIRange);
+		GetEntity()->SetSlotLocalTM(m_laserEffectSlot, scl);
+	}
 
+	if (m_dotEffectSlot >= 0)
+	{
+		if (m_lastLaserHitSolid)
+		{
+			Matrix34 dotMatrix = Matrix34::CreateTranslationMat(Vec3(0, m_smoothLaserLength, 0));
+
+			if (m_lastLaserHitViewPlane)
+				dotMatrix.Scale(Vec3(0.2f, 0.2f, 0.2f));
+			GetEntity()->SetSlotLocalTM(m_dotEffectSlot, dotMatrix);
+		}
+		else
+		{
+			Matrix34 scaleMatrix;
+			scaleMatrix.SetIdentity();
+			scaleMatrix.SetScale(Vec3(0.001f, 0.001f, 0.001f));
+			GetEntity()->SetSlotLocalTM(m_dotEffectSlot, scaleMatrix);
+		}
+	}
 }
 
 //------------------------------------------------------------------
 void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 {
+	if (gEnv->bMultiplayer && m_lamparams.isFlashLight)
+		return;
+	
+	//f32 fColor[4] = { 1,1,0,1 };
+	//gEnv->pRenderer->Draw2dLabel(60.f, 60.0f, 1.3f, fColor, false, "Update FP Laser  %s ", GetEntity()->GetName());
+
 	Vec3 lamPos, dir;
 
-	if (m_laserActivated)
-		AdjustLaserFPDirection(parent, dir, lamPos);
-	else
-	{
-		// Lam Light
-		lamPos = parent->GetSlotHelperPos(eIGS_FirstPerson, m_laserHelperFP.c_str(), true);
-		Quat   lamRot = Quat(parent->GetSlotHelperRotation(eIGS_FirstPerson, m_laserHelperFP.c_str(), true));
-		dir = lamRot.GetColumn1();
-	}
+	AdjustLaserFPDirection(parent, dir, lamPos);
 
-	float  len = m_lamparams.laser_range[eIGS_FirstPerson];
+	const float range = m_lamparams.laser_range[eIGS_FirstPerson];
 
 	dir.Normalize();
 
@@ -818,54 +750,49 @@ void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 	Vec3 hitPos(0, 0, 0);
 	float laserLength = 0.0f;
 	float dotScale = 1.0f;
+	
+	IPhysicalEntity* pSkipEntity = NULL;
+	if (parent->GetOwner())
+		pSkipEntity = parent->GetOwner()->GetPhysics();
+
+	const int objects = ent_all;
+	const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (10 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
+
+	ray_hit hit;
+	if (gEnv->pPhysicalWorld->RayWorldIntersection(lamPos, dir * range, objects,
+		flags, &hit, 1, &pSkipEntity, pSkipEntity ? 1 : 0))
 	{
-		IPhysicalEntity* pSkipEntity = NULL;
-		if (parent->GetOwner())
-			pSkipEntity = parent->GetOwner()->GetPhysics();
-
-		const int objects = ent_all;
-		const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (10 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
-
-		ray_hit hit;
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(lamPos, dir * m_lamparams.laser_range[eIGS_FirstPerson], objects,
-			flags, &hit, 1, &pSkipEntity, pSkipEntity ? 1 : 0))
+		//Clamp distance below near clip plane limits, if not dot will be overdrawn during rasterization
+		if (hit.dist > nearClipPlaneLimit)
 		{
-
-			//Clamp distance below near clip plane limits, if not dot will be overdrawn during rasterization
-			if (hit.dist > nearClipPlaneLimit)
-			{
-				laserLength = nearClipPlaneLimit;
-				m_lastLaserHitPt = lamPos + (nearClipPlaneLimit * dir);
-			}
-			else
-			{
-				laserLength = hit.dist;
-				m_lastLaserHitPt = hit.pt;
-			}
-			m_lastLaserHitSolid = true;
-			if (parent->GetOwnerActor() && parent->GetOwnerActor()->GetActorParams())
-				dotScale *= max(0.3f, parent->GetOwnerActor()->GetActorParams()->viewFoVScale);
-
+			laserLength = nearClipPlaneLimit;
+			hitPos = lamPos + (nearClipPlaneLimit * dir);
 		}
 		else
 		{
-			m_lastLaserHitSolid = false;
-			m_lastLaserHitPt = lamPos - (dir * 3.0f);
-			laserLength = 3.0f;
+			laserLength = hit.dist;
+			hitPos = hit.pt;
 		}
-		hitPos = m_lastLaserHitPt;
-		if (g_pGameCVars->i_debug_projectiles != 0)
-			gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(hitPos, 0.2f, ColorB(255, 0, 0));
+		if (GetOwnerActor() && GetOwnerActor()->GetActorParams())
+			dotScale *= GetOwnerActor()->GetActorParams()->viewFoVScale;
+	}
+	else
+	{
+		hitPos = lamPos - (3.0f * dir);
+		laserLength = 3.0f;
 	}
 
-	if (m_laserActivated && m_dotEffectSlot >= 0)
+	if (m_dotEffectSlot >= 0)
 	{
-		Matrix34 worldMatrix = GetEntity()->GetWorldTM();
+		//Force it always to be active
+		//if(IParticleEmitter* pEmitter = GetEntity()->GetParticleEmitter(m_dotEffectSlot))
+			//pEmitter->Hide(false);
 
+		Matrix34 worldMatrix = GetEntity()->GetWorldTM();
 		if (laserLength <= 0.7f)
 			hitPos = lamPos + (0.7f * dir);
 
-		CPlayer* pPlayer = static_cast<CPlayer*>(parent->GetOwnerActor());
+		CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
 		SPlayerStats* pStats = pPlayer ? static_cast<SPlayerStats*>(pPlayer->GetActorStats()) : NULL;
 		if (pStats && pStats->bLookingAtFriendlyAI)
 		{
@@ -876,16 +803,13 @@ void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 		if (laserLength <= 2.0f)
 			dotScale *= min(1.0f, (0.35f + ((laserLength - 0.7f) * 0.5f)));
 
-		IEntity* pDotEntity = m_pEntitySystem->GetEntity(m_pLaserEntityId);
-		if (pDotEntity)
-		{
-			Matrix34 finalMatrix = Matrix34::CreateTranslationMat(hitPos - (0.2f * dir));
-			pDotEntity->SetWorldTM(finalMatrix);
-			Matrix34 localScale = Matrix34::CreateIdentity();
-			localScale.SetScale(Vec3(dotScale, dotScale, dotScale));
-			pDotEntity->SetSlotLocalTM(m_dotEffectSlot, localScale);
-		}
+		Matrix34 localMatrix = worldMatrix.GetInverted() * Matrix34::CreateTranslationMat(hitPos - (0.2f * dir));
+		localMatrix.Scale(Vec3(dotScale, dotScale, dotScale));
+		GetEntity()->SetSlotLocalTM(m_dotEffectSlot, localMatrix);
 	}
+
+	if (gEnv->bMultiplayer)
+		return;
 
 	if (m_laserActivated || m_lightActivated)
 	{
@@ -893,7 +817,6 @@ void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 		float lightAIRange = m_lightActivated ? min(laserLength, m_lamparams.light_range[eIGS_FirstPerson] * 1.5f) : 0.0f;
 		UpdateAILightAndLaser(lamPos, dir, lightAIRange, m_lamparams.light_fov[eIGS_FirstPerson], laserAIRange);
 	}
-
 }
 
 //------------------------------------------------------------------
@@ -913,7 +836,6 @@ void CLam::AdjustLaserFPDirection(CItem* parent, Vec3& dir, Vec3& pos)
 		SMovementState info;
 		pMC->GetMovementState(info);
 
-
 		CWeapon* pWep = static_cast<CWeapon*>(parent->GetIWeapon());
 		if (pWep && (pWep->IsReloading() || (!pActor->CanFire() && !pWep->IsZoomed())))
 			return;
@@ -925,18 +847,6 @@ void CLam::AdjustLaserFPDirection(CItem* parent, Vec3& dir, Vec3& pos)
 		pos = camera.GetPosition();
 		dir = camera.GetMatrix().GetColumn1();
 		dir.Normalize();
-	}
-}
-
-//-------------------------------------------------------------------
-void CLam::UpdateLaserScale(float scaleLenght, IEntity* pLaserEntity)
-{
-	if (pLaserEntity)
-	{
-		Matrix34 tm;
-		tm.SetIdentity();
-		tm.SetScale(Vec3(1.0f, scaleLenght, 1.0f));
-		pLaserEntity->SetLocalTM(tm);
 	}
 }
 
@@ -997,17 +907,5 @@ void CLam::FullSerialize(TSerialize ser)
 //------------------------------------------------------------------
 void CLam::PostSerialize()
 {
-	/*if(m_laserActiveSerialize)
-	{
-		if(m_laserActivated)
-			ActivateLaser(false);
-		ActivateLaser(true);
-	}
-	if(m_lightActiveSerialize)
-	{
-		if(m_lightActivated)
-			ActivateLight(false);
-		ActivateLight(true);
-	}*/
 }
 

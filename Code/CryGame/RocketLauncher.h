@@ -49,11 +49,13 @@ private:
 	//Laser dot (FP)
 	void UpdateDotEffect(float frameTime);
 	void ActivateLaserDot(bool activate, bool fp);
+	//virtual void SetViewMode(int mode);
+	virtual void OnEnterFirstPerson();
+	virtual void OnEnterThirdPerson();
 
 	//Laser beam (TP) - It works more or less like LAM.cpp
 	void ActivateTPLaser(bool activate);
 	void UpdateTPLaser(float frameTime);
-	void AttachFakeLaserToOwner(bool attach);
 
 	int		m_dotEffectSlot;
 	bool	m_auxSlotUsed;

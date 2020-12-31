@@ -395,7 +395,6 @@ bool CItem::GetAimBlending(OldBlendSpace& params)
 	return false;
 }
 
-
 //------------------------------------------------------------------------
 void CItem::CheckViewChange()
 {
@@ -438,6 +437,15 @@ void CItem::CheckViewChange()
 //------------------------------------------------------------------------
 void CItem::SetViewMode(int mode)
 {
+	for (auto const& accessory : m_accessories)
+	{
+		CItem* pItem = static_cast<CItem*>(m_pGameFramework->GetIItemSystem()->GetItem(accessory.second));
+		if (pItem)
+		{
+			pItem->SetViewMode(mode);
+		}
+	}
+
 	m_stats.viewmode = mode;
 
 	if (mode & eIVM_FirstPerson)
@@ -471,17 +479,6 @@ void CItem::SetViewMode(int mode)
 	}
 	else
 		DrawSlot(eIGS_ThirdPerson, false);
-
-	for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
-	{
-		IItem* pItem = m_pGameFramework->GetIItemSystem()->GetItem(it->second);
-		if (pItem)
-		{
-			CItem* pCItem = static_cast<CItem*>(pItem);
-			if (pCItem)
-				pCItem->SetViewMode(mode);
-		}
-	}
 }
 
 //------------------------------------------------------------------------

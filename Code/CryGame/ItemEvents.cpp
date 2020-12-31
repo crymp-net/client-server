@@ -48,14 +48,17 @@ void CItem::OnEnterFirstPerson()
 	AttachArms(true, true);
 	RestoreLayers();
 
-	/*
-		if(m_stats.mounted)
+	for (auto const& accessory : m_accessories)
+	{
+		if (accessory.first == g_pItemStrings->LAM || accessory.first == g_pItemStrings->LAMRifle || accessory.first == g_pItemStrings->LAMFlashLight || accessory.first == g_pItemStrings->LAMRifleFlashLight)
 		{
-			ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
-			if(pChar)
-				pChar->HideMaster(1);
-		}*/
-
+			CItem* pItem = static_cast<CItem*>(m_pGameFramework->GetIItemSystem()->GetItem(accessory.second));
+			if (pItem)
+			{
+				pItem->OnEnterFirstPerson();
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -68,13 +71,18 @@ void CItem::OnEnterThirdPerson()
 
 	if (CItem* pSlave = static_cast<CItem*>(GetDualWieldSlave()))
 		pSlave->OnEnterThirdPerson();
-	/*
-		if(m_stats.mounted)
+
+	for (auto const& accessory : m_accessories)
+	{
+		if (accessory.first == g_pItemStrings->LAM || accessory.first == g_pItemStrings->LAMRifle || accessory.first == g_pItemStrings->LAMFlashLight || accessory.first == g_pItemStrings->LAMRifleFlashLight)
 		{
-			ICharacterInstance* pChar = GetOwnerActor()?GetOwnerActor()->GetEntity()->GetCharacter(0):NULL;
-			if(pChar)
-				pChar->HideMaster(0);
-		}*/
+			CItem* pItem = static_cast<CItem*>(m_pGameFramework->GetIItemSystem()->GetItem(accessory.second));
+			if (pItem)
+			{
+				pItem->OnEnterThirdPerson();
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------------------
