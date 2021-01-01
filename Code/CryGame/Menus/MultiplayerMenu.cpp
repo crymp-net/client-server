@@ -475,18 +475,27 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 
 	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
 	{
-		string connect;
-		//    if(neednat)
-		//    {
-		//      int cookie = rand() + (rand()<<16);
-		//			connect.Format("connect <nat>%d|%d.%d.%d.%d:%d",cookie,ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,port);
-		//      m_menu->m_browser->SendNatCookie(ip,port,cookie);
-		//    }
-		//    else
-		{
-			connect.Format("connect %d.%d.%d.%d:%d", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF, port);
-		}
-		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(connect.c_str());
+		string tempHost;
+		tempHost.Format("%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
+		
+		// set cl_serveraddr
+		gEnv->pConsole->GetCVar("cl_serveraddr")->Set(tempHost.c_str());
+	
+		string sport;
+		sport.Format("%d", port);
+		// set cl_serverport
+		gEnv->pConsole->GetCVar("cl_serverport")->Set(sport.c_str());
+
+		SGameStartParams params;
+		params.flags = eGSF_Client | eGSF_NoDelayedStart | eGSF_NoQueries;
+		params.flags |= eGSF_ImmersiveMultiplayer;
+		params.hostname = tempHost.c_str();
+		params.pContextParams = NULL;
+		params.port = gEnv->pConsole->GetCVar("cl_serverport")->GetIVal();
+
+		//CryLogAlways("Connect hard: $3%s:%d", params.hostname, params.port);
+
+		g_pGame->GetIGameFramework()->StartGameContext(&params);
 	}
 
 	const wstring& GetGameType(const char* gt)
@@ -982,8 +991,8 @@ void CMultiPlayerMenu::OnUIEvent(const SUIEvent& event)
 	}
 	else if (event.event == eUIE_disconnect)
 	{
-		if (m_hub->IsInLobby())
-			m_ui->EnableResume(false);
+		//if (m_hub->IsInLobby())
+		//	m_ui->EnableResume(false); //CryMP: Causes missing "setResumeEnabled" error in console
 		CMPLobbyUI::SServerInfo serv;
 		if (m_ui->GetSelectedServer(serv))
 		{
