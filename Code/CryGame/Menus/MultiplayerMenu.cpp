@@ -906,7 +906,9 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 {
 	m_buddylist->SetMenu(this);
 	m_ui->SetMenu(this);
-	m_ui->EnableTabs(!lan, !lan, !lan);
+	//m_ui->EnableTabs(!lan, !lan, !lan);
+	//CryMP hide favorites, recent and buddy list, not working atm
+	m_ui->EnableTabs(false, false, false);
 
 	m_profile = m_hub->GetProfile();
 
@@ -932,7 +934,7 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 		}
 	}
 
-	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default);
+	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default); 
 	//read servers back
 
 	//test
@@ -1056,11 +1058,15 @@ void CMultiPlayerMenu::JoinServer()
 		}
 		else
 			m_browser->CheckDirectConnect(serv.m_serverId, serv.m_hostPort);
+
 		if (m_profile && !m_lan)
 			m_profile->AddRecentServer(serv.m_publicIP, serv.m_hostPort);
 		serv.m_recent = true;
 		m_ui->UpdateServer(serv);
 		m_hub->ShowLoadingDlg("@ui_connecting_to", serv.m_hostName.c_str());
+
+		//CryMP for map downloader..
+		StoreServerInfo(serv);
 	}
 }
 

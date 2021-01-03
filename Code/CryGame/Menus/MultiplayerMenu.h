@@ -28,43 +28,47 @@ struct  SStoredServer;
 class CMultiPlayerMenu
 {
 private:
-  struct SGSBrowser;
-  struct SGSNetworkProfile;
-  struct SChat;
-  struct SCreateGame;
+	struct SGSBrowser;
+	struct SGSNetworkProfile;
+	struct SChat;
+	struct SCreateGame;
 
-  class  CUI;
+	class  CUI;
 public:
 	CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub);
 	~CMultiPlayerMenu();
 	bool HandleFSCommand(EGsUiCommand cmd, const char* pArgs);
-  void OnUIEvent(const SUIEvent& event);
+	void OnUIEvent(const SUIEvent& event);
+	const CMPLobbyUI::SServerInfo& GetStoredServerInfo() const { return m_lastServerInfo; };
+
 private:
-  void    DisplayServerList();
-  void    SetServerListPos(double sb_pos);
-  void    ChangeServerListPos(int dir);//either +1 or -1
-  void    UpdateServerList();
-  void    StopServerListUpdate();
-  void    SelectServer(int id);
-  void    JoinServer();
+	void    DisplayServerList();
+	void    SetServerListPos(double sb_pos);
+	void    ChangeServerListPos(int dir);//either +1 or -1
+	void    UpdateServerList();
+	void    StopServerListUpdate();
+	void    SelectServer(int id);
+	void    JoinServer();
 	void    ServerListUpdated();
 	void    OnRefreshComplete(bool ok);
-  
-  IServerBrowser*             m_browser;
-  CGameNetworkProfile*        m_profile;
-  INetworkChat*               m_chat;
-  std::auto_ptr<CUI>          m_ui;
-  std::auto_ptr<SGSBrowser>   m_serverlist;
-  std::auto_ptr<SChat>        m_chatlist;
-  std::auto_ptr<SGSNetworkProfile> m_buddylist;
-  std::auto_ptr<SCreateGame>  m_creategame;
-  bool                        m_lan;
-  std::vector<SStoredServer>  m_favouriteServers;
-  std::vector<SStoredServer>  m_recentServers;
-  CMPHub*                     m_hub;
+	void StoreServerInfo(CMPLobbyUI::SServerInfo& info) { m_lastServerInfo = info; }
+
+	IServerBrowser* m_browser;
+	CGameNetworkProfile* m_profile;
+	INetworkChat* m_chat;
+	std::auto_ptr<CUI>          m_ui;
+	std::auto_ptr<SGSBrowser>   m_serverlist;
+	std::auto_ptr<SChat>        m_chatlist;
+	std::auto_ptr<SGSNetworkProfile> m_buddylist;
+	std::auto_ptr<SCreateGame>  m_creategame;
+	bool                        m_lan;
+	std::vector<SStoredServer>  m_favouriteServers;
+	std::vector<SStoredServer>  m_recentServers;
+	CMPHub* m_hub;
 	bool												m_joiningServer;
-  
-  EChatCategory               m_selectedCat;
-  int                         m_selectedId;
+
+	EChatCategory               m_selectedCat;
+	int                         m_selectedId;
+	CMPLobbyUI::SServerInfo     m_lastServerInfo;
 };
 #endif /*__MULTIPLAYERMENU_H__*/
