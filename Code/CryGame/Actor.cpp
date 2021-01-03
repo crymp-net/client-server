@@ -329,10 +329,17 @@ bool CActor::Init(IGameObject* pGameObject)
 	if (!GetGameObject()->CaptureProfileManager(this))
 		return false;
 
+	if (!m_pGameFramework)
+	{
+		m_pGameFramework = g_pGame->GetIGameFramework();
+		m_pGameplayRecorder = g_pGame->GetIGameFramework()->GetIGameplayRecorder();
+		m_pItemSystem = m_pGameFramework->GetIItemSystem();
+	}
+
 	m_pMovementController = CreateMovementController();
 	GetGameObject()->SetMovementController(m_pMovementController);
 
-	g_pGame->GetIGameFramework()->GetIActorSystem()->AddActor(GetEntityId(), this);
+	m_pGameFramework->GetIActorSystem()->AddActor(GetEntityId(), this);
 
 	g_pGame->GetActorScriptBind()->AttachTo(this);
 	m_pAnimatedCharacter = static_cast<IAnimatedCharacter*>(GetGameObject()->AcquireExtension("AnimatedCharacter"));
@@ -342,13 +349,6 @@ bool CActor::Init(IGameObject* pGameObject)
 	}
 
 	pGameObject->AcquireExtension("Inventory");
-
-	if (!m_pGameFramework)
-	{
-		m_pGameFramework = g_pGame->GetIGameFramework();
-		m_pGameplayRecorder = g_pGame->GetIGameFramework()->GetIGameplayRecorder();
-		m_pItemSystem = m_pGameFramework->GetIItemSystem();
-	}
 
 	GetGameObject()->EnablePrePhysicsUpdate(ePPU_WhenAIActivated);
 
@@ -460,6 +460,20 @@ void CActor::Revive(ReasonForRevive reason)
 		GetGameObject()->SetAspectProfile(eEA_Physics, eAP_Alive);
 	}
 
+	//CryMP
+	if (reason != ReasonForRevive::START_SPECTATING)
+	{
+		if (gEnv->bMultiplayer)
+		{
+			Physicalize();
+		}
+
+		if (gEnv->bServer)
+		{
+			GetGameObject()->SetAspectProfile(eEA_Physics, eAP_Alive);
+		}
+	}
+
 	Freeze(false);
 
 	if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
@@ -525,6 +539,16 @@ void CActor::Revive(ReasonForRevive reason)
 
 	if (IEntityPhysicalProxy* pPProxy = (IEntityPhysicalProxy*)GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS))
 		pPProxy->EnableRestrictedRagdoll(false);
+
+	//CryMP
+	if (reason == ReasonForRevive::START_SPECTATING)
+	{
+		if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+			pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(1);
+
+		m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
+		m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::Revive");
+	}
 }
 
 IGrabHandler* CActor::CreateGrabHanlder()
@@ -536,8 +560,6 @@ IGrabHandler* CActor::CreateGrabHanlder()
 //------------------------------------------------------------------------
 void CActor::Physicalize(EStance stance)
 {
-	CryLogAlways("$3physicalizing $9%s", GetEntity()->GetName());
-
 	//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
 	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
 	assert(pScriptTable);
@@ -1948,8 +1970,8 @@ bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 					m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
 				}
 			}
-			//CryMP: Fix player model glitching inside walls after leaving vehicle, by disablig this code in MP
-			if (gEnv->bMultiplayer || wasFrozen)
+			//CryMP: Fix player model glitching inside walls after leaving vehicle, by disabling this code in MP
+			if (!gEnv->bMultiplayer || wasFrozen)
 			{
 				Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
 
@@ -1989,22 +2011,25 @@ bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			{
 				//CryMP: Only keep this code for MP
 				//removes that dropping to floor when connect
-				if (profile == eAP_Spectator)
+				//moved to Revive
+				/*if (profile == eAP_Spectator)
 				{
 					if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
 						pCharacter->GetISkeletonPose()->DestroyCharacterPhysics(1);
 
 					m_pAnimatedCharacter->ForceRefreshPhysicalColliderMode();
 					m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Spectator, eColliderModeLayer_Game, "Actor::SetAspectProfile");
-				}
+				}*/
 				//CryMP: Physicalize only OnRevive
-				if (gEnv->bClient)
+				if (wasFrozen)
 				{
-					if (m_stance == STANCE_NULL || wasFrozen)
-					{
-						Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
-					}
+					Physicalize(wasFrozen ? STANCE_PRONE : STANCE_NULL);
 				}
+				//else
+				//	CryLogAlways("$3Skipping %s rephysicalization after vehicle exit", GetEntity()->GetName());
+				
+				//m_stance = STANCE_NULL;
+				//SetStance(STANCE_STAND);
 			}
 		}
 		res = true;
@@ -2846,7 +2871,13 @@ bool CActor::UseItem(EntityId itemId)
 	if (gEnv->bServer || (pItem->GetEntity()->GetFlags() & (ENTITY_FLAG_CLIENT_ONLY | ENTITY_FLAG_SERVER_ONLY)))
 		pItem->Use(GetEntityId());
 	else
+	{
+		//CryMP prevent any unexpected bugs etc..
+		if (gEnv->bMultiplayer && !IsClient())
+			return false;
+
 		GetGameObject()->InvokeRMI(SvRequestUseItem(), ItemIdParam(itemId), eRMI_ToServer);
+	}
 
 	return true;
 }
@@ -2911,7 +2942,13 @@ bool CActor::PickUpItem(EntityId itemId, bool sound)
 		m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemPickedUp, 0, 0, (void*)pItem->GetEntityId()));
 	}
 	else
+	{
+		//CryMP prevent any unexpected bugs etc..
+		if (gEnv->bMultiplayer && !IsClient())
+			return false;
+
 		GetGameObject()->InvokeRMI(SvRequestPickUpItem(), ItemIdParam(itemId), eRMI_ToServer);
+	}
 
 	return true;
 }
@@ -2953,7 +2990,13 @@ bool CActor::DropItem(EntityId itemId, float impulseScale, bool selectNext, bool
 				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, (void*)itemId));
 		}
 		else
+		{
+			//CryMP prevent any unexpected bugs etc..
+			if (gEnv->bMultiplayer && !IsClient())
+				return false;
+
 			GetGameObject()->InvokeRMI(SvRequestDropItem(), DropItemParams(itemId, impulseScale, selectNext, bydeath), eRMI_ToServer);
+		}
 
 		if (performCloakFade)
 			pItem->CloakEnable(false, true);
@@ -3109,7 +3152,7 @@ void CActor::ReplaceMaterial(const char* strMaterial)
 			}
 		}
 
-		IItem* curItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(GetInventory()->GetCurrentItem());
+		IItem* curItem = m_pItemSystem->GetItem(GetInventory()->GetCurrentItem());
 		if (curItem)
 			curItem->Cloak(true, mat);
 	}
@@ -3128,7 +3171,7 @@ void CActor::ReplaceMaterial(const char* strMaterial)
 			}
 		}
 
-		IItem* curItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(GetInventory()->GetCurrentItem());
+		IItem* curItem = m_pItemSystem->GetItem(GetInventory()->GetCurrentItem());
 		if (curItem)
 			curItem->Cloak(false);
 
@@ -3418,7 +3461,7 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 	if (IsClient() && gEnv->bMultiplayer && shooterId != GetEntityId() && g_pGameCVars->g_deathCam != 0)
 	{
 		// use the spectator target to store who killed us (used for the MP death cam - not quite spectator mode but similar...).
-		if (g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId))
+		if (m_pGameFramework->GetIActorSystem()->GetActor(shooterId))
 		{
 			SetSpectatorTarget(shooterId);
 

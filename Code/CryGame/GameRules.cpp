@@ -153,7 +153,7 @@ bool CGameRules::Init(IGameObject* pGameObject)
 
 	if (gEnv->bClient)
 	{
-		IActionMapManager* pActionMapMan = g_pGame->GetIGameFramework()->GetIActionMapManager();
+		IActionMapManager* pActionMapMan = m_pGameFramework->GetIActionMapManager();
 		IActionMap* am = NULL;
 		pActionMapMan->EnableActionMap("multiplayer", isMultiplayer);
 		pActionMapMan->EnableActionMap("singleplayer", !isMultiplayer);
@@ -180,7 +180,7 @@ bool CGameRules::Init(IGameObject* pGameObject)
 	m_pRadio = new CRadio(this);
 
 	// create battledust object in SP, and on dx10 MP servers.
-	if (!gEnv->bMultiplayer || (gEnv->bServer && g_pGame->GetIGameFramework()->IsImmersiveMPEnabled()))
+	if (!gEnv->bMultiplayer || (gEnv->bServer && m_pGameFramework->IsImmersiveMPEnabled()))
 		m_pBattleDust = new CBattleDust;
 
 	if (isMultiplayer && gEnv->bClient && !gEnv->pSystem->IsDedicated() && !strcmp(GetEntity()->GetClass()->GetName(), "PowerStruggle"))
@@ -396,7 +396,7 @@ void CGameRules::ProcessEvent(SEntityEvent& event)
 		m_timeOfDayInitialized = false;
 		g_pGame->GetWeaponSystem()->GetTracerManager().Reset();
 
-		if (gEnv->bServer && gEnv->bMultiplayer && pTOD && pTOD->GetIVal() && g_pGame->GetIGameFramework()->IsImmersiveMPEnabled())
+		if (gEnv->bServer && gEnv->bMultiplayer && pTOD && pTOD->GetIVal() && m_pGameFramework->IsImmersiveMPEnabled())
 		{
 			static ICVar* pStart = gEnv->pConsole->GetCVar("sv_timeofdaystart");
 			if (pStart)
@@ -456,19 +456,19 @@ void CGameRules::PostUpdate(float frameTime)
 //------------------------------------------------------------------------
 CActor* CGameRules::GetActorByChannelId(int channelId) const
 {
-	return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActorByChannelId(channelId));
+	return static_cast<CActor*>(m_pActorSystem->GetActorByChannelId(channelId));
 }
 
 //------------------------------------------------------------------------
 CActor* CGameRules::GetActorByEntityId(EntityId entityId) const
 {
-	return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActor(entityId));
+	return static_cast<CActor*>(m_pActorSystem->GetActor(entityId));
 }
 
 //------------------------------------------------------------------------
 int CGameRules::GetChannelId(EntityId entityId) const
 {
-	CActor* pActor = static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActor(entityId));
+	CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(entityId));
 	if (pActor)
 		return pActor->GetChannelId();
 
@@ -831,7 +831,7 @@ void CGameRules::AddTaggedEntity(EntityId shooter, EntityId targetId, bool tempo
 //------------------------------------------------------------------------
 void CGameRules::OnKillMessage(EntityId targetId, EntityId shooterId, const char* weaponClassName, float damage, int material, int hit_type)
 {
-	if (EntityId client_id = g_pGame->GetIGameFramework()->GetClientActor() ? g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId() : 0)
+	if (EntityId client_id = m_pGameFramework->GetClientActor() ? m_pGameFramework->GetClientActor()->GetEntityId() : 0)
 	{
 		if (gEnv->bClient && client_id == targetId)
 			m_pRadio->CancelRadio();
@@ -943,7 +943,7 @@ void CGameRules::RevivePlayerInVehicle(CActor* pActor, EntityId vehicleId, int s
 	// In that case we use the seat exit code to find a valid position to spawn at.
 	if (seatId < 0)
 	{
-		IVehicle* pSpawnVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(vehicleId);
+		IVehicle* pSpawnVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(vehicleId);
 		Vec3 pos = ZERO;
 		if (pSpawnVehicle && pSpawnVehicle->GetExitPositionForActor(pActor, pos, true))
 		{
@@ -1085,7 +1085,7 @@ void CGameRules::KillPlayer(CActor* pActor, bool dropItem, bool ragdoll, EntityI
 
 	uint16 weaponClassId = 0;
 	const char* weaponClassName = "";
-	if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(weaponId))
+	if (IEntity* pEntity = m_pEntitySystem->GetEntity(weaponId))
 	{
 		weaponClassName = pEntity->GetClass()->GetName();
 		m_pGameFramework->GetNetworkSafeClassId(weaponClassId, weaponClassName);
@@ -1105,7 +1105,7 @@ void CGameRules::KillPlayer(CActor* pActor, bool dropItem, bool ragdoll, EntityI
 
 	m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Death));
 	if (shooterId && shooterId != pActor->GetEntityId())
-		if (IActor* pShooter = m_pGameFramework->GetIActorSystem()->GetActor(shooterId))
+		if (IActor* pShooter = m_pActorSystem->GetActor(shooterId))
 			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Kill, 0, 0, (void*)weaponId));
 }
 
@@ -1243,7 +1243,7 @@ void CGameRules::GetPlayers(TPlayers& players)
 //------------------------------------------------------------------------
 bool CGameRules::IsPlayerInGame(EntityId playerId) const
 {
-	INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetNetChannel(GetChannelId(playerId));
+	INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(GetChannelId(playerId));
 	if (pNetChannel && pNetChannel->GetContextViewState() >= eCVS_InGame)
 		return true;
 	return false;
@@ -1259,7 +1259,7 @@ bool CGameRules::IsPlayerActivelyPlaying(EntityId playerId) const
 
 	if (GetTeamCount() == 1)
 	{
-		CActor* pActor = reinterpret_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId));
+		CActor* pActor = reinterpret_cast<CActor*>(m_pActorSystem->GetActor(playerId));
 		if (!pActor)
 			return false;
 
@@ -1276,7 +1276,7 @@ bool CGameRules::IsPlayerActivelyPlaying(EntityId playerId) const
 //------------------------------------------------------------------------
 bool CGameRules::IsChannelInGame(int channelId) const
 {
-	INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetNetChannel(channelId);
+	INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(channelId);
 	if (pNetChannel && pNetChannel->GetContextViewState() >= eCVS_InGame)
 		return true;
 	return false;
@@ -1375,7 +1375,7 @@ void CGameRules::EndVoting(bool success)
 		case eVS_kick:
 		{
 			int ch_id = GetChannelId(m_pVotingSystem->GetEntityId());
-			if (INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetNetChannel(ch_id))
+			if (INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(ch_id))
 				pNetChannel->Disconnect(eDC_Kicked, "Kicked from server by voting");
 		}
 		break;
@@ -1562,7 +1562,7 @@ void CGameRules::SetTeam(int teamId, EntityId id)
 		}
 	}
 
-	if (IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor())
+	if (IActor* pClient = m_pGameFramework->GetClientActor())
 	{
 		if (GetTeam(pClient->GetEntityId()) == teamId)
 		{
@@ -1785,7 +1785,7 @@ void CGameRules::FreezeEntity(EntityId entityId, bool freeze, bool vapor, bool f
 
 	IGameObject* pGameObject = m_pGameFramework->GetGameObject(entityId);
 	IScriptTable* pScriptTable = pEntity->GetScriptTable();
-	IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(entityId);
+	IActor* pActor = m_pActorSystem->GetActor(entityId);
 
 	if (freeze && gEnv->bServer)
 	{
@@ -1915,7 +1915,7 @@ void CGameRules::FreezeEntity(EntityId entityId, bool freeze, bool vapor, bool f
 			IEntity* pChild = pEntity->GetChild(i);
 
 			// don't freeze players attached to entities (vehicles)
-			if (IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(pChild->GetId()))
+			if (IActor* pActor = m_pActorSystem->GetActor(pChild->GetId()))
 			{
 				if (pActor && pActor->IsPlayer())
 					continue;
@@ -1954,7 +1954,7 @@ void CGameRules::FreezeEntity(EntityId entityId, bool freeze, bool vapor, bool f
 			params.eAttachType = GeomType_Physics;
 			params.bIgnoreLocation = true;
 
-			gEnv->pEntitySystem->GetBreakableManager()->AttachSurfaceEffect(pEntity, 0, SURFACE_BREAKAGE_TYPE("freeze_vapor"), params);
+			m_pEntitySystem->GetBreakableManager()->AttachSurfaceEffect(pEntity, 0, SURFACE_BREAKAGE_TYPE("freeze_vapor"), params);
 		}
 	}
 
@@ -2008,7 +2008,7 @@ void CGameRules::ShatterEntity(EntityId entityId, const Vec3& pos, const Vec3& i
 	{
 		// This is simple entity.
 		// So check if entity can be shattered.
-		if (!gEnv->pEntitySystem->GetBreakableManager()->CanShatterEntity(pEntity))
+		if (!m_pEntitySystem->GetBreakableManager()->CanShatterEntity(pEntity))
 			return;
 	}
 
@@ -2038,7 +2038,7 @@ void CGameRules::ShatterEntity(EntityId entityId, const Vec3& pos, const Vec3& i
 		spawnparams.bCountPerUnit=1;
 		spawnparams.fCountScale=1.0f;
 
-		gEnv->pEntitySystem->GetBreakableManager()->AttachSurfaceEffect(pEntity, 0, SURFACE_BREAKAGE_TYPE("freeze_shatter"), spawnparams);
+		m_pEntitySystem->GetBreakableManager()->AttachSurfaceEffect(pEntity, 0, SURFACE_BREAKAGE_TYPE("freeze_shatter"), spawnparams);
 	*/
 
 	IBreakableManager::BreakageParams breakage;
@@ -2054,7 +2054,7 @@ void CGameRules::ShatterEntity(EntityId entityId, const Vec3& pos, const Vec3& i
 	breakage.vHitImpulse = impulse;
 	breakage.vHitPoint = pos;
 
-	gEnv->pEntitySystem->GetBreakableManager()->BreakIntoPieces(pEntity, 0, nFrozenSlot, breakage);
+	m_pEntitySystem->GetBreakableManager()->BreakIntoPieces(pEntity, 0, nFrozenSlot, breakage);
 
 	// send event to game object
 	if (pGameObject)
@@ -2077,7 +2077,7 @@ void CGameRules::ShatterEntity(EntityId entityId, const Vec3& pos, const Vec3& i
 
 	FreezeEntity(entityId, false, false);
 
-	IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(entityId);
+	IActor* pActor = m_pActorSystem->GetActor(entityId);
 	bool isPlayer = (pActor && pActor->IsPlayer());
 
 	if (gEnv->bServer && !m_pGameFramework->IsEditing())
@@ -2159,7 +2159,7 @@ void CGameRules::GetSpawnLocations(TSpawnLocations& locations) const
 //------------------------------------------------------------------------
 bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, bool ignoreTeam, float zoffset) const
 {
-	IEntity* pSpawn = gEnv->pEntitySystem->GetEntity(spawnLocationId);
+	IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnLocationId);
 	if (!pSpawn)
 		return false;
 
@@ -2175,8 +2175,8 @@ bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId
 
 	query.box = AABB(Vec3(c.x - l, c.y - l, c.z - 0.15f), Vec3(c.x + l, c.y + l, c.z + 2.0f));
 	query.nEntityFlags = -1;
-	query.pEntityClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
-	gEnv->pEntitySystem->QueryProximity(query);
+	query.pEntityClass = m_pEntitySystem->GetClassRegistry()->FindClass("Player");
+	m_pEntitySystem->QueryProximity(query);
 
 	bool result = true;
 
@@ -2188,7 +2188,7 @@ bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId
 			if (playerId == entityId) // ignore self
 				continue;
 
-			CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(entityId));
+			CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(entityId));
 			if (pActor && pActor->GetSpectatorMode() != 0) // ignore spectators
 				continue;
 
@@ -2219,7 +2219,7 @@ bool CGameRules::IsSpawnLocationFarEnough(EntityId spawnLocationId, float minDis
 	if (minDistance <= 0.1f)
 		return true;
 
-	IEntity* pSpawn = gEnv->pEntitySystem->GetEntity(spawnLocationId);
+	IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnLocationId);
 	if (!pSpawn)
 		return false;
 
@@ -2235,13 +2235,13 @@ bool CGameRules::TestSpawnLocationWithEnvironment(EntityId spawnLocationId, Enti
 	if (!spawnLocationId)
 		return false;
 
-	IEntity* pSpawn = gEnv->pEntitySystem->GetEntity(spawnLocationId);
+	IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnLocationId);
 	if (!pSpawn)
 		return false;
 
 	IPhysicalEntity* pPlayerPhysics = 0;
 
-	IEntity* pPlayer = gEnv->pEntitySystem->GetEntity(playerId);
+	IEntity* pPlayer = m_pEntitySystem->GetEntity(playerId);
 	if (pPlayer)
 		pPlayerPhysics = pPlayer->GetPhysics();
 
@@ -2511,7 +2511,7 @@ void CGameRules::CheckSpawnGroupValidity(EntityId spawnGroupId)
 {
 	bool exists = spawnGroupId &&
 		(m_spawnGroups.find(spawnGroupId) != m_spawnGroups.end()) &&
-		(gEnv->pEntitySystem->GetEntity(spawnGroupId) != 0);
+		(m_pEntitySystem->GetEntity(spawnGroupId) != 0);
 	bool valid = exists && GetTeam(spawnGroupId) != 0;
 
 	for (std::vector<int>::const_iterator it = m_channelIds.begin(); it != m_channelIds.end(); ++it)
@@ -2800,8 +2800,8 @@ bool CGameRules::CanReceiveChatMessage(EChatMessageType type, EntityId sourceId,
 //------------------------------------------------------------------------
 void CGameRules::ChatLog(EChatMessageType type, EntityId sourceId, EntityId targetId, const char* msg)
 {
-	IEntity* pSource = gEnv->pEntitySystem->GetEntity(sourceId);
-	IEntity* pTarget = gEnv->pEntitySystem->GetEntity(targetId);
+	IEntity* pSource = m_pEntitySystem->GetEntity(sourceId);
+	IEntity* pTarget = m_pEntitySystem->GetEntity(targetId);
 	const char* sourceName = pSource ? pSource->GetName() : "<unknown>";
 	const char* targetName = pTarget ? pTarget->GetName() : "<unknown>";
 	int teamId = GetTeam(sourceId);
@@ -2813,7 +2813,7 @@ void CGameRules::ChatLog(EChatMessageType type, EntityId sourceId, EntityId targ
 	case eChatToTeam:
 		if (teamId)
 		{
-			IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+			IActor* pClientActor = m_pGameFramework->GetClientActor();
 			if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
 				return;
 			targetName = tempBuffer;
@@ -3041,7 +3041,7 @@ bool CGameRules::OnCollision(const SGameCollision& event)
 				m_ignoreEntityNextCollision = 0;
 				return false;
 			}
-			else if (IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor())
+			else if (IActor* pClient = m_pGameFramework->GetClientActor())
 			{
 				if (pTarget->GetId() == pClient->GetGrabbedEntityId())
 					return false;
@@ -3053,8 +3053,8 @@ bool CGameRules::OnCollision(const SGameCollision& event)
 	if (event.pCollision->normImpulse <= 0.001f)
 		return true;
 
-	static IEntityClass* s_pBasicEntityClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("BasicEntity");
-	static IEntityClass* s_pDefaultClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Default");
+	static IEntityClass* s_pBasicEntityClass = m_pEntitySystem->GetClassRegistry()->FindClass("BasicEntity");
+	static IEntityClass* s_pDefaultClass = m_pEntitySystem->GetClassRegistry()->FindClass("Default");
 	bool srcClassFilter = false;
 	bool trgClassFilter = false;
 
@@ -3357,7 +3357,7 @@ void CGameRules::UpdateAffectedEntitiesSet(TExplosionAffectedEntities& affectedE
 	{
 		for (int i = 0; i < pExplosion->nAffectedEnts; ++i)
 		{
-			if (IEntity* pEntity = gEnv->pEntitySystem->GetEntityFromPhysics(pExplosion->pAffectedEnts[i]))
+			if (IEntity* pEntity = m_pEntitySystem->GetEntityFromPhysics(pExplosion->pAffectedEnts[i]))
 			{
 				if (IScriptTable* pEntityTable = pEntity->GetScriptTable())
 				{
@@ -3458,7 +3458,7 @@ void CGameRules::PrepCollision(int src, int trg, const SGameCollision& event, IE
 		deltaE +=  pCollision->normImpulse*(pCollision->vloc[1]*pCollision->n - pCollision->normImpulse*0.5f/pCollision->mass[1]);
 	chain.SetValue("energy_loss", deltaE);*/
 
-	//IEntity *pTarget = gEnv->pEntitySystem->GetEntityFromPhysics(pCollision->pEntity[trg]);
+	//IEntity *pTarget = m_pEntitySystem->GetEntityFromPhysics(pCollision->pEntity[trg]);
 
 	//chain.SetValue("target_type", (int)pCollision->pEntity[trg]->GetType());
 
@@ -3550,10 +3550,10 @@ void CGameRules::ResetEntities()
 	for (TPlayerTeamIdMap::iterator tit = m_playerteams.begin(); tit != m_playerteams.end(); tit++)
 		tit->second.resize(0);
 
-	g_pGame->GetIGameFramework()->Reset(gEnv->bServer);
+	m_pGameFramework->Reset(gEnv->bServer);
 
 	//	SEntityEvent event(ENTITY_EVENT_START_GAME);
-	//	gEnv->pEntitySystem->SendEventToAll(event);
+	//	m_pEntitySystem->SendEventToAll(event);
 }
 
 //------------------------------------------------------------------------
@@ -3566,7 +3566,7 @@ void CGameRules::OnEndGame()
 
 	if (gEnv->bClient)
 	{
-		IActionMapManager* pActionMapMan = g_pGame->GetIGameFramework()->GetIActionMapManager();
+		IActionMapManager* pActionMapMan = m_pGameFramework->GetIActionMapManager();
 		pActionMapMan->EnableActionMap("multiplayer", !isMultiplayer);
 		pActionMapMan->EnableActionMap("singleplayer", isMultiplayer);
 
@@ -3798,7 +3798,7 @@ void CGameRules::FreezeInput(bool freeze)
 
 	g_pGameActions->FilterFreezeTime()->Enable(freeze);
 	/*
-		if (IActor *pClientIActor=g_pGame->GetIGameFramework()->GetClientActor())
+		if (IActor *pClientIActor=m_pGameFramework->GetClientActor())
 		{
 			CActor *pClientActor=static_cast<CActor *>(pClientIActor);
 			if (CWeapon *pWeapon=pClientActor->GetWeapon(pClientActor->GetCurrentItemId()))
@@ -3858,7 +3858,7 @@ void CGameRules::AbortEntityRemoval(EntityId entityId)
 
 void CGameRules::SendRadioMessage(const EntityId sourceId, const int msg)
 {
-	/*g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId()*/
+	/*m_pGameFramework->GetClientActor()->GetEntityId()*/
 	RadioMessageParams params(sourceId, msg);
 
 	if (gEnv->bServer)
@@ -3911,7 +3911,7 @@ void CGameRules::OnAction(const ActionId& actionId, int activationMode, float va
 
 void CGameRules::ReconfigureVoiceGroups(EntityId id, int old_team, int new_team)
 {
-	INetContext* pNetContext = g_pGame->GetIGameFramework()->GetNetContext();
+	INetContext* pNetContext = m_pGameFramework->GetNetContext();
 	if (!pNetContext)
 		return;
 

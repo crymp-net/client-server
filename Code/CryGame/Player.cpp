@@ -4537,7 +4537,8 @@ void CPlayer::HandleEvent(const SGameObjectEvent& event)
 			{
 				m_pNanoSuit->SelectSuitMaterial();
 			}
-			Physicalize();
+			if (!gEnv->bMultiplayer) //CryMP not necessary for mp
+				Physicalize();
 		}
 	}
 }
@@ -5500,6 +5501,10 @@ void CPlayer::RequestGrabOnLadder(ELadderActionType reason)
 	}
 	else
 	{
+		//CryMP prevent any spoofs caused by bugs etc..
+		if (gEnv->bMultiplayer && !IsClient())
+			return;
+
 		GetGameObject()->InvokeRMI(SvRequestGrabOnLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
 	}
 }
@@ -5575,6 +5580,10 @@ void CPlayer::RequestLeaveLadder(ELadderActionType reason)
 	}
 	else
 	{
+		//CryMP prevent any spoofs caused by bugs etc..
+		if (gEnv->bMultiplayer && !IsClient())
+			return;
+
 		GetGameObject()->InvokeRMI(SvRequestLeaveLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
 	}
 }

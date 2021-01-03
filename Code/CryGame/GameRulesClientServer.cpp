@@ -49,7 +49,13 @@ void CGameRules::ClientSimpleHit(const SimpleHitInfo& simpleHitInfo)
 	if (!simpleHitInfo.remote)
 	{
 		if (!gEnv->bServer)
+		{
+			//CryMP prevent any spoofs caused by bugs etc..
+			if (gEnv->bMultiplayer && simpleHitInfo.shooterId != m_pGameFramework->GetClientActorId())
+				return;
+
 			GetGameObject()->InvokeRMI(SvRequestSimpleHit(), simpleHitInfo, eRMI_ToServer);
+		}
 		else
 			ServerSimpleHit(simpleHitInfo);
 	}
@@ -60,11 +66,11 @@ void CGameRules::ClientHit(const HitInfo& hitInfo)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+	IActor* pClientActor = m_pGameFramework->GetClientActor();
 	IEntity* pTarget = m_pEntitySystem->GetEntity(hitInfo.targetId);
 	IEntity* pShooter = m_pEntitySystem->GetEntity(hitInfo.shooterId);
-	IVehicle* pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(hitInfo.targetId);
-	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(hitInfo.targetId);
+	IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(hitInfo.targetId);
+	IActor* pActor = m_pActorSystem->GetActor(hitInfo.targetId);
 	bool dead = pActor ? (pActor->GetHealth() <= 0) : false;
 
 	if ((pClientActor && pClientActor->GetEntity() == pShooter) && pTarget && (pVehicle || pActor) && !dead)
@@ -95,7 +101,13 @@ void CGameRules::ClientHit(const HitInfo& hitInfo)
 	if (!hitInfo.remote && hitInfo.targetId && !backface)
 	{
 		if (!gEnv->bServer)
+		{
+			//CryMP prevent any unexpected bugs etc..
+			if (gEnv->bMultiplayer && hitInfo.shooterId != pClientActor->GetEntityId())
+				return;
+
 			GetGameObject()->InvokeRMI(SvRequestHit(), hitInfo, eRMI_ToServer);
+		}
 		else
 			ServerHit(hitInfo);
 	}
@@ -128,7 +140,7 @@ void CGameRules::ServerSimpleHit(const SimpleHitInfo& simpleHitInfo)
 		{
 			pActor->Fall(Vec3(0.0f, 0.0f, 0.0f), false, simpleHitInfo.value);
 			//This is only used in SP by the player, so don't need further checks
-			CPlayer* pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetClientActor());
+			CPlayer* pPlayer = static_cast<CPlayer*>(m_pGameFramework->GetClientActor());
 			if (pPlayer)
 				pPlayer->PlaySound(CPlayer::ESound_TacBulletFeedBack, true);
 		}
@@ -331,7 +343,7 @@ void CGameRules::CullEntitiesInExplosion(const ExplosionInfo& explosionInfo)
 	float minExtent = g_pGameCVars->g_ec_extent;
 	int   removeThreshold = max(1, g_pGameCVars->g_ec_removeThreshold);
 
-	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+	IActor* pClientActor = m_pGameFramework->GetClientActor();
 
 	Vec3 radiusVec(radiusScale * explosionInfo.physRadius);
 	int i = gEnv->pPhysicalWorld->GetEntitiesInBox(explosionInfo.pos - radiusVec, explosionInfo.pos + radiusVec, pents, ent_rigid | ent_sleeping_rigid);
@@ -356,12 +368,12 @@ void CGameRules::CullEntitiesInExplosion(const ExplosionInfo& explosionInfo)
 					continue;
 
 				// don't remove items/pickups
-				if (IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pEntity->GetId()))
+				if (IItem* pItem = m_pGameFramework->GetIItemSystem()->GetItem(pEntity->GetId()))
 				{
 					continue;
 				}
 				// don't remove enemies/ragdolls
-				if (IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId()))
+				if (IActor* pActor = m_pActorSystem->GetActor(pEntity->GetId()))
 				{
 					continue;
 				}
@@ -442,13 +454,13 @@ void CGameRules::ClientExplosion(const ExplosionInfo& explosionInfo)
 
 		CreateScriptExplosionInfo(m_scriptExplosionInfo, explosionInfo);
 		UpdateAffectedEntitiesSet(affectedEntities, &explosion);
-
+	
 		// check vehicles
-		IVehicleSystem* pVehicleSystem = g_pGame->GetIGameFramework()->GetIVehicleSystem();
+		IVehicleSystem* pVehicleSystem = m_pGameFramework->GetIVehicleSystem();
 		uint32 vcount = pVehicleSystem->GetVehicleCount();
 		if (vcount > 0)
 		{
-			IVehicleIteratorPtr iter = g_pGame->GetIGameFramework()->GetIVehicleSystem()->CreateVehicleIterator();
+			IVehicleIteratorPtr iter = m_pGameFramework->GetIVehicleSystem()->CreateVehicleIterator();
 			while (IVehicle* pVehicle = iter->Next())
 			{
 				if (IEntity* pEntity = pVehicle->GetEntity())
@@ -479,7 +491,7 @@ void CGameRules::ClientExplosion(const ExplosionInfo& explosionInfo)
 
 		float fSuitEnergyBeforeExplosion = 0.0f;
 		float fHealthBeforeExplosion = 0.0f;
-		IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+		IActor* pClientActor = m_pGameFramework->GetClientActor();
 		if (pClientActor)
 		{
 			fSuitEnergyBeforeExplosion = static_cast<CPlayer*>(pClientActor)->GetNanoSuit()->GetSuitEnergy();
@@ -560,7 +572,7 @@ void CGameRules::ClientExplosion(const ExplosionInfo& explosionInfo)
 //-------------------------------------------
 void CGameRules::ProcessClientExplosionScreenFX(const ExplosionInfo& explosionInfo)
 {
-	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+	IActor* pClientActor = m_pGameFramework->GetClientActor();
 	if (pClientActor)
 	{
 		//Distance
@@ -764,10 +776,10 @@ IMPLEMENT_RMI(CGameRules, ClRenameEntity)
 
 		// if this was a remote player, check we're not spectating them.
 		//	If we are, we need to trigger a spectator hud update for the new name
-		EntityId clientId = g_pGame->GetIGameFramework()->GetClientActorId();
+		EntityId clientId = m_pGameFramework->GetClientActorId();
 		if (gEnv->bMultiplayer && params.entityId != clientId)
 		{
-			CActor* pClientActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
+			CActor* pClientActor = static_cast<CActor*>(m_pGameFramework->GetClientActor());
 			if (pClientActor && pClientActor->GetSpectatorMode() == CActor::eASM_Follow && pClientActor->GetSpectatorTarget() == params.entityId && g_pGame->GetHUD())
 			{
 				g_pGame->GetHUD()->RefreshSpectatorHUDText();
@@ -878,7 +890,7 @@ IMPLEMENT_RMI(CGameRules, ClSetTeam)
 		}
 	}
 
-	if (IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor())
+	if (IActor* pClient = m_pGameFramework->GetClientActor())
 	{
 		if (GetTeam(pClient->GetEntityId()) == params.teamId)
 		{
