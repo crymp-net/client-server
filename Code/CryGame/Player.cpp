@@ -209,6 +209,8 @@ CPlayer::CPlayer()
 	m_bVoiceSoundRecursionFlag = false;
 
 	m_vehicleViewDir.Set(0, 1, 0);
+	m_tpLeanOffset = 0.0f;
+	m_tpProneOffset = 0.0f;
 }
 
 CPlayer::~CPlayer()
@@ -421,7 +423,9 @@ void CPlayer::ProcessEvent(SEntityEvent& event)
 
 			IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 			if ((pRenderProxy != NULL) && pRenderProxy->IsCharactersUpdatedBeforePhysics())
+			{
 				PrePhysicsUpdate();
+			}
 		}
 
 	CActor::ProcessEvent(event);
@@ -718,8 +722,9 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 	IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 	if ((pRenderProxy == NULL) || !pRenderProxy->IsCharactersUpdatedBeforePhysics())
+	{
 		PrePhysicsUpdate();
-
+	}
 	IEntity* pEnt = GetEntity();
 	if (pEnt->IsHidden() && !(GetEntity()->GetFlags() & ENTITY_FLAG_UPDATE_HIDDEN))
 		return;
@@ -1191,7 +1196,7 @@ bool CPlayer::ShouldUsePhysicsMovement()
 	return false;
 }
 
-void CPlayer::ProcessCharacterOffset()
+void CPlayer::ProcessCharacterOffset(float frameTime)
 {
 	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
 	{
@@ -1244,27 +1249,72 @@ void CPlayer::ProcessCharacterOffset()
 			}
 		}
 
-		/*
-			SEntitySlotInfo slotInfo;
-			pEnt->GetSlotInfo( 0, slotInfo );
-
-			Matrix34 LocalTM=Matrix34(IDENTITY);
-			if (slotInfo.pLocalTM)
-				LocalTM=*slotInfo.pLocalTM;
-
-			LocalTM.m03 += m_modelOffset.x;
-			LocalTM.m13 += m_modelOffset.y;
-			LocalTM.m23 += m_modelOffset.z;
-		  pEnt->SetSlotLocalTM(0,LocalTM);
-		*/
-
 		m_modelOffset.z = 0.0f;
 
-		//DebugGraph_AddValue("ModelOffsetX", m_modelOffset.x);
-		//DebugGraph_AddValue("ModelOffsetY", m_modelOffset.y);
-
-		GetAnimatedCharacter()->SetExtraAnimationOffset(QuatT(m_modelOffset, IDENTITY));
+		if (!ProcessProceduralLean(frameTime))
+			GetAnimatedCharacter()->SetExtraAnimationOffset(QuatT(m_modelOffset, IDENTITY));
 	}
+}
+
+bool CPlayer::ProcessProceduralLean(float frameTime)
+{
+	//CryMP: New Lean
+	//if (!IsPlayer() || m_stats.isFrozen || m_stats.isRagDoll || m_linkStats.GetLinked())
+	//	return;
+
+	//apply procedural leaning, for the third person character.
+	Ang3 headAnglesGoal(0, m_viewRoll * 3.0f, 0);
+	Interpolate(m_headAngles, headAnglesGoal, 10.0f, frameTime, 30.0f);
+
+	if (m_tpLeanOffset * m_tpLeanOffset > 0.001f || m_headAngles.y * m_headAngles.y > 0.001f)
+	{
+		const float amount = g_pGameCVars->cl_leanAmount;
+		float max = m_stats.leanAmount > 0.0f ? amount : 0.0f;
+		if (m_stats.leanAmount < 0.0f)
+			max = -amount;
+
+		max *= fabs(m_stats.leanAmount);
+
+		//lean more to the left, as weapon usually is in right hand
+		if (max < 0.0f)
+			max *= 1.4f;
+
+		float zOffset = 0.0f;
+
+		if (GetStance() == EStance::STANCE_PRONE)
+		{
+			max *= 3.0f;
+			zOffset = 0.08f;
+		}
+
+		Interpolate(m_tpLeanOffset, max, 10.0f, frameTime, 5.0f);
+		Interpolate(m_tpProneOffset, zOffset, 5.0f, frameTime, 5.0f);
+
+		Vec3 model = m_modelOffset;
+		model.z += m_tpProneOffset;
+
+		auto quat = QuatT(model, IDENTITY);
+		Ang3 offset = Ang3(0.0f, m_tpLeanOffset, 0.0f);
+
+		const auto rot = Quat::CreateRotationXYZ(offset);
+		quat.q *= rot;
+
+		GetAnimatedCharacter()->SetExtraAnimationOffset(quat);
+		return true;
+
+	}
+	else if (m_tpProneOffset * m_tpProneOffset > 0.001f > 0.0f)
+	{
+		Vec3 model = m_modelOffset;
+		Interpolate(m_tpProneOffset, 0.0f, 5.0f, frameTime, 5.0f);
+		model.z += m_tpProneOffset;
+
+		auto quat = QuatT(model, IDENTITY);
+
+		GetAnimatedCharacter()->SetExtraAnimationOffset(quat);
+		return true;
+	}
+	return false;
 }
 
 void CPlayer::PrePhysicsUpdate()
@@ -1361,6 +1411,7 @@ void CPlayer::PrePhysicsUpdate()
 	if (!IsPlayer())
 		fpMode = false;
 	m_pAnimatedCharacter->GetAnimationGraphState()->SetFirstPersonMode(fpMode);
+
 
 	if (m_pMovementController)
 	{
@@ -1465,11 +1516,11 @@ void CPlayer::PrePhysicsUpdate()
 
 	if (pCharacter)
 	{
-		ProcessCharacterOffset();
+		ProcessCharacterOffset(frameTime);
 
 		if (client || (IsPlayer() && gEnv->bServer))
 			pCharacter->GetISkeletonPose()->SetForceSkeletonUpdate(4);
-
+		
 		if (client)
 		{
 			// clear the players look target every frame
@@ -3461,7 +3512,6 @@ void CPlayer::PostPhysicalize()
 	pCharacter->GetISkeletonPose()->GetCharacterPhysics()->SetParams(&sim);
 	pCharacter->GetISkeletonPose()->GetCharacterPhysics()->SetParams(&flags);
 
-
 	//set a default offset for the character, so in the editor the bbox is correct
 	if (m_pAnimatedCharacter)
 	{
@@ -4559,44 +4609,6 @@ float CPlayer::GetActorStrength() const
 void CPlayer::ProcessBonesRotation(ICharacterInstance* pCharacter, float frameTime)
 {
 	CActor::ProcessBonesRotation(pCharacter, frameTime);
-
-	if (!IsPlayer() || m_stats.isFrozen || m_stats.isRagDoll || !pCharacter || m_linkStats.GetLinked())
-		return;
-
-	//apply procedural leaning, for the third person character.
-	Ang3 headAnglesGoal(0, m_viewRoll * 3.0f, 0);
-	Interpolate(m_headAngles, headAnglesGoal, 10.0f, frameTime, 30.0f);
-
-	if (m_headAngles.y * m_headAngles.y > 0.001f)
-	{
-		Ang3 headAngles(m_headAngles);
-
-		headAngles.y *= 0.25f;
-
-		int16 id[3];
-		id[0] = GetBoneID(BONE_SPINE);
-		id[1] = GetBoneID(BONE_SPINE2);
-		id[2] = GetBoneID(BONE_SPINE3);
-
-		float leanValues[3];
-		leanValues[0] = m_headAngles.y * 0.5f;
-		leanValues[1] = m_headAngles.y * 0.5f;
-		leanValues[2] = -m_headAngles.y * 0.5f;
-
-		for (int i = 0;i < 3;++i)
-		{
-			QuatT lQuat;
-			int16 JointID = id[i];
-
-			if (JointID > -1)
-			{
-				lQuat = pCharacter->GetISkeletonPose()->GetRelJointByID(JointID);
-				lQuat.q *= Quat::CreateRotationAA(leanValues[i], Vec3(0.0f, 1.0f, 0.0f));
-
-				pCharacter->GetISkeletonPose()->SetPostProcessQuat(JointID, lQuat);
-			}
-		}
-	}
 }
 
 void CPlayer::ProcessIKLegs(ICharacterInstance* pCharacter, float frameTime)

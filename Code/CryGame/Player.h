@@ -391,6 +391,7 @@ public:
 	void SetDeathTimer() { m_fDeathTime = gEnv->pTimer->GetFrameStartTime().GetSeconds(); }
 	float GetDeathTime() const { return m_fDeathTime; }
 
+	bool ProcessProceduralLean(float frameTime);
 	void SufferingHighLatency(bool highLatency);
 
 	static  const char* GetActorClassType() { return "CPlayer"; }
@@ -605,7 +606,7 @@ public:
 	void ChangeParachuteState(int8 newState);
 	void UpdateFreefallAnimationInputs(bool force=false);
 
-	void ProcessCharacterOffset();
+	void ProcessCharacterOffset(float frameTime);
 
 	const Quat& GetBaseQuat() { return m_baseQuat; }
 	const Quat& GetViewQuat() { return m_viewQuat; }
@@ -829,6 +830,8 @@ protected:
 
 	CVehicleClient* m_pVehicleClient;
 	Vec3 m_vehicleViewDir;
+	float m_tpLeanOffset;
+	float m_tpProneOffset;
 
 	//sound loops that are played when we don't have a nanosuit
 	float		 m_sprintTimer;

@@ -55,6 +55,8 @@ struct SCVars
 	float goc_targety;
 	float goc_targetz;
 
+	float cl_leanAmount;
+
 	// bullet time CVars
 	int		bt_ironsight;
 	int		bt_speed;
