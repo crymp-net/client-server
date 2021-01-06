@@ -1548,8 +1548,8 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	if (!m_pAnimatedCharacter)
 		return;
 
-	//	if (!IsThirdPerson() && !IsPlayer())
-	//		return;
+	if (!IsThirdPerson())
+		return;
 
 	IAnimationGraphState* pGraph = m_pAnimatedCharacter ? m_pAnimatedCharacter->GetAnimationGraphState() : NULL;
 	if (!pGraph)
@@ -1611,8 +1611,52 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 		{
 			SMovementState info;
 			m_pMovementController->GetMovementState(info);
-			aimTarget = info.eyePosition + info.aimDirection * 5.0f; // If this is too close the aiming will fade out.
-			aimEnabled = true;
+
+			const Vec3 p = curMovementState.fireDirection;
+
+			//CryMP: Weapon direction in 3rd person matching 1st person 
+			if (g_pGameCVars->cl_usePostProcessAimDir && IsThirdPerson())
+			{
+				auto* pWeapon = GetCurrentItem();
+				if (!pWeapon)
+					return;
+
+				const auto* pW = static_cast<CWeapon*>(pWeapon->GetIWeapon());
+				if (pW && pW->IsWeaponRaised())
+					return;
+
+				Vec3 cameraPosition;
+				if (IsClient())
+					cameraPosition = GetViewMatrix().GetTranslation();
+				else
+					cameraPosition = curMovementState.eyePosition;
+
+				const Vec3 startPos = curMovementState.weaponPosition;
+				Vec3 HitPos = startPos;
+				const Vec3 WPos = pWeapon->GetEntity()->GetWorldPos();
+				float distance = 250.f;
+				HitPos = startPos + curMovementState.fireDirection * distance;
+				const Vec3 direction = (HitPos - WPos);
+				const Vec3 cameraAimDirection = curMovementState.aimDirection.normalized() * distance;
+				ray_hit hit;
+				const uint32 flags = rwi_colltype_any | rwi_force_pierceable_noncoll | rwi_stop_at_pierceable;
+				IPhysicalEntity* pSkipEnt = pEntity->GetPhysics();
+
+				if (GetGameObject()->IsProbablyVisible() && !GetGameObject()->IsProbablyDistant())
+					gEnv->pPhysicalWorld->RayWorldIntersection(startPos, direction, ent_all, flags, &hit, 1, &pSkipEnt, 1);
+
+				if (hit.dist >= 1.0f) // Target is actually in front of the gun
+				{
+					aimTarget = hit.pt;
+				}
+				else
+				{
+					aimTarget = startPos + direction;
+				}
+			}
+
+			CWeapon* pW = GetWeapon(GetCurrentItemId());
+			aimEnabled = !IsSprinting() || (pW && pW->IsReloading());
 
 			// TODO: This should probably be moved somewhere else and not done every frame.
 			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
@@ -1641,17 +1685,8 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 			}
 		}
 		pSkeletonPose->SetAimIK(aimEnabled, aimTarget);
+
 		pGraph->SetInput(m_inputAiming, aimEnabled ? 1 : 0);
-
-
-		/*
-				if (frameMovementParams.aimIK)
-				{
-					ICVar *pg_aimDebug = gEnv->pConsole->GetCVar("g_aimdebug");
-					if (pg_aimDebug && pg_aimDebug->GetIVal()!=0)
-						gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(  frameMovementParams.aimTarget, 0.5f, ColorB(255,0,255,255) );
-				}
-		*/
 	}
 }
 

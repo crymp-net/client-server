@@ -561,7 +561,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	//CRYMP CVars
 	pConsole->Register("cl_crymp", &cl_crymp, 0);
 	pConsole->Register("cl_circleJump", &cl_circleJump, 0, VF_NOT_NET_SYNCED);
-	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 0, VF_NOT_NET_SYNCED, "");
+	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("cl_messageCenterColor", &cl_messageCenterColor, 1, VF_NOT_NET_SYNCED);
 
 	pConsole->Register("cl_animationWeaponMult", &cl_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
