@@ -70,12 +70,14 @@ void CIronSight::Update(float frameTime, uint frameId)
 	if (m_zoomTime > 0.0f)	// zoomTime is set to 0.0 when zooming ends
 	{
 		keepUpdating = true;
-		float t = CLAMP(1.0f - m_zoomTimer / m_zoomTime, 0.0f, 1.0f);
+		const float t = CLAMP(1.0f - m_zoomTimer / m_zoomTime, 0.0f, 1.0f);
+		const bool pFinishedZoom = t >= 1.0f;
+		const bool pZoomingIn = m_startFoV > m_endFoV;
 		float fovScale;
 
 		if (m_smooth)
 		{
-			if (m_startFoV > m_endFoV)
+			if (pZoomingIn)
 				doft = t;
 			else
 				doft = 1.0f - t;
@@ -85,18 +87,19 @@ void CIronSight::Update(float frameTime, uint frameId)
 		else
 		{
 			fovScale = m_startFoV;
-			if (t >= 1.0f)
+			if (pFinishedZoom)
 				fovScale = m_endFoV;
 		}
 
-		OnZoomStep(m_startFoV > m_endFoV, t);
+		OnZoomStep(pZoomingIn, t);
 
 		SetActorFoVScale(fovScale, true, true, true);
 
 		if (isClient && m_zoomparams.scope_mode && !UseAlternativeIronSight())
 		{
-			AdjustScopePosition(t * 1.25f, m_startFoV > m_endFoV);
-			AdjustNearFov(t * 1.25f, m_startFoV > m_endFoV);
+			const float pTime = t * 1.25f;
+			AdjustScopePosition(pTime, pZoomingIn);
+			AdjustNearFov(pTime, pZoomingIn);
 		}
 
 		// marcok: please don't touch
@@ -105,17 +108,19 @@ void CIronSight::Update(float frameTime, uint frameId)
 			g_pGameCVars->goc_targety = LERP((-2.5f), (-1.5f), doft * doft);
 		}
 
-		if (t >= 1.0f)
+		if (pFinishedZoom)
 		{
 			if (m_zoomingIn)
 			{
 				m_zoomed = true;
-				m_pWeapon->RequestZoom(fovScale);
+				if (pActor && pActor->IsClient())
+					m_pWeapon->RequestZoom(fovScale);
 			}
 			else
 			{
 				m_zoomed = false;
-				m_pWeapon->RequestZoom(1.0f);
+				if (pActor && pActor->IsClient())
+					m_pWeapon->RequestZoom(1.0f);
 			}
 
 			m_zoomTime = 0.0f;
@@ -242,7 +247,6 @@ void CIronSight::Activate(bool activate)
 	m_zoomingIn = false;
 
 	m_currentStep = 0;
-	m_prevStep = 0;
 	m_lastRecoil = 0.0f;
 
 	SetRecoilScale(1.0f);
@@ -272,28 +276,26 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 {
 	if (m_pWeapon->IsBusy() || (IsToggle() && IsZooming()))
 		return false;
+
 	CActor* pActor = m_pWeapon->GetOwnerActor();
 	if (pActor && pActor->GetScreenEffects() != 0)
 	{
 		pActor->GetScreenEffects()->EnableBlends(false, pActor->m_autoZoomInID);
 		pActor->GetScreenEffects()->EnableBlends(false, pActor->m_autoZoomOutID);
 		pActor->GetScreenEffects()->EnableBlends(false, pActor->m_hitReactionID);
-
-		CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
 	}
 
 	if (!m_zoomed || stayZoomed)
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true, zoomStep);
-		m_prevStep = m_currentStep;
 		m_currentStep = zoomStep;
 
 		m_pWeapon->AssistAiming(m_zoomparams.stages[m_currentStep - 1], true);
 	}
 	else
 	{
-		int currentStep = m_currentStep;
-		int nextStep = currentStep + 1;
+		const int currentStep = m_currentStep;
+		const int nextStep = currentStep + 1;
 
 		if (nextStep > m_zoomparams.stages.size())
 		{
@@ -305,10 +307,9 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 				}
 				else
 				{
-					float oFoV = GetZoomFoVScale(currentStep);
-					m_prevStep = m_currentStep;
+					const float oFoV = GetZoomFoVScale(currentStep);
 					m_currentStep = 0;
-					float tFoV = GetZoomFoVScale(m_currentStep);
+					const float tFoV = GetZoomFoVScale(m_currentStep);
 					ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 					return true;
 				}
@@ -316,12 +317,11 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 		}
 		else
 		{
-			float oFoV = GetZoomFoVScale(currentStep);
-			float tFoV = GetZoomFoVScale(nextStep);
+			const float oFoV = GetZoomFoVScale(currentStep);
+			const float tFoV = GetZoomFoVScale(nextStep);
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
-			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 
 			m_pWeapon->AssistAiming(m_zoomparams.stages[m_currentStep - 1], true);
@@ -335,7 +335,6 @@ bool CIronSight::StartZoom(bool stayZoomed, bool fullZoomout, int zoomStep)
 void CIronSight::StopZoom()
 {
 	LeaveZoom(m_zoomparams.zoom_out_time, true);
-	m_prevStep = m_currentStep;
 	m_currentStep = 0;
 }
 
@@ -345,7 +344,6 @@ void CIronSight::ExitZoom()
 	if (m_zoomed || m_zoomTime > 0.0f)
 	{
 		LeaveZoom(m_zoomparams.zoom_out_time, true);
-		m_prevStep = m_currentStep;
 		m_currentStep = 0;
 	}
 }
@@ -356,27 +354,25 @@ void CIronSight::ZoomIn()
 	if (m_pWeapon->IsBusy())
 		return;
 
-	if (!m_zoomed)
+	if (!IsZoomed())
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true);
-		m_prevStep = m_currentStep;
 		m_currentStep = 1;
 	}
 	else
 	{
-		int currentStep = m_currentStep;
-		int nextStep = currentStep + 1;
+		const int currentStep = m_currentStep;
+		const int nextStep = currentStep + 1;
 
 		if (nextStep > m_zoomparams.stages.size())
 			return;
 		else
 		{
-			float oFoV = GetZoomFoVScale(currentStep);
-			float tFoV = GetZoomFoVScale(nextStep);
+			const float oFoV = GetZoomFoVScale(currentStep);
+			const float tFoV = GetZoomFoVScale(nextStep);
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
-			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 		}
 	}
@@ -388,27 +384,25 @@ bool CIronSight::ZoomOut()
 	if (m_pWeapon->IsBusy())
 		return false;
 
-	if (!m_zoomed)
+	if (!IsZoomed())
 	{
 		EnterZoom(m_zoomparams.zoom_in_time, m_zoomparams.layer.c_str(), true);
-		m_prevStep = m_currentStep;
 		m_currentStep = 1;
 	}
 	else
 	{
-		int currentStep = m_currentStep;
-		int nextStep = currentStep - 1;
+		const int currentStep = m_currentStep;
+		const int nextStep = currentStep - 1;
 
 		if (nextStep < 1)
 			return false;
 		else
 		{
-			float oFoV = GetZoomFoVScale(currentStep);
-			float tFoV = GetZoomFoVScale(nextStep);
+			const float oFoV = GetZoomFoVScale(currentStep);
+			const float tFoV = GetZoomFoVScale(nextStep);
 
 			ZoomIn(m_zoomparams.stage_time, oFoV, tFoV, true);
 
-			m_prevStep = m_currentStep;
 			m_currentStep = nextStep;
 			return true;
 		}
@@ -500,7 +494,6 @@ void CIronSight::LeaveZoom(float time, bool smooth)
 
 	m_pWeapon->SetActionSuffix("");
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->idle);
-	m_prevStep = m_currentStep;
 	m_currentStep = 0;
 }
 
@@ -633,12 +626,12 @@ void CIronSight::ZoomOut(float time, float from, float to, bool smooth)
 	m_smooth = smooth;
 
 
-	float totalFoV = abs(m_endFoV - m_startFoV);
-	float ownerFoV = GetActorFoVScale();
+	const float totalFoV = abs(m_endFoV - m_startFoV);
+	const float ownerFoV = GetActorFoVScale();
 
 	m_startFoV = ownerFoV;
 
-	float deltaFoV = abs(m_endFoV - m_startFoV);
+	const float deltaFoV = abs(m_endFoV - m_startFoV);
 
 	if (deltaFoV < totalFoV)
 	{
@@ -711,15 +704,12 @@ void CIronSight::OnZoomedIn()
 		}
 	}
 
-	// SNH: fix for infinite multiplication of recoil etc... only patch the parameters when first entering zoom.
-	//	(previously this happened when going from 10x to 4x and back for the sniper scope).
-	if (m_currentStep == 1 && m_prevStep == 0)
-		ApplyZoomMod(m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode()));
-
 	m_swayCycle = 0.0f;
 	m_lastRecoil = 0.0f;
 
 	m_pWeapon->SetFPWeapon(0.45f, true);
+
+	ApplyZoomMod(m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode()));
 }
 
 //------------------------------------------------------------------------
@@ -728,6 +718,9 @@ void CIronSight::OnLeaveZoom()
 	m_pWeapon->SetFPWeapon(0.1f, true);
 	ClearBlur();
 	ClearDoF();
+
+	//Reset spread and recoil modifications
+	ResetZoomMod(m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode()));
 }
 
 //------------------------------------------------------------------------
@@ -754,19 +747,8 @@ void CIronSight::OnZoomedOut()
 		}
 	}
 
-
-	//Reset spread and recoil modifications
-	IFireMode* pFireMode = m_pWeapon->GetFireMode(m_pWeapon->GetCurrentFireMode());
-
-	if (pFireMode)
-	{
-		pFireMode->ResetSpreadMod();
-		pFireMode->ResetRecoilMod();
-	}
-
 	if (m_zoomparams.scope_mode)
 		ResetFovAndPosition();
-
 }
 
 //------------------------------------------------------------------------
@@ -858,10 +840,11 @@ void CIronSight::Serialize(TSerialize ser)
 //------------------------------------------------------------------------
 void CIronSight::SetActorFoVScale(float fovScale, bool sens, bool recoil, bool hbob)
 {
-	if (!m_pWeapon->GetOwnerActor())
+	auto* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
 		return;
 
-	SActorParams* pActorParams = m_pWeapon->GetOwnerActor()->GetActorParams();
+	SActorParams* pActorParams = pOwner->GetActorParams();
 	if (!pActorParams)
 		return;
 
@@ -876,17 +859,16 @@ void CIronSight::SetActorFoVScale(float fovScale, bool sens, bool recoil, bool h
 		pActorParams->weaponInertiaMultiplier = mult;
 		pActorParams->weaponBobbingMultiplier = mult;
 	}
-
-
 }
 
 //------------------------------------------------------------------------
 float CIronSight::GetActorFoVScale() const
 {
-	if (!m_pWeapon->GetOwnerActor())
+	auto* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
 		return 1.0f;
 
-	SActorParams* pActorParams = m_pWeapon->GetOwnerActor()->GetActorParams();
+	SActorParams* pActorParams = pOwner->GetActorParams();
 	if (!pActorParams)
 		return 1.0f;
 
@@ -897,11 +879,11 @@ float CIronSight::GetActorFoVScale() const
 //------------------------------------------------------------------------
 void CIronSight::SetActorSpeedScale(float scale)
 {
-	if (!m_pWeapon->GetOwnerActor())
+	auto *pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner || !pOwner->IsClient())
 		return;
 
-	if (CActor* pActor = m_pWeapon->GetOwnerActor())
-		pActor->SetZoomSpeedMultiplier(scale);
+	pOwner->SetZoomSpeedMultiplier(scale);
 }
 
 //------------------------------------------------------------------------
@@ -966,7 +948,10 @@ float CIronSight::GetZoomFoVScale(int step) const
 	if (!step)
 		return 1.0f;
 
-	return 1.0f / m_zoomparams.stages[step - 1];
+	if (m_zoomparams.stages[step - 1])
+		return 1.0f / m_zoomparams.stages[step - 1];
+
+	return 1.0f;
 }
 
 //------------------------------------------------------------------------
@@ -1077,8 +1062,27 @@ void CIronSight::ApplyZoomMod(IFireMode* pFM)
 {
 	if (pFM)
 	{
-		pFM->PatchSpreadMod(m_spreadModParams);
-		pFM->PatchRecoilMod(m_recoilModParams);
+		// CryMP: fix for infinite multiplication of recoil etc... 
+		//(previously this happened when going from 10x to 4x and back for the sniper scope).
+
+		//Always reset Zoom mod first
+		ResetZoomMod(pFM);
+
+		for (int i = 0, n = m_currentStep; i < n; ++i)
+		{
+			pFM->PatchSpreadMod(m_spreadModParams);
+			pFM->PatchRecoilMod(m_recoilModParams);
+		}
+	}
+}
+
+//--------------------------------------------------------------------------
+void CIronSight::ResetZoomMod(IFireMode* pFM)
+{
+	if (pFM)
+	{
+		pFM->ResetRecoilMod();
+		pFM->ResetSpreadMod();
 	}
 }
 
@@ -1091,7 +1095,6 @@ bool CIronSight::IsToggle()
 //-----------------------------------------------------------------------
 void CIronSight::FilterView(SViewParams& viewparams)
 {
-
 	if ((m_zoomsway.maxX <= 0.0f) && (m_zoomsway.maxY <= 0.0f))
 		return;
 
@@ -1106,12 +1109,15 @@ void CIronSight::FilterView(SViewParams& viewparams)
 	Quat rotation(viewAngles);
 
 	viewparams.rotation = rotation;
-
 }
 
 //--------------------------------------------------------------------------
 void CIronSight::ZoomSway(float time, float& x, float& y)
 {
+	CPlayer* pPlayer = static_cast<CPlayer*>(m_pWeapon->GetOwnerActor()); 
+	if (!pPlayer || !pPlayer->IsClient()) 
+		return;
+
 	static bool  firing = false;
 
 	bool wasFiring = firing;
@@ -1143,23 +1149,22 @@ void CIronSight::ZoomSway(float time, float& x, float& y)
 	//Strength scale
 	float strengthScale = 1.0f;
 	float stanceScale = 1.0f;
-	if (CPlayer* pPlayer = static_cast<CPlayer*>(m_pWeapon->GetOwnerActor()))
-	{
-		if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-			pStats->FPWeaponSwayOn = true;
 
-		if (pPlayer->GetNanoSuit() && pPlayer->GetNanoSuit()->GetMode() == NANOMODE_STRENGTH)
-			strengthScale = m_zoomsway.strengthScale;
+	if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
+		pStats->FPWeaponSwayOn = true;
 
-		//Stance mods
-		if (pPlayer->GetStance() == STANCE_CROUCH)
-			stanceScale = m_zoomsway.crouchScale;
-		else if (pPlayer->GetStance() == STANCE_PRONE)
-			stanceScale = m_zoomsway.proneScale;
+	if (pPlayer->GetNanoSuit() && pPlayer->GetNanoSuit()->GetMode() == NANOMODE_STRENGTH)
+		strengthScale = m_zoomsway.strengthScale;
 
-		//CryMP: let server know about zoom sway
+	//Stance mods
+	if (pPlayer->GetStance() == STANCE_CROUCH)
+		stanceScale = m_zoomsway.crouchScale;
+	else if (pPlayer->GetStance() == STANCE_PRONE)
+		stanceScale = m_zoomsway.proneScale;
+
+	//CryMP: let server know about zoom sway
+	if (pPlayer->IsClient())
 		pPlayer->GetGameObject()->ChangedNetworkState(IPlayerInput::INPUT_ASPECT);
-	}
 
 	//Time factor
 	float factor = m_zoomsway.minScale;

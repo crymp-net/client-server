@@ -308,6 +308,7 @@ public:
 	virtual int  GetMaxZoomSteps() { return m_zoomparams.stages.size(); };
 
 	virtual void ApplyZoomMod(IFireMode* pFM);
+	virtual void ResetZoomMod(IFireMode* pFM);
 
 	virtual bool IsToggle();
 
@@ -383,7 +384,6 @@ protected:
 	float					m_endFoV;
 	bool					m_smooth;
 	int						m_currentStep;
-	int						m_prevStep;
 
 	float					m_initialNearFov;
 

@@ -371,7 +371,7 @@ bool CWeapon::OnActionModify(EntityId actorId, const ActionId& actionId, int act
 			m_fm->StopFire();
 
 		if(m_zm && m_zm->IsZoomed())
-			m_zm->StopZoom();
+			StopZoom(actorId);
 
 		if(m_weaponRaised)
 			RaiseWeapon(false,true);
@@ -421,9 +421,10 @@ bool CWeapon::OnActionZoomIn(EntityId actorId, const ActionId& actionId, int act
 {
 	if(m_zm && m_zm->IsZoomed())
 	{
-		int numSteps = m_zm->GetMaxZoomSteps();
-		if((numSteps>1) && (m_zm->GetCurrentStep()<numSteps))
-			StartZoom(actorId,1);	
+		//int numSteps = m_zm->GetMaxZoomSteps();
+		//if((numSteps>1) && (m_zm->GetCurrentStep()<numSteps))
+			m_zm->ZoomIn();
+			//StartZoom(actorId,1);	
 	}
 
 	return true;
@@ -434,8 +435,8 @@ bool CWeapon::OnActionZoomOut(EntityId actorId, const ActionId& actionId, int ac
 {
 	if(m_zm && m_zm->IsZoomed())
 	{
-		int numSteps = m_zm->GetMaxZoomSteps();
-		if((numSteps>1) && (m_zm->GetCurrentStep()>1))
+		//int numSteps = m_zm->GetMaxZoomSteps();
+		//if((numSteps>1) && (m_zm->GetCurrentStep()>1))
 			m_zm->ZoomOut();
 	}
 
@@ -478,14 +479,14 @@ bool CWeapon::OnActionZoom(EntityId actorId, const ActionId& actionId, int activ
 
 						//Use mouse wheel for scopes with several steps/stages
 						if (m_zm && m_zm->IsZoomed() && m_zm->GetMaxZoomSteps()>1)
-							m_zm->StopZoom();
+							StopZoom(actorId);
 						else
 							StartZoom(actorId,1);
 					}
 					else if (activationMode == eAAM_OnRelease)
 					{
-						if(m_zm && !m_zm->IsToggle())
-							m_zm->StopZoom();
+						if (m_zm && !m_zm->IsToggle())
+							StopZoom(actorId);
 					}
 				}
 			}
