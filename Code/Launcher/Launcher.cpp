@@ -68,6 +68,9 @@ static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCry
 	if (!Patch::RemoveSecuROM(pCrySystem))
 		return false;
 
+	if (!Patch::MakeDX9Default(pCrySystem))
+		return false;
+
 	if (!Patch::AllowDX9VeryHighSpec(pCrySystem))
 		return false;
 

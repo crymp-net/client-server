@@ -17,6 +17,7 @@ namespace Patch
 
 	// CrySystem
 	bool RemoveSecuROM(void *pCrySystem);
+	bool MakeDX9Default(void *pCrySystem);
 	bool AllowDX9VeryHighSpec(void *pCrySystem);
 	bool AllowMultipleInstances(void *pCrySystem);
 	bool UnhandledExceptions(void *pCrySystem);

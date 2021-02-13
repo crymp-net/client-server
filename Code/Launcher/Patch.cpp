@@ -117,6 +117,26 @@ bool Patch::RemoveSecuROM(void *pCrySystem)
 }
 
 /**
+ * @brief Makes DX9 mode the default.
+ * It's still possible to use the "-dx10" command line parameter to run the game in DX10 mode.
+ * @param pCrySystem CrySystem DLL handle.
+ * @return True if no error occurred, otherwise false.
+ */
+bool Patch::MakeDX9Default(void *pCrySystem)
+{
+#ifdef BUILD_64BIT
+	if (!FillNOP(RVA(pCrySystem, 0x46719), 0x1F))
+#else
+	if (!FillNOP(RVA(pCrySystem, 0x59D86), 0x5))
+#endif
+	{
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * @brief Allows Very High settings in DX9 mode.
  * @param pCrySystem CrySystem DLL handle.
  * @return True if no error occurred, otherwise false.
