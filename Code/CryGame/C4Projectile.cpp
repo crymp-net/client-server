@@ -16,6 +16,7 @@ History:
 #include "Player.h"
 #include "GameRules.h"
 #include "Bullet.h"
+#include "HUD/HUD.h"
 
 CC4Projectile::CC4Projectile() :
 	m_stuck(false),
@@ -73,6 +74,12 @@ void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocit
 		{
 			((CPlayer*)pOwner)->RecordExplosivePlaced(GetEntityId(), 2);
 		}
+	}
+
+	if (gEnv->bClient)
+	{
+		if (g_pGame->GetHUD())
+			g_pGame->GetHUD()->RecordExplosivePlaced(GetEntityId());
 	}
 }
 

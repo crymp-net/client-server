@@ -729,7 +729,7 @@ private:
 	int		m_lastPlayerPPSet;
 
 	//entity classes for faster comparison
-	IEntityClass *m_pSCAR, *m_pSCARTut, *m_pFY71, *m_pSMG, *m_pDSG1, *m_pShotgun, *m_pLAW, *m_pGauss, *m_pClaymore, *m_pAVMine;
+	IEntityClass *m_pSCAR, *m_pSCARTut, *m_pFY71, *m_pSMG, *m_pDSG1, *m_pShotgun, *m_pLAW, *m_pGauss, *m_pClaymore, *m_pAVMine, *m_pC4;
 
 	THUDObjectiveList m_hudObjectivesList;
 

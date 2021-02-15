@@ -210,6 +210,7 @@ CHUD::CHUD()
 	m_pGauss = gEnv->pEntitySystem->GetClassRegistry()->FindClass("GaussRifle");
 	m_pClaymore = gEnv->pEntitySystem->GetClassRegistry()->FindClass("claymoreexplosive");
 	m_pAVMine = gEnv->pEntitySystem->GetClassRegistry()->FindClass("avexplosive");
+	m_pC4 = gEnv->pEntitySystem->GetClassRegistry()->FindClass("c4explosive");
 
 
 	m_fDefenseTimer = m_fStrengthTimer = m_fSpeedTimer = 0;
