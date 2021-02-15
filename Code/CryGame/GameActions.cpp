@@ -529,4 +529,14 @@ void CGameActions::CreateFilterNoConnectivity()
 	m_pFilterNoConnectivity->Filter(hud_show_multiplayer_scoreboard);
 	m_pFilterNoConnectivity->Filter(hud_hide_multiplayer_scoreboard);
 	m_pFilterNoConnectivity->Filter(scores);
+
+	//CryMP feature:
+	//Allow chat, modify weapon, move mouse and zoom actions during network lag
+	m_pFilterNoConnectivity->Filter(hud_openchat);
+	m_pFilterNoConnectivity->Filter(hud_openteamchat);
+	m_pFilterNoConnectivity->Filter(modify);
+	m_pFilterNoConnectivity->Filter(rotatepitch);
+	m_pFilterNoConnectivity->Filter(rotateyaw);
+	m_pFilterNoConnectivity->Filter(zoom);
+	m_pFilterNoConnectivity->Filter(zoom_out);
 }
