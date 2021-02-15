@@ -884,7 +884,8 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 									targetPoint = pEntity->GetWorldPos() + pClaymore->GetTriggerDirection();
 								}
 							}
-							else if(pClass == m_pAVMine)
+							//CryMP: Also display friendly C4
+							else if(pClass == m_pAVMine || pClass == m_pC4)
 							{
 								icon = eOS_Mine;
 							}
