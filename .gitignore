@@ -1,2 +1,10 @@
 Build/
 build.sh
+*.ipch
+*.opendb
+*.db-wal
+*.db-shm
+*.db
+.vs/crymp-client-CLEAN/v16/.suo
+*.json
+*.sqlite

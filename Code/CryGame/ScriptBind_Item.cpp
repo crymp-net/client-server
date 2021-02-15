@@ -4,7 +4,7 @@
  -------------------------------------------------------------------------
   $Id$
   $DateTime$
-  
+
  -------------------------------------------------------------------------
   History:
   - 27:10:2004   11:29 : Created by Márcio Martins
@@ -34,8 +34,8 @@
 
 
 //------------------------------------------------------------------------
-CScriptBind_Item::CScriptBind_Item(ISystem *pSystem, IGameFramework *pGameFramework)
-: m_pSystem(pSystem),
+CScriptBind_Item::CScriptBind_Item(ISystem* pSystem, IGameFramework* pGameFramework)
+	: m_pSystem(pSystem),
 	m_pSS(pSystem->GetIScriptSystem()),
 	m_pGameFW(pGameFramework)
 {
@@ -54,9 +54,9 @@ CScriptBind_Item::~CScriptBind_Item()
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_Item::AttachTo(CItem *pItem)
+void CScriptBind_Item::AttachTo(CItem* pItem)
 {
-	IScriptTable *pScriptTable = pItem->GetEntity()->GetScriptTable();
+	IScriptTable* pScriptTable = pItem->GetEntity()->GetScriptTable();
 
 	if (pScriptTable)
 	{
@@ -100,12 +100,12 @@ void CScriptBind_Item::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(StopUse, "userId");
 	SCRIPT_REG_TEMPLFUNC(Use, "userId");
 	SCRIPT_REG_TEMPLFUNC(IsUsed, "");
- 	SCRIPT_REG_TEMPLFUNC(GetMountedDir, "");
+	SCRIPT_REG_TEMPLFUNC(GetMountedDir, "");
 	SCRIPT_REG_TEMPLFUNC(GetMountedAngleLimits, "");
-	SCRIPT_REG_TEMPLFUNC(SetMountedAngleLimits,"min_pitch, max_pitch, yaw_range");
+	SCRIPT_REG_TEMPLFUNC(SetMountedAngleLimits, "min_pitch, max_pitch, yaw_range");
 
-   SCRIPT_REG_TEMPLFUNC(OnHit, "hit");
-  SCRIPT_REG_TEMPLFUNC(IsDestroyed, "");
+	SCRIPT_REG_TEMPLFUNC(OnHit, "hit");
+	SCRIPT_REG_TEMPLFUNC(IsDestroyed, "");
 	SCRIPT_REG_TEMPLFUNC(OnUsed, "userId");
 
 	SCRIPT_REG_TEMPLFUNC(GetHealth, "");
@@ -113,30 +113,30 @@ void CScriptBind_Item::RegisterMethods()
 }
 
 //------------------------------------------------------------------------
-CItem *CScriptBind_Item::GetItem(IFunctionHandler *pH)
+CItem* CScriptBind_Item::GetItem(IFunctionHandler* pH)
 {
-	void *pThis = pH->GetThis();
+	void* pThis = pH->GetThis();
 
 	if (pThis)
 	{
-		IItem *pItem = m_pGameFW->GetIItemSystem()->GetItem((EntityId)(UINT_PTR)pThis);
+		IItem* pItem = m_pGameFW->GetIItemSystem()->GetItem((EntityId)(UINT_PTR)pThis);
 		if (pItem)
-			return static_cast<CItem *>(pItem);
+			return static_cast<CItem*>(pItem);
 	}
 
 	return 0;
 }
 
 //------------------------------------------------------------------------
-CActor *CScriptBind_Item::GetActor(EntityId actorId)
+CActor* CScriptBind_Item::GetActor(EntityId actorId)
 {
-	return static_cast<CActor *>(m_pGameFW->GetIActorSystem()->GetActor(actorId));
+	return static_cast<CActor*>(m_pGameFW->GetIActorSystem()->GetActor(actorId));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::SetExtensionActivation(IFunctionHandler *pH, const char *extension, bool activation)
+int CScriptBind_Item::SetExtensionActivation(IFunctionHandler* pH, const char* extension, bool activation)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -152,14 +152,14 @@ int CScriptBind_Item::SetExtensionActivation(IFunctionHandler *pH, const char *e
 		}
 	}
 	if (!ok)
-		pH->GetIScriptSystem()->RaiseError("Failed to %s extension %s", activation? "enable" : "disable", extension);
+		pH->GetIScriptSystem()->RaiseError("Failed to %s extension %s", activation ? "enable" : "disable", extension);
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::SetExtensionParams(IFunctionHandler* pH, const char *extension, SmartScriptTable params)
+int CScriptBind_Item::SetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -172,9 +172,9 @@ int CScriptBind_Item::SetExtensionParams(IFunctionHandler* pH, const char *exten
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetExtensionParams(IFunctionHandler* pH, const char *extension, SmartScriptTable params)
+int CScriptBind_Item::GetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
 {
-	CItem * pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -187,9 +187,9 @@ int CScriptBind_Item::GetExtensionParams(IFunctionHandler* pH, const char *exten
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::Select(IFunctionHandler *pH, bool select)
+int CScriptBind_Item::Select(IFunctionHandler* pH, bool select)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -203,9 +203,9 @@ int CScriptBind_Item::Select(IFunctionHandler *pH, bool select)
 #define GVALUE(table, struc, value)	table->SetValue(#value, struc.value)
 #define SVALUE(table, struc, value)	table->SetValue(#value, struc.value.c_str())
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetStats(IFunctionHandler *pH)
+int CScriptBind_Item::GetStats(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 	GVALUE(m_stats, pItem->m_stats, fp);
@@ -219,9 +219,9 @@ int CScriptBind_Item::GetStats(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetParams(IFunctionHandler *pH)
+int CScriptBind_Item::GetParams(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -244,9 +244,9 @@ int CScriptBind_Item::GetParams(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::Reset(IFunctionHandler *pH)
+int CScriptBind_Item::Reset(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -256,9 +256,9 @@ int CScriptBind_Item::Reset(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::Quiet(IFunctionHandler *pH)
+int CScriptBind_Item::Quiet(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -268,9 +268,9 @@ int CScriptBind_Item::Quiet(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::CanPickUp(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::CanPickUp(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -278,9 +278,9 @@ int CScriptBind_Item::CanPickUp(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::CanUse(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::CanUse(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -288,9 +288,9 @@ int CScriptBind_Item::CanUse(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::IsMounted(IFunctionHandler *pH)
+int CScriptBind_Item::IsMounted(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -298,9 +298,9 @@ int CScriptBind_Item::IsMounted(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::PlayAction(IFunctionHandler *pH, const char *actionName)
+int CScriptBind_Item::PlayAction(IFunctionHandler* pH, const char* actionName)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -310,9 +310,9 @@ int CScriptBind_Item::PlayAction(IFunctionHandler *pH, const char *actionName)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetOwnerId(IFunctionHandler *pH)
+int CScriptBind_Item::GetOwnerId(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -320,9 +320,9 @@ int CScriptBind_Item::GetOwnerId(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::StartUse(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::StartUse(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -332,9 +332,9 @@ int CScriptBind_Item::StartUse(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::StopUse(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::StopUse(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -344,9 +344,9 @@ int CScriptBind_Item::StopUse(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::Use(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::Use(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -356,9 +356,9 @@ int CScriptBind_Item::Use(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::IsUsed(IFunctionHandler *pH)
+int CScriptBind_Item::IsUsed(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -366,9 +366,9 @@ int CScriptBind_Item::IsUsed(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetMountedDir(IFunctionHandler *pH)
+int CScriptBind_Item::GetMountedDir(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -377,9 +377,9 @@ int CScriptBind_Item::GetMountedDir(IFunctionHandler *pH)
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetMountedAngleLimits(IFunctionHandler *pH)
+int CScriptBind_Item::GetMountedAngleLimits(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
@@ -387,9 +387,9 @@ int CScriptBind_Item::GetMountedAngleLimits(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::SetMountedAngleLimits(IFunctionHandler *pH, float min_pitch, float max_pitch, float yaw_range)
+int CScriptBind_Item::SetMountedAngleLimits(IFunctionHandler* pH, float min_pitch, float max_pitch, float yaw_range)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (pItem)
 		pItem->SetMountedAngleLimits(min_pitch, max_pitch, yaw_range);
 	return pH->EndFunction();
@@ -397,42 +397,42 @@ int CScriptBind_Item::SetMountedAngleLimits(IFunctionHandler *pH, float min_pitc
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::OnHit(IFunctionHandler *pH, SmartScriptTable hitTable)
+int CScriptBind_Item::OnHit(IFunctionHandler* pH, SmartScriptTable hitTable)
 {
-  CItem *pItem = GetItem(pH);
-  if (!pItem)
-    return pH->EndFunction();
+	CItem* pItem = GetItem(pH);
+	if (!pItem)
+		return pH->EndFunction();
 
-  float damage = 0.f;
-  hitTable->GetValue("damage", damage);
-  char* damageType = 0;
-  hitTable->GetValue("type",damageType);
-  
-  pItem->OnHit(damage,damageType);
+	float damage = 0.f;
+	hitTable->GetValue("damage", damage);
+	char* damageType = 0;
+	hitTable->GetValue("type", damageType);
 
-  return pH->EndFunction();
+	pItem->OnHit(damage, damageType);
+
+	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::IsDestroyed(IFunctionHandler *pH)
+int CScriptBind_Item::IsDestroyed(IFunctionHandler* pH)
 {
-  CItem *pItem = GetItem(pH);
-  if (!pItem)
-    return pH->EndFunction(false);
+	CItem* pItem = GetItem(pH);
+	if (!pItem)
+		return pH->EndFunction(false);
 
-  return pH->EndFunction(pItem->IsDestroyed());
+	return pH->EndFunction(pItem->IsDestroyed());
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::OnUsed(IFunctionHandler *pH, ScriptHandle userId)
+int CScriptBind_Item::OnUsed(IFunctionHandler* pH, ScriptHandle userId)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (!pItem)
 		return pH->EndFunction();
 
 	if (pItem->CanUse((EntityId)userId.n))
 	{
-		CActor *pActor=GetActor((EntityId)userId.n);
+		CActor* pActor = GetActor((EntityId)userId.n);
 		if (pActor)
 		{
 			pActor->UseItem(pItem->GetEntityId());
@@ -441,7 +441,7 @@ int CScriptBind_Item::OnUsed(IFunctionHandler *pH, ScriptHandle userId)
 	}
 	else if (pItem->CanPickUp((EntityId)userId.n))
 	{
-		CActor *pActor=GetActor((EntityId)userId.n);
+		CActor* pActor = GetActor((EntityId)userId.n);
 		if (pActor)
 		{
 			pActor->PickUpItem(pItem->GetEntityId(), true);
@@ -453,9 +453,9 @@ int CScriptBind_Item::OnUsed(IFunctionHandler *pH, ScriptHandle userId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetHealth(IFunctionHandler *pH)
+int CScriptBind_Item::GetHealth(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (pItem)
 		return pH->EndFunction(pItem->GetStats().health);
 
@@ -463,9 +463,9 @@ int CScriptBind_Item::GetHealth(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Item::GetMaxHealth(IFunctionHandler *pH)
+int CScriptBind_Item::GetMaxHealth(IFunctionHandler* pH)
 {
-	CItem *pItem = GetItem(pH);
+	CItem* pItem = GetItem(pH);
 	if (pItem)
 		return pH->EndFunction(pItem->GetProperties().hitpoints);
 

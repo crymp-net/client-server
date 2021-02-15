@@ -27,26 +27,26 @@ class CScriptBind_Game :
 	public CScriptableBase
 {
 public:
-	CScriptBind_Game(ISystem *pSystem, IGameFramework *pGameFramework);
+	CScriptBind_Game(ISystem* pSystem, IGameFramework* pGameFramework);
 	virtual ~CScriptBind_Game();
 
 protected:
-	int ShowMainMenu(IFunctionHandler *pH);
-	int ShowInGameMenu(IFunctionHandler *pH);
-	int PauseGame(IFunctionHandler *pH, bool pause);
-	int PlayFlashAnim(IFunctionHandler *pH);
-	int PlayVideo(IFunctionHandler *pH);
+	int ShowMainMenu(IFunctionHandler* pH);
+	int ShowInGameMenu(IFunctionHandler* pH);
+	int PauseGame(IFunctionHandler* pH, bool pause);
+	int PlayFlashAnim(IFunctionHandler* pH);
+	int PlayVideo(IFunctionHandler* pH);
 	//!	Queries battle status, range from 0 (quiet) to 1 (full combat)
-	int	QueryBattleStatus(IFunctionHandler *pH);
-	int GetNumLightsActivated(IFunctionHandler *pH);
+	int	QueryBattleStatus(IFunctionHandler* pH);
+	int GetNumLightsActivated(IFunctionHandler* pH);
 
 private:
 	void RegisterGlobals();
 	void RegisterMethods();
 
-	ISystem						*m_pSystem;
-	IScriptSystem			*m_pSS;
-	IGameFramework		*m_pGameFW;
+	ISystem* m_pSystem;
+	IScriptSystem* m_pSS;
+	IGameFramework* m_pGameFW;
 };
 
 #endif //__SCRIPTBIND_GAME_H__

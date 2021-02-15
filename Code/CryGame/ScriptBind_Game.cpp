@@ -18,8 +18,8 @@ History:
 #include "Lam.h"
 
 //------------------------------------------------------------------------
-CScriptBind_Game::CScriptBind_Game(ISystem *pSystem, IGameFramework *pGameFramework)
-: m_pSystem(pSystem),
+CScriptBind_Game::CScriptBind_Game(ISystem* pSystem, IGameFramework* pGameFramework)
+	: m_pSystem(pSystem),
 	m_pSS(pSystem->GetIScriptSystem()),
 	m_pGameFW(pGameFramework)
 {
@@ -52,13 +52,13 @@ void CScriptBind_Game::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(PlayFlashAnim, "");
 	SCRIPT_REG_TEMPLFUNC(PlayVideo, "");
 	SCRIPT_REG_TEMPLFUNC(QueryBattleStatus, "");
-	SCRIPT_REG_TEMPLFUNC(GetNumLightsActivated,"");
+	SCRIPT_REG_TEMPLFUNC(GetNumLightsActivated, "");
 
 #undef SCRIPT_REG_CLASSNAME
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Game::ShowMainMenu(IFunctionHandler *pH)
+int CScriptBind_Game::ShowMainMenu(IFunctionHandler* pH)
 {
 	CFlashMenuObject* pFMO = CFlashMenuObject::GetFlashMenuObject();
 	if (pFMO)
@@ -69,7 +69,7 @@ int CScriptBind_Game::ShowMainMenu(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Game::ShowInGameMenu(IFunctionHandler *pH)
+int CScriptBind_Game::ShowInGameMenu(IFunctionHandler* pH)
 {
 	CFlashMenuObject* pFMO = CFlashMenuObject::GetFlashMenuObject();
 	if (pFMO)
@@ -80,7 +80,7 @@ int CScriptBind_Game::ShowInGameMenu(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Game::PauseGame( IFunctionHandler *pH, bool pause )
+int CScriptBind_Game::PauseGame(IFunctionHandler* pH, bool pause)
 {
 	bool forced = false;
 
@@ -94,7 +94,7 @@ int CScriptBind_Game::PauseGame( IFunctionHandler *pH, bool pause )
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Game::PlayFlashAnim(IFunctionHandler *pH)
+int CScriptBind_Game::PlayFlashAnim(IFunctionHandler* pH)
 {
 	SCRIPT_CHECK_PARAMETERS(1);
 
@@ -108,7 +108,7 @@ int CScriptBind_Game::PlayFlashAnim(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Game::PlayVideo(IFunctionHandler *pH)
+int CScriptBind_Game::PlayVideo(IFunctionHandler* pH)
 {
 	SCRIPT_CHECK_PARAMETERS_MIN(1);
 
@@ -139,19 +139,19 @@ int CScriptBind_Game::PlayVideo(IFunctionHandler *pH)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CScriptBind_Game::QueryBattleStatus(IFunctionHandler *pH)
-{		
-	float fStatus=0;
-	if (g_pGame && g_pGame->GetHUD()) 
-	{	
-		CHUD *pHUD = g_pGame->GetHUD();
-		fStatus=pHUD->QueryBattleStatus();		
+int CScriptBind_Game::QueryBattleStatus(IFunctionHandler* pH)
+{
+	float fStatus = 0;
+	if (g_pGame && g_pGame->GetHUD())
+	{
+		CHUD* pHUD = g_pGame->GetHUD();
+		fStatus = pHUD->QueryBattleStatus();
 	}
 	return pH->EndFunction(fStatus);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CScriptBind_Game::GetNumLightsActivated(IFunctionHandler *pH)
-{		
+int CScriptBind_Game::GetNumLightsActivated(IFunctionHandler* pH)
+{
 	return pH->EndFunction(CLam::GetNumLightsActivated());
 }

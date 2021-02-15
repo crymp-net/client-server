@@ -19,8 +19,8 @@ History:
 #include "MPTutorial.h"
 
 //------------------------------------------------------------------------
-CScriptBind_GameRules::CScriptBind_GameRules(ISystem *pSystem, IGameFramework *pGameFramework)
-: m_pSystem(pSystem),
+CScriptBind_GameRules::CScriptBind_GameRules(ISystem* pSystem, IGameFramework* pGameFramework)
+	: m_pSystem(pSystem),
 	m_pSS(pSystem->GetIScriptSystem()),
 	m_pGameFW(pGameFramework)
 {
@@ -59,21 +59,21 @@ void CScriptBind_GameRules::RegisterGlobals()
 	m_pSS->SetGlobalValue("TextMessageToClient", eRMI_ToClientChannel);
 	m_pSS->SetGlobalValue("TextMessageToOtherClients", eRMI_ToOtherClients);
 
- 	m_pSS->SetGlobalValue("eTE_TurretUnderAttack", eTE_TurretUnderAttack);
- 	m_pSS->SetGlobalValue("eTE_GameOverWin", eTE_GameOverWin);
- 	m_pSS->SetGlobalValue("eTE_GameOverLose", eTE_GameOverLose);
- 	m_pSS->SetGlobalValue("eTE_TACTankStarted", eTE_TACTankStarted);
- 	m_pSS->SetGlobalValue("eTE_SingularityStarted", eTE_SingularityStarted);
- 	m_pSS->SetGlobalValue("eTE_TACTankCompleted", eTE_TACTankCompleted);
+	m_pSS->SetGlobalValue("eTE_TurretUnderAttack", eTE_TurretUnderAttack);
+	m_pSS->SetGlobalValue("eTE_GameOverWin", eTE_GameOverWin);
+	m_pSS->SetGlobalValue("eTE_GameOverLose", eTE_GameOverLose);
+	m_pSS->SetGlobalValue("eTE_TACTankStarted", eTE_TACTankStarted);
+	m_pSS->SetGlobalValue("eTE_SingularityStarted", eTE_SingularityStarted);
+	m_pSS->SetGlobalValue("eTE_TACTankCompleted", eTE_TACTankCompleted);
 	m_pSS->SetGlobalValue("eTE_TACLauncherCompleted", eTE_TACLauncherCompleted);
- 	m_pSS->SetGlobalValue("eTE_SingularityCompleted", eTE_SingularityCompleted);
+	m_pSS->SetGlobalValue("eTE_SingularityCompleted", eTE_SingularityCompleted);
 	m_pSS->SetGlobalValue("eTE_EnemyNearBase", eTE_EnemyNearBase);
 	m_pSS->SetGlobalValue("eTE_Promotion", eTE_Promotion);
 	m_pSS->SetGlobalValue("eTE_Reactor50", eTE_Reactor50);
 	m_pSS->SetGlobalValue("eTE_Reactor100", eTE_Reactor100);
 	m_pSS->SetGlobalValue("eTE_ApproachEnemyHq", eTE_ApproachEnemyHq);
 	m_pSS->SetGlobalValue("eTE_ApproachEnemySub", eTE_ApproachEnemySub);
-	m_pSS->SetGlobalValue("eTE_ApproachEnemyCarrier", eTE_ApproachEnemyCarrier);	
+	m_pSS->SetGlobalValue("eTE_ApproachEnemyCarrier", eTE_ApproachEnemyCarrier);
 }
 
 //------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void CScriptBind_GameRules::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(IsProjectile, "entityId");
 	SCRIPT_REG_TEMPLFUNC(IsSameTeam, "entityId0, entityId1");
 	SCRIPT_REG_TEMPLFUNC(IsNeutral, "entityId");
-	
+
 	SCRIPT_REG_TEMPLFUNC(AddSpawnLocation, "entityId");
 	SCRIPT_REG_TEMPLFUNC(RemoveSpawnLocation, "id");
 	SCRIPT_REG_TEMPLFUNC(GetSpawnLocationCount, "");
@@ -224,8 +224,8 @@ void CScriptBind_GameRules::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(GetRoundLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetFragLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetFragLead, "");
-  SCRIPT_REG_TEMPLFUNC(GetFriendlyFireRatio, "");
-  SCRIPT_REG_TEMPLFUNC(GetReviveTime, "");
+	SCRIPT_REG_TEMPLFUNC(GetFriendlyFireRatio, "");
+	SCRIPT_REG_TEMPLFUNC(GetReviveTime, "");
 	SCRIPT_REG_TEMPLFUNC(GetMinPlayerLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetMinTeamLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetTeamLock, "");
@@ -236,7 +236,7 @@ void CScriptBind_GameRules::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(FreezeEntity, "entityId, freeze, vapor");
 	SCRIPT_REG_TEMPLFUNC(ShatterEntity, "entityId, pos, impulse");
 
-  SCRIPT_REG_TEMPLFUNC(DebugCollisionDamage, "");
+	SCRIPT_REG_TEMPLFUNC(DebugCollisionDamage, "");
 	SCRIPT_REG_TEMPLFUNC(DebugHits, "");
 
 	SCRIPT_REG_TEMPLFUNC(SendHitIndicator, "shooterId, explosion");
@@ -258,21 +258,21 @@ void CScriptBind_GameRules::RegisterMethods()
 }
 
 //------------------------------------------------------------------------
-CGameRules *CScriptBind_GameRules::GetGameRules(IFunctionHandler *pH)
+CGameRules* CScriptBind_GameRules::GetGameRules(IFunctionHandler* pH)
 {
-	return static_cast<CGameRules *>(m_pGameFW->GetIGameRulesSystem()->GetCurrentGameRules());
+	return static_cast<CGameRules*>(m_pGameFW->GetIGameRulesSystem()->GetCurrentGameRules());
 }
 
 //------------------------------------------------------------------------
-CActor *CScriptBind_GameRules::GetActor(EntityId id)
+CActor* CScriptBind_GameRules::GetActor(EntityId id)
 {
-	return static_cast<CActor *>(m_pGameFW->GetIActorSystem()->GetActor(id));
+	return static_cast<CActor*>(m_pGameFW->GetIActorSystem()->GetActor(id));
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_GameRules::AttachTo(CGameRules *pGameRules)
+void CScriptBind_GameRules::AttachTo(CGameRules* pGameRules)
 {
-	IScriptTable *pScriptTable = pGameRules->GetEntity()->GetScriptTable();
+	IScriptTable* pScriptTable = pGameRules->GetEntity()->GetScriptTable();
 
 	if (pScriptTable)
 	{
@@ -284,9 +284,9 @@ void CScriptBind_GameRules::AttachTo(CGameRules *pGameRules)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsServer(IFunctionHandler *pH)
+int CScriptBind_GameRules::IsServer(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (!pGameRules)
 		return pH->EndFunction();
 
@@ -294,9 +294,9 @@ int CScriptBind_GameRules::IsServer(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsClient(IFunctionHandler *pH)
+int CScriptBind_GameRules::IsClient(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (!pGameRules)
 		return pH->EndFunction();
 
@@ -304,9 +304,9 @@ int CScriptBind_GameRules::IsClient(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::CanCheat(IFunctionHandler *pH)
+int CScriptBind_GameRules::CanCheat(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (!pGameRules)
 		return pH->EndFunction();
 
@@ -317,14 +317,14 @@ int CScriptBind_GameRules::CanCheat(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SpawnPlayer(IFunctionHandler *pH, int channelId, const char *name, const char *className, Vec3 pos, Vec3 angles)
+int CScriptBind_GameRules::SpawnPlayer(IFunctionHandler* pH, int channelId, const char* name, const char* className, Vec3 pos, Vec3 angles)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = pGameRules->SpawnPlayer(channelId, name, className, pos, Ang3(angles));
+	CActor* pActor = pGameRules->SpawnPlayer(channelId, name, className, pos, Ang3(angles));
 
 	if (pActor)
 		return pH->EndFunction(pActor->GetEntity()->GetScriptTable());
@@ -333,14 +333,14 @@ int CScriptBind_GameRules::SpawnPlayer(IFunctionHandler *pH, int channelId, cons
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ChangePlayerClass(IFunctionHandler *pH, int channelId, const char *className)
+int CScriptBind_GameRules::ChangePlayerClass(IFunctionHandler* pH, int channelId, const char* className)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = pGameRules->ChangePlayerClass(channelId, className);
+	CActor* pActor = pGameRules->ChangePlayerClass(channelId, className);
 
 	if (pActor)
 		return pH->EndFunction(pActor->GetEntity()->GetScriptTable());
@@ -349,14 +349,14 @@ int CScriptBind_GameRules::ChangePlayerClass(IFunctionHandler *pH, int channelId
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RevivePlayer(IFunctionHandler *pH, ScriptHandle playerId, Vec3 pos, Vec3 angles, int teamId, bool clearInventory)
+int CScriptBind_GameRules::RevivePlayer(IFunctionHandler* pH, ScriptHandle playerId, Vec3 pos, Vec3 angles, int teamId, bool clearInventory)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = GetActor((EntityId)playerId.n);
+	CActor* pActor = GetActor((EntityId)playerId.n);
 
 	if (pActor)
 		pGameRules->RevivePlayer(pActor, pos, Ang3(angles), teamId, clearInventory);
@@ -365,14 +365,14 @@ int CScriptBind_GameRules::RevivePlayer(IFunctionHandler *pH, ScriptHandle playe
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RevivePlayerInVehicle(IFunctionHandler *pH, ScriptHandle playerId, ScriptHandle vehicleId, int seatId, int teamId, bool clearInventory)
+int CScriptBind_GameRules::RevivePlayerInVehicle(IFunctionHandler* pH, ScriptHandle playerId, ScriptHandle vehicleId, int seatId, int teamId, bool clearInventory)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = GetActor((EntityId)playerId.n);
+	CActor* pActor = GetActor((EntityId)playerId.n);
 
 	if (pActor)
 		pGameRules->RevivePlayerInVehicle(pActor, (EntityId)vehicleId.n, seatId, teamId, clearInventory);
@@ -381,14 +381,14 @@ int CScriptBind_GameRules::RevivePlayerInVehicle(IFunctionHandler *pH, ScriptHan
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RenamePlayer(IFunctionHandler *pH, ScriptHandle playerId, const char *name)
+int CScriptBind_GameRules::RenamePlayer(IFunctionHandler* pH, ScriptHandle playerId, const char* name)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = GetActor((EntityId)playerId.n);
+	CActor* pActor = GetActor((EntityId)playerId.n);
 
 	if (pActor)
 		pGameRules->RenamePlayer(pActor, name);
@@ -397,15 +397,15 @@ int CScriptBind_GameRules::RenamePlayer(IFunctionHandler *pH, ScriptHandle playe
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::KillPlayer(IFunctionHandler *pH, ScriptHandle playerId, bool dropItem, bool ragdoll,
-																			ScriptHandle shooterId, ScriptHandle weaponId, float damage, int material, int hit_type, Vec3 impulse)
+int CScriptBind_GameRules::KillPlayer(IFunctionHandler* pH, ScriptHandle playerId, bool dropItem, bool ragdoll,
+	ScriptHandle shooterId, ScriptHandle weaponId, float damage, int material, int hit_type, Vec3 impulse)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = GetActor((EntityId)playerId.n);
+	CActor* pActor = GetActor((EntityId)playerId.n);
 
 	if (pActor)
 		pGameRules->KillPlayer(pActor, dropItem, ragdoll, (EntityId)shooterId.n, (EntityId)weaponId.n, damage, material, hit_type, impulse);
@@ -414,14 +414,14 @@ int CScriptBind_GameRules::KillPlayer(IFunctionHandler *pH, ScriptHandle playerI
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::MovePlayer(IFunctionHandler *pH, ScriptHandle playerId, Vec3 pos, Vec3 angles)
+int CScriptBind_GameRules::MovePlayer(IFunctionHandler* pH, ScriptHandle playerId, Vec3 pos, Vec3 angles)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = GetActor((EntityId)playerId.n);
+	CActor* pActor = GetActor((EntityId)playerId.n);
 
 	if (pActor)
 		pGameRules->MovePlayer(pActor, pos, Ang3(angles));
@@ -430,14 +430,14 @@ int CScriptBind_GameRules::MovePlayer(IFunctionHandler *pH, ScriptHandle playerI
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetPlayerByChannelId(IFunctionHandler *pH, int channelId)
+int CScriptBind_GameRules::GetPlayerByChannelId(IFunctionHandler* pH, int channelId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	CActor *pActor = pGameRules->GetActorByChannelId(channelId);
+	CActor* pActor = pGameRules->GetActorByChannelId(channelId);
 	if (pActor)
 		return pH->EndFunction(pActor->GetEntity()->GetScriptTable());
 
@@ -445,88 +445,88 @@ int CScriptBind_GameRules::GetPlayerByChannelId(IFunctionHandler *pH, int channe
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetChannelId(IFunctionHandler *pH, ScriptHandle playerId)
+int CScriptBind_GameRules::GetChannelId(IFunctionHandler* pH, ScriptHandle playerId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int channelId=pGameRules->GetChannelId((EntityId)playerId.n);
+	int channelId = pGameRules->GetChannelId((EntityId)playerId.n);
 
 	return pH->EndFunction(channelId);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetPlayerCount(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetPlayerCount(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	bool inGame=false;
-	if (pH->GetParamCount()>0)
+	bool inGame = false;
+	if (pH->GetParamCount() > 0)
 		pH->GetParam(1, inGame);
 
 	return pH->EndFunction(pGameRules->GetPlayerCount(inGame));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpectatorCount(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpectatorCount(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	bool inGame=false;
-	if (pH->GetParamCount()>0)
+	bool inGame = false;
+	if (pH->GetParamCount() > 0)
 		pH->GetParam(1, inGame);
 
 	return pH->EndFunction(pGameRules->GetSpectatorCount(inGame));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetPlayers(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetPlayers(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
- 
-	int count=pGameRules->GetPlayerCount();
+
+	int count = pGameRules->GetPlayerCount();
 	if (!count)
 		return pH->EndFunction();
 
-	int tcount=m_players->Count();
+	int tcount = m_players->Count();
 
-	int i=0;
-	int k=0;
-	while(i<count)
+	int i = 0;
+	int k = 0;
+	while (i < count)
 	{
-		IEntity *pEntity=gEnv->pEntitySystem->GetEntity(pGameRules->GetPlayer(i));
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(pGameRules->GetPlayer(i));
 		if (pEntity)
 		{
-			IScriptTable *pEntityScript=pEntity->GetScriptTable();
+			IScriptTable* pEntityScript = pEntity->GetScriptTable();
 			if (pEntityScript)
 			{
-				m_players->SetAt(k+1, pEntityScript);
+				m_players->SetAt(k + 1, pEntityScript);
 				++k;
 			}
 		}
 		++i;
 	}
 
-	while(k<tcount)
+	while (k < tcount)
 		m_players->SetNullAt(++k);
 
 	return pH->EndFunction(m_players);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsPlayerInGame(IFunctionHandler *pH, ScriptHandle playerId)
+int CScriptBind_GameRules::IsPlayerInGame(IFunctionHandler* pH, ScriptHandle playerId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules && pGameRules->IsPlayerInGame((EntityId)playerId.n))
 		return pH->EndFunction(true);
@@ -535,35 +535,35 @@ int CScriptBind_GameRules::IsPlayerInGame(IFunctionHandler *pH, ScriptHandle pla
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsProjectile(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::IsProjectile(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	return pH->EndFunction(pGameRules->IsProjectile((EntityId)entityId.n));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsSameTeam(IFunctionHandler *pH, ScriptHandle entityId0, ScriptHandle entityId1)
+int CScriptBind_GameRules::IsSameTeam(IFunctionHandler* pH, ScriptHandle entityId0, ScriptHandle entityId1)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	int t0=pGameRules->GetTeam((EntityId)entityId0.n);
-	int t1=pGameRules->GetTeam((EntityId)entityId1.n);
+	int t0 = pGameRules->GetTeam((EntityId)entityId0.n);
+	int t1 = pGameRules->GetTeam((EntityId)entityId1.n);
 
-	if (t0==t1)
+	if (t0 == t1)
 		return pH->EndFunction(true);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsNeutral(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::IsNeutral(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	int t=pGameRules->GetTeam((EntityId)entityId.n);
+	int t = pGameRules->GetTeam((EntityId)entityId.n);
 
-	if (t==0)
+	if (t == 0)
 		return pH->EndFunction(true);
 
 	return pH->EndFunction();
@@ -571,31 +571,31 @@ int CScriptBind_GameRules::IsNeutral(IFunctionHandler *pH, ScriptHandle entityId
 
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddSpawnLocation(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::AddSpawnLocation(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->AddSpawnLocation((EntityId)entityId.n);
-	
+
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveSpawnLocation(IFunctionHandler *pH, ScriptHandle id)
+int CScriptBind_GameRules::RemoveSpawnLocation(IFunctionHandler* pH, ScriptHandle id)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->RemoveSpawnLocation((EntityId)id.n);
-	
+
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnLocationCount(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpawnLocationCount(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		return pH->EndFunction(pGameRules->GetSpawnLocationCount());
@@ -604,9 +604,9 @@ int CScriptBind_GameRules::GetSpawnLocationCount(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnLocationByIdx(IFunctionHandler *pH, int idx)
+int CScriptBind_GameRules::GetSpawnLocationByIdx(IFunctionHandler* pH, int idx)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 	{
@@ -614,63 +614,63 @@ int CScriptBind_GameRules::GetSpawnLocationByIdx(IFunctionHandler *pH, int idx)
 		if (id)
 			return pH->EndFunction(ScriptHandle(id));
 	}
-	
+
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnLocations(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpawnLocations(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int count=pGameRules->GetSpawnLocationCount();
+	int count = pGameRules->GetSpawnLocationCount();
 	if (!count)
 		return pH->EndFunction();
 
-	int tcount=m_spawnlocations->Count();
+	int tcount = m_spawnlocations->Count();
 
-	int i=0;
-	while(i<count)
+	int i = 0;
+	while (i < count)
 	{
 		m_spawnlocations->SetAt(i, ScriptHandle(pGameRules->GetSpawnLocation(i)));
 		++i;
 	}
 
-	while(i<tcount)
+	while (i < tcount)
 		m_spawnlocations->SetNullAt(++i);
 
 	return pH->EndFunction(m_spawnlocations);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnLocation(IFunctionHandler *pH, ScriptHandle playerId, bool ignoreTeam, bool includeNeutral)
+int CScriptBind_GameRules::GetSpawnLocation(IFunctionHandler* pH, ScriptHandle playerId, bool ignoreTeam, bool includeNeutral)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 	{
-		EntityId groupId=0;
-		float minDistanceToDeath=0.0f;
-		float zOffset=0.0f;
+		EntityId groupId = 0;
+		float minDistanceToDeath = 0.0f;
+		float zOffset = 0.0f;
 		Vec3 deathPos(ZERO);
 
-		if (pH->GetParamCount()>3 && pH->GetParamType(4)==svtPointer)
+		if (pH->GetParamCount() > 3 && pH->GetParamType(4) == svtPointer)
 		{
 			ScriptHandle groupIdHdl;
 			pH->GetParam(4, groupIdHdl);
-			groupId=(EntityId)groupIdHdl.n;
+			groupId = (EntityId)groupIdHdl.n;
 		}
 
-		if (pH->GetParamCount()>5 && pH->GetParamType(5)==svtNumber && pH->GetParamType(6)==svtObject)
+		if (pH->GetParamCount() > 5 && pH->GetParamType(5) == svtNumber && pH->GetParamType(6) == svtObject)
 		{
 			pH->GetParam(5, minDistanceToDeath);
 			pH->GetParam(6, deathPos);
 		}
 
-		EntityId id=pGameRules->GetSpawnLocation((EntityId)playerId.n, ignoreTeam, includeNeutral, groupId, minDistanceToDeath, deathPos, &zOffset);
+		EntityId id = pGameRules->GetSpawnLocation((EntityId)playerId.n, ignoreTeam, includeNeutral, groupId, minDistanceToDeath, deathPos, &zOffset);
 		if (id)
 			return pH->EndFunction(ScriptHandle(id), zOffset);
 	}
@@ -679,13 +679,13 @@ int CScriptBind_GameRules::GetSpawnLocation(IFunctionHandler *pH, ScriptHandle p
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetFirstSpawnLocation(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetFirstSpawnLocation(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 	{
-		EntityId id=pGameRules->GetFirstSpawnLocation(teamId);
+		EntityId id = pGameRules->GetFirstSpawnLocation(teamId);
 		if (id)
 			return pH->EndFunction(ScriptHandle(id));
 	}
@@ -694,9 +694,9 @@ int CScriptBind_GameRules::GetFirstSpawnLocation(IFunctionHandler *pH, int teamI
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddSpawnGroup(IFunctionHandler *pH, ScriptHandle groupId)
+int CScriptBind_GameRules::AddSpawnGroup(IFunctionHandler* pH, ScriptHandle groupId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->AddSpawnGroup((EntityId)groupId.n);
@@ -705,9 +705,9 @@ int CScriptBind_GameRules::AddSpawnGroup(IFunctionHandler *pH, ScriptHandle grou
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddSpawnLocationToSpawnGroup(IFunctionHandler *pH, ScriptHandle groupId, ScriptHandle location)
+int CScriptBind_GameRules::AddSpawnLocationToSpawnGroup(IFunctionHandler* pH, ScriptHandle groupId, ScriptHandle location)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->AddSpawnLocationToSpawnGroup((EntityId)groupId.n, (EntityId)location.n);
@@ -716,9 +716,9 @@ int CScriptBind_GameRules::AddSpawnLocationToSpawnGroup(IFunctionHandler *pH, Sc
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveSpawnLocationFromSpawnGroup(IFunctionHandler *pH, ScriptHandle groupId, ScriptHandle location)
+int CScriptBind_GameRules::RemoveSpawnLocationFromSpawnGroup(IFunctionHandler* pH, ScriptHandle groupId, ScriptHandle location)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->RemoveSpawnLocationFromSpawnGroup((EntityId)groupId.n, (EntityId)location.n);
@@ -727,9 +727,9 @@ int CScriptBind_GameRules::RemoveSpawnLocationFromSpawnGroup(IFunctionHandler *p
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveSpawnGroup(IFunctionHandler *pH, ScriptHandle groupId)
+int CScriptBind_GameRules::RemoveSpawnGroup(IFunctionHandler* pH, ScriptHandle groupId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->RemoveSpawnGroup((EntityId)groupId.n);
@@ -738,13 +738,13 @@ int CScriptBind_GameRules::RemoveSpawnGroup(IFunctionHandler *pH, ScriptHandle g
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnLocationGroup(IFunctionHandler *pH, ScriptHandle spawnId)
+int CScriptBind_GameRules::GetSpawnLocationGroup(IFunctionHandler* pH, ScriptHandle spawnId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 	{
-		EntityId groupId=pGameRules->GetSpawnLocationGroup((EntityId)spawnId.n);
+		EntityId groupId = pGameRules->GetSpawnLocationGroup((EntityId)spawnId.n);
 		if (groupId)
 			return pH->EndFunction(ScriptHandle(groupId));
 	}
@@ -753,43 +753,43 @@ int CScriptBind_GameRules::GetSpawnLocationGroup(IFunctionHandler *pH, ScriptHan
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpawnGroups(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpawnGroups(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int teamId=-1;
-	if (pH->GetParamCount()>0 && pH->GetParamType(1)==svtNumber)
+	int teamId = -1;
+	if (pH->GetParamCount() > 0 && pH->GetParamType(1) == svtNumber)
 		pH->GetParam(1, teamId);
 
-	int count=pGameRules->GetSpawnGroupCount();
+	int count = pGameRules->GetSpawnGroupCount();
 	if (!count)
 		return pH->EndFunction();
 
-	int tcount=m_spawngroups->Count();
+	int tcount = m_spawngroups->Count();
 
-	int i=0;
-	int k=0;
-	while(i<count)
+	int i = 0;
+	int k = 0;
+	while (i < count)
 	{
-		EntityId groupId=pGameRules->GetSpawnGroup(i);
-		if (teamId==-1 || teamId==pGameRules->GetTeam(groupId))
+		EntityId groupId = pGameRules->GetSpawnGroup(i);
+		if (teamId == -1 || teamId == pGameRules->GetTeam(groupId))
 			m_spawngroups->SetAt(k++, ScriptHandle(groupId));
 		++i;
 	}
 
-	while(i<tcount)
+	while (i < tcount)
 		m_spawngroups->SetNullAt(++i);
 
 	return pH->EndFunction(m_spawngroups);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsSpawnGroup(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::IsSpawnGroup(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -801,12 +801,12 @@ int CScriptBind_GameRules::IsSpawnGroup(IFunctionHandler *pH, ScriptHandle entit
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamDefaultSpawnGroup(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetTeamDefaultSpawnGroup(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (pGameRules)
 	{
-		EntityId id=pGameRules->GetTeamDefaultSpawnGroup(teamId);
+		EntityId id = pGameRules->GetTeamDefaultSpawnGroup(teamId);
 		if (id)
 			return pH->EndFunction(ScriptHandle(id));
 	}
@@ -814,9 +814,9 @@ int CScriptBind_GameRules::GetTeamDefaultSpawnGroup(IFunctionHandler *pH, int te
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetTeamDefaultSpawnGroup(IFunctionHandler *pH, int teamId, ScriptHandle groupId)
+int CScriptBind_GameRules::SetTeamDefaultSpawnGroup(IFunctionHandler* pH, int teamId, ScriptHandle groupId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (pGameRules)
 		pGameRules->SetTeamDefaultSpawnGroup(teamId, (EntityId)groupId.n);
 
@@ -824,9 +824,9 @@ int CScriptBind_GameRules::SetTeamDefaultSpawnGroup(IFunctionHandler *pH, int te
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetPlayerSpawnGroup(IFunctionHandler *pH, ScriptHandle playerId, ScriptHandle groupId)
+int CScriptBind_GameRules::SetPlayerSpawnGroup(IFunctionHandler* pH, ScriptHandle playerId, ScriptHandle groupId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (pGameRules)
 		pGameRules->SetPlayerSpawnGroup((EntityId)playerId.n, (EntityId)groupId.n);
 
@@ -834,9 +834,9 @@ int CScriptBind_GameRules::SetPlayerSpawnGroup(IFunctionHandler *pH, ScriptHandl
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddSpectatorLocation(IFunctionHandler *pH, ScriptHandle location)
+int CScriptBind_GameRules::AddSpectatorLocation(IFunctionHandler* pH, ScriptHandle location)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->AddSpectatorLocation((EntityId)location.n);
@@ -846,9 +846,9 @@ int CScriptBind_GameRules::AddSpectatorLocation(IFunctionHandler *pH, ScriptHand
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveSpectatorLocation(IFunctionHandler *pH, ScriptHandle id)
+int CScriptBind_GameRules::RemoveSpectatorLocation(IFunctionHandler* pH, ScriptHandle id)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->RemoveSpectatorLocation((EntityId)id.n);
@@ -858,9 +858,9 @@ int CScriptBind_GameRules::RemoveSpectatorLocation(IFunctionHandler *pH, ScriptH
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpectatorLocationCount(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpectatorLocationCount(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		return pH->EndFunction(pGameRules->GetSpectatorLocationCount());
@@ -869,9 +869,9 @@ int CScriptBind_GameRules::GetSpectatorLocationCount(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpectatorLocation(IFunctionHandler *pH, int idx)
+int CScriptBind_GameRules::GetSpectatorLocation(IFunctionHandler* pH, int idx)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		return pH->EndFunction(ScriptHandle(pGameRules->GetSpectatorLocation(idx)));
@@ -880,75 +880,75 @@ int CScriptBind_GameRules::GetSpectatorLocation(IFunctionHandler *pH, int idx)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSpectatorLocations(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetSpectatorLocations(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int count=pGameRules->GetSpectatorLocationCount();
+	int count = pGameRules->GetSpectatorLocationCount();
 	if (!count)
 		return pH->EndFunction();
 
-	int tcount=m_spectatorlocations->Count();
+	int tcount = m_spectatorlocations->Count();
 
-	int i=0;
-	while(i<count)
+	int i = 0;
+	while (i < count)
 	{
 		m_spectatorlocations->SetAt(i, ScriptHandle(pGameRules->GetSpectatorLocation(i)));
 		++i;
 	}
 
-	while(i<tcount)
+	while (i < tcount)
 		m_spectatorlocations->SetNullAt(++i);
 
 	return pH->EndFunction(m_spectatorlocations);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRandomSpectatorLocation(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRandomSpectatorLocation(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
-
-	if (pGameRules)
-	{
-		if (EntityId locationId=pGameRules->GetRandomSpectatorLocation())
-			return pH->EndFunction(ScriptHandle(locationId));
-	}
-
-	return pH->EndFunction();
-}
-
-//------------------------------------------------------------------------
-int CScriptBind_GameRules::GetInterestingSpectatorLocation(IFunctionHandler *pH)
-{
-	CGameRules *pGameRules=GetGameRules(pH);
-
-	if (pGameRules)
-	{
-		if (EntityId locationId=pGameRules->GetInterestingSpectatorLocation())
-			return pH->EndFunction(ScriptHandle(locationId));
-	}
-
-	return pH->EndFunction();
-}
-
-//------------------------------------------------------------------------
-int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler *pH, ScriptHandle playerId, int change)
-{
-	if(change >= 1) change = 1;
-	if(change <= 0) change = -1;
 	CGameRules* pGameRules = GetGameRules(pH);
-	if(pGameRules)
+
+	if (pGameRules)
+	{
+		if (EntityId locationId = pGameRules->GetRandomSpectatorLocation())
+			return pH->EndFunction(ScriptHandle(locationId));
+	}
+
+	return pH->EndFunction();
+}
+
+//------------------------------------------------------------------------
+int CScriptBind_GameRules::GetInterestingSpectatorLocation(IFunctionHandler* pH)
+{
+	CGameRules* pGameRules = GetGameRules(pH);
+
+	if (pGameRules)
+	{
+		if (EntityId locationId = pGameRules->GetInterestingSpectatorLocation())
+			return pH->EndFunction(ScriptHandle(locationId));
+	}
+
+	return pH->EndFunction();
+}
+
+//------------------------------------------------------------------------
+int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler* pH, ScriptHandle playerId, int change)
+{
+	if (change >= 1) change = 1;
+	if (change <= 0) change = -1;
+	CGameRules* pGameRules = GetGameRules(pH);
+	if (pGameRules)
 	{
 		CPlayer* pPlayer = (CPlayer*)gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor((EntityId)playerId.n);
-		if(pPlayer)
+		if (pPlayer)
 		{
 			// get list of possible players (team mates or all players)
 			CGameRules::TPlayers players;
 			int team = pGameRules->GetTeam((EntityId)playerId.n);
-			if(g_pGame->GetCVars()->g_spectate_TeamOnly == 0 || pGameRules->GetTeamCount() == 0 || team == 0)
+			if (g_pGame->GetCVars()->g_spectate_TeamOnly == 0 || pGameRules->GetTeamCount() == 0 || team == 0)
 			{
 				pGameRules->GetPlayers(players);
 			}
@@ -960,13 +960,13 @@ int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler *pH, ScriptHa
 
 			// work out which one we are currently watching
 			int index = 0;
-			for(; index < players.size(); ++index)
-				if(players[index] == pPlayer->GetSpectatorTarget())
+			for (; index < players.size(); ++index)
+				if (players[index] == pPlayer->GetSpectatorTarget())
 					break;
 
 			// loop through the players to find a valid one.
 			bool found = false;
-			if(numPlayers > 0)
+			if (numPlayers > 0)
 			{
 				int newTargetIndex = index;
 				int numAttempts = numPlayers;
@@ -976,29 +976,29 @@ int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler *pH, ScriptHa
 					--numAttempts;
 
 					// wrap around
-					if(newTargetIndex < 0)
-						newTargetIndex = numPlayers-1;
-					if(newTargetIndex >= numPlayers)
+					if (newTargetIndex < 0)
+						newTargetIndex = numPlayers - 1;
+					if (newTargetIndex >= numPlayers)
 						newTargetIndex = 0;
 
 					// skip ourself
-					if(players[newTargetIndex] == playerId.n)
+					if (players[newTargetIndex] == playerId.n)
 						continue;
 
 					// skip dead players
 					IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(players[newTargetIndex]);
-					if(!pActor || pActor->GetHealth() <= 0)
-						continue;				
+					if (!pActor || pActor->GetHealth() <= 0)
+						continue;
 
 					// skip spectating players
-					if(((CPlayer*)pActor)->GetSpectatorMode() != CActor::eASM_None)
+					if (((CPlayer*)pActor)->GetSpectatorMode() != CActor::eASM_None)
 						continue;
-					
+
 					// otherwise this one will do.
 					found = true;
-				} while(!found && numAttempts > 0);
+				} while (!found && numAttempts > 0);
 
-				if(found)
+				if (found)
 					return pH->EndFunction(ScriptHandle(players[newTargetIndex]));
 			}
 		}
@@ -1009,10 +1009,10 @@ int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler *pH, ScriptHa
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::ChangeSpectatorMode(IFunctionHandler* pH, ScriptHandle playerId, int mode, ScriptHandle targetId)
 {
-	CGameRules *pGameRules = GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	CActor* pActor = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor((EntityId)playerId.n);
 
-	if(pGameRules && pActor)
+	if (pGameRules && pActor)
 		pGameRules->ChangeSpectatorMode(pActor, mode, (EntityId)targetId.n, false);
 
 	return pH->EndFunction();
@@ -1023,9 +1023,9 @@ int CScriptBind_GameRules::CanChangeSpectatorMode(IFunctionHandler* pH, ScriptHa
 {
 	IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor();
 	CHUD* pHUD = g_pGame->GetHUD();
-	if(gEnv->bMultiplayer && pHUD && pActor && pActor->GetEntityId() == playerId.n)
+	if (gEnv->bMultiplayer && pHUD && pActor && pActor->GetEntityId() == playerId.n)
 	{
-		if(pHUD->IsBuyMenuActive() || pHUD->IsScoreboardActive() || pHUD->IsPDAActive())
+		if (pHUD->IsBuyMenuActive() || pHUD->IsScoreboardActive() || pHUD->IsPDAActive())
 			return pH->EndFunction(false);
 	}
 
@@ -1033,9 +1033,9 @@ int CScriptBind_GameRules::CanChangeSpectatorMode(IFunctionHandler* pH, ScriptHa
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddMinimapEntity(IFunctionHandler *pH, ScriptHandle entityId, int type, float lifetime)
+int CScriptBind_GameRules::AddMinimapEntity(IFunctionHandler* pH, ScriptHandle entityId, int type, float lifetime)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1047,9 +1047,9 @@ int CScriptBind_GameRules::AddMinimapEntity(IFunctionHandler *pH, ScriptHandle e
 
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveMinimapEntity(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::RemoveMinimapEntity(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1061,9 +1061,9 @@ int CScriptBind_GameRules::RemoveMinimapEntity(IFunctionHandler *pH, ScriptHandl
 
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetMinimap(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetMinimap(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1075,14 +1075,14 @@ int CScriptBind_GameRules::ResetMinimap(IFunctionHandler *pH)
 
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetPing(IFunctionHandler *pH, int channelId)
+int CScriptBind_GameRules::GetPing(IFunctionHandler* pH, int channelId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	INetChannel *pNetChannel = g_pGame->GetIGameFramework()->GetNetChannel(channelId);
+	INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetNetChannel(channelId);
 	if (pNetChannel)
 		return pH->EndFunction(pNetChannel->GetPing(true));
 
@@ -1090,9 +1090,9 @@ int CScriptBind_GameRules::GetPing(IFunctionHandler *pH, int channelId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetEntities(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetEntities(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->ResetEntities();
@@ -1101,35 +1101,35 @@ int CScriptBind_GameRules::ResetEntities(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ServerExplosion(IFunctionHandler *pH, ScriptHandle shooterId, ScriptHandle weaponId,
-																					 float dmg, Vec3 pos, Vec3 dir, float radius, float angle, float pressure, float holesize)
+int CScriptBind_GameRules::ServerExplosion(IFunctionHandler* pH, ScriptHandle shooterId, ScriptHandle weaponId,
+	float dmg, Vec3 pos, Vec3 dir, float radius, float angle, float pressure, float holesize)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!gEnv->bServer)
 		return pH->EndFunction();
 
-	const char *effect="";
-	float effectScale=1.0f;
-	int type=0;
+	const char* effect = "";
+	float effectScale = 1.0f;
+	int type = 0;
 
-	if (pH->GetParamCount()>9 && pH->GetParamType(10)!=svtNull)
+	if (pH->GetParamCount() > 9 && pH->GetParamType(10) != svtNull)
 		pH->GetParam(10, effect);
 
-	if (pH->GetParamCount()>10 && pH->GetParamType(11)!=svtNull)
+	if (pH->GetParamCount() > 10 && pH->GetParamType(11) != svtNull)
 		pH->GetParam(11, effectScale);
 
-	if (pH->GetParamCount()>11 && pH->GetParamType(12)!=svtNull)
+	if (pH->GetParamCount() > 11 && pH->GetParamType(12) != svtNull)
 		pH->GetParam(12, type);
 
-	float minRadius = radius/2.0f;
-	float minPhysRadius = radius/2.0f;
+	float minRadius = radius / 2.0f;
+	float minPhysRadius = radius / 2.0f;
 	float physRadius = radius;
-	if (pH->GetParamCount()>12 && pH->GetParamType(13)!=svtNull)
+	if (pH->GetParamCount() > 12 && pH->GetParamType(13) != svtNull)
 		pH->GetParam(13, minRadius);
-	if (pH->GetParamCount()>13 && pH->GetParamType(14)!=svtNull)
+	if (pH->GetParamCount() > 13 && pH->GetParamType(14) != svtNull)
 		pH->GetParam(14, minPhysRadius);
-	if (pH->GetParamCount()>14 && pH->GetParamType(15)!=svtNull)
+	if (pH->GetParamCount() > 14 && pH->GetParamType(15) != svtNull)
 		pH->GetParam(15, physRadius);
 
 	ExplosionInfo info(shooterId.n, weaponId.n, dmg, pos, dir.GetNormalized(), minRadius, radius, minPhysRadius, physRadius, angle, pressure, holesize, 0);
@@ -1142,10 +1142,10 @@ int CScriptBind_GameRules::ServerExplosion(IFunctionHandler *pH, ScriptHandle sh
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ServerHit(IFunctionHandler *pH, ScriptHandle targetId, ScriptHandle shooterId, ScriptHandle weaponId,
-																		 float dmg, float radius, int materialId, int partId, int typeId)
+int CScriptBind_GameRules::ServerHit(IFunctionHandler* pH, ScriptHandle targetId, ScriptHandle shooterId, ScriptHandle weaponId,
+	float dmg, float radius, int materialId, int partId, int typeId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!gEnv->bServer)
 		return pH->EndFunction();
@@ -1153,13 +1153,13 @@ int CScriptBind_GameRules::ServerHit(IFunctionHandler *pH, ScriptHandle targetId
 	HitInfo info(shooterId.n, targetId.n, weaponId.n, -1, radius, materialId, partId, typeId);
 	info.damage = dmg;
 
-	if (pH->GetParamCount()>8 && pH->GetParamType(9)!=svtNull)
+	if (pH->GetParamCount() > 8 && pH->GetParamType(9) != svtNull)
 		pH->GetParam(9, info.pos);
 
-	if (pH->GetParamCount()>9 && pH->GetParamType(10)!=svtNull)
+	if (pH->GetParamCount() > 9 && pH->GetParamType(10) != svtNull)
 		pH->GetParam(10, info.dir);
 
-	if (pH->GetParamCount()>10 && pH->GetParamType(11)!=svtNull)
+	if (pH->GetParamCount() > 10 && pH->GetParamType(11) != svtNull)
 		pH->GetParam(11, info.normal);
 
 	pGameRules->ServerHit(info);
@@ -1168,9 +1168,9 @@ int CScriptBind_GameRules::ServerHit(IFunctionHandler *pH, ScriptHandle targetId
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::CreateTeam(IFunctionHandler *pH, const char *name)
+int CScriptBind_GameRules::CreateTeam(IFunctionHandler* pH, const char* name)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1179,9 +1179,9 @@ int CScriptBind_GameRules::CreateTeam(IFunctionHandler *pH, const char *name)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveTeam(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::RemoveTeam(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1192,14 +1192,14 @@ int CScriptBind_GameRules::RemoveTeam(IFunctionHandler *pH, int teamId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamName(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetTeamName(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	const char *name=pGameRules->GetTeamName(teamId);
+	const char* name = pGameRules->GetTeamName(teamId);
 	if (name)
 		return pH->EndFunction(name);
 
@@ -1207,14 +1207,14 @@ int CScriptBind_GameRules::GetTeamName(IFunctionHandler *pH, int teamId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamId(IFunctionHandler *pH, const char *teamName)
+int CScriptBind_GameRules::GetTeamId(IFunctionHandler* pH, const char* teamName)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int id=pGameRules->GetTeamId(teamName);
+	int id = pGameRules->GetTeamId(teamName);
 	if (id)
 		return pH->EndFunction(id);
 
@@ -1222,9 +1222,9 @@ int CScriptBind_GameRules::GetTeamId(IFunctionHandler *pH, const char *teamName)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamCount(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetTeamCount(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1233,74 +1233,74 @@ int CScriptBind_GameRules::GetTeamCount(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamPlayerCount(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetTeamPlayerCount(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	bool inGame=false;
-	if (pH->GetParamCount()>1)
+	bool inGame = false;
+	if (pH->GetParamCount() > 1)
 		pH->GetParam(2, inGame);
 
 	return pH->EndFunction(pGameRules->GetTeamPlayerCount(teamId, inGame));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamChannelCount(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetTeamChannelCount(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	bool inGame=false;
-	if (pH->GetParamCount()>1)
+	bool inGame = false;
+	if (pH->GetParamCount() > 1)
 		pH->GetParam(2, inGame);
 
 	return pH->EndFunction(pGameRules->GetTeamChannelCount(teamId, inGame));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamPlayers(IFunctionHandler *pH, int teamId)
+int CScriptBind_GameRules::GetTeamPlayers(IFunctionHandler* pH, int teamId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int count=pGameRules->GetTeamPlayerCount(teamId);
+	int count = pGameRules->GetTeamPlayerCount(teamId);
 	if (!count)
 		return pH->EndFunction();
 
-	int tcount=m_teamplayers->Count();
+	int tcount = m_teamplayers->Count();
 
-	int i=0;
-	while(i<count)
+	int i = 0;
+	while (i < count)
 	{
-		IEntity *pEntity=gEnv->pEntitySystem->GetEntity(pGameRules->GetTeamPlayer(teamId, i));
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(pGameRules->GetTeamPlayer(teamId, i));
 		if (pEntity)
 		{
-			IScriptTable *pEntityScript=pEntity->GetScriptTable();
+			IScriptTable* pEntityScript = pEntity->GetScriptTable();
 			if (pEntityScript)
-				m_teamplayers->SetAt(i+1, pEntityScript);
+				m_teamplayers->SetAt(i + 1, pEntityScript);
 			else
-				m_teamplayers->SetNullAt(i+1);
+				m_teamplayers->SetNullAt(i + 1);
 		}
 		++i;
 	}
 
-	while(i<tcount)
+	while (i < tcount)
 		m_teamplayers->SetNullAt(++i);
 
 	return pH->EndFunction(m_teamplayers);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetTeam(IFunctionHandler *pH, int teamId, ScriptHandle playerId)
+int CScriptBind_GameRules::SetTeam(IFunctionHandler* pH, int teamId, ScriptHandle playerId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1311,9 +1311,9 @@ int CScriptBind_GameRules::SetTeam(IFunctionHandler *pH, int teamId, ScriptHandl
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeam(IFunctionHandler *pH, ScriptHandle playerId)
+int CScriptBind_GameRules::GetTeam(IFunctionHandler* pH, ScriptHandle playerId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1322,9 +1322,9 @@ int CScriptBind_GameRules::GetTeam(IFunctionHandler *pH, ScriptHandle playerId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetChannelTeam(IFunctionHandler *pH, int channelId)
+int CScriptBind_GameRules::GetChannelTeam(IFunctionHandler* pH, int channelId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1333,9 +1333,9 @@ int CScriptBind_GameRules::GetChannelTeam(IFunctionHandler *pH, int channelId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AddObjective(IFunctionHandler *pH, int teamId, const char *objective, int status, ScriptHandle entityId)
+int CScriptBind_GameRules::AddObjective(IFunctionHandler* pH, int teamId, const char* objective, int status, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1347,9 +1347,9 @@ int CScriptBind_GameRules::AddObjective(IFunctionHandler *pH, int teamId, const 
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetObjectiveStatus(IFunctionHandler *pH, int teamId, const char *objective, int status)
+int CScriptBind_GameRules::SetObjectiveStatus(IFunctionHandler* pH, int teamId, const char* objective, int status)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1360,9 +1360,9 @@ int CScriptBind_GameRules::SetObjectiveStatus(IFunctionHandler *pH, int teamId, 
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetObjectiveEntity(IFunctionHandler *pH, int teamId, const char *objective, ScriptHandle entityId)
+int CScriptBind_GameRules::SetObjectiveEntity(IFunctionHandler* pH, int teamId, const char* objective, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1373,9 +1373,9 @@ int CScriptBind_GameRules::SetObjectiveEntity(IFunctionHandler *pH, int teamId, 
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RemoveObjective(IFunctionHandler *pH, int teamId, const char *objective)
+int CScriptBind_GameRules::RemoveObjective(IFunctionHandler* pH, int teamId, const char* objective)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1386,9 +1386,9 @@ int CScriptBind_GameRules::RemoveObjective(IFunctionHandler *pH, int teamId, con
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetObjectives(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetObjectives(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1400,57 +1400,57 @@ int CScriptBind_GameRules::ResetObjectives(IFunctionHandler *pH)
 
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::TextMessage(IFunctionHandler *pH, int type, const char *msg)
+int CScriptBind_GameRules::TextMessage(IFunctionHandler* pH, int type, const char* msg)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	if (pH->GetParamCount()>2)
+	if (pH->GetParamCount() > 2)
 	{
 		string p[4];
-		for (int i=0;i<pH->GetParamCount()-2;i++)
+		for (int i = 0;i < pH->GetParamCount() - 2;i++)
 		{
-			switch(pH->GetParamType(3+i))
+			switch (pH->GetParamType(3 + i))
 			{
 			case svtPointer:
-				{
-					ScriptHandle sh;
-					pH->GetParam(3+i, sh);
+			{
+				ScriptHandle sh;
+				pH->GetParam(3 + i, sh);
 
-					if (IEntity *pEntity=gEnv->pEntitySystem->GetEntity((EntityId)sh.n))
-						p[i]=pEntity->GetName();
-				}
-				break;
+				if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity((EntityId)sh.n))
+					p[i] = pEntity->GetName();
+			}
+			break;
 			default:
+			{
+				ScriptAnyValue value;
+				pH->GetParamAny(3 + i, value);
+				switch (value.GetVarType())
 				{
-					ScriptAnyValue value;
-					pH->GetParamAny(3+i, value);
-					switch(value.GetVarType())
-					{
-					case svtNumber:
-						p[i].Format("%g", value.number);
-						break;
-					case svtString:
-						p[i]=value.str;
-						break;
-					case svtBool:
-						p[i]=value.b?"true":"false";
-						break;
-					default:
-						break;
-					}
+				case svtNumber:
+					p[i].Format("%g", value.number);
+					break;
+				case svtString:
+					p[i] = value.str;
+					break;
+				case svtBool:
+					p[i] = value.b ? "true" : "false";
+					break;
+				default:
+					break;
 				}
-				break;
+			}
+			break;
 			}
 		}
 		pGameRules->OnTextMessage((ETextMessageType)type, msg,
-			p[0].empty()?0:p[0].c_str(),
-			p[1].empty()?0:p[1].c_str(),
-			p[2].empty()?0:p[2].c_str(),
-			p[3].empty()?0:p[3].c_str()
-			);
+			p[0].empty() ? 0 : p[0].c_str(),
+			p[1].empty() ? 0 : p[1].c_str(),
+			p[2].empty() ? 0 : p[2].c_str(),
+			p[3].empty() ? 0 : p[3].c_str()
+		);
 	}
 	else
 		pGameRules->OnTextMessage((ETextMessageType)type, msg);
@@ -1459,76 +1459,76 @@ int CScriptBind_GameRules::TextMessage(IFunctionHandler *pH, int type, const cha
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SendTextMessage(IFunctionHandler *pH, int type, const char *msg)
+int CScriptBind_GameRules::SendTextMessage(IFunctionHandler* pH, int type, const char* msg)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
 
-	int to=eRMI_ToAllClients;
-	int channelId=-1;
+	int to = eRMI_ToAllClients;
+	int channelId = -1;
 
-	if (pH->GetParamCount()>2)
+	if (pH->GetParamCount() > 2)
 		pH->GetParam(3, to);
 
-	if (pH->GetParamCount()>3)
+	if (pH->GetParamCount() > 3)
 	{
-		if (pH->GetParamType(4)==svtPointer)
+		if (pH->GetParamType(4) == svtPointer)
 		{
 			ScriptHandle playerId;
 			pH->GetParam(4, playerId);
 
-			channelId=pGameRules->GetChannelId((EntityId)playerId.n);
+			channelId = pGameRules->GetChannelId((EntityId)playerId.n);
 		}
-		else if (pH->GetParamType(4)==svtNumber)
+		else if (pH->GetParamType(4) == svtNumber)
 			pH->GetParam(4, channelId);
 	}
 
-	if (pH->GetParamCount()>4)
+	if (pH->GetParamCount() > 4)
 	{
 		string p[4];
-		for (int i=0;i<pH->GetParamCount()-4;i++)
+		for (int i = 0;i < pH->GetParamCount() - 4;i++)
 		{
-			switch(pH->GetParamType(5+i))
+			switch (pH->GetParamType(5 + i))
 			{
 			case svtPointer:
-				{
-					ScriptHandle sh;
-					pH->GetParam(5+i, sh);
+			{
+				ScriptHandle sh;
+				pH->GetParam(5 + i, sh);
 
-					if (IEntity *pEntity=gEnv->pEntitySystem->GetEntity((EntityId)sh.n))
-						p[i]=pEntity->GetName();
-				}
-				break;
+				if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity((EntityId)sh.n))
+					p[i] = pEntity->GetName();
+			}
+			break;
 			default:
+			{
+				ScriptAnyValue value;
+				pH->GetParamAny(5 + i, value);
+				switch (value.GetVarType())
 				{
-					ScriptAnyValue value;
-					pH->GetParamAny(5+i, value);
-					switch(value.GetVarType())
-					{
-					case svtNumber:
-						p[i].Format("%g", value.number);
-						break;
-					case svtString:
-						p[i]=value.str;
-						break;
-					case svtBool:
-						p[i]=value.b?"true":"false";
-						break;
-					default:
-						break;
-					}			
+				case svtNumber:
+					p[i].Format("%g", value.number);
+					break;
+				case svtString:
+					p[i] = value.str;
+					break;
+				case svtBool:
+					p[i] = value.b ? "true" : "false";
+					break;
+				default:
+					break;
 				}
-				break;
+			}
+			break;
 			}
 		}
-		pGameRules->SendTextMessage((ETextMessageType)type, msg, to, channelId, 
-			p[0].empty()?0:p[0].c_str(),
-			p[1].empty()?0:p[1].c_str(),
-			p[2].empty()?0:p[2].c_str(),
-			p[3].empty()?0:p[3].c_str()
-			);
+		pGameRules->SendTextMessage((ETextMessageType)type, msg, to, channelId,
+			p[0].empty() ? 0 : p[0].c_str(),
+			p[1].empty() ? 0 : p[1].c_str(),
+			p[2].empty() ? 0 : p[2].c_str(),
+			p[3].empty() ? 0 : p[3].c_str()
+		);
 	}
 	else
 		pGameRules->SendTextMessage((ETextMessageType)type, msg, to, channelId);
@@ -1537,9 +1537,9 @@ int CScriptBind_GameRules::SendTextMessage(IFunctionHandler *pH, int type, const
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SendChatMessage(IFunctionHandler *pH, int type, ScriptHandle sourceId, ScriptHandle targetId, const char *msg)
+int CScriptBind_GameRules::SendChatMessage(IFunctionHandler* pH, int type, ScriptHandle sourceId, ScriptHandle targetId, const char* msg)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1550,9 +1550,9 @@ int CScriptBind_GameRules::SendChatMessage(IFunctionHandler *pH, int type, Scrip
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ForbiddenAreaWarning(IFunctionHandler *pH, bool active, int timer, ScriptHandle targetId)
+int CScriptBind_GameRules::ForbiddenAreaWarning(IFunctionHandler* pH, bool active, int timer, ScriptHandle targetId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1563,9 +1563,9 @@ int CScriptBind_GameRules::ForbiddenAreaWarning(IFunctionHandler *pH, bool activ
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetGameTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetGameTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1576,9 +1576,9 @@ int CScriptBind_GameRules::ResetGameTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRemainingGameTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRemainingGameTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1587,9 +1587,9 @@ int CScriptBind_GameRules::GetRemainingGameTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsTimeLimited(IFunctionHandler *pH)
+int CScriptBind_GameRules::IsTimeLimited(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules || !pGameRules->IsTimeLimited())
 		return pH->EndFunction();
@@ -1598,9 +1598,9 @@ int CScriptBind_GameRules::IsTimeLimited(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetRoundTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1611,9 +1611,9 @@ int CScriptBind_GameRules::ResetRoundTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRemainingRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRemainingRoundTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1622,9 +1622,9 @@ int CScriptBind_GameRules::GetRemainingRoundTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsRoundTimeLimited(IFunctionHandler *pH)
+int CScriptBind_GameRules::IsRoundTimeLimited(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules || !pGameRules->IsRoundTimeLimited())
 		return pH->EndFunction();
@@ -1633,9 +1633,9 @@ int CScriptBind_GameRules::IsRoundTimeLimited(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetPreRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetPreRoundTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1646,9 +1646,9 @@ int CScriptBind_GameRules::ResetPreRoundTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRemainingPreRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRemainingPreRoundTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1657,9 +1657,9 @@ int CScriptBind_GameRules::GetRemainingPreRoundTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetReviveCycleTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetReviveCycleTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1670,9 +1670,9 @@ int CScriptBind_GameRules::ResetReviveCycleTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRemainingReviveCycleTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRemainingReviveCycleTime(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1681,9 +1681,9 @@ int CScriptBind_GameRules::GetRemainingReviveCycleTime(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetGameStartTimer(IFunctionHandler *pH, float time)
+int CScriptBind_GameRules::ResetGameStartTimer(IFunctionHandler* pH, float time)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1694,9 +1694,9 @@ int CScriptBind_GameRules::ResetGameStartTimer(IFunctionHandler *pH, float time)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRemainingStartTimer(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRemainingStartTimer(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (!pGameRules)
 		return pH->EndFunction();
@@ -1705,9 +1705,9 @@ int CScriptBind_GameRules::GetRemainingStartTimer(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int	CScriptBind_GameRules::EndGame(IFunctionHandler *pH)
+int	CScriptBind_GameRules::EndGame(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->OnEndGame();
@@ -1716,9 +1716,9 @@ int	CScriptBind_GameRules::EndGame(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::NextLevel(IFunctionHandler *pH)
+int CScriptBind_GameRules::NextLevel(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	if (pGameRules)
 		pGameRules->NextLevel();
@@ -1727,170 +1727,170 @@ int CScriptBind_GameRules::NextLevel(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RegisterHitMaterial(IFunctionHandler *pH, const char *materialName)
+int CScriptBind_GameRules::RegisterHitMaterial(IFunctionHandler* pH, const char* materialName)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
-	
+	CGameRules* pGameRules = GetGameRules(pH);
+
 	return pH->EndFunction(pGameRules->RegisterHitMaterial(materialName));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetHitMaterialId(IFunctionHandler *pH, const char *materialName)
+int CScriptBind_GameRules::GetHitMaterialId(IFunctionHandler* pH, const char* materialName)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	return pH->EndFunction(pGameRules->GetHitMaterialId(materialName));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetHitMaterialName(IFunctionHandler *pH, int materialId)
+int CScriptBind_GameRules::GetHitMaterialName(IFunctionHandler* pH, int materialId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	if (ISurfaceType *pSurfaceType=pGameRules->GetHitMaterial(materialId))
+	if (ISurfaceType* pSurfaceType = pGameRules->GetHitMaterial(materialId))
 		return pH->EndFunction(pSurfaceType->GetName());
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetHitMaterials(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetHitMaterials(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ResetHitMaterials();
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::RegisterHitType(IFunctionHandler *pH, const char *type)
+int CScriptBind_GameRules::RegisterHitType(IFunctionHandler* pH, const char* type)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	return pH->EndFunction(pGameRules->RegisterHitType(type));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetHitTypeId(IFunctionHandler *pH, const char *type)
+int CScriptBind_GameRules::GetHitTypeId(IFunctionHandler* pH, const char* type)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	return pH->EndFunction(pGameRules->GetHitTypeId(type));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetHitType(IFunctionHandler *pH, int id)
+int CScriptBind_GameRules::GetHitType(IFunctionHandler* pH, int id)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	return pH->EndFunction(pGameRules->GetHitType(id));
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetHitTypes(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetHitTypes(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ResetHitTypes();
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ForceScoreboard(IFunctionHandler *pH, bool force)
+int CScriptBind_GameRules::ForceScoreboard(IFunctionHandler* pH, bool force)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ForceScoreboard(force);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::FreezeInput(IFunctionHandler *pH, bool freeze)
+int CScriptBind_GameRules::FreezeInput(IFunctionHandler* pH, bool freeze)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->FreezeInput(freeze);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ScheduleEntityRespawn(IFunctionHandler *pH, ScriptHandle entityId, bool unique, float timer)
+int CScriptBind_GameRules::ScheduleEntityRespawn(IFunctionHandler* pH, ScriptHandle entityId, bool unique, float timer)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ScheduleEntityRespawn((EntityId)entityId.n, unique, timer);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AbortEntityRespawn(IFunctionHandler *pH, ScriptHandle entityId, bool destroyData)
+int CScriptBind_GameRules::AbortEntityRespawn(IFunctionHandler* pH, ScriptHandle entityId, bool destroyData)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->AbortEntityRespawn((EntityId)entityId.n, destroyData);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ScheduleEntityRemoval(IFunctionHandler *pH, ScriptHandle entityId, float timer, bool visibility)
+int CScriptBind_GameRules::ScheduleEntityRemoval(IFunctionHandler* pH, ScriptHandle entityId, float timer, bool visibility)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ScheduleEntityRemoval((EntityId)entityId.n, timer, visibility);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::AbortEntityRemoval(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::AbortEntityRemoval(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->AbortEntityRemoval((EntityId)entityId.n);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetSynchedGlobalValue(IFunctionHandler *pH, int key)
+int CScriptBind_GameRules::SetSynchedGlobalValue(IFunctionHandler* pH, int key)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	if (pH->GetParamCount()==2)
+	if (pH->GetParamCount() == 2)
 	{
 		switch (pH->GetParamType(2))
 		{
 		case svtString:
-			{
-				const char *s=0;
-				pH->GetParam(2, s);
-				pGameRules->SetSynchedGlobalValue(key, string(s));
-			}
-			break;
+		{
+			const char* s = 0;
+			pH->GetParam(2, s);
+			pGameRules->SetSynchedGlobalValue(key, string(s));
+		}
+		break;
 		case svtPointer:
-			{
-				ScriptHandle e;
-				pH->GetParam(2, e);
-				pGameRules->SetSynchedGlobalValue(key, (EntityId)e.n);
-			}
-			break;
+		{
+			ScriptHandle e;
+			pH->GetParam(2, e);
+			pGameRules->SetSynchedGlobalValue(key, (EntityId)e.n);
+		}
+		break;
 		case svtBool:
-			{
-				bool b;
-				pH->GetParam(2, b);
-				pGameRules->SetSynchedGlobalValue(key, b);
-			}
-			break;
+		{
+			bool b;
+			pH->GetParam(2, b);
+			pGameRules->SetSynchedGlobalValue(key, b);
+		}
+		break;
 		case svtNumber:
-			{
-				float f;
-				int i;
-				pH->GetParam(2, f);
-				i=(int)f;
-				if (f==i)
-					pGameRules->SetSynchedGlobalValue(key, i);
-				else
-					pGameRules->SetSynchedGlobalValue(key, f);
-			}
-			break;
+		{
+			float f;
+			int i;
+			pH->GetParam(2, f);
+			i = (int)f;
+			if (f == i)
+				pGameRules->SetSynchedGlobalValue(key, i);
+			else
+				pGameRules->SetSynchedGlobalValue(key, f);
+		}
+		break;
 		default:
 			assert(0);
 		}
@@ -1900,51 +1900,51 @@ int CScriptBind_GameRules::SetSynchedGlobalValue(IFunctionHandler *pH, int key)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSynchedGlobalValue(IFunctionHandler *pH, int key)
+int CScriptBind_GameRules::GetSynchedGlobalValue(IFunctionHandler* pH, int key)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	int type=pGameRules->GetSynchedGlobalValueType(key);
-	if (type==eSVT_None)
+	int type = pGameRules->GetSynchedGlobalValueType(key);
+	if (type == eSVT_None)
 		return pH->EndFunction();
 
 	switch (type)
 	{
 	case eSVT_Bool:
-		{
-			bool b;
-			pGameRules->GetSynchedGlobalValue(key, b);
-			return pH->EndFunction(b);
-		}
-		break;
+	{
+		bool b;
+		pGameRules->GetSynchedGlobalValue(key, b);
+		return pH->EndFunction(b);
+	}
+	break;
 	case eSVT_Float:
-		{
-			float f;
-			pGameRules->GetSynchedGlobalValue(key, f);
-			return pH->EndFunction(f);
-		}
-		break;
+	{
+		float f;
+		pGameRules->GetSynchedGlobalValue(key, f);
+		return pH->EndFunction(f);
+	}
+	break;
 	case eSVT_Int:
-		{
-			int i;
-			pGameRules->GetSynchedGlobalValue(key, i);
-			return pH->EndFunction(i);
-		}
-		break;
+	{
+		int i;
+		pGameRules->GetSynchedGlobalValue(key, i);
+		return pH->EndFunction(i);
+	}
+	break;
 	case eSVT_EntityId:
-		{
-			EntityId e;
-			pGameRules->GetSynchedGlobalValue(key, e);
-			return pH->EndFunction(ScriptHandle(e));
-		}
-		break;
+	{
+		EntityId e;
+		pGameRules->GetSynchedGlobalValue(key, e);
+		return pH->EndFunction(ScriptHandle(e));
+	}
+	break;
 	case eSVT_String:
-		{
-			static string s;
-			pGameRules->GetSynchedGlobalValue(key, s);
-			return pH->EndFunction(s.c_str());
-		}
-		break;
+	{
+		static string s;
+		pGameRules->GetSynchedGlobalValue(key, s);
+		return pH->EndFunction(s.c_str());
+	}
+	break;
 	default:
 		assert(0);
 	}
@@ -1953,49 +1953,49 @@ int CScriptBind_GameRules::GetSynchedGlobalValue(IFunctionHandler *pH, int key)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::SetSynchedEntityValue(IFunctionHandler *pH, ScriptHandle entityId, int key)
+int CScriptBind_GameRules::SetSynchedEntityValue(IFunctionHandler* pH, ScriptHandle entityId, int key)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
-	
-	EntityId id=(EntityId)entityId.n;
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	if (pH->GetParamCount()==3)
+	EntityId id = (EntityId)entityId.n;
+
+	if (pH->GetParamCount() == 3)
 	{
 		switch (pH->GetParamType(3))
 		{
 		case svtString:
-			{
-				const char *s=0;
-				pH->GetParam(3, s);
-				pGameRules->SetSynchedEntityValue(id, key, string(s));
-			}
-			break;
+		{
+			const char* s = 0;
+			pH->GetParam(3, s);
+			pGameRules->SetSynchedEntityValue(id, key, string(s));
+		}
+		break;
 		case svtPointer:
-			{
-				ScriptHandle e;
-				pH->GetParam(3, e);
-				pGameRules->SetSynchedEntityValue(id, key, (EntityId)e.n);
-			}
-			break;
+		{
+			ScriptHandle e;
+			pH->GetParam(3, e);
+			pGameRules->SetSynchedEntityValue(id, key, (EntityId)e.n);
+		}
+		break;
 		case svtBool:
-			{
-				bool b;
-				pH->GetParam(3, b);
-				pGameRules->SetSynchedEntityValue(id, key, b);
-			}
-			break;
+		{
+			bool b;
+			pH->GetParam(3, b);
+			pGameRules->SetSynchedEntityValue(id, key, b);
+		}
+		break;
 		case svtNumber:
-			{
-				float f;
-				int i;
-				pH->GetParam(3, f);
-				i=(int)f;
-				if (f==i)
-					pGameRules->SetSynchedEntityValue(id, key, i);
-				else
-					pGameRules->SetSynchedEntityValue(id, key, f);
-			}
-			break;
+		{
+			float f;
+			int i;
+			pH->GetParam(3, f);
+			i = (int)f;
+			if (f == i)
+				pGameRules->SetSynchedEntityValue(id, key, i);
+			else
+				pGameRules->SetSynchedEntityValue(id, key, f);
+		}
+		break;
 		default:
 			assert(0);
 		}
@@ -2004,52 +2004,52 @@ int CScriptBind_GameRules::SetSynchedEntityValue(IFunctionHandler *pH, ScriptHan
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetSynchedEntityValue(IFunctionHandler *pH, ScriptHandle entityId, int key)
+int CScriptBind_GameRules::GetSynchedEntityValue(IFunctionHandler* pH, ScriptHandle entityId, int key)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
-	EntityId id=(EntityId)entityId.n;
-	int type=pGameRules->GetSynchedEntityValueType(id, key);
-	if (type==eSVT_None)
+	EntityId id = (EntityId)entityId.n;
+	int type = pGameRules->GetSynchedEntityValueType(id, key);
+	if (type == eSVT_None)
 		return pH->EndFunction();
 
 	switch (type)
 	{
 	case eSVT_Bool:
-		{
-			bool b;
-			pGameRules->GetSynchedEntityValue(id, key, b);
-			return pH->EndFunction(b);
-		}
-		break;
+	{
+		bool b;
+		pGameRules->GetSynchedEntityValue(id, key, b);
+		return pH->EndFunction(b);
+	}
+	break;
 	case eSVT_Float:
-		{
-			float f;
-			pGameRules->GetSynchedEntityValue(id, key, f);
-			return pH->EndFunction(f);
-		}
-		break;
+	{
+		float f;
+		pGameRules->GetSynchedEntityValue(id, key, f);
+		return pH->EndFunction(f);
+	}
+	break;
 	case eSVT_Int:
-		{
-			int i;
-			pGameRules->GetSynchedEntityValue(id, key, i);
-			return pH->EndFunction(i);
-		}
-		break;
+	{
+		int i;
+		pGameRules->GetSynchedEntityValue(id, key, i);
+		return pH->EndFunction(i);
+	}
+	break;
 	case eSVT_EntityId:
-		{
-			EntityId e;
-			pGameRules->GetSynchedEntityValue(id, key, e);
-			return pH->EndFunction(ScriptHandle(e));
-		}
-		break;
+	{
+		EntityId e;
+		pGameRules->GetSynchedEntityValue(id, key, e);
+		return pH->EndFunction(ScriptHandle(e));
+	}
+	break;
 	case eSVT_String:
-		{
-			static string s;
-			pGameRules->GetSynchedEntityValue(id, key, s);
-			return pH->EndFunction(s.c_str());
-		}
-		break;
+	{
+		static string s;
+		pGameRules->GetSynchedEntityValue(id, key, s);
+		return pH->EndFunction(s.c_str());
+	}
+	break;
 	default:
 		assert(0);
 	}
@@ -2058,122 +2058,122 @@ int CScriptBind_GameRules::GetSynchedEntityValue(IFunctionHandler *pH, ScriptHan
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ResetSynchedStorage(IFunctionHandler *pH)
+int CScriptBind_GameRules::ResetSynchedStorage(IFunctionHandler* pH)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ResetSynchedStorage();
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ForceSynchedStorageSynch(IFunctionHandler *pH, int channelId)
+int CScriptBind_GameRules::ForceSynchedStorageSynch(IFunctionHandler* pH, int channelId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ForceSynchedStorageSynch(channelId);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsDemoMode(IFunctionHandler *pH)
+int CScriptBind_GameRules::IsDemoMode(IFunctionHandler* pH)
 {
 	int demoMode = IsDemoPlayback();
 	return pH->EndFunction(demoMode);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTimeLimit(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetTimeLimit(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_timelimit);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRoundTime(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_roundtime);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetPreRoundTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetPreRoundTime(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_preroundtime);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetRoundLimit(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetRoundLimit(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_roundlimit);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetFragLimit(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetFragLimit(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_fraglimit);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetFragLead(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetFragLead(IFunctionHandler* pH)
 {
-  return pH->EndFunction(g_pGameCVars->g_fraglead);
+	return pH->EndFunction(g_pGameCVars->g_fraglead);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetFriendlyFireRatio(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetFriendlyFireRatio(IFunctionHandler* pH)
 {
-  return pH->EndFunction(g_pGameCVars->g_friendlyfireratio);
+	return pH->EndFunction(g_pGameCVars->g_friendlyfireratio);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetReviveTime(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetReviveTime(IFunctionHandler* pH)
 {
-  return pH->EndFunction(g_pGameCVars->g_revivetime);
+	return pH->EndFunction(g_pGameCVars->g_revivetime);
 }
 
-int CScriptBind_GameRules::GetMinPlayerLimit(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetMinPlayerLimit(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_minplayerlimit);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetMinTeamLimit(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetMinTeamLimit(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_minteamlimit);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetTeamLock(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetTeamLock(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_teamlock);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetAutoTeamBalance(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetAutoTeamBalance(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_autoteambalance);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::GetAutoTeamBalanceThreshold(IFunctionHandler *pH)
+int CScriptBind_GameRules::GetAutoTeamBalanceThreshold(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_autoteambalance_threshold);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::IsFrozen(IFunctionHandler *pH, ScriptHandle entityId)
+int CScriptBind_GameRules::IsFrozen(IFunctionHandler* pH, ScriptHandle entityId)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	if (pGameRules->IsFrozen((EntityId)entityId.n))
 		return pH->EndFunction(1);
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::FreezeEntity(IFunctionHandler *pH, ScriptHandle entityId, bool freeze, bool vapor)
+int CScriptBind_GameRules::FreezeEntity(IFunctionHandler* pH, ScriptHandle entityId, bool freeze, bool vapor)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
-	bool force=false;
-	if (pH->GetParamCount()>3 && pH->GetParamType(4)==svtBool)
+	CGameRules* pGameRules = GetGameRules(pH);
+	bool force = false;
+	if (pH->GetParamCount() > 3 && pH->GetParamType(4) == svtBool)
 		pH->GetParam(4, force);
 
 	pGameRules->FreezeEntity((EntityId)entityId.n, freeze, vapor, force);
@@ -2182,22 +2182,22 @@ int CScriptBind_GameRules::FreezeEntity(IFunctionHandler *pH, ScriptHandle entit
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::ShatterEntity(IFunctionHandler *pH, ScriptHandle entityId, Vec3 pos, Vec3 impulse)
+int CScriptBind_GameRules::ShatterEntity(IFunctionHandler* pH, ScriptHandle entityId, Vec3 pos, Vec3 impulse)
 {
-	CGameRules *pGameRules=GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 	pGameRules->ShatterEntity((EntityId)entityId.n, pos, impulse);
 
 	return pH->EndFunction();
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::DebugCollisionDamage(IFunctionHandler *pH)
+int CScriptBind_GameRules::DebugCollisionDamage(IFunctionHandler* pH)
 {
-  return pH->EndFunction(g_pGameCVars->g_debugCollisionDamage);
+	return pH->EndFunction(g_pGameCVars->g_debugCollisionDamage);
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_GameRules::DebugHits(IFunctionHandler *pH)
+int CScriptBind_GameRules::DebugHits(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_debugHits);
 }
@@ -2205,14 +2205,14 @@ int CScriptBind_GameRules::DebugHits(IFunctionHandler *pH)
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::SendHitIndicator(IFunctionHandler* pH, ScriptHandle shooterId, bool explosion)
 {
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return pH->EndFunction();
 
 	EntityId id = EntityId(shooterId.n);
-	if(!id)
+	if (!id)
 		return pH->EndFunction();
 
-	CGameRules *pGameRules = GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	CActor* pActor = pGameRules->GetActorByEntityId(id);
 	if (!pActor || !pActor->IsPlayer())
@@ -2226,14 +2226,14 @@ int CScriptBind_GameRules::SendHitIndicator(IFunctionHandler* pH, ScriptHandle s
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::SendDamageIndicator(IFunctionHandler* pH, ScriptHandle targetId, ScriptHandle shooterId, ScriptHandle weaponId)
 {
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return pH->EndFunction();
 
-	CGameRules *pGameRules = GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	EntityId tId = EntityId(targetId.n);
-	EntityId sId= EntityId(shooterId.n);
-	EntityId wId= EntityId(weaponId.n);
+	EntityId sId = EntityId(shooterId.n);
+	EntityId wId = EntityId(weaponId.n);
 
 	if (!tId)
 		return pH->EndFunction();
@@ -2250,7 +2250,7 @@ int CScriptBind_GameRules::SendDamageIndicator(IFunctionHandler* pH, ScriptHandl
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::IsInvulnerable(IFunctionHandler* pH, ScriptHandle playerId)
 {
-	CGameRules *pGameRules = GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	CActor* pActor = pGameRules->GetActorByEntityId((EntityId)playerId.n);
 	if (!pActor || !pActor->IsPlayer())
@@ -2259,8 +2259,8 @@ int CScriptBind_GameRules::IsInvulnerable(IFunctionHandler* pH, ScriptHandle pla
 	if (pActor->GetActorClass() != CPlayer::GetActorClassType())
 		return pH->EndFunction();
 
-	CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
-	if (CNanoSuit *pNanoSuit=pPlayer->GetNanoSuit())
+	CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
+	if (CNanoSuit* pNanoSuit = pPlayer->GetNanoSuit())
 		return pH->EndFunction(pNanoSuit->IsInvulnerable());
 
 	return pH->EndFunction();
@@ -2269,10 +2269,10 @@ int CScriptBind_GameRules::IsInvulnerable(IFunctionHandler* pH, ScriptHandle pla
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::SetInvulnerability(IFunctionHandler* pH, ScriptHandle playerId, bool invulnerable)
 {
-	if(!gEnv->bServer)
+	if (!gEnv->bServer)
 		return pH->EndFunction();
 
-	CGameRules *pGameRules = GetGameRules(pH);
+	CGameRules* pGameRules = GetGameRules(pH);
 
 	CActor* pActor = pGameRules->GetActorByEntityId((EntityId)playerId.n);
 	if (!pActor || !pActor->IsPlayer())
@@ -2281,16 +2281,16 @@ int CScriptBind_GameRules::SetInvulnerability(IFunctionHandler* pH, ScriptHandle
 	if (pActor->GetActorClass() != CPlayer::GetActorClassType())
 		return pH->EndFunction();
 
-	CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
-	if (CNanoSuit *pNanoSuit=pPlayer->GetNanoSuit())
+	CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
+	if (CNanoSuit* pNanoSuit = pPlayer->GetNanoSuit())
 	{
 		pNanoSuit->SetInvulnerability(invulnerable);
 
-		float timeout=-1.0f;
-		if (pH->GetParamCount()>2 && pH->GetParamType(3)==svtNumber)
+		float timeout = -1.0f;
+		if (pH->GetParamCount() > 2 && pH->GetParamType(3) == svtNumber)
 			pH->GetParam(3, timeout);
 
-		if (timeout>0.0f)
+		if (timeout > 0.0f)
 			pNanoSuit->SetInvulnerabilityTimeout(timeout);
 	}
 
@@ -2301,7 +2301,7 @@ int CScriptBind_GameRules::SetInvulnerability(IFunctionHandler* pH, ScriptHandle
 int CScriptBind_GameRules::TutorialEvent(IFunctionHandler* pH, int eventType)
 {
 	CMPTutorial* pTutorial = GetGameRules(pH)->GetMPTutorial();
-	if(pTutorial)
+	if (pTutorial)
 	{
 		pTutorial->TriggerEvent(static_cast<ETutorialEvent>(eventType));
 	}
@@ -2333,7 +2333,7 @@ int CScriptBind_GameRules::EnteredGame(IFunctionHandler* pH)
 int CScriptBind_GameRules::EndGameNear(IFunctionHandler* pH, ScriptHandle entityId)
 {
 	CGameRules* pGameRules = g_pGame->GetGameRules();
-	if(pGameRules)
+	if (pGameRules)
 		pGameRules->EndGameNear(EntityId(entityId.n));
 
 	return pH->EndFunction();
@@ -2342,7 +2342,7 @@ int CScriptBind_GameRules::EndGameNear(IFunctionHandler* pH, ScriptHandle entity
 int CScriptBind_GameRules::SPNotifyPlayerKill(IFunctionHandler* pH, ScriptHandle targetId, ScriptHandle weaponId, bool bHeadShot)
 {
 	CGameRules* pGameRules = g_pGame->GetGameRules();
-	if(pGameRules)
+	if (pGameRules)
 		pGameRules->SPNotifyPlayerKill((EntityId)targetId.n, (EntityId)weaponId.n, bHeadShot);
 	return pH->EndFunction();
 }
@@ -2350,7 +2350,7 @@ int CScriptBind_GameRules::SPNotifyPlayerKill(IFunctionHandler* pH, ScriptHandle
 //-----------------------------------------------------------------------------
 int CScriptBind_GameRules::ProcessEMPEffect(IFunctionHandler* pH, ScriptHandle targetId, float timeScale)
 {
-	if(timeScale>0.0f)
+	if (timeScale > 0.0f)
 	{
 		CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(EntityId(targetId.n)));
 		if (pActor && (pActor->GetSpectatorMode() == 0) && (pActor->GetActorClass() == CPlayer::GetActorClassType()))
@@ -2361,7 +2361,7 @@ int CScriptBind_GameRules::ProcessEMPEffect(IFunctionHandler* pH, ScriptHandle t
 				if (!pSuit->IsInvulnerable())
 				{
 					const float baseTime = 15.0f;
-					float time = max(3.0f, baseTime*timeScale);
+					float time = max(3.0f, baseTime * timeScale);
 					pSuit->Activate(false);
 					pSuit->SetSuitEnergy(0.0f);
 					pSuit->Activate(true, time);

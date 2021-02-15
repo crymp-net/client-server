@@ -5,7 +5,7 @@
   $Id$
   $DateTime$
   Description: Implements the player.
-  
+
  -------------------------------------------------------------------------
   History:
   - 29:9:2004: Created by Filippo De Luca
@@ -41,14 +41,14 @@ struct SPlayerStats : public SActorStats
 	bool landed;
 	bool jumped;
 	bool wasStuck;
-	bool wasFlying; 
+	bool wasFlying;
 	float stuckTimeout;
 
 	float jumpLock;
-	
+
 	float leanAmount;
-	
-	float shakeAmount; 
+
+	float shakeAmount;
 
 	Vec3 physCamOffset;
 	float heightPivot;
@@ -56,13 +56,13 @@ struct SPlayerStats : public SActorStats
 	// falling things
 	float fallSpeed;
 	float downwardsImpactVelocity;
-		
+
 	bool isFiring;
 
 	bool isThirdPerson;
-	
+
 	bool isWalkingOnWater;
-	
+
 	CCoherentValue<uint8> followCharacterHead;
 	bool isStandingUp;
 
@@ -85,7 +85,7 @@ struct SPlayerStats : public SActorStats
 	// 2=on,move
 	// 3=on,nomove,a fake spectatormode used by FlowPlayerStagingNode.cpp
 	// SNH: added the CActor::EActorSpectatorMode enum for the above and more...
-	
+
 	Vec3 upVector;
 	Vec3 groundNormal;
 
@@ -102,10 +102,10 @@ struct SPlayerStats : public SActorStats
 	bool FPWeaponSwayOn;
 
 	Vec3 gBootsSpotNormal;
-	
+
 	//
 	Ang3 angularVel;
-	
+
 	Ang3 angularImpulse;
 	float angularImpulseDeceleration;
 	float angularImpulseTime;
@@ -139,7 +139,7 @@ struct SPlayerStats : public SActorStats
 
 	SPlayerStats()
 	{
-		memset(this,0,sizeof(SPlayerStats)); // This will zero everything, fine.
+		memset(this, 0, sizeof(SPlayerStats)); // This will zero everything, fine.
 		new (this) SActorStats(); // But this will set certain Vec3 to QNAN, due to the new default constructors.
 
 		mass = 80.0f;
@@ -148,9 +148,9 @@ struct SPlayerStats : public SActorStats
 
 		firstPersonBody = 2;
 
-		upVector.Set(0,0,1);
+		upVector.Set(0, 0, 1);
 
-		zeroGUp.Set(0,0,1);
+		zeroGUp.Set(0, 0, 1);
 
 		velocity.zero();
 		velocityUnconstrained.zero();
@@ -163,7 +163,7 @@ struct SPlayerStats : public SActorStats
 		bIgnoreSprinting = false;
 
 		groundMaterialIdx = -1;
-		
+
 		inFreefall = -1;
 
 		fallSpeed = 0.0f;
@@ -177,7 +177,7 @@ struct SPlayerStats : public SActorStats
 		worldWaterLevel = 0.0f;
 		worldWaterLevelDelta = 0.0f;
 		swimJumping = false;
-		
+
 		spectatorMode = 0;
 		spectatorTarget = 0;
 		spectatorZoom = 2;
@@ -187,7 +187,7 @@ struct SPlayerStats : public SActorStats
 		FPWeaponSwayOn = false;
 	}
 
-	void Serialize( TSerialize ser, unsigned aspects );
+	void Serialize(TSerialize ser, unsigned aspects);
 };
 
 struct SPlayerParams : public SActorParams
@@ -200,11 +200,11 @@ struct SPlayerParams : public SActorParams
 
 	float inertia;
 	float inertiaAccel;
-		
+
 	float jumpHeight;
 
 	float slopeSlowdown;//cant find a better name for this
-		
+
 	float leanShift;
 	float leanAngle;
 
@@ -221,7 +221,7 @@ struct SPlayerParams : public SActorParams
 
 	SPlayerParams()
 	{
- 		memset(this,0,sizeof(SPlayerParams));
+		memset(this, 0, sizeof(SPlayerParams));
 		new (this) SActorParams();
 
 		sprintMultiplier = 1.25f;
@@ -232,20 +232,20 @@ struct SPlayerParams : public SActorParams
 
 		inertia = 7.0f;
 		inertiaAccel = 11.0f;
-		
+
 		jumpHeight = 1.0f;
 
 		slopeSlowdown = 2.1f;
-		
+
 		leanShift = 0.5f;
 		leanAngle = 11.0f;
-		
+
 		thrusterImpulse = 5.0f;
 		thrusterStabilizeImpulse = 1.0f;
 
 		gravityBootsMultipler = 0.7f;
 
-		strcpy(animationAppendix,"nw");
+		strcpy(animationAppendix, "nw");
 	}
 };
 
@@ -342,44 +342,44 @@ public:
 		eLAT_Die,
 	};
 
-	static const int ASPECT_NANO_SUIT_SETTING			= eEA_GameClientDynamic; // needs to be the same as IPlayerInput::INPUT_ASPECT, so that both get serialized together
-	static const int ASPECT_NANO_SUIT_ENERGY			= eEA_GameServerDynamic;
-	static const int ASPECT_NANO_SUIT_INVULNERABLE= eEA_GameServerDynamic;
+	static const int ASPECT_NANO_SUIT_SETTING = eEA_GameClientDynamic; // needs to be the same as IPlayerInput::INPUT_ASPECT, so that both get serialized together
+	static const int ASPECT_NANO_SUIT_ENERGY = eEA_GameServerDynamic;
+	static const int ASPECT_NANO_SUIT_INVULNERABLE = eEA_GameServerDynamic;
 	static const int ASPECT_NANO_SUIT_DEFENSE_HIT = eEA_GameServerDynamic;
 
-	static const int ASPECT_HEALTH				= eEA_GameServerStatic;
-	static const int ASPECT_FROZEN				= eEA_GameServerStatic;
-	static const int ASPECT_CURRENT_ITEM	= eEA_GameClientStatic;
+	static const int ASPECT_HEALTH = eEA_GameServerStatic;
+	static const int ASPECT_FROZEN = eEA_GameServerStatic;
+	static const int ASPECT_CURRENT_ITEM = eEA_GameClientStatic;
 
 	CPlayer();
 	virtual ~CPlayer();
 
 	virtual void Draw(bool draw);
-	virtual void BindInputs( IAnimationGraphState * pAGState );
+	virtual void BindInputs(IAnimationGraphState* pAGState);
 	//marcok: GC workaround
 	virtual bool ShouldSwim();
-	virtual bool IsSwimming() {	return m_bSwimming; }
+	virtual bool IsSwimming() { return m_bSwimming; }
 	virtual bool IsSprinting();
 	virtual bool CanFire();
-	virtual bool Init( IGameObject * pGameObject );
-	virtual void PostInit( IGameObject * pGameObject );
-	virtual void InitClient( int channelId );
+	virtual bool Init(IGameObject* pGameObject);
+	virtual void PostInit(IGameObject* pGameObject);
+	virtual void InitClient(int channelId);
 	virtual void InitLocalPlayer();
 	virtual void ProcessEvent(SEntityEvent& event);
-	virtual void SetAuthority( bool auth );
-	virtual void SerializeXML( XmlNodeRef& node, bool bLoading );
+	virtual void SetAuthority(bool auth);
+	virtual void SerializeXML(XmlNodeRef& node, bool bLoading);
 	virtual void Update(SEntityUpdateContext& ctx, int updateSlot);
 	virtual void PrePhysicsUpdate();
-	virtual void UpdateView(SViewParams &viewParams);
-	virtual void PostUpdateView(SViewParams &viewParams);
+	virtual void UpdateView(SViewParams& viewParams);
+	virtual void PostUpdateView(SViewParams& viewParams);
 	virtual void UpdateFirstPersonEffects(float frameTime);
-	virtual void GetMemoryStatistics(ICrySizer * s);
+	virtual void GetMemoryStatistics(ICrySizer* s);
 	virtual void UpdateFootSteps(float frameTime);
 	virtual int32 GetArmor() const;
 	virtual int32 GetMaxArmor() const;
 
-	virtual IEntity *LinkToVehicle(EntityId vehicleId);
-	virtual IEntity *LinkToEntity(EntityId entityId, bool bKeepTransformOnDetach=true);
+	virtual IEntity* LinkToVehicle(EntityId vehicleId);
+	virtual IEntity* LinkToEntity(EntityId entityId, bool bKeepTransformOnDetach = true);
 	virtual void LinkToMountedWeapon(EntityId weaponId);
 
 	virtual void SetViewInVehicle(Quat viewRotation);
@@ -397,25 +397,25 @@ public:
 	static  const char* GetActorClassType() { return "CPlayer"; }
 	virtual const char* GetActorClass() const { return CPlayer::GetActorClassType(); }
 
-//	ILINE bool FeetUnderWater() const { return m_bFeetUnderWater; }
+	//	ILINE bool FeetUnderWater() const { return m_bFeetUnderWater; }
 
 protected:
-	virtual IActorMovementController * CreateMovementController();
-	virtual void SetIK( const SActorFrameMovementParams& );
+	virtual IActorMovementController* CreateMovementController();
+	virtual void SetIK(const SActorFrameMovementParams&);
 
 public:
-  struct SAlienInterferenceParams
-  {
-    SAlienInterferenceParams() : maxdist(0.f) {}
-    SAlienInterferenceParams(float dist) : maxdist(dist) {}
+	struct SAlienInterferenceParams
+	{
+		SAlienInterferenceParams() : maxdist(0.f) {}
+		SAlienInterferenceParams(float dist) : maxdist(dist) {}
 
-    float maxdist;
-  };
+		float maxdist;
+	};
 
 	struct UnfreezeParams
 	{
 		UnfreezeParams() {};
-		UnfreezeParams(float dlt): delta(dlt) {};
+		UnfreezeParams(float dlt) : delta(dlt) {};
 
 		float delta;
 		void SerializeWith(TSerialize ser)
@@ -458,8 +458,8 @@ public:
 
 	struct EMPParams
 	{
-		EMPParams(): time(1.0f) {};
-		EMPParams(float _time): time(_time) {};
+		EMPParams() : time(1.0f) {};
+		EMPParams(float _time) : time(_time) {};
 
 		float time;
 
@@ -471,8 +471,8 @@ public:
 
 	struct JumpParams
 	{
-		JumpParams(): strengthJump(false) {};
-		JumpParams(bool _strengthJump): strengthJump(_strengthJump) {};
+		JumpParams() : strengthJump(false) {};
+		JumpParams(bool _strengthJump) : strengthJump(_strengthJump) {};
 
 		bool strengthJump;
 
@@ -499,14 +499,14 @@ public:
 	DECLARE_CLIENT_RMI_PREATTACH(ClParachute, NoParams, eNRT_ReliableOrdered);
 
 	//set/get actor status
-	virtual void SetStats(SmartScriptTable &rTable);
-	virtual void UpdateScriptStats(SmartScriptTable &rTable);
+	virtual void SetStats(SmartScriptTable& rTable);
+	virtual void UpdateScriptStats(SmartScriptTable& rTable);
 	virtual void UpdateStats(float frameTime);
 	virtual void UpdateSwimStats(float frameTime);
 	virtual void UpdateUWBreathing(float frameTime, Vec3 worldBreathPos);
 	virtual void UpdateWeaponRaising();
-	virtual void SetParams(SmartScriptTable &rTable,bool resetFirst);
-	virtual bool GetParams(SmartScriptTable &rTable);
+	virtual void SetParams(SmartScriptTable& rTable, bool resetFirst);
+	virtual bool GetParams(SmartScriptTable& rTable);
 
 	virtual float CalculatePseudoSpeed(bool wantSprint) const;
 
@@ -518,19 +518,19 @@ public:
 	virtual void ToggleThirdPerson();
 
 	virtual int  IsGod();
-	
+
 	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
 	virtual void Kill();
 
 	//stances
-	virtual Vec3	GetStanceViewOffset(EStance stance,float *pLeanAmt=NULL,bool withY = false) const;
+	virtual Vec3	GetStanceViewOffset(EStance stance, float* pLeanAmt = NULL, bool withY = false) const;
 	virtual bool IsThirdPerson() const;
 	virtual void StanceChanged(EStance last);
-  //virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
+	//virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
 
 	virtual void ResetAnimGraph();
 
-	CNanoSuit *GetNanoSuit() const { return m_pNanoSuit; }
+	CNanoSuit* GetNanoSuit() const { return m_pNanoSuit; }
 	void ActivateNanosuit(bool active);
 
 	virtual void SetFlyMode(uint8 flyMode);
@@ -545,52 +545,52 @@ public:
 	virtual int GetSpectatorZoom() const { return m_stats.spectatorZoom; }
 	void MoveToSpectatorTargetPosition();
 
-	virtual void SelectNextItem(int direction, bool keepHistory, const char *category);
+	virtual void SelectNextItem(int direction, bool keepHistory, const char* category);
 	virtual void HolsterItem(bool holster);
 	virtual void SelectLastItem(bool keepHistory, bool forceNext = false);
-	virtual void SelectItemByName(const char *name, bool keepHistory);
+	virtual void SelectItemByName(const char* name, bool keepHistory);
 	virtual void SelectItem(EntityId itemId, bool keepHistory);
 
-	virtual void RagDollize( bool fallAndPlay );
-	virtual void HandleEvent( const SGameObjectEvent& event );
+	virtual void RagDollize(bool fallAndPlay);
+	virtual void HandleEvent(const SGameObjectEvent& event);
 
-	virtual void UpdateAnimGraph(IAnimationGraphState * pState);
+	virtual void UpdateAnimGraph(IAnimationGraphState* pState);
 	virtual void PostUpdate(float frameTime);
 	virtual void PostRemoteSpawn();
 
-	virtual void AnimationEvent(ICharacterInstance *pCharacter, const AnimEventInstance &event);
-	
-	virtual void SetViewRotation( const Quat &rotation );
-	virtual Quat GetViewRotation() const;
-	virtual void EnableTimeDemo( bool bTimeDemo );
+	virtual void AnimationEvent(ICharacterInstance* pCharacter, const AnimEventInstance& event);
 
-	virtual void SetViewAngleOffset(const Vec3 &offset);
+	virtual void SetViewRotation(const Quat& rotation);
+	virtual Quat GetViewRotation() const;
+	virtual void EnableTimeDemo(bool bTimeDemo);
+
+	virtual void SetViewAngleOffset(const Vec3& offset);
 	virtual Vec3 GetViewAngleOffset() { return (Vec3)m_viewAnglesOffset; };
 
-	virtual bool SetAspectProfile(EEntityAspects aspect, uint8 profile );
+	virtual bool SetAspectProfile(EEntityAspects aspect, uint8 profile);
 
-	virtual void FullSerialize( TSerialize ser );
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags );
+	virtual void FullSerialize(TSerialize ser);
+	virtual bool NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags);
 	virtual void PostSerialize();
 	//set/get actor params
-	virtual void SetHealth( int health );
-	virtual SActorStats *GetActorStats() { return &m_stats; };
-	virtual const SActorStats *GetActorStats() const { return &m_stats; };
-	virtual SActorParams *GetActorParams() { return &m_params; };
+	virtual void SetHealth(int health);
+	virtual SActorStats* GetActorStats() { return &m_stats; };
+	virtual const SActorStats* GetActorStats() const { return &m_stats; };
+	virtual SActorParams* GetActorParams() { return &m_params; };
 	virtual void PostPhysicalize();
-	virtual void CameraShake(float angle,float shift,float duration,float frequency,Vec3 pos,int ID,const char* source="");
-	virtual bool CreateCodeEvent(SmartScriptTable &rTable);
-	ILINE virtual void VectorToLocal(Vec3 &v) {v = m_clientViewMatrix.GetInverted() * v;}
+	virtual void CameraShake(float angle, float shift, float duration, float frequency, Vec3 pos, int ID, const char* source = "");
+	virtual bool CreateCodeEvent(SmartScriptTable& rTable);
+	ILINE virtual void VectorToLocal(Vec3& v) { v = m_clientViewMatrix.GetInverted() * v; }
 	ILINE virtual Matrix34 GetViewMatrix() const { return m_clientViewMatrix; }
-	virtual void AddAngularImpulse(const Ang3 &angular,float deceleration, float duration);
-	virtual void SetAngles(const Ang3 &angles);
+	virtual void AddAngularImpulse(const Ang3& angular, float deceleration, float duration);
+	virtual void SetAngles(const Ang3& angles);
 	virtual Ang3 GetAngles();
-	virtual void PlayAction(const char *action,const char *extension, bool looping=false);
+	virtual void PlayAction(const char* action, const char* extension, bool looping = false);
 	virtual void UpdateGrab(float frameTime);
 	virtual float GetActorStrength() const;
 	virtual void Freeze(bool freeze);
-	virtual void ProcessBonesRotation(ICharacterInstance *pCharacter,float frameTime);
-	virtual void ProcessIKLegs(ICharacterInstance *pCharacter,float frameTime);
+	virtual void ProcessBonesRotation(ICharacterInstance* pCharacter, float frameTime);
+	virtual void ProcessIKLegs(ICharacterInstance* pCharacter, float frameTime);
 	virtual void Landed(float fallSpeed);
 
 	//Player can grab north koreans
@@ -600,11 +600,11 @@ public:
 	virtual EntityId	GetGrabbedEntityId() const;
 
 	//Support sleep 
-	virtual bool CanSleep() {return true;}
-	
+	virtual bool CanSleep() { return true; }
+
 	void UpdateParachute(float frameTime);
 	void ChangeParachuteState(int8 newState);
-	void UpdateFreefallAnimationInputs(bool force=false);
+	void UpdateFreefallAnimationInputs(bool force = false);
 
 	void ProcessCharacterOffset(float frameTime);
 
@@ -614,17 +614,17 @@ public:
 	virtual void ResetAnimations();
 	float GetMassFactor() const;
 	bool	IsFiringProne() const;
-  virtual float GetFrozenAmount(bool stages=false) const; 
-	IPlayerInput* GetPlayerInput() const {return m_pPlayerInput.get();}
-		
+	virtual float GetFrozenAmount(bool stages = false) const;
+	IPlayerInput* GetPlayerInput() const { return m_pPlayerInput.get(); }
+
 	virtual void SwitchDemoModeSpectator(bool activate);
 	bool IsTimeDemo() const { return m_timedemo; }
 	void ForceFreeFall() { m_stats.inFreefall = 1; }
 
 	void StopLoopingSounds();
 
-	void RegisterPlayerEventListener	(IPlayerEventListener *pPlayerEventListener);
-	void UnregisterPlayerEventListener(IPlayerEventListener *pPlayerEventListener);
+	void RegisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
+	void UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
 
 	ILINE bool GravityBootsOn() const
 	{
@@ -635,18 +635,18 @@ public:
 	ILINE bool GetStabilize() const { return m_bStabilize; }
 	ILINE float GetSpeedLean() const { return m_fSpeedLean; }
 	ILINE void SetSpeedLean(float speedLean) { m_fSpeedLean = speedLean; }
-	
-	ILINE void EnableParachute(bool enable) { m_parachuteEnabled=enable; };
+
+	ILINE void EnableParachute(bool enable) { m_parachuteEnabled = enable; };
 	ILINE bool IsParachuteEnabled() const { return m_parachuteEnabled; };
 
 	virtual bool UseItem(EntityId itemId);
 	virtual bool PickUpItem(EntityId itemId, bool sound);
-	virtual bool DropItem(EntityId itemId, float impulseScale=1.0f, bool slectNext=true, bool byDeath=false);
+	virtual bool DropItem(EntityId itemId, float impulseScale = 1.0f, bool slectNext = true, bool byDeath = false);
 
 	ILINE const Vec3& GetEyeOffset() const { return m_eyeOffset; }
 	ILINE const Vec3& GetWeaponOffset() const { return m_weaponOffset; }
 
-	void UpdateUnfreezeInput(const Ang3 &deltaRotation, const Vec3 &deltaMovement, float mult);
+	void UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMovement, float mult);
 
 	void SpawnParticleEffect(const char* effectName, const Vec3& pos, const Vec3& dir);
 	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = NULL, float paramValue = 0.0f);
@@ -665,11 +665,11 @@ public:
 	bool NeedToCrouch(const Vec3& pos);
 
 	// mines (and claymores)
-	void RemoveAllExplosives(float timeDelay, uint8 typeId=0xff);
+	void RemoveAllExplosives(float timeDelay, uint8 typeId = 0xff);
 	void RemoveExplosiveEntity(EntityId entityId);
 	void RecordExplosivePlaced(EntityId entityId, uint8 typeId);
 	void RecordExplosiveDestroyed(EntityId entityId, uint8 typeId);
-	
+
 	//First person fists/hands actions
 	void EnterFirstPersonSwimming();
 	void ExitFirstPersonSwimming();
@@ -683,11 +683,11 @@ public:
 	//Hit assistance
 	bool HasHitAssistance();
 
-	void CreateVoiceListener();	
+	void CreateVoiceListener();
 
 	struct SStagingParams
 	{
-		SStagingParams() : 
+		SStagingParams() :
 			bActive(false), bLocked(false), vLimitDir(ZERO), vLimitRangeH(0.0f), vLimitRangeV(0.0f), stance(STANCE_NULL)
 		{
 		}
@@ -700,7 +700,7 @@ public:
 		EStance stance;
 		void Serialize(TSerialize ser)
 		{
-			assert( ser.GetSerializationTarget() != eST_Network );
+			assert(ser.GetSerializationTarget() != eST_Network);
 			ser.BeginGroup("SStagingParams");
 			ser.Value("bActive", bActive);
 			ser.Value("bLocked", bLocked);
@@ -712,24 +712,24 @@ public:
 		}
 	};
 
-	void StagePlayer(bool bStage, SStagingParams* pStagingParams = 0); 
+	void StagePlayer(bool bStage, SStagingParams* pStagingParams = 0);
 
 	void NotifyObjectGrabbed(bool bIsGrab, EntityId objectId, bool bIsNPC, bool bIsTwoHanded = false); // called from OffHand.cpp. bIsGrab always true atm
 
-	virtual void OnSoundSystemEvent( ESoundSystemCallbackEvent event,ISound *pSound );
+	virtual void OnSoundSystemEvent(ESoundSystemCallbackEvent event, ISound* pSound);
 
 private:
 	void AnimationControlled(bool activate);
 	bool ShouldUsePhysicsMovement();
-  void Debug();
+	void Debug();
 	void SetPainEffect(float progress = 0.0f);
-	
+
 	void UpdateSounds(float fFrameTime);
 	float m_fLowHealthSoundMood;
 	float m_fConcentrationTimer;
 	bool m_bConcentration;
 
-	typedef std::list<IPlayerEventListener *> TPlayerEventListeners;
+	typedef std::list<IPlayerEventListener*> TPlayerEventListeners;
 	TPlayerEventListeners m_playerEventListeners;
 
 protected:
@@ -741,9 +741,9 @@ protected:
 	// bool IsMaterialBootable(int matId) const;
 	ILINE bool IsMaterialBootable(int matId) const { return true; }
 
-  void InitInterference();
+	void InitInterference();
 
-	CNanoSuit *m_pNanoSuit;
+	CNanoSuit* m_pNanoSuit;
 
 	Ang3		m_angleOffset;	// Used only by the view system. (retained state)
 
@@ -765,7 +765,7 @@ protected:
 	Vec3		m_upVector;//using gravity boots (or when prone) is the normal of the surface where the player is standing on, otherwise is the default (0,0,1)
 
 	Vec3		m_bobOffset;
-	
+
 	Vec3		m_FPWeaponLastDirVec;
 	Vec3		m_FPWeaponOffset;
 	Ang3		m_FPWeaponAngleOffset;
@@ -779,7 +779,7 @@ protected:
 
 	SPlayerStats		m_stats;
 	SPlayerParams		m_params;
-	
+
 	std::auto_ptr<IPlayerInput> m_pPlayerInput;
 
 	// compatibility with old code: which actions are set
@@ -804,7 +804,7 @@ protected:
 	IAnimationGraph::InputID m_inputAiming;
 	IAnimationGraph::InputID m_inputVehicleName;
 	IAnimationGraph::InputID m_inputVehicleSeat;
-	
+
 	// probably temporary, feel free to figure out better place
 	float m_lastAnimControlled;
 	Quat m_lastAnimContRot;
@@ -839,17 +839,17 @@ protected:
 	//client / localActor active first person effects
 	std::vector<EClientPostEffect> m_clientPostEffects;
 
-  typedef std::map<IEntityClass*, const SAlienInterferenceParams> TAlienInterferenceParams;
-  static TAlienInterferenceParams m_interferenceParams;
+	typedef std::map<IEntityClass*, const SAlienInterferenceParams> TAlienInterferenceParams;
+	static TAlienInterferenceParams m_interferenceParams;
 
 	std::list<EntityId>			m_explosiveList[3];
-  bool                    m_bSpeedSprint;
+	bool                    m_bSpeedSprint;
 	bool										m_bHasAssistance;
 	bool                    m_bVoiceSoundPlaying;
 	bool                    m_bVoiceSoundRecursionFlag;
-	IGameObjectExtension*		m_pVoiceListener;
-	IGameObjectExtension*		m_pInteractor;
-	IEntitySoundProxy*      m_pSoundProxy;
+	IGameObjectExtension* m_pVoiceListener;
+	IGameObjectExtension* m_pInteractor;
+	IEntitySoundProxy* m_pSoundProxy;
 
 	SStagingParams m_stagingParams;
 

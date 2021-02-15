@@ -27,58 +27,58 @@ struct IVehicle;
 struct IVehiclePart;
 struct IVehicleSeat;
 
-class CVehicleWeapon: public CWeapon
+class CVehicleWeapon : public CWeapon
 {
 public:
 
-  CVehicleWeapon();
-  
-  // CWeapon
-  virtual bool Init(IGameObject * pGameObject);
-  virtual void PostInit(IGameObject * pGameObject);
-  virtual void Reset();
+	CVehicleWeapon();
 
-  virtual void MountAtEntity(EntityId entityId, const Vec3 &pos, const Ang3 &angles);
+	// CWeapon
+	virtual bool Init(IGameObject* pGameObject);
+	virtual void PostInit(IGameObject* pGameObject);
+	virtual void Reset();
+
+	virtual void MountAtEntity(EntityId entityId, const Vec3& pos, const Ang3& angles);
 
 	virtual void StartUse(EntityId userId);
 	virtual void StopUse(EntityId userId);
-  virtual bool FilterView(SViewParams& viewParams);
+	virtual bool FilterView(SViewParams& viewParams);
 	virtual void ApplyViewLimit(EntityId userId, bool apply) {}; // should not be done for vehicle weapons
 
-  virtual void StartFire();
-   
-  virtual void Update(SEntityUpdateContext& ctx, int update);
+	virtual void StartFire();
 
-  virtual void SetAmmoCount(IEntityClass* pAmmoType, int count);
-  virtual void SetInventoryAmmoCount(IEntityClass* pAmmoType, int count);
+	virtual void Update(SEntityUpdateContext& ctx, int update);
 
-  virtual bool GetAimBlending(OldBlendSpace& params);
-  virtual void UpdateIKMounted(IActor* pActor, const Vec3& vGunXAxis);
-  virtual void AttachArms(bool attach, bool shadow);
-  virtual bool CanZoom() const;
+	virtual void SetAmmoCount(IEntityClass* pAmmoType, int count);
+	virtual void SetInventoryAmmoCount(IEntityClass* pAmmoType, int count);
+
+	virtual bool GetAimBlending(OldBlendSpace& params);
+	virtual void UpdateIKMounted(IActor* pActor, const Vec3& vGunXAxis);
+	virtual void AttachArms(bool attach, bool shadow);
+	virtual bool CanZoom() const;
 
 	virtual void UpdateFPView(float frameTime);
 
-	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); CWeapon::GetMemoryStatistics(s); }
+	virtual void GetMemoryStatistics(ICrySizer* s) { s->Add(*this); CWeapon::GetMemoryStatistics(s); }
 
-  virtual bool ApplyActorRecoil() const { return (m_pOwnerSeat == m_pSeatUser); }  
-  // ~CWeapon
+	virtual bool ApplyActorRecoil() const { return (m_pOwnerSeat == m_pSeatUser); }
+	// ~CWeapon
 
 protected:
 
-  bool CheckWaterLevel() const;
-  void CheckForFriendlyAI(float frameTime);
+	bool CheckWaterLevel() const;
+	void CheckForFriendlyAI(float frameTime);
 	void CheckForFriendlyPlayers(float frameTime);
 
-  IVehicle* m_pVehicle;
-  IVehiclePart* m_pPart;
-  IVehicleSeat* m_pOwnerSeat; // owner seat of the weapon
-  IVehicleSeat* m_pSeatUser; // seat of the weapons user
+	IVehicle* m_pVehicle;
+	IVehiclePart* m_pPart;
+	IVehicleSeat* m_pOwnerSeat; // owner seat of the weapon
+	IVehicleSeat* m_pSeatUser; // seat of the weapons user
 
 private:
 	float	  m_timeToUpdate;
-  float   m_dtWaterLevelCheck;
-	IEntity *m_pLookAtEnemy;
+	float   m_dtWaterLevelCheck;
+	IEntity* m_pLookAtEnemy;
 };
 
 
