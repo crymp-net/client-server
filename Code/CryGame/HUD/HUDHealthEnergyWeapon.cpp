@@ -43,7 +43,6 @@ void CHUD::CheckSpectatorTarget(float deltaTime)
 	{
 		m_animPlayerStats.SetVisible(false);
 	}
-
 }
 //-----------------------------------------------------------------------------------------------------
 
@@ -108,7 +107,7 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 			auto* Target = GetSpectatorTarget();
 			CActor* pActor = static_cast<CActor*>(Target ? Target : m_pClientActor);
 			if (pActor)
-				pItem = pActor->GetCurrentItem(false);
+				pItem = pActor->GetCurrentItem(true);
 			if (!pItem)
 				return;
 		}

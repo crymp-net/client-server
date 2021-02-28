@@ -3458,20 +3458,23 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 
 	bool ranked = pHUD->GetPlayerRank(shooterId) != 0 || pHUD->GetPlayerRank(GetEntityId()) != 0;
 
-	if (IsClient() && gEnv->bMultiplayer && shooterId != GetEntityId() && g_pGameCVars->g_deathCam != 0)
+	if ((IsClient() || IsFpSpectatorTarget()) && gEnv->bMultiplayer && shooterId != GetEntityId() && g_pGameCVars->g_deathCam != 0)
 	{
 		// use the spectator target to store who killed us (used for the MP death cam - not quite spectator mode but similar...).
 		if (m_pGameFramework->GetIActorSystem()->GetActor(shooterId))
 		{
 			SetSpectatorTarget(shooterId);
 
-			// Also display the name of the enemy who shot you...
-			if (g_pGame->GetGameRules()->GetTeam(shooterId) != g_pGame->GetGameRules()->GetTeam(GetEntityId()))
-				SAFE_HUD_FUNC(GetTagNames()->AddEnemyTagName(shooterId));
+			if (!IsFpSpectatorTarget())
+			{
+				// Also display the name of the enemy who shot you...
+				if (g_pGame->GetGameRules()->GetTeam(shooterId) != g_pGame->GetGameRules()->GetTeam(GetEntityId()))
+					SAFE_HUD_FUNC(GetTagNames()->AddEnemyTagName(shooterId));
 
-			// ensure full body is displayed (otherwise player is headless)
-			if (!IsThirdPerson())
-				ToggleThirdPerson();
+				// ensure full body is displayed (otherwise player is headless)
+				if (!IsThirdPerson())
+					ToggleThirdPerson();
+			}
 		}
 	}
 

@@ -185,14 +185,25 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 		useTarget = true;
 	}
 
-	CActor *pActor = (CActor*)(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = (CPlayer*)(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	
+	//CryMP: Spectator check 
+	auto pTarget = pPlayer ? pPlayer->GetSpectatorTargetPlayer() : nullptr;
+	if (pTarget)
+	{
+		pPlayer = (CPlayer*)(pTarget);
+	}
+
+	if (!pPlayer)
+		return;
+
 	bool bBack = false;
-	if (IMovementController *pMV = pActor->GetMovementController())
+	if (IMovementController *pMV = pPlayer->GetMovementController())
 	{
 		SMovementState state;
 		pMV->GetMovementState(state);
 		Vec3 vLook = state.eyeDirection;
-		Vec3 vDir = vWorldPos - pActor->GetEntity()->GetWorldPos();
+		Vec3 vDir = vWorldPos - pPlayer->GetEntity()->GetWorldPos();
 		float fDot = vLook.Dot(vDir);
 		if(fDot<0.0f)
 			bBack = true;
@@ -298,9 +309,7 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 	float	fMinSize = g_pGameCVars->hud_onScreenNearSize;
 	float	fMaxSize = g_pGameCVars->hud_onScreenFarSize;
 
-	CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-
-	float	fDist = (vWorldPos-pPlayerActor->GetEntity()->GetWorldPos()).len();
+	float	fDist = (vWorldPos - pPlayer->GetEntity()->GetWorldPos()).len();
 	float fSize = 1.0;
 	if(fDist<=iMinDist)
 	{
@@ -368,6 +377,16 @@ int CHUD::FillUpMOArray(std::vector<double> *doubleArray, double a, double b, do
 
 void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 {
+	//CryMP track projectiles in Fp Spec
+	if (pPlayerActor && pPlayerActor->IsFpSpectator())
+	{
+		CPlayer* pTarget = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+		if (pTarget)
+			pPlayerActor = pTarget;
+		else
+			return;
+	}
+
 	if(m_trackedProjectiles.empty())
 	{
 		if (m_friendlyTrackerStatus)
@@ -398,8 +417,8 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 
 	int teamId=g_pGame->GetGameRules()->GetTeam(pPlayerActor->GetEntityId());
 
-	std::vector<EntityId>::iterator end = m_trackedProjectiles.end();
-	std::vector<EntityId>::iterator it = m_trackedProjectiles.begin();
+	auto end = m_trackedProjectiles.end();
+	auto it = m_trackedProjectiles.begin();
 
 	CWeaponSystem *pWeaponSystem=g_pGame->GetWeaponSystem();
 
@@ -635,7 +654,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 	if(IsAirStrikeAvailable() && GetScopes()->IsBinocularsShown())
 	{
 		float fCos = fabsf(cosf(gEnv->pTimer->GetAsyncCurTime()));
-		std::vector<EntityId>::const_iterator it = m_possibleAirStrikeTargets.begin();
+		auto it = m_possibleAirStrikeTargets.begin();
 		for(; it != m_possibleAirStrikeTargets.end(); ++it)
 		{
 			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
@@ -686,18 +705,18 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 	float fX(0.0f), fY(0.0f);
 	CActor *pActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
 	int team = 0;
-	CGameRules *pGameRules = (CGameRules*)(gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules());
+	CGameRules *pGameRules = g_pGame->GetGameRules();
 	if(pActor && pGameRules)
 		team = pGameRules->GetTeam(pActor->GetEntityId());
 
 	if(m_iPlayerOwnedVehicle)
 	{
-		IEntity *pEntity = GetISystem()->GetIEntitySystem()->GetEntity(m_iPlayerOwnedVehicle);
+		IEntity *pEntity = gEnv->pEntitySystem->GetEntity(m_iPlayerOwnedVehicle);
 		if(!pEntity)
 		{
 			m_iPlayerOwnedVehicle = 0;
 		}
-		else
+		else if (pActor) //CryMP: crash fix..
 		{
 			IVehicle *pCurrentVehicle = pActor->GetLinkedVehicle();
 			if(!(pCurrentVehicle && pCurrentVehicle->GetEntityId() == m_iPlayerOwnedVehicle))
@@ -819,7 +838,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 
 	if(pActor)
 	{
-		std::vector<EntityId>::iterator it = m_pHUDRadar->GetObjectives()->begin();
+		auto it = m_pHUDRadar->GetObjectives()->begin();
 		for(; it != m_pHUDRadar->GetObjectives()->end(); ++it)
 		{
 			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
@@ -827,7 +846,8 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 			{
 				int friendly = m_pHUDRadar->FriendOrFoe(gEnv->bMultiplayer, team, pEntity, pGameRules);
 				FlashRadarType type = m_pHUDRadar->ChooseType(pEntity);
-				if(friendly==1 && IsUnderAttack(pEntity))
+				const bool pUnderAttack(IsUnderAttack(pEntity));
+				if(friendly==1 && pUnderAttack)
 				{
 					friendly = 3;
 					AddOnScreenMissionObjective(pEntity, friendly);
@@ -848,18 +868,27 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 	// icons for friendly claymores and mines
 	if(gEnv->bMultiplayer && pActor && pGameRules)
 	{
-		int playerTeam = pGameRules->GetTeam(pActor->GetEntityId());
-		std::list<EntityId>::iterator next;
-		std::list<EntityId>::iterator it = m_explosiveList.begin();
-		for(; it != m_explosiveList.end(); it=next)
+		int color = 1;
+		bool bSpectating = false;
+		if (auto* pPlayer = static_cast<CPlayer*>(pActor))
 		{
-			next = it; ++next;
-
-			int mineTeam = pGameRules->GetTeam(*it);
-			if((mineTeam != 0 && mineTeam == playerTeam) || (mineTeam == 0 && pGameRules->GetTeamCount() < 2))
+			//CryMP: Show explosives icons in spectator mode
+			auto* pTarget = pPlayer->GetSpectatorTargetPlayer();
+			if (pTarget)
+			{
+				pActor = static_cast<CActor*>(pTarget);
+				bSpectating = true;
+			}
+		}
+		const int playerTeam = pGameRules->GetTeam(pActor->GetEntityId());
+		for (const auto explosiveId : m_explosiveList)
+		{
+			const int explosiveTeam = pGameRules->GetTeam(explosiveId);
+			const bool InstantAction(pGameRules->GetTeamCount() < 2);
+			if(bSpectating || (explosiveTeam != 0 && explosiveTeam == playerTeam) || (explosiveTeam == 0 && InstantAction))
 			{
 				// quick check for proximity
-				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
+				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(explosiveId);
 				if(pEntity)
 				{
 					Vec3 dir = pEntity->GetWorldPos() - pActor->GetEntity()->GetWorldPos();
@@ -867,12 +896,19 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 					{
 						Vec3 targetPoint(0,0,0);
 						FlashOnScreenIcon icon = eOS_Bottom;
-						CProjectile *pProjectile = g_pGame->GetWeaponSystem()->GetProjectile(*it);
+						CProjectile *pProjectile = g_pGame->GetWeaponSystem()->GetProjectile(explosiveId);
 						if(pProjectile && pProjectile->GetEntity())
 						{
+							const bool pOwnerOfExplosive(pProjectile->GetOwnerId() == pActor->GetEntityId());
+							const bool bEnemyExplosive(explosiveTeam != playerTeam);
+
 							// in IA, only display mines/claymores placed by this player
-							if(pGameRules->GetTeamCount() < 2 && pProjectile->GetOwnerId() != pActor->GetEntityId())
-								continue;
+							//CryMP: But for spectator mode, always show
+							if (!bSpectating)
+							{
+								if(InstantAction && !pOwnerOfExplosive)
+									continue;
+							}
 
 							IEntityClass* pClass = pProjectile->GetEntity()->GetClass();
 							if(pClass == m_pClaymore)
@@ -889,7 +925,13 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 							{
 								icon = eOS_Mine;
 							}
-							UpdateMissionObjectiveIcon(*it, 1, icon, true, targetPoint);
+
+							if (bSpectating)
+							{	
+								if (bEnemyExplosive || (InstantAction && !pOwnerOfExplosive))
+									color = 2; //CryMP: Red color for enemy explosives
+							}
+							UpdateMissionObjectiveIcon(explosiveId, color, icon, true, targetPoint);
 						}
 					}
 				}

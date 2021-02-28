@@ -61,7 +61,7 @@ void CIronSight::Update(float frameTime, uint frameId)
 {
 	bool keepUpdating = false;
 	CActor* pActor = m_pWeapon->GetOwnerActor();
-	bool isClient = (pActor && pActor->IsClient());
+	bool isClient = (pActor && (pActor->IsClient() || pActor->IsFpSpectatorTarget())); //CryMP: Fp spec support
 
 	float doft = 1.0f;
 	if (!m_zoomed)
@@ -159,7 +159,7 @@ void CIronSight::Update(float frameTime, uint frameId)
 			m_focus = 1.0f;
 		}
 
-		if (isClient)
+		if (pActor && pActor->IsClient())
 		{
 			//float t=m_zoomTimer/m_zoomTime;
 			if (m_zoomTime > 0.0f)
@@ -588,6 +588,8 @@ void CIronSight::TurnOff(bool enable, bool smooth, bool anim)
 //------------------------------------------------------------------------
 void CIronSight::ZoomIn(float time, float from, float to, bool smooth)
 {
+	//CryLogAlways("ZoomIn: time %f | from %f | to %f", time, from, to);
+
 	m_zoomTime = time;
 	m_zoomTimer = m_zoomTime;
 	m_startFoV = from;
@@ -648,7 +650,7 @@ void CIronSight::ZoomOut(float time, float from, float to, bool smooth)
 void CIronSight::OnEnterZoom()
 {
 	CActor* pActor = m_pWeapon->GetOwnerActor();
-	if (pActor && pActor->IsClient())
+	if (pActor && pActor->IsClient()) 
 	{
 		if (g_pGameCVars->g_dof_ironsight != 0)
 		{
@@ -692,7 +694,7 @@ void CIronSight::OnZoomedIn()
 	m_zoomed = true;
 
 	CActor* pActor = m_pWeapon->GetOwnerActor();
-	if (pActor && pActor->IsClient())
+	if (pActor && pActor->IsClient()) 
 	{
 		if (m_zoomparams.dof)
 		{
@@ -760,7 +762,7 @@ void CIronSight::OnZoomStep(bool zoomingIn, float t)
 //------------------------------------------------------------------------
 void CIronSight::UpdateDepthOfField(CActor* pActor, float frameTime, float t)
 {
-	if (pActor)
+	if (pActor && pActor->IsClient())
 	{
 		CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
 		if (IMovementController* pMV = pActor->GetMovementController())
@@ -1040,7 +1042,8 @@ void CIronSight::AdjustNearFov(float time, bool zoomIn)
 //------------------------------------------------------------------------
 void CIronSight::ResetFovAndPosition()
 {
-	if (m_pWeapon->GetOwnerActor() && m_pWeapon->GetOwnerActor()->IsClient())
+	CActor* pActor = m_pWeapon->GetOwnerActor();
+	if (pActor && (pActor->IsClient() || pActor->IsFpSpectatorTarget())) //CryMP Fp spec support
 	{
 		AdjustScopePosition(1.1f, false);
 		AdjustNearFov(1.1f, false);

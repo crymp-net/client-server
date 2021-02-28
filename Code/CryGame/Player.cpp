@@ -52,6 +52,7 @@ History:
 #include "HUD/HUDRadar.h"
 #include "HUD/HUDCrosshair.h"
 #include "HUD/HUDVehicleInterface.h"
+#include "HUD/HUDScopes.h"
 
 #include "PlayerMovement.h"
 #include "PlayerRotation.h"
@@ -209,6 +210,9 @@ CPlayer::CPlayer()
 	m_bVoiceSoundRecursionFlag = false;
 
 	m_vehicleViewDir.Set(0, 1, 0);
+	m_vehicleViewDirSmooth.Set(0, 1, 0);
+	m_netAimDir.Set(0, 1, 0);
+	m_netAimDirSmooth.Set(0, 1, 0);
 	m_tpLeanOffset = 0.0f;
 	m_tpProneOffset = 0.0f;
 }
@@ -803,7 +807,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 	const float frameTime = ctx.fFrameTime;
 
-	bool client(IsClient());
+	bool client(IsClient() || IsFpSpectatorTarget()); //CryMP FP Spec
 
 	EAutoDisablePhysicsMode adpm = eADPM_Never;
 	if (m_stats.isRagDoll)
@@ -956,7 +960,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		// init input systems if required
 		if (GetGameObject()->GetChannelId())
 		{
-			if (client) //|| ((demoMode == 2) && this == gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetOriginalDemoSpectator()))
+			if (IsClient()) //|| ((demoMode == 2) && this == gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetOriginalDemoSpectator()))
 			{
 				if (GetISystem()->IsDedicated())
 					m_pPlayerInput.reset(new CDedicatedInput(this));
@@ -1198,11 +1202,12 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
+	const bool Client(IsClient());
+	if (Client || (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead))
 	{
 		IEntity* pEnt = GetEntity();
 
-		if (IsClient() && !IsThirdPerson() && !m_stats.isOnLadder)
+		if (Client && !IsThirdPerson() && !m_stats.isOnLadder)
 		{
 			float lookDown(m_viewQuatFinal.GetColumn1() * m_baseQuat.GetColumn2());
 			float offsetZ(m_modelOffset.z);
@@ -1303,7 +1308,7 @@ bool CPlayer::ProcessProceduralLean(float frameTime)
 		return true;
 
 	}
-	else if (m_tpProneOffset * m_tpProneOffset > 0.001f > 0.0f)
+	else if (m_tpProneOffset * m_tpProneOffset > 0.001f)
 	{
 		Vec3 model = m_modelOffset;
 		Interpolate(m_tpProneOffset, 0.0f, 5.0f, frameTime, 5.0f);
@@ -1333,21 +1338,7 @@ void CPlayer::PrePhysicsUpdate()
 
 	Debug();
 
-	//workaround - Avoid collision with grabbed NPC - Beni
-	/*if(m_pHumanGrabEntity && !m_throwingNPC)
-	{
-		IMovementController * pMC = GetMovementController();
-		if(pMC)
-		{
-			SMovementState info;
-			pMC->GetMovementState(info);
-
-			Matrix34 prePhysics = m_pHumanGrabEntity->GetWorldTM();
-			prePhysics.AddTranslation(info.eyeDirection*0.5f);
-			m_pHumanGrabEntity->SetWorldTM(prePhysics);
-		}
-
-	}*/
+	const bool TP(IsThirdPerson());
 
 	if (m_pMovementController && !gEnv->bMultiplayer) //CryMP: Ghost Bug Fix #2, disable this in mp for now
 	{
@@ -1367,7 +1358,7 @@ void CPlayer::PrePhysicsUpdate()
 		}
 	}
 
-	bool client(IsClient());
+	bool client(IsClient()); 
 	float frameTime = gEnv->pTimer->GetFrameTime();
 
 	//FIXME:
@@ -1380,7 +1371,7 @@ void CPlayer::PrePhysicsUpdate()
 	{
 		params.flags |= eACF_AlwaysPhysics | eACF_ImmediateStance | eACF_NoLMErrorCorrection;
 
-		if ((gEnv->bMultiplayer && !client) || IsThirdPerson())
+		if ((gEnv->bMultiplayer && !client) || TP)
 		{
 			params.physErrorInnerRadiusFactor = 0.05f;
 			params.physErrorOuterRadiusFactor = 0.2f;
@@ -1394,7 +1385,7 @@ void CPlayer::PrePhysicsUpdate()
 	else
 		params.flags |= eACF_ImmediateStance | eACF_PerAnimGraph | eACF_UseHumanBlending | eACF_ConstrainDesiredSpeedToXY;
 
-	bool firstperson = IsClient() && !IsThirdPerson();
+	bool firstperson = IsClient() && !TP;
 	if (firstperson)
 	{
 		params.flags &= ~(eACF_AlwaysAnimation | eACF_PerAnimGraph);
@@ -1410,8 +1401,8 @@ void CPlayer::PrePhysicsUpdate()
 	bool fpMode = true;
 	if (!IsPlayer())
 		fpMode = false;
-	m_pAnimatedCharacter->GetAnimationGraphState()->SetFirstPersonMode(fpMode);
 
+	m_pAnimatedCharacter->GetAnimationGraphState()->SetFirstPersonMode(fpMode);
 
 	if (m_pMovementController)
 	{
@@ -1520,7 +1511,7 @@ void CPlayer::PrePhysicsUpdate()
 
 		if (client || (IsPlayer() && gEnv->bServer))
 			pCharacter->GetISkeletonPose()->SetForceSkeletonUpdate(4);
-		
+
 		if (client)
 		{
 			// clear the players look target every frame
@@ -1548,7 +1539,7 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	if (!m_pAnimatedCharacter)
 		return;
 
-	if (!IsThirdPerson())
+	if (!IsThirdPerson() && !IsFpSpectatorTarget())
 		return;
 
 	IAnimationGraphState* pGraph = m_pAnimatedCharacter ? m_pAnimatedCharacter->GetAnimationGraphState() : NULL;
@@ -1690,9 +1681,121 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	}
 }
 
+bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
+{
+	if (!IsFpSpectator())
+	{
+		return false;
+	}
+
+	const auto frameTime = viewParams.frameTime;
+
+	auto* pTarget = static_cast<CPlayer*>(GetSpectatorTargetPlayer());
+	if (pTarget && pTarget->IsFpSpectatorTarget())
+	{
+		CItem* pItem = static_cast<CItem*>(pTarget->GetCurrentItem(true));
+		CWeapon* pWeapon = pItem ? static_cast<CWeapon*>(pItem->GetIWeapon()) : nullptr;
+
+		auto* pVehicle = pTarget->GetLinkedVehicle();
+		if (pVehicle)
+		{
+			CHECKQNAN_VEC(pTarget->m_vehicleViewDirSmooth);
+			Interpolate(pTarget->m_vehicleViewDirSmooth, pTarget->m_vehicleViewDir, 5.0f, frameTime);
+			CHECKQNAN_VEC(pTarget->m_vehicleViewDirSmooth);
+		}
+		else
+		{
+			auto netAimFactor(g_pGameCVars->cl_netAimLerpFactor);
+			if (netAimFactor < 50.f)
+			{
+				const bool CryMP_Enhanced(g_pGameCVars->cl_crymp);
+				if (CryMP_Enhanced)
+				{
+					//only little smoothing needed, but we'll keep it for now
+				}
+				else if (pWeapon)
+				{
+					if (pWeapon->IsZoomed())
+						netAimFactor = 4.0f; //special high smoothing when lower FoV (zooming)
+
+					if (pWeapon->IsFiring())
+						netAimFactor *= 1.5f; //increase responsivness a bit
+				}
+
+				const auto speed = CLAMP(netAimFactor, 1.0f, 50.f);
+
+				CHECKQNAN_VEC(pTarget->m_netAimDirSmooth);
+				Interpolate(pTarget->m_netAimDirSmooth, pTarget->m_netAimDir, speed, frameTime);
+				CHECKQNAN_VEC(pTarget->m_netAimDirSmooth);
+			}
+			else
+			{
+				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
+			}
+		}
+
+		//Hide TP model or not
+		pTarget->m_stats.isHidden = pVehicle ? false : true;
+
+		//Run target view as First Person
+		CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
+		playerView.Process(m_FirstPersonSpectatorParams);
+		playerView.Commit(*pTarget, m_FirstPersonSpectatorParams);
+
+		m_viewBlending = false;	// only disable blending for one frame
+
+		Vec3 shakeVec(m_FirstPersonSpectatorParams.currentShakeShift * 0.85f);
+		pTarget->m_stats.FPWeaponPos = m_FirstPersonSpectatorParams.position + pTarget->m_stats.FPWeaponPosOffset + shakeVec;
+
+		Quat wQuat(m_FirstPersonSpectatorParams.rotation * Quat::CreateRotationXYZ(pTarget->m_stats.FPWeaponAnglesOffset * gf_PI / 180.0f));
+		wQuat *= Quat::CreateSlerp(m_FirstPersonSpectatorParams.currentShakeQuat, IDENTITY, 0.5f);
+		wQuat.Normalize();
+
+		pTarget->m_stats.FPWeaponAngles = Ang3(wQuat);
+		pTarget->m_stats.FPSecWeaponPos = pTarget->m_stats.FPWeaponPos;
+		pTarget->m_stats.FPSecWeaponAngles = pTarget->m_stats.FPWeaponAngles;
+
+		viewParams = m_FirstPersonSpectatorParams;
+
+		if (pWeapon)
+		{
+			pWeapon->UpdateFPView(frameTime);
+			if (/*!pWeapon->IsZoomed() && */ pWeapon->IsMounted())
+			{
+				pWeapon->FilterView(viewParams);
+				pWeapon->PostFilterView(viewParams);
+			}
+		}
+		else if (pItem)
+		{
+			pItem->UpdateFPView(frameTime);
+			pItem->FilterView(viewParams);
+			pItem->PostFilterView(viewParams);
+		}
+
+		//Pickup HUD and animations
+		COffHand* pOffhand = static_cast<COffHand*>(pTarget->GetItemByClass(CItem::sOffHandClass));
+		if (pOffhand)
+		{
+			pOffhand->UpdateFPView(frameTime);
+		}
+
+		viewParams.frameTime = frameTime;
+		
+		return true;
+	}
+
+	return false;
+}
+
 void CPlayer::UpdateView(SViewParams& viewParams)
 {
+	//CryMP: This function is called only for the local client
+
 	if (!m_pAnimatedCharacter)
+		return;
+
+	if (UpdateFpSpectatorView(viewParams))
 		return;
 
 	if (viewParams.groundOnly)
@@ -1751,12 +1854,14 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 	m_clientViewMatrix.OrthonormalizeFast();
 
 	// finally, update the network system
-	if (gEnv->bMultiplayer)
+	if (gEnv->bMultiplayer && IsClient())
 		g_pGame->GetIGameFramework()->GetNetContext()->ChangedFov(GetEntityId(), viewParams.fov);
 }
 
 void CPlayer::PostUpdateView(SViewParams& viewParams)
 {
+	if (IsFpSpectator())
+		return;
 
 	Vec3 shakeVec(viewParams.currentShakeShift * 0.85f);
 	m_stats.FPWeaponPos = viewParams.position + m_stats.FPWeaponPosOffset + shakeVec;;
@@ -1777,7 +1882,6 @@ void CPlayer::PostUpdateView(SViewParams& viewParams)
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
 	if (pOffHand && (pOffHand->GetOffHandState() & (eOHS_GRABBING_NPC | eOHS_HOLDING_NPC | eOHS_THROWING_NPC)))
 		pOffHand->PostFilterView(viewParams);
-
 }
 
 void CPlayer::RegisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener)
@@ -1925,6 +2029,88 @@ void CPlayer::SufferingHighLatency(bool highLatency)
 	}
 
 	m_sufferingHighLatency = highLatency;
+}
+
+void CPlayer::SetFpSpectatorTarget(bool activate)
+{
+	if (IsClient())
+		return;
+
+	CPlayer* pPlayer = (CPlayer*)gEnv->pGame->GetIGameFramework()->GetClientActor();
+	if (pPlayer)
+		pPlayer->SetFpSpectator(activate);
+
+	m_stats.fpSpectatorTarget = activate;
+
+	m_stats.isThirdPerson = !activate;
+
+	//lua stuff..
+	m_stats.isHidden = activate;
+
+	m_netAimDirSmooth = m_netAimDir;
+
+	CItem* pItem = static_cast<CItem*>(GetCurrentItem());
+	if (pItem)
+	{
+		pItem->CheckViewChange();
+	}
+
+	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
+	if (pOffHand)
+	{
+		pOffHand->UpdateFPView(0); //hopefully this will fix floating hands ... 
+	}
+
+	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
+
+	CWeapon* pWeapon = (CWeapon*)(pItem ? pItem->GetIWeapon() : 0);
+	if (pWeapon)
+	{
+		auto* pZoomMode = pWeapon->GetActiveZoomMode();
+		if (!pZoomMode)
+			return;
+		
+		//CryLogAlways("%s $9FirstPerson Spectator on %s (%s)", activate ? "Enabling" : "Disabling", GetEntity()->GetName(), pWeapon->GetEntity()->GetName());
+		
+		if (activate)
+		{
+			const float zoomFov = GetActorParams()->zoomFoV;
+			int currentZoomStep = pWeapon->GetZoomStepFromFoV(zoomFov);
+			if (!currentZoomStep)
+				return;
+
+			const bool zoomed = pZoomMode->IsZoomed();
+			if (zoomed)
+				pZoomMode->ExitZoom();
+
+			pWeapon->StartZoom(GetEntityId(), 1);
+
+			//Weapons with more than 1 step
+			if (currentZoomStep > 0)
+			{
+				//are we zooming in or out
+				for (int i = 0, n = currentZoomStep; i < n; ++i)
+				{
+					pZoomMode->ZoomIn();
+				}
+			}
+		}
+		else
+		{
+			pWeapon->ExitZoom();
+		}
+	}
+
+	if (!activate)
+	{
+		ResetFPView();
+		CHUD* pHUD = g_pGame->GetHUD();
+		if (pHUD)
+		{
+			if (pHUD->GetScopes()->IsBinocularsShown())
+				pHUD->GetScopes()->ShowBinoculars(0);
+		}
+	}
 }
 
 void CPlayer::SetViewInVehicle(Quat viewRotation)
@@ -3188,6 +3374,10 @@ int CPlayer::IsGod()
 
 bool CPlayer::IsThirdPerson() const
 {
+	//CryMP: Fp Spec
+	if (IsFpSpectatorTarget())
+		return false;
+
 	//force thirdperson view for non-clients
 	if (!IsClient())
 		return true;
@@ -3238,19 +3428,31 @@ void CPlayer::Revive(ReasonForRevive reason)
 		//Edit: Move it up here before m_stats are reset to prevent bugs..
 		if (m_stats.spectatorTarget && reason == ReasonForRevive::SPAWN)
 			SAFE_HUD_FUNC(SetSpectatorMode(0, m_stats.spectatorTarget, 0));
-	}
 
-	// HAX: to fix player spawning and floating in dedicated server: Marcio fix me?
-	if (gEnv->pSystem->IsEditor() == false)  // AlexL: in editor, we never keep spectator mode
-	{
-		uint8 spectator = m_stats.spectatorMode;
-		m_stats = SPlayerStats();
-		m_stats.spectatorMode = spectator;
 	}
 	else
 	{
-		m_stats = SPlayerStats();
+		CPlayer* pPlayer = (CPlayer*)gEnv->pGame->GetIGameFramework()->GetClientActor();
+		if (pPlayer && pPlayer->GetSpectatorTarget() == GetEntityId())
+		{
+			SAFE_HUD_FUNC(EnergyChanged(NANOSUIT_ENERGY)); //CryMP: Need to update HUD on revive, due to network delay we are not getting initial suit energy, but its always max so..
+		}
 	}
+
+	const uint8 spectator = m_stats.spectatorMode;
+	const EntityId spectatorId = m_stats.spectatorTarget;
+	const uint8 fpSpectator = m_stats.fpSpectator;
+	const uint8 fpSpectatorTarget = m_stats.fpSpectatorTarget;
+	m_stats = SPlayerStats();
+	m_stats.spectatorMode = spectator;
+	m_stats.fpSpectator = fpSpectator;
+
+	if (fpSpectatorTarget)
+		SetFpSpectatorTarget(true);
+
+	//Check if Client has respawned, remove old FP target if necessary
+	if (IsClient())
+		UpdateFpSpectator(spectatorId, 0);
 
 	m_headAngles.Set(0, 0, 0);
 	// default to standing, to prevent the 'spawning in the floor' feeling
@@ -3318,7 +3520,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 	if (!fromInit || GetISystem()->IsSerializingFile() == 1)
 		ResetAnimGraph();
 
-	if (!fromInit && IsClient())
+	if (!fromInit && (IsClient() || IsFpSpectatorTarget()))
 	{
 		if (CHUD* pHUD = g_pGame->GetHUD())
 		{
@@ -3326,7 +3528,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 			pHUD->GetCrosshair()->SetUsability(0);
 		}
 
-		if (gEnv->bMultiplayer)
+		if (gEnv->bMultiplayer && IsClient())
 		{
 			if (GetHealth() > 0 || (g_pGame && g_pGame->GetGameRules() && !g_pGame->GetGameRules()->IsPlayerActivelyPlaying(GetEntityId())))
 			{
@@ -3707,7 +3909,7 @@ void CPlayer::SetHealth(int health)
 	if (health <= 0)
 	{
 		const bool bIsGod = IsGod() > 0;
-		if (IsClient())
+		if (IsClient() || IsFpSpectatorTarget())
 		{
 			SAFE_HUD_FUNC(ActorDeath(this));
 
@@ -4885,7 +5087,7 @@ void CPlayer::UpdateFootSteps(float frameTime)
 		if (m_stats.relativeWaterLevel < 0.0f)
 			CreateScriptEvent("splash", 0);
 
-		bool playFirstPerson = false;
+		bool playFirstPerson = !IsFpSpectatorTarget(); //CryMP Fp Spec
 		if (IsClient() && !IsThirdPerson())
 			playFirstPerson = true;
 		params.playSoundFP = playFirstPerson;
@@ -5043,6 +5245,16 @@ void CPlayer::ActivateNanosuit(bool active)
 	}
 }
 
+IActor* CPlayer::GetSpectatorTargetPlayer()
+{
+	const EntityId sTargetId = GetSpectatorTarget();
+	if (sTargetId)
+	{
+		return m_pGameFramework->GetIActorSystem()->GetActor(sTargetId);
+	}
+	return nullptr;
+}
+
 void CPlayer::SetFlyMode(uint8 flyMode)
 {
 	if (m_stats.spectatorMode)
@@ -5072,8 +5284,12 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 	if (server)
 		m_stats.spectatorHealth = -1;	// set this in all cases to trigger a send if necessary
 
-	if (gEnv->bClient)
-		m_pPlayerInput.reset();
+	//CryMP: This should be correct?
+	IPlayerInput* pPlayerInput = GetPlayerInput();
+	if (pPlayerInput)
+	{
+		pPlayerInput->Reset();
+	}
 
 	if (mode && !m_stats.spectatorMode)
 	{
@@ -5133,10 +5349,65 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 
 		if (mode == CActor::eASM_Follow)
 			MoveToSpectatorTargetPosition();
+
 	}
 
 	if (IsClient())
+	{
 		SAFE_HUD_FUNC(SetSpectatorMode(mode, oldSpectatorTarget, m_stats.spectatorTarget));
+
+		UpdateFpSpectator(oldSpectatorTarget, m_stats.spectatorTarget);
+
+		if (mode)
+		{
+			//CryMP Reset Screen FX, when changing spectator modes 
+
+			ResetScreenFX();
+		}
+	}
+}
+
+void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
+{
+	if (!IsClient())
+		return;
+
+	if (oldTargetId)
+	{
+		//Leaving spectator target
+		CPlayer* pOldTarget = static_cast<CPlayer*>(m_pGameFramework->GetIActorSystem()->GetActor(oldTargetId));
+		if (pOldTarget && pOldTarget->IsFpSpectatorTarget())
+		{
+			pOldTarget->SetFpSpectatorTarget(false);
+		}
+	}
+
+	//if (!IsFpSpectator())
+	//	return;
+	bool foundNew = false;
+
+	if (newTargetId)
+	{
+		CPlayer* pNewTarget = static_cast<CPlayer*>(m_pGameFramework->GetIActorSystem()->GetActor(newTargetId));
+		if (pNewTarget)
+		{
+			auto *pPlayerInput = m_pPlayerInput.get();
+			if (pPlayerInput)
+			{
+				if (static_cast<CPlayerInput*>(pPlayerInput)->ShouldKeepFpSpectator())
+				{
+					pNewTarget->SetFpSpectatorTarget(true);
+					foundNew = true;
+				}
+			}
+			else
+				CryLogErrorAlways("%s has no playerinput", GetEntity()->GetName());
+		}
+	}
+
+	//Haven't found a new target, turn of FP spec mode untill we find a new target
+	if (!foundNew)
+		SetFpSpectator(false);
 }
 
 void CPlayer::MoveToSpectatorTargetPosition()
@@ -5261,9 +5532,12 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 {
 	if (!gEnv->pSoundSystem)
 		return;
-	if (!IsClient()) //currently this is only supposed to be heared by the client (not 3D, not MP)
-		return;
 
+	if (!IsFpSpectatorTarget()) //CryMP play sounds for Fp spectator
+	{
+		if (!IsClient()) //currently this is only supposed to be heared by the client (not 3D, not MP)
+			return;
+	}
 
 	bool repeating = false;
 	uint32 nFlags = 0;

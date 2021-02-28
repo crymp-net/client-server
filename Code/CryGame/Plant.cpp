@@ -318,15 +318,13 @@ void CPlant::StartFire()
 
 	GetPlantingParameters(m_plantPos, m_plantDir, m_plantVel);
 
-	{
-		m_planting = true;
-		m_pWeapon->SetBusy(true);
-		m_pWeapon->PlayAction(m_plantactions.plant.c_str());
+	m_planting = true;
+	m_pWeapon->SetBusy(true);
+	m_pWeapon->PlayAction(m_plantactions.plant.c_str());
 
-		m_plantTimer = m_plantparams.delay;
+	m_plantTimer = m_plantparams.delay;
 
-		m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), CSchedulerAction<StartPlantAction>::Create(this), false);
-	}
+	m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), CSchedulerAction<StartPlantAction>::Create(this), false);
 }
 
 //------------------------------------------------------------------------

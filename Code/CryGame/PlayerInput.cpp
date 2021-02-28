@@ -38,7 +38,9 @@ CPlayerInput::CPlayerInput(CPlayer* pPlayer) :
 	m_moveButtonState(0),
 	m_bUseXIInput(false),
 	m_checkZoom(false),
+	m_KeepFPSpectatorMode(false),
 	m_lastPos(0, 0, 0),
+	m_lookDir(0, 0, 0),
 	m_iSuitModeActionPressed(0),
 	m_iCarryingObject(0),
 	m_fSuitModeActionTime(0.0f),
@@ -490,6 +492,18 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 				{
 					m_pPlayer->ChangeSpectatorZoom(1);
 				}
+				else if (actions.thirdperson == actionId) //CryMP F1 Button: Toggle First Person Spectator (see PlayerView)
+				{
+					auto *pTarget = static_cast<CPlayer*>(m_pPlayer->GetSpectatorTargetPlayer());
+					if (pTarget)
+					{
+						const bool bEnableSpectator(!m_pPlayer->IsFpSpectator());
+
+						pTarget->SetFpSpectatorTarget(bEnableSpectator);
+
+						m_KeepFPSpectatorMode = bEnableSpectator;
+					}
+				}
 			}
 			//CryMP: IA right click to spectate player works now without having to press 'space' 2 x
 			else if (m_pPlayer->GetSpectatorMode() > CActor::eASM_None && g_pGame->GetGameRules())
@@ -927,6 +941,8 @@ void CPlayerInput::GetState(SSerializedPlayerInput& input)
 	input.leanr = (m_actions & ACTION_LEANRIGHT) != 0;
 	input.lookDirection = movementState.eyeDirection;
 	input.bodyDirection = movementState.bodyDirection;
+
+	m_lookDir = input.lookDirection;
 
 	m_lastPos = movementState.pos;
 }

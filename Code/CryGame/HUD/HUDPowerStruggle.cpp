@@ -339,9 +339,12 @@ int CHUDPowerStruggle::GetPlayerPP()
 	int pp = 0;
 	if (m_pGameRules)
 	{
-		auto* pActor = g_pGame->GetIGameFramework()->GetClientActor();
+		auto* pActor = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetClientActor());
 		if (pActor)
-			m_pGameRules->GetSynchedEntityValue(pActor->GetEntityId(), TSynchedKey(200), pp); //PP_AMOUNT_KEY (200)
+		{
+			const TSynchedKey PP_AMOUNT_KEY(200);
+			m_pGameRules->GetSynchedEntityValue(pActor->GetEntityId(), PP_AMOUNT_KEY, pp);
+		}
 	}
 	return pp;
 }

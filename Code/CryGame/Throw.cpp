@@ -430,7 +430,7 @@ void CThrow::ThrowGrenade()
 			return; //Do not throw grenade is player is death (AI "ghost grenades")
 
 		//Hide grenade in hand (FP)
-		if(pPlayer->IsClient() && m_pWeapon->GetEntity()->GetClass()==CItem::sOffHandClass)
+		if((pPlayer->IsClient() || pPlayer->IsFpSpectatorTarget()) && m_pWeapon->GetEntity()->GetClass()==CItem::sOffHandClass)
 		{			
 			if(COffHand* pOffHand= static_cast<COffHand*>(m_pWeapon))
 			{

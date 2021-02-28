@@ -396,10 +396,14 @@ void CHUD::MP_ResetEnd()
 
 CWeapon* CHUD::GetCurrentWeapon()
 {
-	IItemSystem* pItemSystem = m_pItemSystem;
-	if (IItem* pItem = pItemSystem->GetItem(m_uiWeapondID))
+	if (IItem* pItem = m_pItemSystem->GetItem(m_uiWeapondID))
+	{
 		if (IWeapon* pWeapon = pItem->GetIWeapon())
+		{
 			return (CWeapon*)pWeapon;
+		}
+	}
+
 	return 0;
 }
 
@@ -780,9 +784,10 @@ void CHUD::PlayerIdSet(EntityId playerId)
 IActor* CHUD::GetSpectatorTarget()
 {
 	CPlayer* pPlayer = static_cast<CPlayer*>(m_pClientActor);
-	if (pPlayer && pPlayer->GetSpectatorTarget())
-		return gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pPlayer->GetSpectatorTarget());
-
+	if (pPlayer)
+	{
+		return pPlayer->GetSpectatorTargetPlayer();
+	}
 	return 0;
 }
 
@@ -1119,7 +1124,7 @@ void CHUD::OnSetActorItem(IActor* pActor, IItem* pItem)
 			if (pItem->GetIWeapon())
 			{
 				m_uiWeapondID = pItem->GetEntity()->GetId();
-				GetCurrentWeapon()->AddEventListener(this, __FUNCTION__);
+				pItem->GetIWeapon()->AddEventListener(this, __FUNCTION__);
 
 				const char* curClass = NULL;
 				const char* curCategory = NULL;
@@ -3196,57 +3201,7 @@ void CHUD::OnPostUpdate(float frameTime)
 		}
 	}
 
-	if (m_pHUDScopes->GetCurrentScope() != CHUDScopes::ESCOPE_NONE)
-	{
-		CWeapon* pCurrentWeapon = GetCurrentWeapon();
-		if (pPlayer && pCurrentWeapon)
-		{
-			int zoommode = m_pHUDScopes->m_iZoomLevel;
-
-			Vec3 vWorldPos;
-			if (!pCurrentWeapon->GetScopePosition(vWorldPos))
-				vWorldPos = gEnv->pRenderer->GetCamera().GetPosition();
-
-			//float color[] = {1,1,1,0.5f};
-			//gEnv->pRenderer->Draw2dLabel(100,100,2,color,false,"%f, %f, %f",vWorldPos.x,vWorldPos.y,vWorldPos.z);
-
-			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(vWorldPos,0.02f,ColorB(255,0,0),true);
-
-			//if (IMovementController *pMV = pPlayer->GetMovementController())
-			//{
-				//SMovementState state;
-				//pMV->GetMovementState(state);
-				//vWorldPos += state.eyeDirection * 0.5f;
-			//}
-
-			Vec3 vScreenSpace;
-			m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
-			Vec3 vCenter(50.0f, 50.0f, 1.0f);
-			vScreenSpace -= vCenter;
-
-			float height = (float)m_pRenderer->GetHeight();
-			float width = (float)m_pRenderer->GetWidth();
-
-			static Vec3 vSPSmoothPos = vScreenSpace;
-			static Vec3 vSPSmoothPosRate = Vec3(0, 0, 0);;
-			SmoothCD(vSPSmoothPos, vSPSmoothPosRate, gEnv->pTimer->GetFrameTime(), vScreenSpace, 0.15f);
-			vScreenSpace = vSPSmoothPos;
-
-			float x = vScreenSpace.x * width * 0.01f;
-			float y = vScreenSpace.y * height * 0.01f;
-
-			//gEnv->pRenderer->Draw2dLabel(100,125,2,color,false,"%f, %f",x,y);
-
-			//m_pHUDScopes->m_animSniperScope.SetVariable("Root2._x",SFlashVarValue(x));
-			//m_pHUDScopes->m_animSniperScope.SetVariable("Root2._y",SFlashVarValue(y));
-			//m_pHUDScopes->m_animSniperScope.SetVariable("RootMask._x",SFlashVarValue(x));
-			//m_pHUDScopes->m_animSniperScope.SetVariable("RootMask._y",SFlashVarValue(y));
-
-			m_pHUDScopes->m_animSniperScope.SetVariable("Root._x", SFlashVarValue(x));
-			m_pHUDScopes->m_animSniperScope.SetVariable("Root._y", SFlashVarValue(y));
-			//m_pHUDScopes->m_animSniperScope.SetVariable("Root.Scope.Reflex._rotation",SFlashVarValue((pPlayer->GetAngles().z/gf_PI) * 180.0f));
-		}
-	}
+	//Scopes moved
 
 	if (m_bShow && (m_cineState == eHCS_None || gEnv->bMultiplayer) && pPlayer && !m_bInMenu)
 	{
@@ -3451,6 +3406,16 @@ void CHUD::OnPostUpdate(float frameTime)
 			{
 				m_animKillLog.GetFlashPlayer()->Advance(frameTime);
 				m_animKillLog.GetFlashPlayer()->Render();
+			}
+			if (m_animFriendlyProjectileTracker.GetVisible()) //CryMP: grenade indicator in spectator mode
+			{
+				m_animFriendlyProjectileTracker.GetFlashPlayer()->Advance(frameTime);
+				m_animFriendlyProjectileTracker.GetFlashPlayer()->Render();
+			}
+			if (m_animHostileProjectileTracker.GetVisible())
+			{
+				m_animHostileProjectileTracker.GetFlashPlayer()->Advance(frameTime); //CryMP: grenade indicator in spectator mode
+				m_animHostileProjectileTracker.GetFlashPlayer()->Render();
 			}
 			if (m_animMissionObjective.GetVisible() && m_bShowAllOnScreenObjectives) //CryMP: for names in mp spectatemode, update mission objective!
 			{
@@ -4085,6 +4050,13 @@ void CHUD::ActorDeath(IActor* pActor)
 
 	// for MP and for SP local player
 	// remove any progress bar and close suit menu if it was open
+	
+	CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
+	if (pPlayer && pPlayer->IsFpSpectatorTarget())
+	{
+		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
+	}
+
 	if (pActor == m_pClientActor)
 	{
 		ShowProgress(); // hide any leftover progress bar
@@ -4220,6 +4192,8 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 			{
 				pNewSuit->AddListener(this);
 				EnergyChanged(pNewSuit->GetSuitEnergy());
+
+				m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 			}
 		}
 	}

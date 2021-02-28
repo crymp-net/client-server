@@ -115,6 +115,22 @@ void CWeapon::NetMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &dir)
 }
 
 //------------------------------------------------------------------------
+int CWeapon::GetZoomStepFromFoV(float fov) 
+{
+	if (fov > 0.99f)
+		return 0;
+
+	int zoomStep = fov < 0.12f ? 2 : 1;
+	if (GetEntity()->GetClass() == CItem::sBinocularsClass)
+	{
+		//Binocs have 3 steps..
+		zoomStep = fov < 0.13f ? 3 : 2;
+		zoomStep = fov > 0.49f ? 1 : zoomStep;
+	}
+	return zoomStep;
+}
+
+//------------------------------------------------------------------------
 void CWeapon::NetZoom(float fov)
 {
 	if (CActor *pOwner=GetOwnerActor())
@@ -122,23 +138,70 @@ void CWeapon::NetZoom(float fov)
 		if (pOwner->IsClient())
 			return;
 
-		SActorParams *pActorParams = pOwner->GetActorParams();
+		SActorParams* pActorParams = pOwner->GetActorParams();
 		if (!pActorParams)
 			return;
 
-		pActorParams->viewFoVScale = fov;
+		const float previousFoV = pActorParams->zoomFoV;
+		pActorParams->zoomFoV = fov;
+
+		const bool pFpTarget = pOwner->IsFpSpectatorTarget();
+		if (!pFpTarget)
+			return;
+
+		if (m_zm)
+		{
+			if (fov > 0.99f)
+			{
+				ExitZoom();
+			}
+			else
+			{
+				const int currentZoomStep = GetZoomStepFromFoV(previousFoV);
+				const int newZoomStep = GetZoomStepFromFoV(fov);
+				const int diff = abs(currentZoomStep - newZoomStep);
+
+				//CryLogAlways("CurrentZoomStep: %i, NewZoomStep: %i, Diff %i", currentZoomStep, newZoomStep, diff);
+
+				if (!diff)
+					return;
+
+				const bool zoomed = IsZoomed();
+				if (!zoomed)
+				{
+					StartZoom(GetEntityId(), 1);
+					if (diff < 2)
+						return;
+				}
+
+				//Weapons with more than 1 step
+				if (diff)
+				{
+					//are we zooming in or out
+					const bool zoomIn = previousFoV > fov;
+					for (int i = 0, n = diff; i < n; ++i)
+					{
+						if (zoomIn)
+							m_zm->ZoomIn();
+						else
+							m_zm->ZoomOut();
+					}
+				}
+				
+			}
+		}
 	}
 }
 
 //------------------------------------------------------------------------
 void CWeapon::RequestShoot(IEntityClass* pAmmoType, const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, const Vec3 &hit, float extra, int predictionHandle, uint16 seq, uint8 seqr, bool forceExtended)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
+	CActor* pOwner = GetOwnerActor();
 
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 	{
-		if (pActor)
-			pActor->GetGameObject()->Pulse('bang');
+		if (pOwner)
+			pOwner->GetGameObject()->Pulse('bang');
 		GetGameObject()->Pulse('bang');
 
 		if (IsServerSpawn(pAmmoType) || forceExtended)
@@ -164,8 +227,8 @@ void CWeapon::RequestShoot(IEntityClass* pAmmoType, const Vec3 &pos, const Vec3 
 //------------------------------------------------------------------------
 void CWeapon::RequestMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &dir, uint16 seq)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(CWeapon::SvRequestMeleeAttack(), RequestMeleeAttackParams(weaponMelee, pos, dir, seq), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 	{
@@ -177,8 +240,8 @@ void CWeapon::RequestMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &
 //------------------------------------------------------------------------
 void CWeapon::RequestStartFire()
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(CWeapon::SvRequestStartFire(), EmptyParams(), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClStartFire(), EmptyParams(), eRMI_ToAllClients);
@@ -187,8 +250,8 @@ void CWeapon::RequestStartFire()
 //------------------------------------------------------------------------
 void CWeapon::RequestStartMeleeAttack(bool weaponMelee)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(CWeapon::SvRequestStartMeleeAttack(), RequestStartMeleeAttackParams(weaponMelee), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 	{
@@ -200,8 +263,8 @@ void CWeapon::RequestStartMeleeAttack(bool weaponMelee)
 //------------------------------------------------------------------------
 void CWeapon::RequestZoom(float fov)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(CWeapon::SvRequestZoom(), ZoomParams(fov), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 	{
@@ -214,8 +277,8 @@ void CWeapon::RequestZoom(float fov)
 //------------------------------------------------------------------------
 void CWeapon::RequestStopFire()
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(CWeapon::SvRequestStopFire(), EmptyParams(), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClStopFire(), EmptyParams(), eRMI_ToAllClients);
@@ -224,8 +287,8 @@ void CWeapon::RequestStopFire()
 //------------------------------------------------------------------------
 void CWeapon::RequestReload()
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(SvRequestReload(), EmptyParams(), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClReload(), EmptyParams(), eRMI_ToAllClients);
@@ -234,8 +297,8 @@ void CWeapon::RequestReload()
 //-----------------------------------------------------------------------
 void CWeapon::RequestCancelReload()
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if ((!pActor || pActor->IsClient()) && IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if ((!pOwner || pOwner->IsClient()) && IsClient())
 		GetGameObject()->InvokeRMI(SvRequestCancelReload(), EmptyParams(), eRMI_ToServer);
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClCancelReload(), EmptyParams(), eRMI_ToAllClients);
@@ -244,8 +307,8 @@ void CWeapon::RequestCancelReload()
 //------------------------------------------------------------------------
 void CWeapon::RequestFireMode(int fmId)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if (!pActor || pActor->IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if (!pOwner || pOwner->IsClient())
 	{
 		if (gEnv->bServer)
 			SetCurrentFireMode(fmId);	// serialization will fix the rest.
@@ -257,8 +320,8 @@ void CWeapon::RequestFireMode(int fmId)
 //------------------------------------------------------------------------
 void CWeapon::RequestLock(EntityId id, int partId)
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if (!pActor || pActor->IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if (!pOwner || pOwner->IsClient())
 	{
 		if (gEnv->bServer)
 		{
@@ -275,8 +338,8 @@ void CWeapon::RequestLock(EntityId id, int partId)
 //------------------------------------------------------------------------
 void CWeapon::RequestUnlock()
 {
-	IActor *pActor=m_pGameFramework->GetClientActor();
-	if (!pActor || pActor->IsClient())
+	CActor* pOwner = GetOwnerActor();
+	if (!pOwner || pOwner->IsClient())
 		GetGameObject()->InvokeRMI(SvRequestUnlock(), EmptyParams(), eRMI_ToServer);
 }
 
@@ -285,8 +348,8 @@ void CWeapon::RequestWeaponRaised(bool raise)
 {
 	if(gEnv->bMultiplayer)
 	{
-		CActor* pActor = GetOwnerActor();
-		if(pActor && pActor->IsClient())
+		CActor* pOwner = GetOwnerActor();
+		if(pOwner && pOwner->IsClient())
 		{
 			if (gEnv->bServer)
 				GetGameObject()->InvokeRMI(ClWeaponRaised(), WeaponRaiseParams(raise), eRMI_ToRemoteClients|eRMI_NoLocalCalls);

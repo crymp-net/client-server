@@ -66,20 +66,26 @@ void CGameRules::ClientHit(const HitInfo& hitInfo)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	IActor* pClientActor = m_pGameFramework->GetClientActor();
+	const EntityId pClientActorId = m_pGameFramework->GetClientActorId();
+	const EntityId shooterId = hitInfo.shooterId;
+	const EntityId targetId = hitInfo.targetId;
 	IEntity* pTarget = m_pEntitySystem->GetEntity(hitInfo.targetId);
-	IEntity* pShooter = m_pEntitySystem->GetEntity(hitInfo.shooterId);
-	IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(hitInfo.targetId);
-	IActor* pActor = m_pActorSystem->GetActor(hitInfo.targetId);
-	bool dead = pActor ? (pActor->GetHealth() <= 0) : false;
+	if (!pTarget)
+		return;
+	IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(targetId);
+	CPlayer* pShooterPlayer = static_cast<CPlayer*>(m_pActorSystem->GetActor(shooterId));
+	IActor* pTargetPlayer = m_pActorSystem->GetActor(targetId);
+	bool dead = pTargetPlayer ? (pTargetPlayer->GetHealth() <= 0) : false;
+	
+	const bool showCrosshairHit((pClientActorId == shooterId) || (pShooterPlayer && pShooterPlayer->IsFpSpectatorTarget())); //CryMP for FP target we want to see crosshair hits
 
-	if ((pClientActor && pClientActor->GetEntity() == pShooter) && pTarget && (pVehicle || pActor) && !dead)
+	if (showCrosshairHit && pTarget && (pVehicle || pTargetPlayer) && !dead)
 	{
 		SAFE_HUD_FUNC(GetCrosshair()->CrosshairHit());
-		SAFE_HUD_FUNC(GetTagNames()->AddEnemyTagName(pActor ? pActor->GetEntityId() : pVehicle->GetEntityId()));
+		SAFE_HUD_FUNC(GetTagNames()->AddEnemyTagName(pTargetPlayer ? pTargetPlayer->GetEntityId() : pVehicle->GetEntityId()));
 	}
 
-	if (pActor == pClientActor)
+	if (hitInfo.targetId == pClientActorId)
 		if (gEnv->pInput) gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.5f * hitInfo.damage * 0.01f, hitInfo.damage * 0.02f, 0.0f));
 
 	/*	if (gEnv->pAISystem && !gEnv->bMultiplayer)
@@ -98,12 +104,12 @@ void CGameRules::ClientHit(const HitInfo& hitInfo)
 	CallScript(m_clientStateScript, "OnHit", m_scriptHitInfo);
 
 	bool backface = hitInfo.dir.Dot(hitInfo.normal) > 0;
-	if (!hitInfo.remote && hitInfo.targetId && !backface)
+	if (!hitInfo.remote && targetId && !backface)
 	{
 		if (!gEnv->bServer)
 		{
 			//CryMP prevent any unexpected bugs etc..
-			if (gEnv->bMultiplayer && hitInfo.shooterId != pClientActor->GetEntityId())
+			if (gEnv->bMultiplayer && shooterId != pClientActorId)
 				return;
 
 			GetGameObject()->InvokeRMI(SvRequestHit(), hitInfo, eRMI_ToServer);

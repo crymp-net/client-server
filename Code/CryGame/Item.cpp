@@ -48,6 +48,8 @@ IEntityClass* CItem::sAlienCloak = 0;
 IEntityClass* CItem::sSOCOMClass = 0;
 IEntityClass* CItem::sDetonatorClass = 0;
 IEntityClass* CItem::sC4Class = 0;
+IEntityClass* CItem::sClaymoreClass = 0;
+IEntityClass* CItem::sAVMineClass = 0;
 IEntityClass* CItem::sBinocularsClass = 0;
 IEntityClass* CItem::sGaussRifleClass = 0;
 IEntityClass* CItem::sDebugGunClass = 0;
@@ -69,6 +71,12 @@ IEntityClass* CItem::sIncendiaryAmmo = 0;
 IEntityClass* CItem::sScarGrenadeClass = 0;
 IEntityClass* CItem::sDoorClass = 0;
 IEntityClass* CItem::sFlagClass = 0;
+IEntityClass* CItem::sAsian_apc = 0;
+IEntityClass* CItem::sAsian_tank = 0;
+IEntityClass* CItem::sAsian_aaa = 0;
+IEntityClass* CItem::sUS_apc = 0;
+IEntityClass* CItem::sUS_tank = 0;
+IEntityClass* CItem::sUS_trolley = 0;
 
 //------------------------------------------------------------------------
 CItem::CItem()
@@ -160,6 +168,8 @@ bool CItem::Init(IGameObject* pGameObject)
 		sSOCOMClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("SOCOM");
 		sDetonatorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Detonator");
 		sC4Class = gEnv->pEntitySystem->GetClassRegistry()->FindClass("C4");
+		sClaymoreClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Claymore");
+		sAVMineClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("AVMine");
 		sBinocularsClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Binoculars");
 		sGaussRifleClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("GaussRifle");
 		sDebugGunClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("DebugGun");
@@ -180,11 +190,16 @@ bool CItem::Init(IGameObject* pGameObject)
 		sExplosiveGrenade = gEnv->pEntitySystem->GetClassRegistry()->FindClass("explosivegrenade");
 
 		sIncendiaryAmmo = gEnv->pEntitySystem->GetClassRegistry()->FindClass("incendiarybullet");
-
 		sScarGrenadeClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("scargrenade");
 
 		sDoorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Door");
 		sFlagClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Flag");
+		sAsian_apc = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_apc");
+		sAsian_tank = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_tank");
+		sAsian_aaa = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_aaa");
+		sUS_apc = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_apc");
+		sUS_tank = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_tank");
+		sUS_trolley = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_trolley");
 	}
 
 	if (!GetGameObject()->CaptureProfileManager(this))
@@ -1207,9 +1222,9 @@ void CItem::Select(bool select)
 
 	if (CActor* pOwner = GetOwnerActor())
 	{
-		if (g_pGame && g_pGame->GetIGameFramework())
-			if (pOwner == g_pGame->GetIGameFramework()->GetClientActor())
-				SAFE_HUD_FUNC(UpdateCrosshair(select ? this : NULL));	//crosshair might change
+		//CryMP: Fp spec support
+		if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
+			SAFE_HUD_FUNC(UpdateCrosshair(select ? this : NULL));	//crosshair might change
 	}
 
 	OnSelected(select);

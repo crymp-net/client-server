@@ -166,14 +166,15 @@ void CFists::RequestAnimState(EFistAnimState eFAS, bool force /*=false*/)
 			m_timeOut = TIMEOUT;
 			break;
 
-		case eFAS_RELAXED: if (m_currentAnimState != eFAS_NOSTATE && m_currentAnimState != eFAS_RELAXED)
-		{
-			m_currentAnimState = eFAS_RELAXED;
-			m_timeOut = TIMEOUT;
-			PlayAction(g_pItemStrings->deselect);
-			SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->idle_relaxed);
-		}
-						 break;
+		case eFAS_RELAXED:
+			if (m_currentAnimState != eFAS_NOSTATE && m_currentAnimState != eFAS_RELAXED)
+			{
+				m_currentAnimState = eFAS_RELAXED;
+				m_timeOut = TIMEOUT;
+				PlayAction(g_pItemStrings->deselect);
+				SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->idle_relaxed);
+			}
+			break;
 
 		case eFAS_FIGHT:		//if(m_currentAnimState!=eFAS_RUNNING)
 		{
@@ -183,20 +184,22 @@ void CFists::RequestAnimState(EFistAnimState eFAS, bool force /*=false*/)
 		}
 		break;
 
-		case eFAS_RUNNING:	if (m_currentAnimState == eFAS_RELAXED || CanMeleeAttack())
-		{
-			PlayAction(g_pItemStrings->run_forward, 0, true);
-			m_currentAnimState = eFAS_RUNNING;
-		}
-						 break;
+		case eFAS_RUNNING:
+			if (m_currentAnimState == eFAS_RELAXED || CanMeleeAttack())
+			{
+				PlayAction(g_pItemStrings->run_forward, 0, true);
+				m_currentAnimState = eFAS_RUNNING;
+			}
+			break;
 
-		case eFAS_JUMPING:	if (m_currentAnimState == eFAS_RUNNING)
-		{
-			PlayAction(g_pItemStrings->jump_start);
-			SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->jump_idle);
-			m_currentAnimState = eFAS_JUMPING;
-		}
-						 break;
+		case eFAS_JUMPING:
+			if (m_currentAnimState == eFAS_RUNNING)
+			{
+				PlayAction(g_pItemStrings->jump_start);
+				SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->jump_idle);
+				m_currentAnimState = eFAS_JUMPING;
+			}
+			break;
 
 		case eFAS_LANDING:	 if (m_currentAnimState == eFAS_JUMPING)
 		{
@@ -301,10 +304,10 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 		//If NANO speed selected...
 		float speedOverride = -1.0f;
 
-		CActor* owner = GetOwnerActor();
-		if (owner && owner->GetActorClass() == CPlayer::GetActorClassType())
+		CActor* pActor = GetOwnerActor();
+		if (pActor && pActor->GetActorClass() == CPlayer::GetActorClassType())
 		{
-			CPlayer* pPlayer = (CPlayer*)owner;
+			CPlayer* pPlayer = (CPlayer*)pActor;
 			if (pPlayer->GetNanoSuit())
 			{
 				if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED)
@@ -323,23 +326,25 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 		SetWeaponRaised(true);
 
 		//Also give the player some impulse into the opposite direction
-		CActor* pPlayer = GetOwnerActor();
-		Vec3		pos;
-		if (pPlayer)
+		Vec3 pos = ZERO;
+		if (pActor)
 		{
-			IPhysicalEntity* playerPhysics = pPlayer->GetEntity()->GetPhysics();
+			IPhysicalEntity* playerPhysics = pActor->GetEntity()->GetPhysics();
 			if (playerPhysics)
 			{
-				IMovementController* pMC = pPlayer->GetMovementController();
+				IMovementController* pMC = pActor->GetMovementController();
 				if (pMC)
 				{
 					SMovementState state;
 					pMC->GetMovementState(state);
 
-					pe_action_impulse impulse;
-					impulse.iApplyTime = 1;
-					impulse.impulse = -state.eyeDirection * 600.0f;
-					playerPhysics->Action(&impulse);
+					if (pActor->IsClient())
+					{
+						pe_action_impulse impulse;
+						impulse.iApplyTime = 1;
+						impulse.impulse = -state.eyeDirection * 600.0f;
+						playerPhysics->Action(&impulse);
+					}
 
 					pos = state.eyePosition + state.eyeDirection * 0.5f;
 				}
@@ -360,7 +365,6 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 //---------------------------------------------------------------
 void CFists::CollisionFeeback(Vec3& pos, int eFAS)
 {
-
 	CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
 	if (pPlayer)
 	{

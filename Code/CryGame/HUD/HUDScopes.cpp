@@ -182,6 +182,9 @@ void CHUDScopes::DisplayBinoculars(CPlayer* pPlayerActor)
 	SFlashVarValue args[2] = { szN, szW };
 	m_animBinoculars.Invoke("setPosition", args, 2);
 
+	//static float color[] = { 1,1,1,1 };
+	//gEnv->pRenderer->Draw2dLabel(100, 200, 1.5, color, false, "DisplayBinoculars Update %s", szY);
+
 	IAIObject* pAIPlayer = pPlayerActor->GetEntity()->GetAI();
 	if (!pAIPlayer && !gEnv->bMultiplayer)
 		return;
@@ -271,6 +274,59 @@ void CHUDScopes::DisplayBinoculars(CPlayer* pPlayerActor)
 
 void CHUDScopes::DisplayScope(CPlayer* pPlayerActor)
 {
+	if (GetCurrentScope() != CHUDScopes::ESCOPE_NONE)
+	{
+		CWeapon* pCurrentWeapon = g_pHUD->GetCurrentWeapon();
+		EntityId entityId = pPlayerActor->GetSpectatorTarget();
+		if (entityId)
+		{
+			CPlayer* pSpec = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+			if (pSpec)
+			{
+				pPlayerActor = pSpec;
+				IItem* pItem = pSpec->GetCurrentItem();
+				if (pItem && pItem->GetIWeapon() && pItem->GetIWeapon()->IsZoomed())
+					pCurrentWeapon = static_cast<CWeapon*>(pItem->GetIWeapon());
+			}
+		}
+
+		if (pCurrentWeapon)
+		{
+			int zoommode = m_iZoomLevel;
+
+			Vec3 vWorldPos = Vec3(ZERO);
+			if (!pCurrentWeapon->GetScopePosition(vWorldPos))
+				vWorldPos = g_pHUD->m_pRenderer->GetCamera().GetPosition();
+
+			Vec3 vScreenSpace;
+			g_pHUD->m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
+			Vec3 vCenter(50.0f, 50.0f, 1.0f);
+			vScreenSpace -= vCenter;
+
+			float height = (float)g_pHUD->m_pRenderer->GetHeight();
+			float width = (float)g_pHUD->m_pRenderer->GetWidth();
+
+			static Vec3 vSPSmoothPos = vScreenSpace;
+			static Vec3 vSPSmoothPosRate = Vec3(0, 0, 0);;
+			SmoothCD(vSPSmoothPos, vSPSmoothPosRate, gEnv->pTimer->GetFrameTime(), vScreenSpace, 0.15f);
+			vScreenSpace = vSPSmoothPos;
+
+			float x = vScreenSpace.x * width * 0.01f;
+			float y = vScreenSpace.y * height * 0.01f;
+
+			m_animSniperScope.SetVariable("Root._x", SFlashVarValue(x));
+			m_animSniperScope.SetVariable("Root._y", SFlashVarValue(y));
+		}
+	}
+
+	//CryMP: Fp spec support
+	if (pPlayerActor->IsFpSpectator())
+	{
+		CPlayer *pTarget = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+		if (pTarget && pTarget->IsFpSpectatorTarget())
+			pPlayerActor = pTarget;
+	}
+
 	CGameFlashAnimation* pScope = NULL;
 	if (m_eShowScope == ESCOPE_SNIPER)
 		pScope = &m_animSniperScope;

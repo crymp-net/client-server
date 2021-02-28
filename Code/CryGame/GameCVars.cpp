@@ -110,6 +110,8 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 
 	pConsole->Register("cl_leanAmount", &cl_leanAmount, 0.25f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set amount of lean");
+
+	pConsole->Register("cl_netAimLerpFactor", &cl_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients");
 	/*
 	pConsole->Register("goc_enable", &goc_enable, 0, VF_CHEAT, "gears of crysis");
 	pConsole->AddCommand("GOCMode", CmdGOCMode, VF_CHEAT, "Enable GOC mode");

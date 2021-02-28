@@ -1013,7 +1013,7 @@ void CGameRules::RenamePlayer(CActor* pActor, const char* name)
 
 		m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Renamed, fixed));
 	}
-	else if (pActor->GetEntityId() == m_pGameFramework->GetClientActor()->GetEntityId())
+	else if (pActor->IsClient())
 		GetGameObject()->InvokeRMIWithDependentObject(SvRequestRename(), params, eRMI_ToServer, params.entityId);
 }
 

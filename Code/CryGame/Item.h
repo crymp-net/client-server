@@ -1340,6 +1340,8 @@ public:
 	static IEntityClass*	sSOCOMClass;
 	static IEntityClass*	sDetonatorClass;
 	static IEntityClass*	sC4Class;
+	static IEntityClass*    sClaymoreClass;
+	static IEntityClass*    sAVMineClass;
 	static IEntityClass*	sBinocularsClass;
 	static IEntityClass*	sGaussRifleClass;
 	static IEntityClass*	sDebugGunClass;
@@ -1365,7 +1367,12 @@ public:
 	//CryMP
 	static IEntityClass*	sDoorClass;
 	static IEntityClass*	sFlagClass;
-
+	static IEntityClass*    sAsian_apc;
+	static IEntityClass*	sAsian_tank;
+	static IEntityClass*    sAsian_aaa;
+	static IEntityClass*    sUS_apc;
+	static IEntityClass*    sUS_tank;
+	static IEntityClass*    sUS_trolley;
 };
 
 

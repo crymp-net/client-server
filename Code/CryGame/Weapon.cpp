@@ -1321,7 +1321,7 @@ void CWeapon::StartZoom(EntityId actorId, int zoomed)
 		return;
 
 	CPlayer* pPlayer = static_cast<CPlayer*>(pOwner);
-	if (pPlayer && pPlayer->IsSprinting())
+	if (pPlayer && pPlayer->IsClient() && pPlayer->IsSprinting())
 		return;
 
 	if (m_zm)
@@ -1329,7 +1329,7 @@ void CWeapon::StartZoom(EntityId actorId, int zoomed)
 		bool stayZoomed = (m_zm->IsZoomed() && m_zm->IsZooming() && !m_zm->IsToggle());
 		m_zm->StartZoom(stayZoomed, true, zoomed);
 	}
-	else
+	else if (pOwner->IsClient())
 	{
 		// If the view does not zoom, we need to force aim assistance
 		AssistAiming(1, true);
@@ -2220,7 +2220,8 @@ void CWeapon::UpdateCrosshair(float frameTime)
 		}
 	}
 
-	bool bUpdateHUD = IsSelected() && GetOwnerActor() && GetOwnerActor()->IsClient();
+	auto* pOwner = GetOwnerActor();
+	const bool bUpdateHUD = IsSelected() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget());
 
 	if (bUpdateHUD)
 	{
@@ -2304,9 +2305,13 @@ void CWeapon::AccessoriesChanged()
 	if (isDualWield)
 		dualWield->AccessoriesChanged();
 
-	if (IActor* pOwner = GetOwnerActor())
-		if (pOwner->IsClient())
+	if (CActor* pOwner = GetOwnerActor())
+	{
+		if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
+		{
 			SAFE_HUD_FUNC(UpdateCrosshair());
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -2841,10 +2846,10 @@ void CWeapon::EndChangeFireMode()
 //-----------------------------------------------------------------
 EntityId CWeapon::GetLAMAttachment()
 {
-	for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
+	for (const auto &it : m_accessories)
 	{
-		if (it->first == g_pItemStrings->LAM || it->first == g_pItemStrings->LAMRifle)
-			return it->second;
+		if (it.first == g_pItemStrings->LAM || it.first == g_pItemStrings->LAMRifle)
+			return it.second;
 	}
 
 	return 0;
@@ -2859,10 +2864,10 @@ bool CWeapon::IsLamAttached()
 //------------------------------------------------------------
 EntityId CWeapon::GetFlashlightAttachment()
 {
-	for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
+	for (const auto& it : m_accessories)
 	{
-		if (it->first == g_pItemStrings->LAMFlashLight || it->first == g_pItemStrings->LAMRifleFlashLight)
-			return it->second;
+		if (it.first == g_pItemStrings->LAMFlashLight || it.first == g_pItemStrings->LAMRifleFlashLight)
+			return it.second;
 	}
 
 	return 0;
@@ -3397,6 +3402,14 @@ void CWeapon::UpdateWeaponRaising(float frameTime)
 
 			Vec3 pos = info.weaponPosition;
 			Vec3 dir = info.aimDirection;
+
+			//CryMP FP Spec: Use latest dir, not smoothed 
+			if (pActor->IsFpSpectatorTarget())
+			{
+				if (CPlayer *pPlayer = static_cast<CPlayer*>(pActor))
+					dir = pPlayer->GetNetAimDir();
+			}
+
 			Vec3 rightDir = -info.upDirection.Cross(dir); rightDir.Normalize();
 
 			float distance = GetRaiseDistance();

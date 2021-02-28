@@ -45,6 +45,9 @@ protected:
 
 		ICharacterInstance *pCharacter;
 		IVehicle *pVehicle;
+		//CryMP
+		bool isFirstPersonSpectating; 
+		bool isFirstPersonSpecTarget; 
 
 		bool bIsGrabbing;
 		bool stats_isRagDoll;							// ViewFollowCharacterFirstPerson (Primarily: Dead or TrackView) uses to add a small z offset to the view
@@ -147,6 +150,7 @@ protected:
 	void ViewFirstPerson(SViewParams &viewParams);
 	void FirstPersonJump(SViewParams &viewParams,Vec3 &weaponOffset, Ang3 &weaponAngleOffset);
 	void ViewVehicle(SViewParams &viewParams);
+
 	void ViewFollowCharacterFirstPerson(SViewParams &viewParams);
 	void ViewFirstPersonOnLadder(SViewParams & viewParams);
 	void ViewSpectatorTarget(SViewParams &viewParams);

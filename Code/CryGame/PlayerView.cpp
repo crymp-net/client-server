@@ -44,6 +44,8 @@ History:
 
 #include "HUD/HUD.h"
 
+#include "OffHand.h"
+
 
 //CPlayerView::SViewStateIn CPlayerView::m_in;
 //CPlayerView::SViewStateInOut CPlayerView::m_io;
@@ -82,18 +84,12 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 		m_in.defaultFov = g_pGameCVars->cl_fov;
 
 		m_in.frameTime = min(gEnv->pTimer->GetFrameTime(), 0.1f);
+		viewParams.frameTime = m_in.frameTime; //CryMP frameTime 0 :S
 
 		m_in.pCharacter = rPlayer.GetEntity()->GetCharacter(0);
 		m_in.pVehicle = rPlayer.GetLinkedVehicle();
 
 		m_in.bIsGrabbing = false;
-		/*if (rPlayer.m_grabStats.grabId>0)
-		{
-			m_in.bIsGrabbing=true;
-			// *****
-			viewParams.nearplane = 0.1f;
-			// *****
-		}*/
 
 		m_in.stats_isRagDoll = rPlayer.m_stats.isRagDoll;
 		m_in.stats_isStandingUp = rPlayer.m_stats.isStandingUp;
@@ -131,6 +127,15 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 
 		m_in.bIsThirdPerson = rPlayer.IsThirdPerson();
 		m_in.vEntityWorldPos = rPlayer.GetEntity()->GetWorldPos();
+		if (rPlayer.IsFpSpectatorTarget())
+		{
+			if (m_in.pVehicle)
+				m_in.stats_followCharacterHead = true;
+			//m_in.vEntityWorldPos = rPlayer.GetEntity()->GetLocalTM().GetTranslation();
+		}
+		m_in.isFirstPersonSpectating = rPlayer.IsFpSpectator();
+		m_in.isFirstPersonSpecTarget = rPlayer.IsFpSpectatorTarget();
+
 		m_in.entityId = rPlayer.GetEntityId();
 
 		// use absolute entity matrix when frozen
@@ -144,7 +149,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 
 		m_in.headMtxLocal.SetIdentity();
 
-		if (m_in.stats_followCharacterHead)
+		if (m_in.stats_followCharacterHead || m_in.isFirstPersonSpecTarget) //CryMP FP spec
 		{
 			int16 joint_id = rPlayer.GetBoneID(BONE_HEAD);
 			if (joint_id >= 0)
@@ -189,7 +194,6 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 	// *****
 	viewParams.fov = m_in.defaultFov * rPlayer.m_params.viewFoVScale * (gf_PI / 180.0f);
 	viewParams.nearplane = 0.0f;
-	// *****
 
 	m_io.eyeOffsetViewGoal = rPlayer.GetStanceViewOffset(rPlayer.m_stance);
 
@@ -235,7 +239,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 //--------------------------------------------------------------------------
 void CPlayerView::ViewProcess(SViewParams& viewParams)
 {
-	if (m_in.stats_spectatorMode == 0 && m_in.stats_spectatorTarget && gEnv->bMultiplayer && m_in.health <= 0 && g_pGameCVars->g_deathCam != 0)
+	if (gEnv->bMultiplayer && m_in.stats_spectatorTarget && g_pGameCVars->g_deathCam != 0 && ((m_in.isFirstPersonSpecTarget && m_in.stats_isRagDoll /*CryMP: other clients hp is not serialized*/) || (m_in.stats_spectatorMode == 0 && m_in.health <= 0)))
 	{
 		ViewFirstThirdSharedPre(viewParams);
 		ViewDeathCamTarget(viewParams);
@@ -867,10 +871,93 @@ void CPlayerView::ViewFirstPerson(SViewParams& viewParams)
 
 void CPlayerView::ViewVehicle(SViewParams& viewParams)
 {
-	if (m_in.pVehicle)
+	auto* pVehicle = m_in.pVehicle;
+	if (pVehicle)
 	{
-		m_in.pVehicle->UpdateView(viewParams, m_in.entityId);
-		viewParams.viewID = 2;
+		if (m_in.isFirstPersonSpecTarget)
+		{
+			//m_io.bUsePivot = true;
+			const auto* pIActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
+			if (!pIActor)
+				return;
+			auto* pTarget = (CPlayer*)pIActor;
+			if (!pTarget)
+				return;
+
+			bool followHead = true;
+			float fwdOffset = 0.0f;
+			float zOffset = 0.0f;
+			const auto &vClass = pVehicle->GetEntity()->GetClass();
+			const auto *pRegistry = gEnv->pEntitySystem->GetClassRegistry();
+			const bool isDriver(pIActor == pVehicle->GetDriver());
+
+			if (isDriver)
+			{
+				if (vClass == CItem::sAsian_apc)
+				{
+					fwdOffset = 4.0f;
+					zOffset = 3.0f;
+					followHead = false;
+				}
+				else if (vClass == CItem::sAsian_tank)
+				{
+					fwdOffset = 4.0f;
+					zOffset = 3.0f;
+					followHead = false;
+				}
+				else if (vClass == CItem::sAsian_aaa)
+				{
+					fwdOffset = 0.2f;
+					zOffset = 3.8f;
+					followHead = false;
+				}
+				else if (vClass == CItem::sUS_apc)
+				{
+					fwdOffset = 1.0f;
+					zOffset =	3.5f;
+					followHead = false;
+				}
+				else if (vClass == CItem::sUS_tank)
+				{
+					fwdOffset = 4.0f;
+					zOffset = 3.0f;
+					followHead = false;
+				}
+				else if (vClass == CItem::sUS_trolley)
+				{
+					fwdOffset = -1.0f;
+					followHead = true;
+				}
+			}
+
+			const auto smoothDir(pTarget->GetVehicleViewDirSmooth());
+			if (followHead)
+			{
+				ViewFollowCharacterFirstPerson(viewParams);
+			}
+			else
+			{
+				const auto& vPos = pVehicle->GetEntity()->GetWorldPos();
+				const auto* pItem = pTarget->GetCurrentItem(true);
+
+				viewParams.position = vPos;
+				viewParams.rotation = Quat(Matrix33::CreateRotationVDir(smoothDir));
+			}
+			if (fwdOffset > 0.0f)
+			{
+				viewParams.position = viewParams.position + smoothDir * fwdOffset;
+			}
+
+			if (zOffset > 0.0f)
+			{
+				viewParams.position.z = viewParams.position.z + zOffset;
+			}
+		}
+		else
+		{
+			m_in.pVehicle->UpdateView(viewParams, m_in.entityId);
+			viewParams.viewID = 2;
+		}
 	}
 }
 
@@ -1168,7 +1255,8 @@ void CPlayerView::ViewDeathCamTarget(SViewParams& viewParams)
 //FIXME:use the animated character view filter for this
 void CPlayerView::ViewFollowCharacterFirstPerson(SViewParams& viewParams)
 {
-	viewParams.viewID = 3;
+	if (!m_in.isFirstPersonSpecTarget)
+		viewParams.viewID = 3;
 
 	//to avoid clipping
 	viewParams.nearplane = 0.1f;

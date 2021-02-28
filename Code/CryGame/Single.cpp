@@ -239,13 +239,14 @@ void CSingle::Update(float frameTime, uint frameId)
 		keepUpdating = true;
 	}
 
-
+	UpdateSpread(frameTime);
 	UpdateRecoil(frameTime);
 	UpdateHeat(frameTime);
 
 	m_fired = false;
 
-	if (g_pGameCVars->aim_assistCrosshairDebug && m_fireparams.crosshair_assist_range > 0.f && m_pWeapon->GetOwnerActor() && m_pWeapon->GetOwnerActor()->IsClient())
+	//CryMP let's disable this dangerous debug code
+	/*if (g_pGameCVars->aim_assistCrosshairDebug && m_fireparams.crosshair_assist_range > 0.f && m_pWeapon->GetOwnerActor() && m_pWeapon->GetOwnerActor()->IsClient())
 	{
 		// debug only
 		bool bHit(false); ray_hit rayhit; rayhit.pCollider = 0;
@@ -255,7 +256,7 @@ void CSingle::Update(float frameTime, uint frameId)
 		CrosshairAssistAiming(pos, dir, &rayhit);
 
 		keepUpdating = true;
-	}
+	}*/
 
 	if (keepUpdating)
 		m_pWeapon->RequireUpdate(eIUS_FireMode);
@@ -777,6 +778,8 @@ void CSingle::Activate(bool activate)
 
 	ResetRecoil();
 
+	//CryMP: Moved to CIronSight.cpp
+	/*
 	if (m_pWeapon->IsZoomed())
 	{
 		if (activate)
@@ -789,7 +792,7 @@ void CSingle::Activate(bool activate)
 			ResetRecoilMod();
 			ResetSpreadMod();
 		}
-	}
+	}*/
 
 	if (!activate)
 		Cancel();
@@ -2507,7 +2510,6 @@ float CSingle::GetHeat() const
 //------------------------------------------------------------------------
 void CSingle::UpdateHeat(float frameTime)
 {
-
 	CActor* pActor = m_pWeapon->GetOwnerActor();
 	IAIObject* pOwnerAI = (pActor && pActor->GetEntity()) ? pActor->GetEntity()->GetAI() : 0;
 	bool isOwnerAIControlled = pOwnerAI && pOwnerAI->GetAIType() != AIOBJECT_PLAYER;
@@ -2578,47 +2580,11 @@ void CSingle::UpdateHeat(float frameTime)
 //------------------------------------------------------------------------
 void CSingle::UpdateRecoil(float frameTime)
 {
-	//float white[4]={1,1,1,1};
-	// spread
-	float spread_add = 0.0f;
-	float spread_sub = 0.0f;
-	bool dw = m_pWeapon->IsDualWield();
-
 	CActor* pActor = m_pWeapon->GetOwnerActor();
-	IAIObject* pOwnerAI = (pActor && pActor->GetEntity()) ? pActor->GetEntity()->GetAI() : 0;
-	bool isOwnerAIControlled = pOwnerAI && pOwnerAI->GetAIType() != AIOBJECT_PLAYER;
+	if (pActor && !pActor->IsClient())
+		return;
 
-	if (isOwnerAIControlled)
-	{
-		// The AI system will offset the shoot target in any case, so do not apply spread.
-		m_spread = 0.0f;
-	}
-	else
-	{
-		if (m_spreadparams.attack > 0.0f)
-		{
-			// shot
-			float attack = m_spreadparams.attack;
-			if (dw) // experimental recoil increase for dual wield
-				attack *= 1.20f;
-
-			if (m_fired)
-				spread_add = m_spreadparams.attack;
-
-			float decay = m_recoilparams.decay;
-			if (dw) // experimental recoil increase for dual wield
-				decay *= 1.25f;
-
-			spread_sub = frameTime * (m_spreadparams.max - m_spreadparams.min) / decay;
-
-			m_spread += (spread_add - spread_sub) * m_recoilMultiplier;
-			m_spread = CLAMP(m_spread, m_spreadparams.min, m_spreadparams.max * m_recoilMultiplier);
-			//gEnv->pRenderer->Draw2dLabel(50,75,2.0f,white,false,"Current Spread: %f", m_spread);
-		}
-		else
-			m_spread = m_spreadparams.min;
-	}
-
+	const bool dw = m_pWeapon->IsDualWield();
 	//Nano-suit stuff
 	float nanoSuitScale = 1.0f;
 	float strenghtScale = 1.0f;
@@ -2710,12 +2676,11 @@ void CSingle::UpdateRecoil(float frameTime)
 			}
 		}
 
-		CActor* pOwner = m_pWeapon->GetOwnerActor();
 		CItem* pMaster = NULL;
 		if (m_pWeapon->IsDualWieldSlave())
 			pMaster = static_cast<CItem*>(m_pWeapon->GetDualWieldMaster());
 
-		if (pOwner && (m_pWeapon->IsCurrentItem() || (pMaster && pMaster->IsCurrentItem())))
+		if (pActor && (m_pWeapon->IsCurrentItem() || (pMaster && pMaster->IsCurrentItem())))
 		{
 			if (m_fired)
 			{
@@ -2729,7 +2694,7 @@ void CSingle::UpdateRecoil(float frameTime)
 				float t = m_recoil / m_recoilparams.max_recoil;
 				Vec2 new_offset = Vec2(m_recoil_dir.x * m_recoilparams.max.x, m_recoil_dir.y * m_recoilparams.max.y) * t * 3.141592f / 180.0f;
 				m_recoil_offset = new_offset * 0.66f + m_recoil_offset * 0.33f;
-				pOwner->SetViewAngleOffset(Vec3(m_recoil_offset.x, 0.0f, m_recoil_offset.y));
+				pActor->SetViewAngleOffset(Vec3(m_recoil_offset.x, 0.0f, m_recoil_offset.y));
 
 				m_pWeapon->RequireUpdate(eIUS_FireMode);
 
@@ -2753,7 +2718,51 @@ void CSingle::UpdateRecoil(float frameTime)
 		gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(it->pos, 0.125, ColorB(200, 0, 0));
 		gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(it->hit, 0.125, ColorB(0, 0, 200));
 	}*/
+}
 
+//------------------------------------------------------------------------
+void CSingle::UpdateSpread(float frameTime)
+{
+	//float white[4]={1,1,1,1};
+	// spread
+	float spread_add = 0.0f;
+	float spread_sub = 0.0f;
+	const bool dw = m_pWeapon->IsDualWield();
+
+	CActor* pActor = m_pWeapon->GetOwnerActor();
+	IAIObject* pOwnerAI = (pActor && pActor->GetEntity()) ? pActor->GetEntity()->GetAI() : 0;
+	bool isOwnerAIControlled = pOwnerAI && pOwnerAI->GetAIType() != AIOBJECT_PLAYER;
+
+	if (isOwnerAIControlled)
+	{
+		// The AI system will offset the shoot target in any case, so do not apply spread.
+		m_spread = 0.0f;
+	}
+	else
+	{
+		if (m_spreadparams.attack > 0.0f)
+		{
+			// shot
+			float attack = m_spreadparams.attack;
+			if (dw) // experimental recoil increase for dual wield
+				attack *= 1.20f;
+
+			if (m_fired)
+				spread_add = m_spreadparams.attack;
+
+			float decay = m_recoilparams.decay;
+			if (dw) // experimental recoil increase for dual wield
+				decay *= 1.25f;
+
+			spread_sub = frameTime * (m_spreadparams.max - m_spreadparams.min) / decay;
+
+			m_spread += (spread_add - spread_sub) * m_recoilMultiplier;
+			m_spread = CLAMP(m_spread, m_spreadparams.min, m_spreadparams.max * m_recoilMultiplier);
+			//gEnv->pRenderer->Draw2dLabel(50,75,2.0f,white,false,"Current Spread: %f", m_spread);
+		}
+		else
+			m_spread = m_spreadparams.min;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -2772,10 +2781,10 @@ void CSingle::ResetRecoil(bool spread)
 }
 
 //------------------------------------------------------------------------
-void CSingle::NetShoot(const Vec3& hit, int predictionHandle)
+void CSingle::NetShoot(const Vec3& hit, int predictionHandle) //called from server, when other clients shooting
 {
 	Vec3 pos = NetGetFiringPos(hit);
-	Vec3 dir = ApplySpread(NetGetFiringDir(hit, pos), GetSpread());
+	Vec3 dir = NetGetFiringDir(hit, pos); //CryMP: Do not apply extra spread on NetShoot, as it has already been done on the client!
 	Vec3 vel = NetGetFiringVelocity(dir);
 
 	NetShootEx(pos, dir, vel, hit, 1.0f, predictionHandle);
@@ -2798,15 +2807,49 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 	if (m_fireparams.clip_size == 0)
 		ammoCount = m_pWeapon->GetInventoryAmmoCount(ammo);
 
-	const char* action = m_actions.fire_cock.c_str();
-	if (ammoCount == 1)
-		action = m_actions.fire.c_str();
+	if (pActor && pActor->IsFpSpectatorTarget())
+	{
+		//CryMP: Fp Spec shoot animations
+		const char* action = m_actions.fire_cock.c_str();
+		bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
+		if (ammoCount == 1 || zoomedCock)
+			action = m_actions.fire.c_str();
 
-	m_pWeapon->ResetAnimation();
+		int flags = CItem::eIPAF_Default | CItem::eIPAF_RestartAnimation | CItem::eIPAF_CleanBlending;
+		if (m_firstShot)
+		{
+			m_firstShot = false;
+			flags |= CItem::eIPAF_NoBlend;
+		}
 
-	int flags = CItem::eIPAF_Default | CItem::eIPAF_NoBlend;
-	flags = PlayActionSAFlags(flags);
-	m_pWeapon->PlayAction(action, 0, false, flags);
+		flags = PlayActionSAFlags(flags);
+
+		m_pWeapon->PlayAction(action, 0, false, flags);
+
+		if (zoomedCock)
+			m_pWeapon->GetScheduler()->TimerAction(250, CSchedulerAction<ZoomedCockAction>::Create(this), false);
+
+
+		//Check for fire+cocking anim
+		uint time = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+		if (time > 800)
+		{
+			m_cocking = true;
+			m_pWeapon->GetScheduler()->TimerAction(time - 100, CSchedulerAction<EndCockingAction>::Create(this), false);
+		}
+	}
+	else
+	{
+		const char* action = m_actions.fire_cock.c_str();
+		if (ammoCount == 1)
+			action = m_actions.fire.c_str();
+
+		m_pWeapon->ResetAnimation();
+
+		int flags = CItem::eIPAF_Default | CItem::eIPAF_NoBlend;
+		flags = PlayActionSAFlags(flags);
+		m_pWeapon->PlayAction(action, 0, false, flags);
+	}
 
 	CProjectile* pAmmo = m_pWeapon->SpawnAmmo(ammo, true);
 	if (pAmmo)
@@ -2831,7 +2874,7 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 		bool emit = (!m_tracerparams.geometry.empty() || !m_tracerparams.effect.empty()) && (ammoCount == GetClipSize() || (ammoCount % m_tracerparams.frequency == 0));
 		bool ooa = ((m_fireparams.ooatracer_treshold > 0) && m_fireparams.ooatracer_treshold >= ammoCount);
 
-		if (emit || ooa)
+		if (emit || ooa || (pActor && pActor->IsFpSpectatorTarget())) //CryMP emit all tracers for FP spec
 			EmitTracer(pos, hit, ooa);
 
 		m_projectileId = pAmmo->GetEntity()->GetId();
@@ -3146,7 +3189,6 @@ void CSingle::PatchSpreadMod(SSpreadModParams& sSMP)
 
 	//Reset spread
 	m_spread = m_spreadparams.min;
-
 }
 
 //-------------------------------------------------------------------------------
@@ -3203,7 +3245,6 @@ void CSingle::ResetRecoilMod()
 	m_recoilparams.recoil_prone_m = m_recoilparamsCopy.recoil_prone_m;
 	m_recoilparams.recoil_strMode_m = m_recoilparamsCopy.recoil_strMode_m;
 	m_recoilparams.recoil_zeroG_m = m_recoilparamsCopy.recoil_zeroG_m;
-
 }
 
 //-----------------------------------------------------------------------------

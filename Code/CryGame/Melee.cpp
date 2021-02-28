@@ -192,22 +192,23 @@ void CMelee::StartFire()
 	if (!CanFire())
 		return;
 
-	//Prevent fists melee exploit 
-	if ((m_pWeapon->GetEntity()->GetClass() == CItem::sFistsClass) && m_pWeapon->IsBusy())
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
 		return;
 
-	CActor* pOwner = m_pWeapon->GetOwnerActor();
-
-	if (pOwner)
+	//Prevent fists melee exploit
+	if ((m_pWeapon->GetEntity()->GetClass() == CItem::sFistsClass) && m_pWeapon->IsBusy())
 	{
-		if (pOwner->GetStance() == STANCE_PRONE)
-			return;
+		return;
+	}
 
-		if (SPlayerStats* stats = static_cast<SPlayerStats*>(pOwner->GetActorStats()))
-		{
-			if (stats->bLookingAtFriendlyAI)
-				return;
-		}
+	if (pOwner->GetStance() == STANCE_PRONE)
+		return;
+
+	if (SPlayerStats* stats = static_cast<SPlayerStats*>(pOwner->GetActorStats()))
+	{
+		if (stats->bLookingAtFriendlyAI)
+			return;
 	}
 
 	m_attacking = true;
@@ -215,7 +216,7 @@ void CMelee::StartFire()
 	m_pWeapon->RequireUpdate(eIUS_FireMode);
 	m_pWeapon->ExitZoom();
 
-	bool isClient = pOwner ? pOwner->IsClient() : false;
+	const bool isClient = pOwner->IsClient();
 
 	if (g_pGameCVars->bt_end_melee && isClient)
 		g_pGame->GetBulletTime()->Activate(false);
@@ -223,18 +224,15 @@ void CMelee::StartFire()
 
 	float speedOverride = -1.0f;
 
-	if (CActor* pOwner = m_pWeapon->GetOwnerActor())
+	CPlayer* pPlayer = (CPlayer*)pOwner;
+	if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
 	{
-		CPlayer* pPlayer = (CPlayer*)pOwner;
-		if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
-		{
-			ENanoMode curMode = pSuit->GetMode();
-			if (curMode == NANOMODE_SPEED && pSuit->GetSuitEnergy() > NANOSUIT_ENERGY * 0.1f)
-				speedOverride = 1.5f;
-		}
-
-		pPlayer->PlaySound(CPlayer::ESound_Melee);
+		ENanoMode curMode = pSuit->GetMode();
+		if (curMode == NANOMODE_SPEED && pSuit->GetSuitEnergy() > NANOSUIT_ENERGY * 0.1f)
+			speedOverride = 1.5f;
 	}
+
+	pPlayer->PlaySound(CPlayer::ESound_Melee);
 
 	m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
 	m_pWeapon->SetBusy(true);
@@ -251,7 +249,8 @@ void CMelee::StartFire()
 
 	m_pWeapon->OnMelee(m_pWeapon->GetOwnerId());
 
-	m_pWeapon->RequestStartMeleeAttack(m_pWeapon->GetMeleeFireMode() == this);
+	if (isClient)
+		m_pWeapon->RequestStartMeleeAttack(m_pWeapon->GetMeleeFireMode() == this);
 }
 
 //------------------------------------------------------------------------
@@ -262,22 +261,38 @@ void CMelee::StopFire()
 //------------------------------------------------------------------------
 void CMelee::NetStartFire()
 {
-	m_pWeapon->OnMelee(m_pWeapon->GetOwnerId());
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
+		return;
 
 	float speedOverride = -1.0f;
 
-	if (CActor* pOwner = m_pWeapon->GetOwnerActor())
+	CPlayer* pPlayer = (CPlayer*)pOwner;
+	if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
 	{
-		CPlayer* pPlayer = (CPlayer*)pOwner;
-		if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
-		{
-			ENanoMode curMode = pSuit->GetMode();
-			if (curMode == NANOMODE_SPEED)
-				speedOverride = 1.5f;
-		}
+		ENanoMode curMode = pSuit->GetMode();
+		if (curMode == NANOMODE_SPEED)
+			speedOverride = 1.5f;
 	}
 
-	m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default, speedOverride);
+	//CryMP exit zoom modes just incase, like in StartFire
+	m_pWeapon->ExitZoom();
+
+	if (pOwner->IsFpSpectatorTarget())
+	{
+		//CryMP Handle Fp targets
+		pPlayer->PlaySound(CPlayer::ESound_Melee);
+
+		m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
+		m_durationTimer = m_meleeparams.duration;
+	}
+	else
+	{
+		//default TP mode
+		m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default, speedOverride);
+	}
+
+	m_pWeapon->OnMelee(m_pWeapon->GetOwnerId());
 }
 
 //------------------------------------------------------------------------
@@ -707,9 +722,11 @@ void CMelee::Hit(ray_hit* hit, const Vec3& dir, float damageScale, bool remote)
 void CMelee::ApplyCameraShake(bool hit)
 {
 	// Add some camera shake for client even if not hitting
-	if (m_pWeapon->GetOwnerActor() && m_pWeapon->GetOwnerActor()->IsClient())
+	auto* pActor = m_pWeapon->GetOwnerActor();
+	if (pActor && (pActor->IsClient() || pActor->IsFpSpectatorTarget())) //CryMP: Some camera shaking for Fp target as well :D
 	{
-		if (CScreenEffects* pScreenEffects = m_pWeapon->GetOwnerActor()->GetScreenEffects())
+		CActor *pClient = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
+		if (CScreenEffects* pScreenEffects = pClient ? pClient->GetScreenEffects() : NULL)
 		{
 			float rotateTime;
 			if (!hit)

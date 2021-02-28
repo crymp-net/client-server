@@ -213,9 +213,11 @@ public:
 	virtual void EnableFireMode(int idx, bool enable);
 	virtual void FixAccessories(SAccessoryParams* newParams, bool attach);
 
-	virtual IZoomMode* GetZoomMode(int idx) const;
-	virtual IZoomMode* GetZoomMode(const char* name) const;
-	virtual int GetZoomModeIdx(const char* name) const;
+	virtual IZoomMode *GetZoomMode(int idx) const;
+	virtual IZoomMode *GetZoomMode(const char *name) const;
+	virtual IZoomMode* GetActiveZoomMode() const { return m_zm; };
+	virtual int GetZoomModeIdx(const char *name) const;
+
 	virtual int GetCurrentZoomMode() const;
 	virtual void SetCurrentZoomMode(int idx);
 	virtual void SetCurrentZoomMode(const char* name);
@@ -578,6 +580,8 @@ public:
 	virtual void NetMeleeAttack(bool weaponMelee, const Vec3& pos, const Vec3& dir);
 
 	virtual void NetZoom(float fov);
+
+	int GetZoomStepFromFoV(float fov);
 
 	uint16 ILINE GenerateShootSeqN() {
 		++m_shootSeqN;

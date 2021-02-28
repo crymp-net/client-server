@@ -684,6 +684,7 @@ public:
 
 	// recoil/spread
 	virtual void UpdateRecoil(float frameTime);
+	virtual void UpdateSpread(float frameTime);
 	virtual void ResetRecoil(bool spread=true);
 
 	virtual void SetRecoilMultiplier(float recoilMult) { m_recoilMultiplier = recoilMult; }

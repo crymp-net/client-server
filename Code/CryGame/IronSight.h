@@ -321,6 +321,8 @@ public:
 
 	virtual bool IsScope() const { return false; }
 
+	void ResetFovAndPosition();
+
 protected:
 	virtual void EnterZoom(float time, const char *zoom_layer=0, bool smooth=true, int zoomStep = 1);
 	virtual void LeaveZoom(float time, bool smooth=true);
@@ -361,7 +363,6 @@ protected:
 
 	void AdjustScopePosition(float time, bool zoomIn);
 	void AdjustNearFov(float time, bool zoomIn);
-	void ResetFovAndPosition();
 
 	void ZoomSway(float time, float &x, float&y);
 

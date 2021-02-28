@@ -21,6 +21,7 @@
 #include "Actor.h"
 #include "NanoSuit.h"
 #include "CryAction/IActionMapManager.h"
+#include "CryAction/IViewSystem.h"
 
 
 class CPlayerMovement;
@@ -137,6 +138,10 @@ struct SPlayerStats : public SActorStats
 
 	int  grabbedHeavyEntity; //Player is grabbing two handed object(1) or NPC(2)
 
+	//CryMP FP Spec
+	bool fpSpectator;
+	bool fpSpectatorTarget;
+
 	SPlayerStats()
 	{
 		memset(this, 0, sizeof(SPlayerStats)); // This will zero everything, fine.
@@ -185,6 +190,10 @@ struct SPlayerStats : public SActorStats
 		grabbedHeavyEntity = 0;
 
 		FPWeaponSwayOn = false;
+
+		//CryMP FP spec
+		fpSpectator = false,
+			fpSpectatorTarget = false;
 	}
 
 	void Serialize(TSerialize ser, unsigned aspects);
@@ -371,6 +380,7 @@ public:
 	virtual void Update(SEntityUpdateContext& ctx, int updateSlot);
 	virtual void PrePhysicsUpdate();
 	virtual void UpdateView(SViewParams& viewParams);
+	virtual bool UpdateFpSpectatorView(SViewParams& viewParams);
 	virtual void PostUpdateView(SViewParams& viewParams);
 	virtual void UpdateFirstPersonEffects(float frameTime);
 	virtual void GetMemoryStatistics(ICrySizer* s);
@@ -397,11 +407,26 @@ public:
 	static  const char* GetActorClassType() { return "CPlayer"; }
 	virtual const char* GetActorClass() const { return CPlayer::GetActorClassType(); }
 
-	//	ILINE bool FeetUnderWater() const { return m_bFeetUnderWater; }
+	//CryMP 
+	//First Person Spectator
+	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
+	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
+	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
+	void SetFpSpectatorTarget(bool activate);
+	IActor* GetSpectatorTargetPlayer();
+
+	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
+	Vec3 GetNetAimDir() const { return m_netAimDir; }
+	Vec3 GetNetAimDirSmooth() const { return m_netAimDirSmooth; }
+	//CryMP 
 
 protected:
 	virtual IActorMovementController* CreateMovementController();
 	virtual void SetIK(const SActorFrameMovementParams&);
+
+	//CryMP FP Spec
+	SViewParams m_FirstPersonSpectatorParams;
+	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
 public:
 	struct SAlienInterferenceParams
@@ -830,8 +855,14 @@ protected:
 
 	CVehicleClient* m_pVehicleClient;
 	Vec3 m_vehicleViewDir;
+
+	//CryMP
 	float m_tpLeanOffset;
 	float m_tpProneOffset;
+	Vec3 m_vehicleViewDirSmooth;
+	Vec3 m_netAimDir;
+	Vec3 m_netAimDirSmooth;
+	//CryMP
 
 	//sound loops that are played when we don't have a nanosuit
 	float		 m_sprintTimer;

@@ -66,6 +66,8 @@ public:
 
 	void SerializeSaveGame( TSerialize ser );
 
+	bool ShouldKeepFpSpectator() { return m_KeepFPSpectatorMode; }
+
 private:
 
 	EStance FigureOutStance();
@@ -120,6 +122,7 @@ private:
 	bool OnActionInvertMouse(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 private:
 	Vec3 m_lastPos;
+	Vec3 m_lookDir;
 
 	CPlayer* m_pPlayer;
 	SPlayerStats* m_pStats;
@@ -143,6 +146,7 @@ private:
 	int	m_iSuitModeActionPressed;
 	int m_iCarryingObject;
 	int m_lastSerializeFrameID;
+	bool m_KeepFPSpectatorMode;
 
 	bool m_doubleJumped;
 

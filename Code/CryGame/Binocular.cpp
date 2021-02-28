@@ -58,7 +58,8 @@ void CBinocular::Select(bool select)
 {
 	CWeapon::Select(select);
 
-	if (!GetOwnerActor() || !GetOwnerActor()->IsClient())
+	auto* pOwner = GetOwnerActor();
+	if (!pOwner || (!pOwner->IsClient() && !pOwner->IsFpSpectatorTarget())) //CryMP: Fp spec support
 		return;
 
 	if (gEnv->pSoundSystem)		//turn sound-zooming on / off
@@ -85,7 +86,7 @@ void CBinocular::UpdateFPView(float frameTime)
 	CWeapon::UpdateFPView(frameTime);
 
 	CActor* pOwner = GetOwnerActor();
-	if (pOwner && pOwner->IsClient())
+	if (pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())) //CryMP Fp spec support
 	{
 		if (m_zm && IsZoomed() && gEnv->pSoundSystem)
 			gEnv->pSoundSystem->CalcDirectionalAttenuation(pOwner->GetEntity()->GetWorldPos(), pOwner->GetViewRotation().GetColumn1(), 0.35f - m_zm->GetCurrentStep() * 0.05f);

@@ -373,10 +373,10 @@ void CLam::AttachLAMLight(bool attach, CItem* pLightAttach, eGeometrySlot slot)
 		{
 			if (gEnv->bMultiplayer)
 			{
-				if (!pOwner->IsClient())
-					fakeLight = true;
-				else
+				if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()) //CryMP Fp spec support
 					castShadows = true;
+				else
+					fakeLight = true;
 			}
 			else
 			{

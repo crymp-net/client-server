@@ -1265,33 +1265,36 @@ bool COffHand::EvaluateStateTransition(int requestedAction, int activationMode, 
 {
 	switch (requestedAction)
 	{
-	case eOHA_SWITCH_GRENADE: if (activationMode == eAAM_OnPress && m_currentState == eOHS_INIT_STATE)
-	{
-		return true;
-	}
-							break;
-
-	case eOHA_THROW_GRENADE:	if (activationMode == eAAM_OnPress && m_currentState == eOHS_INIT_STATE)
-	{
-		//Don't allow throwing grenades under water.
-		if (CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor()))
+		case eOHA_SWITCH_GRENADE: 
+		if (activationMode == eAAM_OnPress && m_currentState == eOHS_INIT_STATE)
 		{
-			if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-			{
-				if ((pStats->worldWaterLevel + 0.1f) > pStats->FPWeaponPos.z)
-					return false;
-			}
-		}
-
-		//Don't throw if there's no ammo (or not fm)
-		if (m_fm && !m_fm->OutOfAmmo() && m_nextGrenadeThrow <= 0.0f)
 			return true;
-	}
-						   else if (activationMode == eAAM_OnRelease && m_currentState == eOHS_HOLDING_GRENADE)
-	{
-		return true;
-	}
-						   break;
+		}
+		break;
+
+		case eOHA_THROW_GRENADE:	
+		if (activationMode == eAAM_OnPress && m_currentState == eOHS_INIT_STATE)
+		{
+			//Don't allow throwing grenades under water.
+			if (CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor()))
+			{
+				if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
+				{
+					if ((pStats->worldWaterLevel + 0.1f) > pStats->FPWeaponPos.z)
+						return false;
+				}
+			}
+
+			//Don't throw if there's no ammo (or not fm)
+			if (m_fm && !m_fm->OutOfAmmo() && m_nextGrenadeThrow <= 0.0f)
+				return true;
+		}
+	    else if (activationMode == eAAM_OnRelease && m_currentState == eOHS_HOLDING_GRENADE)
+		{
+			return true;
+		}
+		break;
+
 	case eOHA_USE:
 		//Evaluate mouse inputs first
 		if (inputMethod == INPUT_LBM)
@@ -1331,11 +1334,12 @@ bool COffHand::EvaluateStateTransition(int requestedAction, int activationMode, 
 		}
 		break;
 
-	case eOHA_MELEE_ATTACK:		if (activationMode == eAAM_OnPress && m_currentState == eOHS_HOLDING_OBJECT && m_grabType == GRAB_TYPE_ONE_HANDED)
-	{
-		return true;
-	}
-						  break;
+		case eOHA_MELEE_ATTACK:		
+		if (activationMode == eAAM_OnPress && m_currentState == eOHS_HOLDING_OBJECT && m_grabType == GRAB_TYPE_ONE_HANDED)
+		{
+			return true;
+		}
+		 break;
 	}
 
 	return false;
@@ -1811,7 +1815,7 @@ void COffHand::PerformThrow(int activationMode, EntityId throwableId, int oldFMI
 //--------------
 int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity /*=NULL*/, bool getEntityInfo /*= false*/)
 {
-	if (!pActor || !pActor->IsClient())
+	if (!pActor || (!pActor->IsClient() && !pActor->IsFpSpectatorTarget())) //CryMP Fp Spec enable pickup HUD 
 		return OH_NO_GRAB;
 
 	IMovementController* pMC = pActor->GetMovementController();

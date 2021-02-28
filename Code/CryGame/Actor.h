@@ -153,6 +153,7 @@ struct SActorParams
 	float	viewHeightOffset;
 
 	float	viewFoVScale;
+	float   zoomFoV;
 	float	viewSensitivity;
 
 	Vec3	vLimitDir;
@@ -181,6 +182,7 @@ struct SActorParams
 		vLimitRangeVDown = 0.0f;
 
 		viewFoVScale = 1.0f;
+		zoomFoV = 1.0f;
 		viewSensitivity = 1.0f;
 
 		weaponInertiaMultiplier = 1.0f;
@@ -896,6 +898,8 @@ public:
 		return m_linkStats.GetLinkedVehicle();
 	}
 
+	EntityId m_lastVehicleId;
+
 	virtual void SetViewInVehicle(Quat viewRotation) {};
 
 	virtual void SupressViewBlending() {};
@@ -1122,6 +1126,10 @@ public:
 	virtual void DumpActorInfo();
 
 	virtual bool IsAlien() { return false; }
+
+	//CryMP First Person Spectators
+	virtual bool IsFpSpectator() const { return false; }
+	virtual bool IsFpSpectatorTarget() const { return false; }
 
 protected:
 
