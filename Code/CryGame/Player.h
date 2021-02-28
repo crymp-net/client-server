@@ -193,7 +193,7 @@ struct SPlayerStats : public SActorStats
 
 		//CryMP FP spec
 		fpSpectator = false,
-			fpSpectatorTarget = false;
+		fpSpectatorTarget = false;
 	}
 
 	void Serialize(TSerialize ser, unsigned aspects);
@@ -414,6 +414,9 @@ public:
 	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
 	void SetFpSpectatorTarget(bool activate);
 	IActor* GetSpectatorTargetPlayer();
+	int GetLastRank() { return m_lastRank; };
+	const char* GetLastRankName() { return m_lastRankName.c_str(); };
+	void SetLastRankInfo(int rank, const char* info) { m_lastRank = rank;  m_lastRankName = info; };
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }
@@ -859,6 +862,8 @@ protected:
 	//CryMP
 	float m_tpLeanOffset;
 	float m_tpProneOffset;
+	int m_lastRank;
+	std::string m_lastRankName;
 	Vec3 m_vehicleViewDirSmooth;
 	Vec3 m_netAimDir;
 	Vec3 m_netAimDirSmooth;

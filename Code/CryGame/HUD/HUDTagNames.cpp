@@ -56,36 +56,40 @@ CHUDTagNames::~CHUDTagNames()
 
 //-----------------------------------------------------------------------------------------------------
 
-const char* CHUDTagNames::GetPlayerRank(EntityId uiEntityId)
+const char* CHUDTagNames::GetPlayerRank(EntityId playerId)
 {
-	const char* szRank = NULL;
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+	if (!pGameRules || pGameRules->GetTeamCount() < 2)
+		return nullptr;
 
-	IGameRules* pGameRules = g_pGame->GetGameRules();
+	auto* pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId));
+	if (!pPlayer)
+		return nullptr;
 
-	int iPlayerRank = 0;
-	if (IScriptTable* pGameRulesTable = pGameRules->GetEntity()->GetScriptTable())
-	{
-		HSCRIPTFUNCTION pfnGetPlayerRank = NULL;
-		if (pGameRulesTable->GetValue("GetPlayerRank", pfnGetPlayerRank) && pfnGetPlayerRank)
-		{
-			Script::CallReturn(gEnv->pScriptSystem, pfnGetPlayerRank, pGameRulesTable, ScriptHandle(uiEntityId), iPlayerRank);
-			gEnv->pScriptSystem->ReleaseFunc(pfnGetPlayerRank);
-		}
-	}
+	int currentRank = 0;
 
-	if (iPlayerRank)
+	const int lastRank = pPlayer->GetLastRank();
+	const char* lastRankName = pPlayer->GetLastRankName();
+	const char* szRank = nullptr;
+
+	const TSynchedKey RANK_KEY(202);
+	pGameRules->GetSynchedEntityValue(playerId, RANK_KEY, currentRank);
+
+	if (currentRank != lastRank || !lastRankName || !strlen(lastRankName))
 	{
 		static string strRank;
 		static wstring wRank;
-		strRank.Format("@ui_short_rank_%d", iPlayerRank);
+		strRank.Format("@ui_short_rank_%d", currentRank);
 		if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(strRank, wRank))
 		{
 			ConvertWString(wRank, strRank);
 		}
-		szRank = strRank.c_str();
+		pPlayer->SetLastRankInfo(currentRank, strRank.c_str());
+
+		return strRank.c_str();
 	}
 
-	return szRank;
+	return lastRankName;
 }
 
 //-----------------------------------------------------------------------------------------------------
