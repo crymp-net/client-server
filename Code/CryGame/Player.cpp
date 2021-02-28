@@ -2053,6 +2053,8 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 	if (pItem)
 	{
 		pItem->CheckViewChange();
+
+		SAFE_HUD_FUNC(UpdateCrosshair());
 	}
 
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
