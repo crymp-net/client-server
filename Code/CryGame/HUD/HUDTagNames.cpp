@@ -434,8 +434,8 @@ void CHUDTagNames::Update()
 	IActorIteratorPtr it = g_pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
 	while (IActor* pActor = it->Next())
 	{
-		// Never display the local player
-		if (pActor == pClientActor)
+		//CryMP: Display tag name in third person mode
+		if (pActor == pClientActor && (!gEnv->bMultiplayer || !pActor->IsThirdPerson()))
 			continue;
 
 		// Skip enemies, they need to be added only when shot
