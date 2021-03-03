@@ -1762,10 +1762,14 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 		if (pWeapon)
 		{
 			pWeapon->UpdateFPView(frameTime);
-			if (/*!pWeapon->IsZoomed() && */ pWeapon->IsMounted())
+			if (pWeapon->IsMounted())
 			{
 				pWeapon->FilterView(viewParams);
 				pWeapon->PostFilterView(viewParams);
+
+				viewParams.viewID = 0; //CryMP: This has to be 0 otherwise blank screen
+
+				pTarget->m_stats.isHidden = true; //Also hide the TP body, otherwise double arms...
 			}
 		}
 		else if (pItem)
