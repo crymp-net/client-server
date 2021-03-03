@@ -268,3 +268,30 @@ void Util::ErrorBox(const char *msg)
 
 	MessageBoxA(NULL, buffer.get(), "Error", MB_OK | MB_ICONERROR);
 }
+
+/**
+ * @brief Function to remove color codes from names.
+ * @param text The text to remove color codes from.
+ */
+std::string Util::CallRemoveColorCodes(const std::string& text)
+{
+	std::string result;
+	result.reserve(text.length());
+
+	for (size_t i = 0; i < text.length(); i++)
+	{
+		char ch = text[i];
+
+		if (ch == '$')
+		{
+			// drop color codes
+			i++;
+		}
+		else
+		{
+			result += ch;
+		}
+	}
+
+	return result;
+}

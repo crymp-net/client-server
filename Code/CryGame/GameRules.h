@@ -253,6 +253,10 @@ public:
 	bool IsDead(EntityId entityId) const;
 	bool IsSpectator(EntityId entityId) const;
 	void ShowScores(bool show);
+	//CryMP
+	bool IsSameTeam(EntityId firstId, EntityId secondId) const { return GetTeam(firstId) == GetTeam(secondId); };
+	bool IsNeutral(EntityId entityId) const { return GetTeam(entityId) == 0; };
+	bool IsHostile(EntityId firstId, EntityId secondId) const { return (!IsSameTeam(firstId, secondId) || GetTeamCount() < 2); };
 
 	//------------------------------------------------------------------------
 	// player

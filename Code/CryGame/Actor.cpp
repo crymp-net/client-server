@@ -3031,9 +3031,21 @@ void CActor::DropAttachedItems()
 IItem* CActor::GetCurrentItem(bool includeVehicle/*=false*/) const
 {
 	if (EntityId itemId = GetCurrentItemId(includeVehicle))
+	{
 		return m_pItemSystem->GetItem(itemId);
+	}
 
-	return 0;
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+CWeapon* CActor::GetCurrentWeapon(bool includeVehicle/*=false*/) const
+{
+	if (const auto pItem = GetCurrentItem(includeVehicle))
+	{
+		return static_cast<CWeapon*>(pItem->GetIWeapon());
+	}
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

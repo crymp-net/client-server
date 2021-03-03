@@ -40,6 +40,8 @@ namespace Util
 
 	void ErrorBox(const char *msg);
 
+	std::string CallRemoveColorCodes(const std::string& text);
+
 	inline void ErrorBox(const std::string & msg)
 	{
 		ErrorBox(msg.c_str());
