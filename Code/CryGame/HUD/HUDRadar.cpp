@@ -30,6 +30,7 @@ History:
 
 #include "HUDPowerStruggle.h"
 #include "HUDScopes.h"
+#include "CryGame/Scan.h"
 
 #define RANDOM() ((((float)cry_rand()/(float)RAND_MAX)*2.0f)-1.0f)
 
@@ -660,7 +661,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				continue;
 
 			//is it a corpse ?
-			IActor* tempActor = m_pActorSystem->GetActor(pEntity->GetId());
+			CActor* tempActor = static_cast<CActor*>(m_pActorSystem->GetActor(pEntity->GetId()));
 			if (tempActor && !(tempActor->GetHealth() > 0))
 				continue;
 
@@ -851,7 +852,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 					if (unknownEnemyActor || scannedEnemy)	//unknown or known enemy in MP !?
 					{
 						CPlayer* pPlayer = 0;
-						if (static_cast<CActor*>(tempActor)->GetActorClass() == CPlayer::GetActorClassType())
+						if (tempActor->GetActorClass() == CPlayer::GetActorClassType())
 							pPlayer = static_cast<CPlayer*>(tempActor);
 
 						if (pPlayer && !(pPlayer->GetNanoSuit() && pPlayer->GetNanoSuit()->GetCloak()->GetState() != 0))
@@ -891,9 +892,26 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				continue;
 			//**********************************************************************************************
 
-			//requested by Sten : teammates should be more transparent
 			if (mate)
-				fAlpha *= 0.50f;
+			{
+				bool scan(false);
+				CWeapon* pWeapon = tempActor ? tempActor->GetCurrentWeapon(false) : nullptr;
+				if (pWeapon && pWeapon->GetEntity()->GetClass() == CItem::sRadarKitClass)
+				{
+					CScan* pScan = static_cast<CScan*>(pWeapon->GetActiveFireMode());
+					if (pScan && pScan->IsScanning())
+					{
+						scan = true;
+						fAlpha *= 3.0f; //highlite scanning teammates
+					}
+				}
+
+				if (!scan)
+				{
+					//requested by Sten : teammates should be more transparent
+					fAlpha *= 0.50f;
+				}
+			}
 
 			//draw entity
 			float lowerBoundY = m_fY - fRadarSizeOverTwo;

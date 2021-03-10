@@ -69,6 +69,9 @@ IEntityClass* CItem::sEMPGrenade = 0;
 IEntityClass* CItem::sSmokeGrenade = 0;
 IEntityClass* CItem::sIncendiaryAmmo = 0;
 IEntityClass* CItem::sScarGrenadeClass = 0;
+IEntityClass* CItem::sRadarKitClass = 0;
+IEntityClass* CItem::sRepairKitClass = 0;
+IEntityClass* CItem::sLockpickKitClass = 0;
 IEntityClass* CItem::sDoorClass = 0;
 IEntityClass* CItem::sFlagClass = 0;
 IEntityClass* CItem::sAsian_apc = 0;
@@ -193,6 +196,9 @@ bool CItem::Init(IGameObject* pGameObject)
 		sScarGrenadeClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("scargrenade");
 
 		sDoorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Door");
+		sRadarKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("RadarKit");
+		sRepairKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("RepairKit");
+		sLockpickKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("LockpickKit");
 		sFlagClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Flag");
 		sAsian_apc = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_apc");
 		sAsian_tank = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_tank");

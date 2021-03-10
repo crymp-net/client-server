@@ -93,12 +93,13 @@ void CScan::Activate(bool activate)
 //------------------------------------------------------------------------
 void CScan::Update(float frameTime, uint frameId)
 {
-	if (m_scanning && m_pWeapon->IsClient())
+	auto* pOwner = m_pWeapon->GetOwnerActor();
+	if (m_scanning && m_pWeapon->IsClient() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
 	{
-		if (m_delayTimer>0.0f)
+		if (m_delayTimer > 0.0f)
 		{
 			m_delayTimer -= frameTime;
-			if (m_delayTimer>0.0f)
+			if (m_delayTimer > 0.0f)
 				return;
 
 			m_delayTimer = 0.0f;
@@ -106,38 +107,36 @@ void CScan::Update(float frameTime, uint frameId)
 			int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
 			int id = m_pWeapon->GetStats().fp ? 0 : 1;
 
-			m_scanLoopId=m_pWeapon->PlayAction(m_scanactions.scan, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
-			ISound *pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
+			m_scanLoopId = m_pWeapon->PlayAction(m_scanactions.scan, 0, true, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
 			if (pSound)
 				pSound->SetLoopMode(true);
 		}
 
-		if(m_delayTimer==0.0f)
+		if (m_delayTimer == 0.0f && pOwner->IsClient())
 		{
-			if(m_tagEntitiesDelay>0.0f)
+			if (m_tagEntitiesDelay > 0.0f)
 			{
-				m_tagEntitiesDelay-=frameTime;
-				if(m_tagEntitiesDelay<=0.0f)
+				m_tagEntitiesDelay -= frameTime;
+				if (m_tagEntitiesDelay <= 0.0f)
 				{
 					m_tagEntitiesDelay = 0.0f;
 
 					//Here is when entities are displayed on Radar
-					if(gEnv->pGame->GetIGameFramework()->GetClientActor() == m_pWeapon->GetOwnerActor())
-					{
-						if(gEnv->bServer)
-							NetShoot(ZERO, 0);
-						else
-							m_pWeapon->RequestShoot(0, ZERO, ZERO, ZERO, ZERO, 1.0f, 0, 0, 0, false);
-					}
+					if (gEnv->bServer)
+						NetShoot(ZERO, 0);
+					else
+						m_pWeapon->RequestShoot(0, ZERO, ZERO, ZERO, ZERO, 1.0f, 0, 0, 0, false);
 				}
 			}
 
-			if (m_durationTimer>0.0f)
+			if (m_durationTimer > 0.0f)
 			{
-				m_durationTimer-=frameTime;
-				if (m_durationTimer<=0.0f)
+				m_durationTimer -= frameTime;
+				if (m_durationTimer <= 0.0f)
 				{
-					m_durationTimer=0.0f;	
+					m_durationTimer = 0.0f;
 					StopFire();
 				}
 			}
@@ -148,69 +147,11 @@ void CScan::Update(float frameTime, uint frameId)
 }
 
 //------------------------------------------------------------------------
-void CScan::StartFire()
+void CScan::ShowFlashAnimation(bool enable)
 {
-	if (!m_pWeapon->IsBusy())
-	{
-		if(m_pWeapon->GetOwnerActor())
-		{
-			// add the flash animation part here
-			IEntity *pEntity = m_pWeapon->GetEntity();
-			if(pEntity)
-			{
-				IEntityRenderProxy* pRenderProxy((IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER));
-				if (pRenderProxy)
-				{
-					IMaterial* pMtl(pRenderProxy->GetRenderMaterial(0));
-					if (pMtl)
-					{
-						pMtl = pMtl->GetSafeSubMtl(2);
-						if (pMtl)
-						{
-							const SShaderItem& shaderItem(pMtl->GetShaderItem());
-							if (shaderItem.m_pShaderResources && shaderItem.m_pShaderResources->GetTexture(0))
-							{
-								SEfResTexture* pTex(shaderItem.m_pShaderResources->GetTexture(0));
-								if (pTex->m_Sampler.m_pDynTexSource)
-								{
-									IFlashPlayer* pFlashPlayer(0);
-									IDynTextureSource::EDynTextureSource type(IDynTextureSource::DTS_I_FLASHPLAYER);
-
-									pTex->m_Sampler.m_pDynTexSource->GetDynTextureSource((void*&)pFlashPlayer, type);
-									if (pFlashPlayer && type == IDynTextureSource::DTS_I_FLASHPLAYER)
-									{
-										pFlashPlayer->Invoke0("startScan");
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			SAFE_HUD_FUNC(SetRadarScanningEffect(true));
-
-			m_scanning=true;
-			m_delayTimer=m_scanparams.delay;
-			m_durationTimer=m_scanparams.duration;
-			m_tagEntitiesDelay=m_scanparams.tagDelay;
-			m_pWeapon->SetBusy(true);
-		}
-
-		m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
-		m_pWeapon->RequestStartFire();
-		m_pWeapon->RequireUpdate(eIUS_FireMode);
-	}
-}
-
-//------------------------------------------------------------------------
-void CScan::StopFire()
-{
-	if (!m_scanning)
-		return;
-
-	IEntity *pEntity = m_pWeapon->GetEntity();
-	if(pEntity)
+	// add the flash animation part here
+	IEntity* pEntity = m_pWeapon->GetEntity();
+	if (pEntity)
 	{
 		IEntityRenderProxy* pRenderProxy((IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER));
 		if (pRenderProxy)
@@ -233,7 +174,14 @@ void CScan::StopFire()
 							pTex->m_Sampler.m_pDynTexSource->GetDynTextureSource((void*&)pFlashPlayer, type);
 							if (pFlashPlayer && type == IDynTextureSource::DTS_I_FLASHPLAYER)
 							{
-								pFlashPlayer->Invoke0("cancelScan");
+								if (enable)
+								{
+									pFlashPlayer->Invoke0("startScan");
+								}
+								else
+								{
+									pFlashPlayer->Invoke0("cancelScan");
+								}
 							}
 						}
 					}
@@ -241,6 +189,39 @@ void CScan::StopFire()
 			}
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+void CScan::StartFire()
+{
+	if (!m_pWeapon->IsBusy())
+	{
+		if(m_pWeapon->GetOwnerActor())
+		{
+			ShowFlashAnimation(true);
+
+			SAFE_HUD_FUNC(SetRadarScanningEffect(true));
+
+			m_scanning=true;
+			m_delayTimer=m_scanparams.delay;
+			m_durationTimer=m_scanparams.duration;
+			m_tagEntitiesDelay=m_scanparams.tagDelay;
+			m_pWeapon->SetBusy(true);
+		}
+
+		m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
+		m_pWeapon->RequestStartFire();
+		m_pWeapon->RequireUpdate(eIUS_FireMode);
+	}
+}
+
+//------------------------------------------------------------------------
+void CScan::StopFire()
+{
+	if (!m_scanning)
+		return;
+
+	ShowFlashAnimation(false);
 
 	SAFE_HUD_FUNC(SetRadarScanningEffect(false));
 
@@ -263,15 +244,49 @@ void CScan::NetStartFire()
 	if (!m_pWeapon->IsClient())
 		return;
 
-	m_scanLoopId=m_pWeapon->PlayAction(m_scanactions.scan);
-	ISound *pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
-	if (pSound)
-		pSound->SetLoopMode(true);
+	auto* pOwner = m_pWeapon->GetOwnerActor();
+	if (pOwner)
+	{
+		m_scanning = true;
+
+		IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor();
+		CGameRules* pGameRules = g_pGame->GetGameRules();
+		if (pClient && pClient->GetHealth() > 0 && pGameRules)
+		{
+			const bool hostile = pGameRules->IsHostile(pClient->GetEntityId(), pOwner->GetEntityId());
+			const Vec3 clientPos(pClient->GetEntity()->GetWorldPos());
+			const Vec3 pOwnerPos(pOwner->GetEntity()->GetWorldPos());
+
+			if (!hostile && clientPos.GetDistance(pOwnerPos) < 60)
+			{
+				//CryMP: Also show, when team mate is scanning near you
+
+				SAFE_HUD_FUNC(SetRadarScanningEffect(true));
+			}
+		}
+
+		if (pOwner->IsFpSpectatorTarget()) //CryMP: Fp spec support
+		{
+			ShowFlashAnimation(true);
+
+			m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			m_delayTimer = m_scanparams.delay;
+			m_pWeapon->RequireUpdate(eIUS_FireMode);
+		}
+		else
+		{
+			m_scanLoopId = m_pWeapon->PlayAction(m_scanactions.scan);
+		}
+		ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
+		if (pSound)
+			pSound->SetLoopMode(true);
+	}
 }
 
 //------------------------------------------------------------------------
-void CScan::NetStopFire()
-{
+void CScan::NetStopFire() 
+{	
 	if (!m_pWeapon->IsClient())
 		return;
 
@@ -279,6 +294,30 @@ void CScan::NetStopFire()
 	{
 		m_pWeapon->StopSound(m_scanLoopId);
 		m_scanLoopId = INVALID_SOUNDID;
+	}
+
+	m_scanning = false;
+
+	auto* pOwner = m_pWeapon->GetOwnerActor();
+	if (pOwner)
+	{
+		CActor* pClient = (CActor*)g_pGame->GetIGameFramework()->GetClientActor();
+		CGameRules* pGameRules = g_pGame->GetGameRules();
+		if (pClient && pGameRules)
+		{
+			const bool hostile = pGameRules->IsHostile(pClient->GetEntityId(), pOwner->GetEntityId());
+			if (!hostile && !IsClientScanning())
+			{	
+				SAFE_HUD_FUNC(SetRadarScanningEffect(false));
+			}
+		}
+
+		if (pOwner && pOwner->IsFpSpectatorTarget()) //CryMP: Fp spec support
+		{
+			ShowFlashAnimation(false);
+
+			m_pWeapon->PlayAction(m_scanactions.spin_down, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+		}
 	}
 }
 
@@ -320,6 +359,25 @@ void CScan::NetShoot(const Vec3 &hit, int ph)
 			}
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+bool CScan::IsClientScanning() const
+{
+	CPlayer* pClientActor = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetClientActor());
+	if (pClientActor)
+	{
+		CWeapon* pWeapon = pClientActor->GetCurrentWeapon(false);
+		if (pWeapon && pWeapon->GetEntity()->GetClass() == CItem::sRadarKitClass)
+		{
+			CScan* pScan = static_cast<CScan*>(pWeapon->GetActiveFireMode());
+			if (pScan && pScan->IsScanning())
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------

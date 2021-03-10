@@ -1365,6 +1365,9 @@ public:
 	static IEntityClass*    sScarGrenadeClass;
 
 	//CryMP
+	static IEntityClass*    sRadarKitClass;
+	static IEntityClass*    sRepairKitClass;
+	static IEntityClass*    sLockpickKitClass;
 	static IEntityClass*	sDoorClass;
 	static IEntityClass*	sFlagClass;
 	static IEntityClass*    sAsian_apc;

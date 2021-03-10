@@ -3041,10 +3041,11 @@ IItem* CActor::GetCurrentItem(bool includeVehicle/*=false*/) const
 //------------------------------------------------------------------------
 CWeapon* CActor::GetCurrentWeapon(bool includeVehicle/*=false*/) const
 {
-	if (const auto pItem = GetCurrentItem(includeVehicle))
+	if (IItem *pItem = GetCurrentItem(includeVehicle))
 	{
 		return static_cast<CWeapon*>(pItem->GetIWeapon());
 	}
+
 	return nullptr;
 }
 

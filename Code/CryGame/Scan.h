@@ -42,6 +42,8 @@ public:
 
 	virtual void Activate(bool activate);
 
+	void ShowFlashAnimation(bool enable);
+
 	virtual int GetAmmoCount() const { return 0; };
 	virtual int GetClipSize() const { return 0; };
 
@@ -92,6 +94,8 @@ public:
 
 	virtual void Enable(bool enable) { m_enabled = enable; };
 	virtual bool IsEnabled() const { return m_enabled; };
+	virtual bool IsScanning() const { return m_scanning; };
+	virtual bool IsClientScanning() const;
 
 	virtual Vec3 GetFiringPos(const Vec3 &probableHit) const { return ZERO;}
 	virtual Vec3 GetFiringDir(const Vec3 &probableHit, const Vec3& firingPos) const { return ZERO;}

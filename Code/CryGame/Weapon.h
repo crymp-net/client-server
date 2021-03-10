@@ -203,6 +203,7 @@ public:
 
 	virtual int GetNumOfFireModes() const { return m_firemodes.size(); }
 	virtual IFireMode* GetFireMode(int idx) const;
+	IFireMode* GetActiveFireMode() const { return m_fm;  }
 	virtual IFireMode* GetFireMode(const char* name) const;
 	virtual int GetFireModeIdx(const char* name) const;
 	virtual int GetCurrentFireMode() const;
@@ -215,7 +216,7 @@ public:
 
 	virtual IZoomMode *GetZoomMode(int idx) const;
 	virtual IZoomMode *GetZoomMode(const char *name) const;
-	virtual IZoomMode* GetActiveZoomMode() const { return m_zm; };
+	IZoomMode* GetActiveZoomMode() const { return m_zm; };
 	virtual int GetZoomModeIdx(const char *name) const;
 
 	virtual int GetCurrentZoomMode() const;
