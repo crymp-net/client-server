@@ -1288,8 +1288,8 @@ void CPlayerView::ViewExternalControlPostProcess(CPlayer& rPlayer, SViewParams& 
 
 void CPlayerView::ViewFirstPersonOnLadder(SViewParams& viewParams)
 {
-
-	viewParams.viewID = 3;
+	if (!m_in.isFirstPersonSpecTarget)
+		viewParams.viewID = 3;
 
 	viewParams.nearplane = 0.12f;
 	viewParams.position = m_in.entityWorldMatrix * (m_in.localEyePos + Vec3(0.02f, 0.0f, 0.05f));// * (m_in.localEyePos+Vec3(0.1f,0.0f,0.0f));
