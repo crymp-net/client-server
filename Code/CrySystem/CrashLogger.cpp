@@ -214,6 +214,8 @@ static std::vector<CallStackEntry> GetCallStack(const CONTEXT *pExceptionContext
 
 static LONG __stdcall CrashHandler(_EXCEPTION_POINTERS *pExceptionInfo)
 {
+	SetUnhandledExceptionFilter(NULL);
+
 	LogWrite("================================ CRASH DETECTED ================================");
 
 	LogWrite(CRYMP_CLIENT_EXE_DESCRIPTION);
