@@ -1707,7 +1707,7 @@ void CHUDRadar::RenderMapOverlay()
 	std::map<EntityId, bool> drawnVehicles;
 
 	//the current GameRules
-	CGameRules* pGameRules = (CGameRules*)(gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules());
+	CGameRules* pGameRules = g_pGame->GetGameRules();
 
 	//the local player
 	CActor* pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
@@ -3020,12 +3020,12 @@ bool CHUDRadar::CheckObjectMultiplayer(EntityId id)
 		}
 	}
 
-	// also, don't allow tagging of unoccupied vehicles
-	if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(id))
-	{
-		if (!pVehicle->IsPlayerDriving())
-			return false;
-	}
+// also, don't allow tagging of unoccupied vehicles
+if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(id))
+{
+	if (!pVehicle->IsPlayerDriving(false)) //CryMP: False was missing, now you can tag vehicles with drivers
+		return false;
+}
 
 	// don't tag dead players
 	if (CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(id)))
