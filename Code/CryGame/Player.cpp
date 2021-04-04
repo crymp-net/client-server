@@ -3681,7 +3681,16 @@ void CPlayer::RagDollize(bool fallAndPlay)
 		sp.gravity = sp.gravityFreefall = m_stats.gravity;
 		//sp.damping = 1.0f;
 		sp.dampingFreefall = 0.0f;
-		sp.mass = m_stats.mass * 2.0f;
+
+		const bool MP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedMP;
+		const bool SP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedSP;
+
+		if (gEnv->bMultiplayer && !MP_ragdolls || !gEnv->bMultiplayer && !SP_ragdolls)
+		{
+			//CryMP: Default code
+			sp.mass = m_stats.mass * 2.0f;	
+		} 
+		
 		if (sp.mass <= 0.0f)
 		{
 			GameWarning("Tried ragdollizing player with 0 mass.");
@@ -3708,12 +3717,22 @@ void CPlayer::RagDollize(bool fallAndPlay)
 			}
 		}
 
-		if (gEnv->bMultiplayer)
+		if (gEnv->bMultiplayer && !MP_ragdolls)
 		{
 			pe_params_part pp;
 			pp.flagsAND = ~(geom_colltype_player | geom_colltype_vehicle | geom_colltype6);
 			pp.flagsColliderAND = pp.flagsColliderOR = geom_colltype_debris;
 			pPhysEnt->SetParams(&pp);
+		}
+
+		if (gEnv->bMultiplayer && MP_ragdolls || !gEnv->bMultiplayer && SP_ragdolls)
+		{
+			//CryMP
+			//Enable reaction to explosions, bullets and vehicles;
+			pe_params_part colltype;
+			colltype.flagsOR = (geom_colltype_explosion | geom_colltype_foliage_proxy/*bullets*/ | geom_colltype_vehicle);
+
+			pPhysEnt->SetParams(&colltype);
 		}
 	}
 

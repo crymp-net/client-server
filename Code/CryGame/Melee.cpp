@@ -587,8 +587,14 @@ void CMelee::Impulse(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysi
 					SActorStats* pAS = pActor->GetActorStats();
 					if (pAS && pAS->isRagDoll)
 					{
-						//marcok: talk to me before touching this
-						impulseScale = 1.0f; //jan: melee impulses were scaled down, I made sure it still "barely moves"
+						const bool MP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedMP;
+						const bool SP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedSP;
+
+						if ((gEnv->bMultiplayer && !MP_ragdolls) || (!gEnv->bMultiplayer && !SP_ragdolls))
+						{
+							//marcok: talk to me before touching this
+							impulseScale = 1.0f; //jan: melee impulses were scaled down, I made sure it still "barely moves"
+						}
 					}
 				}
 

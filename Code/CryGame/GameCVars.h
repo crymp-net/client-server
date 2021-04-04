@@ -435,6 +435,8 @@ struct SCVars
 	//CRYMP
 	int			cl_crymp;
 	int			cl_circleJump;
+	int			g_ragdollUnrestrictedSP;
+	int			g_ragdollUnrestrictedMP;
 	int			cl_usePostProcessAimDir;
 	int			cl_messageCenterColor;
 	float		cl_animationWeaponMult;

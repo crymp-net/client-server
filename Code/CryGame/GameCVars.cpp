@@ -560,12 +560,15 @@ void SCVars::InitCVars(IConsole* pConsole)
 
 	NetInputChainInitCVars();
 
-	//CRYMP CVars
+	//CryMP CVars 
 	pConsole->Register("cl_crymp", &cl_crymp, 0);
-	pConsole->Register("cl_circleJump", &cl_circleJump, 0, VF_NOT_NET_SYNCED);
+	pConsole->Register("cl_circleJump", &cl_circleJump, 0);
+	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
+	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1);
+
+	//CryMP CVars (un-synced)
 	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("cl_messageCenterColor", &cl_messageCenterColor, 1, VF_NOT_NET_SYNCED);
-
 	pConsole->Register("cl_animationWeaponMult", &cl_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
 	pConsole->Register("cl_animationWeaponMultSpeed", &cl_animationWeaponMultSpeed, 3.0f, VF_NOT_NET_SYNCED);
 	pConsole->Register("cl_animationModelMult", &cl_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
