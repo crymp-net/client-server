@@ -1,24 +1,8 @@
-/*************************************************************************
-Crytek Source File.
-Copyright (C), Crytek Studios, 2001-2006.
--------------------------------------------------------------------------
-$Id$
-$DateTime$
-Description: 
+#pragma once
 
--------------------------------------------------------------------------
-History:
-- 5:7:2006   16:00 : Created by Márcio Martins
-
-*************************************************************************/
-#ifndef __CLIENTSYNCHEDSTORAGE_H__
-#define __CLIENTSYNCHEDSTORAGE_H__
-
-#if _MSC_VER > 1000
-# pragma once
-#endif
-
+#include "CryCommon/ISystem.h"  // required by NetHelpers.h
 #include "CryCommon/NetHelpers.h"
+
 #include "SynchedStorage.h"
 
 #define DECLARE_GLOBAL_MESSAGE(classname) \
@@ -46,46 +30,43 @@ class classname: public CSetChannelMsg \
 		EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq); \
 	}; \
 
-
 class CServerSynchedStorage;
-class CClientSynchedStorage:
-	public CNetMessageSinkHelper<CClientSynchedStorage, CSynchedStorage>
+
+class CClientSynchedStorage: public CNetMessageSinkHelper<CClientSynchedStorage, CSynchedStorage>
 {
+	CCryMutex m_mutex;
+
 public:
-	CClientSynchedStorage(IGameFramework *pGameFramework) { m_pGameFramework=pGameFramework; };
-	virtual ~CClientSynchedStorage() {};
+	CClientSynchedStorage(IGameFramework *pGameFramework)
+	{
+		m_pGameFramework = pGameFramework;
+	}
 
-	void GetMemoryStatistics( ICrySizer * );
-
-	// INetMessageSink
 	virtual void DefineProtocol(IProtocolBuilder *pBuilder);
-	// ~INetMessageSink
 
-	//------------------------------------------------------------------------
 	class CResetMsg: public INetMessage
 	{
 	public:
 		CResetMsg(int _channelId, CServerSynchedStorage *pStorage);
 		
-		int											channelId;
-		CServerSynchedStorage		*m_pStorage;
+		int channelId;
+		CServerSynchedStorage *m_pStorage;
 
 		EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
 		void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
 		size_t GetSize();
 	};
 
-	//------------------------------------------------------------------------
 	class CSetGlobalMsg: public INetMessage
 	{
 	public:
 		CSetGlobalMsg(const SNetMessageDef *pDef, int _channelId, CServerSynchedStorage *pStorage, TSynchedKey _key, TSynchedValue &_value);
 
-		int											channelId;
-		CServerSynchedStorage		*m_pStorage;
+		int channelId;
+		CServerSynchedStorage *m_pStorage;
 
-		TSynchedKey							key;
-		TSynchedValue						value;
+		TSynchedKey key;
+		TSynchedValue value;
 
 		virtual EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
 		virtual void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
@@ -98,17 +79,16 @@ public:
 	DECLARE_GLOBAL_MESSAGE(CSetGlobalEntityIdMsg);
 	DECLARE_GLOBAL_MESSAGE(CSetGlobalStringMsg);
 
-	//------------------------------------------------------------------------
 	class CSetChannelMsg: public INetMessage
 	{
 	public:
 		CSetChannelMsg(const SNetMessageDef *pDef, int _channelId, CServerSynchedStorage *pStorage, TSynchedKey _key, TSynchedValue &_value);
 
-		int											channelId;
-		CServerSynchedStorage		*m_pStorage;
+		int channelId;
+		CServerSynchedStorage *m_pStorage;
 
-		TSynchedKey							key;
-		TSynchedValue						value;
+		TSynchedKey key;
+		TSynchedValue value;
 
 		virtual EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
 		virtual void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
@@ -121,19 +101,17 @@ public:
 	DECLARE_CHANNEL_MESSAGE(CSetChannelEntityIdMsg);
 	DECLARE_CHANNEL_MESSAGE(CSetChannelStringMsg);
 
-
-	//------------------------------------------------------------------------
 	class CSetEntityMsg: public INetMessage
 	{
 	public:
 		CSetEntityMsg(const SNetMessageDef *pDef, int _channelId, CServerSynchedStorage *pStorage, EntityId id, TSynchedKey _key, TSynchedValue &_value);
 
-		int											channelId;
-		CServerSynchedStorage		*m_pStorage;
+		int channelId;
+		CServerSynchedStorage *m_pStorage;
 
-		EntityId								entityId;
-		TSynchedKey							key;
-		TSynchedValue						value;
+		EntityId entityId;
+		TSynchedKey key;
+		TSynchedValue value;
 
 		virtual EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
 		virtual void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
@@ -146,7 +124,6 @@ public:
 	DECLARE_ENTITY_MESSAGE(CSetEntityEntityIdMsg);
 	DECLARE_ENTITY_MESSAGE(CSetEntityStringMsg);
 
-	//------------------------------------------------------------------------
 	NET_DECLARE_IMMEDIATE_MESSAGE(ResetMsg);
 
 	NET_DECLARE_IMMEDIATE_MESSAGE(SetGlobalBoolMsg);
@@ -166,12 +143,7 @@ public:
 	NET_DECLARE_IMMEDIATE_MESSAGE(SetEntityIntMsg);
 	NET_DECLARE_IMMEDIATE_MESSAGE(SetEntityEntityIdMsg);
 	NET_DECLARE_IMMEDIATE_MESSAGE(SetEntityStringMsg);
-
-protected:
-	CCryMutex m_mutex;
 };
 
 #undef DECLARE_GLOBAL_MESSAGE
 #undef DECLARE_ENTITY_MESSAGE
-
-#endif //__CLIENTSYNCHEDSTORAGE_H__

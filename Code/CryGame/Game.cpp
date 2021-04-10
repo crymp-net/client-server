@@ -856,12 +856,6 @@ void CGame::GetMemoryStatistics(ICrySizer* s)
 
 	if (m_pHUD)
 		m_pHUD->GetMemoryStatistics(s);
-
-	if (m_pServerSynchedStorage)
-		m_pServerSynchedStorage->GetMemoryStatistics(s);
-
-	if (m_pClientSynchedStorage)
-		m_pClientSynchedStorage->GetMemoryStatistics(s);
 }
 
 void CGame::OnClearPlayerIds()
