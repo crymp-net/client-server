@@ -1607,9 +1607,12 @@ void CGameRules::SetTeam(int teamId, EntityId id)
 		CallScript(m_clientStateScript, "OnSetTeam", handle, teamId);
 	}
 
-	// if this is a spawn group, update it's validity
-	if (m_spawnGroups.find(id) != m_spawnGroups.end())
-		CheckSpawnGroupValidity(id);
+	if (gEnv->bServer) //CryMP: Fix Lua script errors if we're not server..
+	{
+		// if this is a spawn group, update it's validity
+		if (m_spawnGroups.find(id) != m_spawnGroups.end())
+			CheckSpawnGroupValidity(id);
+	}
 
 	GetGameObject()->InvokeRMIWithDependentObject(ClSetTeam(), SetTeamParams(id, teamId), eRMI_ToRemoteClients, id);
 
@@ -2408,7 +2411,10 @@ void CGameRules::RemoveSpawnGroup(EntityId groupId)
 		}
 	}
 
-	CheckSpawnGroupValidity(groupId);
+	if (gEnv->bServer) //CryMP: Fix Lua script errors if we're not server..
+	{
+		CheckSpawnGroupValidity(groupId);
+	}
 }
 
 //------------------------------------------------------------------------
