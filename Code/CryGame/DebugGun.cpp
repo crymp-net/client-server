@@ -19,6 +19,8 @@ History:
 #include "Actor.h"
 #include "Game.h"
 #include "GameCVars.h"
+#include "Player.h"
+#include "GameRules.h"
 
 #define HIT_RANGE (2000.0f)
 
@@ -78,7 +80,7 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 	IRenderAuxGeom* pAuxGeom = pRenderer->GetIRenderAuxGeom();
 	pAuxGeom->SetRenderFlags(e_Def3DPublicRenderflags);
 
-	pRenderer->Draw2dLabel(pRenderer->GetWidth() / 5.f, pRenderer->GetHeight() - 35, fontLarge, drawColor, false, "Firemode: %s (%.1f)", m_fireModes[m_fireMode].first.c_str(), m_fireModes[m_fireMode].second);
+//'	pRenderer->Draw2dLabel(pRenderer->GetWidth() / 5.f, pRenderer->GetHeight() - 35, fontLarge, drawColor, false, "Firemode: %s (%.1f)", m_fireModes[m_fireMode].first.c_str(), m_fireModes[m_fireMode].second);
 
 	ray_hit rayhit;
 	int hits = 0;
@@ -95,8 +97,6 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 	if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(cam.GetPosition() + cam.GetViewdir(), cam.GetViewdir() * HIT_RANGE, ent_all, flags, &rayhit, 1))
 	{
 		IMaterialManager* pMatMan = gEnv->p3DEngine->GetMaterialManager();
-		IActorSystem* pActorSystem = g_pGame->GetIGameFramework()->GetIActorSystem();
-		IVehicleSystem* pVehicleSystem = g_pGame->GetIGameFramework()->GetIVehicleSystem();
 
 		int x = (int)(pRenderer->GetWidth() * 0.5f) + dx;
 		int y = (int)(pRenderer->GetHeight() * 0.5f) + dx - dy;
@@ -108,16 +108,36 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 		pAuxGeom->DrawCone(end, rayhit.n, 0.1f, 0.2f, colNormal);
 
 		IEntity* pEntity = (IEntity*)rayhit.pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+
+		const EntityId entityId = pEntity ? pEntity->GetId() : (EntityId)0;
+
 		if (pEntity)
 		{
-			pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, pEntity->GetName());
-		}
+			pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, "%s", pEntity->GetName());
+			pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, "Class: %s", pEntity->GetClass()->GetName());
+			
+			pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, "EntityId: %u", entityId);
 
+			if (gEnv->bMultiplayer)
+			{
+				INetContext* pNetContext = g_pGame->GetIGameFramework()->GetNetContext();
+				if (pNetContext)
+				{
+					pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, "Network Bound: %s", pNetContext->IsBound(entityId) ? "YES" : "NO");
+				}
+				auto* pRules = g_pGame->GetGameRules();
+				if (pRules)
+				{
+					pRenderer->Draw2dLabel(x, y += dy, fontLarge, drawColor, false, "Team: %d", pRules->GetTeam(entityId));
+				}
+			}
+		}
 		// material
+
 		const char* matName = pMatMan->GetSurfaceType(rayhit.surface_idx)->GetName();
 
 		if (matName[0])
-			pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%s (%i)", matName, rayhit.surface_idx);
+			pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%s (id %i) iNode: %d CollType: %d", matName, rayhit.surface_idx, rayhit.iNode, rayhit.pCollider->GetType());
 
 		pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.1f m", rayhit.dist);
 
@@ -158,20 +178,30 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 			}
 
 			// class-specific stuff
-			if (IActor* pActor = pActorSystem->GetActor(pEntity->GetId()))
+			if (IActor* pActor = m_pActorSystem->GetActor(entityId))
 			{
 				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%i health", pActor->GetHealth());
 			}
-			else if (IVehicle* pVehicle = pVehicleSystem->GetVehicle(pEntity->GetId()))
+			else if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(entityId))
 			{
 				const SVehicleStatus& status = pVehicle->GetStatus();
+				const float dmgRatio = pVehicle->GetDamageRatio(true) * 100.0f;
+				const SVehicleDamageParams &params = pVehicle->GetDamageParams();
 
-				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.0f%% health", 100.f * status.health);
+				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.0f%% damage", dmgRatio);
 				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%i passengers", status.passengerCount);
 
 				if (pVehicle->GetMovement() && pVehicle->GetMovement()->IsPowered())
 				{
 					pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "Running");
+				}
+				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "collisionDamageThreshold %f - vehicleCollisionDestructionSpeed %f", params.collisionDamageThreshold, params.vehicleCollisionDestructionSpeed);
+
+				const EntityId ownerId = pVehicle->GetOwnerId();
+				IActor *pOwner = m_pActorSystem->GetActor(ownerId);
+				if (pOwner)
+				{
+					pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "Owner %s", pOwner->GetEntity()->GetName());
 				}
 			}
 			else

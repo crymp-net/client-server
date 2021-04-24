@@ -39,6 +39,8 @@
 
 IEntitySystem* CItem::m_pEntitySystem = 0;
 IItemSystem* CItem::m_pItemSystem = 0;
+IActorSystem* CItem::m_pActorSystem = 0;
+IVehicleSystem* CItem::m_pVehicleSystem = 0;
 IGameFramework* CItem::m_pGameFramework = 0;
 IGameplayRecorder* CItem::m_pGameplayRecorder = 0;
 
@@ -165,47 +167,51 @@ bool CItem::Init(IGameObject* pGameObject)
 		m_pGameFramework = gEnv->pGame->GetIGameFramework();
 		m_pGameplayRecorder = m_pGameFramework->GetIGameplayRecorder();
 		m_pItemSystem = m_pGameFramework->GetIItemSystem();
-		sOffHandClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("OffHand");
-		sFistsClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Fists");
-		sAlienCloak = gEnv->pEntitySystem->GetClassRegistry()->FindClass("AlienCloak");
-		sSOCOMClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("SOCOM");
-		sDetonatorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Detonator");
-		sC4Class = gEnv->pEntitySystem->GetClassRegistry()->FindClass("C4");
-		sClaymoreClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Claymore");
-		sAVMineClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("AVMine");
-		sBinocularsClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Binoculars");
-		sGaussRifleClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("GaussRifle");
-		sDebugGunClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("DebugGun");
-		sRefWeaponClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("RefWeapon");
-		sClaymoreExplosiveClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("claymoreexplosive");
-		sAVExplosiveClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("avexplosive");
-		sDSG1Class = gEnv->pEntitySystem->GetClassRegistry()->FindClass("DSG1");
-		sLAMFlashLight = gEnv->pEntitySystem->GetClassRegistry()->FindClass("LAMFlashLight");
-		sLAMRifleFlashLight = gEnv->pEntitySystem->GetClassRegistry()->FindClass("LAMRifleFlashLight");
-		sTACGunClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("TACGun");
-		sTACGunFleetClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("TACGun_Fleet");
-		sAlienMountClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("AlienMount");
-		sRocketLauncherClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("LAW");
+		m_pActorSystem = m_pGameFramework->GetIActorSystem();
+		m_pVehicleSystem = m_pGameFramework->GetIVehicleSystem();
 
-		sFlashbangGrenade = gEnv->pEntitySystem->GetClassRegistry()->FindClass("flashbang");
-		sEMPGrenade = gEnv->pEntitySystem->GetClassRegistry()->FindClass("empgrenade");
-		sSmokeGrenade = gEnv->pEntitySystem->GetClassRegistry()->FindClass("smokegrenade");
-		sExplosiveGrenade = gEnv->pEntitySystem->GetClassRegistry()->FindClass("explosivegrenade");
+		IEntityClassRegistry *pRegistry = gEnv->pEntitySystem->GetClassRegistry();
+		sOffHandClass = pRegistry->FindClass("OffHand");
+		sFistsClass = pRegistry->FindClass("Fists");
+		sAlienCloak = pRegistry->FindClass("AlienCloak");
+		sSOCOMClass = pRegistry->FindClass("SOCOM");
+		sDetonatorClass = pRegistry->FindClass("Detonator");
+		sC4Class = pRegistry->FindClass("C4");
+		sClaymoreClass = pRegistry->FindClass("Claymore");
+		sAVMineClass = pRegistry->FindClass("AVMine");
+		sBinocularsClass = pRegistry->FindClass("Binoculars");
+		sGaussRifleClass = pRegistry->FindClass("GaussRifle");
+		sDebugGunClass = pRegistry->FindClass("DebugGun");
+		sRefWeaponClass = pRegistry->FindClass("RefWeapon");
+		sClaymoreExplosiveClass = pRegistry->FindClass("claymoreexplosive");
+		sAVExplosiveClass = pRegistry->FindClass("avexplosive");
+		sDSG1Class = pRegistry->FindClass("DSG1");
+		sLAMFlashLight = pRegistry->FindClass("LAMFlashLight");
+		sLAMRifleFlashLight = pRegistry->FindClass("LAMRifleFlashLight");
+		sTACGunClass = pRegistry->FindClass("TACGun");
+		sTACGunFleetClass = pRegistry->FindClass("TACGun_Fleet");
+		sAlienMountClass = pRegistry->FindClass("AlienMount");
+		sRocketLauncherClass = pRegistry->FindClass("LAW");
 
-		sIncendiaryAmmo = gEnv->pEntitySystem->GetClassRegistry()->FindClass("incendiarybullet");
-		sScarGrenadeClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("scargrenade");
+		sFlashbangGrenade = pRegistry->FindClass("flashbang");
+		sEMPGrenade = pRegistry->FindClass("empgrenade");
+		sSmokeGrenade = pRegistry->FindClass("smokegrenade");
+		sExplosiveGrenade = pRegistry->FindClass("explosivegrenade");
 
-		sDoorClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Door");
-		sRadarKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("RadarKit");
-		sRepairKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("RepairKit");
-		sLockpickKitClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("LockpickKit");
-		sFlagClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Flag");
-		sAsian_apc = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_apc");
-		sAsian_tank = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_tank");
-		sAsian_aaa = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Asian_aaa");
-		sUS_apc = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_apc");
-		sUS_tank = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_tank");
-		sUS_trolley = gEnv->pEntitySystem->GetClassRegistry()->FindClass("US_trolley");
+		sIncendiaryAmmo = pRegistry->FindClass("incendiarybullet");
+		sScarGrenadeClass = pRegistry->FindClass("scargrenade");
+
+		sDoorClass = pRegistry->FindClass("Door");
+		sRadarKitClass = pRegistry->FindClass("RadarKit");
+		sRepairKitClass = pRegistry->FindClass("RepairKit");
+		sLockpickKitClass = pRegistry->FindClass("LockpickKit");
+		sFlagClass = pRegistry->FindClass("Flag");
+		sAsian_apc = pRegistry->FindClass("Asian_apc");
+		sAsian_tank = pRegistry->FindClass("Asian_tank");
+		sAsian_aaa = pRegistry->FindClass("Asian_aaa");
+		sUS_apc = pRegistry->FindClass("US_apc");
+		sUS_tank = pRegistry->FindClass("US_tank");
+		sUS_trolley = pRegistry->FindClass("US_trolley");
 	}
 
 	if (!GetGameObject()->CaptureProfileManager(this))
@@ -548,16 +554,14 @@ void CItem::ProcessEvent(SEntityEvent& event)
 					gEnv->pConsole->GetCVar("i_noweaponlimit")->Set(iValue);
 					gEnv->pConsole->GetCVar("i_noweaponlimit")->SetFlags(iFlags | ~VF_NOT_NET_SYNCED);
 
-					IItemSystem* pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
-
 					if (m_editorstats.current && pInventory && pInventory->GetCurrentItem() == GetEntityId())
 					{
 						//if (pInventory)
 						pInventory->SetCurrentItem(0);
-						pItemSystem->SetActorItem(GetActor(m_editorstats.ownerId), GetEntityId(), false);
+						m_pItemSystem->SetActorItem(GetActor(m_editorstats.ownerId), GetEntityId(), false);
 					}
 					else if (pInventory && pInventory->GetCurrentItem() == GetEntityId())
-						pItemSystem->SetActorItem(GetActor(m_editorstats.ownerId), (EntityId)0, false);
+						m_pItemSystem->SetActorItem(GetActor(m_editorstats.ownerId), (EntityId)0, false);
 
 				}
 				else
@@ -669,7 +673,7 @@ void CItem::FullSerialize(TSerialize ser)
 	{
 		if (m_ownerId)
 		{
-			IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_ownerId);
+			IActor* pActor = m_pActorSystem->GetActor(m_ownerId);
 			CPlayer* pPlayer = static_cast<CPlayer*> (pActor);
 			if (pPlayer)
 			{
@@ -866,7 +870,7 @@ void CItem::PostSerialize()
 
 	if (m_postSerializeMountedOwner)
 	{
-		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_postSerializeMountedOwner);
+		IActor* pActor = m_pActorSystem->GetActor(m_postSerializeMountedOwner);
 		CPlayer* pPlayer = static_cast<CPlayer*> (pActor);
 		if (pPlayer && m_params.usable)
 		{
@@ -1508,7 +1512,7 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
 			EntityId accessoryId = pInventory->GetItemByClass(pClass);
 			if (!accessoryId)
-				g_pGame->GetIGameFramework()->GetIItemSystem()->GiveItem(pActor, name, false, false, true);
+				m_pItemSystem->GiveItem(pActor, name, false, false, true);
 			else if (CItem* pAccessory = static_cast<CItem*>(m_pItemSystem->GetItem(it->second)))
 				pAccessory->OnPickedUp(pickerId, true);
 
@@ -1520,7 +1524,7 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
 			EntityId accessoryId = pInventory->GetItemByClass(pClass);
 			if (!accessoryId)
-				g_pGame->GetIGameFramework()->GetIItemSystem()->GiveItem(pActor, name, false, false, true);
+				m_pItemSystem->GiveItem(pActor, name, false, false, true);
 		}
 	}
 
@@ -2006,13 +2010,13 @@ CActor* CItem::GetOwnerActor() const
 {
 	if (!m_pGameFramework)
 		return NULL;
-	return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActor(m_ownerId));
+	return static_cast<CActor*>(m_pActorSystem->GetActor(m_ownerId));
 }
 
 //------------------------------------------------------------------------
 CActor* CItem::GetActor(EntityId actorId) const
 {
-	return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActor(actorId));
+	return static_cast<CActor*>(m_pActorSystem->GetActor(actorId));
 }
 
 //------------------------------------------------------------------------
@@ -2061,7 +2065,7 @@ EntityId CItem::GetActorItemId(IActor* pActor) const
 //------------------------------------------------------------------------
 CActor* CItem::GetActorByNetChannel(INetChannel* pNetChannel) const
 {
-	return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActorByChannelId(m_pGameFramework->GetGameChannelId(pNetChannel)));
+	return static_cast<CActor*>(m_pActorSystem->GetActorByChannelId(m_pGameFramework->GetGameChannelId(pNetChannel)));
 }
 
 //------------------------------------------------------------------------
@@ -2784,7 +2788,7 @@ void CItem::SetMaterialRecursive(ICharacterInstance* charInst, bool undo, IMater
 
 void CItem::TakeAccessories(EntityId receiver)
 {
-	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(receiver);
+	IActor* pActor = m_pActorSystem->GetActor(receiver);
 	IInventory* pInventory = GetActorInventory(pActor);
 
 	if (pInventory)
@@ -2794,7 +2798,7 @@ void CItem::TakeAccessories(EntityId receiver)
 			const EntityId id = it->second;
 			const char* name = it->first;
 			if (!pInventory->GetCountOfClass(name))
-				g_pGame->GetIGameFramework()->GetIItemSystem()->GiveItem(pActor, name, false, false, false);
+				m_pItemSystem->GiveItem(pActor, name, false, false, false);
 		}
 	}
 }
@@ -2857,7 +2861,7 @@ bool CItem::CheckAmmoRestrictions(EntityId pickerId)
 	if (gEnv->pSystem->IsEditor())
 		return true;
 
-	IActor* pPicker = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pickerId);
+	IActor* pPicker = m_pActorSystem->GetActor(pickerId);
 	if (pPicker)
 	{
 
