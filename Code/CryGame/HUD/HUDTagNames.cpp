@@ -66,14 +66,13 @@ const char* CHUDTagNames::GetPlayerRank(EntityId playerId)
 	if (!pPlayer)
 		return nullptr;
 
-	int currentRank = 0;
-
 	const int lastRank = pPlayer->GetLastRank();
 	const char* lastRankName = pPlayer->GetLastRankName();
-	const char* szRank = nullptr;
 
 	const TSynchedKey RANK_KEY(202);
+	int currentRank = 1;
 	pGameRules->GetSynchedEntityValue(playerId, RANK_KEY, currentRank);
+	currentRank = MAX(currentRank, 1);
 
 	if (currentRank != lastRank || !lastRankName || !strlen(lastRankName))
 	{

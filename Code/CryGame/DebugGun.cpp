@@ -70,6 +70,10 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 	if (!IsSelected() || !IsClient())
 		return;
 
+	CActor *pOwner = GetOwnerActor();
+	if (!pOwner || !pOwner->IsClient()) //Do not update for other clients
+		return; 
+
 	static float drawColor[4] = { 1,1,1,1 };
 	static const int dx = 5;
 	static const int dy = 15;
@@ -80,7 +84,7 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 	IRenderAuxGeom* pAuxGeom = pRenderer->GetIRenderAuxGeom();
 	pAuxGeom->SetRenderFlags(e_Def3DPublicRenderflags);
 
-//'	pRenderer->Draw2dLabel(pRenderer->GetWidth() / 5.f, pRenderer->GetHeight() - 35, fontLarge, drawColor, false, "Firemode: %s (%.1f)", m_fireModes[m_fireMode].first.c_str(), m_fireModes[m_fireMode].second);
+	//pRenderer->Draw2dLabel(pRenderer->GetWidth() / 5.f, pRenderer->GetHeight() - 35, fontLarge, drawColor, false, "Firemode: %s (%.1f)", m_fireModes[m_fireMode].first.c_str(), m_fireModes[m_fireMode].second);
 
 	ray_hit rayhit;
 	int hits = 0;

@@ -612,7 +612,7 @@ void CNanoSuit::Balance(float energy)
 
 void CNanoSuit::SetSuitEnergy(float value, bool playerInitiated /* = false */)
 {
-	if (m_pOwner && !m_pOwner->IsClient())
+	if (!m_pOwner)
 		return;
 
 	value = clamp(value, 0.0f, NANOSUIT_ENERGY);
