@@ -189,10 +189,10 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 			else if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(entityId))
 			{
 				const SVehicleStatus& status = pVehicle->GetStatus();
-				const float dmgRatio = pVehicle->GetDamageRatio(true) * 100.0f;
+				float dmgRatio = 0.0f;
+				const int componentCount(pVehicle->GetComponentCount());
 				const SVehicleDamageParams &params = pVehicle->GetDamageParams();
 
-				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.0f%% damage", dmgRatio);
 				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%i passengers", status.passengerCount);
 
 				if (pVehicle->GetMovement() && pVehicle->GetMovement()->IsPowered())
@@ -201,6 +201,12 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 				}
 				pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "collisionDamageThreshold %f - vehicleCollisionDestructionSpeed %f", params.collisionDamageThreshold, params.vehicleCollisionDestructionSpeed);
 
+				IVehicleComponent *pComponent = pVehicle->GetComponent(rayhit.ipart);
+				if (pComponent)
+				{
+					pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "Component: %s (Damage ratio: %f)", pComponent->GetComponentName(), pComponent->GetDamageRatio());
+					//pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "Component count: %d", counter);
+				}
 				const EntityId ownerId = pVehicle->GetOwnerId();
 				IActor *pOwner = m_pActorSystem->GetActor(ownerId);
 				if (pOwner)
