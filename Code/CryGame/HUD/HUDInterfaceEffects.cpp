@@ -1168,6 +1168,9 @@ void CHUD::UpdateVoiceChat()
 
 void CHUD::UpdateCrosshairVisibility()
 {
+	if (!m_pHUDCrosshair)
+		return;
+	
 	// marcok: don't touch this, please
 	if (g_pGameCVars->goc_enable)
 	{
@@ -1215,7 +1218,7 @@ void CHUD::UpdateCrosshair(IItem *pItem)
 
 void CHUD::OnToggleThirdPerson(IActor *pActor,bool bThirdPerson)
 {
-	if (!pActor->IsClient())
+	if (!pActor || !pActor->IsClient())
 		return;
 
 	m_bThirdPerson = bThirdPerson;
@@ -1223,7 +1226,11 @@ void CHUD::OnToggleThirdPerson(IActor *pActor,bool bThirdPerson)
 	if(m_pHUDVehicleInterface && m_pHUDVehicleInterface->GetHUDType()!=CHUDVehicleInterface::EHUD_NONE)
 		m_pHUDVehicleInterface->UpdateVehicleHUDDisplay();
 
-	m_pHUDScopes->OnToggleThirdPerson(bThirdPerson);
+	//CryMP crash fix
+	if (m_pHUDScopes)
+	{
+		m_pHUDScopes->OnToggleThirdPerson(bThirdPerson);
+	}
 
 	UpdateCrosshairVisibility();
 }
