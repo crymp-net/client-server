@@ -3353,7 +3353,8 @@ void CGameRules::CreateScriptExplosionInfo(SmartScriptTable& scriptExplosionInfo
 
 void CGameRules::ShowScores(bool show)
 {
-	CallScript(m_script, "ShowScores", show);
+	//CryMP moved to C++
+	//CallScript(m_script, "ShowScores", show);
 }
 
 //------------------------------------------------------------------------

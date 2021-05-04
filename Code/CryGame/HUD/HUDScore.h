@@ -65,7 +65,15 @@ public:
 		void Update(IScriptTable* pGameRulesScript, IActor* pActor, CGameFlashAnimation* pFlashBoard = 0);
 	};
 
-	CHUDScore();
+	CHUDScore(CHUD* pHUD)
+	{
+		m_pHUD = pHUD;
+		m_bShow = false;
+		m_lastUpdate = 0.0f;
+		m_lastShowSwitch = 0;
+		m_pFlashBoard = NULL;
+		m_currentClientTeam = -1;
+	}
 
 	~CHUDScore()
 	{
@@ -93,7 +101,8 @@ public:
 	}
 private:
 
-	int				m_lastUpdate;
+	CHUD* m_pHUD;
+	float			m_lastUpdate;
 	int				m_currentClientTeam;
 	bool			m_bShow;
 	float			m_lastShowSwitch;

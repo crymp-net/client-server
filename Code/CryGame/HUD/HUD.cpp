@@ -443,7 +443,7 @@ bool CHUD::Init(IActor* pActor)
 	if (gEnv->bMultiplayer)
 	{
 		m_pHUDTextChat = new CHUDTextChat;
-		m_pHUDScore = new CHUDScore;
+		m_pHUDScore = new CHUDScore(this);
 		m_hudObjectsList.push_back(m_pHUDTextChat);
 		m_hudObjectsList.push_back(m_pHUDScore);
 	}
