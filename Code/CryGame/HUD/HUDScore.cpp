@@ -197,37 +197,33 @@ void CHUDScore::Render()
 
 	m_scoreBoard.clear();
 
-	IEntityItPtr pIt = gEnv->pEntitySystem->GetEntityIterator();
-	while (!pIt->IsEnd())
+	IActorIteratorPtr actorIt = g_pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
+	while (IActor* pActor = actorIt->Next())
 	{
-		if (IEntity* pEnt = pIt->Next())
-		{
-			const EntityId playerId = pEnt->GetId();
-			if (IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId))
-			{
-				const int KEY_KILL = 100;
-				const int KEY_DEATH = 101;
-				const int KEY_PING = 103;
+		const EntityId playerId = pActor->GetEntityId();
+		const int KEY_KILL = 100;
+		const int KEY_DEATH = 101;
+		const int KEY_PING = 103;
 
-				int kills = 0;
-				pGameRules->GetSynchedEntityValue(playerId, KEY_KILL, kills);
-				int deaths = 0;
-				pGameRules->GetSynchedEntityValue(playerId, KEY_DEATH, deaths);
-				int ping = 0;
-				pGameRules->GetSynchedEntityValue(playerId, KEY_PING, ping);
-				m_scoreBoard.push_back(ScoreEntry(playerId, kills, deaths, ping));
-			}
-		}
+		int kills = 0;
+		pGameRules->GetSynchedEntityValue(playerId, KEY_KILL, kills);
+		int deaths = 0;
+		pGameRules->GetSynchedEntityValue(playerId, KEY_DEATH, deaths);
+		int ping = 0;
+		pGameRules->GetSynchedEntityValue(playerId, KEY_PING, ping);
+		m_scoreBoard.push_back(ScoreEntry(playerId, kills, deaths, ping));
 	}
 
-	for (int i = 0; i < m_scoreBoard.size(); ++i)
-		m_scoreBoard[i].UpdateLiveStats();
+	for (auto& m : m_scoreBoard)
+	{
+		m.UpdateLiveStats();
+	}
+
 	std::sort(m_scoreBoard.begin(), m_scoreBoard.end());
 
 	//clear the teams stats in flash
 	//m_pFlashBoard->Invoke("clearTable");
 
-	std::vector<ScoreEntry>::iterator it;
 	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
 	if (!pClientActor)
 		return;
@@ -276,6 +272,7 @@ void CHUDScore::Render()
 	}
 
 	m_pFlashBoard->Invoke("clearEntries");
+
 	std::vector<EntityId>::const_iterator start;
 	std::vector<EntityId>::const_iterator end;
 	std::vector<EntityId>* alreadySelected = NULL;
@@ -286,12 +283,9 @@ void CHUDScore::Render()
 		end = alreadySelected->end();
 	}
 
-	for (it = m_scoreBoard.begin(); it != m_scoreBoard.end(); ++it)
+	for (const auto& player : m_scoreBoard)
 	{
-		ScoreEntry player = *it;
-
 		IEntity* pPlayer = gEnv->pEntitySystem->GetEntity(player.m_entityId);
-		//assert(pPlayer);
 		if (!pPlayer)
 			continue;
 
@@ -346,7 +340,6 @@ void CHUDScore::Render()
 		if (!notTeamed)
 		{
 			int playerPP = 0;
-
 			pGameRules->GetSynchedEntityValue(player.m_entityId, PP_AMOUNT_KEY, playerPP);
 			pp = SFlashVarValue(playerPP);
 		}
