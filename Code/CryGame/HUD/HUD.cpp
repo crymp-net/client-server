@@ -429,7 +429,7 @@ bool CHUD::Init(IActor* pActor)
 	IScriptSystem* pScriptSystem = gEnv->pScriptSystem;
 
 	m_pHUDScopes = new CHUDScopes(this);
-	m_pHUDRadar = new CHUDRadar;
+	m_pHUDRadar = new CHUDRadar(this);
 	m_pHUDObituary = new CHUDObituary;
 	m_pHUDTextArea = new CHUDTextArea;
 	m_pHUDTextArea->SetFadeTime(2.0f);

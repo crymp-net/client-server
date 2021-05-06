@@ -99,7 +99,7 @@ public:
 
 	void AddTaggedEntity(EntityId iEntityId);
 
-						CHUDRadar();
+	CHUDRadar(CHUD *pHUD);
 	virtual	~	CHUDRadar();
 
 	//Update Loop is private
@@ -251,8 +251,11 @@ private:
 	//this is a 2d line intersection test (AB - PM)
 	bool RadarBounds_IntersectsLineFromOutside(const Vec2 &A, const Vec2 &B, const Vec2 &P, const Vec2 &M, Vec2 &resultingIntersection);
 
-	IActorSystem		*m_pActorSystem;
-	IVehicleSystem	*m_pVehicleSystem;
+	IActorSystem *m_pActorSystem;
+	IVehicleSystem *m_pVehicleSystem;
+	CHUD *m_pHUD = nullptr;
+	CGameRules* m_pGameRules = nullptr;
+	IActor* m_pClientActor = nullptr;
 
 	//helpers for Radar scanning
 	EntityId	m_lookAtObjectID;
