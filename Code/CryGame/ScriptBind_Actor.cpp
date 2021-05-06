@@ -149,6 +149,11 @@ CScriptBind_Actor::CScriptBind_Actor(ISystem* pSystem)
 
 	SCRIPT_REG_TEMPLFUNC(SetSearchBeam, "dir");
 
+	
+	//CryMP:
+	SCRIPT_REG_TEMPLFUNC(EnableThirdPerson, "");
+	SCRIPT_REG_TEMPLFUNC(SetSpectatorTarget, "");
+
 	m_pSS->SetGlobalValue("STANCE_PRONE", STANCE_PRONE);
 	m_pSS->SetGlobalValue("STANCE_CROUCH", STANCE_CROUCH);
 	m_pSS->SetGlobalValue("STANCE_STAND", STANCE_STAND);
@@ -1435,7 +1440,8 @@ int CScriptBind_Actor::RenderScore(IFunctionHandler* pH, ScriptHandle player, in
 	if (!pActor)
 		return pH->EndFunction();
 
-	SAFE_HUD_FUNC(AddToScoreBoard((EntityId)player.n, kills, deaths, ping));
+	//CryMP: moved to C++
+	//SAFE_HUD_FUNC(AddToScoreBoard((EntityId)player.n, kills, deaths, ping));
 
 	return pH->EndFunction();
 }
@@ -1761,6 +1767,35 @@ int CScriptBind_Actor::IsFlying(IFunctionHandler* pH)
 		if (pPhysEnt->GetStatus(&livStat))
 			return pH->EndFunction(livStat.bFlying != 0);
 	}
+
+	return pH->EndFunction();
+}
+
+//CryMP:
+int CScriptBind_Actor::EnableThirdPerson(IFunctionHandler* pH, bool enable)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction();
+
+	if (pActor->GetActorClass() != CPlayer::GetActorClassType())
+		return pH->EndFunction();
+
+	((CPlayer*)pActor)->EnableThirdPerson(enable);
+
+	return pH->EndFunction();
+}
+
+int CScriptBind_Actor::SetSpectatorTarget(IFunctionHandler* pH, ScriptHandle targetId)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction();
+
+	if (pActor->GetActorClass() != CPlayer::GetActorClassType())
+		return pH->EndFunction();
+
+	((CPlayer*)pActor)->SetSpectatorTarget(targetId.n);
 
 	return pH->EndFunction();
 }

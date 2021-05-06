@@ -1926,11 +1926,10 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 	}
 	else
 	{
-		if (IsThirdPerson() && !g_pGameCVars->goc_enable)
-			ToggleThirdPerson();
+		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+		const bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
 
-		if (g_pGameCVars->goc_enable && !IsThirdPerson())
-			ToggleThirdPerson();
+		EnableThirdPerson(shouldStayInTp);
 
 		CALL_PLAYER_EVENT_LISTENERS(OnExitVehicle(this));
 		m_vehicleViewDir.Set(0, 1, 0);
@@ -3354,6 +3353,14 @@ void CPlayer::ToggleThirdPerson()
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 }
 
+//-----------------------------------------------------------------------------
+void CPlayer::EnableThirdPerson(bool enable)
+{
+	m_stats.isThirdPerson = enable;
+
+	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
+}
+
 int CPlayer::IsGod()
 {
 	if (!m_pGameFramework->CanCheat())
@@ -3427,9 +3434,6 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 	m_viewAnglesOffset.Set(0, 0, 0);
 
-	if (IsClient() && IsThirdPerson())
-		ToggleThirdPerson();
-
 	if (IsClient())
 	{
 		//CryMP if spectatorTarget still exists..
@@ -3458,9 +3462,17 @@ void CPlayer::Revive(ReasonForRevive reason)
 	if (fpSpectatorTarget)
 		SetFpSpectatorTarget(true);
 
-	//Check if Client has respawned, remove old FP target if necessary
 	if (IsClient())
+	{
+		//Check if Client has respawned, remove old FP target if necessary
 		UpdateFpSpectator(spectatorId, 0);
+
+		//Restore Third person mode settings
+		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+		const bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+
+		EnableThirdPerson(shouldStayInTp);
+	}
 
 	m_headAngles.Set(0, 0, 0);
 	// default to standing, to prevent the 'spawning in the floor' feeling
@@ -5418,17 +5430,13 @@ void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
 		CPlayer* pNewTarget = static_cast<CPlayer*>(m_pGameFramework->GetIActorSystem()->GetActor(newTargetId));
 		if (pNewTarget)
 		{
-			auto *pPlayerInput = m_pPlayerInput.get();
-			if (pPlayerInput)
+			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+			const bool keepFpSpec = pPlayerInput ? pPlayerInput->ShouldKeepFpSpectator() : false;
+			if (keepFpSpec)
 			{
-				if (static_cast<CPlayerInput*>(pPlayerInput)->ShouldKeepFpSpectator())
-				{
-					pNewTarget->SetFpSpectatorTarget(true);
-					foundNew = true;
-				}
+				pNewTarget->SetFpSpectatorTarget(true);
+				foundNew = true;
 			}
-			else
-				CryLogErrorAlways("%s has no playerinput", GetEntity()->GetName());
 		}
 	}
 

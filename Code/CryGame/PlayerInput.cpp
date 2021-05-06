@@ -38,7 +38,6 @@ CPlayerInput::CPlayerInput(CPlayer* pPlayer) :
 	m_moveButtonState(0),
 	m_bUseXIInput(false),
 	m_checkZoom(false),
-	m_KeepFPSpectatorMode(false),
 	m_lastPos(0, 0, 0),
 	m_lookDir(0, 0, 0),
 	m_iSuitModeActionPressed(0),
@@ -1547,10 +1546,15 @@ bool CPlayerInput::OnActionSuitCloak(EntityId entityId, const ActionId& actionId
 
 bool CPlayerInput::OnActionThirdPerson(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	if (!m_pPlayer->m_stats.spectatorMode)
+	if (!m_pPlayer->m_stats.spectatorMode && m_pPlayer->GetPhysicsProfile() != eAP_Ragdoll)
 	{
 		if (!m_pPlayer->GetLinkedVehicle())
+		{
 			m_pPlayer->ToggleThirdPerson();
+
+			//CryMP: Save Third person mode settings here
+			m_KeepThirdPersonMode = m_pPlayer->IsThirdPerson();
+		}
 	}
 	return false;
 }

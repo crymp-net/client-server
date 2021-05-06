@@ -145,6 +145,9 @@ public:
 
 	virtual int SetSearchBeam(IFunctionHandler* pH, Vec3 dir);
 
+	virtual int EnableThirdPerson(IFunctionHandler* pH, bool enable);
+	virtual int SetSpectatorTarget(IFunctionHandler* pH, ScriptHandle targetId);
+
 	//misc
 	//virtual int MeleeEffect(IFunctionHandler *pH);
 

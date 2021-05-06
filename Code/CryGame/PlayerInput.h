@@ -67,6 +67,7 @@ public:
 	void SerializeSaveGame( TSerialize ser );
 
 	bool ShouldKeepFpSpectator() { return m_KeepFPSpectatorMode; }
+	bool ShouldKeepThirdPerson() { return m_KeepThirdPersonMode; }
 
 private:
 
@@ -146,7 +147,8 @@ private:
 	int	m_iSuitModeActionPressed;
 	int m_iCarryingObject;
 	int m_lastSerializeFrameID;
-	bool m_KeepFPSpectatorMode;
+	bool m_KeepFPSpectatorMode = false;
+	bool m_KeepThirdPersonMode = false;
 
 	bool m_doubleJumped;
 

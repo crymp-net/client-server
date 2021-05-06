@@ -544,6 +544,7 @@ public:
 	virtual float GetStanceNormalSpeed(EStance stance) const;
 
 	virtual void ToggleThirdPerson();
+	void EnableThirdPerson(bool enable);
 
 	virtual int  IsGod();
 
