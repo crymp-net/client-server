@@ -1132,6 +1132,9 @@ public:
 	virtual bool IsFpSpectator() const { return false; }
 	virtual bool IsFpSpectatorTarget() const { return false; }
 
+	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
+	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
+
 protected:
 
 	virtual void SetMaterialRecursive(ICharacterInstance* charInst, bool undo, IMaterial* newMat = 0);
@@ -1248,6 +1251,8 @@ protected:
 	int				m_teamId;
 	EntityId	m_lastItemId;
 
+	EntityId m_HoldingObjectId = (EntityId)0;
+
 public:
 	// Can occur only when we're not zooming out
 	int m_autoZoomInID;
@@ -1257,6 +1262,12 @@ public:
 	int m_saturationID;
 
 	int m_hitReactionID;
+
+	uint8 GetPhysicsProfile() const 
+	{
+		return m_currentPhysProfile;
+	} 
+
 };
 
 #endif //__Actor_H__
