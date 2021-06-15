@@ -201,6 +201,10 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 
 			return 0;
 		}
+		case WM_MOUSEACTIVATE:
+		{
+			return MA_ACTIVATEANDEAT;
+		}
 	}
 
 	return DefWindowProcA(window, msg, wParam, lParam);
