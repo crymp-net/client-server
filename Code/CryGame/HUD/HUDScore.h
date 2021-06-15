@@ -109,6 +109,7 @@ private:
 	string		m_currentServer;
 	string    m_currentServerIp;	
 	CGameFlashAnimation *m_pFlashBoard;
+	SRankStats m_rankStats;
 
 	void Render();
 };

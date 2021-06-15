@@ -260,15 +260,13 @@ void CHUDScore::Render()
 		}
 
 		//get the player rank, next rank, CP etc. from gamerules script
-		SRankStats rankStats;
-
 		//CryMP: This is still using lua, but needs only few updates, once a second should be enough..
 		if (gEnv->pTimer->GetCurrTime() - m_lastUpdate > 1.0f)
 		{
-			rankStats.Update(pGameRulesScript, pClientActor, m_pFlashBoard);
+			m_rankStats.Update(pGameRulesScript, pClientActor, m_pFlashBoard);
 			m_lastUpdate = gEnv->pTimer->GetCurrTime();
 		}
-		drawTeamScores = (rankStats.currentRank != 0); // if we got here it means we don't want to show the number of kills
+		drawTeamScores = (m_rankStats.currentRank != 0); // if we got here it means we don't want to show the number of kills
 	}
 
 	m_pFlashBoard->Invoke("clearEntries");
