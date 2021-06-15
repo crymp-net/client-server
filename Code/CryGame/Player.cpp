@@ -240,7 +240,8 @@ CPlayer::~CPlayer()
 		g_pGame->DestroyHUD(); //CryMP
 	}
 
-	m_pPlayerInput.reset();
+	m_pPlayerInput = nullptr;
+
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (pCharacter)
 		pCharacter->GetISkeletonPose()->SetPostProcessCallback0(0, 0);
@@ -424,7 +425,7 @@ void CPlayer::ProcessEvent(SEntityEvent& event)
 		}
 		else if (event.event == ENTITY_EVENT_PREPHYSICSUPDATE)
 		{
-			if (m_pPlayerInput.get())
+			if (m_pPlayerInput)
 				m_pPlayerInput->PreUpdate();
 
 			IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
@@ -955,8 +956,10 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	if (client)
 		GetGameObject()->AttachDistanceChecker();
 
-	if (m_pPlayerInput.get())
+	if (m_pPlayerInput)
+	{
 		m_pPlayerInput->Update();
+	}
 	else
 	{
 		// init input systems if required
@@ -965,17 +968,17 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 			if (IsClient()) //|| ((demoMode == 2) && this == gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetOriginalDemoSpectator()))
 			{
 				if (GetISystem()->IsDedicated())
-					m_pPlayerInput.reset(new CDedicatedInput(this));
+					m_pPlayerInput = std::make_unique<CDedicatedInput>(this);
 				else
-					m_pPlayerInput.reset(new CPlayerInput(this));
+					m_pPlayerInput = std::make_unique<CPlayerInput>(this);
 			}
 			else
-				m_pPlayerInput.reset(new CNetPlayerInput(this));
+				m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
 		}
 		else if (IsDemoPlayback())
-			m_pPlayerInput.reset(new CNetPlayerInput(this));
+			m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
 
-		if (m_pPlayerInput.get())
+		if (m_pPlayerInput)
 			GetGameObject()->EnablePostUpdates(this);
 	}
 
@@ -2017,7 +2020,7 @@ void CPlayer::SufferingHighLatency(bool highLatency)
 	// the following is done each frame on the server, and once on the client, when we're suffering high latency
 	if (highLatency)
 	{
-		if (m_pPlayerInput.get())
+		if (m_pPlayerInput)
 			m_pPlayerInput->Reset();
 
 		if (IVehicle* pVehicle = GetLinkedVehicle())
@@ -3517,7 +3520,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | (ENTITY_FLAG_CASTSHADOW));
 	GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) | ENTITY_SLOT_RENDER);
 
-	if (m_pPlayerInput.get())
+	if (m_pPlayerInput)
 		m_pPlayerInput->Reset();
 
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
@@ -3815,7 +3818,7 @@ void CPlayer::UpdateAnimGraph(IAnimationGraphState* pState)
 void CPlayer::PostUpdate(float frameTime)
 {
 	CActor::PostUpdate(frameTime);
-	if (m_pPlayerInput.get())
+	if (m_pPlayerInput)
 		m_pPlayerInput->PostUpdate();
 }
 
@@ -4422,7 +4425,7 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 	if (aspect == IPlayerInput::INPUT_ASPECT)
 	{
 		SSerializedPlayerInput serializedInput;
-		if (m_pPlayerInput.get() && ser.IsWriting())
+		if (m_pPlayerInput && ser.IsWriting())
 			m_pPlayerInput->GetState(serializedInput);
 
 		//CryMP: improved serialization accuracy for clients with CryMP mod
@@ -4432,7 +4435,7 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 		else
 			serializedInput.Serialize_Default(ser);
 
-		if (m_pPlayerInput.get() && ser.IsReading())
+		if (m_pPlayerInput && ser.IsReading())
 		{
 			m_pPlayerInput->SetState(serializedInput);
 		}
@@ -4499,17 +4502,22 @@ void CPlayer::FullSerialize(TSerialize ser)
 	}
 
 	//input-action
-	bool hasInput = (m_pPlayerInput.get()) ? true : false;
+	bool hasInput = (m_pPlayerInput != nullptr);
 	bool hadInput = hasInput;
 	ser.Value("PlayerInputExists", hasInput);
 	if (hasInput)
 	{
-		if (ser.IsReading() && !(m_pPlayerInput.get()))
-			m_pPlayerInput.reset(new CPlayerInput(this));
-		((CPlayerInput*)m_pPlayerInput.get())->SerializeSaveGame(ser);
+		if (ser.IsReading() && !m_pPlayerInput)
+		{
+			m_pPlayerInput = std::make_unique<CPlayerInput>(this);
+		}
+
+		static_cast<CPlayerInput*>(m_pPlayerInput.get())->SerializeSaveGame(ser);
 	}
 	else if (hadInput && ser.IsReading())
-		m_pPlayerInput.reset(NULL);
+	{
+		m_pPlayerInput = nullptr;
+	}
 
 	ser.Value("mountedWeapon", m_stats.mountedWeaponID);
 	if (m_stats.mountedWeaponID && this == g_pGame->GetIGameFramework()->GetClientActor()) //re-mounting is done in the item
@@ -6108,7 +6116,7 @@ void CPlayer::GetMemoryStatistics(ICrySizer* s)
 	CActor::GetActorMemoryStatistics(s);
 	if (m_pNanoSuit)
 		m_pNanoSuit->GetMemoryStatistics(s);
-	if (m_pPlayerInput.get())
+	if (m_pPlayerInput)
 		m_pPlayerInput->GetMemoryStatistics(s);
 	s->AddContainer(m_clientPostEffects);
 

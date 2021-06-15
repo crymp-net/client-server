@@ -9,6 +9,9 @@
 
 struct ILoadGame
 {
+	// std::auto_ptr is removed since C++17
+	class std_auto_ptr_TSerialize;
+
 	// initialize - set name of game
 	virtual bool Init( const char * name ) = 0;
 
@@ -19,7 +22,7 @@ struct ILoadGame
 	// serialize a console variable
 	virtual bool GetConsoleVariable( ICVar * pVar ) = 0;
 	// create a serializer for some data section
-	virtual std::auto_ptr<TSerialize> GetSection( const char * section ) = 0;
+	virtual std_auto_ptr_TSerialize GetSection( const char * section ) = 0;
 	virtual bool HaveSection( const char * section ) = 0;
 
 	// finish - indicate success (negative success *must* remove file)

@@ -388,7 +388,7 @@ CQuickGame::CQuickGame() :
 	m_browser(0),
 	m_searching(false)
 {
-	m_list.reset(new SQGServerList(this));
+	m_list = std::make_unique<SQGServerList>(this);
 }
 
 CQuickGame::~CQuickGame()
@@ -401,8 +401,8 @@ void CQuickGame::StartSearch(CMPHub* hub)
 
 	if (hub)//if we want UI
 	{
-		if (!m_ui.get())
-			m_ui.reset(new CQuickGameDlg(this));
+		if (!m_ui)
+			m_ui = std::make_unique<CQuickGameDlg>(this);
 		m_ui->Show(hub);
 	}
 
@@ -495,7 +495,7 @@ void CQuickGame::NextStage()
 		m_browser = 0;
 		m_stage = 0;
 		m_searching = false;
-		if (m_ui.get())
+		if (m_ui)
 			m_ui->OnFinished();
 		break;
 	}

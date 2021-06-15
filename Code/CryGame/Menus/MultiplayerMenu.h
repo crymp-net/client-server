@@ -56,11 +56,11 @@ private:
 	IServerBrowser* m_browser;
 	CGameNetworkProfile* m_profile;
 	INetworkChat* m_chat;
-	std::auto_ptr<CUI>          m_ui;
-	std::auto_ptr<SGSBrowser>   m_serverlist;
-	std::auto_ptr<SChat>        m_chatlist;
-	std::auto_ptr<SGSNetworkProfile> m_buddylist;
-	std::auto_ptr<SCreateGame>  m_creategame;
+	std::unique_ptr<CUI> m_ui;
+	std::unique_ptr<SGSBrowser> m_serverlist;
+	std::unique_ptr<SChat> m_chatlist;
+	std::unique_ptr<SGSNetworkProfile> m_buddylist;
+	std::unique_ptr<SCreateGame> m_creategame;
 	bool                        m_lan;
 	std::vector<SStoredServer>  m_favouriteServers;
 	std::vector<SStoredServer>  m_recentServers;

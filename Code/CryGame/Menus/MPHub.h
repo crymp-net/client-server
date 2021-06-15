@@ -272,9 +272,9 @@ private:
   IFlashPlayer*                   m_currentScreen;
 	IFlashPlayer*                   m_currentStartScreen;
 	IFlashPlayer*                   m_currentIngameScreen;
-  std::auto_ptr<CGameNetworkProfile> m_profile;
-  std::auto_ptr<CMultiPlayerMenu> m_menu;
-  std::auto_ptr<CQuickGame>       m_quickGame;
+	std::unique_ptr<CGameNetworkProfile> m_profile;
+	std::unique_ptr<CMultiPlayerMenu> m_menu;
+	std::unique_ptr<CQuickGame> m_quickGame;
   SRegisterInfo                   m_reginfo;
 	SMPOptions                      m_options;
   std::vector<CDialog*>           m_dialogs;
@@ -288,7 +288,7 @@ private:
 	bool                            m_isInLogin;
 	std::vector<STrustedIp>					m_trustedIPs;
 	bool														m_trustedIPsLoaded;
-	std::auto_ptr<STSPDownload>			m_trustedDownload;
+	std::unique_ptr<STSPDownload> m_trustedDownload;
 };
 
 

@@ -1347,7 +1347,7 @@ struct CGameNetworkProfile::SBuddies : public INetworkProfileListener
 	TBuddyRequestsMap       m_requests;
 
 	TChatTextMap              m_buddyChats;
-	std::auto_ptr<SChatText>  m_globalChat;
+	std::unique_ptr<SChatText> m_globalChat;
 
 	std::vector<SPendingOperation>  m_operations;
 
@@ -1450,7 +1450,7 @@ CGameNetworkProfile::CGameNetworkProfile(CMPHub* hub) :
 	if (serv)
 	{
 		m_profile = serv->GetNetworkProfile();
-		m_infoReader.reset(new SUserInfoReader(this));
+		m_infoReader = std::make_unique<SUserInfoReader>(this);
 	}
 	else
 	{
@@ -1469,8 +1469,8 @@ void CGameNetworkProfile::Login(const char* login, const char* password)
 	m_login = login;
 	m_password = password;
 	m_loggingIn = true;
-	m_stroredServers.reset(new SStoredServerLists(this));
-	m_buddies.reset(new SBuddies(this));
+	m_stroredServers = std::make_unique<SStoredServerLists>(this);
+	m_buddies = std::make_unique<SBuddies>(this);
 	m_profile->AddListener(m_buddies.get());
 	m_profile->Login(login, password);
 }
@@ -1480,8 +1480,8 @@ void CGameNetworkProfile::LoginProfile(const char* email, const char* password, 
 	m_login = profile;
 	m_password = password;
 	m_loggingIn = true;
-	m_buddies.reset(new SBuddies(this));
-	m_stroredServers.reset(new SStoredServerLists(this));
+	m_buddies = std::make_unique<SBuddies>(this);
+	m_stroredServers = std::make_unique<SStoredServerLists>(this);
 	m_profile->AddListener(m_buddies.get());
 	m_profile->LoginProfile(email, password, profile);
 }
@@ -1492,8 +1492,8 @@ void CGameNetworkProfile::Register(const char* login, const char* email, const c
 	m_login = login;
 	m_password = pass;
 	m_loggingIn = true;
-	m_buddies.reset(new SBuddies(this));
-	m_stroredServers.reset(new SStoredServerLists(this));
+	m_buddies = std::make_unique<SBuddies>(this);
+	m_stroredServers = std::make_unique<SStoredServerLists>(this);
 	m_profile->AddListener(m_buddies.get());
 	m_profile->Register(login, email, pass, country, dob);
 }
@@ -1509,8 +1509,8 @@ void CGameNetworkProfile::Logoff()
 	m_loggingIn = false;
 	m_profile->Logoff();
 	m_profile->RemoveListener(m_buddies.get());
-	m_buddies.reset(0);
-	m_stroredServers.reset(0);
+	m_buddies = nullptr;
+	m_stroredServers = nullptr;
 }
 
 void CGameNetworkProfile::AcceptBuddy(int id, bool accept)
@@ -1561,15 +1561,15 @@ void CGameNetworkProfile::SendBuddyMessage(int id, const char* message)
 
 void CGameNetworkProfile::InitUI(INProfileUI* a)
 {
-	if (m_buddies.get())
+	if (m_buddies)
 		m_buddies->UIActivated(a);
-	if (m_stroredServers.get())
+	if (m_stroredServers)
 		m_stroredServers->UIActivated(a);
 }
 
 void CGameNetworkProfile::DestroyUI()
 {
-	if (m_buddies.get())
+	if (m_buddies)
 		m_buddies->m_ui = 0;
 }
 
@@ -1726,7 +1726,7 @@ void CGameNetworkProfile::RetrievePassword(const char* email)
 {
 	if (m_profile)
 	{
-		m_buddies.reset(new SBuddies(this));
+		m_buddies = std::make_unique<SBuddies>(this);
 		m_profile->AddListener(m_buddies.get());
 		m_profile->RetrievePassword(email);
 	}

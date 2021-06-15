@@ -893,10 +893,10 @@ struct CMultiPlayerMenu::SChat : public IChatListener
 CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 	m_browser(0),
 	m_profile(0),
-	m_serverlist(new SGSBrowser()),
-	m_buddylist(new SGSNetworkProfile()),
-	m_ui(new CUI(plr)),
-	m_creategame(new SCreateGame(plr, hub, lan)),
+	m_serverlist(std::make_unique<SGSBrowser>()),
+	m_buddylist(std::make_unique<SGSNetworkProfile>()),
+	m_ui(std::make_unique<CUI>(plr)),
+	m_creategame(std::make_unique<SCreateGame>(plr, hub, lan)),
 	m_lan(lan),
 	m_hub(hub),
 	m_selectedCat(eCC_global),
@@ -926,7 +926,7 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 		if (!lan)
 		{
 			m_chat = serv->GetNetworkChat();
-			m_chatlist.reset(new SChat(this));
+			m_chatlist = std::make_unique<SChat>(this);
 			m_chat->SetListener(m_chatlist.get());
 			m_chat->Join();
 			if (m_hub->GetProfile())
@@ -978,7 +978,7 @@ bool CMultiPlayerMenu::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 
 	handled = m_ui->HandleFSCommand(cmd, pArgs) || handled;
 
-	if (m_creategame.get())
+	if (m_creategame)
 		handled = m_creategame->HandleFSCommand(cmd, pArgs) || handled;
 
 	return handled;
@@ -1284,7 +1284,7 @@ void CMultiPlayerMenu::CUI::OnShowUserInfo(int id, const char* nick)
 
 	if (!id)//chat guy
 	{
-		if (m_menu->m_ui.get())
+		if (m_menu->m_ui)
 			m_menu->m_ui->EnableInfoScreenContorls(m_menu->m_profile->CanInvite(nick), m_menu->m_profile->CanIgnore(nick));
 		SUserInfo info;
 		int p_id;

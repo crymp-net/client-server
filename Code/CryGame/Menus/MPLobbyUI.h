@@ -264,10 +264,10 @@ private:
   void  SetBlinkChat(bool blink);
   
   IFlashPlayer*                 m_player;//TODO: maybe _smart_ptr here?
-  std::auto_ptr<SMPServerList>  m_serverlist;
-  std::auto_ptr<SMPUserList>    m_userlist;
-  std::auto_ptr<SMPChatText>    m_chatlist;
-  std::auto_ptr<SServerFilter>   m_filter;
+	std::unique_ptr<SMPServerList> m_serverlist;
+	std::unique_ptr<SMPUserList> m_userlist;
+	std::unique_ptr<SMPChatText> m_chatlist;
+	std::unique_ptr<SServerFilter> m_filter;
   
   string  m_cmd;
   int     m_currentTab;

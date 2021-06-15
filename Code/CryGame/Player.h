@@ -809,7 +809,7 @@ protected:
 	SPlayerStats		m_stats;
 	SPlayerParams		m_params;
 
-	std::auto_ptr<IPlayerInput> m_pPlayerInput;
+	std::unique_ptr<IPlayerInput> m_pPlayerInput;
 
 	// compatibility with old code: which actions are set
 	int m_actions;

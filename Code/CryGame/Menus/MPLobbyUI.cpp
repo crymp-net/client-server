@@ -1053,15 +1053,15 @@ struct SMPChatText
 
 CMPLobbyUI::CMPLobbyUI(IFlashPlayer* plr) :
 	m_player(plr),
-	m_serverlist(new SMPServerList()),
+	m_serverlist(std::make_unique<SMPServerList>()),
 	m_currentTab(-1),
 	m_chatBlink(false)
 {
 	m_cmd.reserve(256);
 	SetSortParams(gSortColumn, gSortType);
-	m_userlist.reset(new SMPUserList(this));
-	m_chatlist.reset(new SMPChatText());
-	m_filter.reset(new SServerFilter(this));
+	m_userlist = std::make_unique<SMPUserList>(this);
+	m_chatlist = std::make_unique<SMPChatText>();
+	m_filter = std::make_unique<SServerFilter>(this);
 
 	DisplayChatText();
 	SetChatHeader("@ui_menu_GLOBALCHAT", 0);
@@ -1399,7 +1399,7 @@ void  CMPLobbyUI::DisplayServerList()
 {
 	if (m_serverlist->m_dirty)
 	{
-		if (m_filter.get())
+		if (m_filter)
 			m_serverlist->DoFilter(m_filter.get());
 		m_serverlist->DoSort();
 	}

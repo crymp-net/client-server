@@ -35,8 +35,8 @@ private:
   IServerBrowser* m_browser;
   int             m_stage;
   bool            m_searching;
-  std::auto_ptr<SQGServerList>  m_list;
-  std::auto_ptr<CQuickGameDlg>  m_ui;
+  std::unique_ptr<SQGServerList> m_list;
+  std::unique_ptr<CQuickGameDlg> m_ui;
 };
 
 #endif //__QUICKGAME_H__

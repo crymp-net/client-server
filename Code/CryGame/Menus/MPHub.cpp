@@ -145,7 +145,6 @@ gDisconnectErrors[] = { {eDC_Unknown,"@ui_menu_disconnect_Generic"},
 };
 
 CMPHub::CMPHub() :
-	m_menu(0),
 	m_currentScreen(0),
 	m_currentStartScreen(0),
 	m_currentIngameScreen(0),
@@ -161,8 +160,6 @@ CMPHub::CMPHub() :
 
 CMPHub::~CMPHub()
 {
-	// m_menu.reset(0);
-	// m_profile.reset(0);
 }
 
 bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
@@ -217,7 +214,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		SFlashVarValue val("");
 		m_currentScreen->GetVariable("_root.MPAccount_Password", &val);
 		string pass = val.GetConstStrPtr();
-		m_profile.reset(new CGameNetworkProfile(this));
+		m_profile = std::make_unique<CGameNetworkProfile>(this);
 		if (!m_profile->IsDead())
 		{
 			m_loggingIn = true;
@@ -231,7 +228,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		m_options.remeber = atoi(pArgs) != 0;
 		if (!m_options.remeber)
 			m_options.autologin = false;
-		if (m_profile.get() && m_profile->IsLoggedIn() && m_options.remeber)
+		if (m_profile && m_profile->IsLoggedIn() && m_options.remeber)
 		{
 			m_options.login = m_profile->GetLogin();
 			m_options.password = m_profile->GetPassword();
@@ -265,7 +262,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 	{
 		SFlashVarValue infoArgs[2] = { m_options.remeber, m_options.autologin };
 		m_currentScreen->Invoke("showAccountInfo", infoArgs, 2);
-		if (m_profile.get() && m_profile->IsLoggedIn())
+		if (m_profile && m_profile->IsLoggedIn())
 		{
 			SUserStats stats = m_profile->GetMyStats();
 			static string country;
@@ -322,7 +319,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		else
 		{
 			m_options.autologin = true;
-			if (m_profile.get() && m_profile->IsLoggedIn())
+			if (m_profile && m_profile->IsLoggedIn())
 			{
 				//just to be sure
 				m_options.login = m_profile->GetLogin();
@@ -337,8 +334,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 	case eGUC_enterlobby:
 		if (m_currentScreen)
 		{
-			m_menu.reset(0);
-			m_menu.reset(new CMultiPlayerMenu(false, m_currentScreen, this));
+			m_menu = std::make_unique<CMultiPlayerMenu>(false, m_currentScreen, this);
 			if (!IsIngame())
 				m_lastMenu = 2;
 		}
@@ -347,7 +343,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 	case eGUC_leaveLANlobby:
 		if (!IsIngame())
 			m_lastMenu = 0;
-		m_menu.reset(0);
+		m_menu = nullptr;
 		break;
 	case eGUC_internetGame:
 	{
@@ -367,7 +363,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 			break;
 		}
 	}
-	//		if(!m_profile.get() || !m_profile->IsLoggedIn())
+	//		if(!m_profile || !m_profile->IsLoggedIn())
 	//    {
 	//      TryLogin(true);
 	//    }
@@ -388,35 +384,34 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 
 	if (m_currentScreen)
 	{
-		m_menu.reset(0);
-		m_menu.reset(new CMultiPlayerMenu(true, m_currentScreen, this));
+		m_menu = std::make_unique<CMultiPlayerMenu>(true, m_currentScreen, this);
 	}
 	break;
 	case eGUC_quickGame:
 		OnQuickGame();
 		break;
 	case eGUC_back:
-		if (m_quickGame.get())
+		if (m_quickGame)
 		{
 			m_quickGame->Cancel();
-			m_quickGame.reset(0);
+			m_quickGame = nullptr;
 		}
 		break;
 	case eGUC_forgotPassword:
 		//gEnv->pGame->GetIGameFramework()->ShowPageInBrowser("http://login.gamespy.com/lostpassword.aspx");
 		if (m_currentScreen)
 		{
-			m_profile.reset(new CGameNetworkProfile(this));
+			m_profile = std::make_unique<CGameNetworkProfile>(this);
 			SFlashVarValue val("");
 			m_currentScreen->GetVariable("_root.Root.MainMenu.ForgotPassword_POPUP_M.ForgotPassword_POPUP.Texts.Colorset.CA_EMAILADDY.text", &val);
 			m_profile->RetrievePassword(val.GetConstStrPtr());
 		}
 		break;
 	case eGUC_dialogClosed:
-		if (m_profile.get() && m_profile->IsLoggingIn())
+		if (m_profile && m_profile->IsLoggingIn())
 		{
 			m_profile->Logoff();
-			m_profile.reset(0);
+			m_profile = nullptr;
 		}
 		else
 			gEnv->pGame->GetIGameFramework()->ExecuteCommandNextFrame("disconnect");
@@ -453,7 +448,7 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		handled = false;
 	}
 
-	if (m_menu.get() && !handled)
+	if (m_menu && !handled)
 	{
 		handled = m_menu->HandleFSCommand(cmd, pArgs);
 	}
@@ -476,7 +471,7 @@ void CMPHub::OnUIEvent(const SUIEvent& event)
 		break;
 	}
 
-	if (m_menu.get())
+	if (m_menu)
 		m_menu->OnUIEvent(event);
 
 	for (int i = m_dialogs.size() - 1;i >= 0;--i)
@@ -496,7 +491,7 @@ void CMPHub::SetCurrentFlashScreen(IFlashPlayer* screen, bool ingame)
 			OnUIEvent(SUIEvent(eUIE_destroy, ingame ? 0 : 1));
 			for (int i = m_dialogs.size() - 1;i >= 0;--i)
 				m_dialogs[i]->Close();
-			m_menu.reset(0);
+			m_menu = nullptr;
 		}
 	}
 
@@ -551,7 +546,7 @@ void CMPHub::OnLoginFailed(const char* reason)
 {
 	m_loggingIn = false;
 	CloseLoadingDlg();
-	m_profile.reset(0);
+	m_profile = nullptr;
 	ShowError(reason, true);
 	m_options.autologin = false;
 	m_options.remeber = false;
@@ -666,7 +661,7 @@ void CMPHub::OnQuickGame()
 	}
 	else
 	{
-		m_quickGame.reset(new CQuickGame());
+		m_quickGame = std::make_unique<CQuickGame>();
 		m_quickGame->StartSearch(this);
 	}
 }
@@ -842,7 +837,7 @@ void CMPHub::DoLogin(const char* nick, const char* pwd)
 		ShowError("@ui_Enter_Login", true);
 		return;
 	}
-	m_profile.reset(new CGameNetworkProfile(this));
+	m_profile = std::make_unique<CGameNetworkProfile>(this);
 	if (!m_profile->IsDead())
 	{
 		ShowLoadingDlg("@ui_menu_login");
@@ -853,7 +848,7 @@ void CMPHub::DoLogin(const char* nick, const char* pwd)
 
 void CMPHub::DoLoginProfile(const char* email, const char* pwd, const char* profile)
 {
-	m_profile.reset(new CGameNetworkProfile(this));
+	m_profile = std::make_unique<CGameNetworkProfile>(this);
 	if (!m_profile->IsDead())
 	{
 		ShowLoadingDlg("@ui_menu_login");
@@ -864,15 +859,15 @@ void CMPHub::DoLoginProfile(const char* email, const char* pwd, const char* prof
 
 void CMPHub::DoLogoff()
 {
-	if (!m_profile.get())
+	if (!m_profile)
 		return;
 	m_login.resize(0);
 	m_profile->Logoff();
-	m_profile.reset(0);
+	m_profile = nullptr;
 	SetLoginInfo(0);
-	if (m_menu.get())
+	if (m_menu)
 		SwitchToMainScreen();
-	m_menu.reset(0);
+	m_menu = nullptr;
 	if (m_lastMenu == 2)
 		m_lastMenu = 0;
 	if (IsIngame() && gEnv->bMultiplayer)
@@ -1054,9 +1049,9 @@ void CMPHub::OnMenuOpened()
 			IPatchCheck* pc = gs->GetPatchCheck();
 			pc->TrackUsage();
 			pc->CheckForUpdate();
-			if (!m_trustedDownload.get())
+			if (!m_trustedDownload)
 			{
-				m_trustedDownload.reset(new STSPDownload());
+				m_trustedDownload = std::make_unique<STSPDownload>();
 				m_trustedDownload->StartDownload();
 			}
 		}
@@ -1310,7 +1305,7 @@ void CMPHub::CheckTSPIPs()
 {
 	if (!m_trustedIPsLoaded)
 	{
-		if (m_trustedDownload.get() && m_trustedDownload->IsCompleted())
+		if (m_trustedDownload && m_trustedDownload->IsCompleted())
 		{
 			m_trustedIPsLoaded = LoadTrustedIPs();
 		}

@@ -327,13 +327,19 @@ CHUD::~CHUD()
 	OnSetActorItem(NULL, NULL);
 
 	// call OnHUDDestroyed on hud objects. we own them, so delete afterwards
-	std::for_each(m_hudObjectsList.begin(), m_hudObjectsList.end(), std::mem_fun(&CHUDObject::OnHUDToBeDestroyed));
-	// now delete them
-	std::for_each(m_hudObjectsList.begin(), m_hudObjectsList.end(), stl::container_object_deleter());
+	for (CHUDObject *pObject : m_hudObjectsList)
+	{
+		pObject->OnHUDToBeDestroyed();
+		delete pObject;
+	}
+
 	m_hudObjectsList.clear();
 
 	// call OnHUDDestroyed on external hud objects. we don't own them, so don't delete
-	std::for_each(m_externalHUDObjectList.begin(), m_externalHUDObjectList.end(), std::mem_fun(&CHUDObject::OnHUDToBeDestroyed));
+	for (CHUDObject *pObject : m_externalHUDObjectList)
+	{
+		pObject->OnHUDToBeDestroyed();
+	}
 
 	PlayerIdSet(0);	//unregister from game / player
 
