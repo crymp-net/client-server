@@ -773,7 +773,7 @@ void CHUD::PlayerIdSet(EntityId playerId)
 	}
 	else
 	{
-		pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetClientActor());
+		pPlayer = static_cast<CPlayer*>(m_pClientActor);
 		if (pPlayer)
 		{
 			pPlayer->UnregisterPlayerEventListener(this);
