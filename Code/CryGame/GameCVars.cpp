@@ -585,6 +585,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	//CryMP CVars 
 	pConsole->Register("cl_crymp", &cl_crymp, 0);
 	pConsole->Register("cl_circleJump", &cl_circleJump, 0);
+	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0);
 	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1);
 

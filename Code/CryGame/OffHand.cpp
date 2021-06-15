@@ -1,5 +1,5 @@
 /*************************************************************************
-Crytek Source File.
+Crytek Source File
 Copyright (C), Crytek Studios, 2001-2007.
 -------------------------------------------------------------------------
 $Id$
@@ -26,6 +26,7 @@ History:
 #include "HUD/HUDCrosshair.h"
 #include "WeaponSystem.h"
 #include "Projectile.h"
+#include "GameCVars.h"
 
 #define KILL_NPC_TIMEOUT	7.25f
 #define TIME_TO_UPDATE_CH 0.25f
@@ -186,7 +187,7 @@ COffHand::~COffHand()
 	if (m_heldEntityId)
 	{
 		DrawNear(false, m_heldEntityId);
-		if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_heldEntityId))
+		if (IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId))
 		{
 			if (ICharacterInstance* pChar = pEntity->GetCharacter(0))
 				pChar->SetFlags(pChar->GetFlags() & (~ENTITY_SLOT_RENDER_NEAREST));
@@ -280,7 +281,6 @@ void COffHand::PostInit(IGameObject* pGameObject)
 	m_lastFireModeId = 0;
 	SetCurrentFireMode(0);
 	HideItem(true);
-	//EnableUpdate(true,eIUS_General);
 }
 
 //============================================================
@@ -354,7 +354,7 @@ void COffHand::FullSerialize(TSerialize ser)
 
 	if (ser.IsReading() && m_heldEntityId != oldHeldId)
 	{
-		IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(oldHeldId);
+		IActor* pActor = m_pActorSystem->GetActor(oldHeldId);
 		if (pActor)
 		{
 			if (pActor->GetEntity()->GetCharacter(0))
@@ -408,7 +408,7 @@ void COffHand::PostPostSerialize()
 			if (!m_heldEntityId)
 				m_heldEntityId = m_preHeldEntityId;
 
-			SelectGrabType(gEnv->pEntitySystem->GetEntity(m_heldEntityId));
+			SelectGrabType(m_pEntitySystem->GetEntity(m_heldEntityId));
 
 			CActor* pPlayer = GetOwnerActor();
 			if (pPlayer)
@@ -430,7 +430,7 @@ void COffHand::PostPostSerialize()
 
 		if (m_heldEntityId)
 		{
-			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_heldEntityId);
+			IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
 			if (!pEntity)
 			{
 				GameWarning("Offhand held entity did not exist anymore! Perhaps it was a boid ... ");
@@ -438,7 +438,7 @@ void COffHand::PostPostSerialize()
 			}
 			else
 			{
-				SelectGrabType(gEnv->pEntitySystem->GetEntity(m_heldEntityId));
+				SelectGrabType(m_pEntitySystem->GetEntity(m_heldEntityId));
 
 				//If holding an object or NPC
 				if (m_currentState & (eOHS_HOLDING_OBJECT | eOHS_PICKING | eOHS_THROWING_OBJECT | eOHS_MELEE))
@@ -456,7 +456,7 @@ void COffHand::PostPostSerialize()
 				{
 					//Do grabbing again
 					m_currentState = eOHS_INIT_STATE;
-					CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_heldEntityId));
+					CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(m_heldEntityId));
 					bool isDead = false;
 					if (pActor && ((pActor->GetActorStats() && pActor->GetActorStats()->isRagDoll) || pActor->GetHealth() <= 0))
 						isDead = true;
@@ -507,6 +507,46 @@ void COffHand::PostPostSerialize()
 	m_restoreStateAfterLoading = false;
 }
 
+//=======================================
+void COffHand::OnEnterFirstPerson()
+{
+	//CryMP: Check 1st/3rd person transition
+	if (GetOwnerActor() && GetOwnerActor()->IsClient())
+	{
+		const EntityId heldEntityId = m_heldEntityId;
+		m_isClient = true;
+
+		EnableUpdate(true, eIUS_General);
+		DrawNear(true, heldEntityId);
+
+		if (m_wasThirdPerson && heldEntityId)
+		{
+			//unsatisfactory fix for wrong object pos if switching from TP to FP, release object
+			m_forceThrow = false;
+			ThrowObject(eAAM_OnPress, false);
+			ThrowObject(eAAM_OnRelease, false);
+		}
+		m_wasThirdPerson = false;
+	}
+
+	CItem::OnEnterFirstPerson();
+}
+
+//=======================================
+void COffHand::OnEnterThirdPerson()
+{
+	const EntityId heldEntityId = m_heldEntityId;
+	if (heldEntityId)
+	{
+		DrawNear(false, heldEntityId);
+
+		m_wasThirdPerson = true;
+	}
+
+	//CryMP: Check 1st/3rd person transition
+	CItem::OnEnterThirdPerson();
+}
+
 //=============================================================
 bool COffHand::CanSelect() const
 {
@@ -528,8 +568,19 @@ void COffHand::Update(SEntityUpdateContext& ctx, int slot)
 
 	CWeapon::Update(ctx, slot);
 
+	//float white[4] = { 1,1,1,1 };
+	//gEnv->pRenderer->Draw2dLabel(100, 150, 2, white, false, "state %d",  m_currentState);
+
 	if (slot == eIUS_General)
 	{
+		//CryMP: Update held items in TP mode as well
+		if (!m_stats.fp)
+		{
+			UpdateFPView(ctx.fFrameTime);
+			UpdateFPPosition(ctx.fFrameTime);
+			UpdateFPCharacter(ctx.fFrameTime);
+		}
+
 		if (m_resetTimer >= 0.0f)
 		{
 			m_resetTimer -= ctx.fFrameTime;
@@ -600,7 +651,7 @@ void COffHand::Update(SEntityUpdateContext& ctx, int slot)
 			}
 		}
 
-		if (keepUpdating)
+		if (keepUpdating || m_isClient)
 			RequireUpdate(eIUS_General);
 		else
 			EnableUpdate(false, eIUS_General);
@@ -629,7 +680,7 @@ void COffHand::UpdateFPView(float frameTime)
 
 	if (m_currentState == eOHS_INIT_STATE)
 	{
-		if (!gEnv->bMultiplayer)
+		if (!gEnv->bMultiplayer || (g_pGameCVars->cl_pickupObjectsMP && m_pGameFramework->IsImmersiveMPEnabled()))
 			UpdateCrosshairUsabilitySP();
 		else
 			UpdateCrosshairUsabilityMP();
@@ -691,17 +742,20 @@ void COffHand::UpdateCrosshairUsabilitySP()
 		if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
 			onLadder = pStats->isOnLadder;
 
-		if (CanPerformPickUp(pActor, NULL) || (isLadder && !onLadder))
+		const int canGrab = CanPerformPickUp(pActor, NULL);
+
+		if (canGrab || (isLadder && !onLadder))
 		{
 			if (CHUD* pHUD = g_pGame->GetHUD())
 			{
 				IItem* pItem = m_pItemSystem->GetItem(m_crosshairId);
-				if (IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_crosshairId))
-					pHUD->GetCrosshair()->SetUsability(1, "@grab_enemy");
+				CHUDCrosshair *pHUDCrosshair = pHUD->GetCrosshair();
+				if (IActor* pActor = m_pActorSystem->GetActor(m_crosshairId))
+					pHUDCrosshair->SetUsability(1, "@grab_enemy");
 				else if (isLadder)
-					pHUD->GetCrosshair()->SetUsability(1, "@use_ladder");
+					pHUDCrosshair->SetUsability(1, "@use_ladder");
 				else if (!pItem)
-					pHUD->GetCrosshair()->SetUsability(1, "@grab_object");
+					pHUDCrosshair->SetUsability(1, "@grab_object");
 				else if (pItem)
 				{
 					CryFixedStringT<128> itemName = "@";
@@ -722,14 +776,14 @@ void COffHand::UpdateCrosshairUsabilitySP()
 					{
 						IEntityClass* pItemClass = pItem->GetEntity()->GetClass();
 						bool isSocom = strcmp(pItemClass->GetName(), "SOCOM") ? false : true;
-						IItem* pCurrentItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItemByClass(pItemClass));
+						IItem* pCurrentItem = m_pItemSystem->GetItem(pPlayer->GetInventory()->GetItemByClass(pItemClass));
 						if ((!isSocom && pCurrentItem) ||
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
 						{
 							if (pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
-								pHUD->GetCrosshair()->SetUsability(true, "@game_take_ammo_from", itemName.c_str());
+								pHUDCrosshair->SetUsability(true, "@game_take_ammo_from", itemName.c_str());
 							else
-								pHUD->GetCrosshair()->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
+								pHUDCrosshair->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
 						}
 						else
 						{
@@ -739,24 +793,24 @@ void COffHand::UpdateCrosshairUsabilitySP()
 								IItem* pExchangedItem = GetExchangeItem(pPlayer);
 								if (pExchangedItem)
 								{
-									pHUD->GetCrosshair()->SetUsability(true, "@game_exchange_weapon",
+									pHUDCrosshair->SetUsability(true, "@game_exchange_weapon",
 										pExchangedItem->GetEntity()->GetClass()->GetName(), itemName.c_str());
 								}
 								else
-									pHUD->GetCrosshair()->SetUsability(2, "@inventory_full");
+									pHUDCrosshair->SetUsability(2, "@inventory_full");
 							}
 							else
 							{
-								pHUD->GetCrosshair()->SetUsability(true, "@pick_weapon", itemName.c_str());
+								pHUDCrosshair->SetUsability(true, "@pick_weapon", itemName.c_str());
 							}
 						}
 					}
 					else
 					{
 						if (pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
-							pHUD->GetCrosshair()->SetUsability(1, "@pick_item", itemName.c_str());
+							pHUDCrosshair->SetUsability(1, "@pick_item", itemName.c_str());
 						else
-							pHUD->GetCrosshair()->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
+							pHUDCrosshair->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
 					}
 				}
 			}
@@ -826,7 +880,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 					{
 						IEntityClass* pItemClass = pItem->GetEntity()->GetClass();
 						bool isSocom = strcmp(pItemClass->GetName(), "SOCOM") ? false : true;
-						IItem* pCurrentItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItemByClass(pItemClass));
+						IItem* pCurrentItem = m_pItemSystem->GetItem(pPlayer->GetInventory()->GetItemByClass(pItemClass));
 						if ((!isSocom && pCurrentItem) ||
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
 						{
@@ -878,6 +932,10 @@ void COffHand::UpdateCrosshairUsabilityMP()
 //=============================================================
 void COffHand::UpdateHeldObject()
 {
+	CActor* pPlayer = GetOwnerActor();
+	if (!pPlayer || !pPlayer->IsClient())
+		return;
+	
 	IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
 	if (pEntity)
 	{
@@ -917,13 +975,26 @@ void COffHand::UpdateHeldObject()
 		}
 
 		//Update entity WorldTM 
-		int id = m_stats.fp ? eIGS_FirstPerson : eIGS_ThirdPerson;
+		const int id = m_stats.fp ? eIGS_FirstPerson : eIGS_ThirdPerson;
 
 		Matrix34 finalMatrix(Matrix34(GetSlotHelperRotation(id, "item_attachment", true)));
 		finalMatrix.Scale(m_holdScale);
-		finalMatrix.SetTranslation(GetSlotHelperPos(id, "item_attachment", true));
-		finalMatrix = finalMatrix * m_holdOffset;
 
+		Vec3 pos = Vec3(ZERO);
+
+		//CryMP: Handle 3rd person 
+		if (!m_stats.fp)
+		{
+			pos = pPlayer->GetEntity()->GetWorldPos() + pPlayer->GetLocalEyePos();
+		}
+		else
+		{
+			pos = GetSlotHelperPos(id, "item_attachment", true);
+		}
+
+		finalMatrix.SetTranslation(pos);
+		finalMatrix = finalMatrix * m_holdOffset;
+		
 		//This is need it for breakable/joint-constraints stuff
 		if (IPhysicalEntity* pPhys = pEntity->GetPhysics())
 		{
@@ -939,8 +1010,23 @@ void COffHand::UpdateHeldObject()
 
 		}
 		//====================================
-		pEntity->SetWorldTM(finalMatrix, ENTITY_XFORM_USER);
-
+		bool hasAuthority(gEnv->bServer);
+		if (gEnv->bMultiplayer && !gEnv->bServer)
+		{
+			/*INetChannel* pClientChannel = m_pGameFramework->GetClientChannel();
+			if (pClientChannel && m_pGameFramework->GetNetContext()->RemoteContextHasAuthority(pClientChannel, m_heldEntityId))
+			{
+				hasAuthority = true;
+			}*/
+			if (pPlayer->GetHeldObjectId() == m_heldEntityId)
+			{
+				hasAuthority = true;
+			}
+		}
+		if (hasAuthority)
+		{
+			pEntity->SetWorldTM(finalMatrix, ENTITY_XFORM_USER);
+		}
 	}
 }
 
@@ -948,7 +1034,7 @@ void COffHand::UpdateHeldObject()
 void COffHand::UpdateGrabbedNPCState()
 {
 	//Get actor
-	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_heldEntityId));
+	CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(m_heldEntityId));
 	CActor* pPlayer = GetOwnerActor();
 	SActorStats* pStats = pPlayer ? pPlayer->GetActorStats() : NULL;
 
@@ -1005,7 +1091,7 @@ void COffHand::PostUpdate(float frameTime)
 	//Update character position here when the game is paused, if I don't do so, character goes invisible!
 	//IGameObject::PostUpdate() is updated when the game is paused.
 	//PostUpdated are enabled/disabled when grabbing/throwing a character
-	if (g_pGame->GetIGameFramework()->IsGamePaused() && m_currentState & (eOHS_GRABBING_NPC | eOHS_HOLDING_NPC | eOHS_THROWING_NPC))
+	if (m_pGameFramework->IsGamePaused() && m_currentState & (eOHS_GRABBING_NPC | eOHS_HOLDING_NPC | eOHS_THROWING_NPC))
 	{
 		//This should be only be called when grabbing/holding/throwing an NPC from CPlayer::PostUpdateView()
 		IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
@@ -1249,6 +1335,7 @@ bool COffHand::ProcessOffHandActions(EOffHandActions eOHA, int input, int activa
 		}
 		else if (m_currentState & (eOHS_HOLDING_OBJECT | eOHS_THROWING_OBJECT))
 		{
+			//CryMP throwing object called here
 			ThrowObject(activationMode);
 		}
 		else if (m_currentState & (eOHS_HOLDING_NPC | eOHS_THROWING_NPC))
@@ -1455,24 +1542,30 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 {
 	switch (eOHA)
 	{
-	case eOHA_SWITCH_GRENADE: EndSwitchGrenade();
+	case eOHA_SWITCH_GRENADE: 
+		EndSwitchGrenade();
 		break;
 
-	case eOHA_PICK_ITEM:			EndPickUpItem();
+	case eOHA_PICK_ITEM:			
+		EndPickUpItem();
 		break;
 
-	case eOHA_GRAB_NPC:				m_currentState = eOHS_HOLDING_NPC;
+	case eOHA_GRAB_NPC:				
+		m_currentState = eOHS_HOLDING_NPC;
 		break;
 
-	case eOHA_THROW_NPC:			GetScheduler()->TimerAction(300, CSchedulerAction<FinishOffHandAction>::Create(FinishOffHandAction(eOHA_RESET, this)), true);
+	case eOHA_THROW_NPC:			
+		GetScheduler()->TimerAction(300, CSchedulerAction<FinishOffHandAction>::Create(FinishOffHandAction(eOHA_RESET, this)), true);
 		ThrowNPC();
 		m_currentState = eOHS_TRANSITIONING;
 		break;
 
-	case eOHA_PICK_OBJECT:		m_currentState = eOHS_HOLDING_OBJECT;
+	case eOHA_PICK_OBJECT:		
+		m_currentState = eOHS_HOLDING_OBJECT;
 		break;
 
-	case eOHA_THROW_OBJECT: {
+	case eOHA_THROW_OBJECT: 
+	{
 		// after it's thrown, wait 500ms to enable collisions again
 		GetScheduler()->TimerAction(500, CSchedulerAction<FinishOffHandAction>::Create(FinishOffHandAction(eOHA_RESET, this)), true);
 		DrawNear(false);
@@ -1494,9 +1587,10 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 		}
 		m_currentState = eOHS_TRANSITIONING;
 	}
-						  break;
+	break;
 
-	case eOHA_RESET:					//Reset main weapon status and reset offhand
+	case eOHA_RESET:					
+	//Reset main weapon status and reset offhand
 	{
 		if (m_prevMainHandId && !GetOwnerActor()->IsSwimming())
 		{
@@ -1825,8 +1919,10 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 	SMovementState info;
 	pMC->GetMovementState(info);
 
-	if (gEnv->bMultiplayer)
+	if (gEnv->bMultiplayer && !g_pGameCVars->cl_pickupObjectsMP)
+	{
 		return CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
+	}
 
 	EStance playerStance = pActor->GetStance();
 
@@ -1846,7 +1942,9 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 	{
 		const ray_hit* pRay = pActor->GetGameObject()->GetWorldQuery()->GetLookAtPoint(m_range);
 		if (pRay)
+		{
 			pPhysicalEntity = pRay->pCollider;
+		}
 		else
 			return CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
 	}
@@ -1856,16 +1954,34 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 	//if (pMC)
 	{
 		m_crosshairId = 0;
+
+		if (gEnv->bMultiplayer && g_pGameCVars->cl_pickupObjectsMP)
+		{
+			if (!pEntity)
+			{
+				return OH_NO_GRAB;
+			}
+			//CryMP: Objects that are not bound to network, cannot be picked up in MP (except chickens etc)
+			const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
+			const bool bIsBound = m_pGameFramework->GetNetContext()->IsBound(pEntity->GetId());
+			if (!bIsBound && !bClientEntity)
+			{
+				return OH_NO_GRAB;
+			}
+		}
+
 		Vec3 pos = info.eyePosition;
 		float lenSqr = 0.0f;
 		bool  breakable = false;
 		pe_params_part pPart;
-
+		
 		//Check if entity is in range
 		if (pEntity)
 		{
+			const bool bDefaultClass = !strcmp(pEntity->GetClass()->GetName(), "Default");
+			
 			lenSqr = (pos - pEntity->GetWorldPos()).len2();
-			if (pPhysicalEntity->GetType() == PE_RIGID && (!strcmp(pEntity->GetClass()->GetName(), "Default")))
+			if (pPhysicalEntity->GetType() == PE_RIGID && !bDefaultClass)
 			{
 				//Procedurally breakable object (most likely...)
 				//I need to adjust the distance, since the pivot of the entity could be anywhere
@@ -1883,6 +1999,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 		{
 			if (pEntity)
 			{
+				
 				// check if we have to pickup with two hands or just on hand
 				SelectGrabType(pEntity);
 				m_crosshairId = pEntity->GetId();
@@ -1892,7 +2009,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 
 				//1.- Player can grab some NPCs
 				//Let the actor decide if it can be grabbed
-				if (CActor* pActorAI = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId())))
+				if (CActor* pActorAI = static_cast<CActor*>(m_pActorSystem->GetActor(pEntity->GetId())))
 				{
 					if (((playerStance != STANCE_STAND) && (playerStance != STANCE_ZEROG)) || pActor->IsSwimming())
 						return OH_NO_GRAB;
@@ -2008,7 +2125,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				{
 					int pickable = 0;
 					int usable = 0;
-					if (props->GetValue("bPickable", pickable) && !pickable)
+					if (props->GetValue("bPickable", pickable) && !pickable) 
 						return false;
 					else if (pickable)
 						if (props->GetValue("bUsable", usable) && !usable)
@@ -2063,7 +2180,7 @@ int COffHand::CheckItemsInProximity(Vec3 pos, Vec3 dir, bool getEntityInfo)
 
 	float minDstSqr = 0.2f;
 	EntityId nearItemId = 0;
-	int count = gEnv->pEntitySystem->QueryProximity(query);
+	int count = m_pEntitySystem->QueryProximity(query);
 	for (int i = 0; i < query.nCount; i++)
 	{
 		EntityId id = query.pEntities[i]->GetId();
@@ -2155,6 +2272,7 @@ bool COffHand::PerformPickUp()
 		m_holdScale = pEntity->GetScale();
 
 		IgnoreCollisions(true, m_heldEntityId);
+		
 		DrawNear(true);
 
 		if (pActor && pActor->IsPlayer())
@@ -2258,9 +2376,6 @@ void COffHand::IgnoreCollisions(bool ignore, EntityId entityId /*=0*/)
 //==========================================================================================
 void COffHand::DrawNear(bool drawNear, EntityId entityId /*=0*/)
 {
-	if (!m_heldEntityId && !entityId)
-		return;
-
 	IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId ? m_heldEntityId : entityId);
 	if (!pEntity)
 		return;
@@ -2665,11 +2780,34 @@ void COffHand::PickUpObject(bool isLivingEnt /* = false */)
 		GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<FinishOffHandAction>::Create(FinishOffHandAction(eOHA_GRAB_NPC, this)), false);
 	}
 	RequireUpdate(eIUS_General);
+
+	//CryMP notify server
+	if (!isLivingEnt && gEnv->bMultiplayer && g_pGameCVars->cl_pickupObjectsMP && m_pGameFramework->IsImmersiveMPEnabled())
+	{
+		CActor* pOwner = GetOwnerActor();
+		if (pOwner && pOwner->IsClient())
+		{
+			IEntity* pObject = m_pEntitySystem->GetEntity(m_crosshairId);
+			if (pObject)
+			{
+				//Start throw animation for all clients
+				m_fm->StartFire();
+
+				const bool bClientEntity = (pObject->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
+				if (!bClientEntity)
+					pOwner->GetGameObject()->InvokeRMI(CPlayer::SvRequestPickUpItem(), CPlayer::ItemIdParam(m_crosshairId), eRMI_ToServer);
+			}
+		}
+	}
 }
 
 //=========================================================================================
 void COffHand::ThrowObject(int activationMode, bool isLivingEnt /*= false*/)
 {
+	//CryMP:
+	if (!m_heldEntityId)
+		return;
+
 	if (activationMode == eAAM_OnPress)
 	{
 		m_lastFireModeId = GetCurrentFireMode();
@@ -2693,7 +2831,6 @@ void COffHand::ThrowObject(int activationMode, bool isLivingEnt /*= false*/)
 //==========================================================================================
 bool COffHand::GrabNPC()
 {
-
 	CActor* pPlayer = GetOwnerActor();
 
 	assert(pPlayer && "COffHand::GrabNPC --> Offhand has no owner actor (player)!");
@@ -2705,7 +2842,7 @@ bool COffHand::GrabNPC()
 		return false;
 
 	//Get actor
-	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_preHeldEntityId));
+	CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(m_preHeldEntityId));
 
 	assert(pActor && "COffHand::GrabNPC -> No actor found!");
 	if (!pActor)
@@ -2816,7 +2953,7 @@ bool COffHand::GrabNPC()
 void COffHand::ThrowNPC(bool kill /*= true*/)
 {
 	//Get actor
-	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_heldEntityId));
+	CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(m_heldEntityId));
 
 	assert(pActor && "COffHand::Throw -> No actor found!");
 	if (!pActor)
@@ -3141,7 +3278,7 @@ IItem* COffHand::GetExchangeItem(CPlayer* pPlayer)
 			int i = pPlayer->GetInventory()->GetCount();
 			for (int w = i - 1; w > -1; --w)
 			{
-				pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItem(w));
+				pItem = m_pItemSystem->GetItem(pPlayer->GetInventory()->GetItem(w));
 				itemCategory = m_pItemSystem->GetItemCategory(pItem->GetEntity()->GetClass()->GetName());
 				if (!strcmp(itemCategory, "medium") || !strcmp(itemCategory, "heavy"))
 					return pItem;
@@ -3285,7 +3422,45 @@ void COffHand::AttachGrenadeToHand(int grenade, bool fp /*=true*/, bool attach /
 
 		}
 	}
+}
 
+//==============================================================
+void COffHand::AttachObjectToHand(bool attach /*=true*/)
+{
+	//CryMP Experimental 
+	//For Third Person
+	/*
+	ICharacterInstance* pOwnerCharacter = GetOwnerActor() ? GetOwnerActor()->GetEntity()->GetCharacter(0) : NULL;
+	if (!pOwnerCharacter)
+		return;
+
+	IAttachmentManager* pAttachmentManager = pOwnerCharacter->GetIAttachmentManager();
+	IAttachment* pAttachment = pAttachmentManager ? pAttachmentManager->GetInterfaceByName(m_params.attachment[eIH_Left].c_str()) : NULL;
+
+	if (pAttachment)
+	{
+		//If there's an attachment, clear it
+		if (!attach)
+		{
+			pAttachment->ClearBinding();
+		}
+		else
+		{
+			//If not it means we need to attach
+			int slot = eIGS_Aux0;
+			if ((grenade == 1) || (grenade == 2))
+				slot = eIGS_Aux1;
+
+			if (IStatObj* pStatObj = GetEntity()->GetStatObj(slot))
+			{
+				CCGFAttachment* pCGFAttachment = new CCGFAttachment();
+				pCGFAttachment->pObj = pStatObj;
+
+				pAttachment->AddBinding(pCGFAttachment);
+			}
+		}
+
+	}*/
 }
 
 //==============================================================

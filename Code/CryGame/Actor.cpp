@@ -303,6 +303,20 @@ CActor::~CActor()
 		const int channelId = GetChannelId();
 		g_pGame->GetGameRules()->RemoveChannel(channelId);
 	}
+
+	//CryMP handle carrying objects
+	if (gEnv->bServer && gEnv->bMultiplayer && g_pGame->GetIGameFramework() && g_pGame->GetIGameFramework()->IsImmersiveMPEnabled())
+	{
+		const EntityId objectId(GetHeldObjectId());
+		if (objectId)
+		{
+			//give back control to server, when client disconnected
+			if (m_pGameFramework->GetNetContext())
+			{
+				m_pGameFramework->GetNetContext()->DelegateAuthority(objectId, 0);
+			}
+		}
+	}
 }
 
 void CActor::ClearExtensionCache()

@@ -184,7 +184,12 @@ public:
 
 	void AttachGrenadeToHand(int grenade, bool fp = true, bool attach = true);
 
+	void AttachObjectToHand(bool attach);
+
 	virtual void ForcePendingActions() {}
+
+	virtual void OnEnterFirstPerson();
+	virtual void OnEnterThirdPerson();
 
 private:
 
@@ -197,6 +202,8 @@ private:
 
 	//Grenade info
 	int					m_lastFireModeId;
+	bool				m_isClient = false;
+	bool				m_wasThirdPerson = false;
 	float				m_nextGrenadeThrow;
 
 	float				m_lastCHUpdate;

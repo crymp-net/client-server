@@ -18,6 +18,7 @@ History:
 #include "Projectile.h"
 #include "WeaponSystem.h"
 #include "OffHand.h"
+#include "GameCVars.h"
 
 
 //------------------------------------------------------------------------
@@ -74,8 +75,6 @@ void CThrow::Update(float frameTime, uint frameId)
 					else if (pPE&&(pPE->GetType()==PE_LIVING||pPE->GetType()==PE_ARTICULATED))
 						ThrowLivingEntity(pEntity,pPE);
 				}
-
-
 			}
 			else if (!m_netfiring)
 				ThrowGrenade();
@@ -153,7 +152,7 @@ void CThrow::Activate(bool activate)
 //------------------------------------------------------------------------
 bool CThrow::CanFire(bool considerAmmo) const
 {
-	return CSingle::CanFire(considerAmmo);// cannot be changed. it's used in CSingle::Shoot()
+	return GetThrowable() || CSingle::CanFire(considerAmmo);// cannot be changed. it's used in CSingle::Shoot()
 }
 
 //------------------------------------------------------------------------
@@ -329,14 +328,19 @@ void CThrow::DoThrow()
 					if(!drop)
 					{
 						pSuit->PlaySound(STRENGTH_THROW_SOUND, massFactor);
-						pSuit->SetSuitEnergy(pSuit->GetSuitEnergy()-(40.0f*massFactor));
+
+						if (gEnv->bServer)
+							pSuit->SetSuitEnergy(pSuit->GetSuitEnergy()-(40.0f*massFactor));
 					}
 				}
 				else if(!drop)
 					pSuit->PlaySound(STRENGTH_THROW_SOUND, (pSuit->GetSlotValue(NANOSLOT_STRENGTH))*0.01f);
 			}
-			if(curMode == NANOMODE_CLOAK)
-				pSuit->SetSuitEnergy(pSuit->GetSuitEnergy()-100.0f);
+			if (curMode == NANOMODE_CLOAK)
+			{
+				if (gEnv->bServer)
+					pSuit->SetSuitEnergy(pSuit->GetSuitEnergy() - 100.0f);
+			}
 		}
 	}
 
@@ -446,6 +450,9 @@ void CThrow::ThrowGrenade()
 //-----------------------------------------------------
 void CThrow::ThrowObject(IEntity* pEntity, IPhysicalEntity* pPE)
 {
+	if (!pEntity || !pPE)
+		return;
+
 	bool strengthMode = false;
 
 	CPlayer *pPlayer = static_cast<CPlayer*>(m_pWeapon->GetOwnerActor());
@@ -488,7 +495,9 @@ void CThrow::ThrowObject(IEntity* pEntity, IPhysicalEntity* pPE)
 		asv.v = (dir*speed)+vel;
 		AABB box;
 		pEntity->GetWorldBounds(box);
-		Vec3 finalW = -gEnv->pSystem->GetViewCamera().GetMatrix().GetColumn0()*(8.0f/max(0.1f,box.GetRadius()));
+		
+		Vec3 dir(gEnv->pSystem->GetViewCamera().GetMatrix().GetColumn0());
+		Vec3 finalW = -dir*(8.0f/max(0.1f,box.GetRadius()));
 		finalW.x *= Random(0.5f,1.3f);
 		finalW.y *= Random(0.5f,1.3f);
 		finalW.z *= Random(0.5f,1.3f);
@@ -504,6 +513,9 @@ void CThrow::ThrowObject(IEntity* pEntity, IPhysicalEntity* pPE)
 		entityEvent.nParam[1] = pPlayer->GetEntityId();
 	entityEvent.fParam[0] = speed;
 	pEntity->SendEvent( entityEvent );
+
+	//CryMP reset...
+	m_throwableId = 0;
 }
 
 //-----------------------------------------------------

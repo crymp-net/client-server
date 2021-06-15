@@ -118,6 +118,7 @@ public:
 
 	void SetSpeedScale(float speedScale) { m_speed_scale = speedScale; }
 	void ThrowingGrenade(bool throwing) { m_usingGrenade = throwing; }
+	void ThrowingObject(bool throwing) { m_usingObject = throwing; }
 
 protected:
 
@@ -133,13 +134,14 @@ private:
 
 	bool   CheckForIntersections(IPhysicalEntity* heldEntity, Vec3 &dir);
 
-	bool  m_usingGrenade;
+	bool    m_usingGrenade;
+	bool    m_usingObject = false;
 	bool	m_thrown;
 	bool	m_pulling;
 	bool	m_throwing;
 	bool	m_netfiring;
 	float	m_throw_time;
-	bool  m_forceNextThrow;
+	bool    m_forceNextThrow;
 	
 	float	m_hold_timer;
 
