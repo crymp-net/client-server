@@ -1,5 +1,6 @@
-#include <cstdlib>
-#include <cstring>
+#include <malloc.h>  // _msize
+#include <stdlib.h>
+#include <string.h>
 
 #include "Launcher/Util.h"
 #include "Library/DLL.h"
@@ -14,10 +15,14 @@ namespace
 
 		if (size)
 		{
-			result = std::malloc(size);
-		}
+			result = malloc(size);
 
-		allocatedSize = size;
+			allocatedSize = _msize(result);
+		}
+		else
+		{
+			allocatedSize = 0;
+		}
 
 		return result;
 	}
@@ -28,41 +33,54 @@ namespace
 
 		if (size)
 		{
-			result = std::realloc(mem, size);
+			result = realloc(mem, size);
+
+			allocatedSize = _msize(result);
 		}
 		else
 		{
 			if (mem)
 			{
-				std::free(mem);
+				free(mem);
 			}
-		}
 
-		allocatedSize = size;
+			allocatedSize = 0;
+		}
 
 		return result;
 	}
 
 	size_t CryFree_hook(void *mem)
 	{
+		size_t size = 0;
+
 		if (mem)
 		{
-			std::free(mem);
+			size = _msize(mem);
+
+			free(mem);
 		}
 
-		return 0;  // this is not so good
+		return size;
 	}
 
 	void *CrySystemCrtMalloc_hook(size_t size)
 	{
-		return (size) ? std::malloc(size) : nullptr;
+		void *result = nullptr;
+
+		if (size)
+		{
+			result = malloc(size);
+		}
+
+		return result;
 	}
 
 	void CrySystemCrtFree_hook(void *mem)
 	{
 		if (mem)
 		{
-			std::free(mem);
+			free(mem);
 		}
 	}
 
@@ -79,14 +97,14 @@ namespace
 			0xFF, 0xE0                                                   // jmp rax
 		};
 
-		std::memcpy(&code[2], &pNewFunc, 8);
+		memcpy(&code[2], &pNewFunc, 8);
 	#else
 		unsigned char code[] = {
 			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
 			0xFF, 0xE0                     // jmp eax
 		};
 
-		std::memcpy(&code[1], &pNewFunc, 4);
+		memcpy(&code[1], &pNewFunc, 4);
 	#endif
 
 		return Util::FillMem(pFunc, code, sizeof code);
