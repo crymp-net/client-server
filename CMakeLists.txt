@@ -1,12 +1,21 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.15)
 
-####################################################
-project(CryMP-Client VERSION 0.1.0 LANGUAGES CXX RC)
-####################################################
+################################################################################
+
+project(CryMP-Client VERSION 1.0.0 LANGUAGES CXX RC)
+
+################################################################################
 
 if(NOT MSVC)
 	message(FATAL_ERROR "MSVC is the only supported compiler!")
 endif()
+
+if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
+	# use statically linked MSVC runtime library
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+################################################################################
 
 # detect 64-bit compiler
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -22,26 +31,8 @@ else()
 	set(CRYMP_CLIENT_EXE "CryMP-Client32")
 endif()
 
-# prevent modern MSVC from enabling ASLR
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /DYNAMICBASE:NO")
+################################################################################
 
-option(CRYMP_CLIENT_STATIC_MSVC_RUNTIME "Enable static link of MSVC runtime library." ON)
-if(CRYMP_CLIENT_STATIC_MSVC_RUNTIME)
-	foreach(flag
-	  CMAKE_CXX_FLAGS
-	  CMAKE_CXX_FLAGS_DEBUG
-	  CMAKE_CXX_FLAGS_RELEASE
-	  CMAKE_CXX_FLAGS_RELWITHDEBINFO
-	  CMAKE_CXX_FLAGS_MINSIZEREL)
-		if(${flag} MATCHES "/MD")
-			string(REGEX REPLACE "/MD" "/MT" ${flag} "${${flag}}")
-		endif()
-	endforeach()
-endif()
-
-configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
-
-########################################
 add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Client.cpp
   Code/Client/Client.h
@@ -289,9 +280,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Burst.cpp
   Code/CryGame/Burst.h
   Code/CryGame/C4.cpp
+  Code/CryGame/C4.h
   Code/CryGame/C4Detonator.cpp
   Code/CryGame/C4Detonator.h
-  Code/CryGame/C4.h
   Code/CryGame/C4Projectile.cpp
   Code/CryGame/C4Projectile.h
   Code/CryGame/Charge.cpp
@@ -328,11 +319,11 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/GameActions.cpp
   Code/CryGame/GameActions.h
   Code/CryGame/Game.cpp
+  Code/CryGame/Game.h
   Code/CryGame/GameCVars.cpp
   Code/CryGame/GameCVars.h
   Code/CryGame/GameFactory.cpp
   Code/CryGame/GameFactory.h
-  Code/CryGame/Game.h
   Code/CryGame/GameRulesClientServer.cpp
   Code/CryGame/GameRules.cpp
   Code/CryGame/GameRules.h
@@ -351,10 +342,11 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/HUD/HUDCommon.cpp
   Code/CryGame/HUD/HUDCommon.h
   Code/CryGame/HUD/HUD.cpp
+  Code/CryGame/HUD/HUD.h
   Code/CryGame/HUD/HUDCrosshair.cpp
   Code/CryGame/HUD/HUDCrosshair.h
   Code/CryGame/HUD/HUDEnums.h
-  Code/CryGame/HUD/HUD.h
+  Code/CryGame/HUD/HUDHealthEnergyWeapon.cpp
   Code/CryGame/HUD/HUDInterfaceEffects.cpp
   Code/CryGame/HUD/HUDMissionObjectiveSystem.cpp
   Code/CryGame/HUD/HUDMissionObjectiveSystem.h
@@ -408,10 +400,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/ItemAccessory.cpp
   Code/CryGame/ItemClientServer.cpp
   Code/CryGame/Item.cpp
+  Code/CryGame/Item.h
   Code/CryGame/ItemDualWield.cpp
   Code/CryGame/ItemEffect.cpp
   Code/CryGame/ItemEvents.cpp
-  Code/CryGame/Item.h
   Code/CryGame/ItemParamReader.h
   Code/CryGame/ItemParams.cpp
   Code/CryGame/ItemResource.cpp
@@ -471,9 +463,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Plant.cpp
   Code/CryGame/Plant.h
   Code/CryGame/Player.cpp
+  Code/CryGame/Player.h
   Code/CryGame/PlayerFeature.cpp
   Code/CryGame/PlayerFeature.h
-  Code/CryGame/Player.h
   Code/CryGame/PlayerInput.cpp
   Code/CryGame/PlayerInput.h
   Code/CryGame/PlayerMovementController.cpp
@@ -493,11 +485,11 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/ReferenceWeapon.cpp
   Code/CryGame/ReferenceWeapon.h
   Code/CryGame/Rock.cpp
+  Code/CryGame/Rock.h
   Code/CryGame/Rocket.cpp
   Code/CryGame/Rocket.h
   Code/CryGame/RocketLauncher.cpp
   Code/CryGame/RocketLauncher.h
-  Code/CryGame/Rock.h
   Code/CryGame/Scan.cpp
   Code/CryGame/Scan.h
   Code/CryGame/Scope.cpp
@@ -602,8 +594,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/WeaponAttachmentManager.h
   Code/CryGame/WeaponClientServer.cpp
   Code/CryGame/Weapon.cpp
-  Code/CryGame/WeaponEvent.cpp
   Code/CryGame/Weapon.h
+  Code/CryGame/WeaponEvent.cpp
   Code/CryGame/WeaponInput.cpp
   Code/CryGame/WeaponSystem.cpp
   Code/CryGame/WeaponSystem.h
@@ -644,13 +636,24 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/StringBuffer.h
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
-  "Code/CryGame/HUD/HUDHealthEnergyWeapon.cpp")
-########################################
+)
 
-target_link_libraries(${CRYMP_CLIENT_EXE} winhttp dbghelp)
+################################################################################
+
+set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD_REQUIRED ON)
+
+if(BUILD_64BIT)
+	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
+endif()
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 
-if(BUILD_64BIT)
-	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE BUILD_64BIT)
-endif()
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE winhttp dbghelp)
+
+# prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
+target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)
+
+################################################################################
+
+configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
