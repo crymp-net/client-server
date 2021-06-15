@@ -6,8 +6,6 @@
  * registered here.
  */
 
-#include <cstring>
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
@@ -71,33 +69,35 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		{
 			if (gEnv->pInput)
 			{
-				char buffer[4];  // MB_CUR_MAX should be used here, but its value is obtained at run-time = slow
-				std::memset(buffer, 0, sizeof buffer);
-
-				if (wctomb(buffer, wParam) < 0 || buffer[1] != '\0' || buffer[0] < ' ')
-				{
-					break;
-				}
-
-				char keyCode = wParam;
-
-				wchar_t wideBuffer[2];
-				std::memset(wideBuffer, 0, sizeof wideBuffer);
-
-				MultiByteToWideChar(CP_ACP, 0, &keyCode, 1, wideBuffer, sizeof wideBuffer / sizeof (wchar_t));
-
 				SInputEvent event;
+				event.modifiers = gEnv->pInput->GetModifiers();
 				event.deviceId = eDI_Keyboard;
 				event.state = eIS_UI;
-				event.keyName = buffer;
-				event.timestamp = wideBuffer[0];  // ???
-				event.modifiers = gEnv->pInput->GetModifiers();
 				event.value = 1.0;
 
-				gEnv->pInput->PostInputEvent(event);
+				char keyCode = static_cast<char>(wParam);
+				wchar_t keyCodeWide[2] = {};
+
+				MultiByteToWideChar(CP_ACP, 0, &keyCode, 1, keyCodeWide, 2);
+
+				// this looks like a mistake
+				event.timestamp = keyCodeWide[0];
+
+				// MB_CUR_MAX should be here, but it's slow
+				char keyName[4] = {};
+
+				if (wctomb(keyName, static_cast<wchar_t>(wParam)) >= 0)
+				{
+					if (keyName[1] == 0 && static_cast<unsigned char>(keyName[0]) >= 32)
+					{
+						event.keyName = keyName;
+
+						gEnv->pInput->PostInputEvent(event);
+					}
+				}
 			}
 
-			return 0;
+			break;
 		}
 		case WM_SYSKEYDOWN:  // 0x104
 		{
@@ -107,13 +107,10 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 				{
 					if (gEnv->pRenderer && gEnv->pRenderer->GetRenderType() != eRT_DX10)
 					{
-						static ICVar *pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen");
-
-						if (pFullscreenCVar)
+						if (ICVar *pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen"))
 						{
-							int isFullscreen = pFullscreenCVar->GetIVal();
-
-							pFullscreenCVar->Set(isFullscreen ? 0 : 1);
+							int fullscreen = pFullscreenCVar->GetIVal();
+							pFullscreenCVar->Set(static_cast<int>(fullscreen == 0));
 						}
 					}
 
@@ -132,6 +129,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 			break;
 		}
 		case WM_SYSCHAR:  // 0x106
+		case WM_HOTKEY:  // 0x312
 		{
 			return 0;
 		}
@@ -184,23 +182,6 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 			return 0;
 		}
 		case WM_ENTERMENULOOP:  // 0x211
-		{
-			if (g_pGame)
-			{
-				g_pGame->ShowMousePointer(true);
-			}
-
-			return 0;
-		}
-		case WM_EXITMENULOOP:  // 0x212
-		{
-			if (g_pGame)
-			{
-				g_pGame->ShowMousePointer(false);
-			}
-
-			return 0;
-		}
 		case WM_ENTERSIZEMOVE:  // 0x231
 		{
 			if (g_pGame)
@@ -210,6 +191,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 
 			return 0;
 		}
+		case WM_EXITMENULOOP:  // 0x212
 		case WM_EXITSIZEMOVE:  // 0x232
 		{
 			if (g_pGame)
@@ -217,10 +199,6 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 				g_pGame->ShowMousePointer(false);
 			}
 
-			return 0;
-		}
-		case WM_HOTKEY:  // 0x312
-		{
 			return 0;
 		}
 	}
