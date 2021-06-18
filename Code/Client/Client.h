@@ -1,40 +1,52 @@
-/**
- * @file
- * @brief CryMP Client.
- */
-
 #pragma once
+
+#include <memory>
+#include <random>
+#include <string_view>
+#include <type_traits>
 
 #include "CryCommon/IGameFramework.h"
 #include "CryAction/ILevelSystem.h"
+#include "CryCommon/IEntitySystem.h"
 
-#include "GSMaster.h"
-#include "HTTPClient.h"
-#include "Profile.h"
-#include "Telemetry.h"
+struct IConsoleCmdArgs;
 
-class Client : public IGameFrameworkListener, public ILevelSystemListener
+class Executor;
+class HTTPClient;
+class GSMasterHook;
+class ScriptCommands;
+class ScriptCallbacks;
+class ScriptBind_CPPAPI;
+
+class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
-	GSMaster m_GSMaster;
-	HTTPClient m_HTTPClient;
-	Profile m_userProfile;
-	Profile m_staticProfile;
-	Telemetry m_telemetry;
+	IGameFramework *m_pGameFramework = nullptr;
 
-	static Client *s_pInstance;
+	std::string_view m_scriptMain;
+	std::string_view m_scriptGameRules;
+	std::string_view m_scriptJSON;
+	std::string_view m_scriptRPC;
+
+	std::unique_ptr<Executor> m_pExecutor;
+	std::unique_ptr<HTTPClient> m_pHTTPClient;
+	std::unique_ptr<GSMasterHook> m_pGSMasterHook;
+	std::unique_ptr<ScriptCommands> m_pScriptCommands;
+	std::unique_ptr<ScriptCallbacks> m_pScriptCallbacks;
+	std::unique_ptr<ScriptBind_CPPAPI> m_pScriptBind_CPPAPI;
+
+	std::minstd_rand m_randomEngine;
+
+	unsigned int m_contract = 0;
+	std::string m_activePak = "";
+
+	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
+	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
 
 public:
-	Client()
-	: m_GSMaster(),
-	  m_HTTPClient(),
-	  m_userProfile(),
-	  m_staticProfile(),
-	  m_telemetry()
-	{
-		s_pInstance = this;
-	}
+	Client();
+	~Client();
 
-	bool init();
+	void init(IGameFramework *pGameFramework);
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
@@ -50,33 +62,77 @@ public:
 	void OnLoadingError(ILevelInfo *pLevel, const char *error) override;
 	void OnLoadingProgress(ILevelInfo *pLevel, int progressAmount) override;
 
-	static GSMaster & GetGSMaster()
+	// IEntitySystemSink
+	bool OnBeforeSpawn(SEntitySpawnParams & params) override;
+	void OnSpawn(IEntity *pEntity, SEntitySpawnParams & params) override;
+	bool OnRemove(IEntity *pEntity) override;
+	void OnEvent(IEntity *pEntity, SEntityEvent & event) override;
+
+	IGameFramework *getGameFramework()
 	{
-		return s_pInstance->m_GSMaster;
+		return m_pGameFramework;
 	}
 
-	static HTTPClient & GetHTTPClient()
+	Executor *getExecutor()
 	{
-		return s_pInstance->m_HTTPClient;
+		return m_pExecutor.get();
 	}
 
-	static Profile & GetProfile(EProfile type = EProfile::AUTO)
+	HTTPClient *getHTTPClient()
 	{
-		Profile & userProfile = s_pInstance->m_userProfile;
-		Profile & staticProfile = s_pInstance->m_staticProfile;
-
-		switch (type)
-		{
-			case EProfile::AUTO:   break;
-			case EProfile::USER:   return userProfile;
-			case EProfile::STATIC: return staticProfile;
-		}
-
-		return userProfile.isLoggedIn() ? userProfile : staticProfile;
+		return m_pHTTPClient.get();
 	}
 
-	static Telemetry & GetTelemetry()
+	GSMasterHook *getGSMasterHook()
 	{
-		return s_pInstance->m_telemetry;
+		return m_pGSMasterHook.get();
+	}
+
+	ScriptCommands *getScriptCommands()
+	{
+		return m_pScriptCommands.get();
+	}
+
+	ScriptCallbacks *getScriptCallbacks()
+	{
+		return m_pScriptCallbacks.get();
+	}
+
+	ScriptBind_CPPAPI *getScriptBind_CPPAPI()
+	{
+		return m_pScriptBind_CPPAPI.get();
+	}
+
+	// ints
+	template<class T>
+	typename std::enable_if<std::is_integral<T>::value, T>::type getRandomNumber(T min, T max)
+	{
+		// uniform distribution is stateless
+		return std::uniform_int_distribution<T>(min, max)(m_randomEngine);  // [min, max]
+	}
+
+	// floats
+	template<class T>
+	typename std::enable_if<std::is_floating_point<T>::value, T>::type getRandomNumber(T min, T max)
+	{
+		// uniform distribution is stateless
+		return std::uniform_real_distribution<T>(min, max)(m_randomEngine);  // [min, max)
+	}
+
+	bool loadServerPak(const std::string& path);
+	bool unloadServerPak();
+
+	unsigned int getContract() const
+	{
+		return m_contract;
+	}
+
+	unsigned int nextContract()
+	{
+		return ++m_contract;
 	}
 };
+
+///////////////////////
+inline Client *gClient;
+///////////////////////

@@ -1,308 +1,221 @@
-/**
- * @file
- * @brief Implementation of CryMP Client launcher.
- */
-
+#include "Client/Client.h"
 #include "CryCommon/IGameFramework.h"
 #include "CryCommon/IConsole.h"
-#include "CrySystem/CryMemoryManager.h"
-#include "CrySystem/GameWindow.h"
-#include "CrySystem/CrashLogger.h"
-#include "CrySystem/Log.h"
 #include "CryGame/Game.h"
-#include "Client/Client.h"
+#include "Library/CmdLine.h"
+#include "Library/CPU.h"
+#include "Library/Error.h"
+#include "Library/Format.h"
+#include "Library/WinAPI.h"
 
 #include "Launcher.h"
-#include "CmdLine.h"
 #include "Patch.h"
-#include "CPU.h"
+#include "CrashLogger.h"
+#include "CryMemoryManager.h"
 
 #include "config.h"
 
-#ifdef BUILD_64BIT
-#define BIN_DIRECTORY "Bin64"
-#else
-#define BIN_DIRECTORY "Bin32"
-#endif
-
-Launcher *Launcher::s_pInstance;
-
-static bool CheckGameVersion(void *pDLL)
+void Launcher::initWorkingDirectory()
 {
-	int gameVersion = Util::GetCrysisGameVersion(pDLL);
-	if (gameVersion < 0)
-	{
-		Util::ErrorBox("Failed to obtain game version!");
-		return false;
-	}
+	const std::string dirArg = CmdLine::GetArgValue("-dir");
 
-	if (gameVersion != 6156)
-	{
-		Util::ErrorBox("Unsupported version of the game!");
-		return false;
-	}
+	std::filesystem::path dir;
 
-	return true;
-}
-
-static bool InstallMemoryPatches(void *pCryAction, void *pCryNetwork, void *pCrySystem)
-{
-	// CryAction
-
-	if (!Patch::AllowDX9ImmersiveMultiplayer(pCryAction))
-		return false;
-
-	// CryNetwork
-
-	if (!Patch::AllowConnectWithoutGS(pCryNetwork))
-		return false;
-
-	if (!Patch::EnablePreordered(pCryNetwork))
-		return false;
-
-	if (!Patch::AllowSameCDKeys(pCryNetwork))  // useful for non-dedicated servers
-		return false;
-
-	// CrySystem
-
-	if (!Patch::RemoveSecuROM(pCrySystem))
-		return false;
-
-	if (!Patch::MakeDX9Default(pCrySystem))
-		return false;
-
-	if (!Patch::AllowDX9VeryHighSpec(pCrySystem))
-		return false;
-
-	if (!Patch::AllowMultipleInstances(pCrySystem))
-		return false;
-
-	if (!Patch::UnhandledExceptions(pCrySystem))
-		return false;
-
-	if (CPU::IsAMD() && !CPU::Has3DNow())
-	{
-		if (!Patch::Disable3DNow(pCrySystem))
-			return false;
-	}
-
-	return true;
-}
-
-static bool InitWorkingDirectory(Path & rootDirectory)
-{
-	Path path;
-
-	std::string dirArg = CmdLine::GetArgValue("-dir");
 	if (!dirArg.empty())
 	{
-		path = dirArg;
+		// sanitize the path
+		dir = std::filesystem::canonical(dirArg);
 	}
 	else
 	{
-		// get absolute path to the directory with our executable
-		path = Util::GetApplicationDirectory();
+		dir = std::filesystem::current_path();
 	}
 
-	if (!path)
+#ifdef BUILD_64BIT
+	constexpr std::string_view BIN_DIR = "Bin64";
+#else
+	constexpr std::string_view BIN_DIR = "Bin32";
+#endif
+
+	if (dir.filename() != BIN_DIR && std::filesystem::is_directory(dir / "Game"))
 	{
-		Util::ErrorBox("Failed to get application directory!");
-		return false;
+		// we are in Crysis directory, so add Bin32 or Bin64 to the DLL search path
+		WinAPI::DLL_AddSearchDirectory(dir / BIN_DIR);
+	}
+	else
+	{
+		// we are in Crysis/Bin32 or Crysis/Bin64 directory, so remove Bin32 or Bin64 from the path
+		dir = dir.parent_path();
 	}
 
-	if (!path.endsWith(BIN_DIRECTORY) && Util::DirectoryExists(path + "Game"))
+	WinAPI::SetWorkingDirectory(dir);
+}
+
+void Launcher::loadEngine()
+{
+	if (!m_CrySystem.load("CrySystem.dll", DLL::NO_RELEASE))  // unloading Crysis DLLs is not safe
 	{
-		// we are in Crysis root directory
-		if (!Util::AddDLLDirectory(path + BIN_DIRECTORY))
+		throw SystemError("Failed to load the CrySystem DLL!");
+	}
+
+	const int gameVersion = WinAPI::GetCrysisGameBuild(m_CrySystem.getHandle());
+	if (gameVersion < 0)
+	{
+		throw SystemError("Failed to get the game version!");
+	}
+
+	switch (gameVersion)
+	{
+		case 5767:
 		{
-			Util::ErrorBox("Failed to add " BIN_DIRECTORY " directory to DLL search path!");
-			return false;
+			throw Error("Crysis 1.0 is not supported!\n\nInstall 1.2 and 1.2.1 official patch.");
+		}
+		case 5879:
+		{
+			throw Error("Crysis 1.1 is not supported!\n\nInstall 1.2 and 1.2.1 official patch.");
+		}
+		case 6115:
+		{
+			throw Error("Crysis 1.2 is not supported!\n\nInstall 1.2.1 official patch.");
+		}
+		case 6156:
+		{
+			// only the latest Crysis 1.2.1 is supported
+			break;
+		}
+		case 6527:
+		case 6566:
+		case 6586:
+		case 6627:
+		case 6670:
+		case 6729:
+		{
+			throw Error("Crysis Wars is not supported!");
+		}
+		case 687:
+		case 710:
+		case 711:
+		{
+			throw Error("Crysis Warhead is not supported!");
+		}
+		default:
+		{
+			throw Error(Format("Unknown game version %d!", gameVersion));
 		}
 	}
-	else
+
+	if (!m_CryAction.load("CryAction.dll", DLL::NO_RELEASE))
 	{
-		// we are in Bin32 or Bin64 directory
-		path.pop();  // remove Bin32 or Bin64 from the path
+		throw SystemError("Failed to load the CryAction DLL!");
 	}
 
-	// set Crysis root directory as working directory
-	if (!Util::SetWorkingDirectory(path))
+	if (!m_CryNetwork.load("CryNetwork.dll", DLL::NO_RELEASE))
 	{
-		Util::ErrorBox("Failed to set working directory!");
-		return false;
+		throw SystemError("Failed to load the CryNetwork DLL!");
 	}
-
-	std::string rootArg = CmdLine::GetArgValue("-root");
-
-	rootDirectory = rootArg.empty() ? std::move(path) : rootArg;
-
-	return true;
 }
 
-static bool InitLog(SSystemInitParams & params)
+void Launcher::patchEngine()
 {
-	const std::string fileName = CmdLine::GetArgValue("-logfile", params.sLogFileName);  // default log file name
-	const std::string prefix = CmdLine::GetArgValue("-logprefix", "");
-	const int verbosity = CmdLine::GetArgValueInt("-verbosity", 1);  // default verbosity
-
-	const char *logFileName = CmdLine::HasArg("-nologfile") ? nullptr : fileName.c_str();
-
-	std::unique_ptr<CLog> pLog = CLog::Create(verbosity, logFileName, prefix.c_str());
-	if (!pLog)
+	if (m_CryAction)
 	{
-		return false;
+		Patch::AllowDX9ImmersiveMultiplayer(m_CryAction);
 	}
 
-	CrashLogger::Init(*pLog);
+	if (m_CryNetwork)
+	{
+		Patch::FixInternetConnect(m_CryNetwork);
+		Patch::EnablePreordered(m_CryNetwork);
+		Patch::AllowSameCDKeys(m_CryNetwork);
+	}
 
-	// store the log in the engine parameters
-	params.pLog = pLog.release();
+	if (m_CrySystem)
+	{
+		Patch::RemoveSecuROM(m_CrySystem);
+		Patch::MakeDX9Default(m_CrySystem);
+		Patch::AllowDX9VeryHighSpec(m_CrySystem);
+		Patch::AllowMultipleInstances(m_CrySystem);
+		Patch::UnhandledExceptions(m_CrySystem);
 
-	return true;
+		if (CPU::IsAMD() && !CPU::Has3DNow())
+		{
+			Patch::Disable3DNow(m_CrySystem);
+		}
+	}
 }
 
-bool Launcher::run(SSystemInitParams & params)
+void Launcher::startEngine()
 {
-	m_mainThreadID = Util::GetCurrentThreadID();
-	m_pInitParams = &params;
-
-	if (!InitWorkingDirectory(m_rootDirectory))
+	IGameFramework::TEntryFunction entry = m_CryAction.getSymbol<IGameFramework::TEntryFunction>("CreateGameFramework");
+	if (!entry)
 	{
-		return false;
+		throw Error("The CryAction DLL is not valid!");
 	}
 
-	if (!m_libCrySystem.load("CrySystem.dll"))
+	IGameFramework *pGameFramework = entry();
+	if (!pGameFramework)
 	{
-		Util::ErrorBox("Failed to load the CrySystem DLL!");
-		return false;
+		throw Error("Failed to create the GameFramework Interface!");
 	}
 
-	// redirect all memory allocation calls from that broken CryEngine memory manager to our code
-	CryMemoryManager::Init(m_libCrySystem);
+	m_gameWindow.init();
 
-	if (!m_libCryAction.load("CryAction.dll"))
-	{
-		Util::ErrorBox("Failed to load the CryAction DLL!");
-		return false;
-	}
-
-	if (!m_libCryNetwork.load("CryNetwork.dll"))
-	{
-		Util::ErrorBox("Failed to load the CryNetwork DLL!");
-		return false;
-	}
-
-	if (!CheckGameVersion(m_libCrySystem.getHandle()))
-	{
-		return false;
-	}
-
-	if (Util::GetApplicationFileName().find(CRYMP_CLIENT_EXE_NAME) != 0)
-	{
-		Util::ErrorBox("Invalid name of the executable!");
-		return false;
-	}
-
-	if (Util::FindStringNoCase(params.szSystemCmdLine, "-mod"))
-	{
-		Util::ErrorBox("Mods are not supported!");
-		return false;
-	}
-
-	if (params.bDedicatedServer || Util::FindStringNoCase(params.szSystemCmdLine, "-dedicated"))
-	{
-		Util::ErrorBox("Running as dedicated server is not supported!");
-		return false;
-	}
-
-	if (!InstallMemoryPatches(m_libCryAction.getHandle(), m_libCryNetwork.getHandle(), m_libCrySystem.getHandle()))
-	{
-		Util::ErrorBox("Failed to apply memory patch!");
-		return false;
-	}
-
-	IGameFramework::TEntryFunction pEntry = m_libCryAction.getSymbol<IGameFramework::TEntryFunction>("CreateGameFramework");
-	if (!pEntry)
-	{
-		Util::ErrorBox("The CryAction DLL is not valid!");
-		return false;
-	}
-
-	m_pGameFramework = pEntry();
-	if (!m_pGameFramework)
-	{
-		Util::ErrorBox("Failed to create the GameFramework Interface!");
-		return false;
-	}
-
-	// create worker thread for asynchronous tasks
-	m_executor.init();
-
-	// initialize the new log
-	if (!InitLog(params))
-	{
-		return false;
-	}
-
-	GameWindow window;
-	if (!window.init())
-	{
-		return false;
-	}
-
-	params.pUserCallback = this;
+	m_params.pUserCallback = this;
 
 	// initialize CryEngine
-	if (!m_pGameFramework->Init(params))
+	if (!pGameFramework->Init(m_params))  // Launcher::OnInit is called here
 	{
-		Util::ErrorBox("CryENGINE initialization failed!");
-		return false;
+		throw Error("CryENGINE initialization failed!");
 	}
 
-	params.pSystem = m_pSystem;  // Launcher::OnInit
+	// initialize the multiplayer client
+	gClient->init(pGameFramework);
 
-	Client client;
-	if (!client.init())
+	// initialize the game
+	// mods are not supported
+	m_pGame = new CGame();
+	if (!m_pGame->Init(pGameFramework))
 	{
-		Util::ErrorBox("Client initialization failed!");
-		return false;
+		throw Error("Game initialization failed!");
 	}
 
-	CGame game;
-	if (!game.Init(m_pGameFramework))
+	if (!pGameFramework->CompleteInit())
 	{
-		Util::ErrorBox("Game initialization failed!");
-		return false;
+		throw Error("CryEngine post-initialization failed!");
 	}
 
-	if (!m_pGameFramework->CompleteInit())
-	{
-		Util::ErrorBox("CryENGINE post-initialization failed!");
-		return false;
-	}
-
-	m_pSystem->ExecuteCommandLine();
-	m_pSystem->GetIConsole()->ExecuteString("exec autoexec.cfg");
-
-	// game update loop
-	while (true)
-	{
-		if (!window.update())
-		{
-			break;
-		}
-
-		if (!game.Update(true, 0))
-		{
-			window.onQuit();
-			break;
-		}
-	}
-
-	return true;
+	gEnv->pSystem->ExecuteCommandLine();
 }
 
-bool Launcher::OnError(const char *msg)
+void Launcher::updateLoop()
+{
+	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+
+	while (true)
+	{
+		if (!m_gameWindow.update())
+		{
+			break;
+		}
+
+		if (!m_pGame->Update(true, 0))
+		{
+			m_gameWindow.onQuit();
+			break;
+		}
+	}
+}
+
+Launcher::Launcher()
+{
+	memset(&m_params, 0, sizeof m_params);
+}
+
+Launcher::~Launcher()
+{
+}
+
+bool Launcher::OnError(const char *error)
 {
 	// quit
 	return true;
@@ -316,16 +229,13 @@ void Launcher::OnProcessSwitch()
 {
 }
 
-void Launcher::OnInitProgress(const char *msg)
+void Launcher::OnInitProgress(const char *message)
 {
 }
 
 void Launcher::OnInit(ISystem *pSystem)
 {
-	m_pSystem = pSystem;
-
-	// CryEngine global environment
-	ModuleInitISystem(pSystem);
+	gEnv = pSystem->GetGlobalEnvironment();
 }
 
 void Launcher::OnShutdown()
@@ -334,9 +244,62 @@ void Launcher::OnShutdown()
 
 void Launcher::OnUpdate()
 {
-	m_executor.onUpdate();
+	m_log.OnUpdate();
 }
 
 void Launcher::GetMemoryUsage(ICrySizer *pSizer)
 {
+}
+
+void Launcher::setCmdLine(const char *cmdLine)
+{
+	const size_t length = strlen(cmdLine);
+
+	if (length >= sizeof m_params.cmdLine)
+	{
+		throw Error("Command line is too long!");
+	}
+
+	memcpy(m_params.cmdLine, cmdLine, length + 1);
+}
+
+void Launcher::run()
+{
+	if (WinAPI::GetApplicationPath().filename().string().find(CRYMP_CLIENT_EXE_NAME) != 0)
+	{
+		throw Error("Invalid name of the executable!");
+	}
+
+	if (CmdLine::HasArg("-mod"))
+	{
+		throw Error("Mods are not supported!");
+	}
+
+	if (CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
+	{
+		throw Error("Running as a dedicated server is not supported!");
+	}
+
+	// the first step
+	initWorkingDirectory();
+
+	// open the log file
+	m_log.Init(m_params);
+
+	// crash logger requires the log file
+	CrashLogger::Init();
+
+	// load and patch Crysis DLLs
+	loadEngine();
+	patchEngine();
+
+	CryMemoryManager::Init(m_CrySystem);
+
+	// the multiplayer client
+	Client client;
+	gClient = &client;
+
+	startEngine();
+
+	updateLoop();
 }

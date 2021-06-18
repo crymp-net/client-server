@@ -1,11 +1,7 @@
-/**
- * @file
- * @brief HTTP common stuff.
- */
-
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace HTTP
 {
@@ -31,15 +27,10 @@ namespace HTTP
 		STATUS_NOT_IMPLEMENTED       = 501,
 		STATUS_BAD_GATEWAY           = 502,
 		STATUS_SERVICE_UNAVAILABLE   = 503,
-		STATUS_GATEWAY_TIMEOUT       = 504
+		STATUS_GATEWAY_TIMEOUT       = 504,
 	};
 
 	const char *StatusCodeToString(int code);
 
-	std::string URLEncode(const char *text);
-
-	inline std::string URLEncode(const std::string & text)
-	{
-		return URLEncode(text.c_str());
-	}
+	std::string URLEncode(const std::string_view & text);
 }

@@ -1,273 +1,287 @@
 #pragma once
 
-#include <cstdio>
-#include <cstdarg>
-#include <cstring>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdarg.h>
 #include <string>
-#include <new>
+#include <string_view>
 
-template<size_t DefaultSize>
-class StringBuffer
+class StringBufferBase
 {
-	char m_stackBuffer[DefaultSize];
-	char *m_buffer;
-	size_t m_bufferSize;
-	size_t m_pos;
+	size_t m_length = 0;
 
-public:
-	StringBuffer()
+	char *m_buffer = nullptr;
+	size_t m_bufferSize = 0;
+
+	char *m_initialBuffer = nullptr;
+	size_t m_initialBufferSize = 0;
+
+	void deallocate();
+
+protected:
+	StringBufferBase(char *initialBuffer, size_t initialBufferSize)
 	{
-		m_stackBuffer[0] = '\0';
-		m_buffer = m_stackBuffer;
-		m_bufferSize = DefaultSize;
-		m_pos = 0;
+		m_buffer = initialBuffer;
+		m_bufferSize = initialBufferSize;
+
+		m_initialBuffer = initialBuffer;
+		m_initialBufferSize = initialBufferSize;
+
+		clear();
 	}
 
-	StringBuffer(const StringBuffer &) = delete;
-	StringBuffer & operator=(const StringBuffer &) = delete;
+	void moveBufferFrom(StringBufferBase && other);
 
-	~StringBuffer()
+	void appendChar(char ch);
+	void appendText(const std::string_view & text);
+
+	void appendFormat(const char *format, ...);
+	void appendFormatV(const char *format, va_list args);
+
+	void appendNumber(uint64_t number, int minWidth, char pad, int base, bool uppercase);
+	void appendFloat(double number, int minWidth, int precision, bool trailingZeros);
+
+public:
+	StringBufferBase(const StringBufferBase &) = delete;
+	StringBufferBase(StringBufferBase &&) = delete;
+
+	StringBufferBase & operator=(const StringBufferBase &) = delete;
+	StringBufferBase & operator=(StringBufferBase &&) = delete;
+
+	~StringBufferBase()
 	{
 		if (isHeap())
 		{
-			delete [] m_buffer;
+			deallocate();
 		}
 	}
 
 	bool isHeap() const
 	{
-		return m_buffer != m_stackBuffer;
+		return m_buffer != m_initialBuffer;
 	}
 
-	bool isEmpty() const
+	bool empty() const
 	{
-		return m_pos == 0;
+		return m_length == 0;
 	}
 
-	const char *get() const
+	const char *c_str() const
 	{
 		return m_buffer;
 	}
 
-	size_t getLength() const
+	size_t length() const
 	{
-		return m_pos;
+		return m_length;
 	}
 
-	size_t getAvailableSpace() const
+	size_t capacity() const
 	{
-		return m_bufferSize - m_pos - 1;
+		return m_bufferSize - 1;
 	}
 
-	size_t getCapacity() const
+	size_t space() const
 	{
-		return m_bufferSize;
+		return capacity() - length();
 	}
 
-	char operator[](size_t index) const
+	char & operator[](size_t index)
 	{
 		return m_buffer[index];
 	}
 
-	char getLast() const
+	const char & operator[](size_t index) const
 	{
-		return (m_pos > 0) ? m_buffer[m_pos-1] : m_buffer[0];
+		return m_buffer[index];
+	}
+
+	char & front()
+	{
+		return m_buffer[0];
+	}
+
+	const char & front() const
+	{
+		return m_buffer[0];
+	}
+
+	char & back()
+	{
+		return (m_length > 0) ? m_buffer[m_length-1] : m_buffer[0];
+	}
+
+	const char & back() const
+	{
+		return (m_length > 0) ? m_buffer[m_length-1] : m_buffer[0];
 	}
 
 	std::string toString() const
 	{
-		return std::string(m_buffer, m_pos);
+		return std::string(m_buffer, m_length);
 	}
 
-	void clear()
+	operator std::string_view() const
 	{
-		m_pos = 0;
-		m_buffer[0] = '\0';
+		return std::string_view(m_buffer, m_length);
 	}
 
 	void pop(size_t length = 1)
 	{
-		m_pos -= (length < m_pos) ? length : m_pos;
-		m_buffer[m_pos] = '\0';
+		m_length -= (length < m_length) ? length : m_length;
+		m_buffer[m_length] = '\0';
 	}
 
-	void append(char ch)
+	void clear()
 	{
-		makeSpaceFor(1);
-
-		m_buffer[m_pos] = ch;
-		m_pos += 1;
-		m_buffer[m_pos] = '\0';
+		m_length = 0;
+		m_buffer[0] = '\0';
 	}
 
-	void append(const char *string)
+	void reserve(size_t length);
+};
+
+template<size_t Size>
+class StringBuffer : public StringBufferBase
+{
+	static_assert(Size > 0);
+
+	char m_storage[Size];
+
+public:
+	StringBuffer()
+	: StringBufferBase(m_storage, Size)
 	{
-		if (!string)
+	}
+
+	StringBuffer(const char *text)
+	: StringBuffer()
+	{
+		appendText(text);
+	}
+
+	StringBuffer(const std::string & text)
+	: StringBuffer()
+	{
+		appendText(text);
+	}
+
+	StringBuffer(const std::string_view & text)
+	: StringBuffer()
+	{
+		appendText(text);
+	}
+
+	StringBuffer(const StringBuffer & other)
+	: StringBuffer()
+	{
+		appendText(other);
+	}
+
+	StringBuffer(StringBuffer && other)
+	: StringBuffer()
+	{
+		moveBufferFrom(std::move(other));
+	}
+
+	StringBuffer & operator=(const StringBuffer & other)
+	{
+		if (this != &other)
 		{
-			return;
+			clear();
+			appendText(other);
 		}
 
-		append(string, std::strlen(string));
+		return *this;
 	}
 
-	void append(const char *string, size_t length)
+	StringBuffer & operator=(StringBuffer && other)
 	{
-		if (!string || length == 0)
+		if (this != &other)
 		{
-			return;
+			moveBufferFrom(std::move(other));
 		}
 
-		makeSpaceFor(length);
-
-		std::memcpy(m_buffer + m_pos, string, length);
-		m_pos += length;
-		m_buffer[m_pos] = '\0';
+		return *this;
 	}
 
-	void append(const std::string & string)
+	StringBuffer & add(char ch)
 	{
-		append(string.c_str(), string.length());
+		appendChar(ch);
+
+		return *this;
 	}
 
-	int append_f(const char *format, ...)
+	StringBuffer & add(const std::string_view & text)
 	{
-		if (!format)
-		{
-			return 0;
-		}
+		appendText(text);
 
+		return *this;
+	}
+
+	StringBuffer & addFormat(const char *format, ...)
+	{
 		va_list args;
 		va_start(args, format);
-
-		va_list argsCopy;
-		va_copy(argsCopy, args);
-
-		int status = std::vsnprintf(m_buffer + m_pos, m_bufferSize - m_pos, format, args);
-
+		appendFormatV(format, args);
 		va_end(args);
 
-		if (status > 0)
-		{
-			size_t length = status;
-
-			// check if the resulting string was truncated
-			if (length > getAvailableSpace())
-			{
-				makeSpaceFor(length);
-
-				// do again with proper buffer size
-				m_pos += std::vsnprintf(m_buffer + m_pos, m_bufferSize - m_pos, format, argsCopy);
-			}
-			else
-			{
-				m_pos += length;
-			}
-		}
-
-		va_end(argsCopy);
-
-		return status;
+		return *this;
 	}
 
-	int append_vf(const char *format, va_list args)
+	StringBuffer & addFormatV(const char *format, va_list args)
 	{
-		if (!format)
-		{
-			return 0;
-		}
+		appendFormatV(format, args);
 
-		va_list argsCopy;
-		va_copy(argsCopy, args);
-
-		int status = std::vsnprintf(m_buffer + m_pos, m_bufferSize - m_pos, format, args);
-
-		if (status > 0)
-		{
-			size_t length = status;
-
-			// check if the resulting string was truncated
-			if (length > getAvailableSpace())
-			{
-				makeSpaceFor(length);
-
-				// do again with proper buffer size
-				m_pos += std::vsnprintf(m_buffer + m_pos, m_bufferSize - m_pos, format, argsCopy);
-			}
-			else
-			{
-				m_pos += length;
-			}
-		}
-
-		va_end(argsCopy);
-
-		return status;
+		return *this;
 	}
 
-	void makeSpaceFor(size_t length)
+	StringBuffer & addUInt(uint64_t number, int minWidth = 0, char pad = '0', int base = 10, bool uppercase = true)
 	{
-		if (length > getAvailableSpace())
-		{
-			size_t requiredSize = getLength() + length + 1;
-			size_t minimalSize = getCapacity() * 2;
-			size_t newSize = (requiredSize > minimalSize) ? requiredSize : minimalSize;
+		appendNumber(number, minWidth, pad, base, uppercase);
 
-			resize(newSize);
-		}
+		return *this;
 	}
 
-	void resize(size_t size)
+	StringBuffer & addInt(int64_t number, int minWidth = 0, char pad = '0', int base = 10, bool uppercase = true)
 	{
-		if (size == 0 || size == m_bufferSize)
+		if (number < 0)
 		{
-			return;
+			add('-');
+			number = -number;
 		}
 
-		char *oldBuffer = m_buffer;
-		char *newBuffer = (size > DefaultSize) ? new char[size] : m_stackBuffer;
+		appendNumber(number, minWidth, pad, base, uppercase);
 
-		if (newBuffer == oldBuffer)
-		{
-			return;
-		}
+		return *this;
+	}
 
-		if (m_pos >= size)
-		{
-			// truncate buffer content
-			m_pos = size - 1;
-			oldBuffer[m_pos] = '\0';
-		}
+	StringBuffer & addFloat(double number, int minWidth = 0, int precision = 2, bool trailingZeros = false)
+	{
+		appendFloat(number, minWidth, precision, trailingZeros);
 
-		// copy content to the new buffer
-		std::memcpy(newBuffer, oldBuffer, m_pos + 1);
+		return *this;
+	}
 
-		if (isHeap())
-		{
-			delete [] oldBuffer;
-		}
+	StringBuffer & operator+=(char ch)
+	{
+		return add(ch);
+	}
 
-		m_buffer = newBuffer;
-		m_bufferSize = size;
+	StringBuffer & operator+=(const std::string_view & text)
+	{
+		return add(text);
 	}
 };
 
-template<size_t T>
-inline StringBuffer<T> & operator+=(StringBuffer<T> & buffer, char ch)
+template<size_t Size>
+inline const char *begin(const StringBuffer<Size> & buffer)
 {
-	buffer.append(ch);
-	return buffer;
+	return buffer.c_str();
 }
 
-template<size_t T>
-inline StringBuffer<T> & operator+=(StringBuffer<T> & buffer, const char *string)
+template<size_t Size>
+inline const char *end(const StringBuffer<Size> & buffer)
 {
-	buffer.append(string);
-	return buffer;
-}
-
-template<size_t T>
-inline StringBuffer<T> & operator+=(StringBuffer<T> & buffer, const std::string & string)
-{
-	buffer.append(string);
-	return buffer;
+	return buffer.c_str() + buffer.length();
 }

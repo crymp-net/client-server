@@ -1,101 +1,93 @@
-/**
- * @file
- * @brief CryMP Client launcher.
- */
-
 #pragma once
 
 #include "CryCommon/ISystem.h"
 #include "Library/DLL.h"
 
-#include "Executor.h"
-#include "Util.h"
+#include "GameWindow.h"
+#include "Log.h"
 
-struct IGameFramework;
+class CGame;
 
 class Launcher : public ISystemUserCallback
 {
-	unsigned long m_mainThreadID;
-	Path m_rootDirectory;
-	DLL m_libCrySystem;
-	DLL m_libCryAction;
-	DLL m_libCryNetwork;
-	Executor m_executor;
-	ISystem *m_pSystem;
-	IGameFramework *m_pGameFramework;
-	SSystemInitParams *m_pInitParams;
+	DLL m_CryAction;
+	DLL m_CryNetwork;
+	DLL m_CrySystem;
+	SSystemInitParams m_params;
+	GameWindow m_gameWindow;
+	CGame *m_pGame = nullptr;
+	CLog m_log;
 
-	static Launcher *s_pInstance;
+	void initWorkingDirectory();
+	void loadEngine();
+	void patchEngine();
+	void startEngine();
+	void updateLoop();
 
 public:
-	Launcher()
-	: m_mainThreadID(),
-	  m_rootDirectory(),
-	  m_libCrySystem(),
-	  m_libCryAction(),
-	  m_libCryNetwork(),
-	  m_executor(),
-	  m_pSystem(),
-	  m_pGameFramework(),
-	  m_pInitParams()
-	{
-		s_pInstance = this;
-	}
-
-	bool run(SSystemInitParams & params);
+	Launcher();
+	~Launcher();
 
 	// ISystemUserCallback
-	bool OnError(const char *msg) override;
+	bool OnError(const char *error) override;
 	void OnSaveDocument() override;
 	void OnProcessSwitch() override;
-	void OnInitProgress(const char *msg) override;
+	void OnInitProgress(const char *message) override;
 	void OnInit(ISystem *pSystem) override;
 	void OnShutdown() override;
 	void OnUpdate() override;
 	void GetMemoryUsage(ICrySizer *pSizer) override;
 
-	static bool IsMainThread()
+	const DLL & getCryAction() const
 	{
-		return s_pInstance->m_mainThreadID == Util::GetCurrentThreadID();
+		return m_CryAction;
 	}
 
-	static const Path & GetRootDirectory()
+	const DLL & getCryNetwork() const
 	{
-		return s_pInstance->m_rootDirectory;
+		return m_CryNetwork;
 	}
 
-	static const DLL & GetCrySystemDLL()
+	const DLL & getCrySystem() const
 	{
-		return s_pInstance->m_libCrySystem;
+		return m_CrySystem;
 	}
 
-	static const DLL & GetCryActionDLL()
+	const SSystemInitParams & getParams() const
 	{
-		return s_pInstance->m_libCryAction;
+		return m_params;
 	}
 
-	static const DLL & GetCryNetworkDLL()
+	const GameWindow & getGameWindow() const
 	{
-		return s_pInstance->m_libCryNetwork;
+		return m_gameWindow;
 	}
 
-	static Executor & GetExecutor()
+	CGame *getGame()
 	{
-		return s_pInstance->m_executor;
+		return m_pGame;
 	}
 
-	static ISystem *GetISystem()
+	CLog & getLog()
 	{
-		return s_pInstance->m_pSystem;
+		return m_log;
 	}
 
-	static IGameFramework *GetIGameFramework()
+	void setAppInstance(void *hInstance)
 	{
-		return s_pInstance->m_pGameFramework;
+		m_params.hInstance = hInstance;
 	}
 
-	static SSystemInitParams *GetInitParams()
+	void setLogFileName(const char *logFileName)
 	{
-		return s_pInstance->m_pInitParams;
+		m_params.logFileName = logFileName;
 	}
+
+	void setCmdLine(const char *cmdLine);
+
+	void run();
 };
+
+///////////////////////////
+inline Launcher *gLauncher;
+///////////////////////////

@@ -1,70 +1,15 @@
-/**
- * @file
- * @brief Implementation of HTTP client.
- */
-
-#include <cstring>
-#include <new>
-
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winhttp.h>
 
-#include "CryCommon/ISystem.h"
-#include "Launcher/Launcher.h"
-#include "Launcher/IExecutorTask.h"
+#include "Library/WinAPI.h"
 
 #include "HTTPClient.h"
+#include "Client.h"
+#include "Executor.h"
+#include <sstream>
+#include <fstream>
 
 #define HTTP_CLIENT_USER_AGENT L"CryMP-Client"
-#define HTTP_CLIENT_TIMEOUT_MS 5000
-
-static std::wstring ConvertUTF8To16(const char *input)
-{
-	if (!input)
-	{
-		return std::wstring();
-	}
-
-	std::wstring output;
-
-	wchar_t buffer[2048];
-	const int bufferLength = sizeof buffer / sizeof (wchar_t);
-
-	// get length of entire input string, including terminating null character
-	int remainingLength = MultiByteToWideChar(CP_UTF8, 0, input, -1, buffer, 0);
-	if (remainingLength > 0)
-	{
-		// skip terminating null character
-		remainingLength--;
-
-		int pos = 0;
-		while (remainingLength > 0)
-		{
-			const int chunkLength = (remainingLength > bufferLength) ? bufferLength : remainingLength;
-
-			int convertedLength = MultiByteToWideChar(CP_UTF8, 0, input + pos, chunkLength, buffer, bufferLength);
-			if (convertedLength > 0)
-			{
-				output.append(buffer, convertedLength);
-
-				remainingLength -= convertedLength;
-				pos += convertedLength;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	return output;
-}
-
-static std::wstring ConvertUTF8To16(const std::string & input)
-{
-	return ConvertUTF8To16(input.c_str());
-}
 
 class HTTPHandleGuard
 {
@@ -95,21 +40,22 @@ public:
 	}
 };
 
-struct HTTPClientRequestTask : public IExecutorTask
+struct HTTPClientTask : public IExecutorTask
 {
-	enum EMethod
-	{
-		GET, POST
-	};
 
-	int status;
-	EMethod method;
-	std::string url;
-	std::string data;
-	std::string contentType;
-	std::string result;
-	HTTPClient::TCallback pCallback;
-	void *callbackParam;
+	std::string m_method = "GET";
+	std::string m_url;
+	std::string m_data;
+	std::map<std::string, std::string> m_headers;
+	HTTPClient::Callback m_callback;
+	int m_timeout = 0;
+	std::string m_outputPath;
+	bool m_cache = false;
+	bool m_returnPath = false;
+
+	int m_status = 0;
+	std::string m_reply;
+	SystemError m_error;
 
 	// worker thread
 	void execute() override;
@@ -117,28 +63,93 @@ struct HTTPClientRequestTask : public IExecutorTask
 	// main thread
 	void callback() override
 	{
-		pCallback(status, result, callbackParam);
+		if (m_callback)
+		{
+			m_callback(m_status, m_reply, m_error);
+		}
 	}
 };
 
-void HTTPClientRequestTask::execute()
+void HTTPClient::Request(
+	const std::string_view& method,
+	const std::string_view& url,
+	const std::map<std::string, std::string>& headers,
+	const std::string_view& body,
+	Callback callback,
+	int timeout,
+	bool cache,
+	bool returnPath
+) {
+	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
+	task->m_method = method;
+	task->m_url = url;
+	task->m_data = body;
+	task->m_headers = headers;
+	task->m_callback = std::move(callback);
+	task->m_timeout = timeout;
+	task->m_cache = cache;
+	task->m_returnPath = returnPath;
+
+	gClient->getExecutor()->addTask(std::move(task));
+}
+
+void HTTPClient::GET(const std::string_view & url, Callback callback, int timeout)
 {
-	status = -1;
+	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
+	task->m_method = "GET";
+	task->m_url = url;
+	task->m_callback = std::move(callback);
+	task->m_timeout = timeout;
 
-	const std::wstring urlW = ConvertUTF8To16(url);
+	gClient->getExecutor()->addTask(std::move(task));
+}
 
-	URL_COMPONENTS urlComponents;
-	std::memset(&urlComponents, 0, sizeof urlComponents);
+void HTTPClient::POST(const std::string_view & url, const std::string_view & data,
+                      const std::string_view & contentType, Callback callback, int timeout)
+{
+	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
+	task->m_method = "POST";
+	task->m_url = url;
+	task->m_data = data;
+	task->m_headers["Content-type"] = contentType;
+	task->m_callback = std::move(callback);
+	task->m_timeout = timeout;
+
+	gClient->getExecutor()->addTask(std::move(task));
+}
+
+void HTTPClientTask::execute()
+{
+	if (m_cache) {
+		m_outputPath = WinAPI::GetCachePath(m_url);
+		if (m_outputPath.length() > 0) {
+			std::ifstream f(m_outputPath, std::ios::binary);
+			if (f) {
+				m_status = 200;
+				if (m_returnPath) {
+					m_reply = m_outputPath;
+				} else {
+					std::stringstream ss;
+					ss << f.rdbuf();
+					m_reply = ss.str();
+				}
+				f.close();
+				return;
+			}
+		}
+	}
+	const std::wstring url = WinAPI::ConvertUTF8To16(m_url);
+
+	URL_COMPONENTS urlComponents = {};
 	urlComponents.dwStructSize = sizeof urlComponents;
-
 	urlComponents.dwSchemeLength = -1;
 	urlComponents.dwHostNameLength = -1;
 	urlComponents.dwUrlPathLength = -1;
 	urlComponents.dwExtraInfoLength = -1;
 
-	if (!WinHttpCrackUrl(urlW.c_str(), urlW.length(), 0, &urlComponents))
+	if (!WinHttpCrackUrl(url.c_str(), url.length(), 0, &urlComponents))
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpCrackUrl error code %lu", GetLastError());
+		m_error = SystemError("WinHttpCrackUrl");
 		return;
 	}
 
@@ -148,143 +159,101 @@ void HTTPClientRequestTask::execute()
 	                                       WINHTTP_NO_PROXY_BYPASS, 0);
 	if (!hSession)
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpOpen error code %lu", GetLastError());
+		m_error = SystemError("WinHttpOpen");
 		return;
 	}
 
-	if (!WinHttpSetTimeouts(hSession,
-	                        HTTP_CLIENT_TIMEOUT_MS,
-	                        HTTP_CLIENT_TIMEOUT_MS,
-	                        HTTP_CLIENT_TIMEOUT_MS,
-	                        HTTP_CLIENT_TIMEOUT_MS))
+	if (!WinHttpSetTimeouts(hSession, m_timeout, m_timeout, m_timeout, m_timeout))
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpSetTimeouts error code %lu", GetLastError());
+		m_error = SystemError("WinHttpSetTimeouts");
 		return;
 	}
 
-	std::wstring serverNameW(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
+	std::wstring serverName(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
 
-	HTTPHandleGuard hConnect = WinHttpConnect(hSession, serverNameW.c_str(), urlComponents.nPort, 0);
+	HTTPHandleGuard hConnect = WinHttpConnect(hSession, serverName.c_str(), urlComponents.nPort, 0);
 	if (!hConnect)
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpConnect error code %lu", GetLastError());
+		m_error = SystemError("WinHttpConnect");
 		return;
 	}
 
 	DWORD requestFlags = WINHTTP_FLAG_REFRESH;
+
 	if (urlComponents.nScheme == INTERNET_SCHEME_HTTPS)
 	{
 		requestFlags |= WINHTTP_FLAG_SECURE;
 	}
 
 	// URL components are not null-terminated, but whole URL is, so URL path contains both path and parameters
-	HTTPHandleGuard hRequest = WinHttpOpenRequest(hConnect, (method == POST) ? L"POST" : L"GET",
-	                                              urlComponents.lpszUrlPath, NULL,
+	HTTPHandleGuard hRequest = WinHttpOpenRequest(hConnect,
+	                                              WinAPI::ConvertUTF8To16(m_method).c_str(),
+	                                              urlComponents.lpszUrlPath, nullptr,
 	                                              WINHTTP_NO_REFERER,
 	                                              WINHTTP_DEFAULT_ACCEPT_TYPES, requestFlags);
 	if (!hRequest)
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpOpenRequest error code %lu", GetLastError());
+		m_error = SystemError("WinHttpOpenRequest");
 		return;
 	}
 
-	if (data.empty())
-	{
-		if (!WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0))
-		{
-			CryLogErrorAlways("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
-			return;
-		}
-	}
-	else
-	{
-		std::wstring headersW;
-		if (!contentType.empty())
-		{
-			headersW += L"Content-Type: ";
-			headersW += ConvertUTF8To16(contentType);
-			headersW += L"\r\n";
-		}
+	m_headers["X-Sfwcl-HWID"] = WinAPI::GetHWID("idsvc");
+	m_headers["X-Sfwcl-Locale"] = WinAPI::GetLocale();
+	m_headers["X-Sfwcl-Tz"] = std::to_string(WinAPI::GetTimeZoneBias());
+	std::wstring headers;
 
-		if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
-		                        const_cast<char*>(data.c_str()), data.length(), data.length(), 0))
-		{
-			CryLogErrorAlways("HTTPClient: WinHttpSendRequest error code %lu", GetLastError());
-			return;
-		}
+	for (auto& [key, value] : m_headers) {
+		headers += WinAPI::ConvertUTF8To16(key) + L": " + WinAPI::ConvertUTF8To16(value) + L"\r\n";
 	}
 
-	if (!WinHttpReceiveResponse(hRequest, NULL))
+	if (!WinHttpSendRequest(hRequest, headers.c_str(), headers.length(),
+	                        const_cast<char*>(m_data.c_str()), m_data.length(), m_data.length(), 0))
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpReceiveResponse error code %lu", GetLastError());
+		m_error = SystemError("WinHttpSendRequest");
 		return;
 	}
 
-	// copy received data to the result string
+	if (!WinHttpReceiveResponse(hRequest, nullptr))
+	{
+		m_error = SystemError("WinHttpReceiveResponse");
+		return;
+	}
+
 	DWORD chunkLength = 0;
 	do
 	{
 		char buffer[4096];
 		if (!WinHttpReadData(hRequest, buffer, sizeof buffer, &chunkLength))
 		{
-			CryLogErrorAlways("HTTPClient: WinHttpReadData error code %lu", GetLastError());
+			m_error = SystemError("WinHttpReadData");
 			return;
 		}
 
-		result.append(buffer, chunkLength);
+		m_reply.append(buffer, chunkLength);
 	}
 	while (chunkLength > 0);
 
-	DWORD statusCode;
-	DWORD statusCodeLength = sizeof statusCode;
+	DWORD code;
+	DWORD codeLength = sizeof code;
 	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-	                         WINHTTP_HEADER_NAME_BY_INDEX, &statusCode, &statusCodeLength, WINHTTP_NO_HEADER_INDEX))
+	                         WINHTTP_HEADER_NAME_BY_INDEX, &code, &codeLength, WINHTTP_NO_HEADER_INDEX))
 	{
-		CryLogErrorAlways("HTTPClient: WinHttpQueryHeaders error code %lu", GetLastError());
+		m_error = SystemError("WinHttpQueryHeaders");
 		return;
 	}
 
-	status = statusCode;
-}
+	m_status = code;
 
-void HTTPClient::GET(const char *url, TCallback pCallback, void *param)
-{
-	if (!url || !pCallback)
-	{
-		return;
+	if (m_cache && m_outputPath.length() > 0 && m_status >= 200 && m_status < 305) {
+		std::ofstream f(m_outputPath, std::ios::binary);
+		if (!f) {
+			m_error = SystemError("Cannot open cache for write");
+			return;
+		}
+		f << m_reply;
+		f.close();
+		if (m_returnPath) {
+			m_reply = m_outputPath;
+;		}
 	}
-
-	HTTPClientRequestTask *pTask = new HTTPClientRequestTask();
-	pTask->url = url;
-	pTask->pCallback = pCallback;
-	pTask->callbackParam = param;
-	pTask->method = HTTPClientRequestTask::GET;
-
-	Launcher::GetExecutor().addTask(pTask);
-}
-
-void HTTPClient::POST(const char *url, const char *data, const char *contentType, TCallback pCallback, void *param)
-{
-	if (!url || !pCallback)
-	{
-		return;
-	}
-
-	HTTPClientRequestTask *pTask = new HTTPClientRequestTask();
-	pTask->url = url;
-	pTask->pCallback = pCallback;
-	pTask->callbackParam = param;
-	pTask->method = HTTPClientRequestTask::POST;
-
-	if (data)
-	{
-		pTask->data = data;
-	}
-
-	if (contentType)
-	{
-		pTask->contentType = contentType;
-	}
-
-	Launcher::GetExecutor().addTask(pTask);
 }

@@ -1,14 +1,14 @@
-/**
- * @file
- * @brief CryMP Client launcher resources.
- */
-
 #pragma once
 
-#define LAUNCHER_ICON          101
+#define RESOURCE_ICON                     101
 
-#define LAUNCHER_CURSOR_AMBER  103
-#define LAUNCHER_CURSOR_BLUE   104
-#define LAUNCHER_CURSOR_GREEN  105
-#define LAUNCHER_CURSOR_RED    106
-#define LAUNCHER_CURSOR_WHITE  107
+#define RESOURCE_CURSOR_AMBER             103
+#define RESOURCE_CURSOR_BLUE              104
+#define RESOURCE_CURSOR_GREEN             105
+#define RESOURCE_CURSOR_RED               106
+#define RESOURCE_CURSOR_WHITE             107
+
+#define RESOURCE_SCRIPT_MAIN              201
+#define RESOURCE_SCRIPT_GAME_RULES        202
+#define RESOURCE_SCRIPT_JSON              203
+#define RESOURCE_SCRIPT_RPC               204

@@ -36,18 +36,20 @@ endif()
 add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Client.cpp
   Code/Client/Client.h
-  Code/Client/DisplayInfo.cpp
-  Code/Client/DisplayInfo.h
-  Code/Client/GSMaster.cpp
-  Code/Client/GSMaster.h
+  Code/Client/Executor.cpp
+  Code/Client/Executor.h
+  Code/Client/GSMasterHook.cpp
+  Code/Client/GSMasterHook.h
   Code/Client/HTTP.cpp
   Code/Client/HTTP.h
   Code/Client/HTTPClient.cpp
   Code/Client/HTTPClient.h
-  Code/Client/Profile.cpp
-  Code/Client/Profile.h
-  Code/Client/Telemetry.cpp
-  Code/Client/Telemetry.h
+  Code/Client/ScriptBind_CPPAPI.cpp
+  Code/Client/ScriptBind_CPPAPI.h
+  Code/Client/ScriptCallbacks.cpp
+  Code/Client/ScriptCallbacks.h
+  Code/Client/ScriptCommands.cpp
+  Code/Client/ScriptCommands.h
   Code/CryAction/IActionMapManager.h
   Code/CryAction/IActorSystem.h
   Code/CryAction/IAnimatedCharacter.h
@@ -57,8 +59,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryAction/IEffectSystem.h
   Code/CryAction/IGameObject.h
   Code/CryAction/IGameObjectSystem.h
-  Code/CryAction/IGameplayRecorder.h
   Code/CryAction/IGameRulesSystem.h
+  Code/CryAction/IGameplayRecorder.h
   Code/CryAction/IInteractor.h
   Code/CryAction/IItem.h
   Code/CryAction/IItemSystem.h
@@ -75,42 +77,32 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryAction/IWorldQuery.h
   Code/CryAction/Network/NetActionSync.h
   Code/CryCommon/AABBSV.h
-  Code/CryCommon/AgentParams.h
   Code/CryCommon/AIFormationDescriptor.h
   Code/CryCommon/AITrackPatternDescriptor.h
+  Code/CryCommon/AgentParams.h
   Code/CryCommon/AnimKey.h
   Code/CryCommon/BitFiddling.h
   Code/CryCommon/CGFContent.h
   Code/CryCommon/CoherentValue.h
   Code/CryCommon/ConfigurableVariant.h
-  Code/CryCommon/crc32.h
   Code/CryCommon/CryAnimationScriptCommands.h
   Code/CryCommon/CryArray.h
   Code/CryCommon/CryAssert.h
   Code/CryCommon/CryAssert_impl.h
-  Code/CryCommon/Cry_Camera.h
   Code/CryCommon/CryCharAnimationParams.h
   Code/CryCommon/CryCharMorphParams.h
-  Code/CryCommon/Cry_Color.h
   Code/CryCommon/CryCompiledFile.h
   Code/CryCommon/CryEngineDecalInfo.h
   Code/CryCommon/CryFile.h
   Code/CryCommon/CryFixedString.h
-  Code/CryCommon/Cry_GeoDistance.h
-  Code/CryCommon/Cry_Geo.h
-  Code/CryCommon/Cry_GeoIntersect.h
-  Code/CryCommon/Cry_GeoOverlap.h
   Code/CryCommon/CryHeaders.h
   Code/CryCommon/CryLibrary.h
-  Code/CryCommon/Cry_Math.h
-  Code/CryCommon/Cry_Matrix.h
   Code/CryCommon/CryMemoryAllocator.h
   Code/CryCommon/CryModuleDefs.h
   Code/CryCommon/CryName.h
   Code/CryCommon/CryParticleSpawnInfo.h
   Code/CryCommon/CryPath.h
   Code/CryCommon/CryPodArray.h
-  Code/CryCommon/Cry_Quat.h
   Code/CryCommon/CrySizer.h
   Code/CryCommon/CryString.h
   Code/CryCommon/CryThread.h
@@ -122,28 +114,36 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryThread_windows.h
   Code/CryCommon/CryThread_wingc.h
   Code/CryCommon/CryThread_winthread.h
+  Code/CryCommon/CryVersion.h
+  Code/CryCommon/CryVertexBinding.h
+  Code/CryCommon/Cry_Camera.h
+  Code/CryCommon/Cry_Color.h
+  Code/CryCommon/Cry_Geo.h
+  Code/CryCommon/Cry_GeoDistance.h
+  Code/CryCommon/Cry_GeoIntersect.h
+  Code/CryCommon/Cry_GeoOverlap.h
+  Code/CryCommon/Cry_Math.h
+  Code/CryCommon/Cry_Matrix.h
+  Code/CryCommon/Cry_Quat.h
   Code/CryCommon/Cry_ValidNumber.h
   Code/CryCommon/Cry_Vector2.h
   Code/CryCommon/Cry_Vector3.h
-  Code/CryCommon/CryVersion.h
-  Code/CryCommon/CryVertexBinding.h
   Code/CryCommon/Cry_XOptimise.h
   Code/CryCommon/Endian.h
   Code/CryCommon/EntityDesc.h
   Code/CryCommon/Force.h
   Code/CryCommon/FrameProfiler.h
-  Code/CryCommon/functor.h
   Code/CryCommon/GameUtils.h
   Code/CryCommon/GeomQuery.h
   Code/CryCommon/I3DEngine.h
   Code/CryCommon/I3DSampler.h
-  Code/CryCommon/IAgent.h
   Code/CryCommon/IAIAction.h
   Code/CryCommon/IAIGroup.h
   Code/CryCommon/IAIRecorder.h
   Code/CryCommon/IAISystem.h
-  Code/CryCommon/IAnimationGraphSystem.h
   Code/CryCommon/IAVI_Reader.h
+  Code/CryCommon/IAgent.h
+  Code/CryCommon/IAnimationGraphSystem.h
   Code/CryCommon/IBitStream.h
   Code/CryCommon/IBudgetingSystem.h
   Code/CryCommon/IChunkFile.h
@@ -155,8 +155,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/IDebugHistory.h
   Code/CryCommon/IDialogSystem.h
   Code/CryCommon/IEditorGame.h
-  Code/CryCommon/IEntityClass.h
   Code/CryCommon/IEntity.h
+  Code/CryCommon/IEntityClass.h
   Code/CryCommon/IEntityProxy.h
   Code/CryCommon/IEntityRenderState.h
   Code/CryCommon/IEntitySerialize.h
@@ -165,8 +165,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/IFlashPlayer.h
   Code/CryCommon/IFlowSystem.h
   Code/CryCommon/IFont.h
-  Code/CryCommon/IGameFramework.h
   Code/CryCommon/IGame.h
+  Code/CryCommon/IGameFramework.h
   Code/CryCommon/IGameRef.h
   Code/CryCommon/IGameStartup.h
   Code/CryCommon/IGameTokens.h
@@ -176,25 +176,24 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/IInput.h
   Code/CryCommon/IInterestSystem.h
   Code/CryCommon/IJoystick.h
-  Code/CryCommon/ILipSync.h
   Code/CryCommon/ILMSerializationManager.h
+  Code/CryCommon/ILipSync.h
   Code/CryCommon/ILog.h
-  Code/CryCommon/IMaterialEffects.h
   Code/CryCommon/IMaterial.h
+  Code/CryCommon/IMaterialEffects.h
   Code/CryCommon/IMiniLog.h
   Code/CryCommon/IMovieSystem.h
   Code/CryCommon/IMusicSystem.h
   Code/CryCommon/INetwork.h
   Code/CryCommon/INetworkService.h
-  Code/CryCommon/InterpolationHelpers.h
   Code/CryCommon/IPhysics.h
   Code/CryCommon/IProcess.h
   Code/CryCommon/IReadWriteXMLSink.h
   Code/CryCommon/IRemoteControl.h
   Code/CryCommon/IRenderAuxGeom.h
-  Code/CryCommon/IRendererD3D9.h
-  Code/CryCommon/IRenderer.h
   Code/CryCommon/IRenderMesh.h
+  Code/CryCommon/IRenderer.h
+  Code/CryCommon/IRendererD3D9.h
   Code/CryCommon/IResourceCollector.h
   Code/CryCommon/IReverbManager.h
   Code/CryCommon/IScriptSystem.h
@@ -216,22 +215,19 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/IValidator.h
   Code/CryCommon/IVideoPlayer.h
   Code/CryCommon/IXml.h
+  Code/CryCommon/InterpolationHelpers.h
   Code/CryCommon/LMCompStructures.h
-  Code/CryCommon/MiniQueue.h
   Code/CryCommon/MSVCspecific.h
   Code/CryCommon/MTPseudoRandom.cpp
   Code/CryCommon/MTPseudoRandom.h
+  Code/CryCommon/MiniQueue.h
   Code/CryCommon/MultiThread.h
   Code/CryCommon/NetHelpers.h
-  Code/CryCommon/ParticleParams.h
-  Code/CryCommon/physinterface.h
-  Code/CryCommon/Pipe.h
-  Code/CryCommon/platform.h
-  Code/CryCommon/platform_impl.h
   Code/CryCommon/PNoise3.h
+  Code/CryCommon/ParticleParams.h
+  Code/CryCommon/Pipe.h
   Code/CryCommon/PoolAllocator.h
   Code/CryCommon/PoolAllocatorSynchronization.h
-  Code/CryCommon/primitives.h
   Code/CryCommon/ProjectDefines.h
   Code/CryCommon/Range.h
   Code/CryCommon/RendElement.h
@@ -242,7 +238,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/SerializeBuffer.h
   Code/CryCommon/SerializeFwd.h
   Code/CryCommon/SimpleSerialize.h
-  Code/CryCommon/smartptr.h
   Code/CryCommon/StlUtils.h
   Code/CryCommon/StringUtils.h
   Code/CryCommon/TArray.h
@@ -256,9 +251,18 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/VertexFormats.h
   Code/CryCommon/Win32specific.h
   Code/CryCommon/Win64specific.h
+  Code/CryCommon/crc32.h
+  Code/CryCommon/functor.h
+  Code/CryCommon/physinterface.h
+  Code/CryCommon/platform.h
+  Code/CryCommon/platform_impl.h
+  Code/CryCommon/primitives.h
+  Code/CryCommon/smartptr.h
+  Code/CryGame/AIDemoInput.h
+  Code/CryGame/AVMine.cpp
+  Code/CryGame/AVMine.h
   Code/CryGame/Actor.cpp
   Code/CryGame/Actor.h
-  Code/CryGame/AIDemoInput.h
   Code/CryGame/Alien.cpp
   Code/CryGame/Alien.h
   Code/CryGame/AmmoParams.cpp
@@ -267,8 +271,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/AmmoPickup.h
   Code/CryGame/Automatic.cpp
   Code/CryGame/Automatic.h
-  Code/CryGame/AVMine.cpp
-  Code/CryGame/AVMine.h
   Code/CryGame/Beam.cpp
   Code/CryGame/Beam.h
   Code/CryGame/Binocular.cpp
@@ -316,33 +318,31 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/FlowVehicleNodes.cpp
   Code/CryGame/FreezingBeam.cpp
   Code/CryGame/FreezingBeam.h
-  Code/CryGame/GameActions.cpp
-  Code/CryGame/GameActions.h
   Code/CryGame/Game.cpp
   Code/CryGame/Game.h
+  Code/CryGame/GameActions.cpp
+  Code/CryGame/GameActions.h
   Code/CryGame/GameCVars.cpp
   Code/CryGame/GameCVars.h
   Code/CryGame/GameFactory.cpp
   Code/CryGame/GameFactory.h
-  Code/CryGame/GameRulesClientServer.cpp
   Code/CryGame/GameRules.cpp
   Code/CryGame/GameRules.h
+  Code/CryGame/GameRulesClientServer.cpp
   Code/CryGame/GrabHandler.cpp
   Code/CryGame/GrabHandler.h
   Code/CryGame/GunTurret.cpp
   Code/CryGame/GunTurret.h
-  Code/CryGame/HomingMissile.cpp
-  Code/CryGame/HomingMissile.h
   Code/CryGame/HUD/FlashPlayerNULL.h
   Code/CryGame/HUD/GameFlashAnimation.cpp
   Code/CryGame/HUD/GameFlashAnimation.h
   Code/CryGame/HUD/GameFlashLogic.cpp
   Code/CryGame/HUD/GameFlashLogic.h
+  Code/CryGame/HUD/HUD.cpp
+  Code/CryGame/HUD/HUD.h
   Code/CryGame/HUD/HUDAirStrike.cpp
   Code/CryGame/HUD/HUDCommon.cpp
   Code/CryGame/HUD/HUDCommon.h
-  Code/CryGame/HUD/HUD.cpp
-  Code/CryGame/HUD/HUD.h
   Code/CryGame/HUD/HUDCrosshair.cpp
   Code/CryGame/HUD/HUDCrosshair.h
   Code/CryGame/HUD/HUDEnums.h
@@ -385,22 +385,24 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/HUD/Tweaks/TweakMenu.cpp
   Code/CryGame/HUD/Tweaks/TweakMenu.h
   Code/CryGame/HUD/Tweaks/TweakMetadata.cpp
+  Code/CryGame/HUD/Tweaks/TweakMetadata.h
   Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.cpp
   Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.h
-  Code/CryGame/HUD/Tweaks/TweakMetadata.h
   Code/CryGame/HUD/Tweaks/TweakMetadataLUA.cpp
   Code/CryGame/HUD/Tweaks/TweakMetadataLUA.h
   Code/CryGame/HUD/Tweaks/TweakTraverser.cpp
   Code/CryGame/HUD/Tweaks/TweakTraverser.h
+  Code/CryGame/HomingMissile.cpp
+  Code/CryGame/HomingMissile.h
   Code/CryGame/Hunter.cpp
   Code/CryGame/Hunter.h
   Code/CryGame/IPlayerInput.h
   Code/CryGame/IronSight.cpp
   Code/CryGame/IronSight.h
-  Code/CryGame/ItemAccessory.cpp
-  Code/CryGame/ItemClientServer.cpp
   Code/CryGame/Item.cpp
   Code/CryGame/Item.h
+  Code/CryGame/ItemAccessory.cpp
+  Code/CryGame/ItemClientServer.cpp
   Code/CryGame/ItemDualWield.cpp
   Code/CryGame/ItemEffect.cpp
   Code/CryGame/ItemEvents.cpp
@@ -415,6 +417,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/ItemView.cpp
   Code/CryGame/Lam.cpp
   Code/CryGame/Lam.h
+  Code/CryGame/MPTutorial.cpp
+  Code/CryGame/MPTutorial.h
   Code/CryGame/Melee.cpp
   Code/CryGame/Melee.h
   Code/CryGame/Menus/CreateGame.cpp
@@ -438,8 +442,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Menus/OptionsManager.h
   Code/CryGame/Menus/QuickGame.cpp
   Code/CryGame/Menus/QuickGame.h
-  Code/CryGame/MPTutorial.cpp
-  Code/CryGame/MPTutorial.h
   Code/CryGame/NanoSuit.cpp
   Code/CryGame/NanoSuit.h
   Code/CryGame/NetInputChainDebug.cpp
@@ -468,10 +470,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/PlayerFeature.h
   Code/CryGame/PlayerInput.cpp
   Code/CryGame/PlayerInput.h
-  Code/CryGame/PlayerMovementController.cpp
-  Code/CryGame/PlayerMovementController.h
   Code/CryGame/PlayerMovement.cpp
   Code/CryGame/PlayerMovement.h
+  Code/CryGame/PlayerMovementController.cpp
+  Code/CryGame/PlayerMovementController.h
   Code/CryGame/PlayerRotation.cpp
   Code/CryGame/PlayerRotation.h
   Code/CryGame/PlayerView.cpp
@@ -490,6 +492,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Rocket.h
   Code/CryGame/RocketLauncher.cpp
   Code/CryGame/RocketLauncher.h
+  Code/CryGame/SPAnalyst.cpp
+  Code/CryGame/SPAnalyst.h
   Code/CryGame/Scan.cpp
   Code/CryGame/Scan.h
   Code/CryGame/Scope.cpp
@@ -518,18 +522,16 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Shark.h
   Code/CryGame/SharkMovementController.cpp
   Code/CryGame/SharkMovementController.h
-  Code/CryGame/Shotgun.cpp
-  Code/CryGame/Shotgun.h
   Code/CryGame/ShotValidator.cpp
   Code/CryGame/ShotValidator.h
+  Code/CryGame/Shotgun.cpp
+  Code/CryGame/Shotgun.h
   Code/CryGame/Single.cpp
   Code/CryGame/Single.h
   Code/CryGame/SingleTG.cpp
   Code/CryGame/SingleTG.h
   Code/CryGame/SoundMoods.cpp
   Code/CryGame/SoundMoods.h
-  Code/CryGame/SPAnalyst.cpp
-  Code/CryGame/SPAnalyst.h
   Code/CryGame/StdAfx.cpp
   Code/CryGame/StdAfx.h
   Code/CryGame/SynchedStorage.cpp
@@ -538,10 +540,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/TacBullet.h
   Code/CryGame/TagBullet.cpp
   Code/CryGame/TagBullet.h
-  Code/CryGame/ThrowableWeapon.cpp
-  Code/CryGame/ThrowableWeapon.h
   Code/CryGame/Throw.cpp
   Code/CryGame/Throw.h
+  Code/CryGame/ThrowableWeapon.cpp
+  Code/CryGame/ThrowableWeapon.h
   Code/CryGame/TracerManager.cpp
   Code/CryGame/TracerManager.h
   Code/CryGame/Trooper.cpp
@@ -590,53 +592,105 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/VehicleWeapon.h
   Code/CryGame/Voting.cpp
   Code/CryGame/Voting.h
+  Code/CryGame/Weapon.cpp
+  Code/CryGame/Weapon.h
   Code/CryGame/WeaponAttachmentManager.cpp
   Code/CryGame/WeaponAttachmentManager.h
   Code/CryGame/WeaponClientServer.cpp
-  Code/CryGame/Weapon.cpp
-  Code/CryGame/Weapon.h
   Code/CryGame/WeaponEvent.cpp
   Code/CryGame/WeaponInput.cpp
   Code/CryGame/WeaponSystem.cpp
   Code/CryGame/WeaponSystem.h
   Code/CryGame/WorkOnTarget.cpp
   Code/CryGame/WorkOnTarget.h
-  Code/CrySystem/CrashLogger.cpp
-  Code/CrySystem/CrashLogger.h
-  Code/CrySystem/CryMemoryManager.cpp
-  Code/CrySystem/CryMemoryManager.h
-  Code/CrySystem/GameWindow.cpp
-  Code/CrySystem/GameWindow.h
-  Code/CrySystem/Log.cpp
-  Code/CrySystem/Log.h
-  Code/Launcher/CmdLine.cpp
-  Code/Launcher/CmdLine.h
-  Code/Launcher/CPU.cpp
-  Code/Launcher/CPU.h
-  Code/Launcher/Executor.cpp
-  Code/Launcher/Executor.h
-  Code/Launcher/IExecutorTask.h
+  Code/Launcher/CrashLogger.cpp
+  Code/Launcher/CrashLogger.h
+  Code/Launcher/CryMemoryManager.cpp
+  Code/Launcher/CryMemoryManager.h
+  Code/Launcher/GameWindow.cpp
+  Code/Launcher/GameWindow.h
   Code/Launcher/Launcher.cpp
   Code/Launcher/Launcher.h
+  Code/Launcher/Log.cpp
+  Code/Launcher/Log.h
   Code/Launcher/Main.cpp
   Code/Launcher/Patch.cpp
   Code/Launcher/Patch.h
   Code/Launcher/Resources.h
-  Code/Launcher/Util.cpp
-  Code/Launcher/Util.h
-  Code/Library/Hook/IAT.cpp
-  Code/Library/Hook/IAT.h
-  Code/Library/Hook/VTable.cpp
-  Code/Library/Hook/VTable.h
+  Code/Library/CPU.cpp
+  Code/Library/CPU.h
+  Code/Library/CmdLine.cpp
+  Code/Library/CmdLine.h
   Code/Library/DLL.cpp
   Code/Library/DLL.h
-  Code/Library/Path.cpp
-  Code/Library/Path.h
-  Code/Library/PicoSHA2.h
+  Code/Library/Error.cpp
+  Code/Library/Error.h
+  Code/Library/External/nlohmann/adl_serializer.hpp
+  Code/Library/External/nlohmann/byte_container_with_subtype.hpp
+  Code/Library/External/nlohmann/detail/conversions/from_json.hpp
+  Code/Library/External/nlohmann/detail/conversions/to_chars.hpp
+  Code/Library/External/nlohmann/detail/conversions/to_json.hpp
+  Code/Library/External/nlohmann/detail/exceptions.hpp
+  Code/Library/External/nlohmann/detail/hash.hpp
+  Code/Library/External/nlohmann/detail/input/binary_reader.hpp
+  Code/Library/External/nlohmann/detail/input/input_adapters.hpp
+  Code/Library/External/nlohmann/detail/input/json_sax.hpp
+  Code/Library/External/nlohmann/detail/input/lexer.hpp
+  Code/Library/External/nlohmann/detail/input/parser.hpp
+  Code/Library/External/nlohmann/detail/input/position_t.hpp
+  Code/Library/External/nlohmann/detail/iterators/internal_iterator.hpp
+  Code/Library/External/nlohmann/detail/iterators/iter_impl.hpp
+  Code/Library/External/nlohmann/detail/iterators/iteration_proxy.hpp
+  Code/Library/External/nlohmann/detail/iterators/iterator_traits.hpp
+  Code/Library/External/nlohmann/detail/iterators/json_reverse_iterator.hpp
+  Code/Library/External/nlohmann/detail/iterators/primitive_iterator.hpp
+  Code/Library/External/nlohmann/detail/json_pointer.hpp
+  Code/Library/External/nlohmann/detail/json_ref.hpp
+  Code/Library/External/nlohmann/detail/macro_scope.hpp
+  Code/Library/External/nlohmann/detail/macro_unscope.hpp
+  Code/Library/External/nlohmann/detail/meta/cpp_future.hpp
+  Code/Library/External/nlohmann/detail/meta/detected.hpp
+  Code/Library/External/nlohmann/detail/meta/is_sax.hpp
+  Code/Library/External/nlohmann/detail/meta/type_traits.hpp
+  Code/Library/External/nlohmann/detail/meta/void_t.hpp
+  Code/Library/External/nlohmann/detail/output/binary_writer.hpp
+  Code/Library/External/nlohmann/detail/output/output_adapters.hpp
+  Code/Library/External/nlohmann/detail/output/serializer.hpp
+  Code/Library/External/nlohmann/detail/value_t.hpp
+  Code/Library/External/nlohmann/json.hpp
+  Code/Library/External/nlohmann/json_fwd.hpp
+  Code/Library/External/nlohmann/ordered_map.hpp
+  Code/Library/External/nlohmann/thirdparty/hedley/hedley.hpp
+  Code/Library/External/nlohmann/thirdparty/hedley/hedley_undef.hpp
+  Code/Library/External/picosha2.h
+  Code/Library/Format.cpp
+  Code/Library/Format.h
+  Code/Library/RandomSeeder.h
+  Code/Library/StringBuffer.cpp
   Code/Library/StringBuffer.h
+  Code/Library/WinAPI.cpp
+  Code/Library/WinAPI.h
+  Resources/Launcher.manifest
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
 )
+
+################################################################################
+
+set(CRYMP_CLIENT_RESOURCES
+  ${PROJECT_SOURCE_DIR}/Resources/CursorAmber.cur
+  ${PROJECT_SOURCE_DIR}/Resources/CursorBlue.cur
+  ${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
+  ${PROJECT_SOURCE_DIR}/Resources/CursorRed.cur
+  ${PROJECT_SOURCE_DIR}/Resources/CursorWhite.cur
+  ${PROJECT_SOURCE_DIR}/Resources/Icon.ico
+  ${PROJECT_SOURCE_DIR}/Scripts/GameRules.lua
+  ${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
+  ${PROJECT_SOURCE_DIR}/Scripts/Main.lua
+  ${PROJECT_SOURCE_DIR}/Scripts/RPC.lua
+)
+
+set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")
 
 ################################################################################
 
@@ -647,9 +701,9 @@ if(BUILD_64BIT)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
-target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
+target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code Code/Library/External ${PROJECT_BINARY_DIR})
 
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE winhttp dbghelp)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ws2_32 winhttp)
 
 # prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
 target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)

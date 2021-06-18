@@ -1,11 +1,12 @@
-/**
- * @file
- * @brief Implementation of HTTP common stuff.
- */
-
-#include "Library/StringBuffer.h"
-
 #include "HTTP.h"
+
+namespace
+{
+	char HexDigitToChar(int digit)
+	{
+		return (digit < 10) ? '0' + digit : 'A' + (digit - 10);
+	}
+}
 
 const char *HTTP::StatusCodeToString(int code)
 {
@@ -34,27 +35,16 @@ const char *HTTP::StatusCodeToString(int code)
 		case HTTP::STATUS_GATEWAY_TIMEOUT:       return "Gateway Timeout";
 	}
 
-	return "?";
+	return "";
 }
 
-static char HexDigitToChar(int digit)
+std::string HTTP::URLEncode(const std::string_view & text)
 {
-	return (digit < 10) ? '0' + digit : 'A' + (digit - 10);
-}
+	std::string result;
+	result.reserve(2 * text.length());
 
-std::string HTTP::URLEncode(const char *text)
-{
-	if (!text)
+	for (char ch : text)
 	{
-		return std::string();
-	}
-
-	StringBuffer<2048> buffer;
-
-	for (; *text; text++)
-	{
-		char ch = *text;
-
 		if ((ch >= 'a' && ch <= 'z')
 		 || (ch >= 'A' && ch <= 'Z')
 		 || (ch >= '0' && ch <= '9')
@@ -62,18 +52,18 @@ std::string HTTP::URLEncode(const char *text)
 		 || ch == '-'
 		 || ch == '_')
 		{
-			buffer += ch;
+			result += ch;
 		}
 		else
 		{
 			// percent-encoded character
 			int code = static_cast<unsigned char>(ch);
 
-			buffer += '%';
-			buffer += HexDigitToChar(code >> 4);   // first digit
-			buffer += HexDigitToChar(code & 0xF);  // second digit
+			result += '%';
+			result += HexDigitToChar(code >> 4);   // first digit
+			result += HexDigitToChar(code & 0xF);  // second digit
 		}
 	}
 
-	return buffer.toString();
+	return result;
 }

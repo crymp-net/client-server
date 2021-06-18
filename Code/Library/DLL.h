@@ -1,18 +1,19 @@
 #pragma once
 
-#include <string>
+#include <utility>
 
 struct DLL
 {
-	enum ELoadFlags
+	// flags
+	enum
 	{
-		NO_RELEASE = (1 << 0),  //!< Do not unload the library.
-		NO_LOAD    = (1 << 1)   //!< Do not load and unload the library. Only obtain handle to it.
+		NO_RELEASE = (1 << 0),  // do not unload the library
+		NO_LOAD    = (1 << 1),  // do not load and unload the library, only obtain its handle
 	};
 
 private:
-	void *m_handle;
-	int m_flags;
+	void *m_handle = nullptr;
+	int m_flags = 0;
 
 	void release();
 
@@ -22,11 +23,8 @@ public:
 	DLL(const DLL &) = delete;
 
 	DLL(DLL && other)
-	: m_handle(other.m_handle),
-	  m_flags(other.m_flags)
 	{
-		other.m_handle = nullptr;
-		other.m_flags = 0;
+		swap(other);
 	}
 
 	DLL & operator=(const DLL &) = delete;
@@ -35,11 +33,9 @@ public:
 	{
 		if (this != &other)
 		{
-			m_handle = other.m_handle;
-			m_flags = other.m_flags;
+			unload();
 
-			other.m_handle = nullptr;
-			other.m_flags = 0;
+			swap(other);
 		}
 
 		return *this;
@@ -50,16 +46,17 @@ public:
 		unload();
 	}
 
-	bool load(const char *file, int flags = 0);
-
-	bool load(const std::string & file, int flags = 0)
+	void swap(DLL & other)
 	{
-		return load(file.c_str(), flags);
+		std::swap(m_handle, other.m_handle);
+		std::swap(m_flags, other.m_flags);
 	}
+
+	bool load(const char *name, int flags = 0);
 
 	void unload()
 	{
-		if (isLoaded() && !(m_flags & NO_RELEASE) && !(m_flags & NO_LOAD))
+		if (isLoaded() && !(m_flags & NO_LOAD) && !(m_flags & NO_RELEASE))
 		{
 			release();
 		}
@@ -90,20 +87,9 @@ public:
 
 	void *getSymbolAddress(const char *name) const;
 
-	void *getSymbolAddress(const std::string & name) const
-	{
-		return getSymbolAddress(name.c_str());
-	}
-
 	template<class T>
 	T getSymbol(const char *name) const
 	{
 		return reinterpret_cast<T>(getSymbolAddress(name));
-	}
-
-	template<class T>
-	T getSymbol(const std::string & name) const
-	{
-		return reinterpret_cast<T>(getSymbolAddress(name.c_str()));
 	}
 };

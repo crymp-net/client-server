@@ -21,7 +21,7 @@ History:
 #include "FlashMenuScreen.h"
 #include "CryGame/Game.h"
 #include "CryGame/HUD/HUD.h"
-#include "CrySystem/GameWindow.h"
+#include "Launcher/GameWindow.h"
 
 //-----------------------------------------------------------------------------------------------------
 

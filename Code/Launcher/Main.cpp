@@ -1,12 +1,7 @@
-/**
- * @file
- * @brief CryMP Client main function.
- */
+#include "Library/Error.h"
+#include "Library/WinAPI.h"
 
-#include <cstdlib>
-#include <cstring>
-
-#include "CryCommon/CryModuleDefs.h"
+// TODO: get rid of this garbage
 #include "CryCommon/platform_impl.h"
 
 #include "Launcher.h"
@@ -15,35 +10,32 @@
 extern "C"
 {
 	// nVidia
-	DLL_EXPORT DWORD NvOptimusEnablement = 1;
+	__declspec(dllexport) unsigned long NvOptimusEnablement = 1;
 
 	// AMD
-	DLL_EXPORT int AmdPowerXpressRequestHighPerformance = 1;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	SSystemInitParams params;
-	std::memset(&params, 0, sizeof params);
-
-	params.hInstance = hInstance;
-	params.sLogFileName = "Game.log";
-
-	// lpCmdLine does not contain program name
-	const char *cmdLine = GetCommandLineA();
-	const size_t cmdLineLength = std::strlen(cmdLine);
-
-	if (cmdLineLength < sizeof params.szSystemCmdLine)
-	{
-		std::memcpy(params.szSystemCmdLine, cmdLine, cmdLineLength + 1);
-	}
-	else
-	{
-		Util::ErrorBox("Command line is too long!");
-		return EXIT_FAILURE;
-	}
-
 	Launcher launcher;
+	gLauncher = &launcher;
 
-	return launcher.run(params) ? EXIT_SUCCESS : EXIT_FAILURE;
+	try
+	{
+		// set engine parameters
+		launcher.setAppInstance(hInstance);
+		launcher.setLogFileName("Game.log");
+		launcher.setCmdLine(WinAPI::GetCmdLine());  // lpCmdLine doesn't contain program name
+
+		// run the game
+		launcher.run();
+	}
+	catch (const Error & error)
+	{
+		WinAPI::ErrorBox(error);
+		return 1;
+	}
+
+	return 0;
 }

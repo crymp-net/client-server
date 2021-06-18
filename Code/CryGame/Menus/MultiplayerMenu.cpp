@@ -22,6 +22,7 @@ History:
 #include "CreateGame.h"
 #include "CryGame/Game.h"
 #include "GameNetworkProfile.h"
+#include "Library/Format.h"
 
 enum EServerInfoKey
 {
@@ -475,27 +476,15 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 
 	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
 	{
-		string tempHost;
-		tempHost.Format("%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
-		
-		// set cl_serveraddr
-		gEnv->pConsole->GetCVar("cl_serveraddr")->Set(tempHost.c_str());
-	
-		string sport;
-		sport.Format("%d", port);
-		// set cl_serverport
-		gEnv->pConsole->GetCVar("cl_serverport")->Set(sport.c_str());
-
-		SGameStartParams params;
-		params.flags = eGSF_Client | eGSF_NoDelayedStart | eGSF_NoQueries;
-		params.flags |= eGSF_ImmersiveMultiplayer;
-		params.hostname = tempHost.c_str();
-		params.pContextParams = NULL;
-		params.port = gEnv->pConsole->GetCVar("cl_serverport")->GetIVal();
-
-		//CryLogAlways("Connect hard: $3%s:%d", params.hostname, params.port);
-
-		g_pGame->GetIGameFramework()->StartGameContext(&params);
+		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(
+			Format("connect %d.%d.%d.%d %d",
+				(ip)       & 0xFF,
+				(ip >> 8)  & 0xFF,
+				(ip >> 16) & 0xFF,
+				(ip >> 24) & 0xFF,
+				port
+			).c_str()
+		);
 	}
 
 	const wstring& GetGameType(const char* gt)

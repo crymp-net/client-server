@@ -1,25 +1,22 @@
-/**
- * @file
- * @brief Functions for patching Crysis code.
- */
-
 #pragma once
+
+struct DLL;
 
 namespace Patch
 {
 	// CryAction
-	bool AllowDX9ImmersiveMultiplayer(void *pCryAction);
+	void AllowDX9ImmersiveMultiplayer(const DLL & CryAction);
 
 	// CryNetwork
-	bool AllowConnectWithoutGS(void *pCryNetwork);
-	bool EnablePreordered(void *pCryNetwork);
-	bool AllowSameCDKeys(void *pCryNetwork);
+	void FixInternetConnect(const DLL & CryNetwork);
+	void EnablePreordered(const DLL & CryNetwork);
+	void AllowSameCDKeys(const DLL & CryNetwork);
 
 	// CrySystem
-	bool RemoveSecuROM(void *pCrySystem);
-	bool MakeDX9Default(void *pCrySystem);
-	bool AllowDX9VeryHighSpec(void *pCrySystem);
-	bool AllowMultipleInstances(void *pCrySystem);
-	bool UnhandledExceptions(void *pCrySystem);
-	bool Disable3DNow(void *pCrySystem);
+	void RemoveSecuROM(const DLL & CrySystem);
+	void MakeDX9Default(const DLL & CrySystem);
+	void AllowDX9VeryHighSpec(const DLL & CrySystem);
+	void AllowMultipleInstances(const DLL & CrySystem);
+	void UnhandledExceptions(const DLL & CrySystem);
+	void Disable3DNow(const DLL & CrySystem);
 }
