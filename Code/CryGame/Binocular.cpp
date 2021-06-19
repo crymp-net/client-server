@@ -14,8 +14,8 @@ History:
 #include "Binocular.h"
 #include "GameActions.h"
 
-#include "CryAction/IActorSystem.h"
-#include "CryAction/IMovementController.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IMovementController.h"
 
 #include "Game.h"
 #include "HUD/HUD.h"

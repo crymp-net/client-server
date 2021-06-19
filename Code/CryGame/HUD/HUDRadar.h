@@ -26,7 +26,7 @@ class CGameRules;
 class CPlayer;
 template<typename T, EFlashVariableArrayType flashType, int NUM_VALS> struct ArrayFillHelper;
 
-#include "CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
 
 const static int NUM_TAGGED_ENTITIES = 4;
 const static int NUM_MAP_TEXTURES = 8;

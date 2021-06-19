@@ -19,9 +19,9 @@ History:
 #endif
 
 
-#include "CryAction/IGameObject.h"
-#include "CryAction/IGameRulesSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "ItemParamReader.h"
 #include "TracerManager.h"
 #include "Weapon.h"

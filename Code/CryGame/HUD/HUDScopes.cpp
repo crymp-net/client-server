@@ -19,7 +19,7 @@ History:
 #include "HUDSilhouettes.h"
 #include "GameFlashAnimation.h"
 #include "CryGame/Actor.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameRules.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/Weapon.h"

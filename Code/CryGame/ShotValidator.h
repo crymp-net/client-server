@@ -19,7 +19,7 @@ History:
 #endif
 
 
-#include "CryAction/IGameRulesSystem.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
 
 class CGameRules;

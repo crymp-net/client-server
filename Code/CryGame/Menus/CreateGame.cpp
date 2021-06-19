@@ -19,8 +19,8 @@ History:
 
 #include "CryCommon/IGame.h"
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/ILevelSystem.h"
-#include "CryAction/IPlayerProfiles.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/IPlayerProfiles.h"
 
 enum ECreateGameOptions
 {

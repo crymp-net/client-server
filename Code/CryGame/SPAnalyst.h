@@ -22,8 +22,8 @@
 #endif
 
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/IGameplayRecorder.h"
-#include "CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/SerializeFwd.h"
 
 struct ISaveGame;

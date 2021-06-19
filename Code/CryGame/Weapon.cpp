@@ -15,10 +15,10 @@ History:
 #include "GameCVars.h"
 #include "CryCommon/IEntitySystem.h"
 #include "CryCommon/IScriptSystem.h"
-#include "CryAction/IActionMapManager.h"
-#include "CryAction/IGameObject.h"
-#include "CryAction/IGameObjectSystem.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObjectSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "WeaponSystem.h"
 #include "Weapon.h"
 #include "CryCommon/ISerialize.h"
@@ -41,7 +41,7 @@ History:
 #include "CryCommon/CryCharAnimationParams.h"
 
 #include "IPlayerInput.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 
 //------------------------------------------------------------------------
 CWeapon::CWeapon()

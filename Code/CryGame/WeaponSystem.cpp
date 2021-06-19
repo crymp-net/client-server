@@ -15,7 +15,7 @@ History:
 #include "CryCommon/IEntitySystem.h"
 #include "CryCommon/ICryPak.h"
 #include "CryCommon/IScriptSystem.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "Actor.h"
 #include "WeaponSystem.h"
 

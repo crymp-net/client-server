@@ -19,7 +19,7 @@
 #endif
 
 
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "Weapon.h"
 
 

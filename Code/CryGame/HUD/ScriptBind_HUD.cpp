@@ -14,7 +14,7 @@
 #include "CryGame/StdAfx.h"
 #include "ScriptBind_HUD.h"
 #include "HUD.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameRules.h"
 #include "HUDRadar.h"

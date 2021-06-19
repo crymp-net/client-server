@@ -19,7 +19,7 @@ History:
 #include "HUDObject.h"
 #include "CryCommon/IInput.h"
 #include "CryCommon/IFlashPlayer.h"
-#include "CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
 
 class CGameFlashAnimation;
 

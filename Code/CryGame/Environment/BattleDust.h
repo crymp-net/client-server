@@ -18,7 +18,7 @@ History:
 #pragma once
 
 #include <list>
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 // possible events that might cause dust
 enum EBattleDustEventType

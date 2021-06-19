@@ -16,7 +16,7 @@ History:
 
 #include <vector>
 #include "CryCommon/ParticleParams.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Actor.h"
 #include "CryCommon/IMaterialEffects.h"
 #include "VehicleMovementTweaks.h"

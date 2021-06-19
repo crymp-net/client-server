@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 #include "HUDObituary.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/Game.h"
 
 CHUDObituary::CHUDObituary()

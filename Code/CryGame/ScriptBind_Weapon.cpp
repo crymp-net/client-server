@@ -14,7 +14,7 @@
 #include "ScriptBind_Weapon.h"
 #include "Item.h"
 #include "Weapon.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "Actor.h"
 
 

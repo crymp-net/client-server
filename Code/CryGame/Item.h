@@ -21,8 +21,8 @@
 
 #include "CryCommon/IScriptSystem.h"
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/IItemSystem.h"
-#include "CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryCharAnimationParams.h"
 #include "CryCommon/ISound.h"
 #include <map>

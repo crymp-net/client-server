@@ -16,8 +16,8 @@ History:
 #include "Actor.h"
 #include "Throw.h"
 #include "Melee.h"
-#include "CryAction/IViewSystem.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/IGameTokens.h"
 #include "GameActions.h"
 

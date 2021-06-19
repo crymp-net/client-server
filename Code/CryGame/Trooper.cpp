@@ -17,14 +17,14 @@ History:
 #include "Trooper.h"
 #include "CryCommon/GameUtils.h"
 
-#include "CryAction/IViewSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IPhysics.h"
 #include "CryCommon/ICryAnimation.h"
 #include "CryCommon/ISerialize.h"
 #include "CryCommon/IRenderAuxGeom.h"
 #include "CryCommon/IMaterialEffects.h"
-#include "CryAction/IEffectSystem.h"
+#include "CryCommon/CryAction/IEffectSystem.h"
 
 const float CTrooper::CTentacle_maxTimeStep = 0.02f;
 const float CTrooper::CMaxHeadFOR = 0.5*3.14159f;

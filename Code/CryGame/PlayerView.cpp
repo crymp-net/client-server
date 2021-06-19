@@ -29,13 +29,13 @@ History:
 #include "WeaponSystem.h"
 #include "Single.h"
 
-#include "CryAction/IViewSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IPhysics.h"
 #include "CryCommon/ICryAnimation.h"
 #include "CryCommon/IAISystem.h"
 #include "CryCommon/IAgent.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/ISerialize.h"
 
 #include "CryCommon/IRenderAuxGeom.h"

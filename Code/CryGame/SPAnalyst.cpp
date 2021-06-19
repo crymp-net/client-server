@@ -19,8 +19,8 @@
 
 #include "CryCommon/ISerialize.h"
 #include "Game.h"
-#include "CryAction/ISaveGame.h"
-#include "CryAction/ILoadGame.h"
+#include "CryCommon/CryAction/ISaveGame.h"
+#include "CryCommon/CryAction/ILoadGame.h"
 
 #include "GameCVars.h"
 #include "Player.h"

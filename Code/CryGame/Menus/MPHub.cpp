@@ -15,7 +15,7 @@
 
 #include "CryGame/Game.h"
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/IPlayerProfiles.h"
+#include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "OptionsManager.h"
 #include "FlashMenuObject.h"
 #include "CryCommon/IVideoPlayer.h"

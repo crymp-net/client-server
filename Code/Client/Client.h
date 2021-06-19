@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/IEntitySystem.h"
 
 struct IConsoleCmdArgs;

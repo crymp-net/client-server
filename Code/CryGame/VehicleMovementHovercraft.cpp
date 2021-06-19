@@ -15,7 +15,7 @@ History:
 #include "Game.h"
 #include "CryCommon/GameUtils.h"
 #include "CryCommon/StlUtils.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementHovercraft.h"
 #include "GameCVars.h"
 

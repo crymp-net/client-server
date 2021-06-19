@@ -20,9 +20,9 @@
 
 #include "CryCommon/IGame.h"
 #include "CryCommon/IGameFramework.h"
-#include "CryAction/IGameObjectSystem.h"
-#include "CryAction/IGameObject.h"
-#include "CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IGameObjectSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/StlUtils.h"
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"

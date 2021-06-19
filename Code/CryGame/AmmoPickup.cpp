@@ -14,7 +14,7 @@ History:
 #include "AmmoPickup.h"
 #include "Weapon.h"
 #include "Actor.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "ItemParamReader.h"
 #include "GameCVars.h"
 #include "OffHand.h"

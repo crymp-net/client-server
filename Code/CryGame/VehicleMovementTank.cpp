@@ -16,7 +16,7 @@ History:
 #include "GameCVars.h"
 #include "CryCommon/GameUtils.h"
 
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementTank.h"
 
 #define THREAD_SAFE 1

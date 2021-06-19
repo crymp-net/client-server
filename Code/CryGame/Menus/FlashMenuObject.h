@@ -19,7 +19,7 @@ History:
 #include "CryCommon/IGameFramework.h"
 #include "CryCommon/IInput.h"
 #include "CryCommon/IFlashPlayer.h"
-#include "CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/IHardwareMouse.h"
 
 //-----------------------------------------------------------------------------------------------------

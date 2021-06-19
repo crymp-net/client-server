@@ -19,8 +19,8 @@ History:
 #endif
 
 
-#include "CryAction/IItemSystem.h"
-#include "CryAction/IWeapon.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IWeapon.h"
 #include "CryCommon/IAgent.h"
 #include "CryCommon/VectorMap.h"
 #include "CryCommon/IMusicSystem.h"

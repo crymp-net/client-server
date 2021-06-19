@@ -17,11 +17,11 @@ History:
 #include "Bullet.h"
 #include "WeaponSystem.h"
 #include "CryCommon/ISerialize.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 #include "CryCommon/IEntitySystem.h"
 #include "CryCommon/ISound.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IAgent.h"
 #include "ItemParamReader.h"
 #include "GameRules.h"

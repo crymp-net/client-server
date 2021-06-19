@@ -18,8 +18,8 @@ History:
 //#include <platform.h>
 #include "VehicleMovementStdWheeled.h"
 
-#include "CryAction/IVehicleSystem.h"
-#include "CryAction/Network/NetActionSync.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/Network/NetActionSync.h"
 #include "CryCommon/IAgent.h"
 #include "CryCommon/GameUtils.h"
 #include "CryCommon/IGameTokens.h"

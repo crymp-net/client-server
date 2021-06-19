@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 #include "HUDTextArea.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/Game.h"
 
 

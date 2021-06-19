@@ -20,7 +20,7 @@ History:
 
 #include "HUDObject.h"
 #include "CryCommon/IFlashPlayer.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "GameFlashAnimation.h"
 
 class CHUD;

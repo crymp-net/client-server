@@ -20,7 +20,7 @@ History:
 //-----------------------------------------------------------------------------------------------------
 
 #include <list>
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/IFlashPlayer.h"
 #include "GameFlashAnimation.h"
 #include "CryCommon/IHardwareMouse.h"

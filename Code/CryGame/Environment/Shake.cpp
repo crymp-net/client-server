@@ -5,7 +5,7 @@
 #include "CryGame/StdAfx.h"
 #include "Shake.h"
 #include "CryGame/Game.h"
-#include "CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
 
 CShake::CShake()
 {

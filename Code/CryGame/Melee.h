@@ -22,7 +22,7 @@ History:
 #include "Weapon.h"
 #include "Fists.h"
 #include "ItemParamReader.h"
-#include "CryAction/IGameRulesSystem.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
 
 #define ResetValue(name, defaultValue) if (defaultInit) name=defaultValue; reader.Read(#name, name)

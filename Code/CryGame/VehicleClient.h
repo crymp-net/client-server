@@ -16,7 +16,7 @@ History:
 
 #include <map>
 #include <vector>
-#include "CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
 
 enum EVehicleActionExtIds
 {

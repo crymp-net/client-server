@@ -9,7 +9,7 @@
 # pragma once
 #endif
 
-#include "CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
 
 #define DECL_ACTION(name) ActionId name;
 class CGameActions

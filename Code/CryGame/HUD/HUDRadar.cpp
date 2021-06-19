@@ -12,15 +12,15 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/Actor.h"
 #include "CryGame/Weapon.h"
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "CryGame/Game.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameRules.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/IAIGroup.h"
 #include "HUDSilhouettes.h"
 

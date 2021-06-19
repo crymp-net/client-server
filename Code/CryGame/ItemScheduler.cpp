@@ -14,7 +14,7 @@ History:
 #include "ItemScheduler.h"
 #include "Item.h"
 #include "Game.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 
 //------------------------------------------------------------------------

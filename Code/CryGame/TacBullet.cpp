@@ -6,8 +6,8 @@
 #include "TacBullet.h"
 #include "Game.h"
 #include "CryCommon/IEntitySystem.h"
-#include "CryAction/IGameRulesSystem.h"
-#include "CryAction/IAnimationGraph.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
+#include "CryCommon/CryAction/IAnimationGraph.h"
 #include "GameRules.h"
 
 CTacBullet::CTacBullet()

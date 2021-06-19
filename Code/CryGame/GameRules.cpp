@@ -24,10 +24,10 @@
 #include "Menus/FlashMenuObject.h"
 #include "Menus/OptionsManager.h"
 
-#include "CryAction/IVehicleSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "WeaponSystem.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 
 #include "ServerSynchedStorage.h"
 
@@ -38,7 +38,7 @@
 #include "MPTutorial.h"
 #include "Voting.h"
 #include "SPAnalyst.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 
 #include "CryCommon/StlUtils.h"
 #include "CryCommon/StringUtils.h"

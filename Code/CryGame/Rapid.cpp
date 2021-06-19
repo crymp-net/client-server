@@ -17,7 +17,7 @@ History:
 #include "CryCommon/ISound.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include "CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
 
 
 //------------------------------------------------------------------------

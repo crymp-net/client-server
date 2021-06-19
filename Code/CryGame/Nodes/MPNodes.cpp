@@ -18,7 +18,7 @@ History:
 #include "CryGame/Player.h"
 #include "G2FlowBaseNode.h"
 
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
 class CFlowNode_MP : public CFlowBaseNode, public CGameRules::SGameRulesListener
 {

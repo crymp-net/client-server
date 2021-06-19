@@ -16,9 +16,9 @@
 #include "ItemSharedParams.h"
 
 #include "CryCommon/INetwork.h"
-#include "CryAction/IGameObject.h"
-#include "CryAction/IActorSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "WeaponSystem.h"
 #include "ServerSynchedStorage.h"
 #include "ItemString.h"

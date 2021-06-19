@@ -15,7 +15,7 @@ History:
 
 #include "CryGame/StdAfx.h"
 #include "HUDTweakMenu.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "CryCommon/IScriptSystem.h"
 #include "CryGame/ScriptUtils.h"
 #include "CryCommon/ICryPak.h"

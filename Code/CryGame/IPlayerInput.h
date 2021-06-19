@@ -9,7 +9,7 @@
 
 #include "CryCommon/IAgent.h" // for EStance
 #include "CryCommon/ISerialize.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 struct SSerializedPlayerInput
 {

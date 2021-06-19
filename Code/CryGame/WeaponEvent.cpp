@@ -18,7 +18,7 @@ History:
 #include "HUD/HUDRadar.h"
 #include "GameRules.h"
 #include "GameCVars.h"
-#include "CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/IAISystem.h"
 #include "CryCommon/IAgent.h"
 

@@ -26,13 +26,13 @@
 
 #include "CryCommon/ICryPak.h"
 #include "CryCommon/CryPath.h"
-#include "CryAction/IActionMapManager.h"
-#include "CryAction/IViewSystem.h"
-#include "CryAction/ILevelSystem.h"
-#include "CryAction/IItemSystem.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/IMovieSystem.h"
-#include "CryAction/IPlayerProfiles.h"
+#include "CryCommon/CryAction/IPlayerProfiles.h"
 
 #include "ScriptBind_Actor.h"
 #include "ScriptBind_Item.h"
@@ -52,8 +52,8 @@
 
 #include "SPAnalyst.h"
 
-#include "CryAction/ISaveGame.h"
-#include "CryAction/ILoadGame.h"
+#include "CryCommon/CryAction/ISaveGame.h"
+#include "CryCommon/CryAction/ILoadGame.h"
 
 #if defined(CRYSIS_BETA)
 #define CRYSIS_GUID "{CDC82B4A-7540-45A5-B92E-9A7C7033DBF4}"

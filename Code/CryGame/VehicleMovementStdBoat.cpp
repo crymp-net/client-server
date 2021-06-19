@@ -15,10 +15,10 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementStdBoat.h"
 #include "CryCommon/IAgent.h"
-#include "CryAction/Network/NetActionSync.h"
+#include "CryCommon/CryAction/Network/NetActionSync.h"
 
 
 //------------------------------------------------------------------------

@@ -15,8 +15,8 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 
-#include "CryAction/IMovementController.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IMovementController.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementHelicopter.h"
 #include "VehicleActionLandingGears.h"
 #include "CryCommon/ICryAnimation.h"

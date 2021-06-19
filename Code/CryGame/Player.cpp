@@ -24,19 +24,19 @@ History:
 #include "Fists.h"
 #include "GameRules.h"
 
-#include "CryAction/IViewSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IPhysics.h"
 #include "CryCommon/ICryAnimation.h"
 #include "CryCommon/IAISystem.h"
 #include "CryCommon/IAgent.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/ISerialize.h"
 #include "CryCommon/ISound.h"
 #include "CryCommon/IMaterialEffects.h"
 
 #include "CryCommon/IRenderAuxGeom.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 
 #include "CryCommon/IGameTokens.h"
 

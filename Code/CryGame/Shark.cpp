@@ -16,12 +16,12 @@ History:
 #include "Shark.h"
 #include "CryCommon/GameUtils.h"
 
-#include "CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/IPhysics.h"
 #include "CryCommon/ICryAnimation.h"
 #include "CryCommon/ISerialize.h"
 #include "CryCommon/IRenderAuxGeom.h"
-#include "CryAction/IEffectSystem.h"
+#include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/ISound.h"
 
 #include "SharkMovementController.h"

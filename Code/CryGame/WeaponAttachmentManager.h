@@ -19,7 +19,7 @@ History:
 # pragma once
 #endif
 
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "ItemString.h"
 
 class CActor;

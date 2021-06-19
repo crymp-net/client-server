@@ -14,7 +14,7 @@ History:
 
 #include "CryGame/StdAfx.h"
 #include "HUDCrosshair.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameRules.h"
 #include "CryCommon/GameUtils.h"

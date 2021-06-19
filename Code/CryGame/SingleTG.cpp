@@ -16,7 +16,7 @@ History:
 #include "Actor.h"
 #include "Player.h"
 #include "HUD/HUD.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 
 namespace
 {

@@ -15,10 +15,10 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
 #include "CryCommon/IGameTokens.h"
-#include "CryAction/IEffectSystem.h"
+#include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/GameUtils.h"
 
 

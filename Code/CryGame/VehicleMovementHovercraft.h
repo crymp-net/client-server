@@ -16,7 +16,7 @@ History:
 #define __VEHICLEMOVEMENTHOVERCRAFT_H__
 
 #include "VehicleMovementBase.h"
-#include "CryAction/Network/NetActionSync.h"
+#include "CryCommon/CryAction/Network/NetActionSync.h"
 
 
 class CVehicleMovementHovercraft;

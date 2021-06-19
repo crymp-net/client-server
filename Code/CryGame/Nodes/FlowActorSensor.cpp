@@ -10,7 +10,7 @@
 #include "CryGame/Player.h"
 #include "CryGame/GameCVars.h"
 
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/StringUtils.h"
 
 #if defined(WHOLE_PROJECT)

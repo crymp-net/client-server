@@ -19,7 +19,7 @@ History:
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "CryGame/Weapon.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameCVars.h"
 
 CHUDVehicleInterface::CHUDVehicleInterface(CHUD* pHUD, CGameFlashAnimation* pAmmo) : m_pVehicle(NULL)

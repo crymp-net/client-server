@@ -50,32 +50,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ScriptCallbacks.h
   Code/Client/ScriptCommands.cpp
   Code/Client/ScriptCommands.h
-  Code/CryAction/IActionMapManager.h
-  Code/CryAction/IActorSystem.h
-  Code/CryAction/IAnimatedCharacter.h
-  Code/CryAction/IAnimationGraph.h
-  Code/CryAction/IAnimationStateNode.h
-  Code/CryAction/IDebrisMgr.h
-  Code/CryAction/IEffectSystem.h
-  Code/CryAction/IGameObject.h
-  Code/CryAction/IGameObjectSystem.h
-  Code/CryAction/IGameRulesSystem.h
-  Code/CryAction/IGameplayRecorder.h
-  Code/CryAction/IInteractor.h
-  Code/CryAction/IItem.h
-  Code/CryAction/IItemSystem.h
-  Code/CryAction/ILevelSystem.h
-  Code/CryAction/ILoadGame.h
-  Code/CryAction/IMovementController.h
-  Code/CryAction/IPlayerProfiles.h
-  Code/CryAction/ISaveGame.h
-  Code/CryAction/ISubtitleManager.h
-  Code/CryAction/IUIDraw.h
-  Code/CryAction/IVehicleSystem.h
-  Code/CryAction/IViewSystem.h
-  Code/CryAction/IWeapon.h
-  Code/CryAction/IWorldQuery.h
-  Code/CryAction/Network/NetActionSync.h
   Code/CryCommon/AABBSV.h
   Code/CryCommon/AIFormationDescriptor.h
   Code/CryCommon/AITrackPatternDescriptor.h
@@ -85,6 +59,32 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CGFContent.h
   Code/CryCommon/CoherentValue.h
   Code/CryCommon/ConfigurableVariant.h
+  Code/CryCommon/CryAction/IActionMapManager.h
+  Code/CryCommon/CryAction/IActorSystem.h
+  Code/CryCommon/CryAction/IAnimatedCharacter.h
+  Code/CryCommon/CryAction/IAnimationGraph.h
+  Code/CryCommon/CryAction/IAnimationStateNode.h
+  Code/CryCommon/CryAction/IDebrisMgr.h
+  Code/CryCommon/CryAction/IEffectSystem.h
+  Code/CryCommon/CryAction/IGameObject.h
+  Code/CryCommon/CryAction/IGameObjectSystem.h
+  Code/CryCommon/CryAction/IGameRulesSystem.h
+  Code/CryCommon/CryAction/IGameplayRecorder.h
+  Code/CryCommon/CryAction/IInteractor.h
+  Code/CryCommon/CryAction/IItem.h
+  Code/CryCommon/CryAction/IItemSystem.h
+  Code/CryCommon/CryAction/ILevelSystem.h
+  Code/CryCommon/CryAction/ILoadGame.h
+  Code/CryCommon/CryAction/IMovementController.h
+  Code/CryCommon/CryAction/IPlayerProfiles.h
+  Code/CryCommon/CryAction/ISaveGame.h
+  Code/CryCommon/CryAction/ISubtitleManager.h
+  Code/CryCommon/CryAction/IUIDraw.h
+  Code/CryCommon/CryAction/IVehicleSystem.h
+  Code/CryCommon/CryAction/IViewSystem.h
+  Code/CryCommon/CryAction/IWeapon.h
+  Code/CryCommon/CryAction/IWorldQuery.h
+  Code/CryCommon/CryAction/Network/NetActionSync.h
   Code/CryCommon/CryAnimationScriptCommands.h
   Code/CryCommon/CryArray.h
   Code/CryCommon/CryAssert.h

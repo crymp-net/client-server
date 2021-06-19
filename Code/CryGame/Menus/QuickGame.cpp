@@ -15,7 +15,7 @@ History:
 #include "CryCommon/INetwork.h"
 #include "CryCommon/INetworkService.h"
 #include "QuickGame.h"
-#include "CryAction/ILevelSystem.h"
+#include "CryCommon/CryAction/ILevelSystem.h"
 
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"

@@ -13,9 +13,9 @@ History:
 #include "StdAfx.h"
 #include "DebugGun.h"
 
-#include "CryAction/IActorSystem.h"
-#include "CryAction/IVehicleSystem.h"
-#include "CryAction/IMovementController.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IMovementController.h"
 #include "Actor.h"
 #include "Game.h"
 #include "GameCVars.h"

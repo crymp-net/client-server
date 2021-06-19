@@ -13,7 +13,7 @@
 #include "StdAfx.h"
 #include "ScriptBind_Item.h"
 #include "Item.h"
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "Actor.h"
 
 

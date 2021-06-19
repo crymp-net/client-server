@@ -15,7 +15,7 @@ History:
 #define __TORNADO_H__
 #pragma once
 
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 class CFlowTornadoWander;
 struct IGroundEffect;

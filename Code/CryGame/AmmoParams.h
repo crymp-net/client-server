@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "CryAction/IItemSystem.h"
-#include "CryAction/IWeapon.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IWeapon.h"
 
 struct SScaledEffectParams
 {

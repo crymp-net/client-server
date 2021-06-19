@@ -5,7 +5,7 @@
 #include "StdAfx.h"
 #include "CompatibilityAlienMovementController.h"
 #include "Alien.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 
 
 CCompatibilityAlienMovementController::CCompatibilityAlienMovementController( CAlien * pAlien ) : m_pAlien(pAlien), m_atTarget(false)

@@ -13,9 +13,9 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "HUDTextChat.h"
-#include "CryAction/IGameRulesSystem.h"
-#include "CryAction/IActorSystem.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "HUD.h"
 #include "CryGame/GameActions.h"
 #include "CryGame/GameRules.h"

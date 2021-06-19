@@ -44,7 +44,7 @@
 #include "CryCommon/IConsole.h"
 #include "CryCommon/ITimer.h"
 #include "CryCommon/ILog.h"
-#include "CryAction/IGameplayRecorder.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 
 #ifndef GAMEDLL_EXPORTS
 #define GAMEDLL_EXPORTS

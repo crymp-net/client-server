@@ -24,7 +24,7 @@ History:
 #include "WeaponSystem.h"
 #include "CryCommon/IEntitySystem.h"
 #include "CryCommon/ISound.h"
-#include "CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/IMaterialEffects.h"
 #include "GameRules.h"
 #include "CryCommon/Cry_GeoDistance.h"

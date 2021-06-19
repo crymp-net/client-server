@@ -16,7 +16,7 @@ History:
 
 #include "CryGame/StdAfx.h"
 #include "OptionsManager.h"
-#include "CryAction/IPlayerProfiles.h"
+#include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
 #include "CryGame/Game.h"

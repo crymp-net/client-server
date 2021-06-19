@@ -17,7 +17,7 @@ History:
 # pragma once
 
 
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"

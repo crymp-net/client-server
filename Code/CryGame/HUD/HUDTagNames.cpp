@@ -21,7 +21,7 @@ History:
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "HUDTagNames.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 
 //-----------------------------------------------------------------------------------------------------
 

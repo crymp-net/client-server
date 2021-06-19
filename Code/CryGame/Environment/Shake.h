@@ -15,7 +15,7 @@ History:
 #define __SHAKE_H__
 #pragma once
 
-#include "CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 class CShake : public CGameObjectExtensionHelper<CShake, IGameObjectExtension>
 {

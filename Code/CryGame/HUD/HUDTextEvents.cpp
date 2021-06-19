@@ -12,7 +12,7 @@
 #include "CryGame/PlayerInput.h"
 #include "CryCommon/StringUtils.h"
 #include "CryCommon/CryPath.h"
-#include "CryAction/IUIDraw.h"
+#include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 

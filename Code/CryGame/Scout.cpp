@@ -15,8 +15,8 @@
 #include "Scout.h"
 #include "CryCommon/GameUtils.h"
 
-#include "CryAction/IViewSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IPhysics.h"
 #include "CryCommon/ICryAnimation.h"
 #include "CryCommon/ISerialize.h"

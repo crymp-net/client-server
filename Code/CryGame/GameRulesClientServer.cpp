@@ -22,15 +22,15 @@ History:
 #include "HUD/HUDCrosshair.h"
 #include "HUD/HUDTagNames.h"
 
-#include "CryAction/IVehicleSystem.h"
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/IMaterialEffects.h"
 
 #include "Weapon.h"
 #include "WeaponSystem.h"
 #include "Radio.h"
 #include "SoundMoods.h"
-#include "CryAction/IWorldQuery.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "ShotValidator.h"
 
 #include "CryCommon/StlUtils.h"

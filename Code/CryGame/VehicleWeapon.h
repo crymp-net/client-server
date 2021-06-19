@@ -19,7 +19,7 @@ History:
 #endif
 
 
-#include "CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryCharAnimationParams.h"
 #include "Weapon.h"
 
