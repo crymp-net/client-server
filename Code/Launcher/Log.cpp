@@ -197,6 +197,7 @@ bool LogMessageQueue::Pop(LogMessage & message)
 	if (!m_queue.empty())
 	{
 		message = std::move(m_queue.front());
+		m_queue.pop_front();
 		return true;
 	}
 	else
