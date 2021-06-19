@@ -14,3 +14,5 @@
 
 // without ".exe" suffix
 #define CRYMP_CLIENT_EXE_NAME "@CRYMP_CLIENT_EXE@"
+
+#define CRYMP_CLIENT_BUILD_TYPE "@CMAKE_BUILD_TYPE@"

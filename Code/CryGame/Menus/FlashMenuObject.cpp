@@ -43,6 +43,14 @@ History:
 #include "GameNetworkProfile.h"
 #include "CryGame/SPAnalyst.h"
 
+#include "config.h"
+
+#ifdef BUILD_64BIT
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " [" CRYMP_CLIENT_BUILD_TYPE "] 64-bit"
+#else
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " [" CRYMP_CLIENT_BUILD_TYPE "] 32-bit"
+#endif
+
 //both are defined again in FlashMenuObjectOptions
 static const char* scuiControlCodePrefix = "@cc_"; // "@cc_"; // AlexL 03/04/2007: enable this when keys/controls are fully localized
 static const size_t scuiControlCodePrefixLen = strlen(scuiControlCodePrefix);
@@ -2703,7 +2711,7 @@ void CFlashMenuObject::InitStartMenu()
 		//SModInfo info;
 		//if(g_pGame->GetIGameFramework()->GetModInfo(&info))
 		//{
-		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("addLoadedModText", "CryMP Client");
+		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("addLoadedModText", CRYMP_MOD_TEXT);
 		//}
 
 		//m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Invoke("Directx10", (gEnv->pRenderer->GetRenderType() == eRT_DX10)?true:false);
@@ -2801,7 +2809,7 @@ void CFlashMenuObject::InitIngameMenu()
 		//SModInfo info;
 		//if(g_pGame->GetIGameFramework()->GetModInfo(&info))
 		//{
-		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText", "CryMP Client");
+		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText", CRYMP_MOD_TEXT);
 		//}
 
 		if (m_pPlayerProfileManager)
