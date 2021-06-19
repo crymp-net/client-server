@@ -585,6 +585,20 @@ void CLog::UpdateLoadingScreen(const char *format, ...)
 	va_start(args, format);
 	LogV(ILog::eMessage, format, args);
 	va_end(args);
+
+	if (!gEnv)
+		return;
+
+	ISystem *pSystem = gEnv->pSystem;
+
+	if (!pSystem->IsEditor())
+	{
+		ISystem::ILoadingProgressListener *pLoadingProgressListener = pSystem->GetLoadingProgressListener();
+		if (pLoadingProgressListener)
+		{
+			pLoadingProgressListener->OnLoadingProgress(0);
+		}
+	}
 }
 
 void CLog::RegisterConsoleVariables()
