@@ -14,7 +14,7 @@ History:
 
 #include "CryGame/StdAfx.h"
 #include "TweakMetadataCVAR.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

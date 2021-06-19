@@ -16,8 +16,8 @@
 #include "Game.h"
 #include "GameActions.h"
 #include "CryCommon/CryAction/IGameObject.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "Actor.h"
 #include "Player.h"

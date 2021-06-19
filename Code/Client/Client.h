@@ -5,9 +5,9 @@
 #include <string_view>
 #include <type_traits>
 
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 struct IConsoleCmdArgs;
 

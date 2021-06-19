@@ -17,8 +17,8 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "HUDObject.h"
-#include "CryCommon/IGame.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryGame/IGame.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 
 //-----------------------------------------------------------------------------------------------------
 

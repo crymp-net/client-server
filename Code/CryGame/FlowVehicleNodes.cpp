@@ -14,7 +14,7 @@ History:
 #include "StdAfx.h"
 #include "Game.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
-#include "CryCommon/IFlowSystem.h"
+#include "CryCommon/CryAction/IFlowSystem.h"
 #include "Nodes/G2FlowBaseNode.h"
 #include "VehicleActionEntityAttachment.h"
 #include "GameCVars.h"

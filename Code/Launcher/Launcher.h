@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CryCommon/ISystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Library/DLL.h"
 
 #include "GameWindow.h"

@@ -21,7 +21,7 @@ History:
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameRules.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
-#include "CryCommon/IAIGroup.h"
+#include "CryCommon/CryAISystem/IAIGroup.h"
 #include "HUDSilhouettes.h"
 
 #include "GameFlashAnimation.h"

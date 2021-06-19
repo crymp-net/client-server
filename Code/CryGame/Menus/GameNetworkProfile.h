@@ -17,7 +17,7 @@ History:
 
 #pragma once
 
-#include "CryCommon/INetworkService.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 
 class CMPHub;
 

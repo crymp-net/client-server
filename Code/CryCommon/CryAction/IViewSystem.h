@@ -18,7 +18,7 @@
 # pragma once
 #endif
 
-#include "CryCommon/ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 
 //
 #define VIEWID_NORMAL 0

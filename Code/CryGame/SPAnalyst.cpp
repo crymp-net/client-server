@@ -17,7 +17,7 @@
 #include "StdAfx.h"
 #include "SPAnalyst.h"
 
-#include "CryCommon/ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "Game.h"
 #include "CryCommon/CryAction/ISaveGame.h"
 #include "CryCommon/CryAction/ILoadGame.h"

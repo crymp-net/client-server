@@ -21,12 +21,12 @@
 #include "Alien.h"
 #include "GameCVars.h"
 
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IGameObject.h"
-#include "CryCommon/Cry_Geo.h"
-#include "CryCommon/Cry_GeoDistance.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryMath/Cry_Geo.h"
+#include "CryCommon/CryMath/Cry_GeoDistance.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 //------------------------------------------------------------------------
 CScriptBind_Actor::CScriptBind_Actor(ISystem* pSystem)

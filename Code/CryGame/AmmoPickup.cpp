@@ -18,7 +18,7 @@ History:
 #include "ItemParamReader.h"
 #include "GameCVars.h"
 #include "OffHand.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 
 #define EXPLOSIVE_GRENADE 0
 #define SMOKE_GRENADE			1

@@ -5,7 +5,7 @@
 #include "StdAfx.h"
 #include "TacBullet.h"
 #include "Game.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryAction/IGameRulesSystem.h"
 #include "CryCommon/CryAction/IAnimationGraph.h"
 #include "GameRules.h"

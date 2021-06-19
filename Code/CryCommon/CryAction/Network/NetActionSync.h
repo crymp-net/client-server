@@ -20,7 +20,7 @@
 
 #ifdef __GNUC__
 // GCC requires a full decl of TSerialize, not just a fwd decl.
-#include "CryCommon/ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #endif
 
 template <class ActionRep>

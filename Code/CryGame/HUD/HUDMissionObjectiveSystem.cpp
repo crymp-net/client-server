@@ -3,7 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
-#include "CryCommon/ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryGame/Game.h"
 #include "HUD.h"
 #include "HUDRadar.h"

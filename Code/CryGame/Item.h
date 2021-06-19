@@ -19,12 +19,12 @@
 #endif
 
 
-#include "CryCommon/IScriptSystem.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
-#include "CryCommon/CryCharAnimationParams.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CryAnimation/CryCharAnimationParams.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include <map>
 #include <list>
 

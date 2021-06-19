@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CryCommon/IEntityClass.h"
-#include "CryCommon/IGameFramework.h"
-#include "CryCommon/INetwork.h"
+#include "CryCommon/CryEntitySystem/IEntityClass.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 
 enum EGameObjectEventFlags
 {

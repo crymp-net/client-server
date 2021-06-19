@@ -16,7 +16,7 @@ History:
 #include "TweakMetadata.h"
 #include "TweakMetadataCVAR.h"
 #include "TweakMetadataLUA.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

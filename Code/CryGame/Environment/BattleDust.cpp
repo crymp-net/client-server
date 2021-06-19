@@ -19,8 +19,8 @@ History:
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameRules.h"
-#include "CryCommon/IRenderAuxGeom.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 //////////////////////////////////////////////////////////////////////////
 //	CBattleEvent

@@ -21,9 +21,9 @@ History:
 
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IWeapon.h"
-#include "CryCommon/IAgent.h"
-#include "CryCommon/VectorMap.h"
-#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/CryAISystem/IAgent.h"
+#include "CryCommon/CryCore/VectorMap.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
 #include "Item.h"
 
 

@@ -19,10 +19,10 @@ History:
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementHelicopter.h"
 #include "VehicleActionLandingGears.h"
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
-#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 //------------------------------------------------------------------------
 CVehicleMovementHelicopter::CVehicleMovementHelicopter()

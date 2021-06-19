@@ -15,12 +15,12 @@ History:
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "CryCommon/CryAction/IUIDraw.h"
-#include "CryCommon/IMusicSystem.h"
-#include "CryCommon/ISound.h"
-#include "CryCommon/IRenderer.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryGame/Game.h"
 #include "OptionsManager.h"
 #include <time.h>

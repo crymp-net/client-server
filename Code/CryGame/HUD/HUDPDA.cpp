@@ -3,7 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
-#include "CryCommon/StlUtils.h"
+#include "CryCommon/CryCore/StlUtils.h"
 
 #include "HUD.h"
 #include "GameFlashAnimation.h"

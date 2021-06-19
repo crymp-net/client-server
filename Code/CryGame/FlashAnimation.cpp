@@ -12,7 +12,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "FlashAnimation.h"
-#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "HUD/FlashPlayerNULL.h"
 
 IFlashPlayer*	CFlashAnimation::s_pFlashPlayerNull = 0;

@@ -14,15 +14,15 @@ History:
 #include "Game.h"
 #include "GameCVars.h"
 #include "Shark.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #include "CryCommon/CryAction/IViewSystem.h"
-#include "CryCommon/IPhysics.h"
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 
 #include "SharkMovementController.h"
 

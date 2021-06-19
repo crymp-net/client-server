@@ -1,5 +1,5 @@
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IEntity.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryEntitySystem/IEntity.h"
 
 #include "ScriptCallbacks.h"
 

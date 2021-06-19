@@ -13,9 +13,9 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "GameFlashLogic.h"
-#include "CryCommon/IGame.h"
-#include "CryCommon/IFlashPlayer.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryGame/IGame.h"
+#include "CryCommon/CrySystem/IFlashPlayer.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -1,9 +1,9 @@
 #include <map>
 #include <string>
 
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IScriptSystem.h"
-#include "CryCommon/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "Library/WinAPI.h"
 
 #include "ScriptBind_CPPAPI.h"

@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "CryCommon/INetwork.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 #include "GameNetworkProfile.h"
 #include "MPHub.h"
 

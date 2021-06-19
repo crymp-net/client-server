@@ -7,11 +7,11 @@
 #include "CryGame/Game.h"
 #include "CryGame/Actor.h"
 #include "FlowTornado.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 //------------------------------------------------------------------------
 CTornado::CTornado() :

@@ -20,7 +20,7 @@ Notes:
 
 #include "CryGame/StdAfx.h"
 #include "TweakMetadataLUA.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryGame/ScriptUtils.h"
 
 

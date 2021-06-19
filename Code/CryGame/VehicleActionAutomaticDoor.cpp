@@ -16,9 +16,8 @@ History:
 #include "VehicleActionAutomaticDoor.h"
 #include "Game.h"
 
-#include "CryCommon/IScriptSystem.h"
-#include "CryCommon/ScriptHelpers.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 const float DOOR_OPENED = 0.0f;
 const float DOOR_CLOSED = 1.0f;

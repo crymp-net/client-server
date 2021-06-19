@@ -19,8 +19,8 @@ History:
 #include "GameRules.h"
 #include "GameCVars.h"
 #include "CryCommon/CryAction/IActorSystem.h"
-#include "CryCommon/IAISystem.h"
-#include "CryCommon/IAgent.h"
+#include "CryCommon/CryAISystem/IAISystem.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 
 CWeapon::TEventListenerVector * CWeapon::m_listenerCache = 0;
 bool CWeapon::m_listenerCacheInUse = false;

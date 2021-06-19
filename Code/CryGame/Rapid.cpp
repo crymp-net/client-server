@@ -14,7 +14,7 @@ History:
 #include "Rapid.h"
 #include "Actor.h"
 #include "Player.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "CryCommon/CryAction/IViewSystem.h"

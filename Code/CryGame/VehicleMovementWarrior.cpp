@@ -13,7 +13,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "Game.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementWarrior.h"
 

@@ -2,9 +2,9 @@
 
 #include <map>
 
-#include "CryCommon/INetwork.h"
-#include "CryCommon/IGameFramework.h"
-#include "CryCommon/ConfigurableVariant.h"
+#include "CryCommon/CryNetwork/INetwork.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryCore/ConfigurableVariant.h"
 
 using TSynchedValueTypes = NTypelist::CConstruct<bool, float, int, EntityId, string>::TType;
 

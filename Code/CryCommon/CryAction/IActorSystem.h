@@ -19,10 +19,10 @@
 #endif
 
 
-#include "CryCommon/IEntity.h"
-#include "CryCommon/IEntitySystem.h"
-#include "CryCommon/IScriptSystem.h"
-#include "CryCommon/IPhysics.h"
+#include "CryCommon/CryEntitySystem/IEntity.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
 #include "IGameObjectSystem.h"
 #include "IGameObject.h"
 

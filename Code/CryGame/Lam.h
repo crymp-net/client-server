@@ -21,8 +21,8 @@ History:
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"
-#include "CryCommon/IShader.h"
-#include "CryCommon/VectorSet.h"
+#include "CryCommon/CryRenderer/IShader.h"
+#include "CryCommon/CryCore/VectorSet.h"
 
 class CLam : public CItem
 {

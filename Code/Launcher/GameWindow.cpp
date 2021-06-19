@@ -1,12 +1,12 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IConsole.h"
-#include "CryCommon/I3DEngine.h"  // required by IRenderer.h
-#include "CryCommon/IRenderer.h"
-#include "CryCommon/IHardwareMouse.h"
-#include "CryCommon/IInput.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h"  // required by IRenderer.h
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CryInput/IInput.h"
 #include "CryGame/Game.h"
 #include "CryGame/Menus/OptionsManager.h"
 #include "Library/Error.h"

@@ -17,7 +17,7 @@ History:
 #include "HUDScore.h"
 #include "HUD.h"
 #include "HUDRadar.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameRules.h"

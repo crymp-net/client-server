@@ -8,7 +8,7 @@
 #pragma once
 
 #include "IAnimationGraph.h"
-#include "CryCommon/IAnimationGraphSystem.h"
+#include "CryCommon/CryAction/IAnimationGraphSystem.h"
 
 struct AG_FILE
 {

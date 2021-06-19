@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <string_view>
 
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "Launcher/Launcher.h"
 #include "Library/StringBuffer.h"
 #include "Library/WinAPI.h"

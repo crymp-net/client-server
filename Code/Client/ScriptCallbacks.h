@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 struct IEntity;
 

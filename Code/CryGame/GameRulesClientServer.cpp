@@ -24,7 +24,7 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 
 #include "Weapon.h"
 #include "WeaponSystem.h"
@@ -33,7 +33,7 @@ History:
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "ShotValidator.h"
 
-#include "CryCommon/StlUtils.h"
+#include "CryCommon/CryCore/StlUtils.h"
 
 
 //------------------------------------------------------------------------

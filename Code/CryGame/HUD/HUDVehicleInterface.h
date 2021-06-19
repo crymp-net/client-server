@@ -19,7 +19,7 @@ History:
 
 
 #include "HUDObject.h"
-#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "GameFlashAnimation.h"
 

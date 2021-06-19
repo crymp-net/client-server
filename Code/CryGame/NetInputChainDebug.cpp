@@ -13,11 +13,11 @@ History:
 
 #include "StdAfx.h"
 #include "NetInputChainDebug.h"
-#include "CryCommon/IEntitySystem.h"
-#include "CryCommon/ITextModeConsole.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CrySystem/ITextModeConsole.h"
 
 #if ENABLE_NETINPUTCHAINDEBUG
-#include "CryCommon/ConfigurableVariant.h"
+#include "CryCommon/CryCore/ConfigurableVariant.h"
 
 #ifndef XENON
 #include <windows.h>

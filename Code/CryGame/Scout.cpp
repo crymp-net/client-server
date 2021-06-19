@@ -13,14 +13,14 @@
 #include "StdAfx.h"
 #include "Game.h"
 #include "Scout.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "CryCommon/IPhysics.h"
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "Lam.h"
 
 

@@ -2,7 +2,7 @@
 #include "Library/WinAPI.h"
 
 // TODO: get rid of this garbage
-#include "CryCommon/platform_impl.h"
+#include "CryCommon/CryCore/platform_impl.h"
 
 #include "Launcher.h"
 

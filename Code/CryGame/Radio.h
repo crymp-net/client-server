@@ -8,7 +8,7 @@
 #pragma once
 
 #include "GameActions.h"
-#include "CryCommon/IInput.h"
+#include "CryCommon/CryInput/IInput.h"
 
 class CGameRules;
 

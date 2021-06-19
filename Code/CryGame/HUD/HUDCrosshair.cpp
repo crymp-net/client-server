@@ -17,7 +17,7 @@ History:
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameRules.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 #include "HUD.h"
 #include "HUDVehicleInterface.h"
 #include "CryGame/Item.h"

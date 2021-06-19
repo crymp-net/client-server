@@ -20,10 +20,10 @@
 
 #include "IGameObject.h"
 #include "IAnimationGraph.h"
-#include "CryCommon/IFacialAnimation.h"
-#include "CryCommon/SerializeFwd.h"
+#include "CryCommon/CryAnimation/IFacialAnimation.h"
+#include "CryCommon/CryNetwork/SerializeFwd.h"
 
-#include "CryCommon/CryCharAnimationParams.h"
+#include "CryCommon/CryAnimation/CryCharAnimationParams.h"
 
 //--------------------------------------------------------------------------------
 

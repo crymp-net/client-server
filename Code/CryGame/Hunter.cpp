@@ -14,15 +14,15 @@
 #include "Game.h"
 #include "GameCVars.h"
 #include "Hunter.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "CryCommon/IPhysics.h"
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IRenderAuxGeom.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 
 
 const float CHunter::s_turnThreshIdling = cry_cosf (DEG2RAD (30.0f));

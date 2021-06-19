@@ -18,13 +18,13 @@ History:
 #include "GameRules.h"
 #include "Player.h"
 #include "BulletTime.h"
-#include "CryCommon/IEntitySystem.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 #include "GameCVars.h"
 
 
-#include "CryCommon/IRenderer.h"
-#include "CryCommon/IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 
 //std::vector<Vec3> g_points;

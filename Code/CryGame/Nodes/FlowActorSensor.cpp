@@ -11,7 +11,7 @@
 #include "CryGame/GameCVars.h"
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
-#include "CryCommon/StringUtils.h"
+#include "CryCommon/CryCore/StringUtils.h"
 
 #if defined(WHOLE_PROJECT)
 	#define GetPlayer GetPlayerSensor

@@ -20,12 +20,12 @@ History:
 
 #include <utility>
 
-#include "CryCommon/IEntity.h"
-#include "CryCommon/IEntitySystem.h"
-#include "CryCommon/IScriptSystem.h"
-#include "CryCommon/ISound.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryEntitySystem/IEntity.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "IGameObjectSystem.h"
 #include "IGameObject.h"
 #include "IMovementController.h"

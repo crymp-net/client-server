@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CryCommon/ISystem.h"  // required by NetHelpers.h
-#include "CryCommon/NetHelpers.h"
+#include "CryCommon/CrySystem/ISystem.h"  // required by NetHelpers.h
+#include "CryCommon/CryNetwork/NetHelpers.h"
 
 #include "SynchedStorage.h"
 

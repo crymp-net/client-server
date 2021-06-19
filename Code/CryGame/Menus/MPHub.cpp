@@ -4,8 +4,8 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 
-#include "CryCommon/INetwork.h"
-#include "CryCommon/INetworkService.h"
+#include "CryCommon/CryNetwork/INetwork.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 
 #include "MPHub.h"
 #include "MultiplayerMenu.h"
@@ -14,12 +14,12 @@
 
 
 #include "CryGame/Game.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "OptionsManager.h"
 #include "FlashMenuObject.h"
-#include "CryCommon/IVideoPlayer.h"
-#include "CryCommon/CryThread.h"
+#include "CryCommon/CryRenderer/IVideoPlayer.h"
+#include "CryCommon/CryCore/CryThread.h"
 
 static const char* gTSPListFileFullName = "%USER%\\TSP.xml";
 static const char* gTSPListFileURL = "http://www.ea.com/editorial/crysis/crysis.xml";

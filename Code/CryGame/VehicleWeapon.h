@@ -20,7 +20,7 @@ History:
 
 
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "CryCommon/CryCharAnimationParams.h"
+#include "CryCommon/CryAnimation/CryCharAnimationParams.h"
 #include "Weapon.h"
 
 struct IVehicle;

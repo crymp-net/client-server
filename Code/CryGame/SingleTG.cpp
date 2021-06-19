@@ -12,7 +12,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "SingleTG.h"
-#include "CryCommon/IGameTokens.h"
+#include "CryCommon/CryGame/IGameTokens.h"
 #include "Actor.h"
 #include "Player.h"
 #include "HUD/HUD.h"

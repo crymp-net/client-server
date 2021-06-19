@@ -1,5 +1,5 @@
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "SynchedStorage.h"
 

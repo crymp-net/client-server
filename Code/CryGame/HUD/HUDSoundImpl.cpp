@@ -3,7 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "HUD.h"
 #include "CryGame/Actor.h"
 #include "CryGame/Game.h"

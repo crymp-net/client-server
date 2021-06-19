@@ -16,11 +16,11 @@ History:
 #include "CryGame/StdAfx.h"
 #include "HUDTweakMenu.h"
 #include "CryCommon/CryAction/IUIDraw.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryGame/ScriptUtils.h"
-#include "CryCommon/ICryPak.h"
-#include "CryCommon/IGame.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CryGame/IGame.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 //-----------------------------------------------------------------------------------------------------
 
 CHUDTweakMenu::CHUDTweakMenu(IScriptSystem *pScriptSystem) //, m_menu(pScriptSystem)

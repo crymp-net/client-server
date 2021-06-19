@@ -15,7 +15,7 @@
 #include "GameRules.h"
 #include "ItemSharedParams.h"
 
-#include "CryCommon/INetwork.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
@@ -29,7 +29,7 @@
 
 #include "Menus/FlashMenuObject.h"
 #include "Menus/MPHub.h"
-#include "CryCommon/INetworkService.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 
 static void BroadcastChangeSafeMode(ICVar*)
 {

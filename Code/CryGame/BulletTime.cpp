@@ -5,8 +5,8 @@
 #include "StdAfx.h"
 #include "BulletTime.h"
 #include "GameCVars.h"
-#include "CryCommon/ISound.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 CBulletTime::CBulletTime()
 : m_active(false)

@@ -17,9 +17,9 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
-#include "CryCommon/IGameTokens.h"
+#include "CryCommon/CryGame/IGameTokens.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 
 #define RUNSOUND_FADEIN_TIME 0.5f

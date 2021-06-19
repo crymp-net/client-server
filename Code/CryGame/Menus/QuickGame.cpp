@@ -12,8 +12,8 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "CryCommon/INetwork.h"
-#include "CryCommon/INetworkService.h"
+#include "CryCommon/CryNetwork/INetwork.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 #include "QuickGame.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 

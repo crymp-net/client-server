@@ -15,7 +15,7 @@ History:
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"
 #include "Game.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 
 
 //------------------------------------------------------------------------

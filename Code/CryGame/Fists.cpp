@@ -18,7 +18,7 @@ History:
 #include "Melee.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
-#include "CryCommon/IGameTokens.h"
+#include "CryCommon/CryGame/IGameTokens.h"
 #include "GameActions.h"
 
 #include "HUD/HUD.h"

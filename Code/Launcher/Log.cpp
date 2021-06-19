@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "Library/CmdLine.h"
 #include "Library/Error.h"
 #include "Library/StringBuffer.h"

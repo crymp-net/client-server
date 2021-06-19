@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "CryCommon/IAgent.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 #include "IAnimationGraph.h"
 
 // IMPORTANT NOTE: wherever "Target" is mentioned in this file, we talk

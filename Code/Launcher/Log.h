@@ -6,7 +6,7 @@
 #include <deque>
 #include <mutex>
 
-#include "CryCommon/ILog.h"
+#include "CryCommon/CrySystem/ILog.h"
 
 struct ICVar;
 struct SSystemInitParams;

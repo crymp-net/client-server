@@ -16,7 +16,7 @@ History:
 
 #pragma once
 
-#include "CryCommon/I3DEngine.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
 
 #include "IGameObject.h"
 

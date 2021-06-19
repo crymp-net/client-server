@@ -9,7 +9,7 @@
 #include "G2FlowBaseNode.h"
 #include "CryGame/Weapon.h"
 
-#include "CryCommon/StringUtils.h"
+#include "CryCommon/CryCore/StringUtils.h"
 
 namespace
 {

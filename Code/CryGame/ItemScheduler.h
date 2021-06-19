@@ -20,8 +20,8 @@ History:
 
 
 #include <vector>
-#include "CryCommon/ITimer.h"
-#include "CryCommon/PoolAllocator.h"
+#include "CryCommon/CrySystem/ITimer.h"
+#include "CryCommon/CryCore/PoolAllocator.h"
 
 
 class CItem;

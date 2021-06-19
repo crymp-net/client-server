@@ -20,7 +20,7 @@ History:
 #include "IGameObject.h"
 #include "IItem.h"
 #include "IWeapon.h"
-#include "CryCommon/ConfigurableVariant.h"
+#include "CryCommon/CryCore/ConfigurableVariant.h"
 #include "IActorSystem.h"
 
 

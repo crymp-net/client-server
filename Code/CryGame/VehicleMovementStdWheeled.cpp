@@ -20,9 +20,9 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/Network/NetActionSync.h"
-#include "CryCommon/IAgent.h"
-#include "CryCommon/GameUtils.h"
-#include "CryCommon/IGameTokens.h"
+#include "CryCommon/CryAISystem/IAgent.h"
+#include "CryCommon/CryGame/GameUtils.h"
+#include "CryCommon/CryGame/IGameTokens.h"
 #include "Player.h"
 
 #include "NetInputChainDebug.h"

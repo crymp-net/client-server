@@ -24,14 +24,13 @@
 #include "HUD/HUD.h"
 #include "WeaponSystem.h"
 
-#include "CryCommon/ICryPak.h"
-#include "CryCommon/CryPath.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
-#include "CryCommon/IMovieSystem.h"
+#include "CryCommon/CryMovie/IMovieSystem.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 
 #include "ScriptBind_Actor.h"

@@ -15,15 +15,15 @@ History:
 #include "GameCVars.h"
 
 #include "Trooper.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "CryCommon/IPhysics.h"
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/ISerialize.h"
-#include "CryCommon/IRenderAuxGeom.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
 
 const float CTrooper::CTentacle_maxTimeStep = 0.02f;

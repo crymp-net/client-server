@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "CryCommon/IAgent.h" // for EStance
-#include "CryCommon/ISerialize.h"
+#include "CryCommon/CryAISystem/IAgent.h" // for EStance
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryAction/IGameObject.h"
 
 struct SSerializedPlayerInput

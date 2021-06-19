@@ -40,8 +40,8 @@
 #include "SPAnalyst.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 
-#include "CryCommon/StlUtils.h"
-#include "CryCommon/StringUtils.h"
+#include "CryCommon/CryCore/StlUtils.h"
+#include "CryCommon/CryCore/StringUtils.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;

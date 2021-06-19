@@ -14,7 +14,7 @@ History:
 #include "StdAfx.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementAmphibious.h"

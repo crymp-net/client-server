@@ -15,7 +15,7 @@ History:
 
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CryAction/IActorSystem.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "HUDSilhouettes.h"

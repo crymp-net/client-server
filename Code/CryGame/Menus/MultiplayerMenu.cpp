@@ -13,10 +13,10 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "MultiplayerMenu.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "MPLobbyUI.h"
-#include "CryCommon/INetwork.h"
-#include "CryCommon/INetworkService.h"
+#include "CryCommon/CryNetwork/INetwork.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/HUD/GameFlashLogic.h"
 #include "CreateGame.h"

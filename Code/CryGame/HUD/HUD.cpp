@@ -19,7 +19,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "CryCommon/StlUtils.h"
+#include "CryCommon/CryCore/StlUtils.h"
 #include <ctype.h>
 
 #include "CryGame/Game.h"
@@ -40,15 +40,15 @@ History:
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 
 #include "CryCommon/CryAction/IUIDraw.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryGame/IPlayerInput.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
-#include "CryCommon/IInput.h"
-#include "CryCommon/IMaterialEffects.h"
+#include "CryCommon/CryInput/IInput.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/ISaveGame.h"
 #include "CryCommon/CryAction/ILoadGame.h"
-#include "CryCommon/ICryPak.h"
-#include "CryCommon/IMovieSystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CryMovie/IMovieSystem.h"
 
 #include "CryGame/GameRules.h"
 #include "CryGame/Item.h"

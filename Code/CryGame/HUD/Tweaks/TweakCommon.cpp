@@ -18,7 +18,7 @@ Notes:	m_bIsInit is a bad idea - only need one in HUDTweak
 #include "TweakCommon.h"
 #include "TweakMenu.h"
 #include "TweakMetadata.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 //-------------------------------------------------------------------------
 

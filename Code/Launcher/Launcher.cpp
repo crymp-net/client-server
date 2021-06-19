@@ -1,6 +1,6 @@
 #include "Client/Client.h"
-#include "CryCommon/IGameFramework.h"
-#include "CryCommon/IConsole.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "Library/CmdLine.h"
 #include "Library/CPU.h"

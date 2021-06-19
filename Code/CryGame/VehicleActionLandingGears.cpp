@@ -15,7 +15,7 @@ History:
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleActionLandingGears.h"
 #include "Game.h"
-#include "CryCommon/GameUtils.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 const float GEARS_EXTRACTED_TIME = 0.0f;
 const float GEARS_RETRACTED_TIME = 1.0f;

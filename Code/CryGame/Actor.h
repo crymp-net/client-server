@@ -20,11 +20,11 @@
 
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
-#include "CryCommon/CoherentValue.h"
-#include "CryCommon/IMusicSystem.h"
+#include "CryCommon/CryGame/CoherentValue.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
 
 #include "Game.h" // for stance enum
-#include "CryCommon/IAgent.h" // for stance enum
+#include "CryCommon/CryAISystem/IAgent.h" // for stance enum
 #include "CryCommon/CryAction/IAnimationGraph.h"
 #include "CryCommon/CryAction/IAnimatedCharacter.h"
 #include "CryCommon/CryAction/IMovementController.h"

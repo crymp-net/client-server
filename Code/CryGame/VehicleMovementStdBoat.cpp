@@ -17,7 +17,7 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementStdBoat.h"
-#include "CryCommon/IAgent.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 #include "CryCommon/CryAction/Network/NetActionSync.h"
 
 

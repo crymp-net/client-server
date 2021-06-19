@@ -16,7 +16,7 @@ History:
 #include "TweakTraverser.h"
 #include "TweakCommon.h"
 #include "TweakMenu.h"
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include <string>
 
 //-------------------------------------------------------------------------

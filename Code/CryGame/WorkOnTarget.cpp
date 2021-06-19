@@ -18,7 +18,7 @@ History:
 #include "Player.h"
 #include "GameCVars.h"
 #include "GameRules.h"
-#include "CryCommon/IEntitySystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 
 //------------------------------------------------------------------------

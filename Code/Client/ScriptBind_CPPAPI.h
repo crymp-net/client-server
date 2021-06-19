@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CryCommon/IScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 class ScriptBind_CPPAPI : public CScriptableBase
 {

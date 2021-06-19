@@ -1,5 +1,5 @@
-#include "CryCommon/ISystem.h"
-#include "CryCommon/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 
 #include "ScriptCommands.h"
 #include "Client.h"

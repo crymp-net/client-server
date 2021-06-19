@@ -14,9 +14,9 @@ History:
 #include "Item.h"
 #include "ItemSharedParams.h"
 
-#include "CryCommon/ICryAnimation.h"
-#include "CryCommon/ISound.h"
-#include "CryCommon/CryPath.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Actor.h"
 #include "Game.h"

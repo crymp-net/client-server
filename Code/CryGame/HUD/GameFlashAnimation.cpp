@@ -14,7 +14,7 @@ History:
 #include "CryGame/StdAfx.h"
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
-#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "HUD.h"
 
 //-----------------------------------------------------------------------------------------------------

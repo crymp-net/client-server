@@ -22,10 +22,10 @@ History:
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryAction/IWeapon.h"
-#include "CryCommon/IGameTokens.h"
+#include "CryCommon/CryGame/IGameTokens.h"
 #include "Item.h"
 #include "TracerManager.h"
-#include "CryCommon/VectorMap.h"
+#include "CryCommon/CryCore/VectorMap.h"
 #include "AmmoParams.h"
 
 class CGame;

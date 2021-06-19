@@ -22,9 +22,9 @@ History:
 
 #include "HUDEnums.h"
 #include "HUDCommon.h"
-#include "CryCommon/IFlashPlayer.h"
+#include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
-#include "CryCommon/IInput.h"
+#include "CryCommon/CryInput/IInput.h"
 #include "CryCommon/CryAction/IMovementController.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryGame/Item.h"
@@ -33,7 +33,7 @@ History:
 #include "CryGame/Voting.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ISubtitleManager.h"
-#include "CryCommon/CryFixedString.h"
+#include "CryCommon/CryCore/CryFixedString.h"
 
 #include "HUDMissionObjectiveSystem.h"
 

@@ -13,21 +13,21 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
-#include "CryCommon/StlUtils.h"
+#include "CryCommon/CryCore/StlUtils.h"
 
-#include "CryCommon/IVideoPlayer.h"
+#include "CryCommon/CryRenderer/IVideoPlayer.h"
 #include <time.h>
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "CryCommon/CryAction/IUIDraw.h"
-#include "CryCommon/IMusicSystem.h"
-#include "CryCommon/ISound.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
-#include "CryCommon/CryPath.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryAction/ISaveGame.h"
 #include "CryCommon/CryAction/ILoadGame.h"
 #include "MPHub.h"
@@ -35,8 +35,8 @@ History:
 #include "CryGame/HUD/HUDRadar.h"
 #include "CryGame/HUD/HUDTextChat.h"
 #include "OptionsManager.h"
-#include "CryCommon/IAVI_Reader.h"
-#include "CryCommon/StringUtils.h"
+#include "CryCommon/CrySystem/IAVI_Reader.h"
+#include "CryCommon/CryCore/StringUtils.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryGame/GameActions.h"
 #include "CryCommon/CryAction/IViewSystem.h"

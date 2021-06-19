@@ -17,8 +17,8 @@ History:
 #include "MultiplayerMenu.h"
 #include "CreateGame.h"
 
-#include "CryCommon/IGame.h"
-#include "CryCommon/IGameFramework.h"
+#include "CryCommon/CryGame/IGame.h"
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 
