@@ -4,7 +4,7 @@ struct ICVar;
 
 class GSMasterHook
 {
-	ICVar *m_pHostnameCVar;
+	ICVar *m_pHostnameCVar = nullptr;
 
 public:
 	GSMasterHook();

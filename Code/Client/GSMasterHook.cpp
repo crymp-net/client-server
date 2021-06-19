@@ -1,8 +1,13 @@
 #include <winsock2.h>
 
+#include <array>
+#include <algorithm>
+#include <string_view>
+
 #include "CryCommon/ISystem.h"
 #include "CryCommon/IConsole.h"
 #include "Launcher/Launcher.h"
+#include "Library/StringBuffer.h"
 #include "Library/WinAPI.h"
 
 #include "GSMasterHook.h"
@@ -12,27 +17,51 @@
 
 namespace
 {
+	constexpr std::array<std::string_view, 3> PREFIXES = {
+		"crysis.available.",
+		"crysis.master.",
+		"crysis.ms5."
+	};
+
+	std::string_view FindPrefix(const std::string_view & name)
+	{
+		auto it = std::find_if(PREFIXES.begin(), PREFIXES.end(), [name](const std::string_view & prefix)
+		{
+			if (prefix.length() < name.length())
+				return prefix == std::string_view(name.data(), prefix.length());
+			else
+				return false;
+		});
+
+		return (it != PREFIXES.end()) ? *it : std::string_view();
+	}
+
 	void* __stdcall CryNetwork_gethostbyname_hook(const char *name)
 	{
-		// replace gamespy.com suffix with custom hostname
-		if (const char *suffix = strstr(name, "gamespy.com"))
-		{
-			const size_t prefixLength = suffix - name;
+		const std::string_view prefix = FindPrefix(name);
 
+		if (!prefix.empty())
+		{
 			ICVar *pHostnameCVar = gEnv->pConsole->GetCVar(GS_MASTER_HOOK_HOSTNAME_CVAR_NAME);
+			if (pHostnameCVar)
+			{
+				StringBuffer<64> buffer;
+				buffer += prefix;
+				buffer += pHostnameCVar->GetString();
 
-			std::string buffer;
-			buffer.append(name, prefixLength);
-			buffer.append(pHostnameCVar->GetString());
+				CryLog("GSMasterHook: %s => %s", name, buffer.c_str());
 
-			CryLog("GSMasterHook: %s => %s", name, buffer.c_str());
-
-			return gethostbyname(buffer.c_str());
+				return gethostbyname(buffer.c_str());
+			}
+			else
+			{
+				CryLogError("GSMasterHook: " GS_MASTER_HOOK_HOSTNAME_CVAR_NAME " cvar is missing!");
+			}
 		}
-		else
-		{
-			return gethostbyname(name);
-		}
+
+		CryLog("GSMasterHook: %s", name);
+
+		return gethostbyname(name);
 	}
 }
 
