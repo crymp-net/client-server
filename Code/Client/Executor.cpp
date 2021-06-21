@@ -95,3 +95,44 @@ void Executor::AddTaskCompleted(std::unique_ptr<IExecutorTask> && task)
 {
 	m_completedQueue.Push(std::move(task));
 }
+
+struct LambdaTask : public IExecutorTask
+{
+	Executor::Lambda onExecute;
+	Executor::Lambda onCallback;
+
+	// worker thread
+	void Execute() override
+	{
+		if (onExecute)
+		{
+			onExecute();
+		}
+	}
+
+	// main thread
+	void Callback() override
+	{
+		if (onCallback)
+		{
+			onCallback();
+		}
+	}
+};
+
+void Executor::AddLambda(Lambda onExecute, Lambda onCallback)
+{
+	std::unique_ptr<LambdaTask> task = std::make_unique<LambdaTask>();
+	task->onExecute = std::move(onExecute);
+	task->onCallback = std::move(onCallback);
+
+	AddTask(std::move(task));
+}
+
+void Executor::AddLambdaCompleted(Lambda onCallback)
+{
+	std::unique_ptr<LambdaTask> task = std::make_unique<LambdaTask>();
+	task->onCallback = std::move(onCallback);
+
+	AddTaskCompleted(std::move(task));
+}

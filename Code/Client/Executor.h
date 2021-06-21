@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
 
 struct IExecutorTask
 {
@@ -51,4 +52,11 @@ public:
 	// thread-safe
 	void AddTask(std::unique_ptr<IExecutorTask> && task);
 	void AddTaskCompleted(std::unique_ptr<IExecutorTask> && task);
+
+	// alternative to IExecutorTask
+	using Lambda = std::function<void()>;
+
+	// thread-safe
+	void AddLambda(Lambda onExecute, Lambda onCallback);
+	void AddLambdaCompleted(Lambda onCallback);
 };
