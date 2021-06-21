@@ -351,6 +351,12 @@ void CLog::WriteToConsole(const LogMessage & message)
 
 void CLog::Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend)
 {
+	if (!format)
+	{
+		// drop messages with null format
+		return;
+	}
+
 	int requiredVerbosity = 0;
 
 	switch (type)
