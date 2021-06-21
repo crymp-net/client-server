@@ -262,9 +262,18 @@ void CLog::WriteToFile(const LogMessage & message)
 		return;
 
 	StringBuffer<256> buffer;
-	buffer.reserve(message.content.length() + WinAPI::NEWLINE.length());
 
-	buffer += message.prefix;
+	if (message.isAppend)
+	{
+		buffer.reserve(message.content.length() + WinAPI::NEWLINE.length());
+	}
+	else
+	{
+		buffer.reserve(message.prefix.length() + message.content.length() + WinAPI::NEWLINE.length());
+
+		// the prefix is used only in non-append mode
+		buffer += message.prefix;
+	}
 
 	// true if the previous character was '$'
 	bool isColorCode = false;
