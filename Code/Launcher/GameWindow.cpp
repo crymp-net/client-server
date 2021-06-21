@@ -211,7 +211,7 @@ GameWindow::~GameWindow()
 	}
 }
 
-void GameWindow::init()
+void GameWindow::Init()
 {
 	HMODULE exe = GetModuleHandleA(nullptr);
 
@@ -234,7 +234,7 @@ void GameWindow::init()
 	}
 }
 
-bool GameWindow::update()
+bool GameWindow::OnUpdate()
 {
 	MSG msg;
 
@@ -252,7 +252,7 @@ bool GameWindow::update()
 	return true;
 }
 
-void GameWindow::onQuit()
+void GameWindow::OnQuit()
 {
 	MSG msg;
 

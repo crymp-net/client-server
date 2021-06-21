@@ -26,7 +26,7 @@ struct CallStackEntry
 
 	CallStackEntry() = default;
 
-	std::string toString() const
+	std::string ToString() const
 	{
 		std::string result;
 
@@ -82,7 +82,7 @@ struct Module
 		return address < other.address;
 	}
 
-	std::string toString() const
+	std::string ToString() const
 	{
 	#ifdef BUILD_64BIT
 		return Format("%016zX - %016zX %s", address, address + size, name.c_str());
@@ -196,14 +196,14 @@ public:
 		}
 	}
 
-	bool init()
+	bool Init()
 	{
 		if (m_isInitialized)
 		{
 			return true;
 		}
 
-		if (!m_dll.load("dbghelp.dll"))
+		if (!m_dll.Load("dbghelp.dll"))
 		{
 			return false;
 		}
@@ -211,25 +211,25 @@ public:
 		m_process = GetCurrentProcess();
 		m_thread  = GetCurrentThread();
 
-		m_pSymInitialize = m_dll.getSymbol<TSymInitialize>("SymInitialize");
-		m_pSymSetOptions = m_dll.getSymbol<TSymSetOptions>("SymSetOptions");
-		m_pSymCleanup    = m_dll.getSymbol<TSymCleanup>("SymCleanup");
-		m_pSymFromAddr   = m_dll.getSymbol<TSymFromAddr>("SymFromAddr");
+		m_pSymInitialize = m_dll.GetSymbol<TSymInitialize>("SymInitialize");
+		m_pSymSetOptions = m_dll.GetSymbol<TSymSetOptions>("SymSetOptions");
+		m_pSymCleanup    = m_dll.GetSymbol<TSymCleanup>("SymCleanup");
+		m_pSymFromAddr   = m_dll.GetSymbol<TSymFromAddr>("SymFromAddr");
 
 	#ifdef BUILD_64BIT
-		m_pSymGetLineFromAddr     = m_dll.getSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr64");
-		m_pSymGetModuleInfo       = m_dll.getSymbol<TSymGetModuleInfo>("SymGetModuleInfo64");
-		m_pEnumerateLoadedModules = m_dll.getSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules64");
-		m_pStackWalk              = m_dll.getSymbol<TStackWalk>("StackWalk64");
-		m_pSymFunctionTableAccess = m_dll.getSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess64");
-		m_pSymGetModuleBase       = m_dll.getSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase64");
+		m_pSymGetLineFromAddr     = m_dll.GetSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr64");
+		m_pSymGetModuleInfo       = m_dll.GetSymbol<TSymGetModuleInfo>("SymGetModuleInfo64");
+		m_pEnumerateLoadedModules = m_dll.GetSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules64");
+		m_pStackWalk              = m_dll.GetSymbol<TStackWalk>("StackWalk64");
+		m_pSymFunctionTableAccess = m_dll.GetSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess64");
+		m_pSymGetModuleBase       = m_dll.GetSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase64");
 	#else
-		m_pSymGetLineFromAddr     = m_dll.getSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr");
-		m_pSymGetModuleInfo       = m_dll.getSymbol<TSymGetModuleInfo>("SymGetModuleInfo");
-		m_pEnumerateLoadedModules = m_dll.getSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules");
-		m_pStackWalk              = m_dll.getSymbol<TStackWalk>("StackWalk");
-		m_pSymFunctionTableAccess = m_dll.getSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess");
-		m_pSymGetModuleBase       = m_dll.getSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase");
+		m_pSymGetLineFromAddr     = m_dll.GetSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr");
+		m_pSymGetModuleInfo       = m_dll.GetSymbol<TSymGetModuleInfo>("SymGetModuleInfo");
+		m_pEnumerateLoadedModules = m_dll.GetSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules");
+		m_pStackWalk              = m_dll.GetSymbol<TStackWalk>("StackWalk");
+		m_pSymFunctionTableAccess = m_dll.GetSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess");
+		m_pSymGetModuleBase       = m_dll.GetSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase");
 	#endif
 
 		if (!m_pSymInitialize
@@ -258,12 +258,12 @@ public:
 		return true;
 	}
 
-	bool isInitialized() const
+	bool IsInitialized() const
 	{
 		return m_isInitialized;
 	}
 
-	std::vector<CallStackEntry> getCallStack(const CONTEXT *pExceptionContext) const
+	std::vector<CallStackEntry> GetCallStack(const CONTEXT *pExceptionContext) const
 	{
 		std::vector<CallStackEntry> result;
 
@@ -351,7 +351,7 @@ public:
 		return result;
 	}
 
-	std::vector<Module> getLoadedModules() const
+	std::vector<Module> GetLoadedModules() const
 	{
 		std::vector<Module> result;
 
@@ -399,7 +399,7 @@ static const char *ExceptionCodeToString(unsigned int code)
 
 static void Log(const std::string_view & message)
 {
-	void *file = gLauncher->getLog().GetFile();
+	void *file = gLauncher->GetLog().GetFile();
 
 	if (file)
 	{
@@ -476,22 +476,22 @@ static void OnCrash(_EXCEPTION_POINTERS *pExceptionInfo)
 
 	DebugHelper dbghelp;
 
-	if (dbghelp.init())
+	if (dbghelp.Init())
 	{
-		std::vector<CallStackEntry> callstack = dbghelp.getCallStack(pExceptionInfo->ContextRecord);
+		std::vector<CallStackEntry> callstack = dbghelp.GetCallStack(pExceptionInfo->ContextRecord);
 
 		Log("Callstack:");
 		for (size_t i = 0; i < callstack.size(); i++)
 		{
-			Log(callstack[i].toString());
+			Log(callstack[i].ToString());
 		}
 
-		std::vector<Module> modules = dbghelp.getLoadedModules();
+		std::vector<Module> modules = dbghelp.GetLoadedModules();
 
 		Log(Format("Modules (%u):", modules.size()));
 		for (size_t i = 0; i < modules.size(); i++)
 		{
-			Log(modules[i].toString());
+			Log(modules[i].ToString());
 		}
 	}
 	else

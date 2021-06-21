@@ -1,9 +1,6 @@
-#include <map>
-#include <string>
-
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Library/WinAPI.h"
 
 #include "ScriptBind_CPPAPI.h"
@@ -45,7 +42,7 @@ ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
 
 int ScriptBind_CPPAPI::AddCCommand(IFunctionHandler *pH, const char *name, HSCRIPTFUNCTION handler)
 {
-	bool success = gClient->getScriptCommands()->addCommand(name, handler);
+	bool success = gClient->GetScriptCommands()->AddCommand(name, handler);
 
 	return pH->EndFunction(success);
 }
@@ -84,7 +81,7 @@ int ScriptBind_CPPAPI::GetLocaleInformation(IFunctionHandler *pH)
 
 int ScriptBind_CPPAPI::GetMapName(IFunctionHandler *pH)
 {
-	return pH->EndFunction(gClient->getGameFramework()->GetLevelName());
+	return pH->EndFunction(gClient->GetGameFramework()->GetLevelName());
 }
 
 int ScriptBind_CPPAPI::MakeUUID(IFunctionHandler *pH, const char *salt)
@@ -94,7 +91,7 @@ int ScriptBind_CPPAPI::MakeUUID(IFunctionHandler *pH, const char *salt)
 
 int ScriptBind_CPPAPI::Random(IFunctionHandler *pH)
 {
-	return pH->EndFunction(gClient->getRandomNumber<float>(0, 1));
+	return pH->EndFunction(gClient->GetRandomNumber<float>(0, 1));
 }
 
 int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HSCRIPTFUNCTION callback)
@@ -111,7 +108,7 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 	const char *body = "";
 	params->GetValue("body", body);
 
-	int timeout = 4000;
+	int timeout = HTTPClient::DEFAULT_TIMEOUT;
 	params->GetValue("timeout", timeout);
 
 	std::map<std::string, std::string> headers;
@@ -130,37 +127,26 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 		headersTable->EndIteration(it);
 	}
 
-	bool cache = false;
-	bool returnPath = false;
-
-	if (gEnv->pSystem->IsDevMode())
-	{
-		params->GetValue("cache", cache);
-		params->GetValue("returnPath", returnPath);
-	}
-
-	gClient->getHTTPClient()->Request(
+	gClient->GetHTTPClient()->Request(
 		method,
 		url,
-		headers,
 		body,
-		[callback, this](int code, std::string & response, Error & err)
+		std::move(headers),
+		[callback, this](HTTPClient::Result & result)
 		{
 			if (m_pSS->BeginCall(callback))
 			{
-				if (err)
-					m_pSS->PushFuncParam(err.what());
+				if (result.error)
+					m_pSS->PushFuncParam(result.error.what());
 				else
 					m_pSS->PushFuncParam(false);
 
-				m_pSS->PushFuncParam(response.c_str());
-				m_pSS->PushFuncParam(code);
+				m_pSS->PushFuncParam(result.response.c_str());
+				m_pSS->PushFuncParam(result.code);
 				m_pSS->EndCall();
 			}
 		},
-		timeout,
-		cache,
-		returnPath
+		timeout
 	);
 
 	return pH->EndFunction(true);
@@ -168,7 +154,7 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 
 int ScriptBind_CPPAPI::SetCallback(IFunctionHandler *pH, int callback, HSCRIPTFUNCTION handler)
 {
-	bool success = gClient->getScriptCallbacks()->setHandler(static_cast<EScriptCallback>(callback), handler);
+	bool success = gClient->GetScriptCallbacks()->SetHandler(static_cast<EScriptCallback>(callback), handler);
 
 	return pH->EndFunction(success);
 }

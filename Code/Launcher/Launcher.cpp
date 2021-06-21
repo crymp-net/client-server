@@ -15,7 +15,21 @@
 
 #include "config.h"
 
-void Launcher::initWorkingDirectory()
+void Launcher::SetCmdLine()
+{
+	const std::string_view cmdLine = WinAPI::GetCmdLine();
+
+	if (cmdLine.length() >= sizeof m_params.cmdLine)
+	{
+		throw Error("Command line is too long!");
+	}
+
+	memcpy(m_params.cmdLine, cmdLine.data(), cmdLine.length());
+
+	m_params.cmdLine[cmdLine.length()] = '\0';
+}
+
+void Launcher::InitWorkingDirectory()
 {
 	const std::string dirArg = CmdLine::GetArgValue("-dir");
 
@@ -51,14 +65,14 @@ void Launcher::initWorkingDirectory()
 	WinAPI::SetWorkingDirectory(dir);
 }
 
-void Launcher::loadEngine()
+void Launcher::LoadEngine()
 {
-	if (!m_CrySystem.load("CrySystem.dll", DLL::NO_RELEASE))  // unloading Crysis DLLs is not safe
+	if (!m_CrySystem.Load("CrySystem.dll", DLL::NO_RELEASE))  // unloading Crysis DLLs is not safe
 	{
 		throw SystemError("Failed to load the CrySystem DLL!");
 	}
 
-	const int gameVersion = WinAPI::GetCrysisGameBuild(m_CrySystem.getHandle());
+	const int gameVersion = WinAPI::GetCrysisGameBuild(m_CrySystem.GetHandle());
 	if (gameVersion < 0)
 	{
 		throw SystemError("Failed to get the game version!");
@@ -104,18 +118,18 @@ void Launcher::loadEngine()
 		}
 	}
 
-	if (!m_CryAction.load("CryAction.dll", DLL::NO_RELEASE))
+	if (!m_CryAction.Load("CryAction.dll", DLL::NO_RELEASE))
 	{
 		throw SystemError("Failed to load the CryAction DLL!");
 	}
 
-	if (!m_CryNetwork.load("CryNetwork.dll", DLL::NO_RELEASE))
+	if (!m_CryNetwork.Load("CryNetwork.dll", DLL::NO_RELEASE))
 	{
 		throw SystemError("Failed to load the CryNetwork DLL!");
 	}
 }
 
-void Launcher::patchEngine()
+void Launcher::PatchEngine()
 {
 	if (m_CryAction)
 	{
@@ -144,9 +158,9 @@ void Launcher::patchEngine()
 	}
 }
 
-void Launcher::startEngine()
+void Launcher::StartEngine()
 {
-	IGameFramework::TEntryFunction entry = m_CryAction.getSymbol<IGameFramework::TEntryFunction>("CreateGameFramework");
+	IGameFramework::TEntryFunction entry = m_CryAction.GetSymbol<IGameFramework::TEntryFunction>("CreateGameFramework");
 	if (!entry)
 	{
 		throw Error("The CryAction DLL is not valid!");
@@ -158,7 +172,7 @@ void Launcher::startEngine()
 		throw Error("Failed to create the GameFramework Interface!");
 	}
 
-	m_gameWindow.init();
+	m_gameWindow.Init();
 
 	m_params.pUserCallback = this;
 
@@ -169,7 +183,7 @@ void Launcher::startEngine()
 	}
 
 	// initialize the multiplayer client
-	gClient->init(pGameFramework);
+	gClient->Init(pGameFramework);
 
 	// initialize the game
 	// mods are not supported
@@ -187,20 +201,20 @@ void Launcher::startEngine()
 	gEnv->pSystem->ExecuteCommandLine();
 }
 
-void Launcher::updateLoop()
+void Launcher::UpdateLoop()
 {
 	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
 
 	while (true)
 	{
-		if (!m_gameWindow.update())
+		if (!m_gameWindow.OnUpdate())
 		{
 			break;
 		}
 
 		if (!m_pGame->Update(true, 0))
 		{
-			m_gameWindow.onQuit();
+			m_gameWindow.OnQuit();
 			break;
 		}
 	}
@@ -251,20 +265,13 @@ void Launcher::GetMemoryUsage(ICrySizer *pSizer)
 {
 }
 
-void Launcher::setCmdLine(const char *cmdLine)
+void Launcher::Run()
 {
-	const size_t length = strlen(cmdLine);
+	m_params.hInstance = WinAPI::DLL_Get(nullptr);  // EXE handle
+	m_params.logFileName = "Game.log";
 
-	if (length >= sizeof m_params.cmdLine)
-	{
-		throw Error("Command line is too long!");
-	}
+	SetCmdLine();
 
-	memcpy(m_params.cmdLine, cmdLine, length + 1);
-}
-
-void Launcher::run()
-{
 	if (WinAPI::GetApplicationPath().filename().string().find(CRYMP_CLIENT_EXE_NAME) != 0)
 	{
 		throw Error("Invalid name of the executable!");
@@ -281,7 +288,7 @@ void Launcher::run()
 	}
 
 	// the first step
-	initWorkingDirectory();
+	InitWorkingDirectory();
 
 	// open the log file
 	m_log.Init(m_params);
@@ -290,8 +297,8 @@ void Launcher::run()
 	CrashLogger::Init();
 
 	// load and patch Crysis DLLs
-	loadEngine();
-	patchEngine();
+	LoadEngine();
+	PatchEngine();
 
 	CryMemoryManager::Init(m_CrySystem);
 
@@ -299,7 +306,7 @@ void Launcher::run()
 	Client client;
 	gClient = &client;
 
-	startEngine();
+	StartEngine();
 
-	updateLoop();
+	UpdateLoop();
 }

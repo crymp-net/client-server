@@ -1,21 +1,14 @@
 #include <windows.h>
-#include <shlwapi.h>
-#include <shlobj.h>
+#include <winhttp.h>
 
 #include <ctype.h>
-#include <sstream>
-#include <fstream>
 #include <algorithm>
 
-#pragma comment(lib, "Shlwapi")
-
 #include "External/picosha2.h"
-#include "External/nlohmann/json.hpp"
 
 #include "WinAPI.h"
 #include "Error.h"
 #include "Format.h"
-#include "DLL.h"
 
 namespace
 {
@@ -101,7 +94,6 @@ namespace
 		std::string guid;
 
 		HKEY key;
-
 		if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", 0,
 		                  KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key) == ERROR_SUCCESS)
 		{
@@ -200,9 +192,9 @@ void WinAPI::ErrorBox(const char *message)
 
 void WinAPI::ErrorBox(const Error & error)
 {
-	const int code = error.getCode();
-	const char *message = error.getMessage().c_str();
-	const char *description = error.getDescription().c_str();
+	const int code = error.GetCode();
+	const char *message = error.GetMessage().c_str();
+	const char *description = error.GetDescription().c_str();
 
 	if (code > 0 || *description)
 		ErrorBox(Format("%s\nError %d: %s", message, code, description).c_str());
@@ -480,10 +472,10 @@ std::string WinAPI::GetHWID(const std::string & salt)
 
 std::string WinAPI::GetLocale()
 {
-	char buffer[LOCALE_NAME_MAX_LENGTH] = {};
-	GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SNAME, buffer, sizeof(buffer));
+	wchar_t buffer[LOCALE_NAME_MAX_LENGTH];
+	int length = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
 
-	return buffer;
+	return ConvertUTF16To8(std::wstring_view(buffer, length));
 }
 
 long WinAPI::GetTimeZoneBias()
@@ -512,34 +504,140 @@ long WinAPI::GetTimeZoneBias()
 	return 0;
 }
 
-std::string WinAPI::GetCachePath(const std::string & path)
+class HTTPHandleGuard
 {
-	char szPath[MAX_PATH];
-	if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath))) return "";
-	std::string fullPath = szPath;
-	fullPath += "\\sfwcl\\";
-	if (!PathFileExists(fullPath.c_str())) {
-		if (!CreateDirectory(fullPath.c_str(), 0)) return "";
+	HINTERNET m_handle;
+
+public:
+	HTTPHandleGuard(HINTERNET handle)
+	: m_handle(handle)
+	{
 	}
-	std::string hash = SHA256(path);
-	std::ifstream index(fullPath + "index");
-	nlohmann::json indexDic;
-	if (index) {
-		std::stringstream contents;
-		contents << index.rdbuf();
-		index.close();
-		try {
-			indexDic = nlohmann::json::parse(contents.str());
-		} catch (std::exception & ex) {
-			indexDic["error_" + std::string(hash)] = ex.what();
-			// ... well, don't really care
+
+	~HTTPHandleGuard()
+	{
+		if (m_handle)
+		{
+			WinHttpCloseHandle(m_handle);
 		}
 	}
-	indexDic[hash] = path;
-	std::ofstream indexOut(fullPath + "index");
-	if (indexOut) {
-		indexOut << indexDic.dump();
-		indexOut.close();
+
+	operator HINTERNET()
+	{
+		return m_handle;
 	}
-	return fullPath + hash;
+
+	explicit operator bool() const
+	{
+		return m_handle != nullptr;
+	}
+};
+
+WinAPI::HTTPResponse WinAPI::HTTPRequest(
+	const std::string_view & method,
+	const std::string_view & url,
+	const std::string_view & data,
+	const std::map<std::string, std::string> & headers,
+	int timeout)
+{
+	const std::wstring urlW = ConvertUTF8To16(url);
+
+	URL_COMPONENTS urlComponents = {};
+	urlComponents.dwStructSize = sizeof urlComponents;
+	urlComponents.dwSchemeLength = -1;
+	urlComponents.dwHostNameLength = -1;
+	urlComponents.dwUrlPathLength = -1;
+	urlComponents.dwExtraInfoLength = -1;
+
+	if (!WinHttpCrackUrl(urlW.c_str(), urlW.length(), 0, &urlComponents))
+	{
+		throw SystemError("WinHttpCrackUrl");
+	}
+
+	HTTPHandleGuard hSession = WinHttpOpen(L"CryMP-Client",
+	                                       WINHTTP_ACCESS_TYPE_NO_PROXY,
+	                                       WINHTTP_NO_PROXY_NAME,
+	                                       WINHTTP_NO_PROXY_BYPASS, 0);
+	if (!hSession)
+	{
+		throw SystemError("WinHttpOpen");
+	}
+
+	if (!WinHttpSetTimeouts(hSession, timeout, timeout, timeout, timeout))
+	{
+		throw SystemError("WinHttpSetTimeouts");
+	}
+
+	const std::wstring serverNameW(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
+
+	HTTPHandleGuard hConnect = WinHttpConnect(hSession, serverNameW.c_str(), urlComponents.nPort, 0);
+	if (!hConnect)
+	{
+		throw SystemError("WinHttpConnect");
+	}
+
+	DWORD requestFlags = WINHTTP_FLAG_REFRESH;
+
+	if (urlComponents.nScheme == INTERNET_SCHEME_HTTPS)
+	{
+		requestFlags |= WINHTTP_FLAG_SECURE;
+	}
+
+	// URL components are not null-terminated, but whole URL is, so URL path contains both path and parameters
+	HTTPHandleGuard hRequest = WinHttpOpenRequest(hConnect,
+	                                              WinAPI::ConvertUTF8To16(method).c_str(),
+	                                              urlComponents.lpszUrlPath, nullptr,
+	                                              WINHTTP_NO_REFERER,
+	                                              WINHTTP_DEFAULT_ACCEPT_TYPES, requestFlags);
+	if (!hRequest)
+	{
+		throw SystemError("WinHttpOpenRequest");
+	}
+
+	std::wstring headersW;
+
+	for (const auto & [key, value] : headers)
+	{
+		headersW += WinAPI::ConvertUTF8To16(key);
+		headersW += L": ";
+		headersW += WinAPI::ConvertUTF8To16(value);
+		headersW += L"\r\n";
+	}
+
+	if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
+	                        const_cast<char*>(data.data()), data.length(), data.length(), 0))
+	{
+		throw SystemError("WinHttpSendRequest");
+	}
+
+	if (!WinHttpReceiveResponse(hRequest, nullptr))
+	{
+		throw SystemError("WinHttpReceiveResponse");
+	}
+
+	DWORD responseLength = 0;
+	if (!WinHttpQueryDataAvailable(hRequest, &responseLength))
+	{
+		throw SystemError("WinHttpQueryDataAvailable");
+	}
+
+	HTTPResponse response;
+	response.content.resize(responseLength);
+
+	if (!WinHttpReadData(hRequest, response.content.data(), response.content.length(), &responseLength))
+	{
+		throw SystemError("WinHttpReadData");
+	}
+
+	DWORD code;
+	DWORD codeLength = sizeof code;
+	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+	                         WINHTTP_HEADER_NAME_BY_INDEX, &code, &codeLength, WINHTTP_NO_HEADER_INDEX))
+	{
+		throw SystemError("WinHttpQueryHeaders");
+	}
+
+	response.code = code;
+
+	return response;
 }

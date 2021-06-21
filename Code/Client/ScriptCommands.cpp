@@ -4,7 +4,7 @@
 #include "ScriptCommands.h"
 #include "Client.h"
 
-void ScriptCommands::onCommand(IConsoleCmdArgs *pArgs)
+void ScriptCommands::OnCommand(IConsoleCmdArgs *pArgs)
 {
 	const int argCount = pArgs->GetArgCount();
 	if (argCount <= 0)
@@ -21,8 +21,8 @@ void ScriptCommands::onCommand(IConsoleCmdArgs *pArgs)
 		return;
 	}
 
-	HSCRIPTFUNCTION function = it->second;
 	IScriptSystem *pScriptSystem = gEnv->pScriptSystem;
+	HSCRIPTFUNCTION function = it->second;
 
 	if (pScriptSystem->BeginCall(function))
 	{
@@ -37,7 +37,7 @@ void ScriptCommands::onCommand(IConsoleCmdArgs *pArgs)
 
 void ScriptCommands::OnCommandWrapper(IConsoleCmdArgs *pArgs)
 {
-	gClient->getScriptCommands()->onCommand(pArgs);
+	gClient->GetScriptCommands()->OnCommand(pArgs);
 }
 
 ScriptCommands::ScriptCommands()
@@ -48,7 +48,7 @@ ScriptCommands::~ScriptCommands()
 {
 }
 
-bool ScriptCommands::addCommand(const char *name, HSCRIPTFUNCTION handler)
+bool ScriptCommands::AddCommand(const char *name, HSCRIPTFUNCTION handler)
 {
 	if (!name || !*name || !handler)
 	{

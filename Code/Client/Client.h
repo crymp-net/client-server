@@ -17,6 +17,8 @@ class GSMasterHook;
 class ScriptCommands;
 class ScriptCallbacks;
 class ScriptBind_CPPAPI;
+class ServerConnector;
+class ServerPAK;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
@@ -33,11 +35,10 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ScriptCommands> m_pScriptCommands;
 	std::unique_ptr<ScriptCallbacks> m_pScriptCallbacks;
 	std::unique_ptr<ScriptBind_CPPAPI> m_pScriptBind_CPPAPI;
+	std::unique_ptr<ServerConnector> m_pServerConnector;
+	std::unique_ptr<ServerPAK> m_pServerPAK;
 
 	std::minstd_rand m_randomEngine;
-
-	unsigned int m_contract = 0;
-	std::string m_activePak = "";
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
@@ -46,7 +47,7 @@ public:
 	Client();
 	~Client();
 
-	void init(IGameFramework *pGameFramework);
+	void Init(IGameFramework *pGameFramework);
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
@@ -68,44 +69,54 @@ public:
 	bool OnRemove(IEntity *pEntity) override;
 	void OnEvent(IEntity *pEntity, SEntityEvent & event) override;
 
-	IGameFramework *getGameFramework()
+	IGameFramework *GetGameFramework()
 	{
 		return m_pGameFramework;
 	}
 
-	Executor *getExecutor()
+	Executor *GetExecutor()
 	{
 		return m_pExecutor.get();
 	}
 
-	HTTPClient *getHTTPClient()
+	HTTPClient *GetHTTPClient()
 	{
 		return m_pHTTPClient.get();
 	}
 
-	GSMasterHook *getGSMasterHook()
+	GSMasterHook *GetGSMasterHook()
 	{
 		return m_pGSMasterHook.get();
 	}
 
-	ScriptCommands *getScriptCommands()
+	ScriptCommands *GetScriptCommands()
 	{
 		return m_pScriptCommands.get();
 	}
 
-	ScriptCallbacks *getScriptCallbacks()
+	ScriptCallbacks *GetScriptCallbacks()
 	{
 		return m_pScriptCallbacks.get();
 	}
 
-	ScriptBind_CPPAPI *getScriptBind_CPPAPI()
+	ScriptBind_CPPAPI *GetScriptBind_CPPAPI()
 	{
 		return m_pScriptBind_CPPAPI.get();
 	}
 
+	ServerConnector *GetServerConnector()
+	{
+		return m_pServerConnector.get();
+	}
+
+	ServerPAK *GetServerPAK()
+	{
+		return m_pServerPAK.get();
+	}
+
 	// ints
 	template<class T>
-	typename std::enable_if<std::is_integral<T>::value, T>::type getRandomNumber(T min, T max)
+	typename std::enable_if<std::is_integral<T>::value, T>::type GetRandomNumber(T min, T max)
 	{
 		// uniform distribution is stateless
 		return std::uniform_int_distribution<T>(min, max)(m_randomEngine);  // [min, max]
@@ -113,23 +124,10 @@ public:
 
 	// floats
 	template<class T>
-	typename std::enable_if<std::is_floating_point<T>::value, T>::type getRandomNumber(T min, T max)
+	typename std::enable_if<std::is_floating_point<T>::value, T>::type GetRandomNumber(T min, T max)
 	{
 		// uniform distribution is stateless
 		return std::uniform_real_distribution<T>(min, max)(m_randomEngine);  // [min, max)
-	}
-
-	bool loadServerPak(const std::string& path);
-	bool unloadServerPak();
-
-	unsigned int getContract() const
-	{
-		return m_contract;
-	}
-
-	unsigned int nextContract()
-	{
-		return ++m_contract;
 	}
 };
 

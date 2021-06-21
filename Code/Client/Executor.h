@@ -11,10 +11,10 @@ struct IExecutorTask
 	virtual ~IExecutorTask() = default;
 
 	// worker thread
-	virtual void execute() = 0;
+	virtual void Execute() = 0;
 
 	// main thread
-	virtual void callback() = 0;
+	virtual void Callback() = 0;
 };
 
 class ExecutorTaskQueue
@@ -25,10 +25,10 @@ class ExecutorTaskQueue
 public:
 	ExecutorTaskQueue() = default;
 
-	void push(std::unique_ptr<IExecutorTask> && task);
+	void Push(std::unique_ptr<IExecutorTask> && task);
 
-	std::unique_ptr<IExecutorTask> pop();
-	std::unique_ptr<IExecutorTask> popWait(std::condition_variable & cv);
+	std::unique_ptr<IExecutorTask> Pop();
+	std::unique_ptr<IExecutorTask> PopWait(std::condition_variable & cv);
 };
 
 class Executor
@@ -39,16 +39,16 @@ class Executor
 	ExecutorTaskQueue m_completedQueue;
 	bool m_isRunning = false;
 
-	void workerLoop();
+	void WorkerLoop();
 
 public:
 	Executor();
 	~Executor();
 
-	// thread-safe
-	void addTask(std::unique_ptr<IExecutorTask> && task);
-	void addTaskCompleted(std::unique_ptr<IExecutorTask> && task);
-
 	// main thread
-	void onUpdate();
+	void OnUpdate();
+
+	// thread-safe
+	void AddTask(std::unique_ptr<IExecutorTask> && task);
+	void AddTaskCompleted(std::unique_ptr<IExecutorTask> && task);
 };

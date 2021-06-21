@@ -72,7 +72,7 @@ GSMasterHook::GSMasterHook()
 	                                                 VF_NOT_NET_SYNCED,
 	                                                 "GameSpy master server hostname.");
 
-	void *pCryNetwork = gLauncher->getCryNetwork().getHandle();
+	void *pCryNetwork = gLauncher->GetCryNetwork().GetHandle();
 
 	WinAPI::HookIATByAddress(pCryNetwork, gethostbyname, CryNetwork_gethostbyname_hook);
 }

@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <filesystem>
+#include <map>
 
 class Error;
 
@@ -95,5 +96,18 @@ namespace WinAPI
 
 	long GetTimeZoneBias();
 
-	std::string GetCachePath(const std::string & fileName);
+	struct HTTPResponse
+	{
+		int code = 0;
+		std::string content;
+	};
+
+	// blocking, throws SystemError
+	HTTPResponse HTTPRequest(
+		const std::string_view & method,
+		const std::string_view & url,
+		const std::string_view & data,
+		const std::map<std::string, std::string> & headers,
+		int timeout
+	);
 }

@@ -50,6 +50,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ScriptCallbacks.h
   Code/Client/ScriptCommands.cpp
   Code/Client/ScriptCommands.h
+  Code/Client/ServerConnector.cpp
+  Code/Client/ServerConnector.h
+  Code/Client/ServerPAK.cpp
+  Code/Client/ServerPAK.h
   Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
   Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
   Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h

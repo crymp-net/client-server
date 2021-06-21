@@ -58,23 +58,7 @@ namespace
 
 		for (char ch : format)
 		{
-			if (!isFormatSpecifier)
-			{
-				switch (ch)
-				{
-					case '%':
-					{
-						isFormatSpecifier = true;
-						break;
-					}
-					default:
-					{
-						buffer += ch;
-						break;
-					}
-				}
-			}
-			else
+			if (isFormatSpecifier)
 			{
 				switch (ch)
 				{
@@ -171,6 +155,22 @@ namespace
 
 				isFormatSpecifier = false;
 			}
+			else
+			{
+				switch (ch)
+				{
+					case '%':
+					{
+						isFormatSpecifier = true;
+						break;
+					}
+					default:
+					{
+						buffer += ch;
+						break;
+					}
+				}
+			}
 		}
 
 		if (!buffer.empty())
@@ -198,6 +198,7 @@ bool LogMessageQueue::Pop(LogMessage & message)
 	{
 		message = std::move(m_queue.front());
 		m_queue.pop_front();
+
 		return true;
 	}
 	else
@@ -260,30 +261,35 @@ void CLog::WriteToFile(const LogMessage & message)
 	if (!m_file)
 		return;
 
-	std::string buffer;
-	buffer.reserve(message.prefix.length() + message.content.length() + WinAPI::NEWLINE.length());
+	StringBuffer<256> buffer;
+	buffer.reserve(message.content.length() + WinAPI::NEWLINE.length());
 
 	buffer += message.prefix;
 
-	for (size_t i = 0; i < message.content.length(); i++)
-	{
-		const char ch = message.content[i];
+	// true if the previous character was '$'
+	bool isColorCode = false;
 
+	for (char ch : message.content)
+	{
 		if (ch < 32 || ch == 127)
 		{
 			// drop control characters
 		}
-		else if (ch == '$')
+		else if (isColorCode)
 		{
 			// drop color codes
 
-			if (message.content[i+1] == '$')
+			if (ch == '$')
 			{
 				// convert "$$" to "$"
 				buffer += '$';
 			}
 
-			i++;
+			isColorCode = false;
+		}
+		else if (ch == '$')
+		{
+			isColorCode = true;
 		}
 		else
 		{
@@ -396,7 +402,7 @@ void CLog::Push(ILog::ELogType type, const char *format, va_list args, bool isFi
 	}
 
 	// message content
-	StringBuffer<512> buffer;
+	StringBuffer<256> buffer;
 
 	switch (type)
 	{

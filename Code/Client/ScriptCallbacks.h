@@ -22,7 +22,7 @@ class ScriptCallbacks
 	std::array<HSCRIPTFUNCTION, SCRIPT_CALLBACK_COUNT> m_handlers = {};
 
 	template<class... Params>
-	void call(EScriptCallback callback, const Params &... params)
+	void Call(EScriptCallback callback, const Params &... params)
 	{
 		HSCRIPTFUNCTION handler = m_handlers[callback];
 
@@ -37,9 +37,9 @@ public:
 	ScriptCallbacks();
 	~ScriptCallbacks();
 
-	bool setHandler(EScriptCallback callback, HSCRIPTFUNCTION handler);
+	bool SetHandler(EScriptCallback callback, HSCRIPTFUNCTION handler);
 
-	void onUpdate(float deltaTime);
-	void onDisconnect(int reason, const char *message);
-	void onSpawn(IEntity *pEntity);
+	void OnUpdate(float deltaTime);
+	void OnDisconnect(int reason, const char *message);
+	void OnSpawn(IEntity *pEntity);
 };

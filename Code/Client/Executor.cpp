@@ -1,13 +1,13 @@
 #include "Executor.h"
 
-void ExecutorTaskQueue::push(std::unique_ptr<IExecutorTask> && task)
+void ExecutorTaskQueue::Push(std::unique_ptr<IExecutorTask> && task)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
 	m_queue.emplace_back(std::move(task));
 }
 
-std::unique_ptr<IExecutorTask> ExecutorTaskQueue::pop()
+std::unique_ptr<IExecutorTask> ExecutorTaskQueue::Pop()
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -22,7 +22,7 @@ std::unique_ptr<IExecutorTask> ExecutorTaskQueue::pop()
 	return task;
 }
 
-std::unique_ptr<IExecutorTask> ExecutorTaskQueue::popWait(std::condition_variable & cv)
+std::unique_ptr<IExecutorTask> ExecutorTaskQueue::PopWait(std::condition_variable & cv)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 
@@ -41,16 +41,16 @@ std::unique_ptr<IExecutorTask> ExecutorTaskQueue::popWait(std::condition_variabl
 	return task;
 }
 
-void Executor::workerLoop()
+void Executor::WorkerLoop()
 {
 	while (m_isRunning)
 	{
-		std::unique_ptr<IExecutorTask> task = m_workerQueue.popWait(m_workerCV);
+		std::unique_ptr<IExecutorTask> task = m_workerQueue.PopWait(m_workerCV);
 		if (task)
 		{
-			task->execute();
+			task->Execute();
 
-			m_completedQueue.push(std::move(task));
+			m_completedQueue.Push(std::move(task));
 		}
 	}
 }
@@ -61,7 +61,7 @@ Executor::Executor()
 
 	if (!m_workerThread.joinable())
 	{
-		m_workerThread = std::thread(&Executor::workerLoop, this);
+		m_workerThread = std::thread(&Executor::WorkerLoop, this);
 	}
 }
 
@@ -76,22 +76,22 @@ Executor::~Executor()
 	}
 }
 
-void Executor::addTask(std::unique_ptr<IExecutorTask> && task)
+void Executor::OnUpdate()
 {
-	m_workerQueue.push(std::move(task));
+	std::unique_ptr<IExecutorTask> task = m_completedQueue.Pop();
+	if (task)
+	{
+		task->Callback();
+	}
+}
+
+void Executor::AddTask(std::unique_ptr<IExecutorTask> && task)
+{
+	m_workerQueue.Push(std::move(task));
 	m_workerCV.notify_one();
 }
 
-void Executor::addTaskCompleted(std::unique_ptr<IExecutorTask> && task)
+void Executor::AddTaskCompleted(std::unique_ptr<IExecutorTask> && task)
 {
-	m_completedQueue.push(std::move(task));
-}
-
-void Executor::onUpdate()
-{
-	std::unique_ptr<IExecutorTask> task = m_completedQueue.pop();
-	if (task)
-	{
-		task->callback();
-	}
+	m_completedQueue.Push(std::move(task));
 }

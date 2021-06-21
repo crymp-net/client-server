@@ -16,7 +16,7 @@ using WinAPI::FillMem;
  */
 void Patch::AllowDX9ImmersiveMultiplayer(const DLL & CryAction)
 {
-	void *pCryAction = CryAction.getHandle();
+	void *pCryAction = CryAction.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryAction, 0x2B394D), 0x1E);
@@ -36,7 +36,7 @@ void Patch::AllowDX9ImmersiveMultiplayer(const DLL & CryAction)
  */
 void Patch::FixInternetConnect(const DLL & CryNetwork)
 {
-	void *pCryNetwork = CryNetwork.getHandle();
+	void *pCryNetwork = CryNetwork.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryNetwork, 0x189896), 0x18);
@@ -59,7 +59,7 @@ void Patch::EnablePreordered(const DLL & CryNetwork)
 #endif
 	};
 
-	void *pCryNetwork = CryNetwork.getHandle();
+	void *pCryNetwork = CryNetwork.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCryNetwork, 0x17C377), code, sizeof code);
@@ -74,7 +74,7 @@ void Patch::EnablePreordered(const DLL & CryNetwork)
  */
 void Patch::AllowSameCDKeys(const DLL & CryNetwork)
 {
-	void *pCryNetwork = CryNetwork.getHandle();
+	void *pCryNetwork = CryNetwork.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryNetwork, 0xE0188), 0x47);
@@ -93,7 +93,7 @@ void Patch::AllowSameCDKeys(const DLL & CryNetwork)
  */
 void Patch::RemoveSecuROM(const DLL & CrySystem)
 {
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x470B9), 0x16);
@@ -106,7 +106,7 @@ void Patch::RemoveSecuROM(const DLL & CrySystem)
  */
 void Patch::MakeDX9Default(const DLL & CrySystem)
 {
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x46719), 0x1F);
@@ -120,7 +120,7 @@ void Patch::MakeDX9Default(const DLL & CrySystem)
  */
 void Patch::AllowDX9VeryHighSpec(const DLL & CrySystem)
 {
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x4674C), 0x54);
@@ -135,7 +135,7 @@ void Patch::AllowDX9VeryHighSpec(const DLL & CrySystem)
  */
 void Patch::AllowMultipleInstances(const DLL & CrySystem)
 {
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x42BFF), 0x68);
@@ -149,7 +149,7 @@ void Patch::AllowMultipleInstances(const DLL & CrySystem)
  */
 void Patch::UnhandledExceptions(const DLL & CrySystem)
 {
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x22946), 0x6);
@@ -171,7 +171,7 @@ void Patch::Disable3DNow(const DLL & CrySystem)
 	// default CPU feature flags without CPUF_3DNOW
 	const uint8_t flags = 0x18;
 
-	void *pCrySystem = CrySystem.getHandle();
+	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCrySystem, 0xA0FF), &flags, sizeof flags);

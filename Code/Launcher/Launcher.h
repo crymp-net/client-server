@@ -18,11 +18,12 @@ class Launcher : public ISystemUserCallback
 	CGame *m_pGame = nullptr;
 	CLog m_log;
 
-	void initWorkingDirectory();
-	void loadEngine();
-	void patchEngine();
-	void startEngine();
-	void updateLoop();
+	void SetCmdLine();
+	void InitWorkingDirectory();
+	void LoadEngine();
+	void PatchEngine();
+	void StartEngine();
+	void UpdateLoop();
 
 public:
 	Launcher();
@@ -38,54 +39,42 @@ public:
 	void OnUpdate() override;
 	void GetMemoryUsage(ICrySizer *pSizer) override;
 
-	const DLL & getCryAction() const
+	const DLL & GetCryAction() const
 	{
 		return m_CryAction;
 	}
 
-	const DLL & getCryNetwork() const
+	const DLL & GetCryNetwork() const
 	{
 		return m_CryNetwork;
 	}
 
-	const DLL & getCrySystem() const
+	const DLL & GetCrySystem() const
 	{
 		return m_CrySystem;
 	}
 
-	const SSystemInitParams & getParams() const
+	const SSystemInitParams & GetParams() const
 	{
 		return m_params;
 	}
 
-	const GameWindow & getGameWindow() const
+	const GameWindow & GetGameWindow() const
 	{
 		return m_gameWindow;
 	}
 
-	CGame *getGame()
+	CGame *GetGame()
 	{
 		return m_pGame;
 	}
 
-	CLog & getLog()
+	CLog & GetLog()
 	{
 		return m_log;
 	}
 
-	void setAppInstance(void *hInstance)
-	{
-		m_params.hInstance = hInstance;
-	}
-
-	void setLogFileName(const char *logFileName)
-	{
-		m_params.logFileName = logFileName;
-	}
-
-	void setCmdLine(const char *cmdLine);
-
-	void run();
+	void Run();
 };
 
 ///////////////////////////

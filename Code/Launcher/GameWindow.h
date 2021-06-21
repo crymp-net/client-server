@@ -8,9 +8,9 @@ public:
 	GameWindow();
 	~GameWindow();
 
-	void init();
-	bool update();
-	void onQuit();
+	void Init();
+	bool OnUpdate();
+	void OnQuit();
 
 	static void UpdateCursorColor();
 };

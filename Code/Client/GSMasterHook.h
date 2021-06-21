@@ -10,7 +10,7 @@ public:
 	GSMasterHook();
 	~GSMasterHook();
 
-	ICVar *getHostnameCVar()
+	ICVar *GetHostnameCVar()
 	{
 		return m_pHostnameCVar;
 	}

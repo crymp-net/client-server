@@ -15,7 +15,7 @@ private:
 	void *m_handle = nullptr;
 	int m_flags = 0;
 
-	void release();
+	void Release();
 
 public:
 	DLL() = default;
@@ -24,7 +24,7 @@ public:
 
 	DLL(DLL && other)
 	{
-		swap(other);
+		Swap(other);
 	}
 
 	DLL & operator=(const DLL &) = delete;
@@ -33,9 +33,9 @@ public:
 	{
 		if (this != &other)
 		{
-			unload();
+			Unload();
 
-			swap(other);
+			Swap(other);
 		}
 
 		return *this;
@@ -43,53 +43,53 @@ public:
 
 	~DLL()
 	{
-		unload();
+		Unload();
 	}
 
-	void swap(DLL & other)
+	void Swap(DLL & other)
 	{
 		std::swap(m_handle, other.m_handle);
 		std::swap(m_flags, other.m_flags);
 	}
 
-	bool load(const char *name, int flags = 0);
+	bool Load(const char *name, int flags = 0);
 
-	void unload()
+	void Unload()
 	{
-		if (isLoaded() && !(m_flags & NO_LOAD) && !(m_flags & NO_RELEASE))
+		if (IsLoaded() && !(m_flags & NO_LOAD) && !(m_flags & NO_RELEASE))
 		{
-			release();
+			Release();
 		}
 
 		m_handle = nullptr;
 		m_flags = 0;
 	}
 
-	bool isLoaded() const
+	bool IsLoaded() const
 	{
 		return m_handle != nullptr;
 	}
 
 	explicit operator bool() const
 	{
-		return isLoaded();
+		return IsLoaded();
 	}
 
-	void *getHandle() const
+	void *GetHandle() const
 	{
 		return m_handle;
 	}
 
-	int getFlags() const
+	int GetFlags() const
 	{
 		return m_flags;
 	}
 
-	void *getSymbolAddress(const char *name) const;
+	void *GetSymbolAddress(const char *name) const;
 
 	template<class T>
-	T getSymbol(const char *name) const
+	T GetSymbol(const char *name) const
 	{
-		return reinterpret_cast<T>(getSymbolAddress(name));
+		return reinterpret_cast<T>(GetSymbolAddress(name));
 	}
 };

@@ -9,7 +9,7 @@ class ScriptCommands
 {
 	std::map<std::string, HSCRIPTFUNCTION> m_commands;
 
-	void onCommand(IConsoleCmdArgs *pArgs);
+	void OnCommand(IConsoleCmdArgs *pArgs);
 
 	static void OnCommandWrapper(IConsoleCmdArgs *pArgs);
 
@@ -17,5 +17,5 @@ public:
 	ScriptCommands();
 	~ScriptCommands();
 
-	bool addCommand(const char *name, HSCRIPTFUNCTION handler);
+	bool AddCommand(const char *name, HSCRIPTFUNCTION handler);
 };

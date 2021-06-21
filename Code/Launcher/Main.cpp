@@ -23,13 +23,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	try
 	{
-		// set engine parameters
-		launcher.setAppInstance(hInstance);
-		launcher.setLogFileName("Game.log");
-		launcher.setCmdLine(WinAPI::GetCmdLine());  // lpCmdLine doesn't contain program name
-
-		// run the game
-		launcher.run();
+		launcher.Run();
 	}
 	catch (const Error & error)
 	{

@@ -113,9 +113,9 @@ namespace
 
 void CryMemoryManager::Init(const DLL & CrySystem)
 {
-	Hook(CrySystem.getSymbolAddress("CryMalloc"), CryMalloc_hook);
-	Hook(CrySystem.getSymbolAddress("CryRealloc"), CryRealloc_hook);
-	Hook(CrySystem.getSymbolAddress("CryFree"), CryFree_hook);
-	Hook(CrySystem.getSymbolAddress("CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
-	Hook(CrySystem.getSymbolAddress("CrySystemCrtFree"), CrySystemCrtFree_hook);
+	Hook(CrySystem.GetSymbolAddress("CryMalloc"), CryMalloc_hook);
+	Hook(CrySystem.GetSymbolAddress("CryRealloc"), CryRealloc_hook);
+	Hook(CrySystem.GetSymbolAddress("CryFree"), CryFree_hook);
+	Hook(CrySystem.GetSymbolAddress("CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
+	Hook(CrySystem.GetSymbolAddress("CrySystemCrtFree"), CrySystemCrtFree_hook);
 }

@@ -12,7 +12,7 @@ ScriptCallbacks::~ScriptCallbacks()
 {
 }
 
-bool ScriptCallbacks::setHandler(EScriptCallback callback, HSCRIPTFUNCTION handler)
+bool ScriptCallbacks::SetHandler(EScriptCallback callback, HSCRIPTFUNCTION handler)
 {
 	if (callback < 0 || callback >= SCRIPT_CALLBACK_COUNT)
 	{
@@ -31,20 +31,20 @@ bool ScriptCallbacks::setHandler(EScriptCallback callback, HSCRIPTFUNCTION handl
 	return true;
 }
 
-void ScriptCallbacks::onUpdate(float deltaTime)
+void ScriptCallbacks::OnUpdate(float deltaTime)
 {
-	call(SCRIPT_CALLBACK_ON_UPDATE, deltaTime);
+	Call(SCRIPT_CALLBACK_ON_UPDATE, deltaTime);
 }
 
-void ScriptCallbacks::onDisconnect(int reason, const char *message)
+void ScriptCallbacks::OnDisconnect(int reason, const char *message)
 {
-	call(SCRIPT_CALLBACK_ON_DISCONNECT, reason, message);
+	Call(SCRIPT_CALLBACK_ON_DISCONNECT, reason, message);
 }
 
-void ScriptCallbacks::onSpawn(IEntity *pEntity)
+void ScriptCallbacks::OnSpawn(IEntity *pEntity)
 {
 	ScriptHandle entityId;
 	entityId.n = pEntity->GetId();
 
-	call(SCRIPT_CALLBACK_ON_SPAWN, entityId);
+	Call(SCRIPT_CALLBACK_ON_SPAWN, entityId);
 }

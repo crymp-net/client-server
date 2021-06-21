@@ -24,6 +24,7 @@ std::string FormatV(const char *format, va_list args)
 		va_copy(argsCopy, args);
 
 		int status = vsnprintf(buffer, sizeof buffer, format, args);
+
 		if (status > 0)
 		{
 			size_t length = status;

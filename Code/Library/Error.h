@@ -15,7 +15,7 @@ public:
 	explicit Error(std::string && message);
 	explicit Error(std::string && message, int code, std::string && description);
 
-	int getCode() const
+	int GetCode() const
 	{
 		return m_code;
 	}
@@ -25,17 +25,17 @@ public:
 		return m_code != 0;
 	}
 
-	const std::string & getMessage() const
+	const std::string & GetMessage() const
 	{
 		return m_message;
 	}
 
-	const std::string & getDescription() const
+	const std::string & GetDescription() const
 	{
 		return m_description;
 	}
 
-	const std::string & getWhat() const
+	const std::string & GetWhat() const
 	{
 		return m_what;
 	}
