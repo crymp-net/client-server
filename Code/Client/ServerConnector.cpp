@@ -2,47 +2,49 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Library/External/nlohmann/json.hpp"
-#include "Library/StringBuffer.h"
 
 #include "ServerConnector.h"
 #include "Client.h"
 
 using json = nlohmann::json;
 
+namespace
+{
+	std::string GetMasterServerAPI()
+	{
+		const char *endpoint = "";
+		gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint);
+
+		return endpoint;
+	}
+}
+
 void ServerConnector::RequestServerInfo()
 {
 	CryLogAlways("$3[CryMP] Checking server at $6%s:%u$3", m_host.c_str(), m_port);
 
-	// get the master server API URL from Lua
-	const char *endpoint = nullptr;
-	if (gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint))
+	const std::string api = GetMasterServerAPI();
+	if (api.empty())
 	{
-		StringBuffer<128> url;
-		url += endpoint;
-		url += "/server?ip=";
-		url += m_host;
-		url += "&port=";
-		url.addUInt(m_port);
-		url += "&json";
-
-		const unsigned int contractID = m_contractID;
-
-		gClient->GetHTTPClient()->GET(url, [contractID, this](HTTPClient::Result & result)
-		{
-			if (contractID == m_contractID)
-			{
-				// next step
-				OnServerInfo(result);
-			}
-		});
-	}
-	else
-	{
-		CryLogAlways("$4[CryMP] Failed to get the master server API URL!");
-
+		CryLogAlways("$4[CryMP] Failed to get the master server API!");
 		TryConnect();
+		return;
 	}
+
+	const std::string url = api + "/server?ip=" + m_host + "&port=" + std::to_string(m_port) + "&json";
+
+	const unsigned int contractID = m_contractID;
+
+	gClient->GetHTTPClient()->GET(url, [contractID, this](HTTPClient::Result & result)
+	{
+		if (contractID == m_contractID)
+		{
+			// next step
+			OnServerInfo(result);
+		}
+	});
 }
 
 void ServerConnector::OnServerInfo(HTTPClient::Result & result)
