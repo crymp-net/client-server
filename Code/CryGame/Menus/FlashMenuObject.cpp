@@ -46,9 +46,9 @@ History:
 #include "config.h"
 
 #ifdef BUILD_64BIT
-#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " [" CRYMP_CLIENT_BUILD_TYPE "] 64-bit"
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " 64-bit"
 #else
-#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " [" CRYMP_CLIENT_BUILD_TYPE "] 32-bit"
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " 32-bit"
 #endif
 
 //both are defined again in FlashMenuObjectOptions
