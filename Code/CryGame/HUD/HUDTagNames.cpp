@@ -23,6 +23,9 @@ History:
 #include "HUDTagNames.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 
+#include "Library/Format.h"
+#include "Library/WinAPI.h"
+
 //-----------------------------------------------------------------------------------------------------
 
 #define COLOR_DEAD		ColorF(0.4f,0.4f,0.4f)
@@ -76,12 +79,12 @@ const char* CHUDTagNames::GetPlayerRank(EntityId playerId)
 
 	if (currentRank != lastRank || !lastRankName || !strlen(lastRankName))
 	{
-		static string strRank;
+		static std::string strRank;
 		static wstring wRank;
-		strRank.Format("@ui_short_rank_%d", currentRank);
-		if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(strRank, wRank))
+		strRank = Format("@ui_short_rank_%d", currentRank);
+		if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(strRank.c_str(), wRank))
 		{
-			ConvertWString(wRank, strRank);
+			strRank = WinAPI::ConvertUTF16To8(std::wstring_view(wRank.c_str(), wRank.length()));
 		}
 		pPlayer->SetLastRankInfo(currentRank, strRank.c_str());
 
