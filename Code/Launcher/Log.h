@@ -9,7 +9,6 @@
 #include "CryCommon/CrySystem/ILog.h"
 
 struct ICVar;
-struct SSystemInitParams;
 
 struct LogMessage
 {
@@ -64,7 +63,7 @@ public:
 	CLog();
 	~CLog();
 
-	void Init(SSystemInitParams & params);
+	void Init(const char *defaultFileName);
 	void OnUpdate();
 
 	void *GetFile()

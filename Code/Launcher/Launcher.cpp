@@ -1,6 +1,7 @@
 #include "Client/Client.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
 #include "Library/CmdLine.h"
 #include "Library/CPU.h"
@@ -14,6 +15,8 @@
 #include "CryMemoryManager.h"
 
 #include "config.h"
+
+#define BUILD_DATE_TIME __DATE__ " " __TIME__
 
 void Launcher::SetCmdLine()
 {
@@ -31,10 +34,9 @@ void Launcher::SetCmdLine()
 
 void Launcher::InitWorkingDirectory()
 {
-	const std::string dirArg = CmdLine::GetArgValue("-dir");
-
 	std::filesystem::path dir;
 
+	const std::string dirArg = CmdLine::GetArgValue("-dir");
 	if (!dirArg.empty())
 	{
 		// sanitize the path
@@ -174,8 +176,6 @@ void Launcher::StartEngine()
 
 	m_gameWindow.Init();
 
-	m_params.pUserCallback = this;
-
 	// initialize CryEngine
 	if (!pGameFramework->Init(m_params))  // Launcher::OnInit is called here
 	{
@@ -250,6 +250,44 @@ void Launcher::OnInitProgress(const char *message)
 void Launcher::OnInit(ISystem *pSystem)
 {
 	gEnv = pSystem->GetGlobalEnvironment();
+
+	// open the log file
+	m_log.Init(m_params.logFileName);
+
+	// crash logger requires the log file
+	CrashLogger::Init();
+
+	const WinAPI::DateTime dateTime = WinAPI::GetCurrentDateTimeLocal();
+	const std::string timeZone = WinAPI::GetTimeZoneOffsetString();
+
+	CryLogAlways("Log begins at %4hu-%02hu-%02hu %02hu:%02hu:%02hu%s",
+		dateTime.year,
+		dateTime.month,
+		dateTime.day,
+		dateTime.hour,
+		dateTime.minute,
+		dateTime.second,
+		timeZone.c_str()
+	);
+
+	const std::string mainDir = std::filesystem::current_path().string();
+	const std::string userDir = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%")).string();
+	const std::string rootDir = std::filesystem::canonical(gEnv->pSystem->GetRootFolder()).string();
+
+	CryLogAlways("Executable: %s", WinAPI::GetApplicationPath().string().c_str());
+	CryLogAlways("Main directory: %s", mainDir.c_str());
+	CryLogAlways("User directory: %s", userDir.c_str());
+	CryLogAlways("Root directory: %s", rootDir.c_str());
+	CryLogAlways("");
+
+	const SFileVersion & version = gEnv->pSystem->GetProductVersion();
+
+	CryLogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
+	CryLogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
+	CryLogAlways("Compiled at " BUILD_DATE_TIME " by " CRYMP_CLIENT_COMPILER " [" CRYMP_CLIENT_BUILD_TYPE "]");
+	CryLogAlways("Copyright (C) 2001-2008 Crytek GmbH");
+	CryLogAlways("Copyright (C) 2014-2021 CryMP Network");
+	CryLogAlways("");
 }
 
 void Launcher::OnShutdown()
@@ -267,8 +305,11 @@ void Launcher::GetMemoryUsage(ICrySizer *pSizer)
 
 void Launcher::Run()
 {
+	m_params.logFileName = "CryMP-Client.log";
+
 	m_params.hInstance = WinAPI::DLL_Get(nullptr);  // EXE handle
-	m_params.logFileName = "Game.log";
+	m_params.pUserCallback = this;
+	m_params.pLog = &m_log;
 
 	SetCmdLine();
 
@@ -289,12 +330,6 @@ void Launcher::Run()
 
 	// the first step
 	InitWorkingDirectory();
-
-	// open the log file
-	m_log.Init(m_params);
-
-	// crash logger requires the log file
-	CrashLogger::Init();
 
 	// load and patch Crysis DLLs
 	LoadEngine();

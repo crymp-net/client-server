@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "Library/CmdLine.h"
 #include "Library/Error.h"
@@ -13,6 +14,21 @@
 
 namespace
 {
+	std::filesystem::path GetLogDirectoryPath()
+	{
+		const std::string rootArg = CmdLine::GetArgValue("-root");
+		if (!rootArg.empty())
+		{
+			// sanitize the path
+			return std::filesystem::canonical(rootArg);
+		}
+		else
+		{
+			// "Documents/My Games/Crysis/"
+			return gEnv->pCryPak->GetAlias("%USER%");
+		}
+	}
+
 	void CreateLogFileBackup(void *file, const std::filesystem::path & filePath)
 	{
 		// read the beginning of the existing log file
@@ -127,28 +143,7 @@ namespace
 					}
 					case 'z':
 					{
-						long bias = WinAPI::GetTimeZoneBias();
-
-						if (bias == 0)
-						{
-							buffer += 'Z';  // UTC
-						}
-						else
-						{
-							if (bias < 0)
-							{
-								bias = -bias;
-								buffer += '+';
-							}
-							else
-							{
-								buffer += '-';
-							}
-
-							buffer.addUInt(bias / 60, 2);  // hours
-							buffer.addUInt(bias % 60, 2);  // minutes
-						}
-
+						buffer += WinAPI::GetTimeZoneOffsetString();
 						break;
 					}
 				}
@@ -214,11 +209,7 @@ void CLog::OpenFile()
 	if (m_fileName.empty())
 		return;
 
-	// root directory path or empty for the current directory
-	const std::string rootArg = CmdLine::GetArgValue("-root");
-
-	const std::filesystem::path rootPath = std::filesystem::canonical(rootArg);  // sanitize the path
-	const std::filesystem::path filePath = rootPath / m_fileName;
+	const std::filesystem::path filePath = GetLogDirectoryPath() / m_fileName;
 
 	bool exists = false;
 
@@ -489,11 +480,11 @@ CLog::~CLog()
 	CloseFile();
 }
 
-void CLog::Init(SSystemInitParams & params)
+void CLog::Init(const char *defaultFileName)
 {
 	const int defaultVerbosity = 1;
 
-	m_fileName = CmdLine::GetArgValue("-logfile", params.logFileName);
+	m_fileName = CmdLine::GetArgValue("-logfile", defaultFileName);
 	m_verbosity = CmdLine::GetArgValueInt("-verbosity", defaultVerbosity);
 
 	try
@@ -505,7 +496,8 @@ void CLog::Init(SSystemInitParams & params)
 		throw Error(std::string("Failed to open the log file!\n\n") + ex.what());
 	}
 
-	params.pLog = this;
+	CryLogAlways(FormatLogPrefix("BackupNameAttachment=\" Date(%Y %m %d) Time(%H %M %S)\"").c_str());
+	CryLogAlways("");
 }
 
 void CLog::OnUpdate()

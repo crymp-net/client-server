@@ -465,11 +465,7 @@ static void OnCrash(_EXCEPTION_POINTERS *pExceptionInfo)
 {
 	Log("================================ CRASH DETECTED ================================");
 
-#ifdef BUILD_64BIT
-	Log("CryMP Client " CRYMP_CLIENT_VERSION_STRING " 64-bit");
-#else
-	Log("CryMP Client " CRYMP_CLIENT_VERSION_STRING " 32-bit");
-#endif
+	Log("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
 
 	DumpExceptionInfo(pExceptionInfo->ExceptionRecord);
 	DumpRegisters(pExceptionInfo->ContextRecord);

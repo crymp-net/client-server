@@ -45,11 +45,7 @@ History:
 
 #include "config.h"
 
-#ifdef BUILD_64BIT
-#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " 64-bit"
-#else
-#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " 32-bit"
-#endif
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS
 
 //both are defined again in FlashMenuObjectOptions
 static const char* scuiControlCodePrefix = "@cc_"; // "@cc_"; // AlexL 03/04/2007: enable this when keys/controls are fully localized

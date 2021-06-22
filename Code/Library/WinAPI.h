@@ -72,14 +72,17 @@ namespace WinAPI
 
 	struct DateTime
 	{
-		unsigned short year;
-		unsigned short month;
-		unsigned short dayOfWeek;  // Sunday = 0, Monday = 1, ..., Saturday = 6
-		unsigned short day;
-		unsigned short hour;
-		unsigned short minute;
-		unsigned short second;
-		unsigned short millisecond;
+		unsigned short year        = 0;
+		unsigned short month       = 0;  // January = 1, February = 2, ..., December = 12
+		unsigned short dayOfWeek   = 0;  // Sunday = 0, Monday = 1, ..., Saturday = 6
+		unsigned short day         = 0;
+		unsigned short hour        = 0;
+		unsigned short minute      = 0;
+		unsigned short second      = 0;
+		unsigned short millisecond = 0;
+
+		const char *GetDayName();
+		const char *GetMonthName();
 	};
 
 	DateTime GetCurrentDateTimeUTC();
@@ -94,8 +97,8 @@ namespace WinAPI
 	std::string GetHWID(const std::string & salt);
 	std::string GetLocale();
 
-
 	long GetTimeZoneBias();
+	std::string GetTimeZoneOffsetString();
 
 	struct HTTPResponse
 	{
