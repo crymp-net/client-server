@@ -2,12 +2,70 @@
 #include "Library/External/miniz.h"
 #include "Library/WinAPI.h"
 
+#include "CryCommon/CrySystem/ISystem.h"
+
 #pragma comment(lib, "Urlmon")
 
-std::tuple<HRESULT, std::string> MapDownloader::execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, const std::string & message)>& onProgress) {
+HRESULT WINAPI MapDownloader::StatusCallback::OnProgress(unsigned long progress, unsigned long progressMax, unsigned long statusCode, LPCWSTR status) {
+    if (m_parent->m_active) {
+        if (m_parent->m_onProgress) {
+            auto now = std::chrono::system_clock::now();
+            auto duration = now.time_since_epoch();
+            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+            unsigned long chunk = progress - m_lastProgress;
+            bool announce = false;
+            if (m_time.size() > 0) {
+                auto first = m_time.front();
+                auto diff = millis - first;
+                if (diff > 2000) {
+                    auto firstChunk = m_chunks.front();
+                    m_downloaded -= firstChunk;
+                    m_chunks.pop();
+                    m_time.pop();
+                }
+            }
+            m_downloaded += chunk;
+            m_time.push(millis);
+            m_chunks.push(chunk);
+            m_lastProgress = progress;
+            if (millis - m_lastAnnounce >= 1000) {
+                m_lastAnnounce = millis;
+                long long window = 1000;
+                if (m_time.size() > 0) {
+                    window = millis - m_time.front();
+                }
+                if (window < 1000) window = 1000;
+                char infoMessage[100];
+                double nDownloadSpeed = 1000.0 * (double)m_downloaded / (double)window;
+                if (nDownloadSpeed >= 1.0) {
+                    unsigned int remaining = (unsigned int)((progressMax - progress) / nDownloadSpeed);
+                    snprintf(infoMessage, sizeof(infoMessage), 
+                        "Downloading map %.1f%% (%.2f KiB/s, %02d:%02d)", 
+                        100.0 * progress / progressMax,
+                        nDownloadSpeed / 1024.0,
+                        remaining / 60, remaining % 60
+                    );
+                    if (progressMax == 0) progressMax = 1;
+                    m_parent->m_onProgress(progress, progressMax, 0, infoMessage);
+                }
+            }
+        }
+        return S_OK;
+    }
+    else {
+        return E_ABORT;
+    }
+}
+
+std::tuple<HRESULT, std::string> MapDownloader::execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string & message)>& onProgress) {
     m_url = url;
     m_onProgress = onProgress;
     m_active = true;
+    while (!m_status.m_chunks.empty()) m_status.m_chunks.pop();
+    while (!m_status.m_time.empty()) m_status.m_time.pop();
+    m_status.m_downloaded = 0;
+    m_status.m_lastProgress = 0;
+    m_status.m_lastAnnounce = 0;
     auto [downloadResult, downloadText] = download();
     if (FAILED(downloadResult)) {
         m_active = false;
@@ -54,9 +112,10 @@ std::tuple<HRESULT, std::string> MapDownloader::extract(const std::string& path)
     const std::string base = WinAPI::ConvertUTF16To8((std::filesystem::current_path() / "Game").c_str()) + "/";
     for (int i = 0; i < n_files; i++)
     {
-        if (!m_active) {
-            return std::make_tuple(E_ABORT, "User aborted the process");
-        }
+        // Once we start extracting, make sure we extract everything, giving user no choice of cancellation!
+        //if (!m_active) {
+        //    return std::make_tuple(E_ABORT, "User aborted the process");
+        //}
         if (!mz_zip_reader_file_stat(&zip_archive, i, &entry)) continue;
         std::string path = base + entry.m_filename;
         if (mz_zip_reader_is_file_a_directory(&zip_archive, i)) {
@@ -74,9 +133,11 @@ std::tuple<HRESULT, std::string> MapDownloader::extract(const std::string& path)
                 }
             }
         }
-        std::cout << "Extracting file: " << path << "\n";
-        if (m_onProgress)
-            m_onProgress(i, n_files, std::string("Extracting file ") + entry.m_filename);
+        if (m_onProgress) {
+            char infoMessage[100];
+            snprintf(infoMessage, sizeof(infoMessage), "Extracting map %.2f%%", 100.0 * i / n_files);
+            m_onProgress(i, n_files, 1, infoMessage);
+        }
 
         if (!mz_zip_reader_extract_to_file(&zip_archive, i, path.c_str(), 0))
         {
