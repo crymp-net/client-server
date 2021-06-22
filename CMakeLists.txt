@@ -54,6 +54,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ServerConnector.h
   Code/Client/ServerPAK.cpp
   Code/Client/ServerPAK.h
+  Code/Client/MapDownloader.cpp
+  Code/Client/MapDownloader.h
   Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
   Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
   Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
@@ -644,6 +646,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/External/nlohmann/ordered_map.hpp
   Code/Library/External/nlohmann/thirdparty/hedley/hedley.hpp
   Code/Library/External/nlohmann/thirdparty/hedley/hedley_undef.hpp
+  Code/Library/External/miniz.cpp
+  Code/Library/External/miniz.h
   Code/Library/External/picosha2.h
   Code/Library/Format.cpp
   Code/Library/Format.h

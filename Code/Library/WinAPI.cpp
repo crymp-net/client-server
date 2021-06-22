@@ -1,14 +1,21 @@
 #include <windows.h>
 #include <winhttp.h>
+#include <ShlObj.h>
+#include <Shlwapi.h>
 
 #include <ctype.h>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include "nlohmann/json.hpp"
 
 #include "External/picosha2.h"
 
 #include "WinAPI.h"
 #include "Error.h"
 #include "Format.h"
+
+#pragma comment(lib, "Shlwapi")
 
 namespace
 {
@@ -472,10 +479,9 @@ std::string WinAPI::GetHWID(const std::string & salt)
 
 std::string WinAPI::GetLocale()
 {
-	wchar_t buffer[LOCALE_NAME_MAX_LENGTH];
-	int length = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
-
-	return ConvertUTF16To8(std::wstring_view(buffer, length));
+	wchar_t buffer[LOCALE_NAME_MAX_LENGTH] = {};
+	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
+	return ConvertUTF16To8(buffer);
 }
 
 long WinAPI::GetTimeZoneBias()
@@ -538,8 +544,32 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 	const std::string_view & url,
 	const std::string_view & data,
 	const std::map<std::string, std::string> & headers,
-	int timeout)
+	int timeout,
+	bool cache,
+	bool returnPath)
 {
+
+	std::string outputPath = "";
+	if (cache) {
+		outputPath = WinAPI::GetCachePath(std::string(url));
+		if (outputPath.length() > 0) {
+			std::ifstream f(outputPath, std::ios::binary);
+			if (f) {
+				HTTPResponse cacheResponse;
+				cacheResponse.code = 200;
+				if (returnPath) {
+					cacheResponse.content = outputPath;
+				} else {
+					std::stringstream ss;
+					ss << f.rdbuf();
+					cacheResponse.content = ss.str();
+				}
+				f.close();
+				return cacheResponse;
+			}
+		}
+	}
+
 	const std::wstring urlW = ConvertUTF8To16(url);
 
 	URL_COMPONENTS urlComponents = {};
@@ -605,7 +635,7 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 	}
 
 	if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
-	                        const_cast<char*>(data.data()), data.length(), data.length(), 0))
+	                        data.length() ? const_cast<char*>(data.data()) : (char*)0, data.length(), data.length(), 0))
 	{
 		throw SystemError("WinHttpSendRequest");
 	}
@@ -615,19 +645,19 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 		throw SystemError("WinHttpReceiveResponse");
 	}
 
-	DWORD responseLength = 0;
-	if (!WinHttpQueryDataAvailable(hRequest, &responseLength))
-	{
-		throw SystemError("WinHttpQueryDataAvailable");
-	}
-
 	HTTPResponse response;
-	response.content.resize(responseLength);
 
-	if (!WinHttpReadData(hRequest, response.content.data(), response.content.length(), &responseLength))
+	DWORD chunkLength = 0;
+	do
 	{
-		throw SystemError("WinHttpReadData");
-	}
+		char buffer[4096];
+		if (!WinHttpReadData(hRequest, buffer, sizeof buffer, &chunkLength))
+		{
+			throw SystemError("WinHttpReadData");
+		}
+
+		response.content.append(buffer, chunkLength);
+	} while (chunkLength > 0);
 
 	DWORD code;
 	DWORD codeLength = sizeof code;
@@ -639,5 +669,50 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 
 	response.code = code;
 
+	if (cache && outputPath.length() > 0 && code >= 200 && code < 305) {
+		std::ofstream f(outputPath, std::ios::binary);
+		if (!f) {
+			throw SystemError("Cannot open cache for write");
+		}
+		f << response.content;
+		f.close();
+		if (returnPath) {
+			response.content = outputPath;
+		}
+	}
+
 	return response;
+}
+
+std::string WinAPI::GetCachePath(const std::string& path)
+{
+	char szPath[MAX_PATH];
+	if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath))) return "";
+	std::string fullPath = szPath;
+	fullPath += "\\sfwcl\\";
+	if (!PathFileExists(fullPath.c_str())) {
+		if (!CreateDirectory(fullPath.c_str(), 0)) return "";
+	}
+	std::string hash = SHA256(path);
+	std::ifstream index(fullPath + "index");
+	nlohmann::json indexDic;
+	if (index) {
+		std::stringstream contents;
+		contents << index.rdbuf();
+		index.close();
+		try {
+			indexDic = nlohmann::json::parse(contents.str());
+		}
+		catch (std::exception & ex) {
+			indexDic["error_" + std::string(hash)] = ex.what();
+			// ... well, don't really care
+		}
+	}
+	indexDic[hash] = path;
+	std::ofstream indexOut(fullPath + "index");
+	if (indexOut) {
+		indexOut << indexDic.dump();
+		indexOut.close();
+	}
+	return fullPath + hash;
 }

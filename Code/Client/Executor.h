@@ -57,6 +57,6 @@ public:
 	using Lambda = std::function<void()>;
 
 	// thread-safe
-	void AddLambda(Lambda onExecute, Lambda onCallback);
-	void AddLambdaCompleted(Lambda onCallback);
+	void RunAsync(Lambda onExecute, Lambda onCallback = Lambda());
+	void RunOnMainThread(Lambda onCallback);
 };
