@@ -13,6 +13,8 @@ struct HTTPClientTask : public IExecutorTask
 	HTTPClient::Callback callback;
 	HTTPClient::Result result;
 	int timeout = HTTPClient::DEFAULT_TIMEOUT;
+	bool cache = false;
+	bool returnPath = false;
 
 	// worker thread
 	void Execute() override
@@ -24,7 +26,7 @@ struct HTTPClientTask : public IExecutorTask
 
 		try
 		{
-			WinAPI::HTTPResponse response = WinAPI::HTTPRequest(method, url, data, headers, timeout);
+			WinAPI::HTTPResponse response = WinAPI::HTTPRequest(method, url, data, headers, timeout, cache, returnPath);
 
 			result.code = response.code;
 			result.response = std::move(response.content);
@@ -51,7 +53,9 @@ void HTTPClient::Request(
 	const std::string_view & data,
 	std::map<std::string, std::string> && headers,
 	Callback callback,
-	int timeout)
+	int timeout,
+	bool cache,
+	bool returnPath)
 {
 	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
 	task->method = method;
@@ -60,6 +64,8 @@ void HTTPClient::Request(
 	task->headers = std::move(headers);
 	task->callback = std::move(callback);
 	task->timeout = timeout;
+	task->cache = cache;
+	task->returnPath = returnPath;
 
 	gClient->GetExecutor()->AddTask(std::move(task));
 }

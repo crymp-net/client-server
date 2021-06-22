@@ -120,7 +120,7 @@ struct LambdaTask : public IExecutorTask
 	}
 };
 
-void Executor::AddLambda(Lambda onExecute, Lambda onCallback)
+void Executor::RunAsync(Lambda onExecute, Lambda onCallback)
 {
 	std::unique_ptr<LambdaTask> task = std::make_unique<LambdaTask>();
 	task->onExecute = std::move(onExecute);
@@ -129,7 +129,7 @@ void Executor::AddLambda(Lambda onExecute, Lambda onCallback)
 	AddTask(std::move(task));
 }
 
-void Executor::AddLambdaCompleted(Lambda onCallback)
+void Executor::RunOnMainThread(Lambda onCallback)
 {
 	std::unique_ptr<LambdaTask> task = std::make_unique<LambdaTask>();
 	task->onCallback = std::move(onCallback);

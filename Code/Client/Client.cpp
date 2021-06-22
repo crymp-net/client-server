@@ -63,6 +63,8 @@ void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 	}
 
 	pGameFramework->EndGameContext();
+
+	gClient->GetServerConnector()->Disconnect();
 }
 
 Client::Client()

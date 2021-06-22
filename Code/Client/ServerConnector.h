@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "HTTPClient.h"
+#include "MapDownloader.h"
 
 class ServerConnector
 {
@@ -17,15 +18,18 @@ class ServerConnector
 	std::string m_serverMapLink;
 	std::string m_serverPAKLink;
 
+	MapDownloader m_mapDownloder;
+
 	void RequestServerInfo();
-	void OnServerInfo(HTTPClient::Result & result);
-	void DownloadMap();
-	void DownloadPAK();
-	void TryConnect();
+	void OnServerInfo(int contractID, HTTPClient::Result & result);
+	void DownloadMap(int contractID);
+	void DownloadPAK(int contractID);
+	void TryConnect(int contractID);
 
 public:
 	ServerConnector();
 	~ServerConnector();
 
 	void Connect(const std::string_view & host, unsigned int port);
+	void Disconnect();
 };

@@ -94,6 +94,7 @@ namespace WinAPI
 	std::string GetHWID(const std::string & salt);
 	std::string GetLocale();
 
+
 	long GetTimeZoneBias();
 
 	struct HTTPResponse
@@ -108,6 +109,10 @@ namespace WinAPI
 		const std::string_view & url,
 		const std::string_view & data,
 		const std::map<std::string, std::string> & headers,
-		int timeout
+		int timeout,
+		bool cache = false,
+		bool returnPath = false
 	);
+
+	std::string GetCachePath(const std::string& path);
 }

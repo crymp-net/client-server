@@ -29,7 +29,9 @@ public:
 		const std::string_view & data,
 		std::map<std::string, std::string> && headers,
 		Callback callback,
-		int timeout = DEFAULT_TIMEOUT
+		int timeout = DEFAULT_TIMEOUT,
+		bool cache = false,
+		bool returnPath = false
 	);
 
 	void GET(
