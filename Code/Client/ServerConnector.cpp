@@ -13,6 +13,12 @@
 
 #include "CryCommon/CryAction/ILevelSystem.h"
 
+#include "CryGame/Game.h"
+#include "CryGame/Menus/FlashMenuObject.h"
+#include "CryGame/Menus/MPHub.h"
+
+
+
 // TODO: needs refactor maybe? :D
 #ifdef WIN32
 #define StrICmp _stricmp
@@ -140,9 +146,19 @@ void ServerConnector::DownloadMap(int contractID)
 	CryLogAlways("$3[CryMP] This server uses custom map located at: %s", m_serverMapLink.c_str());
 	gClient->GetExecutor()->RunAsync([contractID, this]() {
 		if (contractID != m_contractID) return;
-		auto [result, message] = m_mapDownloder.execute(m_serverMapLink, [](unsigned int progress, unsigned int progressMax, const std::string& message) {
+		auto [result, message] = m_mapDownloder.execute(m_serverMapLink, [contractID, this](unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string& message) {
 			// ...
-			CryLogAlways("$5[CryMP] Map download progress: %d / %d, %s", progress, progressMax, message.c_str());
+			gClient->GetExecutor()->RunOnMainThread([contractID, progress, progressMax, message, this]() {
+				if (contractID != m_contractID);
+				auto menu = g_pGame->GetMenu();
+				if (menu) {
+					auto mpHub = g_pGame->GetMenu()->GetMPHub();
+					if (mpHub) {
+						mpHub->SetLoadingDlgText(message.c_str(), false);
+					}
+				}
+				//CryLogAlways("$5[CryMP] Map download progress: %d / %d, %s", progress, progressMax, message.c_str());
+			});
 		});
 		if (!SUCCEEDED(result)) {
 			CryLogAlways("$4[CryMP] Map download failed with error code: %x, message: %s", result, message.c_str());
@@ -165,6 +181,15 @@ void ServerConnector::DownloadPAK(int contractID)
 		return;
 	}
 	CryLogAlways("$3[CryMP] This server uses server pak located at: $6%s", m_serverPAKLink.c_str());
+
+	auto menu = g_pGame->GetMenu();
+	if (menu) {
+		auto mpHub = g_pGame->GetMenu()->GetMPHub();
+		if (mpHub) {
+			mpHub->SetLoadingDlgText("Loading server pak", false);
+		}
+	}
+
 	gClient->GetHTTPClient()->Request("GET", m_serverPAKLink, "", {}, [contractID, this](HTTPClient::Result& result) -> void {
 		if (m_contractID != contractID) return;
 
@@ -185,6 +210,13 @@ void ServerConnector::DownloadPAK(int contractID)
 void ServerConnector::TryConnect(int contractID)
 {
 	if (contractID != m_contractID) return;
+	auto menu = g_pGame->GetMenu();
+	if (menu) {
+		auto mpHub = g_pGame->GetMenu()->GetMPHub();
+		if (mpHub) {
+			mpHub->SetLoadingDlgText("Joining server", false);
+		}
+	}
 	ILevelSystem* pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
 	pLevelSystem->Rescan();
 	if (m_serverName.empty())

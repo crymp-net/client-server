@@ -2,11 +2,13 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <queue>
 #include <functional>
 #include <future>
 #include <tuple>
 #include <iostream>
 #include <filesystem>
+#include <chrono>
 #include <Urlmon.h>
 #include <Shlwapi.h>
 #include <ShlObj.h>
@@ -15,7 +17,13 @@ class MapDownloader {
 private:
     std::atomic<bool> m_active = false;
     class StatusCallback : public IBindStatusCallback {
+        friend MapDownloader;
         MapDownloader* m_parent;
+        unsigned long long m_downloaded = 0;
+        unsigned long m_lastProgress = 0;
+        long long m_lastAnnounce = 0;
+        std::queue<unsigned int> m_chunks;
+        std::queue<long long> m_time;
     public:
         StatusCallback(MapDownloader* parent) : m_parent(parent) {}
         virtual HRESULT __stdcall QueryInterface(const IID&, void**) {
@@ -48,24 +56,15 @@ private:
         virtual HRESULT WINAPI OnObjectAvailable(REFIID, IUnknown*) {
             return E_NOTIMPL;
         }
-        virtual HRESULT WINAPI OnProgress(unsigned long progress, unsigned long progressMax, unsigned long statusCode, LPCWSTR status) {
-            if (m_parent->m_active) {
-                if (m_parent->m_onProgress)
-                    m_parent->m_onProgress(progress, progressMax, std::string("Downloading, speed: NaN MB/s"));
-                return S_OK;
-            }
-            else {
-                return E_ABORT;
-            }
-        }
+        virtual HRESULT WINAPI OnProgress(unsigned long progress, unsigned long progressMax, unsigned long statusCode, LPCWSTR status);
     };
     std::string m_url;
-    std::function<void(unsigned int progress, unsigned int progressMax, const std::string & message)> m_onProgress = nullptr;
+    std::function<void(unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string & message)> m_onProgress = nullptr;
     std::function<void(int errorCode, const std::string & errorText)> m_onFinished = nullptr;
     StatusCallback m_status;
 public:
     MapDownloader() : m_status(this) {}
-    std::tuple<HRESULT, std::string> execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, const std::string & message)>& onProgress);
+    std::tuple<HRESULT, std::string> execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, unsigned stage, const std::string & message)>& onProgress);
     std::tuple<HRESULT, std::string> download();
     std::tuple<HRESULT, std::string> extract(const std::string& path);
     void cancel();
