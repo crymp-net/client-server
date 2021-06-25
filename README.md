@@ -11,10 +11,11 @@ The next generation [Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) 
 - [x] Integrated CryGame
 - [x] CryMP services
 - [ ] Auto updater
-- [ ] Map downloader
+- [x] Map downloader
 - [x] First person spectate
-- [x] Enable unrestricted ragdolls
-- [ ] Server PAK feature
+- [x] Unrestricted ragdolls
+- [x] Pickup objects in MP 
+- [x] Server PAK feature
 - [ ] New CryPak implementation
 - [ ] UI for CryMP profiles
 - [ ] Get rid of GameSpy stuff
