@@ -3938,6 +3938,20 @@ IMPLEMENT_RMI(CActor, ClPickUp)
 		if (params.select)
 			m_netLastSelectablePickedUp = params.itemId;
 	}
+	else
+	{
+		//CryMP: Add support for pick up objects in Multiplayer
+		//Here is client handler 
+		if (gEnv->bMultiplayer && m_pGameFramework->IsImmersiveMPEnabled() && g_pGameCVars->cl_pickupObjectsMP)
+		{
+			IEntity* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
+			if (pObject)
+			{
+				SetHeldObjectId(params.itemId);
+			}
+		}
+		return true;
+	}
 
 	return true;
 }

@@ -1022,6 +1022,16 @@ void COffHand::UpdateHeldObject()
 			{
 				hasAuthority = true;
 			}
+			//We haven't received authorization from server, check if it's a client entity e.g. chickens etc
+			if (!hasAuthority)
+			{
+				//CryMP: Let us have fun with chickens in MP...
+				const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
+				if (bClientEntity)
+				{
+					hasAuthority = true;
+				}
+			}
 		}
 		if (hasAuthority)
 		{
@@ -1965,6 +1975,10 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 			const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
 			const bool bIsBound = m_pGameFramework->GetNetContext()->IsBound(pEntity->GetId());
 			if (!bIsBound && !bClientEntity)
+			{
+				return OH_NO_GRAB;
+			}
+			if (pEntity->GetClass() == CItem::sDoorClass)
 			{
 				return OH_NO_GRAB;
 			}
