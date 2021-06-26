@@ -14,10 +14,11 @@
 #include "CryCommon/CryAction/ILevelSystem.h"
 
 #include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 #include "CryGame/Menus/MPHub.h"
 
-
+extern SCVars* g_pGameCVars;
 
 // TODO: needs refactor maybe? :D
 #ifdef WIN32
@@ -229,6 +230,9 @@ void ServerConnector::TryConnect(int contractID)
 	params.hostname = m_host.c_str();
 	params.port = m_port;
 
+	g_pGameCVars->cl_circleJump = 0;
+	g_pGameCVars->cl_flyMode = 0;
+	g_pGameCVars->cl_playerView = 0;
 	gClient->GetGameFramework()->StartGameContext(&params);
 }
 

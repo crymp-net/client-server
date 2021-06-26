@@ -1561,10 +1561,10 @@ bool CPlayerInput::OnActionThirdPerson(EntityId entityId, const ActionId& action
 
 bool CPlayerInput::OnActionFlyMode(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	if (!gEnv->pSystem->IsDevMode())
+	if (!g_pGameCVars->cl_flyMode && !gEnv->pSystem->IsDevMode())
 		return false;
 
-	if (!m_pPlayer->m_stats.spectatorMode && m_pPlayer->m_pGameFramework->CanCheat())
+	if (!m_pPlayer->m_stats.spectatorMode && (m_pPlayer->m_pGameFramework->CanCheat() || g_pGameCVars->cl_flyMode))
 	{
 		uint8 flyMode = m_pPlayer->GetFlyMode() + 1;
 		if (flyMode > 2)

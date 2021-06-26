@@ -159,6 +159,9 @@ static Vec3 ProjectPointToLine(const Vec3& point, const Vec3& lineStart, const V
 //-----------------------------------------------------------------------------------------------
 void CPlayerMovement::ProcessFlyMode()
 {
+	if (!gEnv->pSystem->IsDevMode() && !g_pGameCVars->cl_flyMode) {
+		m_player.SetFlyMode(0);
+	}
 	Vec3 move = m_viewQuat * m_movement.desiredVelocity;
 
 	float zMove(0.0f);
