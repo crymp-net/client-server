@@ -80,18 +80,8 @@ namespace
 	}
 }
 
-void ServerBrowser::OnServerList(HTTPClient::Result & result)
+bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 {
-	if (!m_pListener)
-		return;
-
-	if (result.error)
-	{
-		CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
-		m_pListener->UpdateComplete(false);
-		return;
-	}
-
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
 
 	try
@@ -101,8 +91,7 @@ void ServerBrowser::OnServerList(HTTPClient::Result & result)
 		if (data.contains("error"))
 		{
 			CryLogAlways("$4[CryMP] Server list update error: %s", GetCString(data["error"]));
-			m_pListener->UpdateComplete(false);
-			return;
+			return false;
 		}
 
 		for (const json & server : data)
@@ -126,7 +115,7 @@ void ServerBrowser::OnServerList(HTTPClient::Result & result)
 			const std::string version = "1.1.1." + std::to_string(GetInt(server["ver"]));
 			info.m_gameVersion = version.c_str();
 
-			// TODO: some of these are used by server filter
+			// TODO: these are used by server filter
 			info.m_anticheat = false;
 			info.m_dx10 = false;
 			info.m_voicecomm = false;
@@ -152,25 +141,14 @@ void ServerBrowser::OnServerList(HTTPClient::Result & result)
 	catch (const json::exception & ex)
 	{
 		CryLogAlways("$4[CryMP] Server list parse error: %s", ex.what());
-		m_pListener->UpdateComplete(false);
-		return;
+		return false;
 	}
 
-	m_pListener->UpdateComplete(false);
+	return true;
 }
 
-void ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
+bool ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 {
-	if (!m_pListener)
-		return;
-
-	if (result.error)
-	{
-		CryLogAlways("$4[CryMP] Server update failed: %s", result.error.what());
-		m_pListener->ServerUpdateFailed(serverID);
-		return;
-	}
-
 	CryLog("[CryMP] Server info (%d): %s", result.code, result.response.c_str());
 
 	try
@@ -180,8 +158,7 @@ void ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 		if (data.contains("error"))
 		{
 			CryLogAlways("$4[CryMP] Server update error: %s", GetCString(data["error"]));
-			m_pListener->ServerUpdateFailed(serverID);
-			return;
+			return false;
 		}
 
 		const int timeLeft = GetTimeLeft(data);
@@ -228,11 +205,10 @@ void ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 	catch (const json::exception & ex)
 	{
 		CryLogAlways("$4[CryMP] Server info parse error: %s", ex.what());
-		m_pListener->ServerUpdateFailed(serverID);
-		return;
+		return false;
 	}
 
-	m_pListener->ServerUpdateComplete(serverID);
+	return true;
 }
 
 ServerBrowser::ServerBrowser()
@@ -274,7 +250,19 @@ void ServerBrowser::Update()
 
 	gClient->GetHTTPClient()->GET(url, [this](HTTPClient::Result & result)
 	{
-		OnServerList(result);
+		if (m_pListener)
+		{
+			if (result.error)
+			{
+				CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
+			}
+			else
+			{
+				OnServerList(result);
+			}
+
+			m_pListener->UpdateComplete(false);
+		}
 	});
 }
 
@@ -295,7 +283,20 @@ void ServerBrowser::UpdateServerInfo(int id)
 
 	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClient::Result & result)
 	{
-		OnServerInfo(result, id);
+		if (m_pListener)
+		{
+			if (result.error)
+			{
+				CryLogAlways("$4[CryMP] Server update failed: %s", result.error.what());
+			}
+			else
+			{
+				if (OnServerInfo(result, id))
+					m_pListener->ServerUpdateComplete(id);
+				else
+					m_pListener->ServerUpdateFailed(id);
+			}
+		}
 	});
 }
 

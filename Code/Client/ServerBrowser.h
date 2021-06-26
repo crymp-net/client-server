@@ -23,8 +23,8 @@ class ServerBrowser : public IServerBrowser
 		return (id >= 0 && id < m_servers.size()) ? &m_servers[id] : nullptr;
 	}
 
-	void OnServerList(HTTPClient::Result & result);
-	void OnServerInfo(HTTPClient::Result & result, int serverID);
+	bool OnServerList(HTTPClient::Result & result);
+	bool OnServerInfo(HTTPClient::Result & result, int serverID);
 
 public:
 	ServerBrowser();
