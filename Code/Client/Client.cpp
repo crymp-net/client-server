@@ -13,6 +13,7 @@
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
 #include "ScriptBind_CPPAPI.h"
+#include "ServerBrowser.h"
 #include "ServerConnector.h"
 #include "ServerPAK.h"
 
@@ -92,6 +93,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pScriptCommands    = std::make_unique<ScriptCommands>();
 	m_pScriptCallbacks   = std::make_unique<ScriptCallbacks>();
 	m_pScriptBind_CPPAPI = std::make_unique<ScriptBind_CPPAPI>();
+	m_pServerBrowser     = std::make_unique<ServerBrowser>();
 	m_pServerConnector   = std::make_unique<ServerConnector>();
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 
@@ -116,6 +118,20 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(),  m_scriptRPC.length(),  "RPC.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
+}
+
+std::string Client::GetMasterServerAPI()
+{
+	const char *endpoint = nullptr;
+	if (gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint))
+	{
+		return endpoint;
+	}
+	else
+	{
+		CryLogAlways("$4[CryMP] Failed to get the master server API!");
+		return "";
+	}
 }
 
 void Client::OnPostUpdate(float deltaTime)

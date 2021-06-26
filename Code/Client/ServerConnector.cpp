@@ -2,7 +2,6 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IGameFramework.h"
-#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Library/External/nlohmann/json.hpp"
 
 #include "ServerPAK.h"
@@ -28,26 +27,14 @@
 
 using json = nlohmann::json;
 
-namespace
-{
-	std::string GetMasterServerAPI()
-	{
-		const char *endpoint = "";
-		gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint);
-
-		return endpoint;
-	}
-}
-
 void ServerConnector::RequestServerInfo()
 {
 	const unsigned int contractID = m_contractID;
 	CryLogAlways("$3[CryMP] Checking server at $6%s:%u$3", m_host.c_str(), m_port);
 
-	const std::string api = GetMasterServerAPI();
+	const std::string api = gClient->GetMasterServerAPI();
 	if (api.empty())
 	{
-		CryLogAlways("$4[CryMP] Failed to get the master server API!");
 		TryConnect(contractID);
 		return;
 	}

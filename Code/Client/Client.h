@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <random>
+#include <string>
 #include <string_view>
 #include <type_traits>
 
@@ -17,6 +18,7 @@ class GSMasterHook;
 class ScriptCommands;
 class ScriptCallbacks;
 class ScriptBind_CPPAPI;
+class ServerBrowser;
 class ServerConnector;
 class ServerPAK;
 
@@ -35,6 +37,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ScriptCommands> m_pScriptCommands;
 	std::unique_ptr<ScriptCallbacks> m_pScriptCallbacks;
 	std::unique_ptr<ScriptBind_CPPAPI> m_pScriptBind_CPPAPI;
+	std::unique_ptr<ServerBrowser> m_pServerBrowser;
 	std::unique_ptr<ServerConnector> m_pServerConnector;
 	std::unique_ptr<ServerPAK> m_pServerPAK;
 
@@ -48,6 +51,8 @@ public:
 	~Client();
 
 	void Init(IGameFramework *pGameFramework);
+
+	std::string GetMasterServerAPI();
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
@@ -102,6 +107,11 @@ public:
 	ScriptBind_CPPAPI *GetScriptBind_CPPAPI()
 	{
 		return m_pScriptBind_CPPAPI.get();
+	}
+
+	ServerBrowser *GetServerBrowser()
+	{
+		return m_pServerBrowser.get();
 	}
 
 	ServerConnector *GetServerConnector()

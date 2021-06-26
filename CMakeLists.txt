@@ -50,6 +50,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ScriptCallbacks.h
   Code/Client/ScriptCommands.cpp
   Code/Client/ScriptCommands.h
+  Code/Client/ServerBrowser.cpp
+  Code/Client/ServerBrowser.h
   Code/Client/ServerConnector.cpp
   Code/Client/ServerConnector.h
   Code/Client/ServerPAK.cpp
