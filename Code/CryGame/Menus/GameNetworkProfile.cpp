@@ -1446,7 +1446,8 @@ struct CGameNetworkProfile::SStoredServerLists
 CGameNetworkProfile::CGameNetworkProfile(CMPHub* hub) :
 	m_hub(hub), m_loggingIn(false), m_profileId(-1)
 {
-	INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
+	// CryMP: removed GS
+	INetworkService* serv = nullptr;
 	if (serv)
 	{
 		m_profile = serv->GetNetworkProfile();

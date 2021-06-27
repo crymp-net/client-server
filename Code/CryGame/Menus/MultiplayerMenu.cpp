@@ -930,27 +930,31 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 
 	m_profile = m_hub->GetProfile();
 
-	INetworkService* serv = GetISystem()->GetINetwork()->GetService("GameSpy");
-	if (serv)
+	m_browser = nullptr;
+
+	if (lan)
 	{
-		m_browser = (lan) ? serv->GetServerBrowser() : gClient->GetServerBrowser();
-		if (m_browser->IsAvailable())
+		// we still need GS for LAN lobby :(
+		INetworkService *service = GetISystem()->GetINetwork()->GetService("GameSpy");
+		if (service)
 		{
-			m_browser->SetListener(m_serverlist.get());
-			m_browser->Start(m_lan);
-			m_browser->Update();
-		}
-		m_serverlist->SetMenu(this);
-		if (!lan)
-		{
-			m_chat = serv->GetNetworkChat();
-			m_chatlist = std::make_unique<SChat>(this);
-			m_chat->SetListener(m_chatlist.get());
-			m_chat->Join();
-			if (m_hub->GetProfile())
-				m_hub->GetProfile()->InitUI(m_buddylist.get());
+			m_browser = service->GetServerBrowser();
 		}
 	}
+	else
+	{
+		// CryMP
+		m_browser = gClient->GetServerBrowser();
+	}
+
+	if (m_browser && m_browser->IsAvailable())
+	{
+		m_browser->SetListener(m_serverlist.get());
+		m_browser->Start(lan);
+		m_browser->Update();
+	}
+
+	m_serverlist->SetMenu(this);
 
 	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default); 
 	//read servers back

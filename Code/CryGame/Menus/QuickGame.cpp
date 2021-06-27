@@ -457,7 +457,8 @@ void CQuickGame::NextStage()
 	{
 	case 1://Init and LAN check
 	{
-		INetworkService* serv = GetISystem()->GetINetwork()->GetService("GameSpy");
+		// CryMP: removed GS
+		INetworkService* serv = nullptr;
 		if (serv)
 		{
 			//
@@ -472,7 +473,8 @@ void CQuickGame::NextStage()
 	case 2://check internet
 		if (!m_browser)
 		{
-			INetworkService* serv = GetISystem()->GetINetwork()->GetService("GameSpy");
+			// CryMP: removed GS
+			INetworkService* serv = nullptr;
 			if (serv)
 			{
 				//
