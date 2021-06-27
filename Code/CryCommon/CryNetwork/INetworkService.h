@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "ISerialize.h"
 
 struct IServerBrowser;
@@ -94,27 +96,27 @@ struct ITestInterface
 
 struct SBasicServerInfo
 {
-	int				    m_numPlayers;
-	int				    m_maxPlayers;
-  bool          m_anticheat;
-  bool          m_official;
-	bool			    m_private;
-  bool          m_dx10;
-  bool          m_voicecomm;
-  bool          m_friendlyfire;
-  bool          m_dedicated;
-	bool					m_gamepadsonly;
-	ushort        m_hostPort;
-  ushort        m_publicPort;
-	uint32			  m_publicIP;
-	uint32			  m_privateIP;
-  const char*		m_hostName;
-	const char*		m_mapName;
-	const char*		m_gameVersion;
-	const char*		m_gameType;
-	const char*		m_country;
-	const char*		m_modName;
-	const char*		m_modVersion;
+	int m_numPlayers;
+	int m_maxPlayers;
+	bool m_anticheat;
+	bool m_official;
+	bool m_private;
+	bool m_dx10;
+	bool m_voicecomm;
+	bool m_friendlyfire;
+	bool m_dedicated;
+	bool m_gamepadsonly;
+	unsigned short m_hostPort;
+	unsigned short m_publicPort;
+	uint32_t m_publicIP;
+	uint32_t m_privateIP;
+	const char *m_hostName;
+	const char *m_mapName;
+	const char *m_gameVersion;
+	const char *m_gameType;
+	const char *m_country;
+	const char *m_modName;
+	const char *m_modVersion;
 };
 
 enum EServerBrowserError
@@ -127,45 +129,44 @@ enum EServerBrowserError
 struct IServerListener
 {
 	//new server reported during update and basic values received
-	virtual void NewServer(const int id,const SBasicServerInfo*)=0;
-  virtual void UpdateServer(const int id,const SBasicServerInfo*)=0;
-  //remove server from UI server list
-	virtual void RemoveServer(const int id)=0;
+	virtual void NewServer(const int id, const SBasicServerInfo*) = 0;
+	virtual void UpdateServer(const int id, const SBasicServerInfo*) = 0;
+	//remove server from UI server list
+	virtual void RemoveServer(const int id) = 0;
 	//server successfully pinged (servers behind NAT cannot be pinged)
-	virtual void UpdatePing(const int id,const int ping)=0;
+	virtual void UpdatePing(const int id, const int ping) = 0;
 
 	//extended data - can be dependent on game type etc, retrieved only by request via IServerBrowser::UpdateServerInfo
-	virtual void UpdateValue(const int id,const char* name,const char* value)=0;
-	virtual void UpdatePlayerValue(const int id,const int playerNum,const char* name,const char* value)=0;
-	virtual void UpdateTeamValue(const int id,const int teamNum,const char *name,const char* value)=0;
+	virtual void UpdateValue(const int id, const char* name, const char* value) = 0;
+	virtual void UpdatePlayerValue(const int id, const int playerNum, const char* name, const char* value) = 0;
+	virtual void UpdateTeamValue(const int id, const int teamNum, const char *name, const char* value) = 0;
 
 	//called on any error
-	virtual void OnError(const EServerBrowserError)=0;
+	virtual void OnError(const EServerBrowserError) = 0;
 
 	//all servers in the list processed
-	virtual void UpdateComplete(bool cancelled)=0;
+	virtual void UpdateComplete(bool cancelled) = 0;
 
 	//cannot update/ping server 
-	virtual void ServerUpdateFailed(const int id)=0;
-  virtual void ServerUpdateComplete(const int id)=0;
+	virtual void ServerUpdateFailed(const int id) = 0;
+	virtual void ServerUpdateComplete(const int id) = 0;
 
-  virtual void ServerDirectConnect(bool needsnat, uint ip, ushort port)=0;
-
+	virtual void ServerDirectConnect(bool needsnat, unsigned int ip, unsigned short port) = 0;
 };
 
-struct IServerBrowser:public INetworkInterface
+struct IServerBrowser : public INetworkInterface
 {
-	virtual void	Start(bool browseLAN) = 0;
-  virtual void	SetListener(IServerListener* lst) = 0;
-	virtual void	Stop() = 0;
-	virtual void	Update() = 0;
-	virtual void	UpdateServerInfo(int id) = 0;
-  virtual void  BrowseForServer(uint ip, ushort port) = 0;
-  virtual void  BrowseForServer(const char* addr, ushort port) = 0;
-  virtual void  SendNatCookie(uint ip, ushort port, int cookie) = 0;
-  virtual void  CheckDirectConnect(int id, ushort port) = 0;
-	virtual int		GetServerCount() = 0;
-	virtual int		GetPendingQueryCount() = 0;
+	virtual void Start(bool browseLAN) = 0;
+	virtual void SetListener(IServerListener* lst) = 0;
+	virtual void Stop() = 0;
+	virtual void Update() = 0;
+	virtual void UpdateServerInfo(int id) = 0;
+	virtual void BrowseForServer(unsigned int ip, unsigned short port) = 0;
+	virtual void BrowseForServer(const char* addr, unsigned short port) = 0;
+	virtual void SendNatCookie(unsigned int ip, unsigned short port, int cookie) = 0;
+	virtual void CheckDirectConnect(int id, unsigned short port) = 0;
+	virtual int GetServerCount() = 0;
+	virtual int GetPendingQueryCount() = 0;
 };
 
 enum EChatJoinResult
@@ -193,21 +194,21 @@ enum ENetworkChatMessageType
 
 struct IChatListener
 {
-	virtual void Joined(EChatJoinResult)=0;
-	virtual void Message(const char* from, const char* message, ENetworkChatMessageType type)=0;
-	virtual void ChatUser(const char* nick, EChatUserStatus st)=0;
-  virtual void OnError(int err)=0;
-	virtual void OnChatKeys(const char* user, int num, const char** keys, const char** values)=0;
-	virtual void OnGetKeysFailed(const char* user)=0;
+	virtual void Joined(EChatJoinResult) = 0;
+	virtual void Message(const char* from, const char* message, ENetworkChatMessageType type) = 0;
+	virtual void ChatUser(const char* nick, EChatUserStatus st) = 0;
+	virtual void OnError(int err) = 0;
+	virtual void OnChatKeys(const char* user, int num, const char** keys, const char** values) = 0;
+	virtual void OnGetKeysFailed(const char* user) = 0;
 };
 
 struct INetworkChat:public INetworkInterface
 {
-	virtual void Join()=0;
-	virtual void Leave()=0;
-  virtual void SetListener(IChatListener* lst)=0;
-	virtual void Say(const char* message)=0;
-	virtual void SendData(const char* nick, const char* message)=0;
+	virtual void Join() = 0;
+	virtual void Leave() = 0;
+	virtual void SetListener(IChatListener* lst) = 0;
+	virtual void Say(const char* message) = 0;
+	virtual void SendData(const char* nick, const char* message) = 0;
 	virtual void SetChatKeys(int num, const char** keys, const char** value) = 0;
 	virtual void GetChatKeys(const char* user, int num, const char** keys) = 0;
 };
@@ -224,12 +225,12 @@ enum EServerReportError
 struct IServerReportListener
 {
 	virtual void OnError(EServerReportError) = 0;
-	virtual void OnPublicIP(uint,unsigned short) = 0;
+	virtual void OnPublicIP(unsigned int,unsigned short) = 0;
 }; 
 
 struct	IServerReport : public INetworkInterface
 {
-	virtual void AuthPlayer(int playerid, uint ip, const char* challenge, const char* responce) = 0;
+	virtual void AuthPlayer(int playerid, unsigned int ip, const char* challenge, const char* responce) = 0;
 	virtual void ReAuthPlayer(int playerid, const char* responce) = 0;
 
 	virtual void SetReportParams(int numplayers, int numteams) = 0;
@@ -301,7 +302,7 @@ struct INatNeg : public INetworkInterface
 
 struct IDownloadStream
 {
-	virtual void GotData( const uint8 * pData, uint32 length ) = 0;
+	virtual void GotData( const uint8_t *pData, uint32_t length ) = 0;
 	virtual void Complete( bool success ) = 0;
 };
 
@@ -514,15 +515,15 @@ struct SRegisterDayOfBirth
 {
 	SRegisterDayOfBirth(){}
 	SRegisterDayOfBirth(type_zero):day(0),month(0),year(0){}
-	SRegisterDayOfBirth(uint8 d, uint8 m, uint16 y):day(d),month(m),year(y){}
+	SRegisterDayOfBirth(uint8_t d, uint8_t m, uint16_t y):day(d),month(m),year(y){}
 
 	//hm...
-	SRegisterDayOfBirth(uint32 i):day(i&0xFF),month((i>>8)&0xFF),year(i>>16){}
-	operator uint32()const{return (uint32(year)<<16) + (uint32(month)<<8) + day;}
+	SRegisterDayOfBirth(uint32_t i):day(i&0xFF),month((i>>8)&0xFF),year(i>>16){}
+	operator uint32_t()const{return (uint32_t(year)<<16) + (uint32_t(month)<<8) + day;}
 
-	uint8		day;
-	uint8		month;
-	uint16	year;
+	uint8_t day;
+	uint8_t month;
+	uint16_t year;
 };
 
 struct INetworkProfile : public INetworkInterface

@@ -21,9 +21,6 @@
 #include "CryCommon/CryRenderer/IVideoPlayer.h"
 #include "CryCommon/CryCore/CryThread.h"
 
-static const char* gTSPListFileFullName = "%USER%\\TSP.xml";
-static const char* gTSPListFileURL = "http://www.ea.com/editorial/crysis/crysis.xml";
-
 static TKeyValuePair<EGsUiCommand, const char*>
 gUiCommands[] = {
   {eGUC_none,""},
@@ -155,7 +152,6 @@ CMPHub::CMPHub() :
 	m_lastMenu(0),
 	m_isInLogin(false)
 {
-	gEnv->pNetwork->GetService("GameSpy");
 }
 
 CMPHub::~CMPHub()
@@ -207,7 +203,8 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 	case eGUC_registerEnd:
 	{
 		{
-			INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
+			// CryMP: removed GS
+			INetworkService* serv = nullptr;
 			if (!serv || serv->GetState() != eNSS_Ok)
 				break;
 		}
@@ -242,7 +239,8 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 	case eGUC_login:
 	{
 		{
-			INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
+			// CryMP: removed GS
+			INetworkService* serv = nullptr;
 			if (!serv || serv->GetState() != eNSS_Ok)
 				break;
 		}
@@ -346,47 +344,20 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		m_menu = nullptr;
 		break;
 	case eGUC_internetGame:
-	{
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() == eNSS_Initializing)
-			break;
-		if (serv->GetState() == eNSS_Failed)
-		{
-			ShowError("Online support for Crysis is no longer available.");
-			break;
-		}
-		CheckTSPIPs();
-		IPatchCheck* pc = serv->GetPatchCheck();
-		if (pc->IsUpdateAvailable())
-		{
-			ShowYesNoDialog("@ui_patch_warning", "patch");
-			break;
-		}
-	}
-	//		if(!m_profile || !m_profile->IsLoggedIn())
-	//    {
-	//      TryLogin(true);
-	//    }
-	//    else
-	SwitchToLobby();
-	break;
+		SwitchToLobby();
+		break;
 	case eGUC_recordedGames:
 		SAFE_MENU_FUNC(PlayTutorialVideo());
 		break;
 	case eGUC_enterLANlobby:
-	{
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() != eNSS_Ok)
-			break;
-	}
-	if (!IsIngame())
-		m_lastMenu = 3;
+		if (!IsIngame())
+			m_lastMenu = 3;
 
-	if (m_currentScreen)
-	{
-		m_menu = std::make_unique<CMultiPlayerMenu>(true, m_currentScreen, this);
-	}
-	break;
+		if (m_currentScreen)
+		{
+			m_menu = std::make_unique<CMultiPlayerMenu>(true, m_currentScreen, this);
+		}
+		break;
 	case eGUC_quickGame:
 		OnQuickGame();
 		break;
@@ -398,7 +369,6 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		}
 		break;
 	case eGUC_forgotPassword:
-		//gEnv->pGame->GetIGameFramework()->ShowPageInBrowser("http://login.gamespy.com/lostpassword.aspx");
 		if (m_currentScreen)
 		{
 			m_profile = std::make_unique<CGameNetworkProfile>(this);
@@ -423,7 +393,8 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		}
 		else if (!strcmp(pArgs, "patch"))
 		{
-			INetworkService* gs = gEnv->pNetwork->GetService("GameSpy");
+			// CryMP: removed GS
+			INetworkService* gs = nullptr;
 			if (gs)
 			{
 				IPatchCheck* pc = gs->GetPatchCheck();
@@ -651,7 +622,8 @@ void CMPHub::CloseLoadingDlg()
 
 void CMPHub::OnQuickGame()
 {
-	INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
+	// CryMP: removed GS
+	INetworkService* serv = nullptr;
 	if (!serv || serv->GetState() != eNSS_Ok)
 		return;
 
@@ -978,84 +950,9 @@ bool CMPHub::IsLoggingIn()const
 	return m_loggingIn;
 }
 
-struct STSPDownload : public IDownloadStream
-{
-	STSPDownload() :m_complete(false), m_ok(false)
-	{
-	}
-
-	virtual void GotData(const uint8* pData, uint32 length)
-	{
-		m_data.reserve(m_data.size() + length);
-		m_data.insert(m_data.end(), pData, pData + length);
-	}
-
-	virtual void Complete(bool success)
-	{
-		CryAutoLock<CryFastLock> lock(m_lock);
-		m_complete = true;
-		m_ok = success;
-		if (m_ok)
-		{
-			FILE* m_file = gEnv->pCryPak->FOpen(gTSPListFileFullName, "wb");
-			gEnv->pCryPak->FWrite(&m_data[0], m_data.size(), m_file);
-			gEnv->pCryPak->FClose(m_file);
-		}
-		m_data.clear();
-	}
-
-	bool IsCompleted()
-	{
-		CryAutoLock<CryFastLock> lock(m_lock);
-
-		return m_complete;
-	}
-
-	void StartDownload()
-	{
-		INetworkService* gs = gEnv->pNetwork->GetService("GameSpy");
-		if (gs)
-		{
-			IFileDownloader* down = gs->GetFileDownloader();
-			SFileDownloadParameters params;
-			params.sourceFilename = gTSPListFileURL;
-			params.pStream = this;
-			down->SetThrottleParameters(0, 0);
-			down->DownloadFile(params);
-		}
-	}
-
-	CryFastLock m_lock;
-	bool	m_ok;
-	bool  m_complete;
-	std::vector<uint8> m_data;
-};
-
-static bool GameSpyCheck()
-{
-	INetworkService* gs = gEnv->pNetwork->GetService("GameSpy");
-	return gs->GetState() != eNSS_Initializing;
-}
-
 void CMPHub::OnMenuOpened()
 {
-	INetworkService* gs = gEnv->pNetwork->GetService("GameSpy");
-	if (gs)
-	{
-		if (gs->GetState() == eNSS_Initializing)
-			g_pGame->BlockingProcess(&GameSpyCheck);
-		if (gs->GetState() == eNSS_Ok)
-		{
-			IPatchCheck* pc = gs->GetPatchCheck();
-			pc->TrackUsage();
-			pc->CheckForUpdate();
-			if (!m_trustedDownload)
-			{
-				m_trustedDownload = std::make_unique<STSPDownload>();
-				m_trustedDownload->StartDownload();
-			}
-		}
-	}
+	// CryMP: removed GS stuff
 
 	m_menuOpened = true;
 	if (!m_login.empty())
@@ -1180,135 +1077,3 @@ void CMPHub::ShowRetrivePasswordResult(bool ok)
 		ShowError("@ui_menu_EmailWasNotSend");
 	}
 }
-
-struct STrustedIPCompare
-{
-	bool operator()(const STrustedIp& a, const STrustedIp& b)const
-	{
-		bool r = a.lower < b.lower;
-		assert((a.upper < b.upper) == r);
-		return r;
-	}
-
-	bool operator()(const STrustedIp& a, const uint32& b)const
-	{
-		return a.upper < b;
-	}
-};
-
-bool CMPHub::IsIpTrusted(uint32 ip_)const
-{
-	if (!m_trustedIPsLoaded)
-	{
-		return false;
-	}
-
-	uint32 ip = ((ip_ & 0xFF) << 24) + ((ip_ & 0xFF00) << 8) + ((ip_ & 0xFF0000) >> 8) + (ip_ >> 24);
-
-
-	std::vector<STrustedIp>::const_iterator it = std::lower_bound(m_trustedIPs.begin(), m_trustedIPs.end(), ip, STrustedIPCompare());
-	while (it != m_trustedIPs.end() && it->lower < ip)
-	{
-		if (ip >= it->lower && ip <= it->upper)
-			return true;
-		++it;
-	}
-	return false;
-}
-
-bool CMPHub::LoadTrustedIPs()
-{
-	XmlNodeRef root = gEnv->pSystem->LoadXmlFile(gTSPListFileFullName);
-	if (!root)
-	{
-		root = gEnv->pSystem->LoadXmlFile("Libs\\config\\defaultTSP.xml");
-	}
-
-	if (!root || !root->isTag("i"))
-		return false;
-	int num = 0;
-	if (!root->getAttr("e", num))
-		return false;
-	for (int i = 0; i < root->getChildCount(); ++i)
-	{
-		XmlNodeRef ch = root->getChild(i);
-		if (ch->isTag("a"))
-		{
-			CryFixedStringT<32> ip_str = ch->getAttr("r");
-			//CryLog("IP %s", ip_str.c_str());
-			STrustedIp ip;
-			CryFixedStringT<32>::const_iterator p = ip_str.begin();
-			bool failed = false;
-			int pos = 0;
-			while (p != ip_str.end() && !failed)
-			{
-				CryFixedStringT<16> ip_digit;
-				for (;p != ip_str.end() && *p != '.'; ++p)
-				{
-					if (*p != '-' && !isdigit(*p))
-					{
-						GameWarning("TSP IP list contains invalid character : \'%s\'", ip_str.c_str());
-						failed = true;
-						break;
-					}
-					ip_digit += *p;
-				}
-				if (failed)
-					break;
-				uint low = 0, up = 0;
-				if (const char* minus_p = strchr(ip_digit.c_str(), '-'))
-				{
-					CryFixedStringT<16> lower(ip_digit.c_str(), minus_p);
-					CryFixedStringT<16> upper(minus_p + 1);
-					low = atoi(lower);
-					up = atoi(upper);
-				}
-				else
-				{
-					low = up = atoi(ip_digit);
-				}
-				if (low > 255 || up > 255 || up < low)
-				{
-					GameWarning("TSP IP list contains invalid ip address : \'%s\'", ip_str.c_str());
-					failed = true;
-					break;
-				}
-
-				ip.lower = (ip.lower << 8) + low;
-				ip.upper = (ip.upper << 8) + up;
-				if (p != ip_str.end())
-					++p;
-				++pos;
-			}
-			if (!failed)
-				m_trustedIPs.push_back(ip);
-		}
-		else
-		{
-			GameWarning("TSP list contains bad element \'%s\'", ch->getTag());
-		}
-	}
-
-	if (m_trustedIPs.size() != num)
-	{
-		GameWarning("TSP list contains wrong number of elements. Declared - %d, read - %d.", num, m_trustedIPs.size());
-	}
-	std::sort(m_trustedIPs.begin(), m_trustedIPs.end(), STrustedIPCompare());
-	/*for(int i=0; i<m_trustedIPs.size(); ++i)
-	{
-	CryLog("IP read: %X - %X", m_trustedIPs[i].lower, m_trustedIPs[i].upper);
-	}*/
-	return true;
-}
-
-void CMPHub::CheckTSPIPs()
-{
-	if (!m_trustedIPsLoaded)
-	{
-		if (m_trustedDownload && m_trustedDownload->IsCompleted())
-		{
-			m_trustedIPsLoaded = LoadTrustedIPs();
-		}
-	}
-}
-

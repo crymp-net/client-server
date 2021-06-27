@@ -269,10 +269,6 @@ protected:
   static void CmdQuickGame(IConsoleCmdArgs* pArgs);
   static void CmdQuickGameStop(IConsoleCmdArgs* pArgs);
   static void CmdBattleDustReload(IConsoleCmdArgs* pArgs);
-  static void CmdLogin(IConsoleCmdArgs* pArgs);
-	static void CmdLoginProfile(IConsoleCmdArgs* pArgs);
-	static void CmdRegisterNick(IConsoleCmdArgs* pArgs);
-  static void CmdCryNetConnect(IConsoleCmdArgs* pArgs);
 
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;

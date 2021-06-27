@@ -15,7 +15,6 @@
 #include "GameRules.h"
 #include "ItemSharedParams.h"
 
-#include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
@@ -29,7 +28,6 @@
 
 #include "Menus/FlashMenuObject.h"
 #include "Menus/MPHub.h"
-#include "CryCommon/CryNetwork/INetworkService.h"
 
 static void BroadcastChangeSafeMode(ICVar*)
 {
@@ -974,10 +972,6 @@ void CGame::RegisterConsoleCommands()
 	m_pConsole->AddCommand("startNextMapVoting", CmdStartNextMapVoting, VF_RESTRICTEDMODE, "Initiate voting.");
 
 	m_pConsole->AddCommand("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
-	//	m_pConsole->AddCommand("login",CmdLogin, 0, "Log in to GameSpy using nickname and password as arguments");
-	//	m_pConsole->AddCommand("login_profile", CmdLoginProfile, 0, "Log in to GameSpy using email, profile and password as arguments");
-	//	m_pConsole->AddCommand("register", CmdRegisterNick, VF_CHEAT, "Register nickname with email, nickname and password");
-	//	m_pConsole->AddCommand("connect_crynet",CmdCryNetConnect,0,"Connect to online game server");
 	m_pConsole->AddCommand("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
 
 	//CryMP
@@ -1453,207 +1447,4 @@ void CGame::CmdBattleDustReload(IConsoleCmdArgs* pArgs)
 	{
 		pBD->ReloadXml();
 	}
-}
-
-static bool GSCheckComplete()
-{
-	INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-	if (!serv)
-		return true;
-	return serv->GetState() != eNSS_Initializing;
-}
-
-static bool GSLoggingIn()
-{
-	return !g_pGame->GetMenu()->GetMPHub()->IsLoggingIn();
-}
-
-void CGame::CmdLogin(IConsoleCmdArgs* pArgs)
-{
-	if (pArgs->GetArgCount() > 2)
-	{
-		g_pGame->BlockingProcess(&GSCheckComplete);
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() != eNSS_Ok)
-			return;
-		if (gEnv->pSystem->IsDedicated())
-		{
-			if (INetworkProfile* profile = serv->GetNetworkProfile())
-			{
-				profile->Login(pArgs->GetArg(1), pArgs->GetArg(2));
-			}
-		}
-		else
-		{
-			if (g_pGame->GetMenu() && g_pGame->GetMenu()->GetMPHub())
-			{
-				g_pGame->GetMenu()->GetMPHub()->DoLogin(pArgs->GetArg(1), pArgs->GetArg(2));
-				g_pGame->BlockingProcess(&GSLoggingIn);
-			}
-		}
-	}
-	else
-		GameWarning("Invalid parameters.");
-}
-
-static bool GSRegisterNick()
-{
-	INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-	if (!serv)
-		return true;
-	INetworkProfile* profile = serv->GetNetworkProfile();
-	if (!profile)
-		return true;
-	return !profile->IsLoggingIn() || profile->IsLoggedIn();
-}
-
-void CGame::CmdRegisterNick(IConsoleCmdArgs* pArgs)
-{
-	if (!gEnv->pSystem->IsDedicated())
-	{
-		GameWarning("This can be used only on dedicated server.");
-		return;
-	}
-
-	if (pArgs->GetArgCount() > 3)
-	{
-		g_pGame->BlockingProcess(&GSCheckComplete);
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() != eNSS_Ok)
-			return;
-		if (INetworkProfile* profile = serv->GetNetworkProfile())
-		{
-			profile->Register(pArgs->GetArg(1), pArgs->GetArg(2), pArgs->GetArg(3), "", SRegisterDayOfBirth(ZERO));
-		}
-		g_pGame->BlockingProcess(&GSRegisterNick);
-		if (INetworkProfile* profile = serv->GetNetworkProfile())
-		{
-			profile->Logoff();
-		}
-	}
-	else
-		GameWarning("Invalid parameters.");
-}
-
-void CGame::CmdLoginProfile(IConsoleCmdArgs* pArgs)
-{
-	if (pArgs->GetArgCount() > 3)
-	{
-		g_pGame->BlockingProcess(&GSCheckComplete);
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() != eNSS_Ok)
-			return;
-		g_pGame->GetMenu()->GetMPHub()->DoLoginProfile(pArgs->GetArg(1), pArgs->GetArg(2), pArgs->GetArg(3));
-
-		g_pGame->BlockingProcess(&GSLoggingIn);
-	}
-	else
-		GameWarning("Invalid parameters.");
-}
-
-static bool gGSConnecting = false;
-
-struct SCryNetConnectListener : public IServerListener
-{
-	virtual void RemoveServer(const int id) {}
-	virtual void UpdatePing(const int id, const int ping) {}
-	virtual void UpdateValue(const int id, const char* name, const char* value) {}
-	virtual void UpdatePlayerValue(const int id, const int playerNum, const char* name, const char* value) {}
-	virtual void UpdateTeamValue(const int id, const int teamNum, const char* name, const char* value) {}
-	virtual void UpdateComplete(bool cancelled) {}
-
-	//we only need this thing to connect to server
-
-	virtual void OnError(const EServerBrowserError)
-	{
-		End(false);
-	}
-
-	virtual void NewServer(const int id, const SBasicServerInfo* info)
-	{
-		UpdateServer(id, info);
-	}
-
-	virtual void UpdateServer(const int id, const SBasicServerInfo* info)
-	{
-		m_port = info->m_hostPort;
-	}
-
-	virtual void ServerUpdateFailed(const int id)
-	{
-		End(false);
-	}
-	virtual void ServerUpdateComplete(const int id)
-	{
-		m_browser->CheckDirectConnect(id, m_port);
-	}
-
-	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
-	{
-		string connect;
-		//    if(neednat)
-		//    {
-		//      int cookie = rand() + (rand()<<16);
-		//      connect.Format("connect <nat>%d|%d.%d.%d.%d:%d",cookie,ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,port);
-		//      m_browser->SendNatCookie(ip,port,cookie);
-		//    }
-		//    else
-		{
-			connect.Format("connect %d.%d.%d.%d:%d", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF, port);
-		}
-		m_browser->Stop();
-		End(true);
-		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(connect.c_str());
-	}
-
-	void End(bool success)
-	{
-		if (!success)
-			CryLog("Server is not responding.");
-		gGSConnecting = false;
-		m_browser->Stop();
-		m_browser->SetListener(0);
-		delete this;
-	}
-
-	IServerBrowser* m_browser;
-	ushort m_port;
-};
-
-
-static bool GSConnect()
-{
-	return !gGSConnecting;
-}
-
-void CGame::CmdCryNetConnect(IConsoleCmdArgs* pArgs)
-{
-	ushort port = 64087;
-
-	if (pArgs->GetArgCount() > 2)
-		port = atoi(pArgs->GetArg(2));
-	else
-	{
-		ICVar* pv = GetISystem()->GetIConsole()->GetCVar("cl_serverport");
-		if (pv)
-			port = pv->GetIVal();
-	}
-	if (pArgs->GetArgCount() > 1)
-	{
-		g_pGame->BlockingProcess(&GSCheckComplete);
-		INetworkService* serv = gEnv->pNetwork->GetService("GameSpy");
-		if (!serv || serv->GetState() != eNSS_Ok)
-			return;
-		IServerBrowser* sb = serv->GetServerBrowser();
-
-		SCryNetConnectListener* lst = new SCryNetConnectListener();
-		lst->m_browser = sb;
-		sb->SetListener(lst);
-		sb->Start(false);
-		sb->BrowseForServer(pArgs->GetArg(1), port);
-		gGSConnecting = true;
-		g_pGame->BlockingProcess(&GSConnect);
-	}
-	else
-		GameWarning("Invalid parameters.");
 }

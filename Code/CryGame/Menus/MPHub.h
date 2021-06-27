@@ -171,15 +171,6 @@ struct SUIEvent
   const SUIEventParam*  data;
 };
 
-struct STrustedIp
-{
-	STrustedIp():lower(0),upper(0){}
-	uint32 lower;
-	uint32 upper;
-};
-
-struct STSPDownload;
-
 class   CMultiPlayerMenu;
 class   CQuickGame;
 class   CGameNetworkProfile;
@@ -264,10 +255,6 @@ public:
 	void SetIsInLogin(bool isInLogin);
 	void ShowRetrivePasswordResult(bool ok);
 
-	bool IsIpTrusted(uint32 ip)const;
-	bool LoadTrustedIPs();
-	void CheckTSPIPs();
-
 private:
   IFlashPlayer*                   m_currentScreen;
 	IFlashPlayer*                   m_currentStartScreen;
@@ -286,9 +273,6 @@ private:
   int                             m_lastMenu;
   wstring                          m_errrorText;
 	bool                            m_isInLogin;
-	std::vector<STrustedIp>					m_trustedIPs;
-	bool														m_trustedIPsLoaded;
-	std::unique_ptr<STSPDownload> m_trustedDownload;
 };
 
 

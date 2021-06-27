@@ -23,6 +23,8 @@ History:
 #include "CryGame/Game.h"
 #include "GameNetworkProfile.h"
 #include "Library/Format.h"
+#include "Client/Client.h"
+#include "Client/ServerBrowser.h"
 
 enum EServerInfoKey
 {
@@ -51,39 +53,55 @@ enum EServerInfoKey
 	eSIK_playerKills,
 	eSIK_playerDeaths,
 
+	//crymp
+	eSIK_connectable,
+
 	//mods
 	eSIK_modName,
 	eSIK_modVersion
 };
 
 
-static TKeyValuePair<EServerInfoKey, const char*>
-gServerKeyNames[] = {
-					  {eSIK_unknown,""},
-					  {eSIK_hostname,"hostname"},
-					  {eSIK_mapname,"mapname"},
-					  {eSIK_numplayers,"numplayers"},
-					  {eSIK_maxplayers,"maxplayers"},
-					  {eSIK_gametype,"gametype"},
-					  {eSIK_dedicated,"dedicated"},
-					  {eSIK_official,"official"},
-					  {eSIK_frinedlyFire,"friendlyfire"},
-											{eSIK_timeleft,"timeleft"},
-					  {eSIK_timelimit,"timelimit"},
-					  {eSIK_gamever,"gamever"},
-					  {eSIK_anticheat,"anticheat"},
-											{eSIK_voicecomm,"voicecomm"},
-											{eSIK_gamepadsonly,"gamepadsonly"},
-					  {eSIK_private,"password"},
-											{eSIK_dx10,"dx10"},
-					  {eSIK_playerName,"player"},
-					  {eSIK_playerTeam,"team"},
-					  {eSIK_playerRank,"rank"},
-											{eSIK_playerKills,"kills"},
-											{eSIK_playerDeaths,"deaths"},
-											{eSIK_modName,"modname"},
-											{eSIK_modVersion,"modversion"}
+static TKeyValuePair<EServerInfoKey, const char*> gServerKeyNames[] = {
+	{eSIK_unknown,""},
+	{eSIK_hostname,"hostname"},
+	{eSIK_mapname,"mapname"},
+	{eSIK_numplayers,"numplayers"},
+	{eSIK_maxplayers,"maxplayers"},
+	{eSIK_gametype,"gametype"},
+	{eSIK_dedicated,"dedicated"},
+	{eSIK_official,"official"},
+	{eSIK_frinedlyFire,"friendlyfire"},
+	{eSIK_timeleft,"timeleft"},
+	{eSIK_timelimit,"timelimit"},
+	{eSIK_gamever,"gamever"},
+	{eSIK_anticheat,"anticheat"},
+	{eSIK_voicecomm,"voicecomm"},
+	{eSIK_gamepadsonly,"gamepadsonly"},
+	{eSIK_private,"password"},
+	{eSIK_dx10,"dx10"},
+	{eSIK_playerName,"player"},
+	{eSIK_playerTeam,"team"},
+	{eSIK_playerRank,"rank"},
+	{eSIK_playerKills,"kills"},
+	{eSIK_playerDeaths,"deaths"},
+	{eSIK_connectable,"connectable"},
+	{eSIK_modName,"modname"},
+	{eSIK_modVersion,"modversion"}
 };
+
+static EServerInfoKey StringToServerInfoKey(const char *value)
+{
+	constexpr size_t COUNT = sizeof gServerKeyNames / sizeof gServerKeyNames[0];
+
+	for (size_t i = 0; i < COUNT; i++)
+	{
+		if (strcmp(value, gServerKeyNames[i].value) == 0)
+			return gServerKeyNames[i].key;
+	}
+
+	return eSIK_unknown;
+}
 
 
 enum EChannelKey
@@ -103,21 +121,34 @@ enum EChannelKey
 	eCK_Deaths,
 };
 
-static TKeyValuePair<EChannelKey, const char*>
-gChannelKeyNames[] = {
-											{eCK_None,""},
-											{eCK_Profile,"Profile"},
-											{eCK_Played,"TimePlayed"},
-											{eCK_GameMode,"FavoriteGameMode"},
-											{eCK_Map,"FavoriteMap"},
-											{eCK_Weapon,"FavoriteWeapon"},
-											{eCK_Vehicle,"FavoriteVehicle"},
-											{eCK_SuitMode,"FavoriteSuitMode"},
-											{eCK_Accuracy,"Accuracy"},
-											{eCK_KillsPerMinute,"KillsPerMinute"},
-											{eCK_Kills,"Kills"},
-											{eCK_Deaths,"Deaths"}
+static TKeyValuePair<EChannelKey, const char*> gChannelKeyNames[] = {
+	{eCK_None,""},
+	{eCK_Profile,"Profile"},
+	{eCK_Played,"TimePlayed"},
+	{eCK_GameMode,"FavoriteGameMode"},
+	{eCK_Map,"FavoriteMap"},
+	{eCK_Weapon,"FavoriteWeapon"},
+	{eCK_Vehicle,"FavoriteVehicle"},
+	{eCK_SuitMode,"FavoriteSuitMode"},
+	{eCK_Accuracy,"Accuracy"},
+	{eCK_KillsPerMinute,"KillsPerMinute"},
+	{eCK_Kills,"Kills"},
+	{eCK_Deaths,"Deaths"}
 };
+
+static EChannelKey StringToChannelKey(const char *value)
+{
+	constexpr size_t COUNT = sizeof gChannelKeyNames / sizeof gChannelKeyNames[0];
+
+	for (size_t i = 0; i < COUNT; i++)
+	{
+		if (strcmp(value, gChannelKeyNames[i].value) == 0)
+			return gChannelKeyNames[i].key;
+	}
+
+	return eCK_None;
+}
+
 
 class  CMultiPlayerMenu::CUI : public CMPLobbyUI
 {
@@ -216,7 +247,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 		si.m_gameVersion = info->m_gameVersion;
 		si.m_gameTypeName = GetGameType(info->m_gameType);
 		si.m_gameType = info->m_gameType;
-		si.m_official = m_menu->m_hub->IsIpTrusted(info->m_publicIP);
+		si.m_official = info->m_official;
 		si.m_anticheat = info->m_anticheat;
 		si.m_voicecomm = info->m_voicecomm;
 		si.m_friendlyfire = info->m_friendlyfire;
@@ -241,7 +272,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 				si.m_recent = true;
 		}
 
-		si.m_canjoin = (m_dx10 || (!si.m_dx10)) && (m_version.empty() || m_version == si.m_gameVersion) && (m_modName == si.m_modName) && (m_modVersion == si.m_modVersion);
+		si.m_canjoin = (m_version.empty() || m_version == si.m_gameVersion);
 
 		if (update)
 			m_menu->m_ui->UpdateServer(si);
@@ -261,7 +292,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 
 	virtual void UpdateValue(const int id, const char* name, const char* value)
 	{
-		EServerInfoKey key = KEY_BY_VALUE(CONST_TEMP_STRING(name), gServerKeyNames);
+		const EServerInfoKey key = StringToServerInfoKey(name);
 
 		CMPLobbyUI::SServerInfo si;
 		if (m_menu->m_ui->GetServer(id, si))
@@ -288,7 +319,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 				si.m_gameType = value;
 				break;
 			case eSIK_official:
-				//si.m_official = atoi(value)!=0;
+				si.m_official = atoi(value) != 0;
 				break;
 			case eSIK_anticheat:
 				si.m_anticheat = atoi(value) != 0;
@@ -301,6 +332,10 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 				break;
 			case eSIK_dx10:
 				si.m_dx10 = atoi(value) != 0;
+				break;
+			case eSIK_connectable:
+				if (si.m_canjoin)
+					si.m_canjoin = atoi(value) != 0;
 				break;
 			case eSIK_modName:
 				si.m_modName = value;
@@ -367,9 +402,11 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 			return;
 		if (playerNum >= m_details.m_players.size())
 			return;
+
+		const EServerInfoKey key = StringToServerInfoKey(name);
+
 		CMPLobbyUI::SServerDetails::SPlayerDetails& pl = m_details.m_players[playerNum];
-		string val(name);
-		EServerInfoKey key = KEY_BY_VALUE(CONST_TEMP_STRING(val), gServerKeyNames);
+
 		switch (key)
 		{
 		case eSIK_playerName:
@@ -489,7 +526,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 
 	const wstring& GetGameType(const char* gt)
 	{
-		std::map<string, wstring>::const_iterator it = m_gameTypes.find(CONST_TEMP_STRING(gt));
+		std::map<string, wstring>::const_iterator it = m_gameTypes.find(gt);
 		if (it == m_gameTypes.end())
 		{
 			CryFixedStringT<128>  cType;
@@ -804,7 +841,7 @@ struct CMultiPlayerMenu::SChat : public IChatListener
 		string country;
 		for (int i = 0;i < num;++i)
 		{
-			EChannelKey key = KEY_BY_VALUE(CONST_TEMP_STRING(keys[i]), gChannelKeyNames);
+			const EChannelKey key = StringToChannelKey(keys[i]);
 			switch (key)
 			{
 			case eCK_Profile:
@@ -901,27 +938,31 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 
 	m_profile = m_hub->GetProfile();
 
-	INetworkService* serv = GetISystem()->GetINetwork()->GetService("GameSpy");
-	if (serv)
+	m_browser = nullptr;
+
+	if (lan)
 	{
-		m_browser = serv->GetServerBrowser();
-		if (m_browser->IsAvailable())
+		// we still need GS for LAN lobby :(
+		INetworkService *service = GetISystem()->GetINetwork()->GetService("GameSpy");
+		if (service)
 		{
-			m_browser->SetListener(m_serverlist.get());
-			m_browser->Start(m_lan);
-			m_browser->Update();
-		}
-		m_serverlist->SetMenu(this);
-		if (!lan)
-		{
-			m_chat = serv->GetNetworkChat();
-			m_chatlist = std::make_unique<SChat>(this);
-			m_chat->SetListener(m_chatlist.get());
-			m_chat->Join();
-			if (m_hub->GetProfile())
-				m_hub->GetProfile()->InitUI(m_buddylist.get());
+			m_browser = service->GetServerBrowser();
 		}
 	}
+	else
+	{
+		// CryMP
+		m_browser = gClient->GetServerBrowser();
+	}
+
+	if (m_browser && m_browser->IsAvailable())
+	{
+		m_browser->SetListener(m_serverlist.get());
+		m_browser->Start(lan);
+		m_browser->Update();
+	}
+
+	m_serverlist->SetMenu(this);
 
 	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default); 
 	//read servers back
@@ -1053,9 +1094,6 @@ void CMultiPlayerMenu::JoinServer()
 		serv.m_recent = true;
 		m_ui->UpdateServer(serv);
 		m_hub->ShowLoadingDlg("@ui_connecting_to", serv.m_hostName.c_str());
-
-		//CryMP for map downloader..
-		StoreServerInfo(serv);
 	}
 }
 
