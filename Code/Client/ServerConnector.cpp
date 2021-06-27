@@ -219,7 +219,7 @@ void ServerConnector::TryConnect(int contractID)
 
 	g_pGameCVars->cl_circleJump = 0;
 	g_pGameCVars->cl_flyMode = 0;
-	g_pGameCVars->cl_playerView = 0;
+	g_pGameCVars->cl_playerView = 1;
 	gClient->GetGameFramework()->StartGameContext(&params);
 }
 
