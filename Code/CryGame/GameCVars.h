@@ -435,6 +435,8 @@ struct SCVars
 	//CryMP
 	int			cl_crymp;
 	int			cl_circleJump;
+	int			cl_flyMode;
+	int			cl_playerView;
 	int			cl_pickupObjectsMP;
 	int			g_ragdollUnrestrictedSP;
 	int			g_ragdollUnrestrictedMP;
