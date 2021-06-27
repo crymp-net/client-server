@@ -131,7 +131,7 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 
 			m_servers.emplace_back(Server{
 				IPFromString(GetString(server["public_ip"])),
-				static_cast<unsigned short>(GetInt(server["port"]))
+				static_cast<unsigned short>(GetInt(server["public_port"]))
 			});
 
 			m_pListener->NewServer(serverID, &info);
