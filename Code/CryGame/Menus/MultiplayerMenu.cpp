@@ -53,6 +53,9 @@ enum EServerInfoKey
 	eSIK_playerKills,
 	eSIK_playerDeaths,
 
+	//crymp
+	eSIK_connectable,
+
 	//mods
 	eSIK_modName,
 	eSIK_modVersion
@@ -82,6 +85,7 @@ static TKeyValuePair<EServerInfoKey, const char*> gServerKeyNames[] = {
 	{eSIK_playerRank,"rank"},
 	{eSIK_playerKills,"kills"},
 	{eSIK_playerDeaths,"deaths"},
+	{eSIK_connectable,"connectable"},
 	{eSIK_modName,"modname"},
 	{eSIK_modVersion,"modversion"}
 };
@@ -268,7 +272,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 				si.m_recent = true;
 		}
 
-		si.m_canjoin = (m_dx10 || (!si.m_dx10)) && (m_version.empty() || m_version == si.m_gameVersion) && (m_modName == si.m_modName) && (m_modVersion == si.m_modVersion);
+		si.m_canjoin = (m_version.empty() || m_version == si.m_gameVersion);
 
 		if (update)
 			m_menu->m_ui->UpdateServer(si);
@@ -328,6 +332,10 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 				break;
 			case eSIK_dx10:
 				si.m_dx10 = atoi(value) != 0;
+				break;
+			case eSIK_connectable:
+				if (si.m_canjoin)
+					si.m_canjoin = atoi(value) != 0;
 				break;
 			case eSIK_modName:
 				si.m_modName = value;

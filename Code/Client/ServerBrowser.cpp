@@ -115,13 +115,12 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 			const std::string version = "1.1.1." + std::to_string(GetInt(server["ver"]));
 			info.m_gameVersion = version.c_str();
 
-			// TODO: these are used by server filter
-			info.m_anticheat = false;
-			info.m_dx10 = false;
-			info.m_voicecomm = false;
-			info.m_friendlyfire = false;
-			info.m_dedicated = false;
-			info.m_gamepadsonly = false;
+			info.m_anticheat    = GetBool(server["anticheat"]);
+			info.m_dedicated    = GetBool(server["dedicated"]);
+			info.m_dx10         = GetBool(server["dx10"]);
+			info.m_friendlyfire = GetBool(server["friendlyfire"]);
+			info.m_gamepadsonly = GetBool(server["gamepadsonly"]);
+			info.m_voicecomm    = GetBool(server["voicecomm"]);
 
 			// not used
 			info.m_country = "";
@@ -136,6 +135,9 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 			});
 
 			m_pListener->NewServer(serverID, &info);
+
+			// custom stuff
+			m_pListener->UpdateValue(serverID, "connectable", GetInt(server["available"]) ? "1" : "0");
 		}
 	}
 	catch (const json::exception & ex)
@@ -182,6 +184,9 @@ bool ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 		m_pListener->UpdateValue(serverID, "timelimit", timeLeft ? "1" : "0");
 		m_pListener->UpdateValue(serverID, "timeleft", std::to_string(timeLeft).c_str());
 		m_pListener->UpdateValue(serverID, "dx10", GetBool(data["dx10"]) ? "1" : "0");
+
+		// custom stuff
+		m_pListener->UpdateValue(serverID, "connectable", GetInt(data["available"]) ? "1" : "0");
 
 		int playerID = 0;
 
@@ -246,7 +251,7 @@ void ServerBrowser::Update()
 	if (api.empty())
 		return;
 
-	const std::string url = api + "/servers?json";
+	const std::string url = api + "/servers?all&detailed&json";
 
 	gClient->GetHTTPClient()->GET(url, [this](HTTPClient::Result & result)
 	{
