@@ -39,7 +39,6 @@ public:
 	~CMultiPlayerMenu();
 	bool HandleFSCommand(EGsUiCommand cmd, const char* pArgs);
 	void OnUIEvent(const SUIEvent& event);
-	const CMPLobbyUI::SServerInfo& GetStoredServerInfo() const { return m_lastServerInfo; };
 
 private:
 	void    DisplayServerList();
@@ -51,7 +50,6 @@ private:
 	void    JoinServer();
 	void    ServerListUpdated();
 	void    OnRefreshComplete(bool ok);
-	void StoreServerInfo(CMPLobbyUI::SServerInfo& info) { m_lastServerInfo = info; }
 
 	IServerBrowser* m_browser;
 	CGameNetworkProfile* m_profile;
@@ -69,6 +67,5 @@ private:
 
 	EChatCategory               m_selectedCat;
 	int                         m_selectedId;
-	CMPLobbyUI::SServerInfo     m_lastServerInfo;
 };
 #endif /*__MULTIPLAYERMENU_H__*/
