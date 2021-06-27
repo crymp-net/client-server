@@ -130,7 +130,7 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 			info.m_modVersion = "";
 
 			m_servers.emplace_back(Server{
-				IPFromString(GetString(server["ip"])),
+				IPFromString(GetString(server["public_ip"])),
 				static_cast<unsigned short>(GetInt(server["port"]))
 			});
 
