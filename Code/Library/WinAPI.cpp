@@ -14,6 +14,7 @@
 #include "WinAPI.h"
 #include "Error.h"
 #include "Format.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #pragma comment(lib, "Shlwapi")
 
@@ -738,6 +739,10 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 		if (returnPath) {
 			response.content = outputPath;
 		}
+		auto removed = CleanupCache();
+		for (auto& rem : removed) {
+			CryLogAlways("$9[CryMP] Freed up $3%d$9 bytes from cache by removing $6%s", (int)rem.size, rem.hash.c_str());
+		}
 	}
 
 	return response;
@@ -753,25 +758,125 @@ std::string WinAPI::GetCachePath(const std::string& path)
 		if (!CreateDirectory(fullPath.c_str(), 0)) return "";
 	}
 	std::string hash = SHA256(path);
-	std::ifstream index(fullPath + "index");
-	nlohmann::json indexDic;
-	if (index) {
+
+	// Indexing
+	std::ifstream fIndexIn(fullPath + "index");
+	nlohmann::json index;
+	if (fIndexIn) {
 		std::stringstream contents;
-		contents << index.rdbuf();
-		index.close();
+		contents << fIndexIn.rdbuf();
+		fIndexIn.close();
 		try {
-			indexDic = nlohmann::json::parse(contents.str());
-		}
-		catch (std::exception & ex) {
-			indexDic["error_" + std::string(hash)] = ex.what();
-			// ... well, don't really care
+			index = nlohmann::json::parse(contents.str());
+		} catch (std::exception & ex) {
+			// indexDic["error_" + std::string(hash)] = ex.what();
 		}
 	}
-	indexDic[hash] = path;
-	std::ofstream indexOut(fullPath + "index");
-	if (indexOut) {
-		indexOut << indexDic.dump();
-		indexOut.close();
+	if (!index.count("files")) {
+		index["files"] = nlohmann::json::object({});
+	}
+	if (!index.count("lru")) {
+		index["lru"] = nlohmann::json::array({});
+	}
+	if (path.find("http") == 0 && index.count("lru") && index["lru"].is_array()) {
+		auto lru = index["lru"];
+		bool found = false;
+		std::vector<std::string> files;
+		files.reserve(lru.size() + 1);
+		for (auto it = lru.begin(); it != lru.end(); ++it)
+		{
+			if (!it.value().is_string()) continue;
+			auto lruPath = it.value().get<std::string>();
+			if (lruPath == hash) {
+				found = true;
+				continue;
+			}
+			files.push_back(lruPath);
+		}
+		files.push_back(hash);
+		index["lru"] = files;
+	}
+	if (index.count("files") && index["files"].is_object()) {
+		index["files"][hash] = path;
+	}
+	std::ofstream fIndexOut(fullPath + "index");
+	if (fIndexOut) {
+		fIndexOut << index.dump();
+		fIndexOut.close();
 	}
 	return fullPath + hash;
+}
+
+std::deque<LRUEntry> WinAPI::GetLRUEntries() {
+	char szPath[MAX_PATH];
+	if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath))) return {};
+	std::string fullPath = szPath;
+	fullPath += "\\sfwcl\\";
+	if (!PathFileExists(fullPath.c_str())) {
+		if (!CreateDirectory(fullPath.c_str(), 0)) return {};
+	}
+	std::ifstream fIndexIn(fullPath + "index");
+	nlohmann::json index;
+	if (fIndexIn) {
+		std::stringstream contents;
+		contents << fIndexIn.rdbuf();
+		fIndexIn.close();
+		try {
+			index = nlohmann::json::parse(contents.str());
+		} catch (std::exception & ex) {
+			// indexDic["error_" + std::string(hash)] = ex.what();
+		}
+	}
+	std::deque<LRUEntry> entries;
+	if (index.count("lru") && index["lru"].is_array()) {
+		auto lru = index["lru"];
+		unsigned int order = 0;
+		unsigned int removed = 0;
+		std::vector<std::string> newEntries;
+		
+		for (auto it = lru.begin(); it != lru.end(); ++it)
+		{
+			if (!it.value().is_string()) continue;
+			auto hash = it.value().get<std::string>();
+			auto lruPath = fullPath + hash;
+			if (std::filesystem::exists(lruPath)) {
+				auto fileSize = std::filesystem::file_size(lruPath);
+				entries.push_back({ lruPath, hash, fileSize, order++ });
+				newEntries.push_back(hash);
+			} else removed++;
+		}
+
+		if (removed > 0) {
+			index["lru"] = newEntries;
+			std::ofstream fIndexOut(fullPath + "index");
+			if (fIndexOut) {
+				fIndexOut << index.dump();
+				fIndexOut.close();
+			}
+		}
+	}
+	return entries;
+}
+
+std::deque<LRUEntry> WinAPI::CleanupCache() {
+	const uintmax_t CACHE_MAX_SIZE = 2 * 1024 * 1024 * 1024;
+	std::deque<LRUEntry> removed;
+	auto entries = GetLRUEntries();
+	auto cacheSize = 0;
+	for (auto& entry : entries) {
+		cacheSize += entry.size;
+	}
+	// > 1, because we cannot remove very last file downloaded
+	while (cacheSize > CACHE_MAX_SIZE && entries.size() > 1) {
+		auto& toRemove = entries.front();
+		std::filesystem::remove(toRemove.path);
+		cacheSize -= toRemove.size;
+		removed.push_back(toRemove);
+		entries.pop_front();
+	}
+
+	// Clean-up LRU array inside index
+	GetLRUEntries();
+
+	return removed;
 }

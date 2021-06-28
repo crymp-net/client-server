@@ -5,10 +5,18 @@
 #include <string.h>
 #include <string>
 #include <string_view>
+#include <deque>
 #include <filesystem>
 #include <map>
 
 class Error;
+
+struct LRUEntry {
+	std::string path;
+	std::string hash;
+	uintmax_t size;
+	unsigned int order;
+};
 
 namespace WinAPI
 {
@@ -118,4 +126,8 @@ namespace WinAPI
 	);
 
 	std::string GetCachePath(const std::string& path);
+
+	std::deque<LRUEntry> GetLRUEntries();
+
+	std::deque<LRUEntry> CleanupCache();
 }

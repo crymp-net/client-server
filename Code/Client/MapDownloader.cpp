@@ -14,29 +14,12 @@ HRESULT WINAPI MapDownloader::StatusCallback::OnProgress(unsigned long progress,
             auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
             unsigned long chunk = progress - m_lastProgress;
             bool announce = false;
-            if (m_time.size() > 0) {
-                auto first = m_time.front();
-                auto diff = millis - first;
-                if (diff > 2000) {
-                    auto firstChunk = m_chunks.front();
-                    m_downloaded -= firstChunk;
-                    m_chunks.pop();
-                    m_time.pop();
-                }
-            }
-            m_downloaded += chunk;
-            m_time.push(millis);
-            m_chunks.push(chunk);
+            m_speed.push((unsigned long long)chunk);
             m_lastProgress = progress;
             if (millis - m_lastAnnounce >= 1000) {
                 m_lastAnnounce = millis;
-                long long window = 1000;
-                if (m_time.size() > 0) {
-                    window = millis - m_time.front();
-                }
-                if (window < 1000) window = 1000;
                 char infoMessage[100];
-                double nDownloadSpeed = 1000.0 * (double)m_downloaded / (double)window;
+                double nDownloadSpeed = m_speed.getSpeed();
                 if (nDownloadSpeed >= 1.0) {
                     unsigned int remaining = (unsigned int)((progressMax - progress) / nDownloadSpeed);
                     snprintf(infoMessage, sizeof(infoMessage), 
@@ -57,15 +40,17 @@ HRESULT WINAPI MapDownloader::StatusCallback::OnProgress(unsigned long progress,
     }
 }
 
+MapDownloader::MapDownloader() {
+    m_status = std::make_unique<StatusCallback>(this);
+}
+
 std::tuple<HRESULT, std::string> MapDownloader::execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string & message)>& onProgress) {
     m_url = url;
     m_onProgress = onProgress;
     m_active = true;
-    while (!m_status.m_chunks.empty()) m_status.m_chunks.pop();
-    while (!m_status.m_time.empty()) m_status.m_time.pop();
-    m_status.m_downloaded = 0;
-    m_status.m_lastProgress = 0;
-    m_status.m_lastAnnounce = 0;
+    m_status->m_speed.reset();
+    m_status->m_lastProgress = 0;
+    m_status->m_lastAnnounce = 0;
     auto [downloadResult, downloadText] = download();
     if (FAILED(downloadResult)) {
         m_active = false;
@@ -89,7 +74,7 @@ void MapDownloader::cancel() {
 
 std::tuple<HRESULT, std::string> MapDownloader::download() {
     char cachePath[MAX_PATH];
-    HRESULT downloadResult = URLDownloadToCacheFileA(0, m_url.c_str(), cachePath, sizeof(cachePath), 0, &m_status);
+    HRESULT downloadResult = URLDownloadToCacheFileA(0, m_url.c_str(), cachePath, sizeof(cachePath), 0, m_status.get());
     if (FAILED(downloadResult)) return std::make_tuple(downloadResult, "Download failed");
     return std::make_tuple(S_OK, cachePath);
 }
@@ -112,10 +97,6 @@ std::tuple<HRESULT, std::string> MapDownloader::extract(const std::string& path)
     const std::string base = WinAPI::ConvertUTF16To8((std::filesystem::current_path() / "Game").c_str()) + "/";
     for (int i = 0; i < n_files; i++)
     {
-        // Once we start extracting, make sure we extract everything, giving user no choice of cancellation!
-        //if (!m_active) {
-        //    return std::make_tuple(E_ABORT, "User aborted the process");
-        //}
         if (!mz_zip_reader_file_stat(&zip_archive, i, &entry)) continue;
         std::string path = base + entry.m_filename;
         if (mz_zip_reader_is_file_a_directory(&zip_archive, i)) {
