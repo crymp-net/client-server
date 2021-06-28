@@ -86,7 +86,7 @@ void ServerConnector::OnServerInfo(int contractID, HTTPClient::Result & result)
 		else m_serverPAKLink = "";
 
 		// For testing purposes
-		// m_serverPAKLink = "https://crymp.net/client/ServerPak.pak";
+		// m_serverPAKLink = "https://crymp.net/client/ServerPak.pak?3";
 	}
 	catch (const json::exception & ex)
 	{

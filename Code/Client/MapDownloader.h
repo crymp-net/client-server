@@ -1,14 +1,16 @@
 #pragma once
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <vector>
-#include <queue>
 #include <functional>
-#include <future>
 #include <tuple>
 #include <iostream>
 #include <filesystem>
 #include <chrono>
+
+#include "SpeedAggregator.h"
+
 #include <Urlmon.h>
 #include <Shlwapi.h>
 #include <ShlObj.h>
@@ -19,13 +21,13 @@ private:
     class StatusCallback : public IBindStatusCallback {
         friend MapDownloader;
         MapDownloader* m_parent;
-        unsigned long long m_downloaded = 0;
         unsigned long m_lastProgress = 0;
         long long m_lastAnnounce = 0;
-        std::queue<unsigned int> m_chunks;
-        std::queue<long long> m_time;
+        SpeedAggregator m_speed;
     public:
-        StatusCallback(MapDownloader* parent) : m_parent(parent) {}
+        StatusCallback(MapDownloader* parent) : 
+            m_parent(parent),
+            m_speed(2000) {}
         virtual HRESULT __stdcall QueryInterface(const IID&, void**) {
             return E_NOINTERFACE;
         }
@@ -61,9 +63,9 @@ private:
     std::string m_url;
     std::function<void(unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string & message)> m_onProgress = nullptr;
     std::function<void(int errorCode, const std::string & errorText)> m_onFinished = nullptr;
-    StatusCallback m_status;
+    std::unique_ptr<StatusCallback> m_status;
 public:
-    MapDownloader() : m_status(this) {}
+    MapDownloader();
     std::tuple<HRESULT, std::string> execute(const std::string& url, const std::function<void(unsigned int progress, unsigned int progressMax, unsigned stage, const std::string & message)>& onProgress);
     std::tuple<HRESULT, std::string> download();
     std::tuple<HRESULT, std::string> extract(const std::string& path);

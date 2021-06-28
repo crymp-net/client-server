@@ -58,6 +58,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ServerPAK.h
   Code/Client/MapDownloader.cpp
   Code/Client/MapDownloader.h
+  Code/Client/SpeedAggregator.cpp
+  Code/Client/SpeedAggregator.h
   Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
   Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
   Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
