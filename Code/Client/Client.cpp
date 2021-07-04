@@ -159,7 +159,7 @@ void Client::OnActionEvent(const SActionEvent & event)
 		case eAE_disconnected:
 		{
 			m_pScriptCallbacks->OnDisconnect(event.m_value, event.m_description);
-			m_pServerPAK->Unload();
+			m_pServerPAK->OnDisconnect(event.m_value, event.m_description);
 			break;
 		}
 		case eAE_channelCreated:

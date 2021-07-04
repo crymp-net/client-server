@@ -521,31 +521,6 @@ void CGameRules::OnDisconnect(EDisconnectionCause cause, const char* desc)
 	m_pClientNetChannel = 0;
 	int icause = (int)cause;
 	CallScript(m_clientStateScript, "OnDisconnect", icause, desc);
-
-	//CryMP reset scripts
-	IEntityClassRegistry* pClassRegistry = gEnv->pEntitySystem->GetClassRegistry();
-	IEntityClass* pEntityClass = 0;
-	pClassRegistry->IteratorMoveFirst();
-	int counter = 0;
-	while (pEntityClass = pClassRegistry->IteratorNext())
-	{
-		const char* file = pEntityClass->GetScriptFile();
-		if (strlen(file) > 0)
-		{
-			const bool ok = pEntityClass->LoadScript(true);
-			if (ok)
-				++counter;
-			/*if (ok)
-				CryLogAlways("[Crymp] -> Loaded Script file %s successfully (%s)", pEntityClass->GetName(), pEntityClass->GetScriptFile());
-			else
-				CryLogAlways("[Crymp] -> $4Failed to load %s file", pEntityClass->GetName()); */
-		}
-	}
-
-	if (counter)
-	{
-		CryLogAlways("[CryMP] $3Reloaded %d scripts", counter);
-	}
 }
 
 //------------------------------------------------------------------------

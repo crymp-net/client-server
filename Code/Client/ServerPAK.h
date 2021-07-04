@@ -10,6 +10,8 @@ public:
 	ServerPAK();
 	~ServerPAK();
 
-	void Load(const std::string & path);
-	void Unload();
+	bool Load(const std::string & path);
+	bool Unload();
+	void OnDisconnect(int reason, const char* message);
+	void ReloadEntityScripts();
 };
