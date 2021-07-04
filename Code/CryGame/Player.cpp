@@ -215,8 +215,6 @@ CPlayer::CPlayer()
 	m_netAimDirSmooth.Set(0, 1, 0);
 	m_tpLeanOffset = 0.0f;
 	m_tpProneOffset = 0.0f;
-	m_lastRank = -1;
-	m_lastRankName = "";
 }
 
 CPlayer::~CPlayer()

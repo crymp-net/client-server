@@ -15,10 +15,15 @@ History:
 #ifndef __HUDTAGNAMES_H__
 #define __HUDTAGNAMES_H__
 
+#include <string>
+#include <vector>
+
 //-----------------------------------------------------------------------------------------------------
 
 class CHUDTagNames
 {
+	std::vector<std::string> m_rankNames;
+
 public:
 
 		CHUDTagNames();
@@ -31,7 +36,7 @@ public:
 
 private:
 
-	const char *GetPlayerRank(EntityId uiEntityId);
+	const std::string & GetPlayerRank(EntityId entityId);
 
 	bool ProjectOnSphere(Vec3 &rvWorldPos,const AABB &rvBBox);
 
@@ -42,7 +47,7 @@ private:
 
 	struct STagName
 	{
-		CryFixedStringT<64> strName;
+		std::string text;
 		Vec3 vWorld;
 		bool bDrawOnTop;
 		ColorF rgb;

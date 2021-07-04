@@ -48,6 +48,19 @@ CHUDTagNames::CHUDTagNames()
 
 	// Maximum number of players
 	m_tagNamesVector.reserve(32);
+
+	m_rankNames.reserve(9);  // "", "PVT", ..., "GEN"
+	m_rankNames.resize(1);   // the default empty rank name at index 0
+
+	ILocalizationManager *pLocalizationManager = gEnv->pSystem->GetLocalizationManager();
+
+	wstring buffer;
+	for (int i = 1; pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), buffer); i++)
+	{
+		std::wstring_view rankNameW(buffer.c_str(), buffer.length());  // buffer is CryString trash
+
+		m_rankNames.emplace_back(WinAPI::ConvertUTF16To8(rankNameW));
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -59,39 +72,17 @@ CHUDTagNames::~CHUDTagNames()
 
 //-----------------------------------------------------------------------------------------------------
 
-const char* CHUDTagNames::GetPlayerRank(EntityId playerId)
+const std::string & CHUDTagNames::GetPlayerRank(EntityId entityId)
 {
-	CGameRules* pGameRules = g_pGame->GetGameRules();
-	if (!pGameRules || pGameRules->GetTeamCount() < 2)
-		return nullptr;
+	constexpr TSynchedKey RANK_KEY = 202;
 
-	auto* pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId));
-	if (!pPlayer)
-		return nullptr;
+	int rank = 0;
+	g_pGame->GetGameRules()->GetSynchedEntityValue(entityId, RANK_KEY, rank);
 
-	const int lastRank = pPlayer->GetLastRank();
-	const char* lastRankName = pPlayer->GetLastRankName();
+	if (rank < 0 || rank >= m_rankNames.size())
+		rank = 0;
 
-	const TSynchedKey RANK_KEY(202);
-	int currentRank = 1;
-	pGameRules->GetSynchedEntityValue(playerId, RANK_KEY, currentRank);
-	currentRank = MAX(currentRank, 1);
-
-	if (currentRank != lastRank || !lastRankName || !strlen(lastRankName))
-	{
-		static std::string strRank;
-		static wstring wRank;
-		strRank = Format("@ui_short_rank_%d", currentRank);
-		if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(strRank.c_str(), wRank))
-		{
-			strRank = WinAPI::ConvertUTF16To8(std::wstring_view(wRank.c_str(), wRank.length()));
-		}
-		pPlayer->SetLastRankInfo(currentRank, strRank.c_str());
-
-		return strRank.c_str();
-	}
-
-	return lastRankName;
+	return m_rankNames[rank];
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -204,21 +195,11 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	if (!bLocalVehicle && pActor->GetLinkedVehicle())
 		return;
 
-	const char* szRank = GetPlayerRank(pActor->GetEntityId());
+	const std::string & rank = GetPlayerRank(pActor->GetEntityId());
 
 	IEntity* pEntity = pActor->GetEntity();
 	if (!pEntity)
 		return;
-
-	char szText[HUD_MAX_STRING_SIZE];
-	if (szRank)
-	{
-		sprintf(szText, "%s %s", szRank, pEntity->GetName());
-	}
-	else
-	{
-		sprintf(szText, "%s", pEntity->GetName());
-	}
 
 	ICharacterInstance* pCharacterInstance = pEntity->GetCharacter(0);
 	if (!pCharacterInstance)
@@ -282,7 +263,17 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 
 	STagName* pTagName = &m_tagNamesVector[0];
 
-	pTagName->strName = szText;
+	if (rank.empty())
+	{
+		pTagName->text = pEntity->GetName();
+	}
+	else
+	{
+		pTagName->text = rank;
+		pTagName->text += ' ';
+		pTagName->text += pEntity->GetName();
+	}
+
 	pTagName->vWorld = vWorldPos;
 	pTagName->bDrawOnTop = bDrawOnTop;
 	pTagName->rgb = rgbTagName;
@@ -373,21 +364,11 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		if (!pActor)
 			continue;
 
-		const char* szRank = GetPlayerRank(uiEntityId);
+		const std::string & rank = GetPlayerRank(uiEntityId);
 
 		IEntity* pEntity = pActor->GetEntity();
 		if (!pEntity)
 			continue;
-
-		char szText[HUD_MAX_STRING_SIZE];
-		if (szRank)
-		{
-			sprintf(szText, "%s %s", szRank, pEntity->GetName());
-		}
-		else
-		{
-			sprintf(szText, "%s", pEntity->GetName());
-		}
 
 		if (0 == iClientTeam)
 		{
@@ -410,7 +391,17 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 
 		STagName* pTagName = &m_tagNamesVector[m_tagNamesVector.size() - 1];
 
-		pTagName->strName = szText;
+		if (rank.empty())
+		{
+			pTagName->text = pEntity->GetName();
+		}
+		else
+		{
+			pTagName->text = rank;
+			pTagName->text += ' ';
+			pTagName->text += pEntity->GetName();
+		}
+
 		pTagName->vWorld = vWorldPos;
 		pTagName->bDrawOnTop = bDrawOnTop;
 		pTagName->rgb = rgbTagName;
@@ -533,7 +524,7 @@ void CHUDTagNames::DrawTagNames()
 	{
 		STagName* pTagName = &(*iter);
 
-		const char* szText = pTagName->strName;
+		const char* szText = pTagName->text.c_str();
 
 		// It's important that the projection is done outside the UIDraw->PreRender/PostRender because of the Set2DMode(true) which is done internally
 
