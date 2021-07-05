@@ -688,6 +688,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/External/Lua/src/lvm.h
   Code/Library/External/Lua/src/lzio.c
   Code/Library/External/Lua/src/lzio.h
+  Code/Library/External/miniz/miniz.c
+  Code/Library/External/miniz/miniz.h
   Code/Library/External/nlohmann/adl_serializer.hpp
   Code/Library/External/nlohmann/byte_container_with_subtype.hpp
   Code/Library/External/nlohmann/detail/conversions/from_json.hpp
@@ -725,8 +727,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/External/nlohmann/ordered_map.hpp
   Code/Library/External/nlohmann/thirdparty/hedley/hedley.hpp
   Code/Library/External/nlohmann/thirdparty/hedley/hedley_undef.hpp
-  Code/Library/External/miniz.cpp
-  Code/Library/External/miniz.h
   Code/Library/External/picosha2.h
   Code/Library/Format.cpp
   Code/Library/Format.h

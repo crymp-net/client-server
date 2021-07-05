@@ -1,5 +1,5 @@
 #include "MapDownloader.h"
-#include "Library/External/miniz.h"
+#include "Library/External/miniz/miniz.h"
 #include "Library/WinAPI.h"
 
 #include "CryCommon/CrySystem/ISystem.h"
