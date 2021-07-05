@@ -3,6 +3,7 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
+#include "CryScriptSystem/ScriptSystem.h"
 #include "Library/CmdLine.h"
 #include "Library/CPU.h"
 #include "Library/Error.h"
@@ -17,6 +18,55 @@
 #include "config.h"
 
 #define BUILD_DATE_TIME __DATE__ " " __TIME__
+
+namespace
+{
+	IScriptSystem *CreateNewScriptSystem(ISystem *pSystem, bool bStdLibs)
+	{
+		CryLogAlways("$3[CryMP] Using the new Script System");
+
+		std::unique_ptr<CScriptSystem> pScriptSystem = std::make_unique<CScriptSystem>();
+
+		if (!pScriptSystem->Init(pSystem, bStdLibs, 1024))
+			return nullptr;
+
+		return pScriptSystem.release();
+	}
+
+	void ReplaceScriptSystem(const DLL & CrySystem)
+	{
+		using WinAPI::RVA;
+		using WinAPI::FillNOP;
+		using WinAPI::FillMem;
+
+		void *pCrySystem = CrySystem.GetHandle();
+		void *pNewFunc = CreateNewScriptSystem;
+
+#ifdef BUILD_64BIT
+		const size_t codeOffset = 0x445A2;
+		const size_t codeSize = 0x4E;
+
+		unsigned char code[] = {
+			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+			0x48, 0x8B, 0xCB                                             // mov rcx, rbx
+		};
+
+		std::memcpy(&code[2], &pNewFunc, 8);
+#else
+		const size_t codeOffset = 0x56409;
+		const size_t codeSize = 0x3C;
+
+		unsigned char code[] = {
+			0xB8, 0x00, 0x00, 0x00, 0x00  // mov eax, 0x0
+		};
+
+		std::memcpy(&code[1], &pNewFunc, 4);
+#endif
+
+		FillMem(RVA(pCrySystem, codeOffset), code, sizeof code);
+		FillNOP(RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+	}
+}
 
 void Launcher::SetCmdLine()
 {
@@ -156,6 +206,11 @@ void Launcher::PatchEngine()
 		if (CPU::IsAMD() && !CPU::Has3DNow())
 		{
 			Patch::Disable3DNow(m_CrySystem);
+		}
+
+		if (CmdLine::HasArg("-ss"))
+		{
+			ReplaceScriptSystem(m_CrySystem);
 		}
 	}
 }

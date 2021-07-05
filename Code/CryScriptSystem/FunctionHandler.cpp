@@ -1,0 +1,116 @@
+#include <algorithm>
+
+#include "FunctionHandler.h"
+
+IScriptSystem *FunctionHandler::GetIScriptSystem()
+{
+	return m_pSS;
+}
+
+void *FunctionHandler::GetThis()
+{
+	void *self = nullptr;
+
+	// get implicit self table
+	if (m_paramIdOffset > 0 && lua_type(m_L, 1) == LUA_TTABLE)
+	{
+		// index "__this" member
+		lua_pushstring(m_L, "__this");
+		lua_rawget(m_L, 1);
+
+		if (lua_type(m_L, -1) == LUA_TLIGHTUSERDATA)
+		{
+			self = const_cast<void*>(lua_topointer(m_L, -1));
+		}
+
+		// pop result
+		lua_pop(m_L, 1);
+	}
+
+	return self;
+}
+
+bool FunctionHandler::GetSelfAny(ScriptAnyValue & any)
+{
+	if (m_paramIdOffset > 0)
+	{
+		return m_pSS->ToAny(any, 1);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+const char *FunctionHandler::GetFuncName()
+{
+	return m_funcName;
+}
+
+int FunctionHandler::GetParamCount()
+{
+	return std::max(lua_gettop(m_L) - m_paramIdOffset, 0);
+}
+
+ScriptVarType FunctionHandler::GetParamType(int index)
+{
+	const int realIndex = index + m_paramIdOffset;
+	const int type = lua_type(m_L, realIndex);
+
+	return CScriptSystem::LuaTypeToScriptVarType(type);
+}
+
+bool FunctionHandler::GetParamAny(int index, ScriptAnyValue & any)
+{
+	const int realIndex = index + m_paramIdOffset;
+
+	if (m_pSS->ToAny(any, realIndex))
+	{
+		return true;
+	}
+	else
+	{
+		CryLogWarning("[Script Error] Function %s expects parameter %d to be type %s and not %s",
+			m_funcName,
+			index,
+			CScriptSystem::ScriptAnyTypeToString(any.type),
+			CScriptSystem::ScriptVarTypeToString(GetParamType(index))
+		);
+
+		m_pSS->LogStackTrace();
+
+		return false;
+	}
+}
+
+int FunctionHandler::EndFunctionAny(const ScriptAnyValue & any)
+{
+	m_pSS->PushAny(any);
+
+	if (any.type == ANY_TNIL || any.type == ANY_ANY)
+		return 0;
+	else
+		return 1;
+}
+
+int FunctionHandler::EndFunctionAny(const ScriptAnyValue & any1, const ScriptAnyValue & any2)
+{
+	m_pSS->PushAny(any1);
+	m_pSS->PushAny(any2);
+
+	return 2;
+}
+
+int FunctionHandler::EndFunctionAny(const ScriptAnyValue & any1, const ScriptAnyValue & any2, const ScriptAnyValue & any3)
+{
+	m_pSS->PushAny(any1);
+	m_pSS->PushAny(any2);
+	m_pSS->PushAny(any3);
+
+	return 3;
+}
+
+int FunctionHandler::EndFunction()
+{
+	return 0;
+}

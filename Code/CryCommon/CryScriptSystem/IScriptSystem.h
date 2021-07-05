@@ -10,6 +10,8 @@
 #endif
 
 #include "CryCommon/CryCore/functor.h"
+#include "CryCommon/CryCore/platform.h"
+#include "CryCommon/CryMath/Cry_Math.h"
 
 // forward declarations.
 class  ICrySizer;

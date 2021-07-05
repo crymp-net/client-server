@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 ################################################################################
 
-project(CryMP-Client VERSION 1.0.0 LANGUAGES CXX RC)
+project(CryMP-Client VERSION 1.0.0 LANGUAGES C CXX RC)
 
 ################################################################################
 
@@ -591,6 +591,29 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/WeaponSystem.h
   Code/CryGame/WorkOnTarget.cpp
   Code/CryGame/WorkOnTarget.h
+  Code/CryScriptSystem/LuaLibs/bitlib.c
+  Code/CryScriptSystem/ScriptBindings/ScriptBindings.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBindings.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.h
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_System.cpp
+  Code/CryScriptSystem/ScriptBindings/ScriptBind_System.h
+  Code/CryScriptSystem/FunctionHandler.cpp
+  Code/CryScriptSystem/FunctionHandler.h
+  Code/CryScriptSystem/ScriptSystem.cpp
+  Code/CryScriptSystem/ScriptSystem.h
+  Code/CryScriptSystem/ScriptTable.cpp
+  Code/CryScriptSystem/ScriptTable.h
+  Code/CryScriptSystem/ScriptTimerManager.cpp
+  Code/CryScriptSystem/ScriptTimerManager.h
   Code/Launcher/CrashLogger.cpp
   Code/Launcher/CrashLogger.h
   Code/Launcher/CryMemoryManager.cpp
@@ -613,6 +636,58 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/DLL.h
   Code/Library/Error.cpp
   Code/Library/Error.h
+  Code/Library/External/Lua/src/lapi.c
+  Code/Library/External/Lua/src/lapi.h
+  Code/Library/External/Lua/src/lauxlib.c
+  Code/Library/External/Lua/src/lauxlib.h
+  Code/Library/External/Lua/src/lbaselib.c
+  Code/Library/External/Lua/src/lcode.c
+  Code/Library/External/Lua/src/lcode.h
+  Code/Library/External/Lua/src/ldblib.c
+  Code/Library/External/Lua/src/ldebug.c
+  Code/Library/External/Lua/src/ldebug.h
+  Code/Library/External/Lua/src/ldo.c
+  Code/Library/External/Lua/src/ldo.h
+  Code/Library/External/Lua/src/ldump.c
+  Code/Library/External/Lua/src/lfunc.c
+  Code/Library/External/Lua/src/lfunc.h
+  Code/Library/External/Lua/src/lgc.c
+  Code/Library/External/Lua/src/lgc.h
+  Code/Library/External/Lua/src/linit.c
+  Code/Library/External/Lua/src/liolib.c
+  Code/Library/External/Lua/src/llex.c
+  Code/Library/External/Lua/src/llex.h
+  Code/Library/External/Lua/src/llimits.h
+  Code/Library/External/Lua/src/lmathlib.c
+  Code/Library/External/Lua/src/lmem.c
+  Code/Library/External/Lua/src/lmem.h
+  Code/Library/External/Lua/src/loadlib.c
+  Code/Library/External/Lua/src/lobject.c
+  Code/Library/External/Lua/src/lobject.h
+  Code/Library/External/Lua/src/lopcodes.c
+  Code/Library/External/Lua/src/lopcodes.h
+  Code/Library/External/Lua/src/loslib.c
+  Code/Library/External/Lua/src/lparser.c
+  Code/Library/External/Lua/src/lparser.h
+  Code/Library/External/Lua/src/lstate.c
+  Code/Library/External/Lua/src/lstate.h
+  Code/Library/External/Lua/src/lstring.c
+  Code/Library/External/Lua/src/lstring.h
+  Code/Library/External/Lua/src/lstrlib.c
+  Code/Library/External/Lua/src/ltable.c
+  Code/Library/External/Lua/src/ltable.h
+  Code/Library/External/Lua/src/ltablib.c
+  Code/Library/External/Lua/src/ltm.c
+  Code/Library/External/Lua/src/ltm.h
+  Code/Library/External/Lua/src/luaconf.h
+  Code/Library/External/Lua/src/lua.h
+  Code/Library/External/Lua/src/lualib.h
+  Code/Library/External/Lua/src/lundump.c
+  Code/Library/External/Lua/src/lundump.h
+  Code/Library/External/Lua/src/lvm.c
+  Code/Library/External/Lua/src/lvm.h
+  Code/Library/External/Lua/src/lzio.c
+  Code/Library/External/Lua/src/lzio.h
   Code/Library/External/nlohmann/adl_serializer.hpp
   Code/Library/External/nlohmann/byte_container_with_subtype.hpp
   Code/Library/External/nlohmann/detail/conversions/from_json.hpp
