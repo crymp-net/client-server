@@ -217,7 +217,8 @@ void ServerConnector::TryConnect(int contractID)
 	params.hostname = m_host.c_str();
 	params.port = m_port;
 
-	g_pGameCVars->cl_circleJump = 0;
+	g_pGameCVars->cl_circleJump = 0.0f;
+	g_pGameCVars->cl_wallJump = 1.0f;
 	g_pGameCVars->cl_flyMode = 0;
 	g_pGameCVars->cl_playerView = 1;
 	gClient->GetGameFramework()->StartGameContext(&params);

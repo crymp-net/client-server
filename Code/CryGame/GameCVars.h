@@ -434,7 +434,8 @@ struct SCVars
 
 	//CryMP
 	int			cl_crymp;
-	int			cl_circleJump;
+	float		cl_circleJump;
+	float		cl_wallJump;
 	int			cl_flyMode;
 	int			cl_playerView;
 	int			cl_pickupObjectsMP;

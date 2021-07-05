@@ -16,6 +16,7 @@ History:
 #include "Actor.h"
 #include "Throw.h"
 #include "Melee.h"
+#include "GameCVars.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryGame/IGameTokens.h"
@@ -342,7 +343,7 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 					{
 						pe_action_impulse impulse;
 						impulse.iApplyTime = 1;
-						impulse.impulse = -state.eyeDirection * 600.0f;
+						impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->cl_wallJump;
 						playerPhysics->Action(&impulse);
 					}
 
