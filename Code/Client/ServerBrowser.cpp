@@ -168,10 +168,25 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 		{
 			const int serverID = m_servers.size();
 
-			m_servers.emplace_back(Server{
-				IPFromString(GetCString(serverInfo, "public_ip")),
-				static_cast<uint16_t>(GetInt(serverInfo, "public_port"))
-			});
+			Server server;
+
+			if (GetInt(serverInfo, "own"))
+			{
+				std::string_view ipString = GetString(serverInfo, "local_ip");
+
+				if (ipString == "localhost")
+					ipString = "127.0.0.1";
+
+				server.ip = IPFromString(ipString.data());
+				server.port = static_cast<uint16_t>(GetInt(serverInfo, "local_port"));
+			}
+			else
+			{
+				server.ip = IPFromString(GetCString(serverInfo, "public_ip"));
+				server.port = static_cast<uint16_t>(GetInt(serverInfo, "public_port"));
+			}
+
+			m_servers.emplace_back(std::move(server));
 
 			SetBasicServerInfo(m_pListener, serverInfo, serverID, false);
 		}
