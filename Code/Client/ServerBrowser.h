@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -11,8 +12,8 @@ class ServerBrowser : public IServerBrowser
 {
 	struct Server
 	{
-		unsigned int ip = 0;
-		unsigned short port = 0;
+		uint32_t ip = 0;
+		uint16_t port = 0;
 	};
 
 	std::vector<Server> m_servers;

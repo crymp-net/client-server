@@ -14,24 +14,47 @@ using json = nlohmann::json;
 
 namespace
 {
-	bool GetBool(const json & value)
+	bool GetBool(const json & object, const std::string_view & name)
 	{
-		return value.get<bool>();
+		auto it = object.find(name);
+		if (it != object.end() && it->is_boolean())
+			return it->get_ref<const bool&>();
+		else
+			return false;
 	}
 
-	int GetInt(const json & value)
+	int GetInt(const json & object, const std::string_view & name)
 	{
-		return value.get<int>();
+		auto it = object.find(name);
+		if (it != object.end())
+		{
+			if (it->is_number_integer())
+				return static_cast<int>(it->get_ref<const int64_t&>());
+			else if (it->is_number_unsigned())
+				return static_cast<int>(it->get_ref<const uint64_t&>());
+			else if (it->is_number_float())
+				return static_cast<int>(it->get_ref<const double&>());
+		}
+
+		return 0;
 	}
 
-	const std::string & GetString(const json & value)
+	std::string_view GetString(const json & object, const std::string_view & name)
 	{
-		return value.get_ref<const std::string&>();
+		auto it = object.find(name);
+		if (it != object.end() && it->is_string())
+			return it->get_ref<const std::string&>();
+		else
+			return std::string_view();
 	}
 
-	const char *GetCString(const json & value)
+	const char *GetCString(const json & object, const std::string_view & name)
 	{
-		return value.get_ref<const std::string&>().c_str();
+		auto it = object.find(name);
+		if (it != object.end() && it->is_string())
+			return it->get_ref<const std::string&>().c_str();
+		else
+			return "";
 	}
 
 	std::string IPToString(uint32_t ip)
@@ -44,20 +67,22 @@ namespace
 		return Format("%hhu.%hhu.%hhu.%hhu", byte0, byte1, byte2, byte3);
 	}
 
-	uint32_t IPFromString(const std::string & ip)
+	uint32_t IPFromString(const char *ip)
 	{
 		uint8_t byte0 = 0;
 		uint8_t byte1 = 0;
 		uint8_t byte2 = 0;
 		uint8_t byte3 = 0;
 
-		sscanf(ip.c_str(), "%hhu.%hhu.%hhu.%hhu", &byte0, &byte1, &byte2, &byte3);
+		sscanf(ip, "%hhu.%hhu.%hhu.%hhu", &byte0, &byte1, &byte2, &byte3);
 
 		return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
 	}
 
-	const char *GameTypeFromMap(const std::string_view & map)
+	const char *GetGameType(const json & serverInfo)
 	{
+		const std::string_view map = GetString(serverInfo, "map");
+
 		if (Util::StartsWithNoCase("multiplayer/ia/", map))
 			return "InstantAction";
 
@@ -67,14 +92,61 @@ namespace
 		return "";
 	}
 
-	int GetTimeLeft(const json & server)
+	int GetTimeLeft(const json & serverInfo)
 	{
 		int minutes = 0;
 		int seconds = 0;
 
-		sscanf(GetCString(server["timel"]), "%d:%d", &minutes, &seconds);
+		sscanf(GetCString(serverInfo, "timel"), "%d:%d", &minutes, &seconds);
 
 		return (minutes * 60) + seconds;
+	}
+
+	void SetBasicServerInfo(IServerListener *pListener, const json & serverInfo, int serverID, bool isUpdate)
+	{
+		SBasicServerInfo info = {};
+
+		info.m_hostName   =              GetCString(serverInfo, "name");
+		info.m_mapName    =              GetCString(serverInfo, "mapnm");
+		info.m_numPlayers =                  GetInt(serverInfo, "numpl");
+		info.m_maxPlayers =                  GetInt(serverInfo, "maxpl");
+		info.m_publicIP   = IPFromString(GetCString(serverInfo, "public_ip"));
+		info.m_privateIP  = IPFromString(GetCString(serverInfo, "local_ip"));
+		info.m_publicPort =                  GetInt(serverInfo, "public_port");
+		info.m_hostPort   =                  GetInt(serverInfo, "local_port");
+		info.m_official   =                  GetInt(serverInfo, "ranked") != 0;
+		info.m_private    =               GetString(serverInfo, "pass") != "0";
+
+		const std::string version = "1.1.1." + std::to_string(GetInt(serverInfo, "ver"));
+		info.m_gameVersion = version.c_str();
+
+		info.m_gameType = GetGameType(serverInfo);
+
+		if (GetBool(serverInfo, "gs"))
+		{
+			info.m_mapName      = GetCString(serverInfo, "mapdnm");
+			info.m_anticheat    =    GetBool(serverInfo, "anticheat");
+			info.m_dedicated    =    GetBool(serverInfo, "dedicated");
+			info.m_dx10         =    GetBool(serverInfo, "dx10");
+			info.m_friendlyfire =    GetBool(serverInfo, "friendlyfire");
+			info.m_gamepadsonly =    GetBool(serverInfo, "gamepadsonly");
+			info.m_voicecomm    =    GetBool(serverInfo, "voicecomm");
+		}
+
+		// not used
+		info.m_country = "";
+
+		// TODO: add optional SSM info?
+		info.m_modName = "";
+		info.m_modVersion = "";
+
+		if (isUpdate)
+			pListener->UpdateServer(serverID, &info);
+		else
+			pListener->NewServer(serverID, &info);
+
+		// custom stuff
+		pListener->UpdateValue(serverID, "connectable", GetInt(serverInfo, "available") ? "1" : "0");
 	}
 }
 
@@ -84,62 +156,24 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 
 	try
 	{
-		const json data = json::parse(result.response);
+		const json serverList = json::parse(result.response);
 
-		if (data.contains("error"))
+		if (serverList.contains("error"))
 		{
-			CryLogAlways("$4[CryMP] Server list update error: %s", GetCString(data["error"]));
+			CryLogAlways("$4[CryMP] Server list update error: %s", GetCString(serverList, "error"));
 			return false;
 		}
 
-		for (const json & server : data)
+		for (const json & serverInfo : serverList)
 		{
 			const int serverID = m_servers.size();
 
-			SBasicServerInfo info = {};
-
-			info.m_hostName   =                GetCString(server["name"]);
-			info.m_mapName    =                GetCString(server["mapnm"]);
-			info.m_gameType   = GameTypeFromMap(GetString(server["map"]));
-			info.m_numPlayers =                    GetInt(server["numpl"]);
-			info.m_maxPlayers =                    GetInt(server["maxpl"]);
-			info.m_publicIP   =    IPFromString(GetString(server["public_ip"]));
-			info.m_privateIP  =    IPFromString(GetString(server["local_ip"]));
-			info.m_publicPort =                    GetInt(server["public_port"]);
-			info.m_hostPort   =                    GetInt(server["local_port"]);
-			info.m_official   =                    GetInt(server["ranked"]) != 0;
-			info.m_private    =                 GetString(server["pass"]) != "0";
-
-			const std::string version = "1.1.1." + std::to_string(GetInt(server["ver"]));
-			info.m_gameVersion = version.c_str();
-
-			if (server.contains("gs"))
-			{
-				info.m_mapName      = GetCString(server["mapdnm"]);
-				info.m_anticheat    =    GetBool(server["anticheat"]);
-				info.m_dedicated    =    GetBool(server["dedicated"]);
-				info.m_dx10         =    GetBool(server["dx10"]);
-				info.m_friendlyfire =    GetBool(server["friendlyfire"]);
-				info.m_gamepadsonly =    GetBool(server["gamepadsonly"]);
-				info.m_voicecomm    =    GetBool(server["voicecomm"]);
-			}
-
-			// not used
-			info.m_country = "";
-
-			// TODO: add optional SSM info?
-			info.m_modName = "";
-			info.m_modVersion = "";
-
 			m_servers.emplace_back(Server{
-				IPFromString(GetString(server["public_ip"])),
-				static_cast<unsigned short>(GetInt(server["public_port"]))
+				IPFromString(GetCString(serverInfo, "public_ip")),
+				static_cast<uint16_t>(GetInt(serverInfo, "public_port"))
 			});
 
-			m_pListener->NewServer(serverID, &info);
-
-			// custom stuff
-			m_pListener->UpdateValue(serverID, "connectable", GetInt(server["available"]) ? "1" : "0");
+			SetBasicServerInfo(m_pListener, serverInfo, serverID, false);
 		}
 	}
 	catch (const json::exception & ex)
@@ -157,49 +191,52 @@ bool ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 
 	try
 	{
-		const json data = json::parse(result.response);
+		const json serverInfo = json::parse(result.response);
 
-		if (data.contains("error"))
+		if (serverInfo.contains("error"))
 		{
-			CryLogAlways("$4[CryMP] Server update error: %s", GetCString(data["error"]));
+			CryLogAlways("$4[CryMP] Server update error: %s", GetCString(serverInfo, "error"));
 			return false;
 		}
 
-		m_pListener->UpdateValue(serverID, "hostname",                GetCString(data["name"]));
-		m_pListener->UpdateValue(serverID, "mapname",                 GetCString(data["mapnm"]));
-		m_pListener->UpdateValue(serverID, "gametype", GameTypeFromMap(GetString(data["map"])));
-		m_pListener->UpdateValue(serverID, "numplayers",   std::to_string(GetInt(data["numpl"])).c_str());
-		m_pListener->UpdateValue(serverID, "maxplayers",   std::to_string(GetInt(data["maxpl"])).c_str());
-		m_pListener->UpdateValue(serverID, "password",                GetCString(data["pass"]));
-		m_pListener->UpdateValue(serverID, "official",                    GetInt(data["ranked"]) ? "1" : "0");
+		SetBasicServerInfo(m_pListener, serverInfo, serverID, true);
 
-		const std::string version = "1.1.1." + std::to_string(GetInt(data["ver"]));
+		m_pListener->UpdateValue(serverID, "hostname",              GetCString(serverInfo, "name"));
+		m_pListener->UpdateValue(serverID, "mapname",               GetCString(serverInfo, "mapnm"));
+		m_pListener->UpdateValue(serverID, "numplayers", std::to_string(GetInt(serverInfo, "numpl")).c_str());
+		m_pListener->UpdateValue(serverID, "maxplayers", std::to_string(GetInt(serverInfo, "maxpl")).c_str());
+		m_pListener->UpdateValue(serverID, "password",              GetCString(serverInfo, "pass"));
+		m_pListener->UpdateValue(serverID, "official",                  GetInt(serverInfo, "ranked") ? "1" : "0");
+
+		const std::string version = "1.1.1." + std::to_string(GetInt(serverInfo, "ver"));
 		m_pListener->UpdateValue(serverID, "gamever", version.c_str());
 
-		const int timeLeft = GetTimeLeft(data);
+		m_pListener->UpdateValue(serverID, "gametype", GetGameType(serverInfo));
+
+		const int timeLeft = GetTimeLeft(serverInfo);
 		m_pListener->UpdateValue(serverID, "timelimit", timeLeft ? "1" : "0");
 		m_pListener->UpdateValue(serverID, "timeleft", std::to_string(timeLeft).c_str());
 
-		if (data.contains("gs"))
+		if (GetBool(serverInfo, "gs"))
 		{
-			m_pListener->UpdateValue(serverID, "mapname",   GetCString(data["mapdnm"]));
-			m_pListener->UpdateValue(serverID, "anticheat",    GetBool(data["anticheat"])    ? "1" : "0");
-			m_pListener->UpdateValue(serverID, "dedicated",    GetBool(data["dedicated"])    ? "1" : "0");
-			m_pListener->UpdateValue(serverID, "dx10",         GetBool(data["dx10"])         ? "1" : "0");
-			m_pListener->UpdateValue(serverID, "friendlyfire", GetBool(data["friendlyfire"]) ? "1" : "0");
-			m_pListener->UpdateValue(serverID, "gamepadsonly", GetBool(data["gamepadsonly"]) ? "1" : "0");
-			m_pListener->UpdateValue(serverID, "voicecomm",    GetBool(data["voicecomm"])    ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "mapname",   GetCString(serverInfo, "mapdnm"));
+			m_pListener->UpdateValue(serverID, "anticheat",    GetBool(serverInfo, "anticheat")    ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "dedicated",    GetBool(serverInfo, "dedicated")    ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "dx10",         GetBool(serverInfo, "dx10")         ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "friendlyfire", GetBool(serverInfo, "friendlyfire") ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "gamepadsonly", GetBool(serverInfo, "gamepadsonly") ? "1" : "0");
+			m_pListener->UpdateValue(serverID, "voicecomm",    GetBool(serverInfo, "voicecomm")    ? "1" : "0");
 
 			int playerID = 0;
 
-			for (const json & player : data["players"])
+			for (const json & player : serverInfo["players"])
 			{
-				const char *name = GetCString(player["name"]);
+				const char *name = GetCString(player, "name");
 
-				const std::string team   = std::to_string(GetInt(player["team"]));
-				const std::string rank   = std::to_string(GetInt(player["rank"]));
-				const std::string kills  = std::to_string(GetInt(player["kills"]));
-				const std::string deaths = std::to_string(GetInt(player["deaths"]));
+				const std::string team   = std::to_string(GetInt(player, "team"));
+				const std::string rank   = std::to_string(GetInt(player, "rank"));
+				const std::string kills  = std::to_string(GetInt(player, "kills"));
+				const std::string deaths = std::to_string(GetInt(player, "deaths"));
 
 				m_pListener->UpdatePlayerValue(serverID, playerID, "player", name);
 				m_pListener->UpdatePlayerValue(serverID, playerID, "team", team.c_str());
@@ -210,9 +247,6 @@ bool ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
 				playerID++;
 			}
 		}
-
-		// custom stuff
-		m_pListener->UpdateValue(serverID, "connectable", GetInt(data["available"]) ? "1" : "0");
 	}
 	catch (const json::exception & ex)
 	{
