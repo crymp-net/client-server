@@ -77,7 +77,7 @@ void Patch::AllowSameCDKeys(const DLL & CryNetwork)
 	void *pCryNetwork = CryNetwork.GetHandle();
 
 #ifdef BUILD_64BIT
-	FillNOP(RVA(pCryNetwork, 0xE0188), 0x47);
+	FillNOP(RVA(pCryNetwork, 0xE0328), 0x47);
 #else
 	FillNOP(RVA(pCryNetwork, 0x606A5), 0x4);
 #endif
@@ -125,7 +125,7 @@ void Patch::AllowDX9VeryHighSpec(const DLL & CrySystem)
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x4674C), 0x54);
 #else
-	FillNOP(RVA(pCrySystem, 0x5A268), 0x4B);
+	FillNOP(RVA(pCrySystem, 0x59DA8), 0x4B);
 #endif
 }
 
