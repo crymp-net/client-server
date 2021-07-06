@@ -1359,7 +1359,9 @@ void CMultiPlayerMenu::CUI::OnAddFavorite()
 	if (GetSelectedServer(svr))
 	{
 		m_menu->m_favouriteServers.push_back(SStoredServer(svr.m_publicIP, svr.m_hostPort));
-		m_menu->m_profile->AddFavoriteServer(svr.m_publicIP, svr.m_hostPort);
+
+		if (m_menu->m_profile)
+			m_menu->m_profile->AddFavoriteServer(svr.m_publicIP, svr.m_hostPort);
 	}
 }
 
@@ -1369,7 +1371,9 @@ void CMultiPlayerMenu::CUI::OnRemoveFavorite()
 	if (GetSelectedServer(svr))
 	{
 		stl::find_and_erase(m_menu->m_favouriteServers, SStoredServer(svr.m_publicIP, svr.m_hostPort));
-		m_menu->m_profile->RemoveFavoriteServer(svr.m_publicIP, svr.m_hostPort);
+
+		if (m_menu->m_profile)
+			m_menu->m_profile->RemoveFavoriteServer(svr.m_publicIP, svr.m_hostPort);
 	}
 }
 
