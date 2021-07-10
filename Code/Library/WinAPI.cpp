@@ -1,128 +1,21 @@
 #include <windows.h>
 #include <winhttp.h>
-#include <ShlObj.h>
-#include <Shlwapi.h>
-
-#include <ctype.h>
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include "nlohmann/json.hpp"
-
-#include "External/picosha2.h"
 
 #include "WinAPI.h"
-#include "Error.h"
 #include "Format.h"
-#include "CryCommon/CrySystem/ISystem.h"
 
-#pragma comment(lib, "Shlwapi")
-
-namespace
-{
-	using WinAPI::RVA;
-
-	std::string_view GetResource(void *pDLL, const char *name, const char *type)
-	{
-		HRSRC resourceInfo = FindResourceA(static_cast<HMODULE>(pDLL), name, type);
-		if (!resourceInfo)
-			return std::string_view();
-
-		HGLOBAL resourceData = LoadResource(static_cast<HMODULE>(pDLL), resourceInfo);
-		if (!resourceData)
-			return std::string_view();
-
-		const void *data = LockResource(resourceData);
-		size_t length = SizeofResource(static_cast<HMODULE>(pDLL), resourceInfo);
-
-		return std::string_view(static_cast<const char*>(data), length);
-	}
-
-	IMAGE_DATA_DIRECTORY *GetDirectoryData(void *pDLL, unsigned int directory)
-	{
-		if (!pDLL)
-			return nullptr;
-
-		IMAGE_DOS_HEADER *pDOSHeader = static_cast<IMAGE_DOS_HEADER*>(pDLL);
-		if (pDOSHeader->e_magic != IMAGE_DOS_SIGNATURE)
-			return nullptr;
-
-		IMAGE_NT_HEADERS *pPEHeader = static_cast<IMAGE_NT_HEADERS*>(RVA(pDLL, pDOSHeader->e_lfanew));
-		if (pPEHeader->Signature != IMAGE_NT_SIGNATURE)
-			return nullptr;
-
-	#ifdef BUILD_64BIT
-		const int ntOptionalHeaderMagic = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
-	#else
-		const int ntOptionalHeaderMagic = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
-	#endif
-
-		if (pPEHeader->OptionalHeader.Magic != ntOptionalHeaderMagic)
-			return nullptr;
-
-		if (pPEHeader->OptionalHeader.NumberOfRvaAndSizes <= directory)
-			return nullptr;
-
-		IMAGE_DATA_DIRECTORY *pDirectoryData = &pPEHeader->OptionalHeader.DataDirectory[directory];
-		if (pDirectoryData->VirtualAddress == 0 || pDirectoryData->Size == 0)
-			return nullptr;
-
-		return pDirectoryData;
-	}
-
-	DWORD ToNativeSeek(WinAPI::SeekBase base)
-	{
-		switch (base)
-		{
-			case WinAPI::SeekBase::BEGIN:   return FILE_BEGIN;
-			case WinAPI::SeekBase::CURRENT: return FILE_CURRENT;
-			case WinAPI::SeekBase::END:     return FILE_END;
-		}
-
-		return 0;
-	}
-
-	WinAPI::DateTime FromNativeDateTime(const SYSTEMTIME & dateTime)
-	{
-		WinAPI::DateTime result;
-		result.year        = dateTime.wYear;
-		result.month       = dateTime.wMonth;
-		result.dayOfWeek   = dateTime.wDayOfWeek;
-		result.day         = dateTime.wDay;
-		result.hour        = dateTime.wHour;
-		result.minute      = dateTime.wMinute;
-		result.second      = dateTime.wSecond;
-		result.millisecond = dateTime.wMilliseconds;
-
-		return result;
-	}
-
-	std::string GetMachineGUID()
-	{
-		std::string guid;
-
-		HKEY key;
-		if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", 0,
-		                  KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key) == ERROR_SUCCESS)
-		{
-			char buffer[256];
-			DWORD length = static_cast<DWORD>(sizeof buffer);
-
-			if (RegQueryValueExA(key, "MachineGuid", nullptr, nullptr,
-			                     reinterpret_cast<LPBYTE>(buffer), &length) == ERROR_SUCCESS && length > 0)
-			{
-				guid.assign(buffer, length - 1);  // skip terminating null character
-			}
-		}
-
-		return guid;
-	}
-}
+//////////////////
+// Command line //
+//////////////////
 
 const char *WinAPI::GetCmdLine()
 {
 	return GetCommandLineA();
 }
+
+////////////
+// Errors //
+////////////
 
 int WinAPI::GetCurrentErrorCode()
 {
@@ -138,6 +31,10 @@ std::string WinAPI::GetErrorCodeDescription(int code)
 
 	return std::string(buffer, length);
 }
+
+///////////
+// Paths //
+///////////
 
 std::filesystem::path WinAPI::GetApplicationPath()
 {
@@ -164,6 +61,10 @@ void WinAPI::SetWorkingDirectory(const std::filesystem::path & path)
 		throw SystemError("SetCurrentDirectoryW");
 	}
 }
+
+/////////////
+// Modules //
+/////////////
 
 void WinAPI::DLL_AddSearchDirectory(const std::filesystem::path & path)
 {
@@ -193,6 +94,10 @@ void WinAPI::DLL_Unload(void *pDLL)
 	FreeLibrary(static_cast<HMODULE>(pDLL));
 }
 
+/////////////////
+// Message box //
+/////////////////
+
 void WinAPI::ErrorBox(const char *message)
 {
 	MessageBoxA(nullptr, message, "Error", MB_OK | MB_ICONERROR);
@@ -208,6 +113,29 @@ void WinAPI::ErrorBox(const Error & error)
 		ErrorBox(Format("%s\nError %d: %s", message, code, description).c_str());
 	else
 		ErrorBox(message);
+}
+
+///////////////
+// Resources //
+///////////////
+
+namespace
+{
+	std::string_view GetResource(void *pDLL, const char *name, const char *type)
+	{
+		HRSRC resourceInfo = FindResourceA(static_cast<HMODULE>(pDLL), name, type);
+		if (!resourceInfo)
+			return std::string_view();
+
+		HGLOBAL resourceData = LoadResource(static_cast<HMODULE>(pDLL), resourceInfo);
+		if (!resourceData)
+			return std::string_view();
+
+		const void *data = LockResource(resourceData);
+		size_t length = SizeofResource(static_cast<HMODULE>(pDLL), resourceInfo);
+
+		return std::string_view(static_cast<const char*>(data), length);
+	}
 }
 
 std::string_view WinAPI::GetDataResource(void *pDLL, int resourceID)
@@ -235,6 +163,47 @@ int WinAPI::GetCrysisGameBuild(void *pDLL)
 		return -1;
 
 	return LOWORD(pFileInfo->dwFileVersionLS);
+}
+
+///////////
+// Hacks //
+///////////
+
+namespace
+{
+	IMAGE_DATA_DIRECTORY *GetDirectoryData(void *pDLL, unsigned int directory)
+	{
+		using WinAPI::RVA;
+
+		if (!pDLL)
+			return nullptr;
+
+		IMAGE_DOS_HEADER *pDOSHeader = static_cast<IMAGE_DOS_HEADER*>(pDLL);
+		if (pDOSHeader->e_magic != IMAGE_DOS_SIGNATURE)
+			return nullptr;
+
+		IMAGE_NT_HEADERS *pPEHeader = static_cast<IMAGE_NT_HEADERS*>(RVA(pDLL, pDOSHeader->e_lfanew));
+		if (pPEHeader->Signature != IMAGE_NT_SIGNATURE)
+			return nullptr;
+
+	#ifdef BUILD_64BIT
+		const int ntOptionalHeaderMagic = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
+	#else
+		const int ntOptionalHeaderMagic = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
+	#endif
+
+		if (pPEHeader->OptionalHeader.Magic != ntOptionalHeaderMagic)
+			return nullptr;
+
+		if (pPEHeader->OptionalHeader.NumberOfRvaAndSizes <= directory)
+			return nullptr;
+
+		IMAGE_DATA_DIRECTORY *pDirectoryData = &pPEHeader->OptionalHeader.DataDirectory[directory];
+		if (pDirectoryData->VirtualAddress == 0 || pDirectoryData->Size == 0)
+			return nullptr;
+
+		return pDirectoryData;
+	}
 }
 
 /**
@@ -321,52 +290,131 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 	return true;
 }
 
+/////////////
+// Threads //
+/////////////
+
 unsigned long WinAPI::GetCurrentThreadID()
 {
 	return GetCurrentThreadId();
 }
 
-void *WinAPI::OpenLogFile(const std::filesystem::path & path, bool & exists)
+///////////
+// Files //
+///////////
+
+namespace
 {
-	const DWORD mode = GENERIC_READ | GENERIC_WRITE;
+	DWORD ToNativeFileAccessMode(WinAPI::FileAccess access)
+	{
+		switch (access)
+		{
+			case WinAPI::FileAccess::READ_ONLY:
+			{
+				return GENERIC_READ;
+			}
+			case WinAPI::FileAccess::WRITE_ONLY:
+			case WinAPI::FileAccess::WRITE_ONLY_CREATE:
+			{
+				return GENERIC_WRITE;
+			}
+			case WinAPI::FileAccess::READ_WRITE:
+			case WinAPI::FileAccess::READ_WRITE_CREATE:
+			{
+				return GENERIC_READ | GENERIC_WRITE;
+			}
+		}
+
+		return 0;
+	}
+
+	DWORD ToNativeFileCreationDisposition(WinAPI::FileAccess access)
+	{
+		switch (access)
+		{
+			case WinAPI::FileAccess::READ_ONLY:
+			case WinAPI::FileAccess::WRITE_ONLY:
+			case WinAPI::FileAccess::READ_WRITE:
+			{
+				return OPEN_EXISTING;
+			}
+			case WinAPI::FileAccess::WRITE_ONLY_CREATE:
+			case WinAPI::FileAccess::READ_WRITE_CREATE:
+			{
+				return OPEN_ALWAYS;
+			}
+		}
+
+		return 0;
+	}
+
+	DWORD ToNativeFileSeek(WinAPI::FileSeekBase base)
+	{
+		switch (base)
+		{
+			case WinAPI::FileSeekBase::BEGIN:   return FILE_BEGIN;
+			case WinAPI::FileSeekBase::CURRENT: return FILE_CURRENT;
+			case WinAPI::FileSeekBase::END:     return FILE_END;
+		}
+
+		return 0;
+	}
+}
+
+void *WinAPI::FileOpen(const std::filesystem::path & path, FileAccess access, bool *pCreated)
+{
+	const DWORD mode = ToNativeFileAccessMode(access);
 	const DWORD share = FILE_SHARE_READ;
-	const DWORD creation = OPEN_ALWAYS;
+	const DWORD creation = ToNativeFileCreationDisposition(access);
 	const DWORD attributes = FILE_ATTRIBUTE_NORMAL;
 
-	HANDLE file = CreateFileW(path.c_str(), mode, share, nullptr, creation, attributes, nullptr);
-	if (file == INVALID_HANDLE_VALUE)
+	HANDLE handle = CreateFileW(path.c_str(), mode, share, nullptr, creation, attributes, nullptr);
+	if (handle == INVALID_HANDLE_VALUE)
 	{
 		return nullptr;
 	}
-	else if (GetLastError() == ERROR_ALREADY_EXISTS)
+
+	if (pCreated)
 	{
-		exists = true;
+		(*pCreated) = (GetLastError() != ERROR_ALREADY_EXISTS);
 	}
 
-	return file;
+	return handle;
 }
 
-uint64_t WinAPI::Seek(void *handle, WinAPI::SeekBase base, int64_t offset)
+std::string WinAPI::FileRead(void *handle, size_t maxLength)
 {
-	LARGE_INTEGER offsetValue;
-	offsetValue.QuadPart = offset;
-
-	if (!SetFilePointerEx(static_cast<HANDLE>(handle), offsetValue, &offsetValue, ToNativeSeek(base)))
+	// read everything from the current position to the end of the file
+	if (maxLength == 0)
 	{
-		throw SystemError("SetFilePointerEx");
+		const uint64_t currentPos = FileSeek(handle, FileSeekBase::CURRENT, 0);
+		const uint64_t endPos = FileSeek(handle, FileSeekBase::END, 0);
+
+		// restore position
+		FileSeek(handle, FileSeekBase::BEGIN, currentPos);
+
+		if (currentPos < endPos)
+		{
+			const uint64_t distance = endPos - currentPos;
+
+			if (distance >= 0x80000000)  // 2 GiB
+			{
+				throw Error("File is too big!");
+			}
+
+			maxLength = distance;
+		}
 	}
 
-	return offsetValue.QuadPart;
-}
-
-std::string WinAPI::Read(void *handle, size_t maxLength)
-{
 	std::string result;
 	result.resize(maxLength);
 
+	void *buffer = result.data();
+	const DWORD bufferSize = static_cast<DWORD>(result.length());
+
 	DWORD bytesRead = 0;
 
-	if (!ReadFile(static_cast<HANDLE>(handle), result.data(), result.length(), &bytesRead, nullptr))
+	if (!ReadFile(static_cast<HANDLE>(handle), buffer, bufferSize, &bytesRead, nullptr))
 	{
 		throw SystemError("ReadFile");
 	}
@@ -379,21 +427,51 @@ std::string WinAPI::Read(void *handle, size_t maxLength)
 	return result;
 }
 
-size_t WinAPI::Write(void *handle, const std::string_view & text)
+void WinAPI::FileWrite(void *handle, const std::string_view & text)
 {
-	DWORD bytesWritten = 0;
-
-	if (!WriteFile(static_cast<HANDLE>(handle), text.data(), text.length(), &bytesWritten, nullptr))
+#ifdef BUILD_64BIT
+	if (text.length() >= 0xFFFFFFFF)
 	{
-		throw SystemError("WriteFile");
+		throw Error("Data is too big!");
 	}
+#endif
 
-	return bytesWritten;
+	size_t totalBytesWritten = 0;
+
+	// make sure everything is written
+	do
+	{
+		const void *buffer = text.data() + totalBytesWritten;
+		const DWORD bufferSize = text.length() - totalBytesWritten;
+
+		DWORD bytesWritten = 0;
+
+		if (!WriteFile(static_cast<HANDLE>(handle), buffer, bufferSize, &bytesWritten, nullptr))
+		{
+			throw SystemError("WriteFile");
+		}
+
+		totalBytesWritten += bytesWritten;
+	}
+	while (totalBytesWritten < text.length());
 }
 
-void WinAPI::Resize(void *handle, uint64_t size)
+uint64_t WinAPI::FileSeek(void *handle, FileSeekBase base, int64_t offset)
 {
-	Seek(handle, SeekBase::BEGIN, size);  // the offset is interpreted as an unsigned value
+	LARGE_INTEGER offsetValue;
+	offsetValue.QuadPart = offset;
+
+	if (!SetFilePointerEx(static_cast<HANDLE>(handle), offsetValue, &offsetValue, ToNativeFileSeek(base)))
+	{
+		throw SystemError("SetFilePointerEx");
+	}
+
+	return offsetValue.QuadPart;
+}
+
+void WinAPI::FileResize(void *handle, uint64_t size)
+{
+	FileSeek(handle, FileSeekBase::BEGIN, size);  // the offset is interpreted as an unsigned value
 
 	if (!SetEndOfFile(static_cast<HANDLE>(handle)))
 	{
@@ -401,9 +479,31 @@ void WinAPI::Resize(void *handle, uint64_t size)
 	}
 }
 
-void WinAPI::Close(void *handle)
+void WinAPI::FileClose(void *handle)
 {
 	CloseHandle(static_cast<HANDLE>(handle));
+}
+
+//////////
+// Time //
+//////////
+
+namespace
+{
+	WinAPI::DateTime FromNativeDateTime(const SYSTEMTIME & dateTime)
+	{
+		WinAPI::DateTime result;
+		result.year        = dateTime.wYear;
+		result.month       = dateTime.wMonth;
+		result.dayOfWeek   = dateTime.wDayOfWeek;
+		result.day         = dateTime.wDay;
+		result.hour        = dateTime.wHour;
+		result.minute      = dateTime.wMinute;
+		result.second      = dateTime.wSecond;
+		result.millisecond = dateTime.wMilliseconds;
+
+		return result;
+	}
 }
 
 const char *WinAPI::DateTime::GetDayName()
@@ -459,69 +559,6 @@ WinAPI::DateTime WinAPI::GetCurrentDateTimeLocal()
 	return FromNativeDateTime(dateTime);
 }
 
-std::wstring WinAPI::ConvertUTF8To16(const std::string_view & text)
-{
-	std::wstring result;
-
-	int count = MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), nullptr, 0);
-	if (count > 0)
-	{
-		result.resize(count);
-
-		MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), result.data(), count);
-	}
-
-	return result;
-}
-
-std::string WinAPI::ConvertUTF16To8(const std::wstring_view & text)
-{
-	std::string result;
-
-	int count = WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), nullptr, 0, nullptr, nullptr);
-	if (count > 0)
-	{
-		result.resize(count);
-
-		WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), result.data(), count, nullptr, nullptr);
-	}
-
-	return result;
-}
-
-std::string WinAPI::sha256(const std::string_view & text)
-{
-	// lowercase hex digits
-	return picosha2::hash256_hex_string(text);
-}
-
-std::string WinAPI::SHA256(const std::string_view & text)
-{
-	std::string result = sha256(text);
-
-	// uppercase hex digits
-	std::transform(result.begin(), result.end(), result.begin(), toupper);
-
-	return result;
-}
-
-std::string WinAPI::GetHWID(const std::string & salt)
-{
-	std::string hwid = SHA256(GetMachineGUID());
-
-	if (hwid.empty())
-		return hwid;
-	else
-		return hwid + ":" + SHA256(hwid + salt);
-}
-
-std::string WinAPI::GetLocale()
-{
-	wchar_t buffer[LOCALE_NAME_MAX_LENGTH] = {};
-	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
-	return ConvertUTF16To8(buffer);
-}
-
 long WinAPI::GetTimeZoneBias()
 {
 	TIME_ZONE_INFORMATION tz;
@@ -570,66 +607,116 @@ std::string WinAPI::GetTimeZoneOffsetString()
 	}
 }
 
-class HTTPHandleGuard
-{
-	HINTERNET m_handle;
+/////////////
+// Strings //
+/////////////
 
-public:
-	HTTPHandleGuard(HINTERNET handle)
-	: m_handle(handle)
+std::wstring WinAPI::ConvertUTF8To16(const std::string_view & text)
+{
+	std::wstring result;
+
+	int count = MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), nullptr, 0);
+	if (count > 0)
 	{
+		result.resize(count);
+
+		MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), result.data(), count);
 	}
 
-	~HTTPHandleGuard()
+	return result;
+}
+
+std::string WinAPI::ConvertUTF16To8(const std::wstring_view & text)
+{
+	std::string result;
+
+	int count = WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), nullptr, 0, nullptr, nullptr);
+	if (count > 0)
 	{
-		if (m_handle)
+		result.resize(count);
+
+		WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), result.data(), count, nullptr, nullptr);
+	}
+
+	return result;
+}
+
+/////////////////
+// System info //
+/////////////////
+
+std::string WinAPI::GetMachineGUID()
+{
+	std::string guid;
+
+	HKEY key;
+	if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", 0,
+	                  KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key) == ERROR_SUCCESS)
+	{
+		char buffer[256];
+		DWORD length = static_cast<DWORD>(sizeof buffer);
+		if (RegQueryValueExA(key, "MachineGuid", nullptr, nullptr,
+		                     reinterpret_cast<LPBYTE>(buffer), &length) == ERROR_SUCCESS && length > 0)
 		{
-			WinHttpCloseHandle(m_handle);
+			guid.assign(buffer, length - 1);  // skip terminating null character
 		}
 	}
 
-	operator HINTERNET()
-	{
-		return m_handle;
-	}
+	return guid;
+}
 
-	explicit operator bool() const
-	{
-		return m_handle != nullptr;
-	}
-};
+std::string WinAPI::GetLocale()
+{
+	wchar_t buffer[LOCALE_NAME_MAX_LENGTH] = {};
+	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
 
-WinAPI::HTTPResponse WinAPI::HTTPRequest(
+	return ConvertUTF16To8(buffer);
+}
+
+//////////
+// HTTP //
+//////////
+
+namespace
+{
+	class HTTPHandleGuard
+	{
+		HINTERNET m_handle;
+
+	public:
+		HTTPHandleGuard(HINTERNET handle)
+		: m_handle(handle)
+		{
+		}
+
+		~HTTPHandleGuard()
+		{
+			if (m_handle)
+			{
+				WinHttpCloseHandle(m_handle);
+			}
+		}
+
+		operator HINTERNET()
+		{
+			return m_handle;
+		}
+
+		explicit operator bool() const
+		{
+			return m_handle != nullptr;
+		}
+	};
+}
+
+int WinAPI::HTTPRequest(
 	const std::string_view & method,
 	const std::string_view & url,
 	const std::string_view & data,
 	const std::map<std::string, std::string> & headers,
 	int timeout,
-	bool cache,
-	bool returnPath)
-{
-
-	std::string outputPath = "";
-	if (cache) {
-		outputPath = WinAPI::GetCachePath(std::string(url));
-		if (outputPath.length() > 0) {
-			std::ifstream f(outputPath, std::ios::binary);
-			if (f) {
-				HTTPResponse cacheResponse;
-				cacheResponse.code = 200;
-				if (returnPath) {
-					cacheResponse.content = outputPath;
-				} else {
-					std::stringstream ss;
-					ss << f.rdbuf();
-					cacheResponse.content = ss.str();
-				}
-				f.close();
-				return cacheResponse;
-			}
-		}
-	}
-
+	HTTPRequestCallback callback
+){
 	const std::wstring urlW = ConvertUTF8To16(url);
 
 	URL_COMPONENTS urlComponents = {};
@@ -695,7 +782,7 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 	}
 
 	if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
-	                        data.length() ? const_cast<char*>(data.data()) : (char*)0, data.length(), data.length(), 0))
+	                        const_cast<char*>(data.data()), data.length(), data.length(), 0))
 	{
 		throw SystemError("WinHttpSendRequest");
 	}
@@ -705,178 +792,48 @@ WinAPI::HTTPResponse WinAPI::HTTPRequest(
 		throw SystemError("WinHttpReceiveResponse");
 	}
 
-	HTTPResponse response;
-
-	DWORD chunkLength = 0;
-	do
-	{
-		char buffer[4096];
-		if (!WinHttpReadData(hRequest, buffer, sizeof buffer, &chunkLength))
-		{
-			throw SystemError("WinHttpReadData");
-		}
-
-		response.content.append(buffer, chunkLength);
-	} while (chunkLength > 0);
-
-	DWORD code;
-	DWORD codeLength = sizeof code;
+	DWORD statusCode = 0;
+	DWORD statusCodeSize = sizeof statusCode;
 	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-	                         WINHTTP_HEADER_NAME_BY_INDEX, &code, &codeLength, WINHTTP_NO_HEADER_INDEX))
+	                         WINHTTP_HEADER_NAME_BY_INDEX, &statusCode, &statusCodeSize, WINHTTP_NO_HEADER_INDEX))
 	{
-		throw SystemError("WinHttpQueryHeaders");
+		throw SystemError("WinHttpQueryHeaders(WINHTTP_QUERY_STATUS_CODE)");
 	}
 
-	response.code = code;
+	if (callback)
+	{
+		uint64_t contentLength = 0;
 
-	if (cache && outputPath.length() > 0 && code >= 200 && code < 305) {
-		std::ofstream f(outputPath, std::ios::binary);
-		if (!f) {
-			throw SystemError("Cannot open cache for write");
-		}
-		f << response.content;
-		f.close();
-		if (returnPath) {
-			response.content = outputPath;
-		}
-		auto removed = CleanupCache();
-		for (auto& rem : removed) {
-			CryLogAlways("$9[CryMP] Freed up $3%d$9 bytes from cache by removing $6%s", (int)rem.size, rem.hash.c_str());
-		}
-	}
-
-	return response;
-}
-
-std::string WinAPI::GetCachePath(const std::string& path)
-{
-	char szPath[MAX_PATH];
-	if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath))) return "";
-	std::string fullPath = szPath;
-	fullPath += "\\sfwcl\\";
-	if (!PathFileExists(fullPath.c_str())) {
-		if (!CreateDirectory(fullPath.c_str(), 0)) return "";
-	}
-	std::string hash = SHA256(path);
-
-	// Indexing
-	std::ifstream fIndexIn(fullPath + "index");
-	nlohmann::json index;
-	if (fIndexIn) {
-		std::stringstream contents;
-		contents << fIndexIn.rdbuf();
-		fIndexIn.close();
-		try {
-			index = nlohmann::json::parse(contents.str());
-		} catch (std::exception & ex) {
-			// indexDic["error_" + std::string(hash)] = ex.what();
-		}
-	}
-	if (!index.count("files")) {
-		index["files"] = nlohmann::json::object({});
-	}
-	if (!index.count("lru")) {
-		index["lru"] = nlohmann::json::array({});
-	}
-	if (path.find("http") == 0 && index.count("lru") && index["lru"].is_array()) {
-		auto lru = index["lru"];
-		bool found = false;
-		std::vector<std::string> files;
-		files.reserve(lru.size() + 1);
-		for (auto it = lru.begin(); it != lru.end(); ++it)
+		// WINHTTP_QUERY_CONTENT_LENGTH is limited to 32-bit (4 GB) content length
+		// so we get content length value as a string instead
+		wchar_t contentLengthString[32];
+		DWORD contentLengthStringSize = sizeof contentLengthString;  // in bytes
+		if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CUSTOM, L"Content-Length",
+			                 contentLengthString, &contentLengthStringSize, WINHTTP_NO_HEADER_INDEX))
 		{
-			if (!it.value().is_string()) continue;
-			auto lruPath = it.value().get<std::string>();
-			if (lruPath == hash) {
-				found = true;
-				continue;
-			}
-			files.push_back(lruPath);
-		}
-		files.push_back(hash);
-		index["lru"] = files;
-	}
-	if (index.count("files") && index["files"].is_object()) {
-		index["files"][hash] = path;
-	}
-	std::ofstream fIndexOut(fullPath + "index");
-	if (fIndexOut) {
-		fIndexOut << index.dump();
-		fIndexOut.close();
-	}
-	return fullPath + hash;
-}
-
-std::deque<LRUEntry> WinAPI::GetLRUEntries() {
-	char szPath[MAX_PATH];
-	if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath))) return {};
-	std::string fullPath = szPath;
-	fullPath += "\\sfwcl\\";
-	if (!PathFileExists(fullPath.c_str())) {
-		if (!CreateDirectory(fullPath.c_str(), 0)) return {};
-	}
-	std::ifstream fIndexIn(fullPath + "index");
-	nlohmann::json index;
-	if (fIndexIn) {
-		std::stringstream contents;
-		contents << fIndexIn.rdbuf();
-		fIndexIn.close();
-		try {
-			index = nlohmann::json::parse(contents.str());
-		} catch (std::exception & ex) {
-			// indexDic["error_" + std::string(hash)] = ex.what();
-		}
-	}
-	std::deque<LRUEntry> entries;
-	if (index.count("lru") && index["lru"].is_array()) {
-		auto lru = index["lru"];
-		unsigned int order = 0;
-		unsigned int removed = 0;
-		std::vector<std::string> newEntries;
-		
-		for (auto it = lru.begin(); it != lru.end(); ++it)
-		{
-			if (!it.value().is_string()) continue;
-			auto hash = it.value().get<std::string>();
-			auto lruPath = fullPath + hash;
-			if (std::filesystem::exists(lruPath)) {
-				auto fileSize = std::filesystem::file_size(lruPath);
-				entries.push_back({ lruPath, hash, fileSize, order++ });
-				newEntries.push_back(hash);
-			} else removed++;
-		}
-
-		if (removed > 0) {
-			index["lru"] = newEntries;
-			std::ofstream fIndexOut(fullPath + "index");
-			if (fIndexOut) {
-				fIndexOut << index.dump();
-				fIndexOut.close();
+			if (GetLastError() != ERROR_WINHTTP_HEADER_NOT_FOUND)
+			{
+				throw SystemError("WinHttpQueryHeaders(\"Content-Length\")");
 			}
 		}
-	}
-	return entries;
-}
+		else
+		{
+			contentLength = _wcstoui64(contentLengthString, nullptr, 10);
+		}
 
-std::deque<LRUEntry> WinAPI::CleanupCache() {
-	const uintmax_t CACHE_MAX_SIZE = 2 * 1024 * 1024 * 1024;
-	std::deque<LRUEntry> removed;
-	auto entries = GetLRUEntries();
-	auto cacheSize = 0;
-	for (auto& entry : entries) {
-		cacheSize += entry.size;
-	}
-	// > 1, because we cannot remove very last file downloaded
-	while (cacheSize > CACHE_MAX_SIZE && entries.size() > 1) {
-		auto& toRemove = entries.front();
-		std::filesystem::remove(toRemove.path);
-		cacheSize -= toRemove.size;
-		removed.push_back(toRemove);
-		entries.pop_front();
+		const HTTPRequestReader dataReader = [&hRequest](void *buffer, size_t bufferSize) -> size_t
+		{
+			DWORD dataLength = 0;
+			if (!WinHttpReadData(hRequest, buffer, bufferSize, &dataLength))
+			{
+				throw SystemError("WinHttpReadData");
+			}
+
+			return dataLength;
+		};
+
+		callback(contentLength, dataReader);
 	}
 
-	// Clean-up LRU array inside index
-	GetLRUEntries();
-
-	return removed;
+	return statusCode;
 }

@@ -232,7 +232,8 @@ void Launcher::StartEngine()
 	m_gameWindow.Init();
 
 	// initialize CryEngine
-	if (!pGameFramework->Init(m_params))  // Launcher::OnInit is called here
+	// Launcher::OnInit is called here
+	if (!pGameFramework->Init(m_params))
 	{
 		throw Error("CryENGINE initialization failed!");
 	}
@@ -250,7 +251,7 @@ void Launcher::StartEngine()
 
 	if (!pGameFramework->CompleteInit())
 	{
-		throw Error("CryEngine post-initialization failed!");
+		throw Error("CryENGINE post-initialization failed!");
 	}
 
 	gEnv->pSystem->ExecuteCommandLine();

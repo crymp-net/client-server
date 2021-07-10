@@ -14,6 +14,10 @@ struct IConsoleCmdArgs;
 
 class Executor;
 class HTTPClient;
+class FileDownloader;
+class FileRedirector;
+class FileCache;
+class MapDownloader;
 class GSMasterHook;
 class ScriptCommands;
 class ScriptCallbacks;
@@ -33,6 +37,10 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	std::unique_ptr<Executor> m_pExecutor;
 	std::unique_ptr<HTTPClient> m_pHTTPClient;
+	std::unique_ptr<FileDownloader> m_pFileDownloader;
+	std::unique_ptr<FileRedirector> m_pFileRedirector;
+	std::unique_ptr<FileCache> m_pFileCache;
+	std::unique_ptr<MapDownloader> m_pMapDownloader;
 	std::unique_ptr<GSMasterHook> m_pGSMasterHook;
 	std::unique_ptr<ScriptCommands> m_pScriptCommands;
 	std::unique_ptr<ScriptCallbacks> m_pScriptCallbacks;
@@ -53,6 +61,7 @@ public:
 	void Init(IGameFramework *pGameFramework);
 
 	std::string GetMasterServerAPI();
+	std::string GetHWID(const std::string_view & salt);
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
@@ -87,6 +96,26 @@ public:
 	HTTPClient *GetHTTPClient()
 	{
 		return m_pHTTPClient.get();
+	}
+
+	FileDownloader *GetFileDownloader()
+	{
+		return m_pFileDownloader.get();
+	}
+
+	FileRedirector *GetFileRedirector()
+	{
+		return m_pFileRedirector.get();
+	}
+
+	FileCache *GetFileCache()
+	{
+		return m_pFileCache.get();
+	}
+
+	MapDownloader *GetMapDownloader()
+	{
+		return m_pMapDownloader.get();
 	}
 
 	GSMasterHook *GetGSMasterHook()

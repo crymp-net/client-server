@@ -6,7 +6,7 @@
 
 #include "CryCommon/CryNetwork/INetworkService.h"
 
-#include "HTTPClient.h"
+struct HTTPClientResult;
 
 class ServerBrowser : public IServerBrowser
 {
@@ -19,13 +19,8 @@ class ServerBrowser : public IServerBrowser
 	std::vector<Server> m_servers;
 	IServerListener *m_pListener = nullptr;
 
-	Server *GetServer(int id)
-	{
-		return (id >= 0 && id < m_servers.size()) ? &m_servers[id] : nullptr;
-	}
-
-	bool OnServerList(HTTPClient::Result & result);
-	bool OnServerInfo(HTTPClient::Result & result, int serverID);
+	bool OnServerList(HTTPClientResult & result);
+	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
 public:
 	ServerBrowser();

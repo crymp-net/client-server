@@ -4,6 +4,7 @@
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
+#include "Library/WinAPI.h"
 
 #include "ServerPAK.h"
 
@@ -15,9 +16,35 @@ ServerPAK::~ServerPAK()
 {
 }
 
+bool ServerPAK::IsZipFile(const std::string & path)
+{
+	try
+	{
+		WinAPI::File file(path, WinAPI::FileAccess::READ_ONLY);
+
+		if (file && file.Read(2) == "PK")
+		{
+			// file magic number verified
+			return true;
+		}
+	}
+	catch (const std::exception & ex)
+	{
+	}
+
+	return false;
+}
+
 bool ServerPAK::Load(const std::string & path)
 {
 	Unload();
+
+	// Crytek's CryPak crashes when it tries to load something that's not a zip file
+	if (!IsZipFile(path))
+	{
+		CryLogAlways("$4[CryMP] Invalid PAK file $6%s$4", path.c_str());
+		return false;
+	}
 	
 	const bool opened = gEnv->pCryPak->OpenPack("game\\", path.c_str());
 	if (opened)

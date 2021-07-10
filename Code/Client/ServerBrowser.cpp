@@ -9,6 +9,7 @@
 
 #include "ServerBrowser.h"
 #include "Client.h"
+#include "HTTPClient.h"
 
 using json = nlohmann::json;
 
@@ -150,7 +151,7 @@ namespace
 	}
 }
 
-bool ServerBrowser::OnServerList(HTTPClient::Result & result)
+bool ServerBrowser::OnServerList(HTTPClientResult & result)
 {
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
 
@@ -200,7 +201,7 @@ bool ServerBrowser::OnServerList(HTTPClient::Result & result)
 	return true;
 }
 
-bool ServerBrowser::OnServerInfo(HTTPClient::Result & result, int serverID)
+bool ServerBrowser::OnServerInfo(HTTPClientResult & result, int serverID)
 {
 	CryLog("[CryMP] Server info (%d): %s", result.code, result.response.c_str());
 
@@ -303,13 +304,9 @@ void ServerBrowser::Update()
 {
 	m_servers.clear();
 
-	const std::string api = gClient->GetMasterServerAPI();
-	if (api.empty())
-		return;
+	const std::string url = gClient->GetMasterServerAPI() + "/servers?all&detailed&json";
 
-	const std::string url = api + "/servers?all&detailed&json";
-
-	gClient->GetHTTPClient()->GET(url, [this](HTTPClient::Result & result)
+	gClient->GetHTTPClient()->GET(url, [this](HTTPClientResult & result)
 	{
 		if (m_pListener)
 		{
@@ -329,20 +326,15 @@ void ServerBrowser::Update()
 
 void ServerBrowser::UpdateServerInfo(int id)
 {
-	Server *pServer = GetServer(id);
-	if (!pServer)
+	if (id < 0 || id >= m_servers.size())
 		return;
 
-	const std::string api = gClient->GetMasterServerAPI();
-	if (api.empty())
-		return;
+	const std::string ip = IPToString(m_servers[id].ip);
+	const std::string port = std::to_string(m_servers[id].port);
 
-	const std::string ip = IPToString(pServer->ip);
-	const std::string port = std::to_string(pServer->port);
+	const std::string url = gClient->GetMasterServerAPI() + "/server?ip=" + ip + "&port=" + port + "&json";
 
-	const std::string url = api + "/server?ip=" + ip + "&port=" + port + "&json";
-
-	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClient::Result & result)
+	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClientResult & result)
 	{
 		if (m_pListener)
 		{
@@ -375,14 +367,10 @@ void ServerBrowser::SendNatCookie(unsigned int ip, unsigned short port, int cook
 
 void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 {
-	if (!m_pListener)
+	if (!m_pListener || id < 0 || id >= m_servers.size())
 		return;
 
-	Server *pServer = GetServer(id);
-	if (!pServer)
-		return;
-
-	m_pListener->ServerDirectConnect(false, pServer->ip, pServer->port);
+	m_pListener->ServerDirectConnect(false, m_servers[id].ip, m_servers[id].port);
 }
 
 int ServerBrowser::GetServerCount()

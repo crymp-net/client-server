@@ -16,23 +16,28 @@ namespace
 {
 	std::filesystem::path GetLogDirectoryPath()
 	{
+		std::filesystem::path dir;
+
 		const std::string rootArg = CmdLine::GetArgValue("-root");
 		if (!rootArg.empty())
 		{
-			// sanitize the path
-			return std::filesystem::canonical(rootArg);
+			// the root directory
+			dir = rootArg;
 		}
 		else
 		{
 			// "Documents/My Games/Crysis/"
-			return gEnv->pCryPak->GetAlias("%USER%");
+			dir = gEnv->pCryPak->GetAlias("%USER%");
 		}
+
+		// sanitize the path
+		return std::filesystem::canonical(dir);
 	}
 
 	void CreateLogFileBackup(void *file, const std::filesystem::path & filePath)
 	{
 		// read the beginning of the existing log file
-		std::string header = WinAPI::Read(file, 127);
+		std::string header = WinAPI::FileRead(file, 127);
 
 		if (header.empty())
 		{
@@ -53,10 +58,8 @@ namespace
 
 		const std::filesystem::path backupDirPath = filePath.parent_path() / "LogBackups";
 
-		if (!std::filesystem::is_directory(backupDirPath))
-		{
-			std::filesystem::create_directory(backupDirPath);
-		}
+		// make sure the "LogBackups" directory exists
+		std::filesystem::create_directories(backupDirPath);
 
 		const std::filesystem::path backupFilePath = backupDirPath / backupFileName;
 
@@ -207,24 +210,27 @@ void CLog::OpenFile()
 	CloseFile();
 
 	if (m_fileName.empty())
+	{
+		// no file to open
 		return;
+	}
 
 	const std::filesystem::path filePath = GetLogDirectoryPath() / m_fileName;
 
-	bool exists = false;
+	bool created = false;
 
-	m_file = WinAPI::OpenLogFile(filePath, exists);
+	m_file = WinAPI::FileOpen(filePath, WinAPI::FileAccess::READ_WRITE_CREATE, &created);
 	if (!m_file)
 	{
 		throw SystemError(filePath.string());
 	}
 
-	if (exists)
+	if (!created)
 	{
 		CreateLogFileBackup(m_file, filePath);
 
 		// clear the existing file
-		WinAPI::Resize(m_file, 0);
+		WinAPI::FileResize(m_file, 0);
 	}
 }
 
@@ -232,8 +238,7 @@ void CLog::CloseFile()
 {
 	if (m_file)
 	{
-		WinAPI::Close(m_file);
-
+		WinAPI::FileClose(m_file);
 		m_file = nullptr;
 	}
 }
@@ -314,13 +319,13 @@ void CLog::WriteToFile(const LogMessage & message)
 
 	if (message.isAppend)
 	{
+		// move the file pointer before the last newline character
 		const int64_t offset = -static_cast<int64_t>(WinAPI::NEWLINE.length());
 
-		// move the file pointer before the last newline character
-		WinAPI::Seek(m_file, WinAPI::SeekBase::END, offset);
+		WinAPI::FileSeek(m_file, WinAPI::FileSeekBase::END, offset);
 	}
 
-	WinAPI::Write(m_file, buffer);
+	WinAPI::FileWrite(m_file, buffer);
 
 	for (ILogCallback *pCallback : m_callbacks)
 	{

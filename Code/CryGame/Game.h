@@ -35,6 +35,7 @@
 
 struct ISystem;
 struct IConsole;
+struct IConsoleCmdArgs;
 
 class	CScriptBind_Actor;
 class CScriptBind_Item;

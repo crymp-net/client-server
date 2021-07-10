@@ -6,30 +6,37 @@
 
 struct HTTPClientTask : public IExecutorTask
 {
-	std::string method = "GET";
-	std::string url;
-	std::string data;
-	std::map<std::string, std::string> headers;
-	HTTPClient::Callback callback;
-	HTTPClient::Result result;
-	int timeout = HTTPClient::DEFAULT_TIMEOUT;
-	bool cache = false;
-	bool returnPath = false;
+	HTTPClientRequest request;
+	HTTPClientResult result;
 
 	// worker thread
 	void Execute() override
 	{
-		// TODO: move this to Lua
-		headers["X-Sfwcl-HWID"] = WinAPI::GetHWID("idsvc");
-		headers["X-Sfwcl-Locale"] = WinAPI::GetLocale();
-		headers["X-Sfwcl-Tz"] = std::to_string(WinAPI::GetTimeZoneBias());
-
 		try
 		{
-			WinAPI::HTTPResponse response = WinAPI::HTTPRequest(method, url, data, headers, timeout, cache, returnPath);
+			result.code = WinAPI::HTTPRequest(
+				request.method,
+				request.url,
+				request.data,
+				request.headers,
+				request.timeout,
+				[this](uint64_t contentLength, const WinAPI::HTTPRequestReader & reader)
+				{
+					// content length is zero if not provided by the server
+					result.response.reserve(contentLength);
 
-			result.code = response.code;
-			result.response = std::move(response.content);
+					while (true)
+					{
+						char chunk[8192];
+						const size_t chunkLength = reader(chunk, sizeof chunk);
+
+						if (chunkLength == 0)
+							break;
+
+						result.response.append(chunk, chunkLength);
+					}
+				}
+			);
 		}
 		catch (const Error & error)
 		{
@@ -40,64 +47,49 @@ struct HTTPClientTask : public IExecutorTask
 	// main thread
 	void Callback() override
 	{
-		if (callback)
+		if (request.callback)
 		{
-			callback(result);
+			request.callback(result);
 		}
 	}
 };
 
-void HTTPClient::Request(
-	const std::string_view & method,
-	const std::string_view & url,
-	const std::string_view & data,
-	std::map<std::string, std::string> && headers,
-	Callback callback,
-	int timeout,
-	bool cache,
-	bool returnPath)
+void HTTPClient::AddTelemetryHeaders(HTTPClientRequest & request)
+{
+	request.headers["X-Sfwcl-HWID"] = m_hwid;
+	request.headers["X-Sfwcl-Locale"] = m_locale;
+	request.headers["X-Sfwcl-Tz"] = m_timezone;
+}
+
+HTTPClient::HTTPClient()
+{
+	m_hwid = gClient->GetHWID("idsvc");
+	m_locale = WinAPI::GetLocale();
+	m_timezone = std::to_string(WinAPI::GetTimeZoneBias());
+}
+
+HTTPClient::~HTTPClient()
+{
+}
+
+void HTTPClient::Request(HTTPClientRequest && request)
 {
 	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
-	task->method = method;
-	task->url = url;
-	task->data = data;
-	task->headers = std::move(headers);
-	task->callback = std::move(callback);
-	task->timeout = timeout;
-	task->cache = cache;
-	task->returnPath = returnPath;
+	task->request = std::move(request);
+
+	AddTelemetryHeaders(task->request);
 
 	gClient->GetExecutor()->AddTask(std::move(task));
 }
 
-void HTTPClient::GET(
-	const std::string_view & url,
-	Callback callback,
-	int timeout)
+void HTTPClient::GET(const std::string_view & url, std::function<void(HTTPClientResult&)> callback)
 {
 	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
-	task->method = "GET";
-	task->url = url;
-	task->callback = std::move(callback);
-	task->timeout = timeout;
+	task->request.method = "GET";
+	task->request.url = url;
+	task->request.callback = std::move(callback);
 
-	gClient->GetExecutor()->AddTask(std::move(task));
-}
-
-void HTTPClient::POST(
-	const std::string_view & url,
-	const std::string_view & data,
-	const std::string_view & contentType,
-	Callback callback,
-	int timeout)
-{
-	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
-	task->method = "POST";
-	task->url = url;
-	task->data = data;
-	task->headers["Content-Type"] = contentType;
-	task->callback = std::move(callback);
-	task->timeout = timeout;
+	AddTelemetryHeaders(task->request);
 
 	gClient->GetExecutor()->AddTask(std::move(task));
 }

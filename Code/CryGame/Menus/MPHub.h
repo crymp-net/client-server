@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "CryCommon/CryNetwork/INetwork.h"
 
 template<class T, class U>

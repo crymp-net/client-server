@@ -1,50 +1,45 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <functional>
-#include <map>
 
 #include "Library/Error.h"
 
 #include "HTTP.h"
 
+struct HTTPClientResult
+{
+	Error error;           // client error
+	std::string response;  // server response
+	int code = 0;          // HTTP status code
+};
+
+struct HTTPClientRequest
+{
+	std::string method = "GET";
+	std::string url;
+	std::string data;
+	std::map<std::string, std::string> headers;
+	std::function<void(HTTPClientResult&)> callback;
+	int timeout = 4000;
+};
+
 class HTTPClient
 {
+	// cached telemetry headers
+	std::string m_hwid;
+	std::string m_locale;
+	std::string m_timezone;
+
+	void AddTelemetryHeaders(HTTPClientRequest & request);
+
 public:
-	struct Result
-	{
-		int code = 0;          // HTTP status code
-		Error error;           // client error
-		std::string response;  // server response
-	};
+	HTTPClient();
+	~HTTPClient();
 
-	using Callback = std::function<void(Result&)>;
+	void Request(HTTPClientRequest && request);
 
-	static constexpr int DEFAULT_TIMEOUT = 4000;
-
-	void Request(
-		const std::string_view & method,
-		const std::string_view & url,
-		const std::string_view & data,
-		std::map<std::string, std::string> && headers,
-		Callback callback,
-		int timeout = DEFAULT_TIMEOUT,
-		bool cache = false,
-		bool returnPath = false
-	);
-
-	void GET(
-		const std::string_view & url,
-		Callback callback,
-		int timeout = DEFAULT_TIMEOUT
-	);
-
-	void POST(
-		const std::string_view & url,
-		const std::string_view & data,
-		const std::string_view & contentType,
-		Callback callback,
-		int timeout = DEFAULT_TIMEOUT
-	);
+	void GET(const std::string_view & url, std::function<void(HTTPClientResult&)> callback);
 };

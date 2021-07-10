@@ -4,11 +4,16 @@
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Launcher/Resources.h"
 #include "Library/RandomSeeder.h"
+#include "Library/Util.h"
 #include "Library/WinAPI.h"
 
 #include "Client.h"
 #include "Executor.h"
 #include "HTTPClient.h"
+#include "FileDownloader.h"
+#include "FileRedirector.h"
+#include "FileCache.h"
+#include "MapDownloader.h"
 #include "GSMasterHook.h"
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
@@ -89,6 +94,10 @@ void Client::Init(IGameFramework *pGameFramework)
 	// initialize client components
 	m_pExecutor          = std::make_unique<Executor>();
 	m_pHTTPClient        = std::make_unique<HTTPClient>();
+	m_pFileDownloader    = std::make_unique<FileDownloader>();
+	m_pFileRedirector    = std::make_unique<FileRedirector>();
+	m_pFileCache         = std::make_unique<FileCache>();
+	m_pMapDownloader     = std::make_unique<MapDownloader>();
 	m_pGSMasterHook      = std::make_unique<GSMasterHook>();
 	m_pScriptCommands    = std::make_unique<ScriptCommands>();
 	m_pScriptCallbacks   = std::make_unique<ScriptCallbacks>();
@@ -122,16 +131,25 @@ void Client::Init(IGameFramework *pGameFramework)
 
 std::string Client::GetMasterServerAPI()
 {
+	std::string api;
+
 	const char *endpoint = nullptr;
 	if (gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint))
-	{
-		return endpoint;
-	}
+		api = endpoint;
 	else
-	{
 		CryLogAlways("$4[CryMP] Failed to get the master server API!");
-		return "";
-	}
+
+	return api;
+}
+
+std::string Client::GetHWID(const std::string_view & salt)
+{
+	std::string hwid = Util::SHA256(WinAPI::GetMachineGUID());
+
+	if (!hwid.empty())
+		hwid += ':' + Util::SHA256(hwid + std::string(salt));
+
+	return hwid;
 }
 
 void Client::OnPostUpdate(float deltaTime)
@@ -158,8 +176,12 @@ void Client::OnActionEvent(const SActionEvent & event)
 	{
 		case eAE_disconnected:
 		{
-			m_pScriptCallbacks->OnDisconnect(event.m_value, event.m_description);
-			m_pServerPAK->OnDisconnect(event.m_value, event.m_description);
+			EDisconnectionCause reason = static_cast<EDisconnectionCause>(event.m_value);
+			const char *message = event.m_description;
+
+			m_pScriptCallbacks->OnDisconnect(reason, message);
+			m_pServerPAK->OnDisconnect(reason, message);
+
 			break;
 		}
 		case eAE_channelCreated:

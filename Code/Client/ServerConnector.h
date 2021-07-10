@@ -3,28 +3,45 @@
 #include <string>
 #include <string_view>
 
-#include "HTTPClient.h"
-#include "MapDownloader.h"
+struct HTTPClientResult;
 
 class ServerConnector
 {
-	std::string m_host;
-	unsigned int m_port = 0;
+	struct ServerInfo
+	{
+		std::string host;
+		unsigned int port = 0;
+
+		std::string name;
+		std::string map;
+		std::string mapURL;
+		std::string pakURL;
+
+		void clear()
+		{
+			host.clear();
+			port = 0;
+
+			name.clear();
+			map.clear();
+			mapURL.clear();
+			pakURL.clear();
+		}
+	};
+
+	ServerInfo m_server;
 	unsigned int m_contractID = 0;
 
-	// server info
-	std::string m_serverName;
-	std::string m_serverMapName;
-	std::string m_serverMapLink;
-	std::string m_serverPAKLink;
+	bool ParseServerInfo(HTTPClientResult & result);
+	void SetLoadingDialogText(const char *text);
+	void SetLoadingDialogText(const char *label, const char *param);  // for localized stuff
+	void ShowErrorBox(const char *text);
+	void ResetCVars();
 
-	MapDownloader m_mapDownloder;
-
-	void RequestServerInfo();
-	void OnServerInfo(int contractID, HTTPClient::Result & result);
-	void DownloadMap(int contractID);
-	void DownloadPAK(int contractID);
-	void TryConnect(int contractID);
+	void Step1_RequestServerInfo();
+	void Step2_DownloadMap();
+	void Step3_DownloadPAK();
+	void Step4_TryConnect();
 
 public:
 	ServerConnector();

@@ -38,12 +38,22 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Client.h
   Code/Client/Executor.cpp
   Code/Client/Executor.h
+  Code/Client/FileCache.cpp
+  Code/Client/FileCache.h
+  Code/Client/FileDownloader.cpp
+  Code/Client/FileDownloader.h
+  Code/Client/FileRedirector.cpp
+  Code/Client/FileRedirector.h
   Code/Client/GSMasterHook.cpp
   Code/Client/GSMasterHook.h
   Code/Client/HTTP.cpp
   Code/Client/HTTP.h
   Code/Client/HTTPClient.cpp
   Code/Client/HTTPClient.h
+  Code/Client/MapDownloader.cpp
+  Code/Client/MapDownloader.h
+  Code/Client/MapExtractor.cpp
+  Code/Client/MapExtractor.h
   Code/Client/ScriptBind_CPPAPI.cpp
   Code/Client/ScriptBind_CPPAPI.h
   Code/Client/ScriptCallbacks.cpp
@@ -56,8 +66,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/ServerConnector.h
   Code/Client/ServerPAK.cpp
   Code/Client/ServerPAK.h
-  Code/Client/MapDownloader.cpp
-  Code/Client/MapDownloader.h
   Code/Client/SpeedAggregator.cpp
   Code/Client/SpeedAggregator.h
   Code/CryCommon/Cry3DEngine/CGF/CGFContent.h

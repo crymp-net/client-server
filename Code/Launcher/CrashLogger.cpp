@@ -409,7 +409,7 @@ static void Log(const std::string_view & message)
 		line += message;
 		line += WinAPI::NEWLINE;
 
-		WinAPI::Write(file, line);
+		WinAPI::FileWrite(file, line);
 	}
 }
 

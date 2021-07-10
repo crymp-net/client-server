@@ -1,0 +1,23 @@
+#pragma once
+
+#include <string>
+#include <filesystem>
+
+#include "Library/External/miniz/miniz.h"
+
+class MapExtractor
+{
+	mz_zip_archive m_zip;
+	std::filesystem::path m_dirPath;
+	std::filesystem::path m_mapPath;
+
+	std::string GetErrorString();
+	std::string GetFileName(unsigned int index);
+	void ExtractFile(unsigned int index);
+
+public:
+	MapExtractor(const std::filesystem::path & zipPath, const std::filesystem::path & mapName);
+	~MapExtractor();
+
+	void Extract();
+};

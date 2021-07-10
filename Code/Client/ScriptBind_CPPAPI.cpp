@@ -1,6 +1,7 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "Library/Util.h"
 #include "Library/WinAPI.h"
 
 #include "ScriptBind_CPPAPI.h"
@@ -86,7 +87,7 @@ int ScriptBind_CPPAPI::GetMapName(IFunctionHandler *pH)
 
 int ScriptBind_CPPAPI::MakeUUID(IFunctionHandler *pH, const char *salt)
 {
-	return pH->EndFunction(WinAPI::GetHWID(salt).c_str());
+	return pH->EndFunction(gClient->GetHWID(salt).c_str());
 }
 
 int ScriptBind_CPPAPI::Random(IFunctionHandler *pH)
@@ -96,22 +97,25 @@ int ScriptBind_CPPAPI::Random(IFunctionHandler *pH)
 
 int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HSCRIPTFUNCTION callback)
 {
-	const char *url = nullptr;
-	if (!params->GetValue("url", url))
-	{
+	HTTPClientRequest request;
+
+	const char *url;
+	if (params->GetValue("url", url))
+		request.url = url;
+	else
 		return pH->EndFunction(false, "url not provided");
-	}
 
-	const char *method = "GET";
-	params->GetValue("method", method);
+	const char *method;
+	if (params->GetValue("method", method))
+		request.method = method;
 
-	const char *body = "";
-	params->GetValue("body", body);
+	const char *body;
+	if (params->GetValue("body", body))
+		request.data = body;
 
-	int timeout = HTTPClient::DEFAULT_TIMEOUT;
-	params->GetValue("timeout", timeout);
-
-	std::map<std::string, std::string> headers;
+	int timeout;
+	if (params->GetValue("timeout", timeout))
+		request.timeout = timeout;
 
 	SmartScriptTable headersTable;
 	if (params->GetValue("headers", headersTable))
@@ -121,33 +125,28 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 		{
 			if (it.value.GetVarType() == ScriptVarType::svtString)
 			{
-				headers[it.sKey] = it.value.str;
+				request.headers[it.sKey] = it.value.str;
 			}
 		}
 		headersTable->EndIteration(it);
 	}
 
-	gClient->GetHTTPClient()->Request(
-		method,
-		url,
-		body,
-		std::move(headers),
-		[callback, this](HTTPClient::Result & result)
+	request.callback = [callback, this](HTTPClientResult & result)
+	{
+		if (m_pSS->BeginCall(callback))
 		{
-			if (m_pSS->BeginCall(callback))
-			{
-				if (result.error)
-					m_pSS->PushFuncParam(result.error.what());
-				else
-					m_pSS->PushFuncParam(false);
+			if (result.error)
+				m_pSS->PushFuncParam(result.error.what());
+			else
+				m_pSS->PushFuncParam(false);
 
-				m_pSS->PushFuncParam(result.response.c_str());
-				m_pSS->PushFuncParam(result.code);
-				m_pSS->EndCall();
-			}
-		},
-		timeout
-	);
+			m_pSS->PushFuncParam(result.response.c_str());
+			m_pSS->PushFuncParam(result.code);
+			m_pSS->EndCall();
+		}
+	};
+
+	gClient->GetHTTPClient()->Request(std::move(request));
 
 	return pH->EndFunction(true);
 }
@@ -161,7 +160,7 @@ int ScriptBind_CPPAPI::SetCallback(IFunctionHandler *pH, int callback, HSCRIPTFU
 
 int ScriptBind_CPPAPI::SHA256(IFunctionHandler *pH, const char *text)
 {
-	return pH->EndFunction(WinAPI::SHA256(text).c_str());
+	return pH->EndFunction(Util::SHA256(text).c_str());
 }
 
 int ScriptBind_CPPAPI::URLEncode(IFunctionHandler *pH, const char *text)

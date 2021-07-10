@@ -2,225 +2,263 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IGameFramework.h"
-#include "Library/External/nlohmann/json.hpp"
-
-#include "ServerPAK.h"
-#include "MapDownloader.h"
-#include "ServerConnector.h"
-#include "Client.h"
-#include "Executor.h"
-
-#include "CryCommon/CryAction/ILevelSystem.h"
-
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 #include "CryGame/Menus/MPHub.h"
+#include "Library/External/nlohmann/json.hpp"
+#include "Library/Util.h"
 
-extern SCVars* g_pGameCVars;
-
-// TODO: needs refactor maybe? :D
-#ifdef WIN32
-#define StrICmp _stricmp
-#else
-#define StrICmp strcasecmp
-#endif
+#include "ServerConnector.h"
+#include "Client.h"
+#include "HTTPClient.h"
+#include "MapDownloader.h"
+#include "FileCache.h"
+#include "ServerPAK.h"
 
 using json = nlohmann::json;
 
-void ServerConnector::RequestServerInfo()
+namespace
 {
-	const unsigned int contractID = m_contractID;
-	CryLogAlways("$3[CryMP] Checking server at $6%s:%u$3", m_host.c_str(), m_port);
-
-	const std::string api = gClient->GetMasterServerAPI();
-	if (api.empty())
+	std::string_view GetString(const json & object, const std::string_view & name)
 	{
-		TryConnect(contractID);
-		return;
+		auto it = object.find(name);
+		if (it != object.end() && it->is_string())
+			return it->get_ref<const std::string&>();
+		else
+			return std::string_view();
 	}
-
-	const std::string url = api + "/server?ip=" + m_host + "&port=" + std::to_string(m_port) + "&json";
-
-	gClient->GetHTTPClient()->GET(url, [contractID, this](HTTPClient::Result & result)
-	{
-		if (contractID == m_contractID)
-		{
-			// next step
-			OnServerInfo(contractID, result);
-		}
-	});
 }
 
-void ServerConnector::OnServerInfo(int contractID, HTTPClient::Result & result)
+bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
 {
 	if (result.error)
 	{
 		CryLogAlways("$4[CryMP] Server check failed: %s", result.error.what());
-		TryConnect(contractID);
-		return;
+		return false;
 	}
 
 	CryLog("[CryMP] Server info (%d): %s", result.code, result.response.c_str());
 
 	try
 	{
-		const json info = json::parse(result.response);
+		const json serverInfo = json::parse(result.response);
 
-		if (info.contains("error"))
+		if (serverInfo.contains("error"))
 		{
-			CryLogAlways("$4[CryMP] Server check error: %s", info["error"].get<std::string>().c_str());
-			TryConnect(contractID);
-			return;
+			CryLogAlways("$4[CryMP] Server check error: %s", GetString(serverInfo, "error").data());
+			return false;
 		}
 
-		m_serverName = info["name"].get<std::string>();
-		m_serverMapName = info["map"].get<std::string>();
-
-		if (info.contains("mapdl"))
-			m_serverMapLink = info["mapdl"].get<std::string>();
-		else m_serverMapLink = "";
-
-		if (info.contains("pak"))
-			m_serverPAKLink = info["pak"].get<std::string>();
-		else m_serverPAKLink = "";
-
-		// For testing purposes
-		// m_serverPAKLink = "https://crymp.net/client/ServerPak.pak?3";
+		m_server.name   = GetString(serverInfo, "name");
+		m_server.map    = GetString(serverInfo, "map");
+		m_server.mapURL = GetString(serverInfo, "mapdl");
+		m_server.pakURL = GetString(serverInfo, "pak");
 	}
 	catch (const json::exception & ex)
 	{
-		CryLogAlways("$4[CryMP] Server check info parse error: %s", ex.what());
-		TryConnect(contractID);
-		return;
+		CryLogAlways("$4[CryMP] Server info parse error: %s", ex.what());
+		return false;
 	}
 
-	CryLogAlways("$3[CryMP] Server check done, map: $6%s$3", m_serverMapName.c_str());
+	if (!m_server.mapURL.empty() && !Util::StartsWith("http", m_server.mapURL))
+		m_server.mapURL = "http://" + m_server.mapURL;
 
-	// next step
-	DownloadMap(contractID);
+	if (!m_server.pakURL.empty() && !Util::StartsWith("http", m_server.pakURL))
+		m_server.pakURL = "http://" + m_server.pakURL;
+
+	return true;
 }
 
-void ServerConnector::DownloadMap(int contractID)
+void ServerConnector::SetLoadingDialogText(const char *text)
 {
-	if (contractID != m_contractID) return;
-	if (m_serverMapLink.length() == 0) {
-		CryLogAlways("$3[CryMP] This server doesn't use custom map");
-		DownloadPAK(contractID);
-		return;
+	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
+	if (pMPHub)
+	{
+		pMPHub->SetLoadingDlgText(text, false);
 	}
-	if (m_serverMapLink.find("http") != 0) {
-		m_serverMapLink = "https://" + m_serverMapLink;
-	}
-	bool mapMissing = true;
-	
-	ILevelSystem* pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
-	pLevelSystem->Rescan();
-	for (int l = 0; l < pLevelSystem->GetLevelCount(); ++l) {
-		ILevelInfo* pLevelInfo = pLevelSystem->GetLevelInfo(l);
-		if (!pLevelInfo) continue;
-		if (!StrICmp(pLevelInfo->GetName(), m_serverMapName.c_str())) {
-			mapMissing = false;
-			break;
-		}
-	}
+}
 
-	if (!mapMissing) {
-		CryLogAlways("$3[CryMP] This server uses custom map, but map was already found");
-		DownloadPAK(contractID);
-		return;
+void ServerConnector::SetLoadingDialogText(const char *label, const char *param)
+{
+	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
+	if (pMPHub)
+	{
+		pMPHub->SetLoadingDlgText(label, param);
 	}
+}
 
-	CryLogAlways("$3[CryMP] This server uses custom map located at: %s", m_serverMapLink.c_str());
-	gClient->GetExecutor()->RunAsync([contractID, this]() {
-		if (contractID != m_contractID) return;
-		auto [result, message] = m_mapDownloder.execute(m_serverMapLink, [contractID, this](unsigned int progress, unsigned int progressMax, unsigned int stage, const std::string& message) {
-			// ...
-			gClient->GetExecutor()->RunOnMainThread([contractID, progress, progressMax, message, this]() {
-				if (contractID != m_contractID);
-				auto menu = g_pGame->GetMenu();
-				if (menu) {
-					auto mpHub = g_pGame->GetMenu()->GetMPHub();
-					if (mpHub) {
-						mpHub->SetLoadingDlgText(message.c_str(), false);
-					}
-				}
-				//CryLogAlways("$5[CryMP] Map download progress: %d / %d, %s", progress, progressMax, message.c_str());
-			});
-		});
-		if (!SUCCEEDED(result)) {
-			CryLogAlways("$4[CryMP] Map download failed with error code: %x, message: %s", result, message.c_str());
-			DownloadPAK(contractID);
-		} else {
-			CryLogAlways("$3[CryMP] Map download succeeded with message: %s", message.c_str());
-			DownloadPAK(contractID);
+void ServerConnector::ShowErrorBox(const char *text)
+{
+	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
+	if (pMPHub)
+	{
+		pMPHub->CloseLoadingDlg();
+		pMPHub->ShowError(text);
+	}
+}
+
+void ServerConnector::ResetCVars()
+{
+	SCVars *pGameCVars = g_pGame->GetCVars();
+
+	pGameCVars->cl_crymp = 0;
+	pGameCVars->cl_circleJump = 0.0f;
+	pGameCVars->cl_wallJump = 1.0f;
+	pGameCVars->cl_flyMode = 0;
+	pGameCVars->cl_playerView = 1;
+}
+
+void ServerConnector::Step1_RequestServerInfo()
+{
+	CryLogAlways("$3[CryMP] Checking server at $6%s:%u$3", m_server.host.c_str(), m_server.port);
+
+	const std::string & ip = m_server.host;
+	const std::string port = std::to_string(m_server.port);
+
+	const std::string url = gClient->GetMasterServerAPI() + "/server?ip=" + ip + "&port=" + port + "&json";
+
+	gClient->GetHTTPClient()->GET(url, [contractID = m_contractID, this](HTTPClientResult & result)
+	{
+		if (contractID == m_contractID)
+		{
+			if (ParseServerInfo(result))
+			{
+				// next step
+				Step2_DownloadMap();
+			}
+			else
+			{
+				// don't give up
+				Step4_TryConnect();
+			}
 		}
 	});
 }
 
-void ServerConnector::DownloadPAK(int contractID)
+void ServerConnector::Step2_DownloadMap()
 {
-	if (contractID != m_contractID) return;
-	if (m_serverPAKLink.length() == 0) {
-		CryLogAlways("$3[CryMP] This server doesn't use server pak feature");
-		gClient->GetExecutor()->RunOnMainThread([this, contractID]() {
-			TryConnect(contractID);
-		});
-		return;
-	}
-	CryLogAlways("$3[CryMP] This server uses server pak located at: $6%s", m_serverPAKLink.c_str());
+	MapDownloaderRequest request;
+	request.map = m_server.map;
+	request.mapURL = m_server.mapURL;
 
-	auto menu = g_pGame->GetMenu();
-	if (menu) {
-		auto mpHub = g_pGame->GetMenu()->GetMPHub();
-		if (mpHub) {
-			mpHub->SetLoadingDlgText("Loading server pak", false);
+	request.onProgress = [contractID = m_contractID, this](const std::string & message) -> bool
+	{
+		if (contractID == m_contractID)
+		{
+			SetLoadingDialogText(message.c_str());
+
+			// continue download
+			return true;
 		}
-	}
-
-	gClient->GetHTTPClient()->Request("GET", m_serverPAKLink, "", {}, [contractID, this](HTTPClient::Result& result) -> void {
-		if (m_contractID != contractID) return;
-
-		if (result.error || result.code >= 400) {
-			CryLogAlways("$4[CryMP] Failed to download server pak at: %s", m_serverPAKLink.c_str());
-			if (result.error) CryLogAlways("$4[CryMP] Server pak download error description: %s", result.error.what());
-			else CryLogAlways("$4[CryMP] Server pak download status code: %d", result.code);
-			return;
+		else
+		{
+			// cancel download
+			return false;
 		}
+	};
 
-		gClient->GetServerPAK()->Load(result.response);
-		gClient->GetExecutor()->RunOnMainThread([this, contractID]() {
-			TryConnect(contractID);
-		});
-	}, 4000, true, true);
+	request.onComplete = [contractID = m_contractID, this](MapDownloaderResult & result)
+	{
+		if (contractID == m_contractID)
+		{
+			if (result.success)
+			{
+				// next step
+				Step3_DownloadPAK();
+			}
+			else
+			{
+				ShowErrorBox("Map download failed.");
+			}
+		}
+	};
+
+	gClient->GetMapDownloader()->Request(std::move(request));
 }
 
-void ServerConnector::TryConnect(int contractID)
+void ServerConnector::Step3_DownloadPAK()
 {
-	if (contractID != m_contractID) return;
-	auto menu = g_pGame->GetMenu();
-	if (menu) {
-		auto mpHub = g_pGame->GetMenu()->GetMPHub();
-		if (mpHub) {
-			mpHub->SetLoadingDlgText("Joining server", false);
-		}
+	if (m_server.pakURL.empty())
+	{
+		// next step
+		Step4_TryConnect();
 	}
-	ILevelSystem* pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
-	pLevelSystem->Rescan();
-	if (m_serverName.empty())
-		CryLogAlways("$3[CryMP] Joining unknown server at $6%s:%u$3", m_host.c_str(), m_port);
 	else
-		CryLogAlways("$3[CryMP] Joining $6%s$3 at $6%s:%u$3", m_serverName.c_str(), m_host.c_str(), m_port);
+	{
+		CryLogAlways("$3[CryMP] Obtaining server PAK...");
+
+		FileCacheRequest request;
+		request.fileURL = m_server.pakURL;
+		request.fileType = "PAK";
+
+		request.onProgress = [contractID = m_contractID, this](const std::string & message) -> bool
+		{
+			if (contractID == m_contractID)
+			{
+				SetLoadingDialogText(message.c_str());
+
+				// continue download
+				return true;
+			}
+			else
+			{
+				// cancel download
+				return false;
+			}
+		};
+
+		request.onComplete = [contractID = m_contractID, this](FileCacheResult & result)
+		{
+			if (contractID == m_contractID)
+			{
+				if (result.success)
+				{
+					if (gClient->GetServerPAK()->Load(result.filePath.string()))
+					{
+						// next step
+						Step4_TryConnect();
+					}
+					else
+					{
+						ShowErrorBox("Server PAK load failed.");
+					}
+				}
+				else
+				{
+					ShowErrorBox("Server PAK download failed.");
+				}
+			}
+		};
+
+		gClient->GetFileCache()->Request(std::move(request));
+	}
+}
+
+void ServerConnector::Step4_TryConnect()
+{
+	const std::string endpoint = m_server.host + ':' + std::to_string(m_server.port);
+
+	if (m_server.name.empty())
+	{
+		CryLogAlways("$3[CryMP] Joining unknown server at $6%s$3", endpoint.c_str());
+
+		SetLoadingDialogText("@ui_connecting_to", endpoint.c_str());
+	}
+	else
+	{
+		CryLogAlways("$3[CryMP] Joining $6%s$3 at $6%s$3", m_server.name.c_str(), endpoint.c_str());
+
+		SetLoadingDialogText("@ui_connecting_to", m_server.name.c_str());
+	}
+
+	ResetCVars();
 
 	SGameStartParams params;
 	params.flags = eGSF_Client | eGSF_NoDelayedStart | eGSF_NoQueries | eGSF_ImmersiveMultiplayer;
-	params.hostname = m_host.c_str();
-	params.port = m_port;
+	params.hostname = m_server.host.c_str();
+	params.port = m_server.port;
 
-	g_pGameCVars->cl_circleJump = 0.0f;
-	g_pGameCVars->cl_wallJump = 1.0f;
-	g_pGameCVars->cl_flyMode = 0;
-	g_pGameCVars->cl_playerView = 1;
 	gClient->GetGameFramework()->StartGameContext(&params);
 }
 
@@ -234,25 +272,26 @@ ServerConnector::~ServerConnector()
 
 void ServerConnector::Connect(const std::string_view & host, unsigned int port)
 {
-	// a new contract
 	m_contractID++;
 
-	m_host = host;
-	m_port = port;
+	m_server.clear();
+	m_server.host = host;
+	m_server.port = port;
 
 	// IP:PORT host workaround
-	const size_t colonPos = m_host.find(':');
+	const size_t colonPos = host.find(':');
 	if (colonPos != std::string::npos)
 	{
-		m_port = atoi(m_host.c_str() + colonPos + 1);
-		m_host.resize(colonPos);
+		m_server.port = atoi(&host[colonPos + 1]);
+		m_server.host.resize(colonPos);
 	}
 
-	// the first step
-	RequestServerInfo();
+	Step1_RequestServerInfo();
 }
 
-void ServerConnector::Disconnect() {
-	++m_contractID;
-	m_mapDownloder.cancel();
+void ServerConnector::Disconnect()
+{
+	m_contractID++;
+
+	gClient->GetServerPAK()->Unload();
 }
