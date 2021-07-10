@@ -106,7 +106,6 @@ void ServerConnector::ResetCVars()
 	pGameCVars->cl_circleJump = 0.0f;
 	pGameCVars->cl_wallJump = 1.0f;
 	pGameCVars->cl_flyMode = 0;
-	pGameCVars->cl_playerView = 1;
 }
 
 void ServerConnector::Step1_RequestServerInfo()

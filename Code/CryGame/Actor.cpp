@@ -1237,15 +1237,6 @@ void CActor::ProcessEvent(SEntityEvent& event)
 
 void CActor::Update(SEntityUpdateContext& ctx, int slot)
 {
-	if (g_pGameCVars->cl_playerView) {
-		bool is3p = IsThirdPerson();
-		if (g_pGameCVars->cl_playerView == 1 && is3p) {
-			ToggleThirdPerson();
-		}
-		else if (g_pGameCVars->cl_playerView == 3 && !is3p) {
-			ToggleThirdPerson();
-		}
-	}
 	Vec3 cp = GetEntity()->GetWorldPos();
 	//CryLogAlways("%s::Update(current: %.2f,%.2f,%.2f)", GetEntity()->GetName(), cp.x,cp.y,cp.z);
 	// ScreenFX only on client actor

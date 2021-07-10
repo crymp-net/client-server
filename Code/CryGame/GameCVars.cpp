@@ -585,7 +585,6 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("cl_circleJump", &cl_circleJump, 0.0f);
 	pConsole->Register("cl_wallJump", &cl_wallJump, 1.0f);
 	pConsole->Register("cl_flyMode", &cl_flyMode, 0);
-	pConsole->Register("cl_playerView", &cl_playerView, 1);
 	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0);
 	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1);
@@ -907,7 +906,6 @@ void SCVars::ReleaseCVars()
 	pConsole->UnregisterVariable("cl_circleJump", true);
 	pConsole->UnregisterVariable("cl_wallJump", true);
 	pConsole->UnregisterVariable("cl_flyMode", true);
-	pConsole->UnregisterVariable("cl_playerView", true);
 	pConsole->UnregisterVariable("cl_messageCenterColor", true);
 }
 
