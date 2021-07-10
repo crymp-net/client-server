@@ -2,10 +2,20 @@
 #include "Format.h"
 #include "WinAPI.h"
 
+void Error::MakeWhat()
+{
+	if (m_code <= 0 && m_description.empty())
+		m_what = m_message;
+	else
+		m_what = Format("%s: Error code %d (%s)", m_message.c_str(), m_code, m_description.c_str());
+}
+
 Error::Error(std::string && message)
 {
 	m_code = -1;
 	m_message = std::move(message);
+
+	MakeWhat();
 }
 
 Error::Error(std::string && message, int code, std::string && description)
@@ -14,14 +24,7 @@ Error::Error(std::string && message, int code, std::string && description)
 	m_message = std::move(message);
 	m_description = std::move(description);
 
-	if (m_code > 0 || !m_description.empty())
-	{
-		m_what = Format("%s: Error code %d (%s)", m_message.c_str(), m_code, m_description.c_str());
-	}
-	else
-	{
-		m_what = m_message;
-	}
+	MakeWhat();
 }
 
 SystemError::SystemError(std::string && message, int code)

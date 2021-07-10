@@ -10,6 +10,8 @@ class Error : public std::exception
 	std::string m_description;
 	std::string m_what;
 
+	void MakeWhat();
+
 public:
 	explicit Error() = default;
 	explicit Error(std::string && message);
