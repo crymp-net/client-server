@@ -340,7 +340,7 @@ void Launcher::OnInit(ISystem *pSystem)
 
 	CryLogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
 	CryLogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
-	CryLogAlways("Compiled at " BUILD_DATE_TIME " by " CRYMP_CLIENT_COMPILER " [" CRYMP_CLIENT_BUILD_TYPE "]");
+	CryLogAlways("Compiled by " CRYMP_CLIENT_COMPILER " at " BUILD_DATE_TIME " [" CRYMP_CLIENT_BUILD_TYPE "]");
 	CryLogAlways("Copyright (C) 2001-2008 Crytek GmbH");
 	CryLogAlways("Copyright (C) 2014-2021 CryMP Network");
 	CryLogAlways("");
