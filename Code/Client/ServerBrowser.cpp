@@ -308,6 +308,7 @@ void ServerBrowser::Update()
 {
 	m_servers.clear();
 
+	// TODO: read from config file or whatever
 	const std::string masters[] = { "crymp.net" /*, "crymp.nullptr.one" */ };
 	for (auto& master : masters) {
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
