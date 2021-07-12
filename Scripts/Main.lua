@@ -558,10 +558,8 @@ function InitializeClient()
 		DEBUG_MODE = not DEBUG_MODE
 		if DEBUG_MODE then
 			printf("$3Debug mode active")
-			endpoint = "http://crymp.net/api"
 		else
 			printf("$4Debug mode disabled")
-			endpoint = "https://crymp.net/api"
 		end
 	end)
 
