@@ -4,7 +4,9 @@ ALLOW_EXPERIMENTAL = true
 
 function InitializeClient()
 	local _L = {}
+	local defaultMaster = "crymp.net"
 	local logAlways = System.LogAlways
+	local authProvider = defaultMaster
 	local EXPORT = false
 	local EXPORTED = {}
 	local RED, GREEN, YELLOW = "$4", "$3", "$6"
@@ -253,7 +255,7 @@ function InitializeClient()
 		SFWCL_ENDPOINT = baseUri
 	end
 
-	SetHTTPEndpoint("https://crymp.net/api")
+	SetHTTPEndpoint("https://" .. defaultMaster .. "/api")
 
 	local function GetProfile()
 		if activeProfile.real.logged then
@@ -370,8 +372,18 @@ function InitializeClient()
 
 	local function Login(name, password, profileType)
 		profileType = profileType or "real"
+		local authHost = defaultMaster
+		local authEndpoint = endpoint
+		local prefix, postfix = name:match("([^@]+)@(.+)")
+		if prefix and postfix then
+			name = prefix
+			authHost = postfix
+			authEndpoint = "https://" .. postfix .. "/api"
+		else
+			authHost = defaultMaster
+		end
 		return Promise(function(resolve, reject)
-			POST(endpoint .. "/login", {
+			POST(authEndpoint .. "/login", {
 				a = name,
 				b = password
 			})
@@ -386,7 +398,8 @@ function InitializeClient()
 						password = password,
 						id = id,
 						token = token,
-						display = display
+						display = display,
+						master = authHost
 					}
 					resolve(activeProfile[profileType])
 				end
@@ -399,7 +412,11 @@ function InitializeClient()
 		return Promise(function(resolve, reject)
 			local profile = GetProfile()
 			if not profile then return reject("Couldn't find any profile") end
-			Login(profile.name, profile.password)
+			local profileName = profile.name
+			if profile.master ~= "crymp.net" then
+				profileName = profileName .. "@" .. profile.master
+			end
+			Login(profileName, profile.password)
 			:Then(function(session)
 				resolve(session)
 			end)
@@ -419,6 +436,15 @@ function InitializeClient()
 		end)
 	end
 
+	local function GetValidateCommand(profile)
+		local id = profile.id
+		if profile.master ~= "crymp.net" then
+			id = id .. "@" .. profile.master
+		end
+		local command = string.format("!validate %s %s %s", id, profile.token, profile.display or "Nomad")
+		return command
+	end
+
 	local function Authenticate()
 		return Promise(function(resolve, reject)
 			if not g_localActor then
@@ -430,13 +456,13 @@ function InitializeClient()
 				RefreshSession()
 				:Then(function(session)
 					profile = GetProfile()
-					local command = string.format("!validate %s %s %s", profile.id, profile.token, profile.display or "Nomad")
+					local command = GetValidateCommand(profile)
 					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
 					resolve(true)
 				end)
 				:Catch(function(error)
 					printf(RED .. "Failed to reactivate session, using old profile")
-					local command = string.format("!validate %s %s %s", profile.id, profile.token, profile.display or "Nomad")
+					local command = GetValidateCommand(profile)
 					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
 					resolve(true)
 				end)

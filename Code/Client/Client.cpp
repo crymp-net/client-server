@@ -50,6 +50,7 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	}
 
 	gClient->GetServerConnector()->Connect(
+		pConsole->GetCVar("cl_masteraddr")->GetString(),
 		pConsole->GetCVar("cl_serveraddr")->GetString(),
 		pConsole->GetCVar("cl_serverport")->GetIVal()
 	);
@@ -129,8 +130,11 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
 }
 
-std::string Client::GetMasterServerAPI()
+std::string Client::GetMasterServerAPI(const std::string& master)
 {
+	if (master.length() > 0) {
+		return std::string("https://") + master + "/api";
+	}
 	std::string api;
 
 	const char *endpoint = nullptr;
