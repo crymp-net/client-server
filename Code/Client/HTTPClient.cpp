@@ -1,3 +1,4 @@
+#include "Library/Util.h"
 #include "Library/WinAPI.h"
 
 #include "HTTPClient.h"
@@ -56,9 +57,12 @@ struct HTTPClientTask : public IExecutorTask
 
 void HTTPClient::AddTelemetryHeaders(HTTPClientRequest & request)
 {
-	request.headers["X-Sfwcl-HWID"] = m_hwid;
-	request.headers["X-Sfwcl-Locale"] = m_locale;
-	request.headers["X-Sfwcl-Tz"] = m_timezone;
+	if (Util::StartsWith(gClient->GetMasterServerAPI(), request.url))
+	{
+		request.headers["X-Sfwcl-HWID"] = m_hwid;
+		request.headers["X-Sfwcl-Locale"] = m_locale;
+		request.headers["X-Sfwcl-Tz"] = m_timezone;
+	}
 }
 
 HTTPClient::HTTPClient()
