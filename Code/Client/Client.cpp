@@ -22,6 +22,9 @@
 #include "ServerConnector.h"
 #include "ServerPAK.h"
 
+#include <fstream>
+#include <sstream>
+
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 {
 	IGameFramework *pGameFramework = gClient->GetGameFramework();
@@ -124,10 +127,42 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 
-	// execute Lua scripts
-	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(),  m_scriptRPC.length(),  "RPC.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
+	// preserve this so it's called after master info is retrieved later on
+	auto loadLuas = [this]() -> void {
+		IScriptSystem* pSS = gEnv->pScriptSystem;
+		pSS->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
+		pSS->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
+		pSS->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
+	};
+
+	// Refactor this one to use correct folder
+	std::ifstream fMasters("masters.txt");
+	m_masters.clear();
+	if (fMasters.is_open()) {
+		std::string master;
+		while (fMasters >> master) {
+			if(master.length() > 0)
+				m_masters.push_back(master);
+		}
+		if (m_masters.size() == 0) m_masters.push_back("crymp.net");
+		fMasters.close();
+		loadLuas();
+	} else {
+		GetHTTPClient()->GET("https://raw.githubusercontent.com/ccomrade/crymp-client/master/Config/masters.txt", [this, loadLuas](const HTTPClientResult& res) -> void {
+			if (res.error || res.code > 399) {
+				m_masters.push_back("crymp.net");
+			} else {
+				std::stringstream ss; ss << res.response;
+				std::string master;
+				while (ss >> master) {
+					if (master.length() > 0)
+						m_masters.push_back(master);
+				}
+				if (m_masters.size() == 0) m_masters.push_back("crymp.net");
+			}
+			loadLuas();
+		});
+	}
 }
 
 std::string Client::GetMasterServerAPI(const std::string& master)

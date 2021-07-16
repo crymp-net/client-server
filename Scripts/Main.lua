@@ -3,6 +3,7 @@ System.LogAlways("$5[sfwcl] Client loaded")
 ALLOW_EXPERIMENTAL = true
 
 function InitializeClient()
+	local masters = CPPAPI.GetMasters()
 	local _L = {}
 	local defaultMaster = "crymp.net"
 	local logAlways = System.LogAlways
@@ -39,6 +40,13 @@ function InitializeClient()
 	local localState = {};
 	local addCCommand = System.AddCCommand;
 	local getCVar = System.GetCVar;
+
+	for i, master in ipairs(masters) do
+		print(YELLOW .. "[CryMP] Resolved master: " .. master)
+	end
+
+	-- first master gets to be default master (it can provide HWID to ID resolver)
+	defaultMaster = masters[1]
 
 	local function _pcall(func, ...)
 		local status,err=pcall(func,...);

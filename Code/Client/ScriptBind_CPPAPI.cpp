@@ -35,6 +35,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(SetCallback, "callback, handler");
 	SCRIPT_REG_TEMPLFUNC(SHA256, "text");
 	SCRIPT_REG_TEMPLFUNC(URLEncode, "text");
+	SCRIPT_REG_TEMPLFUNC(GetMasters, "");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -166,4 +167,14 @@ int ScriptBind_CPPAPI::SHA256(IFunctionHandler *pH, const char *text)
 int ScriptBind_CPPAPI::URLEncode(IFunctionHandler *pH, const char *text)
 {
 	return pH->EndFunction(HTTP::URLEncode(text).c_str());
+}
+
+int ScriptBind_CPPAPI::GetMasters(IFunctionHandler* pH)
+{
+	auto masters = gClient->GetMasters();
+	SmartScriptTable table;
+	for (auto& master : masters) {
+		table->PushBack(master.c_str());
+	}
+	return pH->EndFunction(table);
 }
