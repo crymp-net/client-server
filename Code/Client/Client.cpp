@@ -171,17 +171,16 @@ void Client::Init(IGameFramework *pGameFramework)
 std::string Client::GetMasterServerAPI(const std::string& master)
 {
 	if (master.length() > 0) {
+		int a = 0, b = 0, c = 0, d = 0;
+		// in case it is IP, don't use HTTPS
+		if (sscanf(master.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) == 4)
+			return "http://" + master + "/api";
 		return std::string("https://") + master + "/api";
 	}
-	std::string api;
+	
+	CryLogAlways("$4[CryMP] Failed to get the master server API! Using fallback");
 
-	const char *endpoint = nullptr;
-	if (gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint))
-		api = endpoint;
-	else
-		CryLogAlways("$4[CryMP] Failed to get the master server API!");
-
-	return api;
+	return "https://crymp.net/api";
 }
 
 std::string Client::GetHWID(const std::string_view & salt)

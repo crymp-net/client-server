@@ -63,7 +63,7 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
-	std::string GetMasterServerAPI(const std::string& master = "");
+	std::string GetMasterServerAPI(const std::string& master);
 	std::string GetHWID(const std::string_view & salt);
 
 	// IGameFrameworkListener

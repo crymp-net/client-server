@@ -155,13 +155,13 @@ function InitializeClient()
 		end
 		for i, v in pairs(_L) do
 			if type(_G[i]) ~= "table" then
-				printf(RED .. "[sfwcl] Server changed global " .. YELLOW .. i .. RED.. ", reverting back!")
+				printf(RED .. "[CryMP] Server changed global " .. YELLOW .. i .. RED.. ", reverting back!")
 				_G[i] = {}
 				v = _G[i]
 			end
 			for j, w in pairs(v) do
 				if _G[i][j] ~= w then
-					printf(RED .. "[sfwcl] Server changed global function " .. YELLOW .. i .. "." .. j .. RED .. ", reverting back!")
+					printf(RED .. "[CryMP] Server changed global function " .. YELLOW .. i .. "." .. j .. RED .. ", reverting back!")
 				end
 				_G[i][j] = w
 			end
@@ -373,11 +373,19 @@ function InitializeClient()
 		end)
 	end
 
+	local function ToEndpoint(master)
+		local a, b, c, d = master:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")
+		if a then
+			return "http://" .. master .. "/api"
+		end
+		return "https://" .. master .. "/api"
+	end
+
 	local function GetStaticID()
 		return Promise(function(resolve, reject)
 			GetMaster()
 			:Then(function(defaultMaster)
-				local endpoint = "https://" .. defaultMaster .. "/api"
+				local endpoint = ToEndpoint(defaultMaster)
 				GET(endpoint .. "/id")
 				:Then(function(response)
 					local id, token = string.match(response,"([0-9]+)/([0-9a-fA-F]+)")
@@ -396,13 +404,13 @@ function InitializeClient()
 	local function ObtainStaticID()
 		GetStaticID()
 		:Then(function(profile)
-			printf(GREEN .. "Successfully obtained static profile: %s", profile.id)
+			printf(GREEN .. "[CryMP] Successfully obtained static profile: %s", profile.id)
 			activeProfile.static = profile
 			localState.STATIC_ID = profile.id
 			localState.STATIC_HASH = profile.token
 		end)
 		:Catch(function(error)
-			printf(RED .. error)
+			printf(RED .. "[CryMP] " .. error)
 		end)
 	end
 
@@ -410,14 +418,14 @@ function InitializeClient()
 		profileType = profileType or "real"
 		return Promise(function(resolve, reject)
 			GetMaster():Then(function(defaultMaster)
-				local endpoint = "https://" .. defaultMaster .. "/api"
+				local endpoint = ToEndpoint(defaultMaster)
 				local authHost = defaultMaster
 				local authEndpoint = endpoint
 				local prefix, postfix = name:match("([^@]+)@(.+)")
 				if prefix and postfix then
 					name = prefix
 					authHost = postfix
-					authEndpoint = "https://" .. postfix .. "/api"
+					authEndpoint = ToEndpoint(postfix)
 				else
 					authHost = defaultMaster
 				end
@@ -468,10 +476,10 @@ function InitializeClient()
 	local function LoginCCommandHandler(name, password)
 		Login(name, password)
 		:Then(function(response)
-			printf(GREEN .. "Successfully logged in, profile ID: %s", activeProfile.real.id)
+			printf(GREEN .. "[CryMP] Successfully logged in, profile ID: %s", activeProfile.real.id)
 		end)
 		:Catch(function(error)
-			printf(RED .. "Log-in failed")
+			printf(RED .. "[CryMP] Log-in failed")
 		end)
 	end
 
@@ -487,7 +495,7 @@ function InitializeClient()
 	local function Authenticate()
 		return Promise(function(resolve, reject)
 			if not g_localActor then
-				printf(RED .. "You are not in-game")
+				printf(RED .. "[CryMP] You are not in-game")
 				return resolve(false)
 			end
 			local profile = GetProfile()
@@ -500,13 +508,13 @@ function InitializeClient()
 					resolve(true)
 				end)
 				:Catch(function(error)
-					printf(RED .. "Failed to reactivate session, using old profile")
+					printf(RED .. "[CryMP] Failed to reactivate session, using old profile")
 					local command = GetValidateCommand(profile)
 					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
 					resolve(true)
 				end)
 			else
-				printf(RED .. "Cannot authenticate due to missing profile")
+				printf(RED .. "[CryMP] Cannot authenticate due to missing profile")
 				return resolve(false)
 			end
 		end)
@@ -562,7 +570,7 @@ function InitializeClient()
 	end
 
 	local function OnDisconnect(reason, message)
-		printf("Disconnect: %d %s", reason, message)
+		printf("[CryMP] Disconnect: %d %s", reason, message)
 		ResetState()
 	end
 
@@ -585,10 +593,10 @@ function InitializeClient()
 	CPPAPI.AddCCommand("sfwcl_refresh", function()
 		RefreshSession()
 		:Then(function(session)
-			printf(GREEN .. "Successfully refreshed session: %s", session.id)
+			printf(GREEN .. "[CryMP] Successfully refreshed session: %s", session.id)
 		end)
 		:Catch(function(error)
-			printf(RED .. "Failed to refresh session: " .. tostring(error))
+			printf(RED .. "[CryMP] Failed to refresh session: " .. tostring(error))
 		end)
 	end)
 	CPPAPI.AddCCommand("auth_login", function()
@@ -597,9 +605,9 @@ function InitializeClient()
 	CPPAPI.AddCCommand("sfwcl_debug", function()
 		DEBUG_MODE = not DEBUG_MODE
 		if DEBUG_MODE then
-			printf("$3Debug mode active")
+			printf(GREEN .. "[CryMP] Debug mode active")
 		else
-			printf("$4Debug mode disabled")
+			printf(RED .. "[CryMP] Debug mode disabled")
 		end
 	end)
 
