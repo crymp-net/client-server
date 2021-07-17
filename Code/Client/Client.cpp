@@ -170,6 +170,9 @@ void Client::Init(IGameFramework *pGameFramework)
 
 std::string Client::GetMasterServerAPI(const std::string& master)
 {
+	if (master.length() == 0 && m_masters.size() >= 1)
+		return GetMasterServerAPI(m_masters[0]);
+
 	if (master.length() > 0) {
 		int a = 0, b = 0, c = 0, d = 0;
 		// in case it is IP, don't use HTTPS
