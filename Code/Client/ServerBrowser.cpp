@@ -310,15 +310,17 @@ void ServerBrowser::Update()
 	m_servers.clear();
 
 	const auto& masters = gClient->GetMasters();
-	size_t* remaining = new size_t; // this one can survive through stack pops
-	remaining[0] = masters.size();
+	const size_t contractId = ++m_contract;
+	m_pendingQueryCount = masters.size();
 
 	for (const std::string & master : masters)
 	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-		gClient->GetHTTPClient()->GET(url, [this, master, remaining](HTTPClientResult& result)
+		gClient->GetHTTPClient()->GET(url, [this, master, contractId](HTTPClientResult& result)
 			{
+				if (contractId != m_contract) return;
+				m_pendingQueryCount--;
 				if (m_pListener)
 				{
 					if (result.error)
@@ -330,11 +332,8 @@ void ServerBrowser::Update()
 						OnServerList(master, result);
 					}
 
-					// TODO: this must be called only once
-					remaining[0]--;
-					if (!remaining[0]) {
+					if (m_pendingQueryCount == 0) {
 						m_pListener->UpdateComplete(false);
-						delete remaining;
 					}
 				}
 			});

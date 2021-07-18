@@ -20,6 +20,9 @@ class ServerBrowser : public IServerBrowser
 	std::vector<Server> m_servers;
 	IServerListener *m_pListener = nullptr;
 
+	size_t m_pendingQueryCount = 0;
+	size_t m_contract = 0;
+
 	bool OnServerList(const std::string & master, HTTPClientResult & result);
 	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
