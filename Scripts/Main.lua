@@ -386,9 +386,10 @@ function InitializeClient()
 			GetMaster()
 			:Then(function(defaultMaster)
 				local endpoint = ToEndpoint(defaultMaster)
-				GET(endpoint .. "/id")
+				GET(endpoint .. "/id?export=json")
 				:Then(function(response)
-					local id, token = string.match(response,"([0-9]+)/([0-9a-fA-F]+)")
+					local obj = json.decode(response)
+					local id, token = obj.id, obj.token
 					if id and token then
 						return resolve({id = id, token = token, name = "::tr:" .. id, password = token, logged = true, master = defaultMaster})
 					end
@@ -429,15 +430,16 @@ function InitializeClient()
 				else
 					authHost = defaultMaster
 				end
-				POST(authEndpoint .. "/login", {
+				POST(authEndpoint .. "/login?export=json", {
 					a = name,
 					b = password
 				})
 				:Then(function(response)
-					if response == "FAIL" then
+					local obj = json.decode(response)
+					if obj.error ~= nil then
 						reject("Invalid credentials")
 					else
-						local id, token, display = response:match("([0-9]+),([a-zA-Z0-9_]+),(.*)")
+						local id, token, display = obj.id, obj.token, obj.name
 						activeProfile[profileType] = {
 							logged = true,
 							name = name,
