@@ -53,7 +53,7 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	}
 
 	gClient->GetServerConnector()->Connect(
-		pConsole->GetCVar("cl_masteraddr")->GetString(),
+		gClient->m_masters[0],  // default master
 		pConsole->GetCVar("cl_serveraddr")->GetString(),
 		pConsole->GetCVar("cl_serverport")->GetIVal()
 	);
