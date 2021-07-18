@@ -141,19 +141,19 @@ void Client::Init(IGameFramework *pGameFramework)
 				out.push_back(master);
 			}
 		}
-		if (out.size() == 0) out.push_back("crymp.net");
 	};
 
 	std::string_view masterListFallbackStr = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
 	std::stringstream masterListSs; masterListSs << masterListFallbackStr;
-	streamToMasters(masterListSs, m_masters);
 
 	std::ifstream fMasters("masters.txt");
 	if (fMasters.is_open()) {
 		CryLogAlways("$6[CryMP] Using local masters.txt as a master list provider");
 		streamToMasters(fMasters, m_masters);
 		fMasters.close();
-	} else {
+	}
+	if(m_masters.size() == 0){
+		streamToMasters(masterListSs, m_masters);
 		CryLogAlways("$6[CryMP] Using compiled masters.txt as a master list provider");
 	}
 	
