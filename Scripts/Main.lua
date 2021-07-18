@@ -375,7 +375,7 @@ function InitializeClient()
 
 	local function ToEndpoint(master)
 		local a, b, c, d = master:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")
-		if a then
+		if a or master:find("localhost") == 1 then
 			return "http://" .. master .. "/api"
 		end
 		return "https://" .. master .. "/api"
