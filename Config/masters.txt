@@ -1,2 +1,1 @@
 crymp.net
-nomad.nullptr.one
