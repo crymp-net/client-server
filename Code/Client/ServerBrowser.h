@@ -20,8 +20,8 @@ class ServerBrowser : public IServerBrowser
 	std::vector<Server> m_servers;
 	IServerListener *m_pListener = nullptr;
 
-	bool OnServerList(const std::string& master, HTTPClientResult & result);
-	bool OnServerInfo(const std::string& master, HTTPClientResult & result, int serverID);
+	bool OnServerList(const std::string & master, HTTPClientResult & result);
+	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
 public:
 	ServerBrowser();

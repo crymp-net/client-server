@@ -1,14 +1,16 @@
-#include "CryGame/StdAfx.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 #include "Library/External/nlohmann/json.hpp"
 #include "Library/Format.h"
 #include "Library/Util.h"
 
 #include "ServerBrowser.h"
+#include "ServerConnector.h"
 #include "Client.h"
 #include "HTTPClient.h"
 
@@ -104,7 +106,7 @@ namespace
 		return (minutes * 60) + seconds;
 	}
 
-	void SetBasicServerInfo(IServerListener *pListener, const std::string& master, const json & serverInfo, int serverID, bool isUpdate)
+	void SetBasicServerInfo(IServerListener *pListener, const json & serverInfo, int serverID, bool isUpdate)
 	{
 		SBasicServerInfo info = {};
 
@@ -118,7 +120,6 @@ namespace
 		info.m_hostPort   =                  GetInt(serverInfo, "local_port");
 		info.m_official   =                  GetInt(serverInfo, "ranked") != 0;
 		info.m_private    =               GetString(serverInfo, "pass") != "0";
-		info.m_master     = master.c_str();
 
 		const std::string version = "1.1.1." + std::to_string(GetInt(serverInfo, "ver"));
 		info.m_gameVersion = version.c_str();
@@ -153,7 +154,7 @@ namespace
 	}
 }
 
-bool ServerBrowser::OnServerList(const std::string& master, HTTPClientResult & result)
+bool ServerBrowser::OnServerList(const std::string & master, HTTPClientResult & result)
 {
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
 
@@ -193,7 +194,7 @@ bool ServerBrowser::OnServerList(const std::string& master, HTTPClientResult & r
 
 			m_servers.emplace_back(std::move(server));
 
-			SetBasicServerInfo(m_pListener, server.master, serverInfo, serverID, false);
+			SetBasicServerInfo(m_pListener, serverInfo, serverID, false);
 		}
 	}
 	catch (const json::exception & ex)
@@ -205,7 +206,7 @@ bool ServerBrowser::OnServerList(const std::string& master, HTTPClientResult & r
 	return true;
 }
 
-bool ServerBrowser::OnServerInfo(const std::string& master, HTTPClientResult & result, int serverID)
+bool ServerBrowser::OnServerInfo(HTTPClientResult & result, int serverID)
 {
 	CryLog("[CryMP] Server info (%d): %s", result.code, result.response.c_str());
 
@@ -219,7 +220,7 @@ bool ServerBrowser::OnServerInfo(const std::string& master, HTTPClientResult & r
 			return false;
 		}
 
-		SetBasicServerInfo(m_pListener, master, serverInfo, serverID, true);
+		SetBasicServerInfo(m_pListener, serverInfo, serverID, true);
 
 		m_pListener->UpdateValue(serverID, "hostname",              GetCString(serverInfo, "name"));
 		m_pListener->UpdateValue(serverID, "mapname",               GetCString(serverInfo, "mapnm"));
@@ -308,10 +309,10 @@ void ServerBrowser::Update()
 {
 	m_servers.clear();
 
-	// TODO: read from config file or whatever
-	auto& masters = gClient->GetMasters();
-	for (auto& master : masters) {
+	for (const std::string & master : gClient->GetMasters())
+	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
+
 		gClient->GetHTTPClient()->GET(url, [this, master](HTTPClientResult& result)
 			{
 				if (m_pListener)
@@ -325,6 +326,7 @@ void ServerBrowser::Update()
 						OnServerList(master, result);
 					}
 
+					// TODO: this must be called only once
 					m_pListener->UpdateComplete(false);
 				}
 			});
@@ -338,11 +340,11 @@ void ServerBrowser::UpdateServerInfo(int id)
 
 	const std::string ip = IPToString(m_servers[id].ip);
 	const std::string port = std::to_string(m_servers[id].port);
-	const std::string master = m_servers[id].master;
+	const std::string & master = m_servers[id].master;
 
 	const std::string url = gClient->GetMasterServerAPI(master) + "/server?ip=" + ip + "&port=" + port + "&json";
 
-	gClient->GetHTTPClient()->GET(url, [id, master, this](HTTPClientResult & result)
+	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClientResult & result)
 	{
 		if (m_pListener)
 		{
@@ -352,7 +354,7 @@ void ServerBrowser::UpdateServerInfo(int id)
 			}
 			else
 			{
-				if (OnServerInfo(master, result, id))
+				if (OnServerInfo(result, id))
 					m_pListener->ServerUpdateComplete(id);
 				else
 					m_pListener->ServerUpdateFailed(id);
@@ -375,10 +377,30 @@ void ServerBrowser::SendNatCookie(unsigned int ip, unsigned short port, int cook
 
 void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 {
-	if (!m_pListener || id < 0 || id >= m_servers.size())
+	if (id < 0 || id >= m_servers.size())
 		return;
-	gEnv->pConsole->GetCVar("cl_masteraddr")->Set(m_servers[id].master.c_str());
-	m_pListener->ServerDirectConnect(false, m_servers[id].ip, m_servers[id].port);
+
+	// make sure we are not connected to any server
+	if (!gEnv->bServer)
+	{
+		INetChannel *pClientChannel = gClient->GetGameFramework()->GetClientChannel();
+		if (pClientChannel)
+		{
+			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
+		}
+	}
+
+	gClient->GetGameFramework()->EndGameContext();
+
+	const uint32_t ip = m_servers[id].ip;
+	const std::string host = Format("%d.%d.%d.%d",
+		(ip)       & 0xFF,
+		(ip >> 8)  & 0xFF,
+		(ip >> 16) & 0xFF,
+		(ip >> 24) & 0xFF
+	);
+
+	gClient->GetServerConnector()->Connect(m_servers[id].master, host, m_servers[id].port);
 }
 
 int ServerBrowser::GetServerCount()

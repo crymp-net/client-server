@@ -63,7 +63,7 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
-	std::string GetMasterServerAPI(const std::string& master);
+	std::string GetMasterServerAPI(const std::string & master);
 	std::string GetHWID(const std::string_view & salt);
 
 	// IGameFrameworkListener
@@ -156,7 +156,8 @@ public:
 		return m_pServerPAK.get();
 	}
 
-	const std::vector<std::string>& GetMasters() const {
+	const std::vector<std::string> & GetMasters() const
+	{
 		return m_masters;
 	}
 

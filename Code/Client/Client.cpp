@@ -132,6 +132,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
 
+	// TODO: refactor
 	auto streamToMasters = [](std::istream& is, std::vector<std::string>& out) {
 		std::string master;
 		out.clear();
@@ -143,7 +144,7 @@ void Client::Init(IGameFramework *pGameFramework)
 		if (out.size() == 0) out.push_back("crymp.net");
 	};
 
-	std::string_view masterListFallbackStr = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MASTERS);
+	std::string_view masterListFallbackStr = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
 	std::stringstream masterListSs; masterListSs << masterListFallbackStr;
 	streamToMasters(masterListSs, m_masters);
 
@@ -168,7 +169,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	}
 }
 
-std::string Client::GetMasterServerAPI(const std::string& master)
+std::string Client::GetMasterServerAPI(const std::string & master)
 {
 	if (master.length() == 0 && m_masters.size() >= 1)
 		return GetMasterServerAPI(m_masters[0]);

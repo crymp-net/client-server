@@ -58,11 +58,14 @@ struct HTTPClientTask : public IExecutorTask
 
 void HTTPClient::AddTelemetryHeaders(HTTPClientRequest & request)
 {
-	for (auto& master : gClient->GetMasters()) {
-		if (Util::StartsWith(gClient->GetMasterServerAPI(master), request.url)) {
+	for (const std::string & master : gClient->GetMasters())
+	{
+		if (Util::StartsWith(gClient->GetMasterServerAPI(master), request.url))
+		{
 			request.headers["X-Sfwcl-HWID"] = m_hwid;
 			request.headers["X-Sfwcl-Locale"] = m_locale;
 			request.headers["X-Sfwcl-Tz"] = m_timezone;
+
 			break;
 		}
 	}

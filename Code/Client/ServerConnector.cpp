@@ -269,7 +269,7 @@ ServerConnector::~ServerConnector()
 {
 }
 
-void ServerConnector::Connect(const std::string& master, const std::string_view & host, unsigned int port)
+void ServerConnector::Connect(const std::string_view & master, const std::string_view & host, unsigned int port)
 {
 	m_contractID++;
 

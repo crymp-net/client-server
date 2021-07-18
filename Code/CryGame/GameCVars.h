@@ -446,7 +446,6 @@ struct SCVars
 	float		cl_animationWeaponMultSpeed;
 	float		cl_animationModelMult;
 	float		cl_animationModelMultSpeed;
-	ICVar*		cl_masteraddr;
 
 	SCVars()
 	{

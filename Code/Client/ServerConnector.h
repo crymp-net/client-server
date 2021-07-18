@@ -49,6 +49,6 @@ public:
 	ServerConnector();
 	~ServerConnector();
 
-	void Connect(const std::string& master, const std::string_view & host, unsigned int port);
+	void Connect(const std::string_view & master, const std::string_view & host, unsigned int port);
 	void Disconnect();
 };

@@ -172,11 +172,14 @@ int ScriptBind_CPPAPI::URLEncode(IFunctionHandler *pH, const char *text)
 
 int ScriptBind_CPPAPI::GetMasters(IFunctionHandler* pH)
 {
-	auto masters = gClient->GetMasters();
 	SmartScriptTable table;
-	if (!table.Create(m_pSS)) return pH->EndFunction(false);
-	for (auto& master : masters) {
+	if (!table.Create(m_pSS))
+		return pH->EndFunction(false);
+
+	for (const std::string & master : gClient->GetMasters())
+	{
 		table->PushBack(master.c_str());
 	}
+
 	return pH->EndFunction(table);
 }
