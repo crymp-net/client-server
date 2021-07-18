@@ -392,15 +392,7 @@ void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 
 	gClient->GetGameFramework()->EndGameContext();
 
-	const uint32_t ip = m_servers[id].ip;
-	const std::string host = Format("%d.%d.%d.%d",
-		(ip)       & 0xFF,
-		(ip >> 8)  & 0xFF,
-		(ip >> 16) & 0xFF,
-		(ip >> 24) & 0xFF
-	);
-
-	gClient->GetServerConnector()->Connect(m_servers[id].master, host, m_servers[id].port);
+	gClient->GetServerConnector()->Connect(m_servers[id].master, IPToString(m_servers[id].ip), m_servers[id].port);
 }
 
 int ServerBrowser::GetServerCount()
