@@ -148,25 +148,16 @@ void Client::Init(IGameFramework *pGameFramework)
 	std::stringstream masterListSs; masterListSs << masterListFallbackStr;
 	streamToMasters(masterListSs, m_masters);
 
-	// Refactor this one to use correct folder
 	std::ifstream fMasters("masters.txt");
 	if (fMasters.is_open()) {
-		CryLogAlways("$6[CryMP] Using local masters.txt as master list provider");
+		CryLogAlways("$6[CryMP] Using local masters.txt as a master list provider");
 		streamToMasters(fMasters, m_masters);
 		fMasters.close();
-		GetScriptCallbacks()->OnMasterResolved();
 	} else {
-		GetHTTPClient()->GET("https://raw.githubusercontent.com/ccomrade/crymp-client/master/Config/masters.txt", [this, streamToMasters](const HTTPClientResult& res) -> void {
-			if (res.error || res.code > 399) {
-				CryLogAlways("$6[CryMP] Using compiled masters.txt as a master list provider");
-			} else {
-				CryLogAlways("$6[CryMP] Using remote masters.txt as a master list provider");
-				std::stringstream ss; ss << res.response;
-				streamToMasters(ss, m_masters);
-			}
-			GetScriptCallbacks()->OnMasterResolved();
-		});
+		CryLogAlways("$6[CryMP] Using compiled masters.txt as a master list provider");
 	}
+	
+	GetScriptCallbacks()->OnMasterResolved();
 }
 
 std::string Client::GetMasterServerAPI(const std::string & master)
