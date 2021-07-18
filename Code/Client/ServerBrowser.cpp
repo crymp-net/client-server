@@ -309,11 +309,15 @@ void ServerBrowser::Update()
 {
 	m_servers.clear();
 
-	for (const std::string & master : gClient->GetMasters())
+	const auto& masters = gClient->GetMasters();
+	size_t* remaining = new size_t; // this one can survive through stack pops
+	remaining[0] = masters.size();
+
+	for (const std::string & master : masters)
 	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-		gClient->GetHTTPClient()->GET(url, [this, master](HTTPClientResult& result)
+		gClient->GetHTTPClient()->GET(url, [this, master, remaining](HTTPClientResult& result)
 			{
 				if (m_pListener)
 				{
@@ -327,7 +331,11 @@ void ServerBrowser::Update()
 					}
 
 					// TODO: this must be called only once
-					m_pListener->UpdateComplete(false);
+					remaining[0]--;
+					if (!remaining[0]) {
+						m_pListener->UpdateComplete(false);
+						delete remaining;
+					}
 				}
 			});
 	}
