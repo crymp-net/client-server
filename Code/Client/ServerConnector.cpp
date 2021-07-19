@@ -1,6 +1,7 @@
 #include <stdlib.h>  // atoi
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryGame/Game.h"
@@ -286,6 +287,11 @@ void ServerConnector::Connect(const std::string_view & master, const std::string
 		m_server.port = atoi(&host[colonPos + 1]);
 		m_server.host.resize(colonPos);
 	}
+
+	IConsole *pConsole = gEnv->pConsole;
+
+	pConsole->GetCVar("cl_serveraddr")->Set(m_server.host.c_str());
+	pConsole->GetCVar("cl_serverport")->Set(static_cast<int>(m_server.port));
 
 	Step1_RequestServerInfo();
 }

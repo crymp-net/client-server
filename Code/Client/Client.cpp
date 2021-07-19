@@ -1,3 +1,5 @@
+#include <stdlib.h>  // atoi
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
@@ -62,21 +64,20 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 {
 	IConsole *pConsole = gEnv->pConsole;
 
+	const char *host = "";
+	const char *port = "";
+
 	if (pArgs->GetArgCount() > 1)
-	{
-		pConsole->GetCVar("cl_serveraddr")->Set(pArgs->GetArg(1));
-	}
+		host = pArgs->GetArg(1);
+	else
+		host = pConsole->GetCVar("cl_serveraddr")->GetString();
 
 	if (pArgs->GetArgCount() > 2)
-	{
-		pConsole->GetCVar("cl_serverport")->Set(pArgs->GetArg(2));
-	}
+		port = pArgs->GetArg(2);
+	else
+		port = pConsole->GetCVar("cl_serverport")->GetString();
 
-	gClient->GetServerConnector()->Connect(
-		gClient->m_masters[0],  // default master server
-		pConsole->GetCVar("cl_serveraddr")->GetString(),
-		pConsole->GetCVar("cl_serverport")->GetIVal()
-	);
+	gClient->GetServerConnector()->Connect(gClient->m_masters[0], host, atoi(port));
 }
 
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
