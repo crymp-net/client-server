@@ -167,7 +167,7 @@ const IItemParamsNode* CWeapon::GetFireModeParams(const char* name)
 		const IItemParamsNode* fm = firemodes->GetChild(i);
 
 		const char* fmname = fm->GetAttribute("name");
-		if (!fmname || !fmname[0] || stricmp(name, fmname))
+		if (!fmname || !fmname[0] || _stricmp(name, fmname))
 			continue;
 
 		return fm;
@@ -192,7 +192,7 @@ const IItemParamsNode* CWeapon::GetZoomModeParams(const char* name)
 		const IItemParamsNode* zm = zoommodes->GetChild(i);
 
 		const char* zmname = zm->GetAttribute("name");
-		if (!zmname || !zmname[0] || stricmp(name, zmname))
+		if (!zmname || !zmname[0] || _stricmp(name, zmname))
 			continue;
 
 		return zm;
@@ -1900,7 +1900,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 			if (GetOwnerActor()->IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
-				itoa(capacity - current, buffer, 10);
+				_itoa(capacity - current, buffer, 10);
 				SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pAmmoType->GetName()).c_str(), buffer));*/
 				SAFE_HUD_FUNC(DisplayAmmoPickup(pAmmoType->GetName(), capacity - current));
 			}
@@ -1914,7 +1914,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 		if (GetOwnerActor()->IsClient() && count - current > 0)
 		{
 			/*char buffer[5];
-			itoa(count - current, buffer, 10);
+			_itoa(count - current, buffer, 10);
 			SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pAmmoType->GetName()).c_str(), buffer));*/
 			SAFE_HUD_FUNC(DisplayAmmoPickup(pAmmoType->GetName(), count - current));
 		}
@@ -2344,13 +2344,13 @@ void CWeapon::PatchFireModeWithAccessory(IFireMode* pFireMode, const char* firem
 			{
 				const IItemParamsNode* firemode = firemodes->GetChild(i);
 				const char* name = firemode->GetAttribute("name");
-				if (name && !stricmp(name, firemodeName))
+				if (name && !_stricmp(name, firemodeName))
 				{
 					pFireMode->PatchParams(firemode);
 					break;
 				}
 				const char* typ = firemode->GetAttribute("type");
-				if (typ && !stricmp(typ, firemodeName))
+				if (typ && !_stricmp(typ, firemodeName))
 				{
 					pFireMode->PatchParams(firemode);
 					break;
@@ -2384,13 +2384,13 @@ void CWeapon::PatchZoomModeWithAccessory(IZoomMode* pZoomMode, const char* zoomm
 			{
 				const IItemParamsNode* zoommode = zoommodes->GetChild(i);
 				const char* name = zoommode->GetAttribute("name");
-				if (name && !stricmp(name, zoommodeName))
+				if (name && !_stricmp(name, zoommodeName))
 				{
 					pZoomMode->PatchParams(zoommode);
 					break;
 				}
 				const char* typ = zoommode->GetAttribute("type");
-				if (typ && !stricmp(typ, zoommodeName))
+				if (typ && !_stricmp(typ, zoommodeName))
 				{
 					pZoomMode->PatchParams(zoommode);
 					break;

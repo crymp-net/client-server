@@ -1007,7 +1007,7 @@ public:
 						{
 							// Dejan: actions should not go through the ai proxy anymore!
 							/*
-							if(_stricmp(value, "idle") == 0)
+							if(__stricmp(value, "idle") == 0)
 								return pProxy->ResetAGInput( AIAG_ACTION );
 							else
 							{

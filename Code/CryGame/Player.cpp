@@ -4779,11 +4779,11 @@ void CPlayer::AnimationControlled(bool activate)
 
 void CPlayer::HandleEvent(const SGameObjectEvent& event)
 {
-	/*else if (!stricmp(event.event, "CameraFollowHead"))
+	/*else if (!_stricmp(event.event, "CameraFollowHead"))
 	{
 		m_stats.followCharacterHead = 1;
 	}
-	else if (!stricmp(event.event, "NormalCamera"))
+	else if (!_stricmp(event.event, "NormalCamera"))
 	{
 		m_stats.followCharacterHead = 0;
 	}
@@ -6976,7 +6976,7 @@ void CPlayer::AnimationEvent(ICharacterInstance* pCharacter, const AnimEventInst
 	if (IsThirdPerson())
 	{
 		const char* eventName = event.m_EventName;
-		if (gEnv->pSoundSystem && eventName && (stricmp(eventName, "sound_tp") == 0))
+		if (gEnv->pSoundSystem && eventName && (_stricmp(eventName, "sound_tp") == 0))
 		{
 			Vec3 offset(0.0f, 0.0f, 1.0f);
 			if (event.m_BonePathName && event.m_BonePathName[0])

@@ -453,7 +453,7 @@ string CGame::InitMapReloading()
 			{
 				if (pSGE->GetDescription(i, desc))
 				{
-					if (!stricmp(desc.name, levelFileName.c_str()))
+					if (!_stricmp(desc.name, levelFileName.c_str()))
 					{
 						m_bReload = true;
 						return levelFileName;
@@ -525,7 +525,7 @@ void CGame::OnSaveGame(ISaveGame* pSaveGame)
 			// strip profileName_ prefix
 			if (bSaveGameFolderShared)
 			{
-				if (strnicmp(filename.c_str(), profilename.c_str(), profilename.length()) == 0)
+				if (_strnicmp(filename.c_str(), profilename.c_str(), profilename.length()) == 0)
 					filename = filename.substr(profilename.length());
 			}
 			pProfile->SetAttribute("Singleplayer.LastSavedGame", filename);
@@ -941,7 +941,7 @@ const char* CGame::CreateSaveGameName()
 		}
 	}
 
-	itoa(id, buffer, 10);
+	_itoa(id, buffer, 10);
 	m_newSaveGame.clear();
 	if (id < 10)
 		m_newSaveGame += "0";

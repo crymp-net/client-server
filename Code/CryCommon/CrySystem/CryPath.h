@@ -254,7 +254,7 @@ namespace PathUtil
 	{
 		string fullpath = MakeFullPath(path);
 		string rootDataFolder = ToUnixPath(AddSlash(DATA_FOLDER));
-		if (fullpath.length() > rootDataFolder.length() && strnicmp(fullpath.c_str(),rootDataFolder.c_str(),rootDataFolder.length()) == 0)
+		if (fullpath.length() > rootDataFolder.length() && _strnicmp(fullpath.c_str(),rootDataFolder.c_str(),rootDataFolder.length()) == 0)
 		{
 			return fullpath.substr(rootDataFolder.length(), fullpath.length()-rootDataFolder.length());
 		}

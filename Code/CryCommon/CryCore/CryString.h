@@ -1052,7 +1052,7 @@ inline int CryStringT<T>::compare( size_type _Pos1,size_type _Num1,const value_t
 template <class T>
 inline int CryStringT<T>::compareNoCase( const CryStringT<T>& _Str ) const
 {
-	return stricmp( m_str,_Str.m_str );
+	return _stricmp( m_str,_Str.m_str );
 }
 
 template <class T>
@@ -1071,7 +1071,7 @@ inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const C
 template <class T>
 inline int CryStringT<T>::compareNoCase( const value_type* _Ptr	) const
 {
-	return stricmp( m_str,_Ptr );
+	return _stricmp( m_str,_Ptr );
 }
 
 template <class T>
@@ -1087,7 +1087,7 @@ inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const v
 	if (length() - _Pos1 < _Num1)
 		_Num1 = length() - _Pos1; // trim to size
 
-	int res = _Num1 == 0 ? 0 : strnicmp( m_str+_Pos1,_Ptr,(_Num1 < _Num2)?_Num1:_Num2);
+	int res = _Num1 == 0 ? 0 : _strnicmp( m_str+_Pos1,_Ptr,(_Num1 < _Num2)?_Num1:_Num2);
 	return (res != 0 ? res : _Num1 < _Num2 ? -1 : _Num1 == _Num2 ? 0 : +1);
 }
 

@@ -120,7 +120,7 @@ inline const char* stristr(const char* szString, const char* szSubstring)
 
 	for (int nSubstringPos = 0; nSubstringPos <= nSuperstringLength - nSubstringLength; ++nSubstringPos)
 	{
-		if (strnicmp(szString+nSubstringPos, szSubstring, nSubstringLength) == 0)
+		if (_strnicmp(szString+nSubstringPos, szSubstring, nSubstringLength) == 0)
 			return szString+nSubstringPos;
 	}
 	return NULL;
@@ -441,13 +441,13 @@ enum YesNoType
 // parse the yes/no string in the cal file
 inline YesNoType toYesNoType(const char* szString)
 {
-	if (!stricmp(szString, "yes")
-		|| !stricmp(szString, "enable")
-		|| !stricmp(szString, "1"))
+	if (!_stricmp(szString, "yes")
+		|| !_stricmp(szString, "enable")
+		|| !_stricmp(szString, "1"))
 		return nYNT_Yes;
-	if (!stricmp(szString, "no")
-		|| !stricmp(szString, "disable")
-		|| !stricmp(szString, "0"))
+	if (!_stricmp(szString, "no")
+		|| !_stricmp(szString, "disable")
+		|| !_stricmp(szString, "0"))
 		return nYNT_No;
 	return nYNT_Invalid;
 }

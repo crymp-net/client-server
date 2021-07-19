@@ -272,9 +272,9 @@ void SAmmoParams::LoadFlagsAndParams()
 
 		if (typeName && typeName[0])
 		{
-			if (!stricmp(typeName, "grenade"))
+			if (!_stricmp(typeName, "grenade"))
 				aiType = AIOBJECT_GRENADE;
-			else if (!stricmp(typeName, "rpg"))
+			else if (!_stricmp(typeName, "rpg"))
 				aiType = AIOBJECT_RPG;
 		}
 	}

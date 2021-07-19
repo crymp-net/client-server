@@ -2564,7 +2564,7 @@ void COffHand::StartPickUpItem()
 		if (!pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
 		{
 			CryFixedStringT<128> itemName = pItem->GetEntity()->GetClass()->GetName();
-			if (!stricmp(itemName.c_str(), "CustomAmmoPickup"))
+			if (!_stricmp(itemName.c_str(), "CustomAmmoPickup"))
 			{
 				SmartScriptTable props;
 				if (pItem->GetEntity()->GetScriptTable() && pItem->GetEntity()->GetScriptTable()->GetValue("Properties", props))

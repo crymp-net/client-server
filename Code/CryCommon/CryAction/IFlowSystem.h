@@ -205,12 +205,12 @@ struct SFlowSystemConversion<string, bool>
 			to = !!to_i;
 			return true;
 		}
-		if (0 == stricmp (from.c_str(), "true"))
+		if (0 == _stricmp (from.c_str(), "true"))
 		{
 			to = true;
 			return true;
 		}
-		if (0 == stricmp (from.c_str(), "false"))
+		if (0 == _stricmp (from.c_str(), "false"))
 		{
 			to = false;
 			return true;

@@ -132,7 +132,7 @@ void CItem::OnHit(float damage, const char* damageType)
 	if (!m_properties.hitpoints)
 		return;
 
-	if (damageType && !stricmp(damageType, "repair"))
+	if (damageType && !_stricmp(damageType, "repair"))
 	{
 		if (m_stats.health < m_properties.hitpoints) //repair only to maximum 
 		{

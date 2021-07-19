@@ -490,7 +490,7 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 		m_spectators = v->GetIVal();
 		keyArray.push_back(VALUE_BY_KEY(eCGO_spectators, gCreateGameOptions));
 		char s[32] = "\0";
-		itoa(m_spectators, s, 10);
+		_itoa(m_spectators, s, 10);
 		valueArray.push_back(s);
 	}
 	if (ICVar* v = gEnv->pConsole->GetCVar("g_friendlyfireratio"))

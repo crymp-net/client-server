@@ -278,7 +278,7 @@ inline void ZeroStruct( T &t ) { memset( &t,0,sizeof(t) ); }
 
 #ifndef NOT_USE_CRY_STRING
 	// Fixed-Sized (stack based string)
-	// put after the platform wrappers because of missing wcsicmp/wcsnicmp functions
+	// put after the platform wrappers because of missing _wcsicmp/_wcsnicmp functions
 	#include "CryFixedString.h"
 #endif
 

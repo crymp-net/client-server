@@ -312,7 +312,7 @@ int listvars(lua_State* L, int level)
 		if (lua_isnumber(L, i))
 		{
 			int n = (int)lua_tonumber(L, i);
-			itoa(n, sTemp, 10);
+			_itoa(n, sTemp, 10);
 			//OutputDebugString(sTemp);
 		}
 		else if (lua_isstring(L, i))
@@ -342,7 +342,7 @@ int listvars(lua_State* L, int level)
 	   if (lua_isnumber(L, i))
 	   {
 	   int n = (int)lua_tonumber(L, i);
-	   itoa(n, sTemp, 10);
+	   _itoa(n, sTemp, 10);
 	   OutputDebugString(sTemp);
 	   }
 	   else if (lua_isstring(L, i))
@@ -392,7 +392,7 @@ int listvars(lua_State* L, int level)
         lua_getinfo(L, "Sl", ar);
         if(ar->source)
         {
-          if(stricmp(ar->source,pSS->m_BreakPoint.sSourceFile.c_str())==0)
+          if(_stricmp(ar->source,pSS->m_BreakPoint.sSourceFile.c_str())==0)
             break;
         }
       }
@@ -402,7 +402,7 @@ int listvars(lua_State* L, int level)
       if(pSS->m_BreakPoint.nLine!=ar->currentline)
       {
         lua_getinfo(L, "Sl", ar);
-        if((stricmp(pSS->m_sLastBreakSource.c_str(),ar->source)==0)){
+        if((_stricmp(pSS->m_sLastBreakSource.c_str(),ar->source)==0)){
           break;
         }
       }
@@ -411,7 +411,7 @@ int listvars(lua_State* L, int level)
       /*lua_getinfo(L, "S", ar);
       if(ar->source)
       {
-      if(pSS->m_BreakPoint.nLine!=ar->currentline && (stricmp(pSS->m_sLastBreakSource.c_str(),ar->source)!=0))
+      if(pSS->m_BreakPoint.nLine!=ar->currentline && (_stricmp(pSS->m_sLastBreakSource.c_str(),ar->source)!=0))
       break;
       }
       return;*//*

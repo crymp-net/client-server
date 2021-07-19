@@ -1415,12 +1415,12 @@ void  CMPLobbyUI::DisplayServerList()
 
 	int num_servers = m_serverlist->m_all.size();
 
-	itoa(num_servers, convert, 10);
+	_itoa(num_servers, convert, 10);
 	m_cmd = MPPath;
 	m_cmd += "NumServers\0";
 	m_player->SetVariable(m_cmd.c_str(), convert);
 
-	itoa(m_serverlist->m_startIndex, convert, 10);
+	_itoa(m_serverlist->m_startIndex, convert, 10);
 	m_cmd = MPPath;
 	m_cmd += "DisplayServerIndex\0";
 	m_player->SetVariable(m_cmd.c_str(), convert);
@@ -1434,10 +1434,10 @@ void  CMPLobbyUI::DisplayServerList()
 
 	if (m_serverlist->m_total != -1)
 	{
-		itoa(m_serverlist->m_done, convert, 10);
+		_itoa(m_serverlist->m_done, convert, 10);
 		count = convert;
 		count += "/";
-		itoa(m_serverlist->m_total, convert, 10);
+		_itoa(m_serverlist->m_total, convert, 10);
 		count += convert;
 	}
 	m_cmd = MPPath;
@@ -1452,7 +1452,7 @@ void  CMPLobbyUI::DisplayServerList()
 
 		const SServerInfo& server = m_serverlist->m_allServers[m_serverlist->m_all[idx]];
 
-		itoa(server.m_numPlayers, convert, 10);
+		_itoa(server.m_numPlayers, convert, 10);
 		if (server.m_numPlayers < 10)
 		{
 			convert[1] = convert[0];
@@ -1463,7 +1463,7 @@ void  CMPLobbyUI::DisplayServerList()
 		strcpy(uiNumPlayers, convert);
 		strcat(uiNumPlayers, " / \0");
 
-		itoa(server.m_maxPlayers, convert, 10);
+		_itoa(server.m_maxPlayers, convert, 10);
 		if (server.m_maxPlayers < 10)
 		{
 			convert[1] = ' ';

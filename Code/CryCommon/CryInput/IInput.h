@@ -79,14 +79,14 @@ struct TKeyName
 	TKeyName() { key = ""; }
 	TKeyName( const char *_key ) { key = _key; };
 	operator const char*() const { return key; };
-	bool operator<( const TKeyName &n ) const { return stricmp(key,n.key) < 0; }
-	bool operator>( const TKeyName &n ) const { return stricmp(key,n.key) > 0; }
-	bool operator==( const TKeyName &n ) const { return stricmp(key,n.key) == 0; }
-	bool operator!=( const TKeyName &n ) const { return stricmp(key,n.key) != 0; }
-	bool operator<( const char *str ) const { return stricmp(key,str) < 0; }
-	bool operator>( const char *str ) const { return stricmp(key,str) > 0; }
-	bool operator==( const char *str ) const { return stricmp(key,str) == 0; }
-	bool operator!=( const char *str ) const { return stricmp(key,str) != 0; }
+	bool operator<( const TKeyName &n ) const { return _stricmp(key,n.key) < 0; }
+	bool operator>( const TKeyName &n ) const { return _stricmp(key,n.key) > 0; }
+	bool operator==( const TKeyName &n ) const { return _stricmp(key,n.key) == 0; }
+	bool operator!=( const TKeyName &n ) const { return _stricmp(key,n.key) != 0; }
+	bool operator<( const char *str ) const { return _stricmp(key,str) < 0; }
+	bool operator>( const char *str ) const { return _stricmp(key,str) > 0; }
+	bool operator==( const char *str ) const { return _stricmp(key,str) == 0; }
+	bool operator!=( const char *str ) const { return _stricmp(key,str) != 0; }
 	const char *c_str() const { return key; }
 };
 inline bool operator==( const char *str,TKeyName &n ) { return n == str; }

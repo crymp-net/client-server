@@ -204,7 +204,7 @@ IMPLEMENT_RMI(CC4, ClSetProjectileId)
 IMPLEMENT_RMI(CC4, SvRequestTime)
 {
 	IFireMode* pFireMode = GetFireMode(params.fmId);
-	if (pFireMode && !stricmp(pFireMode->GetType(), "Plant"))
+	if (pFireMode && !_stricmp(pFireMode->GetType(), "Plant"))
 	{
 		CPlant* pPlant = static_cast<CPlant*>(pFireMode);
 		pPlant->SetTime(params.time);

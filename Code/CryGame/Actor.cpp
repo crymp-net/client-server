@@ -2543,9 +2543,9 @@ bool CActor::CheckVirtualInventoryRestrictions(const std::vector<string>& invent
 		{
 			const char* category = m_pItemSystem->GetItemCategory(*it);
 
-			if (!stricmp(category, "medium"))
+			if (!_stricmp(category, "medium"))
 				++mediumCount;
-			else if (!stricmp(category, "heavy"))
+			else if (!_stricmp(category, "heavy"))
 				++heavyCount;
 		}
 
@@ -3850,7 +3850,7 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 				if (IsClient() && g_pGame->GetHUD() && capacity - current > 0)
 				{
 					//char buffer[5];
-					//itoa(capacity - current, buffer, 10);
+					//_itoa(capacity - current, buffer, 10);
 					//g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);
 					if (g_pGame->GetHUD())
 						g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
@@ -3868,7 +3868,7 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
 			{
 				/*char buffer[5];
-				itoa(params.count - current, buffer, 10);
+				_itoa(params.count - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
 				if (g_pGame->GetHUD())
 					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
@@ -3900,7 +3900,7 @@ IMPLEMENT_RMI(CActor, ClAddAmmo)
 			if (capacity != current && IsClient() && g_pGame->GetHUD() && capacity - current > 0)
 			{
 				/*char buffer[5];
-				itoa(capacity - current, buffer, 10);
+				_itoa(capacity - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
 				if (g_pGame->GetHUD())
 					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
@@ -3912,7 +3912,7 @@ IMPLEMENT_RMI(CActor, ClAddAmmo)
 			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
 			{
 				/*char buffer[5];
-				itoa(params.count - current, buffer, 10);
+				_itoa(params.count - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
 				if (g_pGame->GetHUD())
 					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
@@ -4084,7 +4084,7 @@ void CActor::NotifyInventoryAmmoChange(IEntityClass* pAmmoClass, int amount)
 		return;
 
 	/*char buffer[5];
-	itoa(amount, buffer, 10);
+	_itoa(amount, buffer, 10);
 	SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pAmmoClass->GetName()).c_str(), buffer));*/
 	if (g_pGame->GetHUD())
 		g_pGame->GetHUD()->DisplayAmmoPickup(pAmmoClass->GetName(), amount);

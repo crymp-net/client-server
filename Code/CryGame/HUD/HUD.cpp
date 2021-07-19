@@ -805,11 +805,11 @@ void CHUD::GameRulesSet(const char* name)
 
 	if (gEnv->bMultiplayer)
 	{
-		if (!stricmp(name, "InstantAction"))
+		if (!_stricmp(name, "InstantAction"))
 			gameRules = EHUD_INSTANTACTION;
-		else if (!stricmp(name, "PowerStruggle"))
+		else if (!_stricmp(name, "PowerStruggle"))
 			gameRules = EHUD_POWERSTRUGGLE;
-		else if (!stricmp(name, "TeamAction"))
+		else if (!_stricmp(name, "TeamAction"))
 			gameRules = EHUD_TEAMACTION;
 	}
 
@@ -1385,7 +1385,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 		}
 		return;
 	}
-	else if (!stricmp(szCommand, "Suicide"))
+	else if (!_stricmp(szCommand, "Suicide"))
 	{
 		if (m_pClientActor && m_pClientActor->GetHealth() > 0)
 			ShowWarningMessage(EHUD_SUICIDE);
@@ -1408,11 +1408,11 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 			GetISystem()->GetIInput()->SetExclusiveListener(NULL);
 		}
 	}
-	if (!stricmp(szCommand, "menu_highlight"))
+	if (!_stricmp(szCommand, "menu_highlight"))
 	{
 		PlaySound(ESound_Highlight);
 	}
-	else if (!stricmp(szCommand, "menu_select"))
+	else if (!_stricmp(szCommand, "menu_select"))
 	{
 		PlaySound(ESound_Select);
 	}
@@ -1556,12 +1556,12 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 		OnCloak();
 		return;
 	}
-	else if (!stricmp(szCommand, "MP_TeamMateSelected"))
+	else if (!_stricmp(szCommand, "MP_TeamMateSelected"))
 	{
 		EntityId id = static_cast<EntityId>(atoi(szArgs));
 		m_pHUDRadar->SelectTeamMate(id, true);
 	}
-	else if (!stricmp(szCommand, "MP_KickPlayer"))
+	else if (!_stricmp(szCommand, "MP_KickPlayer"))
 	{
 		EntityId id = static_cast<EntityId>(atoi(szArgs));
 		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id);
@@ -1572,7 +1572,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 			gEnv->pConsole->ExecuteString(kick.c_str());
 		}
 	}
-	else if (!stricmp(szCommand, "MuteMember"))
+	else if (!_stricmp(szCommand, "MuteMember"))
 	{
 		if (szArgs)
 		{
@@ -1580,42 +1580,42 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 			gEnv->pGame->GetIGameFramework()->MutePlayerById(mute);
 		}
 	}
-	else if (!stricmp(szCommand, "MP_TeamMateDeselected"))
+	else if (!_stricmp(szCommand, "MP_TeamMateDeselected"))
 	{
 		EntityId id = static_cast<EntityId>(atoi(szArgs));
 		m_pHUDRadar->SelectTeamMate(id, false);
 	}
-	else if (!stricmp(szCommand, "soundstart_malfunction"))
+	else if (!_stricmp(szCommand, "soundstart_malfunction"))
 	{
 		PlaySound(ESound_Malfunction);
 	}
-	/*	else if(!stricmp(szCommand,"soundstop_malfunction"))
+	/*	else if(!_stricmp(szCommand,"soundstop_malfunction"))
 		{
 			note: hud_malfunction has been changed to oneshot instead of looping sound
 			PlaySound(ESound_Malfunction,false);
 		}*/
-	else if (!stricmp(szCommand, "vehicle_init"))
+	else if (!_stricmp(szCommand, "vehicle_init"))
 	{
 		PlaySound(ESound_VehicleIn);
 	}
-	else if (!stricmp(szCommand, "law_locking"))
+	else if (!_stricmp(szCommand, "law_locking"))
 	{
 		PlaySound(ESound_LawLocking);
 	}
-	else if (!stricmp(szCommand, "hud_download_start"))
+	else if (!_stricmp(szCommand, "hud_download_start"))
 	{
 		PlaySound(ESound_DownloadStart);
 	}
-	else if (!stricmp(szCommand, "hud_download_loop"))
+	else if (!_stricmp(szCommand, "hud_download_loop"))
 	{
 		//PlaySound(ESound_DownloadLoop);
 	}
-	else if (!stricmp(szCommand, "hud_download_stop"))
+	else if (!_stricmp(szCommand, "hud_download_stop"))
 	{
 		//PlaySound(ESound_DownloadLoop,false);
 		PlaySound(ESound_DownloadStop);
 	}
-	else if (!stricmp(szCommand, "closeBinoculars"))
+	else if (!_stricmp(szCommand, "closeBinoculars"))
 	{
 		m_pHUDScopes->DestroyBinocularsAtNextFrame();
 	}
@@ -3495,7 +3495,7 @@ void CHUD::OnPostUpdate(float frameTime)
 				{
 					string died("You died ");
 					char aNumber[5];
-					itoa(m_iDeaths, aNumber, 10);
+					_itoa(m_iDeaths, aNumber, 10);
 					died.append(aNumber);
 					died.append(" times.");
 					m_pUIDraw->DrawText(m_pDefaultFont, 10, 80, 0, 0, died.c_str(), alpha, 1, 1, 1, UIDRAWHORIZONTAL_LEFT, UIDRAWVERTICAL_TOP, UIDRAWHORIZONTAL_LEFT, UIDRAWVERTICAL_TOP);
@@ -4855,18 +4855,18 @@ void CHUD::UpdateTeamActionHUD()
 {
 	if (CGameRules* pGameRules = g_pGame->GetGameRules())
 	{
-		if (pGameRules->IsRoundTimeLimited() && !stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "TeamAction"))
+		if (pGameRules->IsRoundTimeLimited() && !_stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "TeamAction"))
 		{
 			IEntityScriptProxy* pScriptProxy = static_cast<IEntityScriptProxy*>(pGameRules->GetEntity()->GetProxy(ENTITY_PROXY_SCRIPT));
 			if (pScriptProxy)
 			{
 				bool preround = false;
 				int remainingTime = -1;
-				if (!stricmp(pScriptProxy->GetState(), "InGame"))
+				if (!_stricmp(pScriptProxy->GetState(), "InGame"))
 				{
 					remainingTime = (int)(pGameRules->GetRemainingRoundTime());
 				}
-				else if (!stricmp(pScriptProxy->GetState(), "PreRound"))
+				else if (!_stricmp(pScriptProxy->GetState(), "PreRound"))
 				{
 					preround = true;
 					remainingTime = (int)(pGameRules->GetRemainingPreRoundTime());
@@ -4900,7 +4900,7 @@ void CHUD::UpdateTeamActionHUD()
 					pGameRules->GetSynchedGlobalValue(key0 + 1, nkScore);
 					pGameRules->GetSynchedGlobalValue(key0 + 2, usScore);
 				}
-				if (pGameRules->IsRoundTimeLimited() && !stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "TeamAction"))
+				if (pGameRules->IsRoundTimeLimited() && !_stricmp(pGameRules->GetEntity()->GetClass()->GetName(), "TeamAction"))
 				{
 					IActor* pClientActor = m_pClientActor;
 					if (!pClientActor)

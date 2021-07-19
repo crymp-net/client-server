@@ -125,12 +125,12 @@ void CHUDMissionObjectiveSystem::LoadLevelObjectives(const char *filename)
 					{
 						if(attrib)
 						{
-							if(!stricmp(attrib, "Secondary"))
+							if(!_stricmp(attrib, "Secondary"))
 							{
-								if(!stricmp(optional, "true"))
+								if(!_stricmp(optional, "true"))
 									secondaryObjective = true;
 							}
-							else if(!stricmp(attrib, "MapLabel"))
+							else if(!_stricmp(attrib, "MapLabel"))
 								mapLabel = optional;
 						}
 					}

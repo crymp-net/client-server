@@ -55,7 +55,7 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 		{
 			string sPath = sGeneralPath;
 			char c[5];
-			itoa(i, c, 10);
+			_itoa(i, c, 10);
 			sPath.append(c);
 			sPath.append(".available");
 
@@ -74,7 +74,7 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 	{
 		string sPath = sGeneralPath;
 		char c[5];
-		itoa(i, c, 10);
+		_itoa(i, c, 10);
 		sPath.append(c);
 		sPath.append(".done");
 
@@ -370,8 +370,8 @@ const char* CFlashMenuObject::ValidateName(const char* fileName)
 	if (index >= 0)
 	{
 		string check(sFileName.substr(index + 1, sFileName.length() - (index + 1)));
-		//if(!stricmp(check, "levelstart")) //because of the french law we can't do this ...
-		if (!stricmp(check, "crysis"))
+		//if(!_stricmp(check, "levelstart")) //because of the french law we can't do this ...
+		if (!_stricmp(check, "crysis"))
 			return "@ui_error_levelstart";
 	}
 	return NULL;
@@ -400,7 +400,7 @@ void CFlashMenuObject::UpdateMods()
 		{
 			if (fd.attrib & _A_SUBDIR)
 			{
-				if (!stricmp("..", fd.name)) continue;
+				if (!_stricmp("..", fd.name)) continue;
 				string subDir(dir);
 				subDir.append(fd.name);
 				subDir += "\\";

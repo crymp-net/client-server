@@ -1003,7 +1003,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 			{
 				XmlNodeRef mapNode = mapInfo->getChild(n);
 				const char* name = mapNode->getTag();
-				if (!stricmp(name, "LoadingScreens"))
+				if (!_stricmp(name, "LoadingScreens"))
 				{
 					int attribs = mapNode->getNumAttributes();
 					const char* key;
@@ -1014,27 +1014,27 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 						screenArray.push_back(value);
 					}
 				}
-				else if (!stricmp(name, "HeaderText"))
+				else if (!_stricmp(name, "HeaderText"))
 				{
 					int attribs = mapNode->getNumAttributes();
 					const char* key;
 					for (int i = 0; i < attribs; ++i)
 					{
 						mapNode->getAttributeByIndex(i, &key, &header);
-						if (!stricmp(key, "text"))
+						if (!_stricmp(key, "text"))
 						{
 							break;
 						}
 					}
 				}
-				else if (!stricmp(name, "DescriptionText"))
+				else if (!_stricmp(name, "DescriptionText"))
 				{
 					int attribs = mapNode->getNumAttributes();
 					const char* key;
 					for (int i = 0; i < attribs; ++i)
 					{
 						mapNode->getAttributeByIndex(i, &key, &description);
-						if (!stricmp(key, "text"))
+						if (!_stricmp(key, "text"))
 						{
 							break;
 						}
@@ -1413,7 +1413,7 @@ static int ChooseLocalizedAudioChannel()
 
 	for (int i = 0; i < g_languageMappingCount; ++i)
 	{
-		if (stricmp(g_languageMapping[i], language) == 0)
+		if (_stricmp(g_languageMapping[i], language) == 0)
 			return i;
 	}
 	return -1;
@@ -1428,13 +1428,13 @@ bool CFlashMenuObject::PlayVideo(const char* pVideoFile, bool origUpscaleMode, u
 	ICVar* pCVar = gEnv->pConsole->GetCVar("g_language");
 	bool french = false;
 	if (pCVar)
-		french = stricmp(pCVar->GetString(), "french") == 0;
+		french = _stricmp(pCVar->GetString(), "french") == 0;
 	useSubtitles = g_pGameCVars->hud_subtitles || french;
 	if (pVideoFile && pVideoFile[0])
 	{
 		if (audioCh == VIDEOPLAYER_LOCALIZED_AUDIOCHANNEL)
 		{
-			if (french && !stricmp(pVideoFile, "Localized/Video/PS_Tutorial.sfd"))
+			if (french && !_stricmp(pVideoFile, "Localized/Video/PS_Tutorial.sfd"))
 				audioCh = -1;
 			else
 				audioCh = ChooseLocalizedAudioChannel();
@@ -1985,63 +1985,63 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 	if (g_pGame->GetOptions()->HandleFSCommand(szCommand, szArgs))
 		return;
 
-	if (!stricmp(szCommand, "menu_highlight"))
+	if (!_stricmp(szCommand, "menu_highlight"))
 	{
 		PlaySound(ESound_MenuHighlight);
 	}
-	else if (!stricmp(szCommand, "main_highlight"))
+	else if (!_stricmp(szCommand, "main_highlight"))
 	{
 		PlaySound(ESound_MainHighlight);
 	}
-	else if (!stricmp(szCommand, "menu_select"))
+	else if (!_stricmp(szCommand, "menu_select"))
 	{
 		PlaySound(ESound_MenuSelect);
 	}
-	else if (!stricmp(szCommand, "menu_select_dialog"))
+	else if (!_stricmp(szCommand, "menu_select_dialog"))
 	{
 		PlaySound(ESound_MenuSelectDialog);
 	}
-	else if (!stricmp(szCommand, "menu_winopen"))
+	else if (!_stricmp(szCommand, "menu_winopen"))
 	{
 		PlaySound(ESound_MenuOpen);
 	}
-	else if (!stricmp(szCommand, "menu_winclose"))
+	else if (!_stricmp(szCommand, "menu_winclose"))
 	{
 		PlaySound(ESound_MenuClose);
 	}
-	else if (!stricmp(szCommand, "main_start"))
+	else if (!_stricmp(szCommand, "main_start"))
 	{
 		PlaySound(ESound_MenuStart);
 	}
-	else if (!stricmp(szCommand, "main_open"))
+	else if (!_stricmp(szCommand, "main_open"))
 	{
 		PlaySound(ESound_MenuFirstOpen);
 	}
-	else if (!stricmp(szCommand, "menu_close"))
+	else if (!_stricmp(szCommand, "menu_close"))
 	{
 		PlaySound(ESound_MenuFirstClose);
 	}
-	else if (!stricmp(szCommand, "main_warning_open"))
+	else if (!_stricmp(szCommand, "main_warning_open"))
 	{
 		PlaySound(ESound_MenuWarningOpen);
 	}
-	else if (!stricmp(szCommand, "main_warning_close"))
+	else if (!_stricmp(szCommand, "main_warning_close"))
 	{
 		PlaySound(ESound_MenuWarningClose);
 	}
-	else if (!stricmp(szCommand, "menu_checkbox_select"))
+	else if (!_stricmp(szCommand, "menu_checkbox_select"))
 	{
 		PlaySound(Esound_MenuCheckbox);
 	}
-	else if (!stricmp(szCommand, "menu_difficulty"))
+	else if (!_stricmp(szCommand, "menu_difficulty"))
 	{
 		PlaySound(Esound_MenuDifficulty);
 	}
-	else if (!stricmp(szCommand, "menu_changeSlider"))
+	else if (!_stricmp(szCommand, "menu_changeSlider"))
 	{
 		PlaySound(ESound_MenuSlider);
 	}
-	else if (!stricmp(szCommand, "menu_dropdown_select"))
+	else if (!_stricmp(szCommand, "menu_dropdown_select"))
 	{
 		PlaySound(ESound_MenuDropDown);
 	}
@@ -3376,10 +3376,10 @@ void CFlashMenuObject::SetDisplayFormats()
 		if (formats[i].m_Width < 800)
 			continue;
 
-		itoa(formats[i].m_Width, buffer, 10);
+		_itoa(formats[i].m_Width, buffer, 10);
 		string command(buffer);
 		command.append("x");
-		itoa(formats[i].m_Height, buffer, 10);
+		_itoa(formats[i].m_Height, buffer, 10);
 		command.append(buffer);
 		m_pCurrentFlashMenuScreen->Invoke("addResolution", command.c_str());
 
@@ -3531,7 +3531,7 @@ public:
 IFlashLoadMovieImage* CFlashMenuObject::LoadMovie(const char* pFilePath)
 {
 	bool bResolved = false;
-	if (stricmp(PathUtil::GetExt(pFilePath), "thumbnail") == 0)
+	if (_stricmp(PathUtil::GetExt(pFilePath), "thumbnail") == 0)
 	{
 		string saveGameName = pFilePath;
 		PathUtil::RemoveExtension(saveGameName);
@@ -3580,7 +3580,7 @@ void CFlashMenuObject::OnSaveGame(ISaveGame* pSaveGame)
 		{
 			// check if it ends with '_levelstart.CRYSISJMSF'
 			const size_t len = strlen(saveGameName);
-			if (len > LEVELSTART_POSTFIX_LEN && strnicmp(saveGameName + len - LEVELSTART_POSTFIX_LEN, LEVELSTART_POSTFIX, LEVELSTART_POSTFIX_LEN) == 0)
+			if (len > LEVELSTART_POSTFIX_LEN && _strnicmp(saveGameName + len - LEVELSTART_POSTFIX_LEN, LEVELSTART_POSTFIX, LEVELSTART_POSTFIX_LEN) == 0)
 			{
 				CryFixedStringT<256> path(pLevelInfo->GetPath());
 				path += '/';

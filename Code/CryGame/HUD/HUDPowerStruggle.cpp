@@ -196,8 +196,8 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 		int ihq[2] = { (int)(hq[0] * 100.0f), (int)(hq[1] * 100.0f) };
 		static char chq[2][16];
 		memset(chq, 0, 2 * 16);
-		itoa(ihq[0], chq[0], 10);
-		itoa(ihq[1], chq[1], 10);
+		_itoa(ihq[0], chq[0], 10);
+		_itoa(ihq[1], chq[1], 10);
 
 		wstring hqFormatter[2];
 		hqFormatter[0] = g_pGame->GetHUD()->LocalizeWithParams("@mp_HQLife", false, chq[0]);
@@ -584,7 +584,7 @@ bool CHUDPowerStruggle::CheckDoubleLoadoutName(const char* name)
 	for (int i(0); i < m_EquipmentPacks.size(); ++i)
 	{
 		SEquipmentPack pack = m_EquipmentPacks[i];
-		if (!stricmp(pack.strName.c_str(), name)) return false;
+		if (!_stricmp(pack.strName.c_str(), name)) return false;
 	}
 	return true;
 }
@@ -1374,7 +1374,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 	ActivateBuyMenuTabs();
 
 	char buffer[10];
-	itoa(m_lastPurchase.iPrice, buffer, 10);
+	_itoa(m_lastPurchase.iPrice, buffer, 10);
 
 	wstring localized;
 	localized = g_pHUD->LocalizeWithParams("@ui_buy_REPEATLASTBUY", true, buffer);

@@ -61,7 +61,7 @@ string CTweakMetadataLUA::GetValue(void) {
 			result = value.str; 
 			break;
 		case ANY_TNUMBER:
-			//result = itoa(value.number, buffer, 10);
+			//result = _itoa(value.number, buffer, 10);
 			_snprintf(buffer, sizeof buffer, "%g", value.number);
 			buffer[sizeof buffer - 1] = 0;
 			result = buffer;

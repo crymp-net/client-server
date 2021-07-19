@@ -77,14 +77,14 @@ public:
 		return ::strncmp(a, b, n);
 	}
 
-	ILINE int _stricmp ( const_str a, const_str b) const
+	ILINE int __stricmp ( const_str a, const_str b) const
 	{
-		return ::stricmp(a, b);
+		return ::_stricmp(a, b);
 	}
 
 	ILINE int _strnicmp ( const_str a, const_str b, size_type n) const
 	{
-		return strnicmp(a, b, n);
+		return _strnicmp(a, b, n);
 	}
 
 	ILINE size_type _strspn( const_str str, const_str strCharSet ) const
@@ -178,14 +178,14 @@ public:
 		return wcsncmp (a, b, n);
 	}
 
-	ILINE int _stricmp ( const_str a, const_str b) const
+	ILINE int __stricmp ( const_str a, const_str b) const
 	{
-		return wcsicmp(a, b);
+		return _wcsicmp(a, b);
 	}
 
 	ILINE int _strnicmp ( const_str a, const_str b, size_type n) const
 	{
-		return wcsnicmp(a, b, n);
+		return _wcsnicmp(a, b, n);
 	}
 
 	ILINE size_type _strspn( const_str str, const_str strCharSet ) const
@@ -998,7 +998,7 @@ inline int CryStackStringT<T,S>::compare( size_type _Pos1,size_type _Num1,const 
 template <class T, size_t S>
 inline int CryStackStringT<T,S>::compareNoCase( const CryStackStringT<T,S>& _Str ) const
 {
-	return CharTraits<T>::_stricmp( m_str,_Str.m_str );
+	return CharTraits<T>::__stricmp( m_str,_Str.m_str );
 }
 
 template <class T, size_t S>
@@ -1017,7 +1017,7 @@ inline int CryStackStringT<T,S>::compareNoCase( size_type _Pos1,size_type _Num1,
 template <class T, size_t S>
 inline int CryStackStringT<T,S>::compareNoCase( const value_type* _Ptr	) const
 {
-	return CharTraits<T>::_stricmp( m_str,_Ptr );
+	return CharTraits<T>::__stricmp( m_str,_Ptr );
 }
 
 template <class T, size_t S>

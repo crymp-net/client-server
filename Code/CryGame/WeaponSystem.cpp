@@ -450,7 +450,7 @@ void CWeaponSystem::Scan(const char *folderName)
 				continue;
 			}
 
-			if (stricmp(PathUtil::GetExt(fd.name), "xml"))
+			if (_stricmp(PathUtil::GetExt(fd.name), "xml"))
 				continue;
 
 			string xmlFile = folder + string("/") + string(fd.name);

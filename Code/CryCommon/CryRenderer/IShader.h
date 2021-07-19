@@ -200,7 +200,7 @@ struct SShaderParam
       SShaderParam *sp = &(*Params)[i]; 
       if (!sp)
         continue;
-      if (!stricmp(sp->m_Name, name))
+      if (!_stricmp(sp->m_Name, name))
       {
         switch (sp->m_Type)
         {          
@@ -1061,28 +1061,28 @@ enum ETexGenType
 };
 
 #define CASE_TEXMOD(var_name)\
-  if(!stricmp(#var_name,szParamName))\
+  if(!_stricmp(#var_name,szParamName))\
   {\
     var_name = fValue;\
     return true;\
   }\
 
 #define CASE_TEXMODANGLE(var_name)\
-  if(!stricmp(#var_name,szParamName))\
+  if(!_stricmp(#var_name,szParamName))\
 {\
   var_name = Degr2Word(fValue);\
   return true;\
 }\
 
 #define CASE_TEXMODBYTE(var_name)\
-  if(!stricmp(#var_name,szParamName))\
+  if(!_stricmp(#var_name,szParamName))\
 {\
   var_name = (byte)fValue;\
   return true;\
 }\
 
 #define CASE_TEXMODBOOL(var_name)\
-  if(!stricmp(#var_name,szParamName))\
+  if(!_stricmp(#var_name,szParamName))\
 {\
   var_name = (fValue==1.f);\
   return true;\
@@ -1371,7 +1371,7 @@ struct STexSampler
   }
   _inline friend bool operator != (const STexSampler &m1, const STexSampler &m2)
   {
-    if (stricmp(m1.m_Name.c_str(), m2.m_Name.c_str()) != 0 ||
+    if (_stricmp(m1.m_Name.c_str(), m2.m_Name.c_str()) != 0 ||
       m1.m_eTexType != m2.m_eTexType || 
       m1.m_nTexFlags != m2.m_nTexFlags ||
       m1.m_nFlags != m2.m_nFlags)
@@ -1399,7 +1399,7 @@ struct SEfResTexture
 
   _inline friend bool operator != (const SEfResTexture &m1, const SEfResTexture &m2)
   {
-    if (stricmp(m1.m_Name.c_str(), m2.m_Name.c_str()) != 0 ||
+    if (_stricmp(m1.m_Name.c_str(), m2.m_Name.c_str()) != 0 ||
         m1.m_TexFlags != m2.m_TexFlags || 
         m1.m_Amount != m2.m_Amount ||
         m1.m_bUTile != m2.m_bUTile ||

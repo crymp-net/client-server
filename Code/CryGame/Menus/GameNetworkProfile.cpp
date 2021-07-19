@@ -1628,14 +1628,14 @@ void CGameNetworkProfile::SearchUsers(const char* nick)
 
 bool CGameNetworkProfile::CanInvite(const char* nick)
 {
-	if (!stricmp(m_login.c_str(), nick))
+	if (!_stricmp(m_login.c_str(), nick))
 		return false;
 	return m_buddies->CanInvite(nick);
 }
 
 bool CGameNetworkProfile::CanIgnore(const char* nick)
 {
-	if (!stricmp(m_login.c_str(), nick))
+	if (!_stricmp(m_login.c_str(), nick))
 		return false;
 	return m_buddies->CanIgnore(nick);
 }
@@ -1666,7 +1666,7 @@ bool CGameNetworkProfile::GetUserInfo(const char* nick, SUserInfo& info, int& id
 
 bool CGameNetworkProfile::IsIgnored(const char* nick)
 {
-	if (!stricmp(m_login.c_str(), nick))
+	if (!_stricmp(m_login.c_str(), nick))
 		return false;
 	return m_buddies->IsIgnoring(nick);
 }

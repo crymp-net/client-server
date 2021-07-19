@@ -83,9 +83,9 @@ class CNameTable : public INameTable
 	static inline int compare(const char *s1, const char *s2)
 	{ return strcmp(s1, s2); }
 #else
-  typedef std::set<char *, stl::less_stricmp<char *> > TableT;
+  typedef std::set<char *, stl::less__stricmp<char *> > TableT;
 	static inline int compare(const char *s1, const char *s2)
-	{ return stricmp(s1, s2); }
+	{ return _stricmp(s1, s2); }
 #endif
 
   TableT m_Table;
@@ -296,9 +296,9 @@ private:
   #endif
 #else
   #ifdef USE_HASH_MAP
-    typedef stl::hash_map<const char*,SNameEntry*,stl::hash_stricmp<const char*> > NameMap;
+    typedef stl::hash_map<const char*,SNameEntry*,stl::hash__stricmp<const char*> > NameMap;
   #else
-    typedef std::map<const char*,SNameEntry*,stl::less_stricmp<const char*> > NameMap;
+    typedef std::map<const char*,SNameEntry*,stl::less__stricmp<const char*> > NameMap;
   #endif
 #endif
 
@@ -478,13 +478,13 @@ inline bool	CCryName::operator!=( const CCryName &n ) const {
 }
 
 inline bool	CCryName::operator==( const char* str ) const {
-	return m_str && stricmp(m_str,str) == 0;
+	return m_str && _stricmp(m_str,str) == 0;
 }
 
 inline bool	CCryName::operator!=( const char* str ) const {
 	if (!m_str)
 		return true;
-	return stricmp(m_str,str) != 0;
+	return _stricmp(m_str,str) != 0;
 }
 
 inline bool	CCryName::operator<( const CCryName &n ) const {

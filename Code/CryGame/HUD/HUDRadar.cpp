@@ -1621,7 +1621,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 		{
 			XmlNodeRef mapNode = mapInfo->getChild(n);
 			const char* name = mapNode->getTag();
-			if (!stricmp(name, "MiniMap"))
+			if (!_stricmp(name, "MiniMap"))
 			{
 				int attribs = mapNode->getNumAttributes();
 				const char* key;
@@ -2489,7 +2489,7 @@ FlashRadarType CHUDRadar::ChooseType(IEntity* pEntity, bool radarOnly)
 		returnType = EPatrolBoat;
 	else if (pCls == m_pBoatUS)
 		returnType = ESpeedBoat;
-	else if (!stricmp(cls, "HQ"))
+	else if (!_stricmp(cls, "HQ"))
 	{
 		CGameRules* pGameRules = static_cast<CGameRules*>(gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules());
 		if (pGameRules->GetTeam(pEntity->GetId()) == 2) //us team
@@ -2497,7 +2497,7 @@ FlashRadarType CHUDRadar::ChooseType(IEntity* pEntity, bool radarOnly)
 		else
 			returnType = EHeadquarter;
 	}
-	else if (!stricmp(cls, "Factory") && m_pHUD->GetPowerStruggleHUD())	//this should be much bigger and choose out of the different factory versions (not yet existing)
+	else if (!_stricmp(cls, "Factory") && m_pHUD->GetPowerStruggleHUD())	//this should be much bigger and choose out of the different factory versions (not yet existing)
 	{
 		if (m_pHUD->GetPowerStruggleHUD()->CanBuild(pEntity, "ustank"))
 		{
@@ -2520,7 +2520,7 @@ FlashRadarType CHUDRadar::ChooseType(IEntity* pEntity, bool radarOnly)
 			returnType = EFactoryPrototype;
 		}
 	}
-	else if (!stricmp(cls, "AlienEnergyPoint"))
+	else if (!_stricmp(cls, "AlienEnergyPoint"))
 	{
 		returnType = EAlienEnergySource;
 	}

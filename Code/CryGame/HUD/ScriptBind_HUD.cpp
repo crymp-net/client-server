@@ -272,7 +272,7 @@ int CScriptBind_HUD::TacWarning(IFunctionHandler* pH)
 	for (int i = 0; i < buildings.size(); ++i)
 	{
 		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(buildings[i].m_id);
-		if (!stricmp(pEntity->GetClass()->GetName(), "HQ"))
+		if (!_stricmp(pEntity->GetClass()->GetName(), "HQ"))
 		{
 			Vec3 pos = pEntity->GetWorldPos();
 			pos.z += 10;

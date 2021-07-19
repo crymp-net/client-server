@@ -1398,7 +1398,7 @@ void CTrooper::JumpEffect()
 
 void CTrooper::AnimationEvent(ICharacterInstance *pCharacter, const AnimEventInstance &event)
 {
-	if(stricmp(event.m_EventName, "jump") == 0 && m_jumpParams.state != JS_Flying) 
+	if(_stricmp(event.m_EventName, "jump") == 0 && m_jumpParams.state != JS_Flying) 
 		Jump();
 	//else
 	CAlien::AnimationEvent (pCharacter,event);
