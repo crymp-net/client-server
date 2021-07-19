@@ -897,35 +897,40 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 
 	size_t pos;
 
-	// replace \ with \\ 
+	// replace \ with \\ a
+	
 	pos = 1;
+	std::string strValue = szValue.c_str();
 	for (;;)
 	{
-		pos = szValue.find_first_of("\\", pos);
+		pos = strValue.find_first_of("\\", pos);
 
-		if (pos == CryFixedStringT<128>::npos)
+		if (pos == std::string::npos)
 		{
 			break;
 		}
 
-		szValue.replace(pos, 1, "\\\\", 2);
+		strValue.replace(pos, 1, "\\\\", 2);
 		pos += 2;
 	}
+	
 
 	// replace " with \" 
 	pos = 1;
 	for (;;)
 	{
-		pos = szValue.find_first_of("\"", pos);
+		pos = strValue.find_first_of("\"", pos);
 
-		if (pos == CryFixedStringT<128>::npos)
+		if (pos == std::string::npos)
 		{
 			break;
 		}
 
-		szValue.replace(pos, 1, "\\\"", 2);
+		strValue.replace(pos, 1, "\\\"", 2);
 		pos += 2;
 	}
+	
+	szValue = strValue.c_str();
 
 	if (pCVar->GetType() == CVAR_STRING)
 		szLine += " = \"" + szValue + "\"\r\n";
