@@ -154,7 +154,7 @@ namespace
 	}
 }
 
-bool ServerBrowser::OnServerList(const std::string & master, HTTPClientResult & result)
+bool ServerBrowser::OnServerList(HTTPClientResult & result, const std::string & master)
 {
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
 
@@ -173,7 +173,6 @@ bool ServerBrowser::OnServerList(const std::string & master, HTTPClientResult & 
 			const int serverID = m_servers.size();
 
 			Server server;
-
 			server.master = master;
 
 			if (GetInt(serverInfo, "own"))
@@ -308,35 +307,36 @@ void ServerBrowser::Stop()
 void ServerBrowser::Update()
 {
 	m_servers.clear();
+	m_pendingQueryCount = gClient->GetMasters().size();
 
-	const auto& masters = gClient->GetMasters();
-	const size_t contractId = ++m_contract;
-	m_pendingQueryCount = masters.size();
-
-	for (const std::string & master : masters)
+	for (const std::string & master : gClient->GetMasters())
 	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-		gClient->GetHTTPClient()->GET(url, [this, master, contractId](HTTPClientResult& result)
-			{
-				if (contractId != m_contract) return;
-				m_pendingQueryCount--;
-				if (m_pListener)
-				{
-					if (result.error)
-					{
-						CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
-					}
-					else
-					{
-						OnServerList(master, result);
-					}
+		gClient->GetHTTPClient()->GET(url, [this, master, contractId = ++m_contract](HTTPClientResult& result)
+		{
+			if (contractId != m_contract)
+				return;
 
-					if (m_pendingQueryCount == 0) {
-						m_pListener->UpdateComplete(false);
-					}
+			m_pendingQueryCount--;
+
+			if (m_pListener)
+			{
+				if (result.error)
+				{
+					CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
 				}
-			});
+				else
+				{
+					OnServerList(result, master);
+				}
+
+				if (m_pendingQueryCount == 0)
+				{
+					m_pListener->UpdateComplete(false);
+				}
+			}
+		});
 	}
 }
 

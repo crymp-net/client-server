@@ -14,7 +14,7 @@ class ServerBrowser : public IServerBrowser
 	{
 		uint32_t ip = 0;
 		uint16_t port = 0;
-		std::string master = "crymp.net";
+		std::string master;
 	};
 
 	std::vector<Server> m_servers;
@@ -23,7 +23,7 @@ class ServerBrowser : public IServerBrowser
 	size_t m_pendingQueryCount = 0;
 	size_t m_contract = 0;
 
-	bool OnServerList(const std::string & master, HTTPClientResult & result);
+	bool OnServerList(HTTPClientResult & result, const std::string & master);
 	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
 public:

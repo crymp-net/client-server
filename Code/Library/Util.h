@@ -6,6 +6,7 @@
 #include <string_view>
 #include <filesystem>
 #include <algorithm>
+#include <vector>
 
 namespace Util
 {
@@ -18,6 +19,10 @@ namespace Util
 	bool StartsWithNoCase(const std::wstring_view & prefix, const std::wstring_view & text);
 
 	bool PathStartsWith(const std::filesystem::path & prefix, const std::filesystem::path & path);
+
+	std::vector<std::string_view> Split(const std::string_view & text, const std::string_view & separators);
+	std::vector<std::string_view> SplitLines(const std::string_view & text);
+	std::vector<std::string_view> SplitWhitespace(const std::string_view & text);
 
 	const char *CopyToBuffer(const std::string_view & text, char *buffer, size_t bufferSize);
 

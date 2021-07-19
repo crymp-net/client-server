@@ -72,6 +72,40 @@ bool Util::PathStartsWith(const std::filesystem::path & prefix, const std::files
 	return prefixIt == prefix.end();
 }
 
+std::vector<std::string_view> Util::Split(const std::string_view & text, const std::string_view & separators)
+{
+	std::vector<std::string_view> result;
+
+	std::string_view remainingText = text;
+	size_t pos = remainingText.find_first_of(separators);
+
+	while (pos != std::string_view::npos)
+	{
+		std::string_view token(remainingText.data(), pos);
+
+		if (!token.empty())
+			result.push_back(token);
+
+		remainingText.remove_prefix(pos + 1);
+		pos = remainingText.find_first_of(separators);
+	}
+
+	if (!remainingText.empty())
+		result.push_back(remainingText);
+
+	return result;
+}
+
+std::vector<std::string_view> Util::SplitLines(const std::string_view & text)
+{
+	return Split(text, "\r\n");
+}
+
+std::vector<std::string_view> Util::SplitWhitespace(const std::string_view & text)
+{
+	return Split(text, "\t\n\v\f\r ");
+}
+
 const char *Util::CopyToBuffer(const std::string_view & text, char *buffer, size_t bufferSize)
 {
 	if (buffer && bufferSize > 0)

@@ -170,7 +170,7 @@ int ScriptBind_CPPAPI::URLEncode(IFunctionHandler *pH, const char *text)
 	return pH->EndFunction(HTTP::URLEncode(text).c_str());
 }
 
-int ScriptBind_CPPAPI::GetMasters(IFunctionHandler* pH)
+int ScriptBind_CPPAPI::GetMasters(IFunctionHandler *pH)
 {
 	SmartScriptTable table;
 	if (!table.Create(m_pSS))

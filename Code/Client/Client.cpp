@@ -22,8 +22,41 @@
 #include "ServerConnector.h"
 #include "ServerPAK.h"
 
-#include <fstream>
-#include <sstream>
+void Client::InitMasters()
+{
+	std::string content;
+
+	WinAPI::File file("masters.txt", WinAPI::FileAccess::READ_ONLY);  // Crysis main directory
+	if (file)
+	{
+		CryLogAlways("$6[CryMP] Using local masters.txt as the master server list provider");
+
+		try
+		{
+			content = file.Read();
+		}
+		catch (const Error & error)
+		{
+			CryLogAlways("$4[CryMP] Failed to read the masters.txt file: %s", error.what());
+		}
+	}
+	else
+	{
+		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
+	}
+
+	for (const std::string_view & master : Util::SplitWhitespace(content))
+	{
+		m_masters.emplace_back(master);
+	}
+
+	if (m_masters.empty())
+	{
+		m_masters.emplace_back("crymp.net");
+	}
+
+	m_pScriptCallbacks->OnMasterResolved();
+}
 
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 {
@@ -53,7 +86,7 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	}
 
 	gClient->GetServerConnector()->Connect(
-		gClient->m_masters[0],  // default master
+		gClient->m_masters[0],  // default master server
 		pConsole->GetCVar("cl_serveraddr")->GetString(),
 		pConsole->GetCVar("cl_serverport")->GetIVal()
 	);
@@ -127,55 +160,29 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 
-
+	// execute Lua scripts
 	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
 
-	// TODO: refactor
-	auto streamToMasters = [](std::istream& is, std::vector<std::string>& out) {
-		std::string master;
-		out.clear();
-		while (is >> master) {
-			if (master.length() > 0) {
-				out.push_back(master);
-			}
-		}
-	};
-
-	std::ifstream masters("masters.txt");
-	if (masters.is_open()) {
-		CryLogAlways("$6[CryMP] Using local masters.txt as a master list provider");
-		streamToMasters(masters, m_masters);
-		masters.close();
-	}
-
-	if(m_masters.size() == 0){
-		CryLogAlways("$6[CryMP] Using compiled masters.txt as a master list provider");
-		std::stringstream ss; 
-		ss << WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
-		streamToMasters(ss, m_masters);
-	}
-	
-	GetScriptCallbacks()->OnMasterResolved();
+	InitMasters();
 }
 
 std::string Client::GetMasterServerAPI(const std::string & master)
 {
-	if (master.length() == 0 && m_masters.size() >= 1)
-		return GetMasterServerAPI(m_masters[0]);
-
-	if (master.length() > 0) {
+	if (master.empty())
+	{
+		return "https://" + m_masters[0] + "/api";
+	}
+	else
+	{
 		int a = 0, b = 0, c = 0, d = 0;
 		// in case it is IP, don't use HTTPS
-		if (sscanf(master.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) == 4 || master.find("localhost") == 0)
+		if (sscanf(master.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) == 4 || master == "localhost")
 			return "http://" + master + "/api";
-		return std::string("https://") + master + "/api";
+		else
+			return "https://" + master + "/api";
 	}
-	
-	CryLogAlways("$4[CryMP] Failed to get the master server API, using fallback!");
-
-	return "https://crymp.net/api";
 }
 
 std::string Client::GetHWID(const std::string_view & salt)

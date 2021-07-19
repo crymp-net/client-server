@@ -49,6 +49,7 @@ void ScriptCallbacks::OnSpawn(IEntity *pEntity)
 	Call(SCRIPT_CALLBACK_ON_SPAWN, entityId);
 }
 
-void ScriptCallbacks::OnMasterResolved() {
+void ScriptCallbacks::OnMasterResolved()
+{
 	Call(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, true);
 }

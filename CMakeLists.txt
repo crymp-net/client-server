@@ -753,7 +753,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 ################################################################################
 
 set(CRYMP_CLIENT_RESOURCES
-  ${PROJECT_SOURCE_DIR}/Config/masters.txt
   ${PROJECT_SOURCE_DIR}/Resources/CursorAmber.cur
   ${PROJECT_SOURCE_DIR}/Resources/CursorBlue.cur
   ${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
@@ -764,6 +763,7 @@ set(CRYMP_CLIENT_RESOURCES
   ${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
   ${PROJECT_SOURCE_DIR}/Scripts/Main.lua
   ${PROJECT_SOURCE_DIR}/Scripts/RPC.lua
+  ${PROJECT_SOURCE_DIR}/masters.txt
 )
 
 set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")

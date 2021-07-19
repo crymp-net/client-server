@@ -14,6 +14,7 @@ struct HTTPClientTask : public IExecutorTask
 	void Execute() override
 	{
 		CryLog("%s %s", request.method.c_str(), request.url.c_str());
+
 		try
 		{
 			result.code = WinAPI::HTTPRequest(
