@@ -67,9 +67,9 @@ struct IGameObjectExtensionCreatorBase
 	template <class T> \
 	struct C##name##Creator : public I##name##Creator \
 	{ \
-		I##name * Create() \
+		IGameObjectExtension * Create() \
 		{ \
-			return new T(); \
+			return (IGameObjectExtension*) new T(); \
 		} \
 		void GetGameObjectExtensionRMIData( void ** ppRMI, size_t * nCount ) \
 		{ \

@@ -1478,7 +1478,7 @@ void  CMPLobbyUI::DisplayServerList()
 		m_cmd = MPPath;
 		m_cmd += "AddServer\0";
 
-		SFlashVarValue args[] = { server.m_serverId, server.m_hostName.c_str(), server.m_ping, uiNumPlayers, server.m_mapName.c_str(), server.m_gameTypeName.c_str(), uiIP, server.m_hostPort, server.m_private, server.m_official, server.m_favorite, server.m_anticheat, server.m_canjoin, server.m_gameVersion };
+		SFlashVarValue args[] = { server.m_serverId, server.m_hostName.c_str(), server.m_ping, uiNumPlayers, server.m_mapName.c_str(), server.m_gameTypeName.c_str(), uiIP, server.m_hostPort, server.m_private, server.m_official, server.m_favorite, server.m_anticheat, server.m_canjoin, server.m_gameVersion.c_str() };
 		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 
 	}
@@ -1685,8 +1685,8 @@ void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
 													sd.m_dedicated ? "@ui_menu_YES" : "@ui_menu_NO",
 													sd.m_voicecomm ? "@ui_menu_ENABLED" : "@ui_menu_DISABLED",
 													sd.m_gamepadsonly ? "@ui_menu_YES" : "@ui_menu_NO",
-													sd.m_modname,
-													sd.m_modversion };
+													sd.m_modname.c_str(),
+													sd.m_modversion.c_str() };
 
 		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
 	}

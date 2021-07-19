@@ -914,7 +914,7 @@ void CFlashMenuObject::MP_ResetProgress(int iProgress)
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDRESET]->Invoke("SetProgress", float(iProgress));
 	}
 
-	const bool bStandAlone = gEnv->pRenderer->EF_Query(EFQ_RecurseLevel) <= 0;
+	const bool bStandAlone = ((intptr_t)gEnv->pRenderer->EF_Query(EFQ_RecurseLevel)) <= 0;
 	if (bStandAlone)
 		gEnv->pSystem->RenderBegin();
 	m_bIgnorePendingEvents = true;
@@ -1167,7 +1167,7 @@ void CFlashMenuObject::OnLoadingProgress(ILevelInfo* pLevel, int progressAmount)
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("SetProgress", fProgress);
 	}
 
-	const bool bStandAlone = gEnv->pRenderer->EF_Query(EFQ_RecurseLevel) <= 0;
+	const bool bStandAlone = ((intptr_t)gEnv->pRenderer->EF_Query(EFQ_RecurseLevel)) <= 0;
 	if (bStandAlone)
 		gEnv->pSystem->RenderBegin();
 	m_bIgnorePendingEvents = true;
