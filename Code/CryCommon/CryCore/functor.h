@@ -479,7 +479,7 @@ functor( RT (*f)() )
 {
 	return CBFunctionTranslator0wRet<RT,RT (*)()>(f);
 }
-
+*/
 /************************* one arg - no return *******************/
 template <class P1>
 class Functor1:public FunctorBase {
@@ -887,7 +887,7 @@ functor( RT (CallType::* RHCB_CONST_REF f)(P1)const)
 	typedef RT (CallType::*MemFunc)(P1)const;
 	return CBMemberOf1stArgTranslator2wRet<P1,P2,RT,MemFunc>(f);
 }
-
+*/
 
 /************************* three args - no return *******************/
 template <class P1,class P2,class P3>
@@ -1091,7 +1091,7 @@ functor( RT (CallType::* RHCB_CONST_REF f)(P1,P2)const)
 	typedef RT (CallType::*MemFunc)(P1,P2)const;
 	return CBMemberOf1stArgTranslator3wRet<P1,P2,P3,RT,MemFunc>(f);
 }
-
+*/
 
 /************************* four args - no return *******************/
 template <class P1,class P2,class P3,class P4>

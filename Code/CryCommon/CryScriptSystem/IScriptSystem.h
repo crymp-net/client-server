@@ -1014,6 +1014,8 @@ inline ScriptAnyValue::ScriptAnyValue( const ScriptAnyValue& rhs )
 		vec3.y = rhs.vec3.y;
 		vec3.z = rhs.vec3.z;
 		break;
+	default:
+		break;
 	}
 }
 inline void ScriptAnyValue::Swap( ScriptAnyValue& value )

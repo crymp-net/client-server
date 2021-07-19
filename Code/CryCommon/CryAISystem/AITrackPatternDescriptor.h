@@ -167,4 +167,4 @@ struct ITrackPatternDescriptor
 };
 
 
-#endif __AITrackPatternDescriptor_H__
+#endif

@@ -1080,7 +1080,7 @@ struct pe_status_constraint : pe_status {
 
 struct pe_status_area : pe_status {
 	enum entype { type_id=23 };
-	pe_status_area() { type=type_id; bUniformOnly=false; ctr.zero(); size.zero(); vel.zero(); MARK_UNUSED gravity, pb; pLockUpdate=0; }
+	pe_status_area() { type=type_id; bUniformOnly=false; ctr.zero(); size.zero(); vel.zero(); pLockUpdate=0; }
 
 	// inputs.
 	Vec3 ctr, size;							// query bounds

@@ -68,4 +68,4 @@ public:
 	float GetNodeDistanceToOwner(const FormationNode& nodeDescriptor) const;
 } ;
 
-#endif __AIFormationDescriptor_H__
+#endif

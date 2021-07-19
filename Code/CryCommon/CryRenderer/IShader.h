@@ -236,6 +236,9 @@ struct SShaderParam
               strcpy(sp->m_Value.m_String, str);
             }
             break;
+          default:
+            // ...
+            break;
         }
         break;
       }
@@ -461,7 +464,7 @@ public:
   {
     int Id = m_Id;
     int VisId = m_VisId;
-    memcpy(this, srcObj, sizeof(*srcObj));
+    memcpy((void*)this, (void*)srcObj, sizeof(*srcObj));
     m_Id = Id;
     m_VisId = VisId;
   }
@@ -2146,7 +2149,7 @@ public:
   {
     m_BaseOrigin = m_Origin;
     m_BaseColor = m_Color;
-    m_SpecMult = m_SpecMult;
+    //m_SpecMult = m_SpecMult;
     m_RAEBaseAmbientColor = m_RAEAmbientColor;
     m_fBaseRadius = m_fRadius;
     m_fBaseLightFrustumAngle = m_fLightFrustumAngle;
