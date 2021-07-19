@@ -42,7 +42,7 @@ function InitializeClient()
 	local getCVar = System.GetCVar;
 
 	local function OnMasterResolved()
-		masters = CPPAPI.GetMasters()
+		masters = _L.CPPAPI.GetMasters()
 		printf("$5[CryMP] Resolved masters:", #masters)
 		for i, master in pairs(masters) do
 			printf("$5[CryMP] - %s", master)
@@ -98,44 +98,16 @@ function InitializeClient()
 		logAlways(fmt:format(...))
 	end
 
+	local function SafeAddCCommand(name, ...)
+		if name == "login" or name == "simple_login" or name == "secu_login" or name == "auth_login" then
+			System.LogAlways("$4[error] Cannot override these!")
+			return nil
+		end
+		return addCCommand(name, ...)
+	end
+
 	local function FixFlaws()
-		local ALLOWED_CVARS = {
-			"g_playerHealthValue", "g_blood", "g_ragdollMinTime", "cl_hitShake", "cl_hitBlur",
-			"g_ragdollPollTime", "g_ragdollDistance", "g_ragdollUnseenTime",
-			"cl_motionBlur", "cl_sprintBlur", "cl_fov", "g_tk_punish", "g_tk_punish_limit",
-			"g_pp_scale_income", "g_pp_scale_price", "g_energy_scale_price", "g_energy_scale_income",
-			"g_suitArmorHealthValue", "g_PlayerFallAndPlay", "g_difficultyLevel", "g_godMode",
-			"g_playerRespawns", "g_fallAndPlayThreshold", "g_difficultyHintSystem",
-			"g_difficultyRadius", "g_difficultyRadiusThreshold", "g_difficultyRadiusThreshold",
-			"g_difficultySaveThreshold", "g_punishFriendlyDeaths", "g_enableloadingscreen",
-			"g_enableitems"
-		}
-
-		local BANNED_CVARS = {
-			"sv_password"
-		}
-
-		local ALLOWED_CVARS_DIC = {}
-		local BANNED_CVARS_DIC = {}
-		for i,v in pairs(ALLOWED_CVARS) do
-			ALLOWED_CVARS_DIC[v] = true
-		end
-		for i,v in pairs(BANNED_CVARS) do
-			BANNED_CVARS_DIC[v] = true
-		end
-		System.AddCCommand = function(name, ...)
-			if name == "login" or name == "simple_login" or name == "auth_login" then
-				System.LogAlways("$4[error] Cannot override these!")
-				return nil
-			end
-			return addCCommand(name, ...)
-		end
-		System.GetCVar = function(cvar)
-			if BANNED_CVARS_DIC[cvar] then
-				return nil
-			end
-			return getCVar(cvar)
-		end
+		System.AddCCommand = SafeAddCCommand
 	end
 
 	local function RemoveFlaws()
@@ -146,6 +118,7 @@ function InitializeClient()
 			end
 		end
 		System.ScanDirectory = nil
+		System.BrowseURL = nil
 		FixFlaws()
 	end
 
@@ -155,13 +128,13 @@ function InitializeClient()
 		end
 		for i, v in pairs(_L) do
 			if type(_G[i]) ~= "table" then
-				printf(RED .. "[CryMP] Server changed global " .. YELLOW .. i .. RED.. ", reverting back!")
+				_L.System.Log(RED .. "[CryMP] Server changed global " .. YELLOW .. i .. RED.. ", reverting back!")
 				_G[i] = {}
 				v = _G[i]
 			end
 			for j, w in pairs(v) do
 				if _G[i][j] ~= w then
-					printf(RED .. "[CryMP] Server changed global function " .. YELLOW .. i .. "." .. j .. RED .. ", reverting back!")
+					_L.System.Log(RED .. "[CryMP] Server changed global function " .. YELLOW .. i .. "." .. j .. RED .. ", reverting back!")
 				end
 				_G[i][j] = w
 			end
@@ -578,8 +551,8 @@ function InitializeClient()
 
 	local function OnSpawn(entityId)
 		local entity = _L.System.GetEntity(entityId)
-		if entity then
-			--printf("Spawned entity %s of class %s", entity:GetName(), entity.class)
+		if entity and entity.class == "CustomAmmoPickup" then
+			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
 		end
 	end
 
