@@ -1,3 +1,5 @@
+#include <stdlib.h>  // atoi
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
@@ -22,54 +24,64 @@
 #include "ServerConnector.h"
 #include "ServerPAK.h"
 
-void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
+void Client::InitMasters()
 {
-	IGameFramework *pGameFramework = gClient->GetGameFramework();
+	std::string content;
 
-	if (!gEnv->bServer)
+	WinAPI::File file("masters.txt", WinAPI::FileAccess::READ_ONLY);  // Crysis main directory
+	if (file)
 	{
-		INetChannel *pClientChannel = pGameFramework->GetClientChannel();
-		if (pClientChannel)
+		CryLogAlways("$6[CryMP] Using local masters.txt as the master server list provider");
+
+		try
 		{
-			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
+			content = file.Read();
+		}
+		catch (const Error & error)
+		{
+			CryLogAlways("$4[CryMP] Failed to read the masters.txt file: %s", error.what());
 		}
 	}
+	else
+	{
+		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
+	}
 
-	pGameFramework->EndGameContext();
+	for (const std::string_view & master : Util::SplitWhitespace(content))
+	{
+		m_masters.emplace_back(master);
+	}
 
+	if (m_masters.empty())
+	{
+		m_masters.emplace_back("crymp.net");
+	}
+
+	m_pScriptCallbacks->OnMasterResolved();
+}
+
+void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
+{
 	IConsole *pConsole = gEnv->pConsole;
 
+	const char *host = "";
+	const char *port = "";
+
 	if (pArgs->GetArgCount() > 1)
-	{
-		pConsole->GetCVar("cl_serveraddr")->Set(pArgs->GetArg(1));
-	}
+		host = pArgs->GetArg(1);
+	else
+		host = pConsole->GetCVar("cl_serveraddr")->GetString();
 
 	if (pArgs->GetArgCount() > 2)
-	{
-		pConsole->GetCVar("cl_serverport")->Set(pArgs->GetArg(2));
-	}
+		port = pArgs->GetArg(2);
+	else
+		port = pConsole->GetCVar("cl_serverport")->GetString();
 
-	gClient->GetServerConnector()->Connect(
-		pConsole->GetCVar("cl_serveraddr")->GetString(),
-		pConsole->GetCVar("cl_serverport")->GetIVal()
-	);
+	gClient->GetServerConnector()->Connect(gClient->m_masters[0], host, atoi(port));
 }
 
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 {
-	IGameFramework *pGameFramework = gClient->GetGameFramework();
-
-	if (!gEnv->bServer)
-	{
-		INetChannel *pClientChannel = pGameFramework->GetClientChannel();
-		if (pClientChannel)
-		{
-			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
-		}
-	}
-
-	pGameFramework->EndGameContext();
-
 	gClient->GetServerConnector()->Disconnect();
 }
 
@@ -125,21 +137,27 @@ void Client::Init(IGameFramework *pGameFramework)
 
 	// execute Lua scripts
 	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(),  m_scriptRPC.length(),  "RPC.lua");
+	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
+
+	InitMasters();
 }
 
-std::string Client::GetMasterServerAPI()
+std::string Client::GetMasterServerAPI(const std::string & master)
 {
-	std::string api;
-
-	const char *endpoint = nullptr;
-	if (gEnv->pScriptSystem->GetGlobalValue("SFWCL_ENDPOINT", endpoint))
-		api = endpoint;
+	if (master.empty())
+	{
+		return "https://" + m_masters[0] + "/api";
+	}
 	else
-		CryLogAlways("$4[CryMP] Failed to get the master server API!");
-
-	return api;
+	{
+		int a = 0, b = 0, c = 0, d = 0;
+		// in case it is IP, don't use HTTPS
+		if (sscanf(master.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) == 4 || master == "localhost")
+			return "http://" + master + "/api";
+		else
+			return "https://" + master + "/api";
+	}
 }
 
 std::string Client::GetHWID(const std::string_view & salt)

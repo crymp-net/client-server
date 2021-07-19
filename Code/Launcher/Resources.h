@@ -12,3 +12,5 @@
 #define RESOURCE_SCRIPT_GAME_RULES        202
 #define RESOURCE_SCRIPT_JSON              203
 #define RESOURCE_SCRIPT_RPC               204
+
+#define RESOURCE_MASTERS                  301

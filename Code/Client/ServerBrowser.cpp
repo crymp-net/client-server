@@ -8,6 +8,7 @@
 #include "Library/Util.h"
 
 #include "ServerBrowser.h"
+#include "ServerConnector.h"
 #include "Client.h"
 #include "HTTPClient.h"
 
@@ -151,7 +152,7 @@ namespace
 	}
 }
 
-bool ServerBrowser::OnServerList(HTTPClientResult & result)
+bool ServerBrowser::OnServerList(HTTPClientResult & result, const std::string & master)
 {
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
 
@@ -170,6 +171,7 @@ bool ServerBrowser::OnServerList(HTTPClientResult & result)
 			const int serverID = m_servers.size();
 
 			Server server;
+			server.master = master;
 
 			if (GetInt(serverInfo, "own"))
 			{
@@ -303,25 +305,37 @@ void ServerBrowser::Stop()
 void ServerBrowser::Update()
 {
 	m_servers.clear();
+	m_pendingQueryCount = gClient->GetMasters().size();
 
-	const std::string url = gClient->GetMasterServerAPI() + "/servers?all&detailed&json";
-
-	gClient->GetHTTPClient()->GET(url, [this](HTTPClientResult & result)
+	for (const std::string & master : gClient->GetMasters())
 	{
-		if (m_pListener)
-		{
-			if (result.error)
-			{
-				CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
-			}
-			else
-			{
-				OnServerList(result);
-			}
+		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-			m_pListener->UpdateComplete(false);
-		}
-	});
+		gClient->GetHTTPClient()->GET(url, [this, master, contractId = ++m_contract](HTTPClientResult& result)
+		{
+			if (contractId != m_contract)
+				return;
+
+			m_pendingQueryCount--;
+
+			if (m_pListener)
+			{
+				if (result.error)
+				{
+					CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
+				}
+				else
+				{
+					OnServerList(result, master);
+				}
+
+				if (m_pendingQueryCount == 0)
+				{
+					m_pListener->UpdateComplete(false);
+				}
+			}
+		});
+	}
 }
 
 void ServerBrowser::UpdateServerInfo(int id)
@@ -331,8 +345,9 @@ void ServerBrowser::UpdateServerInfo(int id)
 
 	const std::string ip = IPToString(m_servers[id].ip);
 	const std::string port = std::to_string(m_servers[id].port);
+	const std::string & master = m_servers[id].master;
 
-	const std::string url = gClient->GetMasterServerAPI() + "/server?ip=" + ip + "&port=" + port + "&json";
+	const std::string url = gClient->GetMasterServerAPI(master) + "/server?ip=" + ip + "&port=" + port + "&json";
 
 	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClientResult & result)
 	{
@@ -367,10 +382,10 @@ void ServerBrowser::SendNatCookie(unsigned int ip, unsigned short port, int cook
 
 void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 {
-	if (!m_pListener || id < 0 || id >= m_servers.size())
+	if (id < 0 || id >= m_servers.size())
 		return;
 
-	m_pListener->ServerDirectConnect(false, m_servers[id].ip, m_servers[id].port);
+	gClient->GetServerConnector()->Connect(m_servers[id].master, IPToString(m_servers[id].ip), m_servers[id].port);
 }
 
 int ServerBrowser::GetServerCount()

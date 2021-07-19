@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
@@ -51,6 +52,10 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	std::minstd_rand m_randomEngine;
 
+	std::vector<std::string> m_masters;
+
+	void InitMasters();
+
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
 
@@ -60,7 +65,7 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
-	std::string GetMasterServerAPI();
+	std::string GetMasterServerAPI(const std::string & master);
 	std::string GetHWID(const std::string_view & salt);
 
 	// IGameFrameworkListener
@@ -151,6 +156,11 @@ public:
 	ServerPAK *GetServerPAK()
 	{
 		return m_pServerPAK.get();
+	}
+
+	const std::vector<std::string> & GetMasters() const
+	{
+		return m_masters;
 	}
 
 	// ints

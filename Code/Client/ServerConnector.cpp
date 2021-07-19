@@ -1,7 +1,9 @@
 #include <stdlib.h>  // atoi
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
@@ -115,7 +117,7 @@ void ServerConnector::Step1_RequestServerInfo()
 	const std::string & ip = m_server.host;
 	const std::string port = std::to_string(m_server.port);
 
-	const std::string url = gClient->GetMasterServerAPI() + "/server?ip=" + ip + "&port=" + port + "&json";
+	const std::string url = gClient->GetMasterServerAPI(m_server.master) + "/server?ip=" + ip + "&port=" + port + "&json";
 
 	gClient->GetHTTPClient()->GET(url, [contractID = m_contractID, this](HTTPClientResult & result)
 	{
@@ -269,13 +271,14 @@ ServerConnector::~ServerConnector()
 {
 }
 
-void ServerConnector::Connect(const std::string_view & host, unsigned int port)
+void ServerConnector::Connect(const std::string_view & master, const std::string_view & host, unsigned int port)
 {
-	m_contractID++;
+	Disconnect();
 
 	m_server.clear();
 	m_server.host = host;
 	m_server.port = port;
+	m_server.master = master;
 
 	// IP:PORT host workaround
 	const size_t colonPos = host.find(':');
@@ -285,12 +288,28 @@ void ServerConnector::Connect(const std::string_view & host, unsigned int port)
 		m_server.host.resize(colonPos);
 	}
 
+	IConsole *pConsole = gEnv->pConsole;
+
+	pConsole->GetCVar("cl_serveraddr")->Set(m_server.host.c_str());
+	pConsole->GetCVar("cl_serverport")->Set(static_cast<int>(m_server.port));
+
 	Step1_RequestServerInfo();
 }
 
 void ServerConnector::Disconnect()
 {
 	m_contractID++;
+
+	if (!gEnv->bServer)
+	{
+		INetChannel *pClientChannel = gClient->GetGameFramework()->GetClientChannel();
+		if (pClientChannel)
+		{
+			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
+		}
+	}
+
+	gClient->GetGameFramework()->EndGameContext();
 
 	gClient->GetServerPAK()->Unload();
 }

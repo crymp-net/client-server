@@ -14,12 +14,16 @@ class ServerBrowser : public IServerBrowser
 	{
 		uint32_t ip = 0;
 		uint16_t port = 0;
+		std::string master;
 	};
 
 	std::vector<Server> m_servers;
 	IServerListener *m_pListener = nullptr;
 
-	bool OnServerList(HTTPClientResult & result);
+	size_t m_pendingQueryCount = 0;
+	size_t m_contract = 0;
+
+	bool OnServerList(HTTPClientResult & result, const std::string & master);
 	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
 public:
