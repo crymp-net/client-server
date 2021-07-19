@@ -2,6 +2,7 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryNetwork/INetwork.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
@@ -271,7 +272,7 @@ ServerConnector::~ServerConnector()
 
 void ServerConnector::Connect(const std::string_view & master, const std::string_view & host, unsigned int port)
 {
-	m_contractID++;
+	Disconnect();
 
 	m_server.clear();
 	m_server.host = host;
@@ -292,6 +293,17 @@ void ServerConnector::Connect(const std::string_view & master, const std::string
 void ServerConnector::Disconnect()
 {
 	m_contractID++;
+
+	if (!gEnv->bServer)
+	{
+		INetChannel *pClientChannel = gClient->GetGameFramework()->GetClientChannel();
+		if (pClientChannel)
+		{
+			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
+		}
+	}
+
+	gClient->GetGameFramework()->EndGameContext();
 
 	gClient->GetServerPAK()->Unload();
 }

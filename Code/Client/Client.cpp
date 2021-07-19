@@ -60,19 +60,6 @@ void Client::InitMasters()
 
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 {
-	IGameFramework *pGameFramework = gClient->GetGameFramework();
-
-	if (!gEnv->bServer)
-	{
-		INetChannel *pClientChannel = pGameFramework->GetClientChannel();
-		if (pClientChannel)
-		{
-			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
-		}
-	}
-
-	pGameFramework->EndGameContext();
-
 	IConsole *pConsole = gEnv->pConsole;
 
 	if (pArgs->GetArgCount() > 1)
@@ -94,19 +81,6 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 {
-	IGameFramework *pGameFramework = gClient->GetGameFramework();
-
-	if (!gEnv->bServer)
-	{
-		INetChannel *pClientChannel = pGameFramework->GetClientChannel();
-		if (pClientChannel)
-		{
-			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
-		}
-	}
-
-	pGameFramework->EndGameContext();
-
 	gClient->GetServerConnector()->Disconnect();
 }
 

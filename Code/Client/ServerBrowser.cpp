@@ -3,8 +3,6 @@
 #include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CryAction/IGameFramework.h"
-#include "CryCommon/CryNetwork/INetwork.h"
 #include "Library/External/nlohmann/json.hpp"
 #include "Library/Format.h"
 #include "Library/Util.h"
@@ -386,18 +384,6 @@ void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 {
 	if (id < 0 || id >= m_servers.size())
 		return;
-
-	// make sure we are not connected to any server
-	if (!gEnv->bServer)
-	{
-		INetChannel *pClientChannel = gClient->GetGameFramework()->GetClientChannel();
-		if (pClientChannel)
-		{
-			pClientChannel->Disconnect(eDC_UserRequested, "User left the game");
-		}
-	}
-
-	gClient->GetGameFramework()->EndGameContext();
 
 	gClient->GetServerConnector()->Connect(m_servers[id].master, IPToString(m_servers[id].ip), m_servers[id].port);
 }
