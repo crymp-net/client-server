@@ -49,8 +49,8 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("fmId", fmId, 'fmod');
-			ser.Value("projectileId", id, 'eid');
+			ser.Value("fmId", fmId, /* 'fmod' */ 0x666D6F64);
+			ser.Value("projectileId", id, /* 'eid' */0x00656964);
 		}
 	};
 
@@ -64,7 +64,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("fmId", fmId, 'fmod');
+			ser.Value("fmId", fmId, /* 'fmod' */ 0x666D6F64);
 			ser.Value("time", time, 'fsec');
 		}
 	};

@@ -212,7 +212,7 @@ bool CProjectile::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 prof
 		{
 			Vec3 pos = GetEntity()->GetWorldPos();
 			Quat ori = GetEntity()->GetWorldRotation();
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("ori", ori, 'ori1');
 			if (ser.IsReading())
 				GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), ori, pos));
@@ -322,8 +322,8 @@ void CProjectile::FullSerialize(TSerialize ser)
 
 	ser.Value("Remote", m_remote);
 	// m_tracerpath should be serialized but the template-template stuff doesn't work under VS2005
-	ser.Value("Owner", m_ownerId, 'eid');
-	ser.Value("Weapon", m_weaponId, 'eid');
+	ser.Value("Owner", m_ownerId, /* 'eid' */0x00656964);
+	ser.Value("Weapon", m_weaponId, /* 'eid' */0x00656964);
 	ser.Value("TrailEffect", m_trailEffectId);
 	ser.Value("TrailSound", m_trailSoundId);
 	ser.Value("WhizSound", m_whizSoundId);
@@ -1315,11 +1315,11 @@ void CProjectile::PostRemoteSpawn()
 //------------------------------------------------------------------------
 void CProjectile::SerializeSpawnInfo(TSerialize ser)
 {
-	ser.Value("hostId", m_hostId, 'eid');
-	ser.Value("ownerId", m_ownerId, 'eid');
-	ser.Value("weaponId", m_weaponId, 'eid');
-	ser.Value("fmId", m_fmId, 'fmod');
-	ser.Value("pos", m_initial_pos, 'wrld');
+	ser.Value("hostId", m_hostId, /* 'eid' */0x00656964);
+	ser.Value("ownerId", m_ownerId, /* 'eid' */0x00656964);
+	ser.Value("weaponId", m_weaponId, /* 'eid' */0x00656964);
+	ser.Value("fmId", m_fmId, /* 'fmod' */ 0x666D6F64);
+	ser.Value("pos", m_initial_pos, /* 'wrld' */ 0x77726C64);
 	ser.Value("dir", m_initial_dir, 'dir0');
 	ser.Value("vel", m_initial_vel, 'vel0');
 	ser.Value("tracked", m_tracked, 'bool');
@@ -1343,11 +1343,11 @@ ISerializableInfoPtr CProjectile::GetSpawnInfo()
 		bool tracked;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("hostId", hostId, 'eid');
-			ser.Value("ownerId", ownerId, 'eid');
-			ser.Value("weaponId", weaponId, 'eid');
-			ser.Value("fmId", fmId, 'fmod');
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("hostId", hostId, /* 'eid' */0x00656964);
+			ser.Value("ownerId", ownerId, /* 'eid' */0x00656964);
+			ser.Value("weaponId", weaponId, /* 'eid' */0x00656964);
+			ser.Value("fmId", fmId, /* 'fmod' */ 0x666D6F64);
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("dir", dir, 'dir0');
 			ser.Value("vel", vel, 'vel0');
 			ser.Value("tracked", tracked, 'bool');

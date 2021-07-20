@@ -515,10 +515,10 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("type", type, 'ui3');
-			ser.Value("source", sourceId, 'eid');
+			ser.Value("type", type, /* 'ui3' */ 0x00756933);
+			ser.Value("source", sourceId, /* 'eid' */0x00656964);
 			if (type == eChatToTarget)
-				ser.Value("target", targetId, 'eid');
+				ser.Value("target", targetId, /* 'eid' */0x00656964);
 			ser.Value("message", msg);
 			ser.Value("onlyTeam", onlyTeam, 'bool');
 		}
@@ -535,7 +535,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("active", active, 'bool');
-			ser.Value("timer", timer, 'ui5');
+			ser.Value("timer", timer, /* 'ui5' */ 0x00756935);
 		}
 	};
 
@@ -592,9 +592,9 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("type", type, 'ui3');
+			ser.Value("type", type, /* 'ui3' */ 0x00756933);
 			ser.Value("message", msg);
-			ser.Value("nparams", nparams, 'ui3');
+			ser.Value("nparams", nparams, /* 'ui3' */ 0x00756933);
 
 			for (int i=0;i<nparams; ++i)
 				ser.Value("param", params[i]);
@@ -623,7 +623,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("teamId", teamId, 'team');
 		}
 	};
@@ -642,7 +642,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("teamId", teamId, 'team');
 		}
 	};
@@ -665,9 +665,9 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("mode", mode, 'ui3');
-			ser.Value("targetId", targetId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
+			ser.Value("mode", mode, /* 'ui3' */ 0x00756933);
+			ser.Value("targetId", targetId, /* 'eid' */0x00656964);
 			ser.Value("resetAll", resetAll, 'bool');
 		}
 	};
@@ -686,7 +686,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("name", name);
 		}
 	};
@@ -717,7 +717,7 @@ public:
     void SerializeWith(TSerialize ser)
     {
       ser.EnumValue("type",vote_type,eVS_none,eVS_last);
-      ser.Value("entityId",entityId,'eid');
+      ser.Value("entityId",entityId,/* 'eid' */0x00656964);
       ser.Value("param",param);
     }
   };
@@ -733,8 +733,8 @@ public:
     void SerializeWith(TSerialize ser)
     {
       ser.EnumValue("state", state, eVS_none, eVS_last);
-      ser.Value("timeout", timeout, 'ui8');
-      ser.Value("entityId", entityId,'eid');
+      ser.Value("timeout", timeout, /* 'ui8' */ 0x00756938);
+      ser.Value("entityId", entityId,/* 'eid' */0x00656964);
       ser.Value("description", description);
     }
   };
@@ -754,9 +754,9 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("lifetime", lifetime, 'fsec');
-			ser.Value("type", type, 'i8');
+			ser.Value("type", type, /* 'i8' */ 0x00006938);
 		}
 	};
 
@@ -771,7 +771,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 		}
 	};
 
@@ -792,7 +792,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 		}
 	};
 
@@ -808,7 +808,7 @@ public:
 		{
 			ser.Value("name", name);
 			ser.Value("status", status, 'hSts');
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 		}
 	};
 
@@ -835,7 +835,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("name", name);
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 		}
 	};
 
@@ -861,7 +861,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("freeze", freeze, 'bool');
 			ser.Value("vapor", vapor, 'bool');
 		}
@@ -877,7 +877,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("pos", pos, 'sHit');
 			ser.Value("impulse", impulse, 'vHPs'); // temp policy
 		}
@@ -893,8 +893,8 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("shooterId", shooterId, 'eid');
-			ser.Value("weaponId", weaponId, 'eid');
+			ser.Value("shooterId", shooterId, /* 'eid' */0x00656964);
+			ser.Value("weaponId", weaponId, /* 'eid' */0x00656964);
 		}
 	};
 

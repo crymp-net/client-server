@@ -158,7 +158,7 @@ bool CGunTurret::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profi
 		if (ser.IsReading() && enabled != m_turretparams.enabled)
 			Activate(m_turretparams.enabled);
 
-		ser.Value("health", m_stats.health, 'iii');
+		ser.Value("health", m_stats.health, /* 'iii' */ 0x00696969);
 
 		if (ser.IsReading())
 			UpdateDamageLevel();
@@ -181,7 +181,7 @@ bool CGunTurret::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profi
 		ser.Value("target_pitch", m_goalPitch, 'frad');
 
 		EntityId old_id = m_targetId;
-		ser.Value("target", m_targetId, 'eid');
+		ser.Value("target", m_targetId, /* 'eid' */0x00656964);
 		if (old_id != m_targetId)
 		{
 			OnTargetLocked(m_targetId ? gEnv->pEntitySystem->GetEntity(m_targetId) : 0);

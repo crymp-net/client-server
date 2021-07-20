@@ -4411,7 +4411,7 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 			hasWeapon = NetGetCurrentItem() != 0;
 
 		ser.Value("hasWeapon", hasWeapon, 'bool');
-		ser.Value("currentItemId", static_cast<CActor*>(this), &CActor::NetGetCurrentItem, &CActor::NetSetCurrentItem, 'eid');
+		ser.Value("currentItemId", static_cast<CActor*>(this), &CActor::NetGetCurrentItem, &CActor::NetSetCurrentItem, /* 'eid' */0x00656964);
 
 		if (reading && hasWeapon && NetGetCurrentItem() == 0) // fix the case where this guy's weapon might not have been bound on this client yet
 			ser.FlagPartialRead();

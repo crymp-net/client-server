@@ -104,7 +104,7 @@ void CSynchedStorage::Dump()
 
 void CSynchedStorage::SerializeValue(TSerialize ser, TSynchedKey & key, TSynchedValue & value, int type)
 {
-	ser.Value("key", key, 'ssk');
+	ser.Value("key", key, /* 'ssk' */ 0x0073736B);
 
 	switch (type)
 	{
@@ -153,7 +153,7 @@ void CSynchedStorage::SerializeValue(TSerialize ser, TSynchedKey & key, TSynched
 				i = *value.GetPtr<int>();
 			}
 
-			ser.Value("value", i, 'ssi');
+			ser.Value("value", i, /* 'ssi' */ 0x00737369);
 
 			if (ser.IsReading())
 			{
@@ -171,7 +171,7 @@ void CSynchedStorage::SerializeValue(TSerialize ser, TSynchedKey & key, TSynched
 				e = *value.GetPtr<EntityId>();
 			}
 
-			ser.Value("value", e, 'eid');
+			ser.Value("value", e, /* 'eid' */0x00656964);
 
 			if (ser.IsReading())
 			{
@@ -203,7 +203,7 @@ void CSynchedStorage::SerializeValue(TSerialize ser, TSynchedKey & key, TSynched
 
 void CSynchedStorage::SerializeEntityValue(TSerialize ser, EntityId id, TSynchedKey & key, TSynchedValue & value, int type)
 {
-	ser.Value("key", key, 'ssk');
+	ser.Value("key", key, /* 'ssk' */ 0x0073736B);
 
 	switch (type)
 	{
@@ -252,7 +252,7 @@ void CSynchedStorage::SerializeEntityValue(TSerialize ser, EntityId id, TSynched
 				i = *value.GetPtr<int>();
 			}
 
-			ser.Value("value", i, 'ssi');
+			ser.Value("value", i, /* 'ssi' */ 0x00737369);
 
 			if (ser.IsReading())
 			{
@@ -270,7 +270,7 @@ void CSynchedStorage::SerializeEntityValue(TSerialize ser, EntityId id, TSynched
 				e = *value.GetPtr<EntityId>();
 			}
 
-			ser.Value("value", e, 'eid');
+			ser.Value("value", e, /* 'eid' */0x00656964);
 
 			if (ser.IsReading())
 			{

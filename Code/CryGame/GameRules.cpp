@@ -3898,8 +3898,8 @@ void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)
 
 void CGameRules::RadioMessageParams::SerializeWith(TSerialize ser)
 {
-	ser.Value("source", sourceId, 'eid');
-	ser.Value("msg", msg, 'ui8');
+	ser.Value("source", sourceId, /* 'eid' */0x00656964);
+	ser.Value("msg", msg, /* 'ui8' */ 0x00756938);
 }
 
 void CGameRules::ShowStatus()

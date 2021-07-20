@@ -456,8 +456,8 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("topPos", topPos, 'wrld');
-			ser.Value("bottomPos", bottomPos, 'wrld');
+			ser.Value("topPos", topPos, /* 'wrld' */ 0x77726C64);
+			ser.Value("bottomPos", bottomPos, /* 'wrld' */ 0x77726C64);
 			ser.Value("ladderOrientation", ladderOrientation, 'dir0');
 			ser.Value("reason", reason);
 		}

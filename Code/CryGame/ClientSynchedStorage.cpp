@@ -204,7 +204,7 @@ DEFINE_CHANNEL_MESSAGE(CSetChannelStringMsg, string, SetChannelStringMsg);
 	CClientSynchedStorage::class::class(int _channelId, CServerSynchedStorage *pStorage, EntityId id, TSynchedKey _key, TSynchedValue &_value) \
 	:	CSetEntityMsg(CClientSynchedStorage::msgdef, _channelId, pStorage, id, _key, _value) {}; \
 	EMessageSendResult CClientSynchedStorage::class::WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq) \
-{ ser.Value("entityId", entityId, 'eid'); \
+{ ser.Value("entityId", entityId, /* 'eid' */0x00656964); \
 	m_pStorage->SerializeValue(ser, key, value, NTypelist::IndexOf<type, TSynchedValueTypes>::value); \
 	return eMSR_SentOk; }
 
@@ -213,7 +213,7 @@ DEFINE_CHANNEL_MESSAGE(CSetChannelStringMsg, string, SetChannelStringMsg);
 	TSynchedKey		key; \
 	TSynchedValue value; \
 	EntityId			id; \
-	ser.Value("entityId", id, 'eid'); \
+	ser.Value("entityId", id, /* 'eid' */0x00656964); \
 	SerializeEntityValue(ser, id, key, value, NTypelist::IndexOf<type, TSynchedValueTypes>::value); \
 	return true;
 
