@@ -1305,7 +1305,7 @@ void CNanoSuit::Serialize(TSerialize ser, unsigned aspects)
 		if (aspects & CPlayer::ASPECT_NANO_SUIT_SETTING)
 		{
 			uint8 mode = m_currentMode;
-			ser.Value("mode", mode, 'ui3');
+			ser.Value("mode", mode, /* 'ui3' */ 0x00756933);
 			if (ser.IsReading() && (mode != m_currentMode))
 				SetMode((ENanoMode)mode);
 		}

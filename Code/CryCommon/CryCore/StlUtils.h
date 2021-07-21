@@ -257,11 +257,11 @@ namespace stl
 	//////////////////////////////////////////////////////////////////////////
 	//! Case insensetive less key for any type convertable to const char*.
 	template <class Type>
-	struct less_stricmp
+	struct less__stricmp
 	{
 		bool operator()( const Type &left,const Type &right ) const
 		{
-			return stricmp(constchar_cast(left),constchar_cast(right)) < 0;
+			return _stricmp(constchar_cast(left),constchar_cast(right)) < 0;
 		}
 	};
 }

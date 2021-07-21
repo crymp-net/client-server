@@ -147,7 +147,7 @@ bool CRadio::OnAction(const ActionId& actionId, int activationMode, float value)
 
 	IActor *pClient = g_pGame->GetIGameFramework()->GetClientActor();
 
-	if(!pClient || pClient<=0 || (static_cast<CPlayer*>(pClient))->GetSpectatorMode())
+	if(!pClient || (intptr_t)pClient<=0 || (static_cast<CPlayer*>(pClient))->GetSpectatorMode())
 		return false;
 
 	if(m_TeamName.empty())

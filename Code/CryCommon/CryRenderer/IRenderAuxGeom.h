@@ -279,19 +279,10 @@ inline EAuxGeomPublicRenderflags_Mode2D3D
 SAuxGeomRenderFlags::GetMode2D3DFlag() const
 {
 	uint32 mode2D3D( m_renderFlags & e_Mode2D3DMask );
-	switch( mode2D3D )
-	{
-	case e_Mode2D:
-		{
-			return( e_Mode2D );
-		}
-	case e_Mode3D:
-	default:
-		{
-			assert( e_Mode3D == mode2D3D );
-			return( e_Mode3D );
-		}
-	}
+	if( mode2D3D == e_Mode2D )
+		return( e_Mode2D );
+	assert( e_Mode3D == mode2D3D );
+	return( e_Mode3D );
 }
 
 

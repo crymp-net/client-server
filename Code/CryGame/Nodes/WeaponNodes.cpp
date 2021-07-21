@@ -262,11 +262,11 @@ protected:
 		const char* actWeaponName = pWeapon->GetEntity()->GetClass()->GetName();
 
 		const string& weaponName = GetPortString(&m_actInfo, 0);
-		if (weaponName.empty() == false && stricmp(actWeaponName, weaponName.c_str()) != 0)
+		if (weaponName.empty() == false && _stricmp(actWeaponName, weaponName.c_str()) != 0)
 			return;
 
 		const string& itemName = GetPortString(&m_actInfo, 1);
-		if (itemName.empty() == false && stricmp(accessory, itemName.c_str()) != 0)
+		if (itemName.empty() == false && _stricmp(accessory, itemName.c_str()) != 0)
 			return;
 
 		string name (actWeaponName);

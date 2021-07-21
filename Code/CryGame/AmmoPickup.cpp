@@ -76,7 +76,7 @@ void CAmmoPickup::SerializeSpawnInfo(TSerialize ser)
 	string modelName;
 	int count;
 	ser.Value("modelName", modelName);
-	ser.Value("classId", ammoClassId, 'ui16');
+	ser.Value("classId", ammoClassId, /* 'ui16' */ 0x75693136);
 	ser.Value("count", count, 'ammo');
 	m_modelName = modelName;
 
@@ -98,7 +98,7 @@ ISerializableInfoPtr CAmmoPickup::GetSpawnInfo()
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("modelName", modelName);
-			ser.Value("classId", ammoClassId, 'ui16');
+			ser.Value("classId", ammoClassId, /* 'ui16' */ 0x75693136);
 			ser.Value("count", count, 'ammo');
 		}
 	};

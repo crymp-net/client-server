@@ -260,7 +260,7 @@ void CSPAnalyst::OnLoadingStart(ILevelInfo *pLevelInfo)
 	WriteXML(); //close old record
 
 	// when we load 'Island' the Game starts
-	if (stricmp(pLevelInfo->GetName(), "island") == 0 || !m_bChainLoad)
+	if (_stricmp(pLevelInfo->GetName(), "island") == 0 || !m_bChainLoad)
 	{
 		Reset(); // -> so gameStartTime will be assigned in eGE_GameStarted event
 	}
@@ -434,7 +434,7 @@ void CSPAnalyst::WriteToSection(const char* name, int value)
 	if(m_currentRecordingSection)
 	{
 		char buffer[32];
-		itoa(value, buffer, 10);
+		_itoa(value, buffer, 10);
 		m_currentRecordingSection->setAttr(name, string(buffer));
 	}
 }
@@ -457,9 +457,9 @@ void CSPAnalyst::WriteToSection(const char* name, float value)
 		int high = (int)value;
 		int low = int((value-(float)high)*1000.0f);
 		char highbuffer[16];
-		itoa(high, highbuffer, 10);
+		_itoa(high, highbuffer, 10);
 		char lowbuffer[16];
-		itoa(low, lowbuffer, 10);
+		_itoa(low, lowbuffer, 10);
 		string floatAsString(highbuffer);
 		floatAsString.append(".");
 		floatAsString.append(lowbuffer);

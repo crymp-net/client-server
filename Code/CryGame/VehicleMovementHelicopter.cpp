@@ -1453,8 +1453,8 @@ void CNetworkMovementHelicopter::Serialize(TSerialize ser, unsigned aspects)
 		ser.Value("pitch", m_actionPitch, 'vAng');
 		ser.Value("yaw", m_actionYaw, 'vAng');
 		ser.Value("roll", m_actionRoll, 'vAng');
-		ser.Value("height", m_desiredHeight, 'iii');
-		ser.Value("dir", m_desiredDir, 'iii');
+		ser.Value("height", m_desiredHeight, /* 'iii' */ 0x00696969);
+		ser.Value("dir", m_desiredDir, /* 'iii' */ 0x00696969);
     ser.Value("boost", m_boost, 'bool');
 	}
 }

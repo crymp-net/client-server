@@ -100,17 +100,17 @@ typedef TIntVec::iterator	TIntVecIt;
 typedef std::vector<SPatternDef*>							TPatternDefVec;
 typedef TPatternDefVec::iterator							TPatternDefVecIt;
 
-typedef std::map<string,string,stl::less_stricmp<string> > TThemeBridgeMap;
+typedef std::map<string,string,stl::less__stricmp<string> > TThemeBridgeMap;
 typedef TThemeBridgeMap::iterator							TThemeBridgeMapIt;
 
-typedef std::map<string,SMusicMood*,stl::less_stricmp<string> > TMoodMap;
+typedef std::map<string,SMusicMood*,stl::less__stricmp<string> > TMoodMap;
 typedef TMoodMap::iterator										TMoodMapIt;
 typedef TMoodMap::const_iterator							TMoodMapItConst;
 
 typedef std::vector<SMusicPatternSet*>				TPatternSetVec;
 typedef TPatternSetVec::iterator							TPatternSetVecIt;
 
-typedef std::map<string,SMusicTheme*,stl::less_stricmp<string> >	TThemeMap;
+typedef std::map<string,SMusicTheme*,stl::less__stricmp<string> >	TThemeMap;
 typedef TThemeMap::iterator										TThemeMapIt;
 typedef TThemeMap::const_iterator							TThemeMapItConst;
 

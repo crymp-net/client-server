@@ -1415,12 +1415,12 @@ void  CMPLobbyUI::DisplayServerList()
 
 	int num_servers = m_serverlist->m_all.size();
 
-	itoa(num_servers, convert, 10);
+	_itoa(num_servers, convert, 10);
 	m_cmd = MPPath;
 	m_cmd += "NumServers\0";
 	m_player->SetVariable(m_cmd.c_str(), convert);
 
-	itoa(m_serverlist->m_startIndex, convert, 10);
+	_itoa(m_serverlist->m_startIndex, convert, 10);
 	m_cmd = MPPath;
 	m_cmd += "DisplayServerIndex\0";
 	m_player->SetVariable(m_cmd.c_str(), convert);
@@ -1434,10 +1434,10 @@ void  CMPLobbyUI::DisplayServerList()
 
 	if (m_serverlist->m_total != -1)
 	{
-		itoa(m_serverlist->m_done, convert, 10);
+		_itoa(m_serverlist->m_done, convert, 10);
 		count = convert;
 		count += "/";
-		itoa(m_serverlist->m_total, convert, 10);
+		_itoa(m_serverlist->m_total, convert, 10);
 		count += convert;
 	}
 	m_cmd = MPPath;
@@ -1452,7 +1452,7 @@ void  CMPLobbyUI::DisplayServerList()
 
 		const SServerInfo& server = m_serverlist->m_allServers[m_serverlist->m_all[idx]];
 
-		itoa(server.m_numPlayers, convert, 10);
+		_itoa(server.m_numPlayers, convert, 10);
 		if (server.m_numPlayers < 10)
 		{
 			convert[1] = convert[0];
@@ -1463,7 +1463,7 @@ void  CMPLobbyUI::DisplayServerList()
 		strcpy(uiNumPlayers, convert);
 		strcat(uiNumPlayers, " / \0");
 
-		itoa(server.m_maxPlayers, convert, 10);
+		_itoa(server.m_maxPlayers, convert, 10);
 		if (server.m_maxPlayers < 10)
 		{
 			convert[1] = ' ';
@@ -1478,7 +1478,7 @@ void  CMPLobbyUI::DisplayServerList()
 		m_cmd = MPPath;
 		m_cmd += "AddServer\0";
 
-		SFlashVarValue args[] = { server.m_serverId, server.m_hostName.c_str(), server.m_ping, uiNumPlayers, server.m_mapName.c_str(), server.m_gameTypeName.c_str(), uiIP, server.m_hostPort, server.m_private, server.m_official, server.m_favorite, server.m_anticheat, server.m_canjoin, server.m_gameVersion };
+		SFlashVarValue args[] = { server.m_serverId, server.m_hostName.c_str(), server.m_ping, uiNumPlayers, server.m_mapName.c_str(), server.m_gameTypeName.c_str(), uiIP, server.m_hostPort, server.m_private, server.m_official, server.m_favorite, server.m_anticheat, server.m_canjoin, server.m_gameVersion.c_str() };
 		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 
 	}
@@ -1685,8 +1685,8 @@ void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
 													sd.m_dedicated ? "@ui_menu_YES" : "@ui_menu_NO",
 													sd.m_voicecomm ? "@ui_menu_ENABLED" : "@ui_menu_DISABLED",
 													sd.m_gamepadsonly ? "@ui_menu_YES" : "@ui_menu_NO",
-													sd.m_modname,
-													sd.m_modversion };
+													sd.m_modname.c_str(),
+													sd.m_modversion.c_str() };
 
 		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
 	}

@@ -25,7 +25,7 @@
 #pragma warning(disable: 4244)	// conversion from 'int' to 'float', possible loss of data
 #pragma warning(disable: 4512)	// assignment operator could not be generated (in STLPort with const constructs)
 #pragma warning(disable: 4530)  // C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
-#pragma warning(disable: 4996)	// 'stricmp' was declared deprecated
+#pragma warning(disable: 4996)	// '_stricmp' was declared deprecated
 #pragma warning(disable: 4503)  // decorated name length exceeded, name was truncated
 
 #pragma warning(disable: 4302)

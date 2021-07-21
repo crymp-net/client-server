@@ -3209,7 +3209,7 @@ void CPlayer::UpdateStats(float frameTime)
 
 			if (g_pGameCVars->pl_debugFallDamage != 0)
 			{
-				char* side = gEnv->bServer ? "Server" : "Client";
+				const char* side = gEnv->bServer ? "Server" : "Client";
 
 				char* color = "";
 				if (velFraction < 0.33f)
@@ -3228,8 +3228,8 @@ void CPlayer::UpdateStats(float frameTime)
 		{
 			if (m_stats.downwardsImpactVelocity > 0.5f)
 			{
-				char* side = gEnv->bServer ? "Server" : "Client";
-				char* color = "$3"; // Green
+				const char* side = gEnv->bServer ? "Server" : "Client";
+				const char* color = "$3"; // Green
 				CryLogAlways("%s[%s][%s] ImpactVelo=%3.2f, FallSpeed=%3.2f, FallDamage: NONE",
 					color, side, GetEntity()->GetName(), m_stats.downwardsImpactVelocity, m_stats.fallSpeed);
 			}
@@ -3259,7 +3259,7 @@ void CPlayer::UpdateStats(float frameTime)
 	if (g_pGameCVars->pl_debugFallDamage == 2)
 	{
 		Vec3 pos = GetEntity()->GetWorldPos();
-		char* side = gEnv->bServer ? "Sv" : "Cl";
+		const char* side = gEnv->bServer ? "Sv" : "Cl";
 		CryLogAlways("[%s] liv.vel=%0.1f,%0.1f,%3.2f liv.velU=%0.1f,%0.1f,%3.2f impactVel=%3.2f posZ=%3.2f (liv.velReq=%0.1f,%0.1f,%3.2f) (fallspeed=%3.2f) gt=%3.3f, pt=%3.3f",
 			side,
 			livStat.vel.x, livStat.vel.y, livStat.vel.z,
@@ -4411,7 +4411,7 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 			hasWeapon = NetGetCurrentItem() != 0;
 
 		ser.Value("hasWeapon", hasWeapon, 'bool');
-		ser.Value("currentItemId", static_cast<CActor*>(this), &CActor::NetGetCurrentItem, &CActor::NetSetCurrentItem, 'eid');
+		ser.Value("currentItemId", static_cast<CActor*>(this), &CActor::NetGetCurrentItem, &CActor::NetSetCurrentItem, /* 'eid' */0x00656964);
 
 		if (reading && hasWeapon && NetGetCurrentItem() == 0) // fix the case where this guy's weapon might not have been bound on this client yet
 			ser.FlagPartialRead();
@@ -4779,11 +4779,11 @@ void CPlayer::AnimationControlled(bool activate)
 
 void CPlayer::HandleEvent(const SGameObjectEvent& event)
 {
-	/*else if (!stricmp(event.event, "CameraFollowHead"))
+	/*else if (!_stricmp(event.event, "CameraFollowHead"))
 	{
 		m_stats.followCharacterHead = 1;
 	}
-	else if (!stricmp(event.event, "NormalCamera"))
+	else if (!_stricmp(event.event, "NormalCamera"))
 	{
 		m_stats.followCharacterHead = 0;
 	}
@@ -6976,7 +6976,7 @@ void CPlayer::AnimationEvent(ICharacterInstance* pCharacter, const AnimEventInst
 	if (IsThirdPerson())
 	{
 		const char* eventName = event.m_EventName;
-		if (gEnv->pSoundSystem && eventName && (stricmp(eventName, "sound_tp") == 0))
+		if (gEnv->pSoundSystem && eventName && (_stricmp(eventName, "sound_tp") == 0))
 		{
 			Vec3 offset(0.0f, 0.0f, 1.0f);
 			if (event.m_BonePathName && event.m_BonePathName[0])

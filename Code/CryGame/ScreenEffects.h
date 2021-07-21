@@ -27,7 +27,7 @@ class CLinearBlend : public IBlendType
 {
 public:
 	CLinearBlend(float slope) { m_slope = slope; };
-	CLinearBlend() { CLinearBlend::CLinearBlend(1.0f); };
+	CLinearBlend() { m_slope = 1.0f; };
 	virtual ~CLinearBlend() {};
 
 	virtual float Blend(float progress) {

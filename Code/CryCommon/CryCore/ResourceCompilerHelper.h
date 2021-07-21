@@ -202,9 +202,9 @@ public: // ---------------------------------------------------------------------
 
 		if(ext)
 		{
-			if(stricmp(ext,".tif")==0)
+			if(_stricmp(ext,".tif")==0)
 				return ReplaceExtension(szFilePath,".dds");
-			if(stricmp(ext,".srf")==0)
+			if(_stricmp(ext,".srf")==0)
 				return ReplaceExtension(szFilePath,".dds");
 		}
 
@@ -217,8 +217,8 @@ public: // ---------------------------------------------------------------------
 	static bool IsImageFormat( const char *szExtension )
 	{
 		if(szExtension)
-			if(	 stricmp(szExtension,"dds")==0				// DirectX surface format
-				|| stricmp(szExtension,"tif")==0)		// Crytek resource compiler image input format	
+			if(	 _stricmp(szExtension,"dds")==0				// DirectX surface format
+				|| _stricmp(szExtension,"tif")==0)		// Crytek resource compiler image input format	
 				return true;
 
 		return false;

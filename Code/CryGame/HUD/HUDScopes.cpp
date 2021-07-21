@@ -441,9 +441,9 @@ void CHUDScopes::ShowScope(int iVisible)
 void CHUDScopes::SetScopeZoomMode(int iZoomMode, string& scopeType)
 {
 	int type = 1;
-	if (!stricmp(scopeType.c_str(), "scope_assault"))	//assault scope has no sound atm.
+	if (!_stricmp(scopeType.c_str(), "scope_assault"))	//assault scope has no sound atm.
 		type = 0;
-	else if (!stricmp(scopeType.c_str(), "scope_sniper"))
+	else if (!_stricmp(scopeType.c_str(), "scope_sniper"))
 		type = 2;
 
 	if (type && m_iZoomLevel != iZoomMode)

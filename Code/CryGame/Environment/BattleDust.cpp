@@ -102,8 +102,8 @@ bool CBattleEvent::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 pro
 {
 	if (aspect == PROPERTIES_ASPECT)
 	{
-		ser.Value("worldPos", m_worldPos, 'wrld');
-		ser.Value("numParticles", m_numParticles, 'iii');
+		ser.Value("worldPos", m_worldPos, /* 'wrld' */ 0x77726C64);
+		ser.Value("numParticles", m_numParticles, /* 'iii' */ 0x00696969);
 	}
 	return true;
 }

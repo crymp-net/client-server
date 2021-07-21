@@ -181,5 +181,5 @@ struct AgentParameters
 };
 
 
-#endif _AGENTPARAMS_H_
+#endif
 

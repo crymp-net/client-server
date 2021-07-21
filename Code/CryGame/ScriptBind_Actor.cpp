@@ -663,11 +663,11 @@ int CScriptBind_Actor::EnableAspect(IFunctionHandler* pH, const char* aspect, bo
 
 	uint8 aspectbit = 0;
 
-	if (!stricmp(aspect, "physics"))
+	if (!_stricmp(aspect, "physics"))
 		aspectbit |= eEA_Physics;
-	else if (!stricmp(aspect, "gameobject"))
+	else if (!_stricmp(aspect, "gameobject"))
 		aspectbit |= eEA_GameClientDynamic | eEA_GameServerDynamic | eEA_GameClientStatic | eEA_GameServerStatic;
-	else if (!stricmp(aspect, "script"))
+	else if (!_stricmp(aspect, "script"))
 		aspectbit |= eEA_Script;
 
 	if (pActor)
@@ -754,7 +754,7 @@ int CScriptBind_Actor::SetInventoryAmmo(IFunctionHandler* pH, const char* ammo, 
 			if (pActor->IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
-				itoa(capacity - current, buffer, 10);
+				_itoa(capacity - current, buffer, 10);
 				SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer));*/
 				if (g_pGame->GetHUD())
 					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
@@ -769,7 +769,7 @@ int CScriptBind_Actor::SetInventoryAmmo(IFunctionHandler* pH, const char* ammo, 
 		if (pActor->IsClient() && amount - current > 0)
 		{
 			/*char buffer[5];
-			itoa(amount - current, buffer, 10);
+			_itoa(amount - current, buffer, 10);
 			SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer));*/
 			if (g_pGame->GetHUD())
 				g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), amount - current);
@@ -810,7 +810,7 @@ int CScriptBind_Actor::AddInventoryAmmo(IFunctionHandler* pH, const char* ammo, 
 			if (pActor->IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
-				itoa(capacity - current, buffer, 10);
+				_itoa(capacity - current, buffer, 10);
 				SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer));*/
 				if (g_pGame->GetHUD())
 					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
@@ -825,7 +825,7 @@ int CScriptBind_Actor::AddInventoryAmmo(IFunctionHandler* pH, const char* ammo, 
 		if (pActor->IsClient() && amount - current > 0)
 		{
 			/*char buffer[5];
-			itoa(amount - current, buffer, 10);
+			_itoa(amount - current, buffer, 10);
 			SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer));*/
 			if (g_pGame->GetHUD())
 				g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), amount - current);
@@ -1148,22 +1148,22 @@ int CScriptBind_Actor::SetPhysicalizationProfile(IFunctionHandler* pH, const cha
 		return pH->EndFunction();
 
 	uint p = 0;
-	if (!stricmp(profile, "alive"))
+	if (!_stricmp(profile, "alive"))
 		p = eAP_Alive;
-	else if (!stricmp(profile, "unragdoll"))
+	else if (!_stricmp(profile, "unragdoll"))
 		p = eAP_NotPhysicalized;
-	else if (!stricmp(profile, "ragdoll"))
+	else if (!_stricmp(profile, "ragdoll"))
 	{
 		if (!pActor->GetLinkedVehicle())
 			p = eAP_Ragdoll;
 		else
 			p = eAP_Alive;
 	}
-	else if (!stricmp(profile, "spectator"))
+	else if (!_stricmp(profile, "spectator"))
 		p = eAP_Spectator;
-	else if (!stricmp(profile, "sleep"))
+	else if (!_stricmp(profile, "sleep"))
 		p = eAP_Sleep;
-	else if (!stricmp(profile, "frozen"))
+	else if (!_stricmp(profile, "frozen"))
 		p = eAP_Frozen;
 	else
 		return pH->EndFunction();

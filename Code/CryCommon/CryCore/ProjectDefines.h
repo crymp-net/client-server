@@ -23,7 +23,7 @@
 
 //VS2005
 #if _MSC_VER >= 1400
-//#pragma warning( default  : 4996 )  // warning C4996: 'stricmp' was declared deprecated
+//#pragma warning( default  : 4996 )  // warning C4996: '_stricmp' was declared deprecated
 #endif
 
 

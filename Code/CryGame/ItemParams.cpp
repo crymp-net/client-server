@@ -97,19 +97,19 @@ bool CItem::ReadParams(const IItemParamsNode *params)
 		for (int i=0; i<n; i++)
 		{
 			const IItemParamsNode *item = dw->GetChild(i);
-			if (!stricmp(dw->GetChildName(i), "item") && !m_sharedparams->Valid())
+			if (!_stricmp(dw->GetChildName(i), "item") && !m_sharedparams->Valid())
 			{
 				const char *name = item->GetAttribute("value");
 				if (name && name[0])
 					m_sharedparams->dualWieldSupport.insert(TDualWieldSupportMap::value_type(name, true));
 			}
-			else if (!stricmp(dw->GetChildName(i), "suffix"))
+			else if (!_stricmp(dw->GetChildName(i), "suffix"))
 			{
 				const char *suffix = item->GetAttribute("value");
 				if (suffix)
 					m_params.dual_wield_suffix = suffix;
 			}
-			else if (!stricmp(dw->GetChildName(i), "pose"))
+			else if (!_stricmp(dw->GetChildName(i), "pose"))
 			{
 				const char *pose = item->GetAttribute("value");
 				if (pose)
@@ -246,7 +246,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 	{
 		const IItemParamsNode *child = actionparams->GetChild(i);
 		const char *childName = actionparams->GetChildName(i);
-		if (!stricmp(childName, "sound"))
+		if (!_stricmp(childName, "sound"))
 		{
 			const char *name = child->GetAttribute("name");
 			if (!name)
@@ -280,7 +280,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 			pAction->sound[islot].isstatic = isstatic!=0;
 			pAction->sound[islot].issynched = issynched!=0;
 		}
-		else if (!stricmp(childName, "animation"))
+		else if (!_stricmp(childName, "animation"))
 		{
 			const char *name = child->GetAttribute("name");
 			if (!name)
@@ -323,7 +323,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 
 			pAction->animation[islot].push_back(animation);
 		}
-    else if (!stricmp(childName, "effect"))
+    else if (!_stricmp(childName, "effect"))
     {
       const char *name = child->GetAttribute("name");
       if (!name)
@@ -437,7 +437,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 	for (int i=0; i<n; i++)
 	{
 		const IItemParamsNode *child = layer->GetChild(i);
-		if (!stricmp(layer->GetChildName(i), "animation"))
+		if (!_stricmp(layer->GetChildName(i), "animation"))
 		{
 			const char *name = child->GetAttribute("name");
 			if (!name)
@@ -458,13 +458,13 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 			pLayer->name[islot] = name;
 			pLayer->id[islot] = 0; child->GetAttribute("layerId", pLayer->id[islot]);
 		}
-		else if (!stricmp(layer->GetChildName(i), "bones"))
+		else if (!_stricmp(layer->GetChildName(i), "bones"))
 		{
 			int nb = child->GetChildCount();
 			for (int b=0; b<nb; b++)
 			{
 				const IItemParamsNode *bone = child->GetChild(b);
-				if (!stricmp(child->GetChildName(b), "bone"))
+				if (!_stricmp(child->GetChildName(b), "bone"))
 				{
 					const char *name = bone->GetAttribute("name");
 					if (!name)
@@ -499,7 +499,7 @@ bool CItem::ReadAccessories(const IItemParamsNode *accessories)
 	for (int i=0; i<n; i++)
 	{
 		const IItemParamsNode *child = accessories->GetChild(i);
-		if (!stricmp(accessories->GetChildName(i), "accessory") && !m_sharedparams->Valid())
+		if (!_stricmp(accessories->GetChildName(i), "accessory") && !m_sharedparams->Valid())
 		{
 			SAccessoryParams params;
 			if (!ReadAccessoryParams(child, &params))
@@ -509,13 +509,13 @@ bool CItem::ReadAccessories(const IItemParamsNode *accessories)
 			m_sharedparams->accessoryparams.insert(TAccessoryParamsMap::value_type(name, params));
 
 		}
-		else if (!stricmp(accessories->GetChildName(i), "initialsetup"))
+		else if (!_stricmp(accessories->GetChildName(i), "initialsetup"))
 		{
 			int na = child->GetChildCount();
 			for (int k=0; k<na; k++)
 			{
 				const IItemParamsNode *accessory = child->GetChild(k);
-				if (!stricmp(child->GetChildName(k), "accessory"))
+				if (!_stricmp(child->GetChildName(k), "accessory"))
 				{
 					const char *name = accessory->GetAttribute("name");
 					if (!name || !name[0])
@@ -645,9 +645,9 @@ bool CItem::SetGeometryFromParams(int slot, const IItemParamsNode *geometry)
 		int idx = 0;
 		if (hand && hand[0])
 		{
-			if (!stricmp(hand, "right"))
+			if (!_stricmp(hand, "right"))
 				idx = 1;
-			else if (!stricmp(hand, "left"))
+			else if (!_stricmp(hand, "left"))
 				idx = 2;
 			else
 			{
@@ -678,25 +678,25 @@ int CItem::TargetToSlot(const char *slot)
 	int islot = eIGS_Last;
 	if (slot)
 	{
-		if (!stricmp(slot, "firstperson"))
+		if (!_stricmp(slot, "firstperson"))
 			islot = eIGS_FirstPerson;
-		else if (!stricmp(slot, "thirdperson"))
+		else if (!_stricmp(slot, "thirdperson"))
 			islot = eIGS_ThirdPerson;
-		else if (!stricmp(slot, "arms"))
+		else if (!_stricmp(slot, "arms"))
 			islot = eIGS_Arms;
-		else if (!stricmp(slot, "aux0"))
+		else if (!_stricmp(slot, "aux0"))
 			islot = eIGS_Aux0;
-		else if (!stricmp(slot, "owner"))
+		else if (!_stricmp(slot, "owner"))
 			islot = eIGS_Owner;
-		else if (!stricmp(slot, "ownerloop"))
+		else if (!_stricmp(slot, "ownerloop"))
 			islot = eIGS_OwnerLooped;
-		else if (!stricmp(slot, "offhand"))
+		else if (!_stricmp(slot, "offhand"))
 			islot = eIGS_OffHand;
-    else if (!stricmp(slot, "destroyed"))
+    else if (!_stricmp(slot, "destroyed"))
       islot = eIGS_Destroyed;
-		else if (!stricmp(slot, "thirdpersonAux"))
+		else if (!_stricmp(slot, "thirdpersonAux"))
 			islot = eIGS_ThirdPersonAux;
-		else if (!stricmp(slot, "aux1"))
+		else if (!_stricmp(slot, "aux1"))
 			islot = eIGS_Aux1;
 	}
 

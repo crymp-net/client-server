@@ -363,7 +363,7 @@ bool CC4Projectile::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 pr
 	{
 		ser.Value("localPos", m_localChildPos);
 		ser.Value("localOri", m_localChildRot);
-		ser.Value("parentEntity", m_parentEntity, 'eid');
+		ser.Value("parentEntity", m_parentEntity, /* 'eid' */0x00656964);
 
 		if (ser.IsReading() && !m_stuck)
 		{

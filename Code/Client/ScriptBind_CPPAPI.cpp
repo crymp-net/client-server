@@ -79,7 +79,7 @@ int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const ch
 
 int ScriptBind_CPPAPI::GetLocaleInformation(IFunctionHandler *pH)
 {
-	return pH->EndFunction(WinAPI::GetLocale().c_str(), WinAPI::GetTimeZoneBias());
+	return pH->EndFunction(WinAPI::GetLocale().c_str(), (int)WinAPI::GetTimeZoneBias());
 }
 
 int ScriptBind_CPPAPI::GetMapName(IFunctionHandler *pH)

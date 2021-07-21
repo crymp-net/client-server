@@ -860,7 +860,7 @@ void CItem::PostSerialize()
 	}
 
 	m_actionSuffix = m_actionSuffixSerializationHelper;
-	if (pOwner && pOwner->IsPlayer() && IsSelected() && !stricmp(m_actionSuffixSerializationHelper.c_str(), "akimbo_"))
+	if (pOwner && pOwner->IsPlayer() && IsSelected() && !_stricmp(m_actionSuffixSerializationHelper.c_str(), "akimbo_"))
 	{
 		PlayAction(g_pItemStrings->idle);
 	}
@@ -2836,7 +2836,7 @@ void CItem::AddAccessoryAmmoToInventory(IEntityClass* pAmmoType, int count, CAct
 		if (pOwner->IsClient())
 		{
 			/*char buffer[5];
-			itoa(count, buffer, 10);
+			_itoa(count, buffer, 10);
 			SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pAmmoType->GetName()).c_str(), buffer));*/
 			if (g_pGame->GetHUD())
 				g_pGame->GetHUD()->DisplayAmmoPickup(pAmmoType->GetName(), count);

@@ -350,11 +350,11 @@ public:
 		int predictionHandle;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("dir", dir, 'dir3');
 			ser.Value("hit", hit, 'sHit');
-			ser.Value("seq", seq, 'ui16');
-			ser.Value("seqr", seqr, 'ui5');
+			ser.Value("seq", seq, /* 'ui16' */ 0x75693136);
+			ser.Value("seqr", seqr, /* 'ui5' */ 0x00756935);
 			ser.Value("predictionHandle", predictionHandle, 'phdl');
 		};
 	};
@@ -384,7 +384,7 @@ public:
 		int predictionHandle;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("ref_eid", eid, 'eid');
+			ser.Value("ref_eid", eid, /* 'eid' */0x00656964);
 			ser.Value("use_hit", hit0, 'bool');
 			ser.Value("ref_hit", hit, hit0 ? 'hit0' : 'hit1');
 			ser.Value("predictionHandle", predictionHandle, 'phdl');
@@ -408,13 +408,13 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("dir", dir, 'dir3');
 			ser.Value("vel", vel, 'vel0');
-			ser.Value("hit", hit, 'wrld');
+			ser.Value("hit", hit, /* 'wrld' */ 0x77726C64);
 			ser.Value("extra", extra, 'smal');
-			ser.Value("seq", seq, 'ui16');
-			ser.Value("seqr", seqr, 'ui5');
+			ser.Value("seq", seq, /* 'ui16' */ 0x75693136);
+			ser.Value("seqr", seqr, /* 'ui5' */ 0x00756935);
 			ser.Value("predictionHandle", predictionHandle, 'phdl');
 		};
 	};
@@ -427,7 +427,7 @@ public:
 		int id;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("id", id, 'fmod');
+			ser.Value("id", id, /* 'fmod' */ 0x666D6F64);
 		};
 	};
 
@@ -444,9 +444,9 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("wmelee", wmelee, 'bool');
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("dir", dir, 'dir3');
-			ser.Value("seq", seq, 'ui16');
+			ser.Value("seq", seq, /* 'ui16' */ 0x75693136);
 		}
 	};
 
@@ -462,7 +462,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("wmelee", wmelee, 'bool');
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("dir", dir, 'dir3');
 		}
 	};
@@ -488,7 +488,7 @@ public:
 		int id;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("id", id, 'fmod');
+			ser.Value("id", id, /* 'fmod' */ 0x666D6F64);
 		};
 	};
 
@@ -508,7 +508,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("entityId", entityId, 'eid');
+			ser.Value("entityId", entityId, /* 'eid' */0x00656964);
 			ser.Value("partId", partId);
 		}
 	};

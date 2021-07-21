@@ -249,7 +249,7 @@ void CFlashMenuObject::SetProfile()
 
 const wchar_t* CFlashMenuObject::GetMappedProfileName(const char* profileName)
 {
-	if (stricmp(profileName, "default") == 0)
+	if (_stricmp(profileName, "default") == 0)
 		gEnv->pSystem->GetLocalizationManager()->LocalizeLabel("@ui_DefaultProfileName", m_tempMappedProfileName);
 	else
 		gEnv->pSystem->GetLocalizationManager()->LocalizeString(profileName, m_tempMappedProfileName);

@@ -116,7 +116,7 @@ const char* COptionsManager::GetProfileName()
 	IPlayerProfile* profile = m_pPlayerProfileManager->GetCurrentProfile(user);
 	if (!profile)
 		return "Nomad";
-	if (!stricmp(profile->GetName(), "default"))
+	if (!_stricmp(profile->GetName(), "default"))
 		return "Nomad";
 	return profile->GetName();
 
@@ -222,7 +222,7 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 				ICVar* pCVar = gEnv->pConsole->GetCVar(attribCVar);
 				if (pCVar && GetProfileValue(attrib.name, value))
 				{
-					if (stricmp(pCVar->GetString(), value.c_str()))
+					if (_stricmp(pCVar->GetString(), value.c_str()))
 					{
 						//CryLogAlways("Inited, loaded and changed: %s = %s (was %s)", attrib.name, value, pCVar->GetString());
 						pCVar->Set(value.c_str());
@@ -231,7 +231,7 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 					{
 						//CryLogAlways("Inited, loaded, but not changed: %s = %s", attrib.name, value);
 					}
-					if (!stricmp(attrib.name, "Option.hud_colorLine"))
+					if (!_stricmp(attrib.name, "Option.hud_colorLine"))
 					{
 						SetCrysisProfileColor(value.c_str());
 					}
@@ -344,7 +344,7 @@ void COptionsManager::UpdateFlashOptions()
 			SFlashVarValue option[3] = { "pb_client", m_pbEnabled, true };
 			pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 		}
-		else if (!stricmp(it->first.c_str(), "fsaa_mode"))
+		else if (!_stricmp(it->first.c_str(), "fsaa_mode"))
 		{
 			if (g_pGame->GetMenu())
 			{
@@ -372,7 +372,7 @@ void COptionsManager::UpdateFlashOptions()
 
 				bool bIsValid = pCVar->GetIVal() == pCVar->GetRealIVal();
 
-				if (!stricmp(name, "r_fsaa_samples")) //fsaa workaround for RnD
+				if (!_stricmp(name, "r_fsaa_samples")) //fsaa workaround for RnD
 				{
 					ICVar* pFSAA = gEnv->pConsole->GetCVar("r_fsaa");
 					if (pFSAA && pFSAA->GetIVal() == 0)
@@ -441,14 +441,14 @@ bool COptionsManager::HandleFSCommand(const char* szCommand, const char* szArgs)
 	if (!pProfile)
 		return false;
 
-	if (!stricmp(szCommand, "SaveProfile"))
+	if (!_stricmp(szCommand, "SaveProfile"))
 	{
 		UpdateToProfile();
 		SaveProfile();
 		return true;
 	}
 
-	if (!stricmp(szCommand, "RestoreDefaultProfile"))
+	if (!_stricmp(szCommand, "RestoreDefaultProfile"))
 	{
 		if (szArgs && szArgs[0])
 			ResetDefaults(szArgs);
@@ -457,24 +457,24 @@ bool COptionsManager::HandleFSCommand(const char* szCommand, const char* szArgs)
 		return true;
 	}
 
-	if (!stricmp(szCommand, "UpdateCVars"))
+	if (!_stricmp(szCommand, "UpdateCVars"))
 	{
 		UpdateFlashOptions();
 		return true;
 	}
 
-	if (!stricmp(szCommand, "hud_showAllObjectives"))
+	if (!_stricmp(szCommand, "hud_showAllObjectives"))
 	{
 		if (szArgs)
 		{
 			SAFE_HUD_FUNC(SetShowAllOnScreenObjectives(atoi(szArgs) ? true : false));
 		}
 	}
-	else if (!stricmp(szCommand, "hud_colorLine"))
+	else if (!_stricmp(szCommand, "hud_colorLine"))
 	{
 		SetCrysisProfileColor(szArgs);
 	}
-	else if (gEnv->bMultiplayer && !stricmp(szCommand, "g_psTutorial_Enabled"))
+	else if (gEnv->bMultiplayer && !_stricmp(szCommand, "g_psTutorial_Enabled"))
 	{
 		if (atoi(szArgs) == 1)
 		{
@@ -748,11 +748,11 @@ void COptionsManager::SetAntiAliasingMode(const char* params)
 				gEnv->pConsole->ExecuteString("r_fsaa 1");
 				CryFixedStringT<32> command = "r_fsaa_samples ";
 				char buffer[16];
-				itoa(mode.samples, buffer, 10);
+				_itoa(mode.samples, buffer, 10);
 				command.append(buffer);
 				gEnv->pConsole->ExecuteString(command.c_str());
 				command = "r_fsaa_quality ";
-				itoa(mode.quality, buffer, 10);
+				_itoa(mode.quality, buffer, 10);
 				command.append(buffer);
 				gEnv->pConsole->ExecuteString(command.c_str());
 
@@ -884,8 +884,8 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	if (pCVar == 0)
 		return;
 
-	CryFixedStringT<128> szLine = pCVar->GetName();
-	CryFixedStringT<128> szValue = pCVar->GetString();
+	std::string szLine = pCVar->GetName();
+	std::string szValue = pCVar->GetString();
 
 	// only save if we have an option to it
 	std::map<string, SOptionEntry>::const_iterator iter = m_pOptionsManager->m_profileOptions.find(CONST_TEMP_STRING(pCVar->GetName()));
@@ -897,13 +897,14 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 
 	size_t pos;
 
-	// replace \ with \\ 
+	// replace \ with \\ a
+	
 	pos = 1;
 	for (;;)
 	{
 		pos = szValue.find_first_of("\\", pos);
 
-		if (pos == CryFixedStringT<128>::npos)
+		if (pos == std::string::npos)
 		{
 			break;
 		}
@@ -911,6 +912,7 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 		szValue.replace(pos, 1, "\\\\", 2);
 		pos += 2;
 	}
+	
 
 	// replace " with \" 
 	pos = 1;
@@ -918,7 +920,7 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	{
 		pos = szValue.find_first_of("\"", pos);
 
-		if (pos == CryFixedStringT<128>::npos)
+		if (pos == std::string::npos)
 		{
 			break;
 		}

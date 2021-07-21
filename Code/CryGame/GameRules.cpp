@@ -998,7 +998,7 @@ void CGameRules::RenamePlayer(CActor* pActor, const char* name)
 {
 	string fixed = VerifyName(name, pActor->GetEntity());
 	RenameEntityParams params(pActor->GetEntityId(), fixed.c_str());
-	if (!stricmp(fixed.c_str(), pActor->GetEntity()->GetName()))
+	if (!_stricmp(fixed.c_str(), pActor->GetEntity()->GetName()))
 		return;
 
 	if (gEnv->bServer)
@@ -1059,7 +1059,7 @@ bool CGameRules::IsNameTaken(const char* name, IEntity* pEntity)
 	for (std::vector<int>::const_iterator it = m_channelIds.begin(); it != m_channelIds.end(); ++it)
 	{
 		CActor* pActor = GetActorByChannelId(*it);
-		if (pActor && pActor->GetEntity() != pEntity && !stricmp(name, pActor->GetEntity()->GetName()))
+		if (pActor && pActor->GetEntity() != pEntity && !_stricmp(name, pActor->GetEntity()->GetName()))
 			return true;
 	}
 
@@ -3898,8 +3898,8 @@ void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)
 
 void CGameRules::RadioMessageParams::SerializeWith(TSerialize ser)
 {
-	ser.Value("source", sourceId, 'eid');
-	ser.Value("msg", msg, 'ui8');
+	ser.Value("source", sourceId, /* 'eid' */0x00656964);
+	ser.Value("msg", msg, /* 'ui8' */ 0x00756938);
 }
 
 void CGameRules::ShowStatus()

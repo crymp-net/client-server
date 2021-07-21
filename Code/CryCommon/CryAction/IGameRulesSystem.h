@@ -66,10 +66,10 @@ struct SimpleHitInfo
 
 	void SerializeWith(TSerialize ser)
 	{
-		ser.Value("shooterId", shooterId, 'eid');
-		ser.Value("targetId", targetId, 'eid');
-		ser.Value("weaponId", weaponId, 'eid');
-		ser.Value("type", type, 'hTyp');
+		ser.Value("shooterId", shooterId, /* 'eid' */0x00656964);
+		ser.Value("targetId", targetId, /* 'eid' */0x00656964);
+		ser.Value("weaponId", weaponId, /* 'eid' */0x00656964);
+		ser.Value("type", type, /* 'hTyp' */ 0x68547970);
 		ser.Value("value", value, 'hVal');
 	}
 };
@@ -152,20 +152,20 @@ struct HitInfo
 
   void SerializeWith(TSerialize ser)
   {
-    ser.Value("shooterId", shooterId, 'eid');
-    ser.Value("targetId", targetId, 'eid');
-    ser.Value("weaponId", weaponId, 'eid');
-		ser.Value("fmId", fmId, 'fmod');
-    //ser.Value("projectileId", projectileId, 'eid');
-		ser.Value("damage", damage, 'dmg');
-		ser.Value("radius", radius, 'hRad');
-    ser.Value("material", material, 'mat');
-    ser.Value("partId", partId, 'part');
-    ser.Value("type", type, 'hTyp');
-		ser.Value("pos", pos, 'wrld');
-    ser.Value("dir", dir, 'dir1');
-    ser.Value("normal", normal, 'dir1');
-		ser.Value("seq", seq, 'ui16');
+    ser.Value("shooterId", shooterId, /* 'eid' */0x00656964);
+    ser.Value("targetId", targetId, /* 'eid' */0x00656964);
+    ser.Value("weaponId", weaponId, /* 'eid' */0x00656964);
+		ser.Value("fmId", fmId, /* 'fmod' */ 0x666D6F64);
+    //ser.Value("projectileId", projectileId, /* 'eid' */0x00656964);
+		ser.Value("damage", damage, /* 'dmg' */ 0x00646D67);
+		ser.Value("radius", radius, /* 'hRad' */ 0x68526164);
+    ser.Value("material", material, /* 'mat' */ 0x006D6174);
+    ser.Value("partId", partId, /* 'part' */ 0x70617274);
+    ser.Value("type", type, /* 'hTyp' */ 0x68547970);
+		ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
+    ser.Value("dir", dir, /* 'dir1' */ 0x64697231);
+    ser.Value("normal", normal, /* 'dir1' */ 0x64697231);
+		ser.Value("seq", seq, /* 'ui16' */ 0x75693136);
   }
 };
 
@@ -282,19 +282,19 @@ struct ExplosionInfo
 
   void SerializeWith(TSerialize ser)
   {
-    ser.Value("shooterId", shooterId, 'eid');
-    ser.Value("weaponId", weaponId, 'eid');    
-		ser.Value("damage", damage, 'dmg');
-    ser.Value("pos", pos, 'wrld');
-    ser.Value("dir", dir, 'dir1');
-		ser.Value("minRadius", minRadius, 'hRad');
-		ser.Value("radius", radius, 'hRad');
-		ser.Value("minPhysRadius", minPhysRadius, 'hRad');
-		ser.Value("physRadius", physRadius, 'hRad');
+    ser.Value("shooterId", shooterId, /* 'eid' */0x00656964);
+    ser.Value("weaponId", weaponId, /* 'eid' */0x00656964);    
+		ser.Value("damage", damage, /* 'dmg' */ 0x00646D67);
+    ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
+    ser.Value("dir", dir, /* 'dir1' */ 0x64697231);
+		ser.Value("minRadius", minRadius, /* 'hRad' */ 0x68526164);
+		ser.Value("radius", radius, /* 'hRad' */ 0x68526164);
+		ser.Value("minPhysRadius", minPhysRadius, /* 'hRad' */ 0x68526164);
+		ser.Value("physRadius", physRadius, /* 'hRad' */ 0x68526164);
 		ser.Value("angle", angle, 'hAng');
 		ser.Value("pressure", pressure, 'hPrs');
 		ser.Value("hole_size", hole_size, 'hHSz');
-    ser.Value("type", type, 'hTyp');
+    ser.Value("type", type, /* 'hTyp' */ 0x68547970);
 
 		ser.Value("effect_class", effect_class);
 
@@ -310,7 +310,7 @@ struct ExplosionInfo
 				pParticleEffect = gEnv->p3DEngine->FindParticleEffect(effect_name.c_str());
 			}
 			ser.Value("effect_scale", effect_scale, 'hESc');
-			ser.Value("maxblurdistance", maxblurdistance, 'iii');
+			ser.Value("maxblurdistance", maxblurdistance, /* 'iii' */ 0x00696969);
 			ser.EndGroup();
 		}
 
@@ -325,9 +325,9 @@ struct ExplosionInfo
 		{
 			if (ser.IsReading())
 				impact=true;
-			ser.Value("impact_normal", impact_normal, 'dir1');
+			ser.Value("impact_normal", impact_normal, /* 'dir1' */ 0x64697231);
 			ser.Value("impact_velocity", impact_velocity, 'pPVl');
-      ser.Value("impact_targetId", impact_targetId, 'eid');
+      ser.Value("impact_targetId", impact_targetId, /* 'eid' */0x00656964);
 			ser.EndGroup();
 		}
   };

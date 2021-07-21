@@ -97,15 +97,15 @@ void CPlayerFeature::OnPickedUp(EntityId pickerId, bool destroyed)
 //------------------------------------------------------------------------
 void CPlayerFeature::ActivateFeature(CActor *pActor, const char *feature)
 {
-	if (!stricmp("nanosuit", feature))
+	if (!_stricmp("nanosuit", feature))
 		NanoSuit(pActor);
-	else if (!stricmp("parachute", feature))
+	else if (!_stricmp("parachute", feature))
 		Parachute(pActor);
-	else if (!stricmp("aliencloak", feature))
+	else if (!_stricmp("aliencloak", feature))
 		AlienCloak(pActor);
-	else if (!stricmp("nightvision", feature))
+	else if (!_stricmp("nightvision", feature))
 		NightVision(pActor);
-	else if (!stricmp("dualSOCOM", feature))
+	else if (!_stricmp("dualSOCOM", feature))
 		DualSOCOM(pActor);
 	else
 		CryLogAlways("%s - Unknown Player Feature '%s'...", GetEntity()->GetName(), feature);

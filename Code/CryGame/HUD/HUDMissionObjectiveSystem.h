@@ -127,7 +127,7 @@ public:
 		ser.Value("m_shortDescription", m_shortMessage);
 		ser.Value("m_screenMessage", m_screenMessage);
 		ser.Value("m_mapLabel", m_mapLabel);
-		ser.Value("m_trackedEntity", m_trackedEntity, 'eid');
+		ser.Value("m_trackedEntity", m_trackedEntity, /* 'eid' */0x00656964);
 		ser.Value("m_silent", m_silent);
 		ser.Value("m_secondary", m_secondary);
 		ser.EnumValue("m_eStatus", m_eStatus, FIRST, LAST);

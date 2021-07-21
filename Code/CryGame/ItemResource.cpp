@@ -431,7 +431,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 			if (m_geometry[slot] != name)
 			{
 				const char* ext = PathUtil::GetExt(name.c_str());
-				if ((stricmp(ext, "chr") == 0) || (stricmp(ext, "cdf") == 0) || (stricmp(ext, "cga") == 0))
+				if ((_stricmp(ext, "chr") == 0) || (_stricmp(ext, "cdf") == 0) || (_stricmp(ext, "cga") == 0))
 					GetEntity()->LoadCharacter(slot, name, 0);
 				else
 					GetEntity()->LoadGeometry(slot, name, 0, 0);
@@ -621,7 +621,7 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 		}
 
 
-		if (!env || !env[0] || !stricmp("indoor", env))
+		if (!env || !env[0] || !_stricmp("indoor", env))
 			name.replace("%env%", "");
 		else
 		{

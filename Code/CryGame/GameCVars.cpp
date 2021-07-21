@@ -1334,7 +1334,7 @@ void SCVars::CacheObjects(const char* folderName)
 
 			auto ext(PathUtil::GetExt(fd.name));
 			
-			if (stricmp(PathUtil::GetExt(fd.name), "cdf") && stricmp(PathUtil::GetExt(fd.name), "cgf") && stricmp(PathUtil::GetExt(fd.name), "cga") && stricmp(PathUtil::GetExt(fd.name), "chr"))
+			if (_stricmp(PathUtil::GetExt(fd.name), "cdf") && _stricmp(PathUtil::GetExt(fd.name), "cgf") && _stricmp(PathUtil::GetExt(fd.name), "cga") && _stricmp(PathUtil::GetExt(fd.name), "chr"))
 				continue;
 
 			if (folder == "Objects/Characters/Human/asian/infantry/camp" || folder == "Objects/Characters/Human/asian/infantry/jungle" || folder == "Objects/Characters/Human/asian/infantry/elite")
@@ -1348,7 +1348,7 @@ void SCVars::CacheObjects(const char* folderName)
 			string cdfFile = folder + string("/") + string(fd.name);
 
 			//CryLogAlways("$3Trying to load %s", cdfFile.c_str());
-			if (!stricmp(PathUtil::GetExt(fd.name), "cdf") || !stricmp(PathUtil::GetExt(fd.name), "chr") || !stricmp(PathUtil::GetExt(fd.name), "cga"))
+			if (!_stricmp(PathUtil::GetExt(fd.name), "cdf") || !_stricmp(PathUtil::GetExt(fd.name), "chr") || !_stricmp(PathUtil::GetExt(fd.name), "cga"))
 			{
 				ICharacterInstance* pChar = gEnv->pCharacterManager->CreateInstance(cdfFile.c_str());
 				if (pChar && pChar->GetFilePath())

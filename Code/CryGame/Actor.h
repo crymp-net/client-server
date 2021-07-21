@@ -530,7 +530,7 @@ public:
 		ItemIdParam(EntityId item) : itemId(item) {};
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("itemId", itemId, 'eid');
+			ser.Value("itemId", itemId, /* 'eid' */0x00656964);
 		}
 		EntityId itemId;
 	};
@@ -542,7 +542,7 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("itemId", itemId, 'eid');
+			ser.Value("itemId", itemId, /* 'eid' */0x00656964);
 			ser.Value("impulseScale", impulseScale, 'iScl');
 			ser.Value("selectNext", selectNext, 'bool');
 			ser.Value("byDeath", byDeath, 'bool');
@@ -562,7 +562,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("teamId", teamId, 'team');
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("rot", rot, 'ori1');
 		};
 
@@ -578,7 +578,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("teamId", teamId, 'team');
-			ser.Value("vehicleId", vehicleId, 'eid');
+			ser.Value("vehicleId", vehicleId, /* 'eid' */0x00656964);
 			ser.Value("seatId", seatId, 'seat');
 		};
 
@@ -608,12 +608,12 @@ public:
 
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("shooterId", shooterId, 'eid');
-			ser.Value("weaponClassId", weaponClassId, 'ui16');
-			ser.Value("damage", damage, 'dmg');
-			ser.Value("material", material, 'mat');
-			ser.Value("hit_type", hit_type, 'hTyp');
-			ser.Value("impulse", impulse, 'kImp');
+			ser.Value("shooterId", shooterId, /* 'eid' */0x00656964);
+			ser.Value("weaponClassId", weaponClassId, /* 'ui16' */ 0x75693136);
+			ser.Value("damage", damage, /* 'dmg' */ 0x00646D67);
+			ser.Value("material", material, /* 'mat' */ 0x006D6174);
+			ser.Value("hit_type", hit_type, /* 'hTyp' */ 0x68547970);
+			ser.Value("impulse", impulse, /* 'kImp' */ 0x6B496D70);
 		};
 	};
 	struct MoveParams
@@ -622,7 +622,7 @@ public:
 		MoveParams(const Vec3& p, const Quat& q) : pos(p), rot(q) {};
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("pos", pos, 'wrld');
+			ser.Value("pos", pos, /* 'wrld' */ 0x77726C64);
 			ser.Value("rot", rot, 'ori1');
 		}
 		Vec3 pos;
@@ -647,7 +647,7 @@ public:
 		PickItemParams(EntityId item, bool slct, bool snd) : itemId(item), select(slct), sound(snd) {};
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("itemId", itemId, 'eid');
+			ser.Value("itemId", itemId, /* 'eid' */0x00656964);
 			ser.Value("select", select, 'bool');
 			ser.Value("sound", sound, 'bool');
 		}
@@ -678,7 +678,7 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("mode", mode, 'spec');
-			ser.Value("target", targetId, 'eid');
+			ser.Value("target", targetId, /* 'eid' */0x00656964);
 		}
 	};
 	struct SetSpectatorHealthParams
@@ -688,7 +688,7 @@ public:
 		int health;
 		void SerializeWith(TSerialize ser)
 		{
-			ser.Value("health", health, 'i8');
+			ser.Value("health", health, /* 'i8' */ 0x00006938);
 		}
 	};
 
@@ -1007,7 +1007,7 @@ public:
 						{
 							// Dejan: actions should not go through the ai proxy anymore!
 							/*
-							if(_stricmp(value, "idle") == 0)
+							if(__stricmp(value, "idle") == 0)
 								return pProxy->ResetAGInput( AIAG_ACTION );
 							else
 							{

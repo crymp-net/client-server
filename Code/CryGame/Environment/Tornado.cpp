@@ -128,7 +128,7 @@ bool CTornado::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile
 {
 	if (aspect == POSITION_ASPECT)
 	{
-		ser.Value("Pos", m_currentPos, 'wrld');
+		ser.Value("Pos", m_currentPos, /* 'wrld' */ 0x77726C64);
 	}
 	return true;
 }

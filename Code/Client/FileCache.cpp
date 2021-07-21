@@ -240,7 +240,7 @@ std::deque<FileCacheEntry> FileCache::LoadEntries()
 
 std::deque<FileCacheEntry> FileCache::Cleanup()
 {
-	constexpr uint64_t CACHE_MAX_SIZE = 2 * 1024 * 1024 * 1024;
+	const uint64_t CACHE_MAX_SIZE = 2147483648ULL;
 
 	std::deque<FileCacheEntry> entries = LoadEntries();
 

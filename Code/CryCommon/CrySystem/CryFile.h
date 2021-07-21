@@ -60,9 +60,9 @@ inline const char* CryGetExt( const char *filepath )
 inline bool IsCharacterFile( const char *filename )
 {
 	const char *ext = CryGetExt(filename);
-	if (stricmp(ext,CRY_CHARACTER_FILE_EXT) == 0 ||
-			stricmp(ext,CRY_CHARACTER_DEFINITION_FILE_EXT) == 0 ||
-			stricmp(ext,CRY_ANIM_GEOMETRY_FILE_EXT) == 0)
+	if (_stricmp(ext,CRY_CHARACTER_FILE_EXT) == 0 ||
+			_stricmp(ext,CRY_CHARACTER_DEFINITION_FILE_EXT) == 0 ||
+			_stricmp(ext,CRY_ANIM_GEOMETRY_FILE_EXT) == 0)
 	{
 		return true;
 	}
@@ -76,7 +76,7 @@ inline bool IsCharacterFile( const char *filename )
 inline bool IsStatObjFile( const char *filename )
 {
 	const char *ext = CryGetExt(filename);
-	if (stricmp(ext,CRY_GEOMETRY_FILE_EXT) == 0)
+	if (_stricmp(ext,CRY_GEOMETRY_FILE_EXT) == 0)
 	{
 		return true;
 	}

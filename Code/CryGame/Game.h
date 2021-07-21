@@ -313,7 +313,7 @@ protected:
 	CBulletTime						*m_pBulletTime;
 	CSoundMoods						*m_pSoundMoods;
 
-	typedef std::map<string, string, stl::less_stricmp<string> > TLevelMapMap;
+	typedef std::map<string, string, stl::less__stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
 
 private:

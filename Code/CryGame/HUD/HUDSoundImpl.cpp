@@ -185,10 +185,10 @@ void CHUD::PlayStatusSound(const char* name, bool forceSuitSound)
 
 	//we don't want to play the suit sounds at once (because of quick mode change key)
 	if(!forceSuitSound &&
-			(!stricmp(name, "normal_cloak_on") ||
-			!stricmp(name, "maximum_speed") ||
-			!stricmp(name, "maximum_strength") ||
-			!stricmp(name, "maximum_armor")))
+			(!_stricmp(name, "normal_cloak_on") ||
+			!_stricmp(name, "maximum_speed") ||
+			!_stricmp(name, "maximum_strength") ||
+			!_stricmp(name, "maximum_armor")))
 	{
 		// look for "m_fSuitChangeSoundTimer"
 		return;

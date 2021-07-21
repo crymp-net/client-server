@@ -674,7 +674,7 @@ void CHUD::SubtitleAssignCharacterName(CHUD::SSubtitleEntry& entry)
 			const char* currentLanguage = pLocMgr->GetLanguage();
 			for (int i = 0; i < g_languageCharacterPrefixesCount; ++i)
 			{
-				if (stricmp(g_languageCharacterPrefixes[i].language, currentLanguage) == 0)
+				if (_stricmp(g_languageCharacterPrefixes[i].language, currentLanguage) == 0)
 				{
 					charPrefix = g_languageCharacterPrefixes[i].prefix;
 					break;
@@ -702,7 +702,7 @@ void CHUD::SubtitleAppendCharacterName(const CHUD::SSubtitleEntry& entry, CryFix
 			const char* currentLanguage = pLocMgr->GetLanguage();
 			for (int i = 0; i < g_languageCharacterPrefixesCount; ++i)
 			{
-				if (stricmp(g_languageCharacterPrefixes[i].language, currentLanguage) == 0)
+				if (_stricmp(g_languageCharacterPrefixes[i].language, currentLanguage) == 0)
 				{
 					charPrefix = g_languageCharacterPrefixes[i].prefix;
 					break;
@@ -876,7 +876,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	if (targetId == shooterId)
 		bSuicide = true;
 
-	if(!stricmp(weaponClassName, "AutoTurret") || !stricmp(weaponClassName, "AutoTurretAA") || !stricmp(weaponClassName, "AlienTurret"))
+	if(!_stricmp(weaponClassName, "AutoTurret") || !_stricmp(weaponClassName, "AutoTurretAA") || !_stricmp(weaponClassName, "AlienTurret"))
 	{
 		bTurret = true;
 	}

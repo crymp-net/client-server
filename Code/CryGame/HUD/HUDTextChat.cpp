@@ -96,7 +96,7 @@ void CHUDTextChat::Update(float fDeltaTime)
 	}
 
 	//gEnv->pGame->GetIGameFramework()->GetIUIDraw()->DrawText(30, 450, 16.0f, 16.0f, m_inputText.c_str(), 1.0f, 0.1f, 1.0f, 0.3f, UIDRAWHORIZONTAL_LEFT, UIDRAWVERTICAL_TOP, UIDRAWHORIZONTAL_LEFT, UIDRAWVERTICAL_TOP);
-	if (stricmp(m_lastInputText.c_str(), m_inputText.c_str()))
+	if (_stricmp(m_lastInputText.c_str(), m_inputText.c_str()))
 	{
 		m_flashChat->Invoke("setInputText", m_inputText.c_str());
 		m_lastInputText = m_inputText;
@@ -458,7 +458,7 @@ void CHUDTextChat::GetMemoryStatistics(ICrySizer* s)
 
 void CHUDTextChat::HandleFSCommand(const char* pCommand, const char* pArgs)
 {
-	if (!stricmp(pCommand, "sendChatText"))
+	if (!_stricmp(pCommand, "sendChatText"))
 	{
 		size_t len = strlen(pArgs);
 		char buffer[2] = { 0 };
@@ -524,11 +524,11 @@ bool CHUDTextChat::Vote(const char* type, const char* params)
 	EntityId id = 0;
 	if (type && type[0])
 	{
-		if (!stricmp(type, "kick"))
+		if (!_stricmp(type, "kick"))
 		{
 			vote = eVS_kick;
 		}
-		else if (!stricmp(type, "nextmap"))
+		else if (!_stricmp(type, "nextmap"))
 		{
 			vote = eVS_nextMap;
 		}
