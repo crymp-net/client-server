@@ -4,8 +4,8 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 #include "CryGame/Game.h"
-#include "CryGame/Player.h"
-#include "CryGame/NanoSuit.h"
+#include "CryGame/Actors/Player/Player.h"
+#include "CryGame/Actors/Player/NanoSuit.h"
 #include "G2FlowBaseNode.h"
 
 #if defined(WHOLE_PROJECT)

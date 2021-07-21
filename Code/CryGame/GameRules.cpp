@@ -15,8 +15,8 @@
 #include "GameRules.h"
 #include "Game.h"
 #include "GameCVars.h"
-#include "Actor.h"
-#include "Player.h"
+#include "Actors/Actor.h"
+#include "Actors/Player/Player.h"
 #include "HUD/HUD.h"
 #include "HUD/HUDRadar.h"
 #include "HUD/HUDTextChat.h"
@@ -26,7 +26,7 @@
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
-#include "WeaponSystem.h"
+#include "Items/Weapons/WeaponSystem.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 
 #include "ServerSynchedStorage.h"

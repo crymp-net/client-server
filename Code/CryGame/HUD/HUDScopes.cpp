@@ -18,11 +18,11 @@ History:
 #include "HUDRadar.h"
 #include "HUDSilhouettes.h"
 #include "GameFlashAnimation.h"
-#include "CryGame/Actor.h"
+#include "CryGame/Actors/Actor.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameRules.h"
 #include "CryGame/GameCVars.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 
 //-----------------------------------------------------------------------------------------------------
 

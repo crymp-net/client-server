@@ -15,7 +15,7 @@ History:
 
 #include "CryGame/GameRules.h"
 #include "CryGame/GameCVars.h"
-#include "CryGame/Player.h"
+#include "CryGame/Actors/Player/Player.h"
 #include "G2FlowBaseNode.h"
 
 #include "CryCommon/CryAction/IVehicleSystem.h"

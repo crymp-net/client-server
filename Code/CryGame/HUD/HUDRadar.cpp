@@ -13,8 +13,8 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CryAction/IUIDraw.h"
-#include "CryGame/Actor.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Actors/Actor.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 #include "HUD.h"
 #include "HUDRadar.h"
 #include "CryGame/Game.h"
@@ -30,7 +30,7 @@ History:
 
 #include "HUDPowerStruggle.h"
 #include "HUDScopes.h"
-#include "CryGame/Scan.h"
+#include "CryGame/Items/Weapons/FireModes/Scan.h"
 
 #define RANDOM() ((((float)cry_rand()/(float)RAND_MAX)*2.0f)-1.0f)
 

@@ -15,7 +15,7 @@ History:
 #include "Game.h"
 #include "Menus/FlashMenuObject.h"
 #include "HUD/HUD.h"
-#include "Lam.h"
+#include "Items/Lam.h"
 
 //------------------------------------------------------------------------
 CScriptBind_Game::CScriptBind_Game(ISystem* pSystem, IGameFramework* pGameFramework)

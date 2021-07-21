@@ -5,10 +5,10 @@
 #include "CryGame/StdAfx.h"
 #include "HUD.h"
 #include "GameFlashAnimation.h"
-#include "CryGame/Actor.h"
+#include "CryGame/Actors/Actor.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 #include "HUDScopes.h"
 #include "HUDSilhouettes.h"
 

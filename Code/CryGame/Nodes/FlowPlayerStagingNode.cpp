@@ -4,9 +4,9 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 #include "CryGame/Game.h"
-#include "CryGame/Player.h"
-#include "CryGame/PlayerInput.h"
-#include "CryGame/PlayerMovementController.h"
+#include "CryGame/Actors/Player/Player.h"
+#include "CryGame/Actors/Player/PlayerInput.h"
+#include "CryGame/Actors/Player/PlayerMovementController.h"
 #include "G2FlowBaseNode.h"
 
 class CFlowPlayerStagingNode : public CFlowBaseNode

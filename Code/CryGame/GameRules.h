@@ -22,7 +22,7 @@
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CryAction/IGameRulesSystem.h"
 #include "CryCommon/CryAction/IViewSystem.h"
-#include "Actor.h"
+#include "Actors/Actor.h"
 #include "SynchedStorage.h"
 #include <queue>
 #include "Voting.h"

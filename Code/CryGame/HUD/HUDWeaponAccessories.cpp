@@ -5,7 +5,7 @@
 #include "CryGame/StdAfx.h"
 
 #include "HUD.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 
 //-----------------------------------------------------------------------------------------------------
 

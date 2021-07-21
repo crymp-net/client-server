@@ -5,7 +5,7 @@
 #include "CryGame/StdAfx.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
-#include "CryGame/Item.h"
+#include "CryGame/Items/Item.h"
 #include "CryGame/GameRules.h"
 #include "G2FlowBaseNode.h"
 #include "CryGame/HUD/HUD.h"

@@ -19,7 +19,7 @@ History:
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "HUDSilhouettes.h"
-#include "CryGame/Item.h"
+#include "CryGame/Items/Item.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -7,7 +7,7 @@
 
 #include "CryGame/HUD/HUD.h"
 #include "G2FlowBaseNode.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 
 #include "CryCommon/CryCore/StringUtils.h"
 

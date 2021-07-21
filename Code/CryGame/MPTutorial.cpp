@@ -22,7 +22,7 @@ History:
 #include "GameRules.h"
 #include "HUD/HUDPowerStruggle.h"
 #include "HUD/HUDRadar.h"
-#include "Player.h"
+#include "Actors/Player/Player.h"
 
 const float MESSAGE_DISPLAY_TIME = 4.0f;		// default time for msg display (if no audio)
 const float MESSAGE_GAP_TIME = 2.0f;				// gap between msgs

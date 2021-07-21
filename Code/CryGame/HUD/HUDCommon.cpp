@@ -22,8 +22,8 @@ History:
 #include "GameFlashLogic.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 
-#include "CryGame/Player.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Actors/Player/Player.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameActions.h"

@@ -9,7 +9,7 @@
 #include "HUDObituary.h"
 #include "CryGame/GameRules.h"
 #include "HUDTextChat.h"
-#include "CryGame/PlayerInput.h"
+#include "CryGame/Actors/Player/PlayerInput.h"
 #include "CryCommon/CryCore/StringUtils.h"
 #include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryAction/IUIDraw.h"

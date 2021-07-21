@@ -5,7 +5,7 @@
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "HUD.h"
-#include "CryGame/Actor.h"
+#include "CryGame/Actors/Actor.h"
 #include "CryGame/Game.h"
 
 void CHUD::PlaySound(ESound eSound, bool play)

@@ -20,9 +20,9 @@ History:
 #include "CryCommon/CryGame/GameUtils.h"
 #include "HUD.h"
 #include "HUDVehicleInterface.h"
-#include "CryGame/Item.h"
-#include "CryGame/Weapon.h"
-#include "CryGame/OffHand.h"
+#include "CryGame/Items/Item.h"
+#include "CryGame/Items/Weapons/Weapon.h"
+#include "CryGame/Items/Weapons/OffHand.h"
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -13,7 +13,7 @@ History:
 #include "StdAfx.h"
 #include "ScriptBind_GameRules.h"
 #include "GameRules.h"
-#include "Actor.h"
+#include "Actors/Actor.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "MPTutorial.h"

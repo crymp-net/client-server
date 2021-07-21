@@ -23,7 +23,7 @@
 #include "CryCommon/CryAction/ILoadGame.h"
 
 #include "GameCVars.h"
-#include "Player.h"
+#include "Actors/Player/Player.h"
 #include "HUD/HUD.h"
 #include "HUD/HUDRadar.h"
 

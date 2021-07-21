@@ -14,7 +14,7 @@ History:
 *************************************************************************/
 
 #include "CryGame/StdAfx.h"
-#include "CryGame/Actor.h"
+#include "CryGame/Actors/Actor.h"
 #include "CryGame/GameCVars.h"
 #include "GameFlashLogic.h"
 #include "CryGame/GameRules.h"

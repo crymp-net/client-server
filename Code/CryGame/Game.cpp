@@ -22,7 +22,7 @@
 #include "BulletTime.h"
 #include "SoundMoods.h"
 #include "HUD/HUD.h"
-#include "WeaponSystem.h"
+#include "Items/Weapons/WeaponSystem.h"
 
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
@@ -33,16 +33,16 @@
 #include "CryCommon/CryMovie/IMovieSystem.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 
-#include "ScriptBind_Actor.h"
-#include "ScriptBind_Item.h"
-#include "ScriptBind_Weapon.h"
+#include "Actors/ScriptBind_Actor.h"
+#include "Items/ScriptBind_Item.h"
+#include "Items/Weapons/ScriptBind_Weapon.h"
 #include "ScriptBind_GameRules.h"
 #include "ScriptBind_Game.h"
 #include "HUD/ScriptBind_HUD.h"
 
 #include "GameFactory.h"
 
-#include "ItemSharedParams.h"
+#include "Items/ItemSharedParams.h"
 
 #include "Nodes/G2FlowBaseNode.h"
 

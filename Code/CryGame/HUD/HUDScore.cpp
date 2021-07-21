@@ -23,7 +23,7 @@ History:
 #include "CryGame/GameRules.h"
 #include "GameFlashAnimation.h"
 #include "HUDCommon.h"
-#include "CryGame/Actor.h"
+#include "CryGame/Actors/Actor.h"
 
 CHUDScore::ScoreEntry::ScoreEntry(EntityId id, int kills, int deaths, int ping) : m_entityId(id), m_team(-1)
 {

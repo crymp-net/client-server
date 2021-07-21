@@ -254,66 +254,64 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CrySystem/IValidator.h
   Code/CryCommon/CrySystem/IXml.h
   Code/CryCommon/CrySystem/TimeValue.h
-  Code/CryGame/AIDemoInput.h
-  Code/CryGame/AVMine.cpp
-  Code/CryGame/AVMine.h
-  Code/CryGame/Actor.cpp
-  Code/CryGame/Actor.h
-  Code/CryGame/Alien.cpp
-  Code/CryGame/Alien.h
-  Code/CryGame/AmmoParams.cpp
-  Code/CryGame/AmmoParams.h
-  Code/CryGame/AmmoPickup.cpp
-  Code/CryGame/AmmoPickup.h
-  Code/CryGame/Automatic.cpp
-  Code/CryGame/Automatic.h
-  Code/CryGame/Beam.cpp
-  Code/CryGame/Beam.h
-  Code/CryGame/Binocular.cpp
-  Code/CryGame/Binocular.h
-  Code/CryGame/Bullet.cpp
-  Code/CryGame/Bullet.h
+  Code/CryGame/Actors/AIDemoInput.h
+  Code/CryGame/Actors/Actor.cpp
+  Code/CryGame/Actors/Actor.h
+  Code/CryGame/Actors/Alien/Alien.cpp
+  Code/CryGame/Actors/Alien/Alien.h
+  Code/CryGame/Actors/Alien/CompatibilityAlienMovementController.cpp
+  Code/CryGame/Actors/Alien/CompatibilityAlienMovementController.h
+  Code/CryGame/Actors/Alien/Hunter.cpp
+  Code/CryGame/Actors/Alien/Hunter.h
+  Code/CryGame/Actors/Alien/Observer.cpp
+  Code/CryGame/Actors/Alien/Observer.h
+  Code/CryGame/Actors/Alien/Scout.cpp
+  Code/CryGame/Actors/Alien/Scout.h
+  Code/CryGame/Actors/Alien/Trooper.cpp
+  Code/CryGame/Actors/Alien/Trooper.h
+  Code/CryGame/Actors/GrabHandler.cpp
+  Code/CryGame/Actors/GrabHandler.h
+  Code/CryGame/Actors/Player/IPlayerInput.h
+  Code/CryGame/Actors/Player/NanoSuit.cpp
+  Code/CryGame/Actors/Player/NanoSuit.h
+  Code/CryGame/Actors/Player/NetPlayerInput.cpp
+  Code/CryGame/Actors/Player/NetPlayerInput.h
+  Code/CryGame/Actors/Player/Player.cpp
+  Code/CryGame/Actors/Player/Player.h
+  Code/CryGame/Actors/Player/PlayerInput.cpp
+  Code/CryGame/Actors/Player/PlayerInput.h
+  Code/CryGame/Actors/Player/PlayerMovement.cpp
+  Code/CryGame/Actors/Player/PlayerMovement.h
+  Code/CryGame/Actors/Player/PlayerMovementController.cpp
+  Code/CryGame/Actors/Player/PlayerMovementController.h
+  Code/CryGame/Actors/Player/PlayerRotation.cpp
+  Code/CryGame/Actors/Player/PlayerRotation.h
+  Code/CryGame/Actors/Player/PlayerView.cpp
+  Code/CryGame/Actors/Player/PlayerView.h
+  Code/CryGame/Actors/Player/WeaponAttachmentManager.cpp
+  Code/CryGame/Actors/Player/WeaponAttachmentManager.h
+  Code/CryGame/Actors/ScreenEffects.cpp
+  Code/CryGame/Actors/ScreenEffects.h
+  Code/CryGame/Actors/ScriptBind_Actor.cpp
+  Code/CryGame/Actors/ScriptBind_Actor.h
+  Code/CryGame/Actors/Shark/Shark.cpp
+  Code/CryGame/Actors/Shark/Shark.h
+  Code/CryGame/Actors/Shark/SharkMovementController.cpp
+  Code/CryGame/Actors/Shark/SharkMovementController.h
   Code/CryGame/BulletTime.cpp
   Code/CryGame/BulletTime.h
-  Code/CryGame/Burst.cpp
-  Code/CryGame/Burst.h
-  Code/CryGame/C4.cpp
-  Code/CryGame/C4.h
-  Code/CryGame/C4Detonator.cpp
-  Code/CryGame/C4Detonator.h
-  Code/CryGame/C4Projectile.cpp
-  Code/CryGame/C4Projectile.h
-  Code/CryGame/Charge.cpp
-  Code/CryGame/Charge.h
-  Code/CryGame/Claymore.cpp
-  Code/CryGame/Claymore.h
   Code/CryGame/ClientSynchedStorage.cpp
   Code/CryGame/ClientSynchedStorage.h
-  Code/CryGame/CompatibilityAlienMovementController.cpp
-  Code/CryGame/CompatibilityAlienMovementController.h
-  Code/CryGame/DebugGun.cpp
-  Code/CryGame/DebugGun.h
-  Code/CryGame/Detonate.cpp
-  Code/CryGame/Detonate.h
-  Code/CryGame/EMPField.cpp
-  Code/CryGame/EMPField.h
   Code/CryGame/Environment/BattleDust.cpp
   Code/CryGame/Environment/BattleDust.h
-  Code/CryGame/Environment/FlowTornado.cpp
-  Code/CryGame/Environment/FlowTornado.h
   Code/CryGame/Environment/Shake.cpp
   Code/CryGame/Environment/Shake.h
-  Code/CryGame/Environment/Tornado.cpp
-  Code/CryGame/Environment/Tornado.h
-  Code/CryGame/Fists.cpp
-  Code/CryGame/Fists.h
+  Code/CryGame/Environment/Tornado/FlowTornado.cpp
+  Code/CryGame/Environment/Tornado/FlowTornado.h
+  Code/CryGame/Environment/Tornado/Tornado.cpp
+  Code/CryGame/Environment/Tornado/Tornado.h
   Code/CryGame/FlashAnimation.cpp
   Code/CryGame/FlashAnimation.h
-  Code/CryGame/FlowItemAnimation.cpp
-  Code/CryGame/FlowItemAnimation.h
-  Code/CryGame/FlowVehicleNodes.cpp
-  Code/CryGame/FreezingBeam.cpp
-  Code/CryGame/FreezingBeam.h
   Code/CryGame/Game.cpp
   Code/CryGame/Game.h
   Code/CryGame/GameActions.cpp
@@ -325,10 +323,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/GameRules.cpp
   Code/CryGame/GameRules.h
   Code/CryGame/GameRulesClientServer.cpp
-  Code/CryGame/GrabHandler.cpp
-  Code/CryGame/GrabHandler.h
-  Code/CryGame/GunTurret.cpp
-  Code/CryGame/GunTurret.h
   Code/CryGame/HUD/FlashPlayerNULL.h
   Code/CryGame/HUD/GameFlashAnimation.cpp
   Code/CryGame/HUD/GameFlashAnimation.h
@@ -388,35 +382,125 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/HUD/Tweaks/TweakMetadataLUA.h
   Code/CryGame/HUD/Tweaks/TweakTraverser.cpp
   Code/CryGame/HUD/Tweaks/TweakTraverser.h
-  Code/CryGame/HomingMissile.cpp
-  Code/CryGame/HomingMissile.h
-  Code/CryGame/Hunter.cpp
-  Code/CryGame/Hunter.h
-  Code/CryGame/IPlayerInput.h
-  Code/CryGame/IronSight.cpp
-  Code/CryGame/IronSight.h
-  Code/CryGame/Item.cpp
-  Code/CryGame/Item.h
-  Code/CryGame/ItemAccessory.cpp
-  Code/CryGame/ItemClientServer.cpp
-  Code/CryGame/ItemDualWield.cpp
-  Code/CryGame/ItemEffect.cpp
-  Code/CryGame/ItemEvents.cpp
-  Code/CryGame/ItemParamReader.h
-  Code/CryGame/ItemParams.cpp
-  Code/CryGame/ItemResource.cpp
-  Code/CryGame/ItemScheduler.cpp
-  Code/CryGame/ItemScheduler.h
-  Code/CryGame/ItemSharedParams.cpp
-  Code/CryGame/ItemSharedParams.h
-  Code/CryGame/ItemString.h
-  Code/CryGame/ItemView.cpp
-  Code/CryGame/Lam.cpp
-  Code/CryGame/Lam.h
+  Code/CryGame/Items/FlowItemAnimation.cpp
+  Code/CryGame/Items/FlowItemAnimation.h
+  Code/CryGame/Items/Item.cpp
+  Code/CryGame/Items/Item.h
+  Code/CryGame/Items/ItemAccessory.cpp
+  Code/CryGame/Items/ItemClientServer.cpp
+  Code/CryGame/Items/ItemDualWield.cpp
+  Code/CryGame/Items/ItemEffect.cpp
+  Code/CryGame/Items/ItemEvents.cpp
+  Code/CryGame/Items/ItemParamReader.h
+  Code/CryGame/Items/ItemParams.cpp
+  Code/CryGame/Items/ItemResource.cpp
+  Code/CryGame/Items/ItemScheduler.cpp
+  Code/CryGame/Items/ItemScheduler.h
+  Code/CryGame/Items/ItemSharedParams.cpp
+  Code/CryGame/Items/ItemSharedParams.h
+  Code/CryGame/Items/ItemString.h
+  Code/CryGame/Items/ItemView.cpp
+  Code/CryGame/Items/Lam.cpp
+  Code/CryGame/Items/Lam.h
+  Code/CryGame/Items/PlayerFeature.cpp
+  Code/CryGame/Items/PlayerFeature.h
+  Code/CryGame/Items/ScriptBind_Item.cpp
+  Code/CryGame/Items/ScriptBind_Item.h
+  Code/CryGame/Items/Weapons/AmmoParams.cpp
+  Code/CryGame/Items/Weapons/AmmoParams.h
+  Code/CryGame/Items/Weapons/AmmoPickup.cpp
+  Code/CryGame/Items/Weapons/AmmoPickup.h
+  Code/CryGame/Items/Weapons/Binocular.cpp
+  Code/CryGame/Items/Weapons/Binocular.h
+  Code/CryGame/Items/Weapons/C4.cpp
+  Code/CryGame/Items/Weapons/C4.h
+  Code/CryGame/Items/Weapons/C4Detonator.cpp
+  Code/CryGame/Items/Weapons/C4Detonator.h
+  Code/CryGame/Items/Weapons/DebugGun.cpp
+  Code/CryGame/Items/Weapons/DebugGun.h
+  Code/CryGame/Items/Weapons/FireModes/Automatic.cpp
+  Code/CryGame/Items/Weapons/FireModes/Automatic.h
+  Code/CryGame/Items/Weapons/FireModes/Beam.cpp
+  Code/CryGame/Items/Weapons/FireModes/Beam.h
+  Code/CryGame/Items/Weapons/FireModes/Burst.cpp
+  Code/CryGame/Items/Weapons/FireModes/Burst.h
+  Code/CryGame/Items/Weapons/FireModes/Charge.cpp
+  Code/CryGame/Items/Weapons/FireModes/Charge.h
+  Code/CryGame/Items/Weapons/FireModes/Detonate.cpp
+  Code/CryGame/Items/Weapons/FireModes/Detonate.h
+  Code/CryGame/Items/Weapons/FireModes/FreezingBeam.cpp
+  Code/CryGame/Items/Weapons/FireModes/FreezingBeam.h
+  Code/CryGame/Items/Weapons/FireModes/Melee.cpp
+  Code/CryGame/Items/Weapons/FireModes/Melee.h
+  Code/CryGame/Items/Weapons/FireModes/Plant.cpp
+  Code/CryGame/Items/Weapons/FireModes/Plant.h
+  Code/CryGame/Items/Weapons/FireModes/Rapid.cpp
+  Code/CryGame/Items/Weapons/FireModes/Rapid.h
+  Code/CryGame/Items/Weapons/FireModes/Scan.cpp
+  Code/CryGame/Items/Weapons/FireModes/Scan.h
+  Code/CryGame/Items/Weapons/FireModes/Shotgun.cpp
+  Code/CryGame/Items/Weapons/FireModes/Shotgun.h
+  Code/CryGame/Items/Weapons/FireModes/Single.cpp
+  Code/CryGame/Items/Weapons/FireModes/Single.h
+  Code/CryGame/Items/Weapons/FireModes/SingleTG.cpp
+  Code/CryGame/Items/Weapons/FireModes/SingleTG.h
+  Code/CryGame/Items/Weapons/FireModes/Throw.cpp
+  Code/CryGame/Items/Weapons/FireModes/Throw.h
+  Code/CryGame/Items/Weapons/FireModes/WorkOnTarget.cpp
+  Code/CryGame/Items/Weapons/FireModes/WorkOnTarget.h
+  Code/CryGame/Items/Weapons/Fists.cpp
+  Code/CryGame/Items/Weapons/Fists.h
+  Code/CryGame/Items/Weapons/GunTurret.cpp
+  Code/CryGame/Items/Weapons/GunTurret.h
+  Code/CryGame/Items/Weapons/OffHand.cpp
+  Code/CryGame/Items/Weapons/OffHand.h
+  Code/CryGame/Items/Weapons/Projectile.cpp
+  Code/CryGame/Items/Weapons/Projectile.h
+  Code/CryGame/Items/Weapons/Projectiles/AVMine.cpp
+  Code/CryGame/Items/Weapons/Projectiles/AVMine.h
+  Code/CryGame/Items/Weapons/Projectiles/Bullet.cpp
+  Code/CryGame/Items/Weapons/Projectiles/Bullet.h
+  Code/CryGame/Items/Weapons/Projectiles/C4Projectile.cpp
+  Code/CryGame/Items/Weapons/Projectiles/C4Projectile.h
+  Code/CryGame/Items/Weapons/Projectiles/Claymore.cpp
+  Code/CryGame/Items/Weapons/Projectiles/Claymore.h
+  Code/CryGame/Items/Weapons/Projectiles/EMPField.cpp
+  Code/CryGame/Items/Weapons/Projectiles/EMPField.h
+  Code/CryGame/Items/Weapons/Projectiles/HomingMissile.cpp
+  Code/CryGame/Items/Weapons/Projectiles/HomingMissile.h
+  Code/CryGame/Items/Weapons/Projectiles/Rock.cpp
+  Code/CryGame/Items/Weapons/Projectiles/Rock.h
+  Code/CryGame/Items/Weapons/Projectiles/Rocket.cpp
+  Code/CryGame/Items/Weapons/Projectiles/Rocket.h
+  Code/CryGame/Items/Weapons/Projectiles/TacBullet.cpp
+  Code/CryGame/Items/Weapons/Projectiles/TacBullet.h
+  Code/CryGame/Items/Weapons/Projectiles/TagBullet.cpp
+  Code/CryGame/Items/Weapons/Projectiles/TagBullet.h
+  Code/CryGame/Items/Weapons/ReferenceWeapon.cpp
+  Code/CryGame/Items/Weapons/ReferenceWeapon.h
+  Code/CryGame/Items/Weapons/RocketLauncher.cpp
+  Code/CryGame/Items/Weapons/RocketLauncher.h
+  Code/CryGame/Items/Weapons/ScriptBind_Weapon.cpp
+  Code/CryGame/Items/Weapons/ScriptBind_Weapon.h
+  Code/CryGame/Items/Weapons/ThrowableWeapon.cpp
+  Code/CryGame/Items/Weapons/ThrowableWeapon.h
+  Code/CryGame/Items/Weapons/TracerManager.cpp
+  Code/CryGame/Items/Weapons/TracerManager.h
+  Code/CryGame/Items/Weapons/VehicleWeapon.cpp
+  Code/CryGame/Items/Weapons/VehicleWeapon.h
+  Code/CryGame/Items/Weapons/Weapon.cpp
+  Code/CryGame/Items/Weapons/Weapon.h
+  Code/CryGame/Items/Weapons/WeaponClientServer.cpp
+  Code/CryGame/Items/Weapons/WeaponEvent.cpp
+  Code/CryGame/Items/Weapons/WeaponInput.cpp
+  Code/CryGame/Items/Weapons/WeaponSystem.cpp
+  Code/CryGame/Items/Weapons/WeaponSystem.h
+  Code/CryGame/Items/Weapons/ZoomModes/IronSight.cpp
+  Code/CryGame/Items/Weapons/ZoomModes/IronSight.h
+  Code/CryGame/Items/Weapons/ZoomModes/Scope.cpp
+  Code/CryGame/Items/Weapons/ZoomModes/Scope.h
   Code/CryGame/MPTutorial.cpp
   Code/CryGame/MPTutorial.h
-  Code/CryGame/Melee.cpp
-  Code/CryGame/Melee.h
   Code/CryGame/Menus/CreateGame.cpp
   Code/CryGame/Menus/CreateGame.h
   Code/CryGame/Menus/FlashMenuObject.cpp
@@ -438,167 +522,83 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Menus/OptionsManager.h
   Code/CryGame/Menus/QuickGame.cpp
   Code/CryGame/Menus/QuickGame.h
-  Code/CryGame/NanoSuit.cpp
-  Code/CryGame/NanoSuit.h
   Code/CryGame/NetInputChainDebug.cpp
   Code/CryGame/NetInputChainDebug.h
-  Code/CryGame/NetPlayerInput.cpp
-  Code/CryGame/NetPlayerInput.h
   Code/CryGame/Nodes/FlowActorSensor.cpp
   Code/CryGame/Nodes/FlowFadeNode.cpp
   Code/CryGame/Nodes/FlowHitInfoNode.cpp
   Code/CryGame/Nodes/FlowNanoSuitNodes.cpp
   Code/CryGame/Nodes/FlowPlayerStagingNode.cpp
   Code/CryGame/Nodes/FlowPostFXNodes.cpp
+  Code/CryGame/Nodes/FlowVehicleNodes.cpp
   Code/CryGame/Nodes/G2FlowBaseNode.h
   Code/CryGame/Nodes/HUDNodes.cpp
   Code/CryGame/Nodes/MPNodes.cpp
   Code/CryGame/Nodes/WeaponNodes.cpp
-  Code/CryGame/Observer.cpp
-  Code/CryGame/Observer.h
-  Code/CryGame/OffHand.cpp
-  Code/CryGame/OffHand.h
-  Code/CryGame/Plant.cpp
-  Code/CryGame/Plant.h
-  Code/CryGame/Player.cpp
-  Code/CryGame/Player.h
-  Code/CryGame/PlayerFeature.cpp
-  Code/CryGame/PlayerFeature.h
-  Code/CryGame/PlayerInput.cpp
-  Code/CryGame/PlayerInput.h
-  Code/CryGame/PlayerMovement.cpp
-  Code/CryGame/PlayerMovement.h
-  Code/CryGame/PlayerMovementController.cpp
-  Code/CryGame/PlayerMovementController.h
-  Code/CryGame/PlayerRotation.cpp
-  Code/CryGame/PlayerRotation.h
-  Code/CryGame/PlayerView.cpp
-  Code/CryGame/PlayerView.h
-  Code/CryGame/Projectile.cpp
-  Code/CryGame/Projectile.h
   Code/CryGame/Radio.cpp
   Code/CryGame/Radio.h
-  Code/CryGame/Rapid.cpp
-  Code/CryGame/Rapid.h
-  Code/CryGame/ReferenceWeapon.cpp
-  Code/CryGame/ReferenceWeapon.h
-  Code/CryGame/Rock.cpp
-  Code/CryGame/Rock.h
-  Code/CryGame/Rocket.cpp
-  Code/CryGame/Rocket.h
-  Code/CryGame/RocketLauncher.cpp
-  Code/CryGame/RocketLauncher.h
   Code/CryGame/SPAnalyst.cpp
   Code/CryGame/SPAnalyst.h
-  Code/CryGame/Scan.cpp
-  Code/CryGame/Scan.h
-  Code/CryGame/Scope.cpp
-  Code/CryGame/Scope.h
-  Code/CryGame/Scout.cpp
-  Code/CryGame/Scout.h
-  Code/CryGame/ScreenEffects.cpp
-  Code/CryGame/ScreenEffects.h
-  Code/CryGame/ScriptBind_Actor.cpp
-  Code/CryGame/ScriptBind_Actor.h
   Code/CryGame/ScriptBind_Game.cpp
   Code/CryGame/ScriptBind_Game.h
   Code/CryGame/ScriptBind_GameRules.cpp
   Code/CryGame/ScriptBind_GameRules.h
-  Code/CryGame/ScriptBind_Item.cpp
-  Code/CryGame/ScriptBind_Item.h
-  Code/CryGame/ScriptBind_Weapon.cpp
-  Code/CryGame/ScriptBind_Weapon.h
   Code/CryGame/ScriptControlledPhysics.cpp
   Code/CryGame/ScriptControlledPhysics.h
   Code/CryGame/ScriptUtils.cpp
   Code/CryGame/ScriptUtils.h
   Code/CryGame/ServerSynchedStorage.cpp
   Code/CryGame/ServerSynchedStorage.h
-  Code/CryGame/Shark.cpp
-  Code/CryGame/Shark.h
-  Code/CryGame/SharkMovementController.cpp
-  Code/CryGame/SharkMovementController.h
   Code/CryGame/ShotValidator.cpp
   Code/CryGame/ShotValidator.h
-  Code/CryGame/Shotgun.cpp
-  Code/CryGame/Shotgun.h
-  Code/CryGame/Single.cpp
-  Code/CryGame/Single.h
-  Code/CryGame/SingleTG.cpp
-  Code/CryGame/SingleTG.h
   Code/CryGame/SoundMoods.cpp
   Code/CryGame/SoundMoods.h
   Code/CryGame/StdAfx.cpp
   Code/CryGame/StdAfx.h
   Code/CryGame/SynchedStorage.cpp
   Code/CryGame/SynchedStorage.h
-  Code/CryGame/TacBullet.cpp
-  Code/CryGame/TacBullet.h
-  Code/CryGame/TagBullet.cpp
-  Code/CryGame/TagBullet.h
-  Code/CryGame/Throw.cpp
-  Code/CryGame/Throw.h
-  Code/CryGame/ThrowableWeapon.cpp
-  Code/CryGame/ThrowableWeapon.h
-  Code/CryGame/TracerManager.cpp
-  Code/CryGame/TracerManager.h
-  Code/CryGame/Trooper.cpp
-  Code/CryGame/Trooper.h
-  Code/CryGame/VehicleActionAutomaticDoor.cpp
-  Code/CryGame/VehicleActionAutomaticDoor.h
-  Code/CryGame/VehicleActionDeployRope.cpp
-  Code/CryGame/VehicleActionDeployRope.h
-  Code/CryGame/VehicleActionEntityAttachment.cpp
-  Code/CryGame/VehicleActionEntityAttachment.h
-  Code/CryGame/VehicleActionLandingGears.cpp
-  Code/CryGame/VehicleActionLandingGears.h
-  Code/CryGame/VehicleClient.cpp
-  Code/CryGame/VehicleClient.h
-  Code/CryGame/VehicleDamageBehaviorBurn.cpp
-  Code/CryGame/VehicleDamageBehaviorBurn.h
-  Code/CryGame/VehicleDamageBehaviorCameraShake.cpp
-  Code/CryGame/VehicleDamageBehaviorCameraShake.h
-  Code/CryGame/VehicleDamageBehaviorCollisionEx.cpp
-  Code/CryGame/VehicleDamageBehaviorCollisionEx.h
-  Code/CryGame/VehicleDamageBehaviorExplosion.cpp
-  Code/CryGame/VehicleDamageBehaviorExplosion.h
-  Code/CryGame/VehicleDamageBehaviorTire.cpp
-  Code/CryGame/VehicleDamageBehaviorTire.h
-  Code/CryGame/VehicleMovementAmphibious.cpp
-  Code/CryGame/VehicleMovementAmphibious.h
-  Code/CryGame/VehicleMovementBase.cpp
-  Code/CryGame/VehicleMovementBase.h
-  Code/CryGame/VehicleMovementHelicopter.cpp
-  Code/CryGame/VehicleMovementHelicopter.h
-  Code/CryGame/VehicleMovementHovercraft.cpp
-  Code/CryGame/VehicleMovementHovercraft.h
-  Code/CryGame/VehicleMovementStdBoat.cpp
-  Code/CryGame/VehicleMovementStdBoat.h
-  Code/CryGame/VehicleMovementStdWheeled.cpp
-  Code/CryGame/VehicleMovementStdWheeled.h
-  Code/CryGame/VehicleMovementTank.cpp
-  Code/CryGame/VehicleMovementTank.h
-  Code/CryGame/VehicleMovementTweaks.cpp
-  Code/CryGame/VehicleMovementTweaks.h
-  Code/CryGame/VehicleMovementVTOL.cpp
-  Code/CryGame/VehicleMovementVTOL.h
-  Code/CryGame/VehicleMovementWarrior.cpp
-  Code/CryGame/VehicleMovementWarrior.h
-  Code/CryGame/VehicleWeapon.cpp
-  Code/CryGame/VehicleWeapon.h
+  Code/CryGame/Vehicles/Action/VehicleActionAutomaticDoor.cpp
+  Code/CryGame/Vehicles/Action/VehicleActionAutomaticDoor.h
+  Code/CryGame/Vehicles/Action/VehicleActionDeployRope.cpp
+  Code/CryGame/Vehicles/Action/VehicleActionDeployRope.h
+  Code/CryGame/Vehicles/Action/VehicleActionEntityAttachment.cpp
+  Code/CryGame/Vehicles/Action/VehicleActionEntityAttachment.h
+  Code/CryGame/Vehicles/Action/VehicleActionLandingGears.cpp
+  Code/CryGame/Vehicles/Action/VehicleActionLandingGears.h
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorBurn.cpp
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorBurn.h
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorCameraShake.cpp
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorCameraShake.h
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorCollisionEx.cpp
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorCollisionEx.h
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorExplosion.cpp
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorExplosion.h
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorTire.cpp
+  Code/CryGame/Vehicles/Damage/VehicleDamageBehaviorTire.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementAmphibious.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementAmphibious.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementBase.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementBase.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementHelicopter.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementHelicopter.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementHovercraft.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementHovercraft.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementStdBoat.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementStdBoat.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementStdWheeled.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementStdWheeled.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementTank.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementTank.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementTweaks.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementTweaks.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementVTOL.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementVTOL.h
+  Code/CryGame/Vehicles/Movement/VehicleMovementWarrior.cpp
+  Code/CryGame/Vehicles/Movement/VehicleMovementWarrior.h
+  Code/CryGame/Vehicles/VehicleClient.cpp
+  Code/CryGame/Vehicles/VehicleClient.h
   Code/CryGame/Voting.cpp
   Code/CryGame/Voting.h
-  Code/CryGame/Weapon.cpp
-  Code/CryGame/Weapon.h
-  Code/CryGame/WeaponAttachmentManager.cpp
-  Code/CryGame/WeaponAttachmentManager.h
-  Code/CryGame/WeaponClientServer.cpp
-  Code/CryGame/WeaponEvent.cpp
-  Code/CryGame/WeaponInput.cpp
-  Code/CryGame/WeaponSystem.cpp
-  Code/CryGame/WeaponSystem.h
-  Code/CryGame/WorkOnTarget.cpp
-  Code/CryGame/WorkOnTarget.h
   Code/CryScriptSystem/LuaLibs/bitlib.c
   Code/CryScriptSystem/ScriptBindings/ScriptBindings.cpp
   Code/CryScriptSystem/ScriptBindings/ScriptBindings.h

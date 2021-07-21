@@ -41,7 +41,7 @@ History:
 
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
-#include "CryGame/IPlayerInput.h"
+#include "CryGame/Actors/Player/IPlayerInput.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryInput/IInput.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
@@ -51,9 +51,9 @@ History:
 #include "CryCommon/CryMovie/IMovieSystem.h"
 
 #include "CryGame/GameRules.h"
-#include "CryGame/Item.h"
-#include "CryGame/Weapon.h"
-#include "CryGame/OffHand.h"
+#include "CryGame/Items/Item.h"
+#include "CryGame/Items/Weapons/Weapon.h"
+#include "CryGame/Items/Weapons/OffHand.h"
 
 #include "Tweaks/HUDTweakMenu.h"
 
@@ -65,7 +65,7 @@ History:
 #include "HUDSilhouettes.h"
 
 #include "CryGame/Menus/OptionsManager.h"
-#include "CryGame/WeaponSystem.h"
+#include "CryGame/Items/Weapons/WeaponSystem.h"
 #include "CryGame/Radio.h"
 
 static const float NIGHT_VISION_ENERGY = 30.0f;

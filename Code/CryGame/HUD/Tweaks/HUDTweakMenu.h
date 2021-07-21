@@ -17,7 +17,7 @@ History:
 
 #pragma once
 
-#include "CryGame/HUD/HUDObject.h"
+#include "../HUDObject.h"
 #include "TweakMenu.h"
 #include "TweakTraverser.h"
 

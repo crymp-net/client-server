@@ -21,7 +21,7 @@ History:
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameRules.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 #include "HUDVehicleInterface.h"
 #include "CryGame/Menus/OptionsManager.h"
 

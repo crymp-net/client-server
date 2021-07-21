@@ -18,7 +18,7 @@ History:
 #include "GameFlashLogic.h"
 #include "HUD.h"
 #include "HUDRadar.h"
-#include "CryGame/Weapon.h"
+#include "CryGame/Items/Weapons/Weapon.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryGame/GameCVars.h"
 
