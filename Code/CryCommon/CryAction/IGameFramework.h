@@ -69,7 +69,7 @@ struct IGameObjectExtensionCreatorBase
 	{ \
 		IGameObjectExtension * Create() \
 		{ \
-			return (IGameObjectExtension*) new T(); \
+			return static_cast<IGameObjectExtension*>(new T()); \
 		} \
 		void GetGameObjectExtensionRMIData( void ** ppRMI, size_t * nCount ) \
 		{ \

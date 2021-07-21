@@ -884,8 +884,8 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	if (pCVar == 0)
 		return;
 
-	CryFixedStringT<128> szLine = pCVar->GetName();
-	CryFixedStringT<128> szValue = pCVar->GetString();
+	std::string szLine = pCVar->GetName();
+	std::string szValue = pCVar->GetString();
 
 	// only save if we have an option to it
 	std::map<string, SOptionEntry>::const_iterator iter = m_pOptionsManager->m_profileOptions.find(CONST_TEMP_STRING(pCVar->GetName()));
@@ -900,17 +900,16 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	// replace \ with \\ a
 	
 	pos = 1;
-	std::string strValue = szValue.c_str();
 	for (;;)
 	{
-		pos = strValue.find_first_of("\\", pos);
+		pos = szValue.find_first_of("\\", pos);
 
 		if (pos == std::string::npos)
 		{
 			break;
 		}
 
-		strValue.replace(pos, 1, "\\\\", 2);
+		szValue.replace(pos, 1, "\\\\", 2);
 		pos += 2;
 	}
 	
@@ -919,18 +918,16 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	pos = 1;
 	for (;;)
 	{
-		pos = strValue.find_first_of("\"", pos);
+		pos = szValue.find_first_of("\"", pos);
 
 		if (pos == std::string::npos)
 		{
 			break;
 		}
 
-		strValue.replace(pos, 1, "\\\"", 2);
+		szValue.replace(pos, 1, "\\\"", 2);
 		pos += 2;
 	}
-	
-	szValue = strValue.c_str();
 
 	if (pCVar->GetType() == CVAR_STRING)
 		szLine += " = \"" + szValue + "\"\r\n";
