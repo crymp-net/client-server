@@ -198,7 +198,7 @@ void Launcher::PatchEngine()
 	if (m_CrySystem)
 	{
 		Patch::RemoveSecuROM(m_CrySystem);
-		Patch::MakeDX9Default(m_CrySystem);
+		//Patch::MakeDX9Default(m_CrySystem);
 		Patch::AllowDX9VeryHighSpec(m_CrySystem);
 		Patch::AllowMultipleInstances(m_CrySystem);
 		Patch::UnhandledExceptions(m_CrySystem);
