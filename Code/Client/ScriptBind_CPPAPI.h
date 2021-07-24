@@ -9,7 +9,6 @@ public:
 	~ScriptBind_CPPAPI();
 
 	int AddCCommand(IFunctionHandler *pH, const char *name, HSCRIPTFUNCTION handler);
-	int ApplyMaskAll(IFunctionHandler *pH, int mask, bool apply);
 	int ApplyMaskOne(IFunctionHandler *pH, ScriptHandle entity, int mask, bool apply);
 	int FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value);
 	int GetLocaleInformation(IFunctionHandler *pH);

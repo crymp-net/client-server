@@ -1,6 +1,6 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -25,7 +25,6 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_GLOBAL(SCRIPT_CALLBACK_ON_MASTER_RESOLVED);
 
 	SCRIPT_REG_TEMPLFUNC(AddCCommand, "name, handler");
-	SCRIPT_REG_TEMPLFUNC(ApplyMaskAll, "mask, apply");
 	SCRIPT_REG_TEMPLFUNC(ApplyMaskOne, "entity, mask, apply");
 	SCRIPT_REG_TEMPLFUNC(FSetCVar, "cvar, value");
 	SCRIPT_REG_TEMPLFUNC(GetLocaleInformation, "");
@@ -50,18 +49,26 @@ int ScriptBind_CPPAPI::AddCCommand(IFunctionHandler *pH, const char *name, HSCRI
 	return pH->EndFunction(success);
 }
 
-int ScriptBind_CPPAPI::ApplyMaskAll(IFunctionHandler *pH, int mask, bool apply)
-{
-	// TODO: misterSD needs this
-	CryLogWarningAlways("CPPAPI.ApplyMaskAll is not implemented!");
-	return pH->EndFunction();
-}
-
 int ScriptBind_CPPAPI::ApplyMaskOne(IFunctionHandler *pH, ScriptHandle entity, int mask, bool apply)
 {
-	// TODO: misterSD needs this
-	CryLogWarningAlways("CPPAPI.ApplyMaskOne is not implemented!");
-	return pH->EndFunction();
+	IEntity *pEntity = gEnv->pEntitySystem->GetEntity(entity.n);
+	if(!pEntity)
+		return pH->EndFunction(false);
+
+	IEntityRenderProxy *pRenderProxy = static_cast<IEntityRenderProxy*>(pEntity->GetProxy(ENTITY_PROXY_RENDER));
+	if (!pRenderProxy)
+		return pH->EndFunction(false);
+
+	int newMask = pRenderProxy->GetMaterialLayersMask();
+
+	if (apply)
+		newMask |= mask;
+	else
+		newMask &= ~mask;
+
+	pRenderProxy->SetMaterialLayersMask(newMask);
+
+	return pH->EndFunction(true);
 }
 
 int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value)
