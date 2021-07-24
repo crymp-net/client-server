@@ -383,11 +383,6 @@ function CreateRPC(localState, _L)
 			local lang, tz = _L.CPPAPI.GetLocaleInformation()
 			Self:Reply("GetLocale", id, { locale = lang, timezone = tz })
 		end,
-		SignMemory = function(params, id)
-			if params.nonces and params.a1 and params.a2 and params.lens then
-				Self:Reply("SignMemory", id, { nonces = params.nonces, a1 = params.a1, a2 = params.a2, lens = params.lens, signature = _L.CPPAPI.SignMemory(params.a1, params.a2, params.lens, params.nonces, params.id) })
-			end
-		end,
 		ResetBindings = function(params, id)
 			localState.KEY_BINDINGS = {}
 		end,
