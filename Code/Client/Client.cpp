@@ -119,10 +119,9 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 
 	// prepare Lua scripts
-	m_scriptMain      = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
-	m_scriptGameRules = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_GAME_RULES);
-	m_scriptJSON      = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
-	m_scriptRPC       = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
+	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
+	m_scriptJSON = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
+	m_scriptRPC  = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
 
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
@@ -228,7 +227,6 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
-	gEnv->pScriptSystem->ExecuteBuffer(m_scriptGameRules.data(), m_scriptGameRules.length(), "GameRules.lua");
 }
 
 void Client::OnLoadingComplete(ILevel *pLevel)

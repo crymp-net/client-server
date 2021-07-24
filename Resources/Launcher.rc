@@ -12,7 +12,6 @@ RESOURCE_CURSOR_RED   CURSOR "CursorRed.cur"
 RESOURCE_CURSOR_WHITE CURSOR "CursorWhite.cur"
 
 RESOURCE_SCRIPT_MAIN       RCDATA "../Scripts/Main.lua"
-RESOURCE_SCRIPT_GAME_RULES RCDATA "../Scripts/GameRules.lua"
 RESOURCE_SCRIPT_RPC        RCDATA "../Scripts/RPC.lua"
 RESOURCE_SCRIPT_JSON       RCDATA "../Scripts/JSON.lua"
 

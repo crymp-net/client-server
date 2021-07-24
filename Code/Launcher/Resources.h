@@ -9,7 +9,6 @@
 #define RESOURCE_CURSOR_WHITE             107
 
 #define RESOURCE_SCRIPT_MAIN              201
-#define RESOURCE_SCRIPT_GAME_RULES        202
 #define RESOURCE_SCRIPT_JSON              203
 #define RESOURCE_SCRIPT_RPC               204
 

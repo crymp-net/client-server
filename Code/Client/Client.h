@@ -32,7 +32,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	IGameFramework *m_pGameFramework = nullptr;
 
 	std::string_view m_scriptMain;
-	std::string_view m_scriptGameRules;
 	std::string_view m_scriptJSON;
 	std::string_view m_scriptRPC;
 
