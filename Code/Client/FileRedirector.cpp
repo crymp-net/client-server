@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -118,11 +119,19 @@ void FileRedirector::SetDownloadedMapsPrefix(const std::string_view & prefix)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
-	m_downloadedMapsPrefix = SanitizePath(prefix);
+	m_downloadedMapsPrefix = prefix;
 
 	// make sure the trailing slash is there
-	if (!m_downloadedMapsPrefix.empty() && m_downloadedMapsPrefix.back() != SEPARATOR)
+	const unsigned int flags = ICryPak::FLAGS_ADD_TRAILING_SLASH;
+
+	CryPak_Hook *pCryPak = reinterpret_cast<CryPak_Hook*>(gEnv->pCryPak);
+
+	char buffer[512];
+	const char *oldPrefix = m_downloadedMapsPrefix.c_str();
+	const char *newPrefix = (pCryPak->*m_pOriginalAdjustFileName)(oldPrefix, buffer, flags, nullptr);
+
+	if (newPrefix != oldPrefix)
 	{
-		m_downloadedMapsPrefix += SEPARATOR;
+		m_downloadedMapsPrefix = buffer;
 	}
 }

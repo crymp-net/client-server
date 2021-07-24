@@ -141,14 +141,13 @@ void MapDownloader::RegisterDownloadedMaps()
 	ILevelSystem *pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
 	FileRedirector *pFileRedirector = gClient->GetFileRedirector();
 
-	const std::string_view userDir = gEnv->pCryPak->GetAlias("%USER");
 	const int levelCount = pLevelSystem->GetLevelCount();
 
 	for (int i = 0; i < levelCount; i++)
 	{
 		const ILevelInfo *pLevelInfo = pLevelSystem->GetLevelInfo(i);
 
-		if (Util::StartsWith(userDir, pLevelInfo->GetPath()))
+		if (Util::StartsWithNoCase("%USER%", pLevelInfo->GetPath()))
 		{
 			pFileRedirector->AddDownloadedMap(pLevelInfo->GetName());
 		}
@@ -171,12 +170,10 @@ MapDownloader::MapDownloader()
 {
 	m_downloadDir = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%")) / "Downloads";
 
-	const std::filesystem::path mapDir = m_downloadDir / "Levels";
-
 	// make sure the map directory exists
-	std::filesystem::create_directories(mapDir);
+	std::filesystem::create_directories(m_downloadDir / "Levels");
 
-	gClient->GetFileRedirector()->SetDownloadedMapsPrefix(mapDir.string());
+	gClient->GetFileRedirector()->SetDownloadedMapsPrefix("%USER%/Downloads/Levels");
 
 	RescanMaps();
 	RegisterDownloadedMaps();
