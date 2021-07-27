@@ -3313,8 +3313,22 @@ IMPLEMENT_RMI(CActor, SvRequestPickUpItem)
 	CItem* pItem = GetItem(params.itemId);
 	if (!pItem)
 	{
-		// this may occur if the item has been deleted but the client has not yet been informed
-		GameWarning("[gamenet] Failed to pickup item. Item not found!");
+		//CryMP: Add support for pick up items in Multiplayer
+		//Here is server handler (add this code to server, to add support for it)
+		if (gEnv->bMultiplayer && m_pGameFramework->IsImmersiveMPEnabled())
+		{
+			auto* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
+			if (pObject)
+			{
+				if (IGameObject* pGameObject = m_pGameFramework->GetGameObject(params.itemId))
+				{
+					m_pGameFramework->GetNetContext()->DelegateAuthority(params.itemId, pNetChannel);
+					SetHeldObjectId(params.itemId);
+
+					GetGameObject()->InvokeRMIWithDependentObject(CActor::ClPickUp(), CActor::PickItemParams(params.itemId, false, false), eRMI_ToAllClients | eRMI_NoLocalCalls, params.itemId);
+				}
+			}
+		}
 		return true;
 	}
 
