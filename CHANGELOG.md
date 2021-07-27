@@ -69,6 +69,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `cl_master` client-side cvar with GameSpy master server hostname.
 
 ### Removed
+- Useless "times out" log messages.
 - Useless client-side chat log. It doesn't log chat messages from other players anyway.
 - Some GameSpy stuff (natneg, console commands, profile, server browser).
 - `log_IncludeTime` cvar. Use the new `log_Prefix` cvar instead.

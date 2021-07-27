@@ -27,6 +27,20 @@ void Patch::AllowDX9ImmersiveMultiplayer(const DLL & CryAction)
 #endif
 }
 
+/**
+ * @brief Disables useless "times out" log messages from the Break Replicator.
+ */
+void Patch::DisableBreakLog(const DLL & CryAction)
+{
+	void *pCryAction = CryAction.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillNOP(RVA(pCryAction, 0x2D183F), 0x5);
+#else
+	FillNOP(RVA(pCryAction, 0x1E987D), 0x5);
+#endif
+}
+
 ////////////////
 // CryNetwork //
 ////////////////

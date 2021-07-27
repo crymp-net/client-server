@@ -6,6 +6,7 @@ namespace Patch
 {
 	// CryAction
 	void AllowDX9ImmersiveMultiplayer(const DLL & CryAction);
+	void DisableBreakLog(const DLL & CryAction);
 
 	// CryNetwork
 	void FixInternetConnect(const DLL & CryNetwork);

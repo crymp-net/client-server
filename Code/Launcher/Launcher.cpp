@@ -186,6 +186,7 @@ void Launcher::PatchEngine()
 	if (m_CryAction)
 	{
 		Patch::AllowDX9ImmersiveMultiplayer(m_CryAction);
+		Patch::DisableBreakLog(m_CryAction);
 	}
 
 	if (m_CryNetwork)
