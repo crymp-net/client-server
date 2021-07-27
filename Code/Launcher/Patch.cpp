@@ -179,3 +179,38 @@ void Patch::Disable3DNow(const DLL & CrySystem)
 	FillMem(RVA(pCrySystem, 0x93E2), &flags, sizeof flags);
 #endif
 }
+
+/**
+ * @brief Disables useless "IO Error=" log messages from the Stream Engine.
+ */
+void Patch::DisableIOErrorLog(const DLL & CrySystem)
+{
+	void *pCrySystem = CrySystem.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillNOP(RVA(pCrySystem, 0x7B23C), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B5E4), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B62C), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B65E), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B692), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B6DF), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B724), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B76A), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7B982), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7BAE1), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7BB98), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7BCDA), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7C51D), 0x5);
+#else
+	FillNOP(RVA(pCrySystem, 0x780CB), 0x5);
+	FillNOP(RVA(pCrySystem, 0x781AF), 0x5);
+	FillNOP(RVA(pCrySystem, 0x78490), 0x5);
+	FillNOP(RVA(pCrySystem, 0x784CF), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7850D), 0x5);
+	FillNOP(RVA(pCrySystem, 0x78549), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7859E), 0x5);
+	FillNOP(RVA(pCrySystem, 0x785D6), 0x5);
+	FillNOP(RVA(pCrySystem, 0x7861C), 0x5);
+	FillNOP(RVA(pCrySystem, 0x78744), 0x5);
+#endif
+}

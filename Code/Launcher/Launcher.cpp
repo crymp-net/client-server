@@ -202,6 +202,7 @@ void Launcher::PatchEngine()
 		Patch::AllowDX9VeryHighSpec(m_CrySystem);
 		Patch::AllowMultipleInstances(m_CrySystem);
 		Patch::UnhandledExceptions(m_CrySystem);
+		Patch::DisableIOErrorLog(m_CrySystem);
 
 		if (CPU::IsAMD() && !CPU::Has3DNow())
 		{

@@ -19,4 +19,5 @@ namespace Patch
 	void AllowMultipleInstances(const DLL & CrySystem);
 	void UnhandledExceptions(const DLL & CrySystem);
 	void Disable3DNow(const DLL & CrySystem);
+	void DisableIOErrorLog(const DLL & CrySystem);
 }
