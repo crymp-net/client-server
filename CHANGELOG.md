@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Show battle and kill log in spectator mode.
 - Show kick and ban reason.
 - Send recoil and zoom sway changes to server.
+- Default value of `con_restricted` is `0` instead of `1`.
 - Default log verbosity is `0` instead of `1`.
 - Multiple game instances cannot use the same log file anymore. Use `-logfile` or `-root` to change the log file.
 - No annoying color codes (`$0` .. `$9`) in the log file anymore.

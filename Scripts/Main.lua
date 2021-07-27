@@ -556,6 +556,8 @@ function InitializeClient()
 		end
 	end
 
+	System.SetCVar("con_restricted", 0)
+
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_UPDATE, OnUpdate)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_DISCONNECT, OnDisconnect)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
