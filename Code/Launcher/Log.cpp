@@ -487,7 +487,7 @@ CLog::~CLog()
 
 void CLog::Init(const char *defaultFileName)
 {
-	const int defaultVerbosity = 1;
+	const int defaultVerbosity = 0;
 
 	m_fileName = CmdLine::GetArgValue("-logfile", defaultFileName);
 	m_verbosity = CmdLine::GetArgValueInt("-verbosity", defaultVerbosity);
