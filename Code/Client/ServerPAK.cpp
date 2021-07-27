@@ -1,6 +1,7 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
@@ -86,6 +87,8 @@ bool ServerPAK::Unload()
 
 void ServerPAK::OnDisconnect(int reason, const char* message)
 {
+	gEnv->pScriptSystem->ResetTimers();
+
 	const bool unloaded = Unload();
 	if (unloaded || (reason != eDC_ServerFull && reason != eDC_AuthenticationFailed))
 	{
