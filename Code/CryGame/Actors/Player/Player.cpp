@@ -3349,9 +3349,7 @@ void CPlayer::UpdateStats(float frameTime)
 //-----------------------------------------------------------------------------
 void CPlayer::ToggleThirdPerson()
 {
-	m_stats.isThirdPerson = !m_stats.isThirdPerson;
-
-	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
+	EnableThirdPerson(!m_stats.isThirdPerson);
 }
 
 //-----------------------------------------------------------------------------
@@ -3360,6 +3358,16 @@ void CPlayer::EnableThirdPerson(bool enable)
 	m_stats.isThirdPerson = enable;
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
+
+	//CryMP: Reset Hurricane model
+	if (!enable)
+	{
+		CWeapon* pWeapon = GetCurrentWeapon(false);
+		if (pWeapon && pWeapon->GetEntity()->GetClass() == CItem::sHurricaneClass)
+		{
+			pWeapon->Select(true);
+		}
+	}
 }
 
 int CPlayer::IsGod()
@@ -5319,7 +5327,8 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 	//CryMP: Crash fix
 	if (targetId == GetEntityId()) //never allow to spectate yourself, causes CryPhysics crash
 	{
-		CryLogAlways("$3Server Admin attempted to crash your client (blocked)");
+		CryLogAlways("$3[CryMP] Blocked attempt to crash your client - Playing on this server is not secure!");
+		SAFE_HUD_FUNC(TextMessage("Blocked attempt to crash your client - Playing on this server is not secure!"));
 		return;
 	}
 
