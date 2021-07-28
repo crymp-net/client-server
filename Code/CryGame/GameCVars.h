@@ -456,9 +456,6 @@ struct SCVars
 
 	void InitCVars(IConsole *pConsole);
 	void ReleaseCVars();
-
-	void CacheObjects(const char* folder);
-	bool m_recursing = false;
 };
 
 #endif //__GAMECVARS_H__

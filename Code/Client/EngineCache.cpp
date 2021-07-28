@@ -5,10 +5,31 @@
 
 #include "EngineCache.h"
 
+static void CacheObjectsInfo(IConsoleCmdArgs* pArgs)
+{
+	int vCount = -1;
+	gEnv->pCharacterManager->GetLoadedModels(nullptr, vCount);
+	CryLogAlways("$3Loaded Models: %d", vCount);
+
+	int sCount = -1;
+	gEnv->p3DEngine->GetLoadedStatObjArray(nullptr, sCount);
+	CryLogAlways("$3Loaded StatObj: %d", sCount);
+
+	int rCount = -1;
+	gEnv->p3DEngine->GetVoxelRenderNodes(nullptr, rCount);
+	CryLogAlways("$3Loaded VoxelRenderNodes: %d", rCount);
+
+	uint32 mCount = -1;
+	gEnv->p3DEngine->GetMaterialManager()->GetLoadedMaterials(nullptr, mCount);
+	CryLogAlways("$3Loaded Materials: %d", mCount);
+}
+
 EngineCache::EngineCache()
 {
 	IConsole* pConsole = gEnv->pConsole;
 	pConsole->Register("cl_engineCacheLevel", &cl_engineCacheLevel, 1, VF_NOT_NET_SYNCED, "0 - off, 4 - maximum level");
+
+	pConsole->AddCommand("cacheInfo", CacheObjectsInfo, 0, "Get cached object info");
 }
 
 EngineCache::~EngineCache()
@@ -111,7 +132,6 @@ bool EngineCache::Cache(string folder, string file)
 		IMaterial* pMat = gEnv->p3DEngine->GetMaterialManager()->LoadMaterial(file.c_str());
 		if (pMat)
 		{
-			pMat->GetNumRefs();
 			pMat->AddRef();
 		}
 	}

@@ -42,28 +42,6 @@ static void BroadcastChangeSafeMode(ICVar*)
 	}
 }
 
-static void CacheObjectsInfo(IConsoleCmdArgs* pArgs)
-{
-	int vCount = -1;
-	gEnv->pCharacterManager->GetLoadedModels(nullptr, vCount);
-	CryLogAlways("$3Loaded Models: %d", vCount);
-
-	int sCount = -1;
-	gEnv->p3DEngine->GetLoadedStatObjArray(nullptr, sCount);
-	CryLogAlways("$3Loaded StatObj: %d", sCount);
-
-	int rCount = -1;
-	gEnv->p3DEngine->GetVoxelRenderNodes(nullptr, rCount);
-	CryLogAlways("$3Loaded VoxelRenderNodes: %d", rCount);
-}
-
-static void CacheObjects(IConsoleCmdArgs* pArgs)
-{
-	g_pGameCVars->CacheObjects("Objects/Characters/Human");
-	g_pGameCVars->CacheObjects("Objects/Characters/Vehicles");
-	g_pGameCVars->CacheObjects("Objects/Characters/Weapons");
-}
-
 void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
 {
 	g_pGameCVars->goc_enable = 0;
@@ -973,10 +951,6 @@ void CGame::RegisterConsoleCommands()
 
 	m_pConsole->AddCommand("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
 	m_pConsole->AddCommand("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
-
-	//CryMP
-	m_pConsole->AddCommand("cacheObjects", CacheObjects, 0, "Cache objects.");
-	m_pConsole->AddCommand("cacheInfo", CacheObjectsInfo, 0, "Get cached object info");
 }
 
 //------------------------------------------------------------------------
@@ -1298,73 +1272,6 @@ void CGame::CmdVote(IConsoleCmdArgs* pArgs)
 
 	if (CGameRules* pGameRules = g_pGame->GetGameRules())
 		pGameRules->Vote(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), true);
-}
-
-void SCVars::CacheObjects(const char* folderName)
-{
-	const string folder = folderName;
-	string search = folder;
-	search += "/*.*";
-
-	ICryPak* pPak = gEnv->pSystem->GetIPak();
-
-	_finddata_t fd;
-	const intptr_t handle = pPak->FindFirst(search.c_str(), &fd);
-
-	if (handle > -1)
-	{
-		do
-		{
-			if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-				continue;
-
-			if (fd.attrib & _A_SUBDIR)
-			{
-				string subName = folder + "/" + fd.name;
-				if (m_recursing)
-					CacheObjects(subName.c_str());
-				else
-				{
-					m_recursing = true;
-					CacheObjects(subName.c_str());
-					m_recursing = false;
-				}
-				continue;
-			}
-
-			auto ext(PathUtil::GetExt(fd.name));
-			
-			if (_stricmp(PathUtil::GetExt(fd.name), "cdf") && _stricmp(PathUtil::GetExt(fd.name), "cgf") && _stricmp(PathUtil::GetExt(fd.name), "cga") && _stricmp(PathUtil::GetExt(fd.name), "chr"))
-				continue;
-
-			if (folder == "Objects/Characters/Human/asian/infantry/camp" || folder == "Objects/Characters/Human/asian/infantry/jungle" || folder == "Objects/Characters/Human/asian/infantry/elite")
-				continue;
-			
-			//CryLogAlways("folder: %s | %s", folder.c_str(), string(fd.name).c_str());
-
-			if (string(fd.name) == "nanosuit_us_parachute.cdf" || string(fd.name) == "nanosuit_us_with_weapon.cdf")
-				continue;
-
-			string cdfFile = folder + string("/") + string(fd.name);
-
-			//CryLogAlways("$3Trying to load %s", cdfFile.c_str());
-			if (!_stricmp(PathUtil::GetExt(fd.name), "cdf") || !_stricmp(PathUtil::GetExt(fd.name), "chr") || !_stricmp(PathUtil::GetExt(fd.name), "cga"))
-			{
-				ICharacterInstance* pChar = gEnv->pCharacterManager->CreateInstance(cdfFile.c_str());
-				if (pChar && pChar->GetFilePath())
-					pChar->AddRef();
-			}
-			else
-			{
-				IStatObj* pStatObj = gEnv->p3DEngine->LoadStatObj(cdfFile.c_str());
-				if (pStatObj && pStatObj->GetFilePath())
-				{
-					pStatObj->AddRef();
-				}
-			}
-			
-		} while (pPak->FindNext(handle, &fd) >= 0);
-	}	
 }
 
 void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
