@@ -26,6 +26,7 @@ class ScriptBind_CPPAPI;
 class ServerBrowser;
 class ServerConnector;
 class ServerPAK;
+class EngineCache;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
@@ -48,6 +49,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ServerBrowser> m_pServerBrowser;
 	std::unique_ptr<ServerConnector> m_pServerConnector;
 	std::unique_ptr<ServerPAK> m_pServerPAK;
+	std::unique_ptr<EngineCache> m_pEngineCache;
 
 	std::minstd_rand m_randomEngine;
 
@@ -155,6 +157,11 @@ public:
 	ServerPAK *GetServerPAK()
 	{
 		return m_pServerPAK.get();
+	}
+
+	EngineCache* GetEngineCache()
+	{
+		return m_pEngineCache.get();
 	}
 
 	const std::vector<std::string> & GetMasters() const

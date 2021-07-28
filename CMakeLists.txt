@@ -36,6 +36,8 @@ endif()
 add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/Client.cpp
   Code/Client/Client.h
+  Code/Client/EngineCache.cpp
+  Code/Client/EngineCache.h
   Code/Client/Executor.cpp
   Code/Client/Executor.h
   Code/Client/FileCache.cpp

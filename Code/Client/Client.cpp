@@ -23,6 +23,7 @@
 #include "ServerBrowser.h"
 #include "ServerConnector.h"
 #include "ServerPAK.h"
+#include "EngineCache.h"
 
 void Client::InitMasters()
 {
@@ -117,6 +118,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerBrowser     = std::make_unique<ServerBrowser>();
 	m_pServerConnector   = std::make_unique<ServerConnector>();
 	m_pServerPAK         = std::make_unique<ServerPAK>();
+	m_pEngineCache		 = std::make_unique<EngineCache>();
 
 	// prepare Lua scripts
 	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
@@ -227,6 +229,7 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
+	m_pEngineCache->OnLoadingStart(pLevel);
 }
 
 void Client::OnLoadingComplete(ILevel *pLevel)
@@ -239,6 +242,7 @@ void Client::OnLoadingError(ILevelInfo *pLevel, const char *error)
 
 void Client::OnLoadingProgress(ILevelInfo *pLevel, int progressAmount)
 {
+	m_pEngineCache->OnLoadingProgress(pLevel, progressAmount);
 }
 
 bool Client::OnBeforeSpawn(SEntitySpawnParams & params)
