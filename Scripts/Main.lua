@@ -6,6 +6,7 @@ function InitializeClient()
 	local masters = nil
 	local _L = {}
 	local logAlways = System.LogAlways
+	local validateDelay = 2500
 	local EXPORT = false
 	local EXPORTED = {}
 	local RED, GREEN, YELLOW = "$4", "$3", "$6"
@@ -479,14 +480,18 @@ function InitializeClient()
 				:Then(function(session)
 					profile = GetProfile()
 					local command = GetValidateCommand(profile)
-					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-					resolve(true)
+					Script.SetTimer(validateDelay, function()
+						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+						resolve(true)
+					end)
 				end)
 				:Catch(function(error)
 					printf(RED .. "[CryMP] Failed to reactivate session, using old profile")
 					local command = GetValidateCommand(profile)
-					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-					resolve(true)
+					Script.SetTimer(validateDelay, function()
+						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+						resolve(true)
+					end)
 				end)
 			else
 				printf(RED .. "[CryMP] Cannot authenticate due to missing profile")
