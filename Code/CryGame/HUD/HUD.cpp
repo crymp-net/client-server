@@ -3517,6 +3517,15 @@ void CHUD::OnPostUpdate(float frameTime)
 					m_pHUDScopes->DisplayScope(pPlayer);
 					m_pHUDScopes->Update(frameTime);
 				}
+				//CryMP: also render chat in scoreboard 
+				if (m_animChat.GetVisible())
+				{
+					m_animChat.GetFlashPlayer()->Advance(frameTime);
+					m_animChat.GetFlashPlayer()->Render();
+
+					if (m_pHUDTextChat)
+						m_pHUDTextChat->Update(frameTime);
+				}
 			}
 
 			if (gEnv->bMultiplayer)
