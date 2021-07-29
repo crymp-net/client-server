@@ -468,7 +468,34 @@ function InitializeClient()
 		return command
 	end
 
-	local function Authenticate()
+	local function Authenticate(chat, immediate)
+		if chat == nil then chat = false end
+		if immediate == nil then immediate = true end
+
+		local function MainResolver(resolve, profile)
+			local profile = GetProfile()
+			local command = GetValidateCommand(profile)
+			local retval = {
+				master = profile.master,
+				id = profile.id,
+				token = profile.token,
+				display = profile.display
+			}
+			if chat then
+				if immediate then
+					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+					resolve(retval)
+				else
+					Script.SetTimer(validateDelay, function()
+						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+						resolve(retval)
+					end)
+				end
+			else
+				resolve(retval)
+			end
+		end
+
 		return Promise(function(resolve, reject)
 			if not g_localActor then
 				printf(RED .. "[CryMP] You are not in-game")
@@ -478,20 +505,11 @@ function InitializeClient()
 			if profile then
 				RefreshSession()
 				:Then(function(session)
-					profile = GetProfile()
-					local command = GetValidateCommand(profile)
-					Script.SetTimer(validateDelay, function()
-						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-						resolve(true)
-					end)
+					MainResolver(resolve)
 				end)
 				:Catch(function(error)
 					printf(RED .. "[CryMP] Failed to reactivate session, using old profile")
-					local command = GetValidateCommand(profile)
-					Script.SetTimer(validateDelay, function()
-						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-						resolve(true)
-					end)
+					MainResolver(resolve)
 				end)
 			else
 				printf(RED .. "[CryMP] Cannot authenticate due to missing profile")
@@ -538,7 +556,7 @@ function InitializeClient()
 
 			if g_localActor ~= LAST_ACTOR then
 				LAST_ACTOR = g_localActor
-				Authenticate()
+				Authenticate(true, false)
 			end
 
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
@@ -582,7 +600,7 @@ function InitializeClient()
 		end)
 	end)
 	CPPAPI.AddCCommand("auth_login", function()
-		Authenticate()
+		Authenticate(true)
 	end)
 	CPPAPI.AddCCommand("sfwcl_debug", function()
 		DEBUG_MODE = not DEBUG_MODE
@@ -608,6 +626,7 @@ function InitializeClient()
 	EXPORTED.AddHook = AddHook
 	EXPORTED.RemoveHook = RemoveHook
 	EXPORTED.CreateBinding = CreateBinding
+	EXPORTED.Authenticate = Authenticate
 
 	if EXPORT then
 		EXPORTED.Request = Request
