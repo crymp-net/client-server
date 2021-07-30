@@ -562,7 +562,9 @@ function InitializeClient()
 
 			if g_localActor ~= LAST_ACTOR then
 				LAST_ACTOR = g_localActor
-				Authenticate(true, false)
+				if g_localActor ~= nil then
+					Authenticate(true, false)
+				end
 			end
 
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
@@ -597,6 +599,10 @@ function InitializeClient()
 				end
 				_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
 			end
+			if entity and entity.class == "CustomAmmoPickup" then
+				entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
+			end
+			if entity.class == "Player" then return; end
 			if name == "frozen:all" then
 				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_FROZEN)
 				_L.CPPAPI.ApplyMaskAll(MASK_FROZEN, 1)
@@ -625,9 +631,6 @@ function InitializeClient()
 			elseif name:sub(1,6) == "cloak:" then
 				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
 			end
-		end
-		if entity and entity.class == "CustomAmmoPickup" then
-			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
 		end
 	end
 
