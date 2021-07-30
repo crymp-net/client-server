@@ -15,6 +15,10 @@ function InitializeClient()
 	local LAST_RULES = nil
 	local ACTIVE_RPC = nil
 	local RPC_STATE  = true
+	local MASK_FROZEN = 1
+	local MASK_WET = 2
+	local MASK_CLOAK = 4
+	local MASK_DYNFROZEN = 8
 
 	local pendingMasterResolves = {}
 	local activeProfile = {
@@ -574,8 +578,24 @@ function InitializeClient()
 
 	local function OnSpawn(entityId)
 		local entity = _L.System.GetEntity(entityId)
+		if entity then
+			local name = entity:GetName() or "<unknown>"
+			if name:sub(1,7) == "frozen:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_FROZEN, 1)
+			elseif name:sub(1,10) == "dynfrozen:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_DYNFROZEN, 1)
+			elseif name:sub(1,4) == "wet:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_WET, 1)
+			elseif name:sub(1,6) == "cloak:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
+			elseif name:sub(1,3) == "fx:" then
+				Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			end
+		end
 		if entity and entity.class == "CustomAmmoPickup" then
-			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
+			-- apparently must be executed next frame
+			Script.SetTimer(1, function() entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0) end)
 		end
 	end
 
