@@ -307,11 +307,13 @@ void ServerBrowser::Update()
 	m_servers.clear();
 	m_pendingQueryCount = gClient->GetMasters().size();
 
+	int contractId = ++m_contract;
+
 	for (const std::string & master : gClient->GetMasters())
 	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-		gClient->GetHTTPClient()->GET(url, [this, master, contractId = ++m_contract](HTTPClientResult& result)
+		gClient->GetHTTPClient()->GET(url, [this, master, contractId](HTTPClientResult& result)
 		{
 			if (contractId != m_contract)
 				return;

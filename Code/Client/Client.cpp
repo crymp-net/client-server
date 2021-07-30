@@ -203,12 +203,16 @@ void Client::OnActionEvent(const SActionEvent & event)
 
 			break;
 		}
+		case eAE_resetBegin:
+		{
+			m_pScriptCallbacks->OnLoadingStart();
+			break;
+		}
 		case eAE_channelCreated:
 		case eAE_channelDestroyed:
 		case eAE_connectFailed:
 		case eAE_connected:
 		case eAE_clientDisconnected:
-		case eAE_resetBegin:
 		case eAE_resetEnd:
 		case eAE_resetProgress:
 		case eAE_preSaveGame:
@@ -230,6 +234,7 @@ void Client::OnLevelNotFound(const char *levelName)
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
 	m_pEngineCache->OnLoadingStart(pLevel);
+	m_pScriptCallbacks->OnLoadingStart();
 }
 
 void Client::OnLoadingComplete(ILevel *pLevel)

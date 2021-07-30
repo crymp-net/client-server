@@ -1,6 +1,8 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/Cry3DEngine/IMaterial.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -23,9 +25,11 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_GLOBAL(SCRIPT_CALLBACK_ON_DISCONNECT);
 	SCRIPT_REG_GLOBAL(SCRIPT_CALLBACK_ON_SPAWN);
 	SCRIPT_REG_GLOBAL(SCRIPT_CALLBACK_ON_MASTER_RESOLVED);
+	SCRIPT_REG_GLOBAL(SCRIPT_CALLBACK_ON_LOADING_START);
 
 	SCRIPT_REG_TEMPLFUNC(AddCCommand, "name, handler");
 	SCRIPT_REG_TEMPLFUNC(ApplyMaskOne, "entity, mask, apply");
+	SCRIPT_REG_TEMPLFUNC(ApplyMaskAll, "mask, apply");
 	SCRIPT_REG_TEMPLFUNC(FSetCVar, "cvar, value");
 	SCRIPT_REG_TEMPLFUNC(GetLocaleInformation, "");
 	SCRIPT_REG_TEMPLFUNC(GetMapName, "");
@@ -69,6 +73,35 @@ int ScriptBind_CPPAPI::ApplyMaskOne(IFunctionHandler *pH, ScriptHandle entity, i
 	pRenderProxy->SetMaterialLayersMask(newMask);
 
 	return pH->EndFunction(true);
+}
+
+int ScriptBind_CPPAPI::ApplyMaskAll(IFunctionHandler* pH, int applyMask, bool apply) {
+	IEntitySystem* pES = gEnv->pSystem->GetIEntitySystem();
+	if (pES) {
+		IEntityIt* it = pES->GetEntityIterator();
+		int affectedEntities = 0;
+		while (!it->IsEnd()) {
+			IEntity* pEntity = it->This();
+			int targetMask = applyMask;
+			if (targetMask == MTL_LAYER_FROZEN && apply) {
+				IVehicleSystem* pVS = gClient->GetGameFramework()->GetIVehicleSystem();
+				if (pVS->GetVehicle(pEntity->GetId()))
+					targetMask = MTL_LAYER_DYNAMICFROZEN;
+			}
+			IEntityRenderProxy* pRP = (IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER);
+			if (pRP) {
+				int mask = pRP->GetMaterialLayersMask();
+				if (apply)
+					mask |= targetMask;
+				else mask &= ~targetMask;
+				pRP->SetMaterialLayersMask(mask);
+			}
+			affectedEntities++;
+			it->Next();
+		}
+		return pH->EndFunction(affectedEntities);
+	}
+	return pH->EndFunction(0);
 }
 
 int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value)

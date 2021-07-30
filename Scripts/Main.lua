@@ -15,6 +15,10 @@ function InitializeClient()
 	local LAST_RULES = nil
 	local ACTIVE_RPC = nil
 	local RPC_STATE  = true
+	local MASK_FROZEN = 1
+	local MASK_WET = 2
+	local MASK_CLOAK = 4
+	local MASK_DYNFROZEN = 8
 
 	local pendingMasterResolves = {}
 	local activeProfile = {
@@ -146,6 +150,7 @@ function InitializeClient()
 	local function ResetState()
 		RestoreEnvironment()
 		localState = {
+			ACTIVE_LAYERS = 0,
 			ACTIVE_ANIMATIONS = {},
 			ACTIVE_EFFECTS = {},
 			STATIC_ID = activeProfile.static.id or "Unknown",
@@ -497,6 +502,7 @@ function InitializeClient()
 		end
 
 		return Promise(function(resolve, reject)
+			if not System.IsMultiplayer() then return resolve(false) end
 			if not g_localActor then
 				printf(RED .. "[CryMP] You are not in-game")
 				return resolve(false)
@@ -556,7 +562,9 @@ function InitializeClient()
 
 			if g_localActor ~= LAST_ACTOR then
 				LAST_ACTOR = g_localActor
-				Authenticate(true, false)
+				if g_localActor ~= nil then
+					Authenticate(true, false)
+				end
 			end
 
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
@@ -567,15 +575,62 @@ function InitializeClient()
 		end
 	end
 
+	local function OnLoadingStart()
+		printf(YELLOW .. "[CryMP] Resetting local state")
+		ResetState()
+	end
+
 	local function OnDisconnect(reason, message)
-		printf("[CryMP] Disconnect: %d %s", reason, message)
+		printf(YELLOW .. "[CryMP] Disconnect: %d %s", reason, message)
 		ResetState()
 	end
 
 	local function OnSpawn(entityId)
 		local entity = _L.System.GetEntity(entityId)
-		if entity and entity.class == "CustomAmmoPickup" then
-			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
+		if entity then
+			local name = entity:GetName() or "<unknown>"
+			if localState.ACTIVE_LAYERS > 0 then
+				local mask = localState.ACTIVE_LAYERS
+				-- vehicles cannot be frozen, only dynfrozen, otherwise they are impossible to enter / drive
+				if entity.vehicle then
+					if band(mask, MASK_FROZEN) > 0 then
+						mask = bor(mask, MASK_DYNFROZEN) - MASK_FROZEN
+					end
+				end
+				_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
+			end
+			if entity.class == "CustomAmmoPickup" then
+				entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
+			end
+			if entity.class == "Player" then return; end
+			if name == "frozen:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_FROZEN)
+				_L.CPPAPI.ApplyMaskAll(MASK_FROZEN, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "dynfrozen:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_DYNFROZEN)
+				_L.CPPAPI.ApplyMaskAll(MASK_DYNFROZEN, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "wet:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_WET)
+				_L.CPPAPI.ApplyMaskAll(MASK_WET, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "cloak:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_CLOAK)
+				_L.CPPAPI.ApplyMaskAll(MASK_CLOAK, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name:sub(1,3) == "fx:" then
+				Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name:sub(1,7) == "frozen:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_FROZEN, 1)
+			elseif name:sub(1,10) == "dynfrozen:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_DYNFROZEN, 1)
+			elseif name:sub(1,4) == "wet:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_WET, 1)
+			elseif name:sub(1,6) == "cloak:" then
+				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
+			end
 		end
 	end
 
@@ -585,6 +640,7 @@ function InitializeClient()
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_DISCONNECT, OnDisconnect)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, OnMasterResolved)
+	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_LOADING_START, OnLoadingStart)
 
 	CPPAPI.AddCCommand("secu_login", LoginCCommandHandler)
 	CPPAPI.AddCCommand("simple_login", LoginCCommandHandler)

@@ -12,6 +12,7 @@ enum EScriptCallback
 	SCRIPT_CALLBACK_ON_DISCONNECT,
 	SCRIPT_CALLBACK_ON_SPAWN,
 	SCRIPT_CALLBACK_ON_MASTER_RESOLVED,
+	SCRIPT_CALLBACK_ON_LOADING_START,
 
 	// must be last
 	SCRIPT_CALLBACK_COUNT
@@ -41,7 +42,8 @@ public:
 	bool SetHandler(EScriptCallback callback, HSCRIPTFUNCTION handler);
 
 	void OnUpdate(float deltaTime);
-	void OnDisconnect(int reason, const char *message);
+	void OnDisconnect(int reason, const char* message);
+	void OnLoadingStart();
 	void OnSpawn(IEntity *pEntity);
 	void OnMasterResolved();
 };
