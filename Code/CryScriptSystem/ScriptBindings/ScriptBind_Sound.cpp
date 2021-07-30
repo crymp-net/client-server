@@ -1,7 +1,72 @@
+#include <string.h>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
 
 #include "ScriptBind_Sound.h"
+#include "../ScriptTable.h"
+
+ISound *ScriptBind_Sound::GetSound(IFunctionHandler *pH, int index)
+{
+	switch (pH->GetParamType(index))
+	{
+		case svtPointer:
+		{
+			ScriptHandle soundID;
+			if (!pH->GetParam(index, soundID))
+				return nullptr;
+
+			return gEnv->pSoundSystem->GetSound(static_cast<tSoundID>(soundID.n));
+		}
+		case svtObject:
+		{
+			SmartScriptTable table;
+			if (!pH->GetParam(index, table))
+				return nullptr;
+
+			void *data = table->GetUserDataValue();
+			if (!data)
+				return nullptr;
+
+			return *static_cast<ISound**>(data);
+		}
+		default:
+		{
+			CryLogErrorAlways("GetSound: ???");
+			return nullptr;
+		}
+	}
+}
+
+SmartScriptTable ScriptBind_Sound::CreateSoundTable(IFunctionHandler *pH, ISound *pSound)
+{
+	SmartScriptTable userData = m_pSS->CreateUserData(&pSound, sizeof (ISound*));
+
+	IScriptTable::SUserFunctionDesc fd;
+	fd.pUserDataFunc = SoundTableDestructor;
+	fd.sFunctionName = "__gc";
+	fd.nDataSize = sizeof (ISound*);
+	fd.pDataBuffer = &pSound;
+	fd.sGlobalName = "<gc-sound>";
+	fd.sFunctionParams = "()";
+
+	SmartScriptTable metaTable = SmartScriptTable(m_pSS);
+	metaTable->AddFunction(fd);
+
+	static_cast<ScriptTable*>(userData.GetPtr())->SetMetatable(metaTable);
+
+	return userData;
+}
+
+int ScriptBind_Sound::SoundTableDestructor(IFunctionHandler *pH, void *buffer, int size)
+{
+	(*static_cast<ISound**>(buffer))->Release();
+
+	return pH->EndFunction();
+}
 
 ScriptBind_Sound::ScriptBind_Sound(ISystem *pSystem, IScriptSystem *pSS)
 {
@@ -91,284 +156,770 @@ ScriptBind_Sound::ScriptBind_Sound(ISystem *pSystem, IScriptSystem *pSS)
 #undef SCRIPT_REG_CLASSNAME
 #define SCRIPT_REG_CLASSNAME &ScriptBind_Sound::
 
+	// sound
 	SCRIPT_REG_FUNC(AddToScaleGroup);
-	SCRIPT_REG_FUNC(EndMusicTheme);
 	SCRIPT_REG_FUNC(GetSoundLength);
 	SCRIPT_REG_FUNC(GetSoundVolume);
 	SCRIPT_REG_FUNC(IsPlaying);
-	SCRIPT_REG_FUNC(Load3DSound);
-	SCRIPT_REG_FUNC(LoadSound);
-	SCRIPT_REG_FUNC(LoadStreamSound);
-	SCRIPT_REG_FUNC(Play);
-	SCRIPT_REG_FUNC(PlayEx);
-	SCRIPT_REG_FUNC(PlayPattern);
+	SCRIPT_REG_TEMPLFUNC(Load3DSound, "sound");
+	SCRIPT_REG_TEMPLFUNC(LoadSound, "sound");
+	SCRIPT_REG_TEMPLFUNC(LoadStreamSound, "sound");
+	SCRIPT_REG_TEMPLFUNC(Play, "sound, pos, flags, semantic");
+	SCRIPT_REG_TEMPLFUNC(PlayEx, "sound, pos, flags, volume, minRadius, maxRadius, semantic");
 	SCRIPT_REG_FUNC(PlaySound);
-	SCRIPT_REG_FUNC(PlaySoundFadeUnderwater);
-	SCRIPT_REG_FUNC(PlayStinger);
-	SCRIPT_REG_FUNC(Precache);
-	SCRIPT_REG_FUNC(RegisterReverbSound);
-	SCRIPT_REG_FUNC(RegisterSoundMood);
-	SCRIPT_REG_FUNC(RegisterWeightedEaxEnvironment);
-	SCRIPT_REG_FUNC(SetDefaultMusicMood);
-	SCRIPT_REG_FUNC(SetEaxEnvironment);
+	SCRIPT_REG_TEMPLFUNC(Precache, "sound, flags");
+	SCRIPT_REG_TEMPLFUNC(RegisterSoundMood, "mood");
+	SCRIPT_REG_TEMPLFUNC(RegisterWeightedEaxEnvironment, "preset");
 	SCRIPT_REG_FUNC(SetFadeTime);
-	SCRIPT_REG_FUNC(SetGroupScale);
-	SCRIPT_REG_FUNC(SetMasterVolumeScale);
-	SCRIPT_REG_FUNC(SetMenuMusic);
+	SCRIPT_REG_TEMPLFUNC(SetGroupScale, "group, scale");
+	SCRIPT_REG_TEMPLFUNC(SetMasterVolumeScale, "scale");
 	SCRIPT_REG_FUNC(SetMinMaxDistance);
-	SCRIPT_REG_FUNC(SetMusicMood);
-	SCRIPT_REG_FUNC(SetMusicTheme);
 	SCRIPT_REG_FUNC(SetParameterValue);
 	SCRIPT_REG_FUNC(SetSoundLoop);
 	SCRIPT_REG_FUNC(SetSoundPaused);
 	SCRIPT_REG_FUNC(SetSoundPosition);
-	SCRIPT_REG_FUNC(SetSoundProperties);
 	SCRIPT_REG_FUNC(SetSoundVolume);
-	SCRIPT_REG_FUNC(SetWeatherAndPerceptionFlags);
 	SCRIPT_REG_FUNC(Silence);
 	SCRIPT_REG_FUNC(StopSound);
-	SCRIPT_REG_FUNC(UnregisterSoundMood);
-	SCRIPT_REG_FUNC(UnregisterWeightedEaxEnvironment);
-	SCRIPT_REG_FUNC(UpdateSoundMood);
-	SCRIPT_REG_FUNC(UpdateWeightedEaxEnvironment);
+	SCRIPT_REG_TEMPLFUNC(UnregisterSoundMood, "mood");
+	SCRIPT_REG_TEMPLFUNC(UnregisterWeightedEaxEnvironment, "preset");
+	SCRIPT_REG_TEMPLFUNC(UpdateSoundMood, "mood, fade, fadeTimeMs");
+	SCRIPT_REG_TEMPLFUNC(UpdateWeightedEaxEnvironment, "preset, weight");
+
+	// music
+	SCRIPT_REG_FUNC(EndMusicTheme);
+	SCRIPT_REG_FUNC(PlayPattern);
+	SCRIPT_REG_FUNC(PlayStinger);
+	SCRIPT_REG_TEMPLFUNC(SetDefaultMusicMood, "mood");
+	SCRIPT_REG_TEMPLFUNC(SetMenuMusic, "playMenuMusic, theme, mood");
+	SCRIPT_REG_TEMPLFUNC(SetMusicMood, "mood");
+	SCRIPT_REG_TEMPLFUNC(SetMusicTheme, "theme");
 }
 
 int ScriptBind_Sound::AddToScaleGroup(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	SCRIPT_CHECK_PARAMETERS(2);
 
-int ScriptBind_Sound::EndMusicTheme(IFunctionHandler *pH)
-{
-	// TODO
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	int group = 0;
+
+	pH->GetParam(2, group);
+
+	if (pSound)
+	{
+		pSound->AddToScaleGroup(group);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::GetSoundLength(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
+	SCRIPT_CHECK_PARAMETERS(1);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	float length = 0;
+
+	if (pSound)
+	{
+		length = static_cast<float>(pSound->GetLengthMs()) / 1000;
+	}
+
+	return pH->EndFunction(length);
 }
 
 int ScriptBind_Sound::GetSoundVolume(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
+	SCRIPT_CHECK_PARAMETERS(1);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	float volume = 0;
+
+	if (pSound)
+	{
+		volume = pSound->GetVolume();
+	}
+
+	return pH->EndFunction(volume);
 }
 
 int ScriptBind_Sound::IsPlaying(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
+	SCRIPT_CHECK_PARAMETERS(1);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	bool isPlaying = false;
+
+	if (pSound)
+	{
+		isPlaying = pSound->IsPlaying();
+	}
+
+	return pH->EndFunction(isPlaying);
 }
 
-int ScriptBind_Sound::Load3DSound(IFunctionHandler *pH)
+int ScriptBind_Sound::Load3DSound(IFunctionHandler *pH, const char *sound)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	uint32_t flags = 0;
+	float volume = 1;
+	float minDistance = 1;
+	float clipDistance = 500;
+	int priority = 0;
+
+	if (paramCount >= 2)
+		pH->GetParam(2, flags);
+
+	if (paramCount >= 3)
+		pH->GetParam(3, volume);
+
+	if (paramCount >= 4)
+		pH->GetParam(4, minDistance);
+
+	if (paramCount >= 5)
+		pH->GetParam(5, clipDistance);
+
+	if (paramCount >= 6)
+		pH->GetParam(6, priority);
+
+	if (clipDistance > 1000)
+		clipDistance = 1000;
+
+	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, FLAG_SOUND_3D | flags);
+
+	if (pSound)
+	{
+		pSound->SetVolume(volume);
+		pSound->SetMinMaxDistance(minDistance, clipDistance / 2);
+
+		if (paramCount >= 7)
+		{
+			int groups = 0;
+			pH->GetParam(7, groups);
+
+			pSound->SetScaleGroup(groups);
+		}
+
+		pSound->AddRef();
+		pSound->SetSoundPriority(priority);
+
+		return pH->EndFunction(CreateSoundTable(pH, pSound));
+	}
+	else
+	{
+		CryLogError("Sound.Load3DSound: Failed to load sound '%s'", sound);
+
+		return pH->EndFunction();
+	}
 }
 
-int ScriptBind_Sound::LoadSound(IFunctionHandler *pH)
+int ScriptBind_Sound::LoadSound(IFunctionHandler *pH, const char *sound)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	uint32_t flags = 0;
+	float volume = 1;
+
+	if (paramCount >= 2)
+		pH->GetParam(2, flags);
+
+	if (paramCount >= 3)
+		pH->GetParam(3, volume);
+
+	if (volume < 0 || volume > 1)
+		volume = 1;
+
+	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, flags);
+
+	if (pSound)
+	{
+		pSound->SetVolume(volume);
+		pSound->AddRef();
+
+		return pH->EndFunction(CreateSoundTable(pH, pSound));
+	}
+	else
+	{
+		CryLogError("Sound.LoadSound: Failed to load sound '%s'", sound);
+
+		return pH->EndFunction();
+	}
 }
 
-int ScriptBind_Sound::LoadStreamSound(IFunctionHandler *pH)
+int ScriptBind_Sound::LoadStreamSound(IFunctionHandler *pH, const char *sound)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	uint32_t flags = 0;
+
+	if (paramCount >= 2)
+		pH->GetParam(2, flags);
+
+	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, FLAG_SOUND_STREAM | flags);
+
+	if (pSound)
+	{
+		pSound->AddRef();
+
+		return pH->EndFunction(CreateSoundTable(pH, pSound));
+	}
+	else
+	{
+		CryLogError("Sound.LoadStreamSound: Failed to load sound '%s'", sound);
+
+		return pH->EndFunction();
+	}
 }
 
-int ScriptBind_Sound::Play(IFunctionHandler *pH)
+int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags, uint32_t semantic)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, flags);
+
+	if (pSound)
+	{
+		pSound->SetPosition(pos);
+		pSound->SetSemantic(static_cast<ESoundSemantic>(semantic));
+		pSound->Play();
+
+		return pH->EndFunction(ScriptHandle(pSound->GetId()));
+	}
+	else
+	{
+		return pH->EndFunction();
+	}
 }
 
-int ScriptBind_Sound::PlayEx(IFunctionHandler *pH)
+int ScriptBind_Sound::PlayEx(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags, float volume, float minRadius, float maxRadius, uint32_t semantic)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
 
-int ScriptBind_Sound::PlayPattern(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
+	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, flags);
+
+	if (pSound)
+	{
+		pSound->SetPosition(pos);
+		pSound->SetSemantic(static_cast<ESoundSemantic>(semantic));
+		pSound->SetVolume(volume);
+
+		if (minRadius > 0 && maxRadius > 0)
+			pSound->SetMinMaxDistance(minRadius, maxRadius);
+
+		pSound->Play();
+
+		return pH->EndFunction(ScriptHandle(pSound->GetId()));
+	}
+	else
+	{
+		return pH->EndFunction();
+	}
 }
 
 int ScriptBind_Sound::PlaySound(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS_MIN(1);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	float volumeScale = 1;
+
+	if (pH->GetParamCount() >= 2)
+		pH->GetParam(2, volumeScale);
+
+	if (pSound)
+	{
+		pSound->Play(volumeScale);
+	}
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::PlaySoundFadeUnderwater(IFunctionHandler *pH)
+int ScriptBind_Sound::Precache(IFunctionHandler *pH, const char *sound, uint32_t flags)
 {
-	// TODO
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const bool result = (pSoundSystem->Precache(sound, 0, flags) != ePrecacheResult_Error);
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::RegisterSoundMood(IFunctionHandler *pH, const char *mood)
+{
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	ISoundMoodManager *pSoundMoodManager = pSoundSystem->GetIMoodManager();
+	if (!pSoundMoodManager)
+		return pH->EndFunction();
+
+	pSoundMoodManager->RegisterSoundMood(mood);
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::PlayStinger(IFunctionHandler *pH)
+int ScriptBind_Sound::RegisterWeightedEaxEnvironment(IFunctionHandler *pH, const char *preset)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
 
-int ScriptBind_Sound::Precache(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	IReverbManager *pReverbManager = pSoundSystem->GetIReverbManager();
+	if (!pReverbManager)
+		return pH->EndFunction();
 
-int ScriptBind_Sound::RegisterReverbSound(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	const int paramCount = pH->GetParamCount();
 
-int ScriptBind_Sound::RegisterSoundMood(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	bool fullEffectWhenInside = false;
+	uint32_t flags = 0;
 
-int ScriptBind_Sound::RegisterWeightedEaxEnvironment(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	if (paramCount >= 2)
+		pH->GetParam(2, fullEffectWhenInside);
 
-int ScriptBind_Sound::SetDefaultMusicMood(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	if (paramCount >= 3)
+		pH->GetParam(3, flags);
 
-int ScriptBind_Sound::SetEaxEnvironment(IFunctionHandler *pH)
-{
-	// TODO
+	pReverbManager->RegisterWeightedReverbEnvironment(preset, fullEffectWhenInside, flags);
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetFadeTime(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS(3);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	float fadeGoal = 0;
+	int fadeTimeMs = 0;
+
+	pH->GetParam(2, fadeGoal);
+	pH->GetParam(3, fadeTimeMs);
+
+	if (fadeGoal < 0)
+		fadeGoal = 0;
+
+	if (fadeGoal > 1)
+		fadeGoal = 1;
+
+	if (fadeTimeMs < 0)
+		fadeTimeMs = 1;
+
+	if (pSound)
+	{
+		pSound->SetFade(fadeGoal, fadeTimeMs);
+	}
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::SetGroupScale(IFunctionHandler *pH)
+int ScriptBind_Sound::SetGroupScale(IFunctionHandler *pH, int group, float scale)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const bool result = pSoundSystem->SetGroupScale(group, scale);
+
+	return pH->EndFunction(result);
 }
 
-int ScriptBind_Sound::SetMasterVolumeScale(IFunctionHandler *pH)
+int ScriptBind_Sound::SetMasterVolumeScale(IFunctionHandler *pH, float scale)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
 
-int ScriptBind_Sound::SetMenuMusic(IFunctionHandler *pH)
-{
-	// TODO
+	pSoundSystem->SetMasterVolumeScale(scale);
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetMinMaxDistance(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	SCRIPT_CHECK_PARAMETERS(3);
 
-int ScriptBind_Sound::SetMusicMood(IFunctionHandler *pH)
-{
-	// TODO
-	return pH->EndFunction();
-}
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
 
-int ScriptBind_Sound::SetMusicTheme(IFunctionHandler *pH)
-{
-	// TODO
+	float minDist = 0;
+	float maxDist = 0;
+
+	pH->GetParam(2, minDist);
+	pH->GetParam(3, maxDist);
+
+	if (minDist < 1)
+		minDist = 1;
+
+	if (pSound)
+	{
+		pSound->SetMinMaxDistance(minDist, maxDist);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS(3);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	const char *paramName = nullptr;
+	float paramValue = 0;
+
+	pH->GetParam(2, paramName);
+	pH->GetParam(3, paramValue);
+
+	if (pSound)
+	{
+		if (strcmp(paramName, "pitch") == 0)
+		{
+			ptParamF32 value = paramValue;
+			pSound->SetParam(spPITCH, &value);
+		}
+		else
+		{
+			pSound->SetParam(paramName, paramValue);
+		}
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetSoundLoop(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS(2);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	bool enable = false;
+
+	pH->GetParam(2, enable);
+
+	if (pSound)
+	{
+		pSound->SetLoopMode(enable);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetSoundPaused(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS(2);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	bool paused = false;
+
+	pH->GetParam(2, paused);
+
+	if (pSound)
+	{
+		pSound->SetPaused(paused);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetSoundPosition(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	SCRIPT_CHECK_PARAMETERS(2);
 
-int ScriptBind_Sound::SetSoundProperties(IFunctionHandler *pH)
-{
-	// TODO
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	Vec3 pos;
+
+	pH->GetParam(2, pos);
+
+	if (pSound)
+	{
+		if (!pSound->IsRelative())
+			pSound->SetPosition(pos);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::SetSoundVolume(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
-}
+	SCRIPT_CHECK_PARAMETERS(2);
 
-int ScriptBind_Sound::SetWeatherAndPerceptionFlags(IFunctionHandler *pH)
-{
-	// TODO
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	float volume = 0;
+
+	pH->GetParam(2, volume);
+
+	if (pSound)
+	{
+		pSound->SetVolume(volume);
+	}
+
 	return pH->EndFunction();
 }
 
 int ScriptBind_Sound::Silence(IFunctionHandler *pH)
 {
-	// TODO
-	return pH->EndFunction();
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	const bool result = pSoundSystem->Silence(true, false);
+
+	return pH->EndFunction(result);
 }
 
 int ScriptBind_Sound::StopSound(IFunctionHandler *pH)
 {
-	// TODO
+	SCRIPT_CHECK_PARAMETERS(1);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	if (pSound)
+	{
+		pSound->Stop();
+	}
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::UnregisterSoundMood(IFunctionHandler *pH)
+int ScriptBind_Sound::UnregisterSoundMood(IFunctionHandler *pH, const char *mood)
 {
-	// TODO
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	ISoundMoodManager *pSoundMoodManager = pSoundSystem->GetIMoodManager();
+	if (!pSoundMoodManager)
+		return pH->EndFunction();
+
+	pSoundMoodManager->UnregisterSoundMood(mood);
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::UnregisterWeightedEaxEnvironment(IFunctionHandler *pH)
+int ScriptBind_Sound::UnregisterWeightedEaxEnvironment(IFunctionHandler *pH, const char *preset)
 {
-	// TODO
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	IReverbManager *pReverbManager = pSoundSystem->GetIReverbManager();
+	if (!pReverbManager)
+		return pH->EndFunction();
+
+	pReverbManager->UnregisterWeightedReverbEnvironment(preset);
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::UpdateSoundMood(IFunctionHandler *pH)
+int ScriptBind_Sound::UpdateSoundMood(IFunctionHandler *pH, const char *mood, float fade, uint32_t fadeTimeMs)
 {
-	// TODO
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	ISoundMoodManager *pSoundMoodManager = pSoundSystem->GetIMoodManager();
+	if (!pSoundMoodManager)
+		return pH->EndFunction();
+
+	pSoundMoodManager->UpdateSoundMood(mood, fade, fadeTimeMs);
+
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::UpdateWeightedEaxEnvironment(IFunctionHandler *pH)
+int ScriptBind_Sound::UpdateWeightedEaxEnvironment(IFunctionHandler *pH, const char *preset, float weight)
 {
-	// TODO
+	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
+	if (!pSoundSystem)
+		return pH->EndFunction();
+
+	IReverbManager *pReverbManager = pSoundSystem->GetIReverbManager();
+	if (!pReverbManager)
+		return pH->EndFunction();
+
+	pReverbManager->UpdateWeightedReverbEnvironment(preset, weight);
+
 	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::EndMusicTheme(IFunctionHandler *pH)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	int themeFadeType = 0;
+	int forceEndLimitInSec = 5;
+	bool endEverything = false;
+
+	if (paramCount >= 1)
+		pH->GetParam(1, themeFadeType);
+
+	if (paramCount >= 2)
+		pH->GetParam(2, forceEndLimitInSec);
+
+	if (paramCount >= 3)
+		pH->GetParam(3, endEverything);
+
+	const bool result = pMusicSystem->EndTheme(static_cast<EThemeFadeType>(themeFadeType), forceEndLimitInSec, endEverything);
+
+	if (!result)
+		CryLogError("Unable to end music theme!");
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::PlayPattern(IFunctionHandler *pH)
+{
+	SCRIPT_CHECK_PARAMETERS(3);
+
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	const char *pattern = nullptr;
+	bool stopPrevious = false;
+	bool playSynched = false;
+
+	pH->GetParam(1, pattern);
+	pH->GetParam(2, stopPrevious);
+	pH->GetParam(3, playSynched);
+
+	pMusicSystem->PlayPattern(pattern, stopPrevious, playSynched);
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::PlayStinger(IFunctionHandler *pH)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	pMusicSystem->PlayStinger();
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::SetDefaultMusicMood(IFunctionHandler *pH, const char *mood)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	const bool result = pMusicSystem->SetDefaultMood(mood);
+
+	if (!result)
+		CryLogError("Unable to set default music mood '%s'", mood);
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::SetMenuMusic(IFunctionHandler *pH, bool playMenuMusic, const char *theme, const char *mood)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	if (playMenuMusic)
+	{
+		pMusicSystem->SerializeInternal(true);
+
+		if (!m_isMenuMusicLoaded)
+		{
+			pMusicSystem->LoadFromXML("music/common_music.xml", true, false);
+			m_isMenuMusicLoaded = true;
+		}
+
+		pMusicSystem->SetTheme(theme, false);
+		pMusicSystem->SetMood(mood);
+	}
+	else
+	{
+		pMusicSystem->SerializeInternal(false);
+	}
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::SetMusicMood(IFunctionHandler *pH, const char *mood)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	bool playFromStart = true;
+	bool forceChange = false;
+
+	if (paramCount >= 2)
+		pH->GetParam(2, playFromStart);
+
+	if (paramCount >= 3)
+		pH->GetParam(3, forceChange);
+
+	const bool result = pMusicSystem->SetMood(mood, playFromStart, forceChange);
+
+	if (!result)
+		CryLogError("Unable to set music mood '%s'", mood);
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::SetMusicTheme(IFunctionHandler *pH, const char *theme)
+{
+	IMusicSystem *pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	const int paramCount = pH->GetParamCount();
+
+	bool forceChange = false;
+	bool keepMood = false;
+	int delaySec = -1;
+
+	if (paramCount >= 2)
+		pH->GetParam(2, forceChange);
+
+	if (paramCount >= 3)
+		pH->GetParam(3, keepMood);
+
+	if (paramCount >= 4)
+		pH->GetParam(4, delaySec);
+
+	const bool result = pMusicSystem->SetTheme(theme, forceChange, keepMood, delaySec);
+
+	if (!result)
+		CryLogError("Unable to set music theme '%s'", theme);
+
+	return pH->EndFunction(result);
 }
