@@ -131,6 +131,8 @@ void ServerPAK::ReloadEntityScripts()
 					continue;
 			}
 
+			gEnv->pScriptSystem->SetGlobalToNull(pEntityClass->GetName());
+
 			const bool ok = pEntityClass->LoadScript(true);
 			if (ok)
 			{
