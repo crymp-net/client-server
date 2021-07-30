@@ -204,8 +204,10 @@ void Client::OnActionEvent(const SActionEvent & event)
 			break;
 		}
 		case eAE_resetBegin:
+		{
 			m_pScriptCallbacks->OnLoadingStart();
 			break;
+		}
 		case eAE_channelCreated:
 		case eAE_channelDestroyed:
 		case eAE_connectFailed:
