@@ -149,7 +149,7 @@ struct IMaterial
 {
 	// TODO: Remove it!
 	//! default texture mapping 
-	uchar m_ucDefautMappingAxis;
+	unsigned char m_ucDefautMappingAxis;
 	float m_fDefautMappingScale;
 
 	virtual ~IMaterial() {};

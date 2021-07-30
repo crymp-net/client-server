@@ -53,3 +53,8 @@ void ScriptCallbacks::OnMasterResolved()
 {
 	Call(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, true);
 }
+
+void ScriptCallbacks::OnLoadingStart()
+{
+	Call(SCRIPT_CALLBACK_ON_LOADING_START);
+}

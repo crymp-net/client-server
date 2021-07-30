@@ -150,6 +150,7 @@ function InitializeClient()
 	local function ResetState()
 		RestoreEnvironment()
 		localState = {
+			ACTIVE_LAYERS = 0,
 			ACTIVE_ANIMATIONS = {},
 			ACTIVE_EFFECTS = {},
 			STATIC_ID = activeProfile.static.id or "Unknown",
@@ -501,6 +502,7 @@ function InitializeClient()
 		end
 
 		return Promise(function(resolve, reject)
+			if not System.IsMultiplayer() then return resolve(false) end
 			if not g_localActor then
 				printf(RED .. "[CryMP] You are not in-game")
 				return resolve(false)
@@ -571,8 +573,13 @@ function InitializeClient()
 		end
 	end
 
+	local function OnLoadingStart()
+		printf(YELLOW .. "[CryMP] Resetting local state")
+		ResetState()
+	end
+
 	local function OnDisconnect(reason, message)
-		printf("[CryMP] Disconnect: %d %s", reason, message)
+		printf(YELLOW .. "[CryMP] Disconnect: %d %s", reason, message)
 		ResetState()
 	end
 
@@ -580,7 +587,36 @@ function InitializeClient()
 		local entity = _L.System.GetEntity(entityId)
 		if entity then
 			local name = entity:GetName() or "<unknown>"
-			if name:sub(1,7) == "frozen:" then
+			if localState.ACTIVE_LAYERS > 0 then
+				local mask = localState.ACTIVE_LAYERS
+				-- vehicles cannot be frozen, only dynfrozen, otherwise they are impossible to enter / drive
+				if entity.vehicle then
+					if band(mask, MASK_FROZEN) > 0 then
+						mask = bor(mask, MASK_DYNFROZEN) - MASK_FROZEN
+					end
+				end
+				_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
+			end
+			if name == "frozen:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_FROZEN)
+				_L.CPPAPI.ApplyMaskAll(MASK_FROZEN, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "dynfrozen:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_DYNFROZEN)
+				_L.CPPAPI.ApplyMaskAll(MASK_DYNFROZEN, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "wet:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_WET)
+				_L.CPPAPI.ApplyMaskAll(MASK_WET, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name == "cloak:all" then
+				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_CLOAK)
+				_L.CPPAPI.ApplyMaskAll(MASK_CLOAK, 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name:sub(1,3) == "fx:" then
+				Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
+				entity:SetPos({x=256; y=256; z=4096;})
+			elseif name:sub(1,7) == "frozen:" then
 				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_FROZEN, 1)
 			elseif name:sub(1,10) == "dynfrozen:" then
 				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_DYNFROZEN, 1)
@@ -588,14 +624,10 @@ function InitializeClient()
 				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_WET, 1)
 			elseif name:sub(1,6) == "cloak:" then
 				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
-			elseif name:sub(1,3) == "fx:" then
-				Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
-				entity:SetPos({x=256; y=256; z=4096;})
 			end
 		end
 		if entity and entity.class == "CustomAmmoPickup" then
-			-- apparently must be executed next frame
-			Script.SetTimer(1, function() entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0) end)
+			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
 		end
 	end
 
@@ -605,6 +637,7 @@ function InitializeClient()
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_DISCONNECT, OnDisconnect)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, OnMasterResolved)
+	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_LOADING_START, OnLoadingStart)
 
 	CPPAPI.AddCCommand("secu_login", LoginCCommandHandler)
 	CPPAPI.AddCCommand("simple_login", LoginCCommandHandler)
