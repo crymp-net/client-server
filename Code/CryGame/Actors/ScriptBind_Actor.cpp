@@ -152,7 +152,10 @@ CScriptBind_Actor::CScriptBind_Actor(ISystem* pSystem)
 	
 	//CryMP:
 	SCRIPT_REG_TEMPLFUNC(EnableThirdPerson, "");
-	SCRIPT_REG_TEMPLFUNC(SetSpectatorTarget, "");
+	SCRIPT_REG_TEMPLFUNC(IsThirdPerson, "");
+	SCRIPT_REG_TEMPLFUNC(SetDeathCamTarget, "");
+	SCRIPT_REG_FUNC(GetFlyMode);
+	SCRIPT_REG_FUNC(GetPhysicalColliderMode);
 
 	m_pSS->SetGlobalValue("STANCE_PRONE", STANCE_PRONE);
 	m_pSS->SetGlobalValue("STANCE_CROUCH", STANCE_CROUCH);
@@ -1786,7 +1789,16 @@ int CScriptBind_Actor::EnableThirdPerson(IFunctionHandler* pH, bool enable)
 	return pH->EndFunction();
 }
 
-int CScriptBind_Actor::SetSpectatorTarget(IFunctionHandler* pH, ScriptHandle targetId)
+int CScriptBind_Actor::IsThirdPerson(IFunctionHandler* pH)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction();
+
+	return pH->EndFunction(pActor->IsThirdPerson());
+}
+
+int CScriptBind_Actor::SetDeathCamTarget(IFunctionHandler* pH, ScriptHandle targetId)
 {
 	CActor* pActor = GetActor(pH);
 	if (!pActor)
@@ -1798,4 +1810,28 @@ int CScriptBind_Actor::SetSpectatorTarget(IFunctionHandler* pH, ScriptHandle tar
 	((CPlayer*)pActor)->SetSpectatorTarget(targetId.n);
 
 	return pH->EndFunction();
+}
+
+int CScriptBind_Actor::GetFlyMode(IFunctionHandler* pH)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction(-1);
+
+	return pH->EndFunction(((CPlayer*)(pActor))->GetFlyMode());
+}
+
+int CScriptBind_Actor::GetPhysicalColliderMode(IFunctionHandler* pH)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction(-1);
+
+	IAnimatedCharacter* pAnim = pActor->GetAnimatedCharacter();
+	if (pAnim)
+	{
+		return pH->EndFunction((int)pAnim->GetPhysicalColliderMode());
+	}
+
+	return pH->EndFunction(-1);
 }
