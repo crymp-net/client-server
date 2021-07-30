@@ -55,11 +55,15 @@ CHUDTagNames::CHUDTagNames()
 	ILocalizationManager *pLocalizationManager = gEnv->pSystem->GetLocalizationManager();
 
 	wstring buffer;
-	for (int i = 1; pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), buffer); i++)
-	{
-		std::wstring_view rankNameW(buffer.c_str(), buffer.length());  // buffer is CryString trash
 
-		m_rankNames.emplace_back(WinAPI::ConvertUTF16To8(rankNameW));
+	for (int i = 1; i <= 8; i++)
+	{
+		if (pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), buffer))
+		{
+			std::wstring_view rankNameW(buffer.c_str(), buffer.length());  // buffer is CryString trash
+
+			m_rankNames.emplace_back(WinAPI::ConvertUTF16To8(rankNameW));
+		}
 	}
 }
 
