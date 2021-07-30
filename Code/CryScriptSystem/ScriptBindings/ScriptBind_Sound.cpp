@@ -35,7 +35,6 @@ ISound *ScriptBind_Sound::GetSound(IFunctionHandler *pH, int index)
 		}
 		default:
 		{
-			CryLogErrorAlways("GetSound: ???");
 			return nullptr;
 		}
 	}
