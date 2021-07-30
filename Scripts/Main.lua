@@ -599,7 +599,7 @@ function InitializeClient()
 				end
 				_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
 			end
-			if entity and entity.class == "CustomAmmoPickup" then
+			if entity.class == "CustomAmmoPickup" then
 				entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
 			end
 			if entity.class == "Player" then return; end
