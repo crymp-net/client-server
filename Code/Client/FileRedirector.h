@@ -6,40 +6,46 @@
 #include <set>
 #include <mutex>
 
+#include "Library/Util.h"
+
 class FileRedirector
 {
+public:
+	class DownloadedMaps
+	{
+		std::set<std::string, Util::TransparentStringCompare> m_maps;
+		std::string m_downloadPath;
+		std::mutex m_mutex;
+
+	public:
+		void Add(const std::string_view & map);
+		void SetDownloadPath(const std::string_view & path);
+		bool Redirect(const std::string_view & path, std::string & result);
+	};
+
+private:
 	struct CryPak_Hook
 	{
 		const char *AdjustFileName(const char *src, char *dst, unsigned int flags, bool *pFoundInPak);
 	};
 
-	struct FastStringCompare
-	{
-		using is_transparent = void;
-
-		bool operator()(const std::string_view & a, const std::string_view & b) const
-		{
-			return a < b;
-		}
-	};
-
 	using TAdjustFileName = decltype(&CryPak_Hook::AdjustFileName);
-	using TDownloadedMaps = std::set<std::string, FastStringCompare>;
 
 	TAdjustFileName m_pOriginalAdjustFileName = nullptr;
-	TDownloadedMaps m_downloadedMaps;
-	std::string m_downloadedMapsPrefix;
-	std::mutex m_mutex;
+	DownloadedMaps m_downloadedMaps;
 
 	void HackCryPak();
 	const char *RedirectPath(const char *path, char *buffer, size_t bufferSize);
-	std::string RedirectDownloadedMap(const std::string_view & path);
-	std::string SanitizePath(const std::string_view & path);
 
 public:
 	FileRedirector();
 	~FileRedirector();
 
-	void AddDownloadedMap(const std::string_view & mapName);
-	void SetDownloadedMapsPrefix(const std::string_view & prefix);
+	std::string SanitizePath(const std::string_view & path);
+	std::string AdjustPath(const std::string_view & path, unsigned int flags = 0);
+
+	DownloadedMaps & GetDownloadedMaps()
+	{
+		return m_downloadedMaps;
+	}
 };

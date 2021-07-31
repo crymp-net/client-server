@@ -25,7 +25,7 @@ void MapExtractor::ExtractFile(unsigned int index)
 	std::filesystem::path filePath = GetFileName(index);
 
 	// skip files outside "levels/multiplayer/ps/mymap/"
-	if (!Util::PathStartsWith(m_mapPath, filePath))
+	if (!Util::PathStartsWith(filePath, m_mapPath))
 	{
 		CryLogAlways("$6[CryMP] [MapExtractor] Ignoring '%s'", filePath.string().c_str());
 		return;

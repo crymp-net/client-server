@@ -61,7 +61,7 @@ void HTTPClient::AddTelemetryHeaders(HTTPClientRequest & request)
 {
 	for (const std::string & master : gClient->GetMasters())
 	{
-		if (Util::StartsWith(gClient->GetMasterServerAPI(master), request.url))
+		if (Util::StartsWith(request.url, gClient->GetMasterServerAPI(master)))
 		{
 			request.headers["X-Sfwcl-HWID"] = m_hwid;
 			request.headers["X-Sfwcl-Locale"] = m_locale;

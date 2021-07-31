@@ -3,18 +3,69 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
-#include "Library/Util.h"
 #include "Library/WinAPI.h"
 
 #include "FileRedirector.h"
 
 namespace
 {
-	constexpr char SEPARATOR = '\\';
-	constexpr std::string_view PREFIX_MAPS = "game\\levels\\";
-
 	FileRedirector *g_self;
 }
+
+////////////////////////////////////
+// FileRedirector::DownloadedMaps //
+////////////////////////////////////
+
+void FileRedirector::DownloadedMaps::Add(const std::string_view & map)
+{
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	m_maps.emplace(g_self->SanitizePath(map));
+}
+
+void FileRedirector::DownloadedMaps::SetDownloadPath(const std::string_view & path)
+{
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	m_downloadPath = g_self->AdjustPath(path, ICryPak::FLAGS_ADD_TRAILING_SLASH);
+}
+
+bool FileRedirector::DownloadedMaps::Redirect(const std::string_view & path, std::string & result)
+{
+	constexpr std::string_view PATH_PREFIX = "game\\levels\\";
+
+	if (!Util::StartsWith(path, PATH_PREFIX))
+	{
+		// not a map path
+		return false;
+	}
+
+	const std::string_view mapPath = Util::RemovePrefix(path, PATH_PREFIX.length());
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	for (size_t pos = mapPath.find('\\'); pos != std::string_view::npos; pos = mapPath.find('\\', pos + 1))
+	{
+		const std::string_view mapName = Util::RemoveSuffix(mapPath, mapPath.length() - pos);
+
+		if (m_maps.find(mapName) != m_maps.end())
+		{
+			result.reserve(m_downloadPath.length() + mapPath.length());
+
+			result = m_downloadPath;
+			result += mapPath;
+
+			return true;
+		}
+	}
+
+	// not a downloaded map
+	return false;
+}
+
+////////////////////
+// FileRedirector //
+////////////////////
 
 const char *FileRedirector::CryPak_Hook::AdjustFileName(const char *src, char *dst, unsigned int flags, bool *pFoundInPak)
 {
@@ -40,46 +91,30 @@ void FileRedirector::HackCryPak()
 const char *FileRedirector::RedirectPath(const char *path, char *buffer, size_t bufferSize)
 {
 	const std::string_view oldPath = path;
+
 	std::string newPath;
-
-	if (Util::StartsWith(PREFIX_MAPS, oldPath))
-	{
-		newPath = RedirectDownloadedMap(Util::RemovePrefix(oldPath, PREFIX_MAPS.length()));
-	}
-
-	if (!newPath.empty())
+	if (m_downloadedMaps.Redirect(oldPath, newPath))
 	{
 		CryLog("[CryMP] [FileRedirector] Redirecting '%s' to '%s'", path, newPath.c_str());
 
-		path = Util::CopyToBuffer(newPath, buffer, bufferSize);
+		path = Util::CopyToBuffer(buffer, bufferSize, newPath);
 	}
 
 	return path;
 }
 
-std::string FileRedirector::RedirectDownloadedMap(const std::string_view & path)
+FileRedirector::FileRedirector()
 {
-	std::lock_guard<std::mutex> lock(m_mutex);
-
-	for (size_t pos = path.find(SEPARATOR); pos != std::string_view::npos; pos = path.find(SEPARATOR, pos + 1))
+	if (!g_self)
 	{
-		const std::string_view mapName = Util::RemoveSuffix(path, path.length() - pos);
-
-		if (m_downloadedMaps.count(mapName) > 0)
-		{
-			std::string result;
-			result.reserve(m_downloadedMapsPrefix.length() + path.length());
-
-			result += m_downloadedMapsPrefix;
-			result += path;
-
-			// redirect path
-			return result;
-		}
+		HackCryPak();
 	}
 
-	// no redirect
-	return std::string();
+	g_self = this;
+}
+
+FileRedirector::~FileRedirector()
+{
 }
 
 std::string FileRedirector::SanitizePath(const std::string_view & path)
@@ -89,7 +124,7 @@ std::string FileRedirector::SanitizePath(const std::string_view & path)
 	std::transform(result.begin(), result.end(), result.begin(), [](char ch) -> char
 	{
 		if (ch == '/')
-			return SEPARATOR;
+			return '\\';
 		else
 			return tolower(ch);
 	});
@@ -97,41 +132,17 @@ std::string FileRedirector::SanitizePath(const std::string_view & path)
 	return result;
 }
 
-FileRedirector::FileRedirector()
+std::string FileRedirector::AdjustPath(const std::string_view & path, unsigned int flags)
 {
-	g_self = this;
-
-	HackCryPak();
-}
-
-FileRedirector::~FileRedirector()
-{
-}
-
-void FileRedirector::AddDownloadedMap(const std::string_view & mapName)
-{
-	std::lock_guard<std::mutex> lock(m_mutex);
-
-	m_downloadedMaps.emplace(SanitizePath(mapName));
-}
-
-void FileRedirector::SetDownloadedMapsPrefix(const std::string_view & prefix)
-{
-	std::lock_guard<std::mutex> lock(m_mutex);
-
-	m_downloadedMapsPrefix = prefix;
-
-	// make sure the trailing slash is there
-	const unsigned int flags = ICryPak::FLAGS_ADD_TRAILING_SLASH;
+	std::string result(path);
 
 	CryPak_Hook *pCryPak = reinterpret_cast<CryPak_Hook*>(gEnv->pCryPak);
 
 	char buffer[512];
-	const char *oldPrefix = m_downloadedMapsPrefix.c_str();
-	const char *newPrefix = (pCryPak->*m_pOriginalAdjustFileName)(oldPrefix, buffer, flags, nullptr);
-
-	if (newPrefix != oldPrefix)
+	if ((pCryPak->*m_pOriginalAdjustFileName)(result.c_str(), buffer, flags, nullptr) != result.c_str())
 	{
-		m_downloadedMapsPrefix = buffer;
+		result = buffer;
 	}
+
+	return result;
 }

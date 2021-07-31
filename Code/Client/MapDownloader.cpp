@@ -74,7 +74,7 @@ void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 
 				RescanMaps();
 
-				gClient->GetFileRedirector()->AddDownloadedMap(request.map);
+				gClient->GetFileRedirector()->GetDownloadedMaps().Add(request.map);
 
 				CryLogAlways("$3[CryMP] [MapDownloader] Map downloaded successfully");
 			}
@@ -139,7 +139,7 @@ void MapDownloader::RescanMaps()
 void MapDownloader::RegisterDownloadedMaps()
 {
 	ILevelSystem *pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
-	FileRedirector *pFileRedirector = gClient->GetFileRedirector();
+	FileRedirector::DownloadedMaps & downloadedMaps = gClient->GetFileRedirector()->GetDownloadedMaps();
 
 	const int levelCount = pLevelSystem->GetLevelCount();
 
@@ -147,9 +147,9 @@ void MapDownloader::RegisterDownloadedMaps()
 	{
 		const ILevelInfo *pLevelInfo = pLevelSystem->GetLevelInfo(i);
 
-		if (Util::StartsWithNoCase("%USER%", pLevelInfo->GetPath()))
+		if (Util::StartsWithNoCase(pLevelInfo->GetPath(), "%USER%"))
 		{
-			pFileRedirector->AddDownloadedMap(pLevelInfo->GetName());
+			downloadedMaps.Add(pLevelInfo->GetName());
 		}
 	}
 }
@@ -173,7 +173,7 @@ MapDownloader::MapDownloader()
 	// make sure the map directory exists
 	std::filesystem::create_directories(m_downloadDir / "Levels");
 
-	gClient->GetFileRedirector()->SetDownloadedMapsPrefix("%USER%/Downloads/Levels");
+	gClient->GetFileRedirector()->GetDownloadedMaps().SetDownloadPath("%USER%/Downloads/Levels");
 
 	RescanMaps();
 	RegisterDownloadedMaps();

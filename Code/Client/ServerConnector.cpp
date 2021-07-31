@@ -63,10 +63,10 @@ bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
 		return false;
 	}
 
-	if (!m_server.mapURL.empty() && !Util::StartsWith("http", m_server.mapURL))
+	if (!m_server.mapURL.empty() && !Util::StartsWith(m_server.mapURL, "http"))
 		m_server.mapURL = "http://" + m_server.mapURL;
 
-	if (!m_server.pakURL.empty() && !Util::StartsWith("http", m_server.pakURL))
+	if (!m_server.pakURL.empty() && !Util::StartsWith(m_server.pakURL, "http"))
 		m_server.pakURL = "http://" + m_server.pakURL;
 
 	return true;

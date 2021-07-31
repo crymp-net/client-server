@@ -8,6 +8,35 @@
 #include "StringBuffer.h"
 #include "External/picosha2.h"
 
+bool Util::LessNoCase(const std::string_view & stringA, const std::string_view & stringB)
+{
+	auto [itA, itB] = std::mismatch(
+		stringA.begin(),
+		stringA.end(),
+		stringB.begin(),
+		stringB.end(),
+		[](char a, char b) -> bool
+		{
+			return tolower(a) == tolower(b);
+		}
+	);
+
+	if (itB == stringB.end())
+	{
+		// B is a prefix of A or both strings are equal
+		return false;
+	}
+	else if (itA == stringA.end())
+	{
+		// A is a prefix of B
+		return true;
+	}
+	else
+	{
+		return *itA < *itB;
+	}
+}
+
 bool Util::EqualNoCase(const std::string_view & stringA, const std::string_view & stringB)
 {
 	return std::equal(stringA.begin(), stringA.end(), stringB.begin(), stringB.end(), [](char a, char b) -> bool
@@ -24,7 +53,7 @@ bool Util::EqualNoCase(const std::wstring_view & stringA, const std::wstring_vie
 	});
 }
 
-bool Util::StartsWith(const std::string_view & prefix, const std::string_view & text)
+bool Util::StartsWith(const std::string_view & text, const std::string_view & prefix)
 {
 	if (prefix.length() <= text.length())
 		return prefix == std::string_view(text.data(), prefix.length());
@@ -32,7 +61,7 @@ bool Util::StartsWith(const std::string_view & prefix, const std::string_view & 
 		return false;
 }
 
-bool Util::StartsWith(const std::wstring_view & prefix, const std::wstring_view & text)
+bool Util::StartsWith(const std::wstring_view & text, const std::wstring_view & prefix)
 {
 	if (prefix.length() <= text.length())
 		return prefix == std::wstring_view(text.data(), prefix.length());
@@ -40,7 +69,7 @@ bool Util::StartsWith(const std::wstring_view & prefix, const std::wstring_view 
 		return false;
 }
 
-bool Util::StartsWithNoCase(const std::string_view & prefix, const std::string_view & text)
+bool Util::StartsWithNoCase(const std::string_view & text, const std::string_view & prefix)
 {
 	if (prefix.length() <= text.length())
 		return EqualNoCase(prefix, std::string_view(text.data(), prefix.length()));
@@ -48,7 +77,7 @@ bool Util::StartsWithNoCase(const std::string_view & prefix, const std::string_v
 		return false;
 }
 
-bool Util::StartsWithNoCase(const std::wstring_view & prefix, const std::wstring_view & text)
+bool Util::StartsWithNoCase(const std::wstring_view & text, const std::wstring_view & prefix)
 {
 	if (prefix.length() <= text.length())
 		return EqualNoCase(prefix, std::wstring_view(text.data(), prefix.length()));
@@ -56,7 +85,7 @@ bool Util::StartsWithNoCase(const std::wstring_view & prefix, const std::wstring
 		return false;
 }
 
-bool Util::PathStartsWith(const std::filesystem::path & prefix, const std::filesystem::path & path)
+bool Util::PathStartsWith(const std::filesystem::path & path, const std::filesystem::path & prefix)
 {
 	auto [prefixIt, pathIt] = std::mismatch(
 		prefix.begin(),
@@ -106,7 +135,7 @@ std::vector<std::string_view> Util::SplitWhitespace(const std::string_view & tex
 	return Split(text, "\t\n\v\f\r ");
 }
 
-const char *Util::CopyToBuffer(const std::string_view & text, char *buffer, size_t bufferSize)
+const char *Util::CopyToBuffer(char *buffer, size_t bufferSize, const std::string_view & text)
 {
 	if (buffer && bufferSize > 0)
 	{

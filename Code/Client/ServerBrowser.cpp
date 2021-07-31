@@ -85,10 +85,10 @@ namespace
 	{
 		const std::string_view map = GetString(serverInfo, "map");
 
-		if (Util::StartsWithNoCase("multiplayer/ia/", map))
+		if (Util::StartsWithNoCase(map, "multiplayer/ia/"))
 			return "InstantAction";
 
-		if (Util::StartsWithNoCase("multiplayer/ps/", map))
+		if (Util::StartsWithNoCase(map, "multiplayer/ps/"))
 			return "PowerStruggle";
 
 		return "";

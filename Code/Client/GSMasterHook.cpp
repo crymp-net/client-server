@@ -27,7 +27,7 @@ namespace
 	{
 		auto it = std::find_if(PREFIXES.begin(), PREFIXES.end(), [&name](const std::string_view & prefix)
 		{
-			return Util::StartsWith(prefix, name);
+			return Util::StartsWith(name, prefix);
 		});
 
 		return (it != PREFIXES.end()) ? *it : std::string_view();
