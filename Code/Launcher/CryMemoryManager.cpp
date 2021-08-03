@@ -6,7 +6,7 @@
 #include "Library/WinAPI.h"
 
 #include "CryMemoryManager.h"
-#include "CryCommon/CrySystem/ISystem.h"
+
 namespace
 {
 	void *CryMalloc_hook(size_t size, size_t & allocatedSize)
