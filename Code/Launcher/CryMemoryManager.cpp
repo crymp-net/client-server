@@ -15,6 +15,8 @@ namespace
 
 		if (size)
 		{
+			// align to 8 bytes
+			size += 7 & (8 - (size & 7));
 			result = malloc(size);
 
 			allocatedSize = _msize(result);
@@ -33,6 +35,8 @@ namespace
 
 		if (size)
 		{
+			// align to 8 bytes
+			size += 7 & (8 - (size & 7));
 			result = realloc(mem, size);
 
 			allocatedSize = _msize(result);
@@ -70,6 +74,8 @@ namespace
 
 		if (size)
 		{
+			// align to 8 bytes
+			size += 7 & (8 - (size & 7));
 			result = malloc(size);
 		}
 
