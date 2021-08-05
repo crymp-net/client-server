@@ -91,14 +91,6 @@ class CFrameProfilerSection;
 #define PROC_MENU		1
 #define PROC_3DENGINE	2
 
-//ID for script userdata typing (maybe they should be moved into the game.dll)
-#define USER_DATA_SOUND			1
-#define USER_DATA_TEXTURE		2
-#define USER_DATA_OBJECT		3
-#define USER_DATA_LIGHT			4
-#define USER_DATA_BONEHANDLER	5
-#define USER_DATA_POINTER		6
-
 enum ESystemUpdateFlags
 {
 	ESYSUPDATE_IGNORE_AI			= 0x0001,

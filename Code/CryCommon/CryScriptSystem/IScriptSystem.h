@@ -1,28 +1,20 @@
-// -------------------------------------------------------------------------
-// Crytek Source File.
-// Copyright (C) Crytek GmbH, 2001-2008.
-// -------------------------------------------------------------------------
-#ifndef _ISCRIPTSYSTEM_H_
-#define _ISCRIPTSYSTEM_H_
+// Copyright (C) 2001-2008 Crytek GmbH
 
-#if _MSC_VER > 1000
 #pragma once
-#endif
 
 #include "CryCommon/CryCore/functor.h"
 #include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryMath/Cry_Math.h"
 
-// forward declarations.
-class  ICrySizer;
-struct IWeakScriptObject;
-struct IScriptTable;
-struct ISystem;
-struct IFunctionHandler;
-class  SmartScriptTable;
+class ICrySizer;
+class SmartScriptTable;
 
-// Script function reference.
-struct SScriptFuncHandle {};
+struct ISystem;
+struct IScriptTable;
+struct IFunctionHandler;
+
+// script function reference
+struct SScriptFuncHandle;
 typedef SScriptFuncHandle* HSCRIPTFUNCTION;
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,38 +29,7 @@ union ScriptHandle
 
 	ScriptHandle() : ptr(0) {};
 	ScriptHandle(int i) : n(i) {};
-
-	ScriptHandle( void *p ) : ptr(p) {};
-};
-
-struct SSomeUserData {};
-typedef SSomeUserData* USER_DATA;
-struct ScriptUserData
-{
-	void * ptr;
-	int nRef;
-	
-	ScriptUserData() { ptr = 0; nRef = 0; }
-};
-
-typedef int HBREAKPOINT;
-
-
-enum ELuaDebugMode
-{
-	eLDM_NoDebug = 0,
-	eLDM_FullDebug = 1,
-	eLDM_OnlyErrors = 2
-};
-
-
-enum BreakState
-{
-	bsStepNext,
-	bsStepInto,
-	bsStepOut,
-	bsContinue,
-	bsNoBreak
+	ScriptHandle(void *p) : ptr(p) {};
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -130,8 +91,6 @@ struct ScriptAnyValue
 	ScriptAnyValue( HSCRIPTFUNCTION value ) : type(ANY_TFUNCTION) { function = value; };
 	ScriptAnyValue( const Vec3 &value ) : type(ANY_TVECTOR) { vec3.x=value.x; vec3.y=value.y; vec3.z=value.z; };
 	ScriptAnyValue( const Ang3 &value ) : type(ANY_TVECTOR) { vec3.x=value.x; vec3.y=value.y; vec3.z=value.z; };
-//	ScriptAnyValue( const ScriptUserData &value ) : type(ANY_TUSERDATA) { ud.ptr = value.ptr; ud.nRef = value.nRef; };
-//	ScriptAnyValue( USER_DATA value ) : type(ANY_TUSERDATA) { ud.nRef=(int)value;ud.nCookie=0;ud.nVal=0; }; // To Remove
 	ScriptAnyValue( IScriptTable *value ); // implemented at the end of header
 	ScriptAnyValue( const SmartScriptTable &value ); // implemented at the end of header
 
@@ -164,8 +123,6 @@ struct ScriptAnyValue
 	bool CopyTo( HSCRIPTFUNCTION &value ) { if (type==ANY_TFUNCTION) { value = function; return true; }; return false; };
 	bool CopyTo( Vec3 &value ) { if (type==ANY_TVECTOR) { value.x=vec3.x;value.y=vec3.y;value.z=vec3.z; return true; }; return false; };
 	bool CopyTo( Ang3 &value ) { if (type==ANY_TVECTOR) { value.x=vec3.x;value.y=vec3.y;value.z=vec3.z; return true; }; return false; };
-//	bool CopyTo( ScriptUserData &value ) { if (type==ANY_TUSERDATA) { value.ptr = ud.ptr; value.nRef = ud.nRef; return true; }; return false; };
-//	bool CopyTo( USER_DATA &value ) { if (type==ANY_TUSERDATA) { value = (USER_DATA)ud.nRef; return true; }; return false; };
 	bool CopyTo( IScriptTable *value ); // implemented at the end of header
 	bool CopyTo( SmartScriptTable &value ); // implemented at the end of header
 
@@ -182,8 +139,6 @@ struct ScriptAnyValue
 	ScriptAnyValue( HSCRIPTFUNCTION,int ) : type(ANY_TFUNCTION) {};
 	ScriptAnyValue( Vec3&,int ) : type(ANY_TVECTOR) {};
 	ScriptAnyValue( Ang3&,int ) : type(ANY_TVECTOR) {};
-	ScriptAnyValue( ScriptUserData,int ) : type(ANY_TUSERDATA) {};
-	ScriptAnyValue( USER_DATA,int ) : type(ANY_TUSERDATA) {};
 	ScriptAnyValue( IScriptTable* _table,int );
 	ScriptAnyValue( const SmartScriptTable &value,int );
 
@@ -191,18 +146,19 @@ struct ScriptAnyValue
 	{
 		switch (type)
 		{
-		case ANY_ANY: return svtNull;
-		case ANY_TNIL: return svtNull;
-		case ANY_TBOOLEAN: return svtBool;
-		case ANY_THANDLE: return svtPointer;
-		case ANY_TNUMBER: return svtNumber;
-		case ANY_TSTRING: return svtString;
-		case ANY_TTABLE: return svtObject;
-		case ANY_TFUNCTION: return svtFunction;
-		case ANY_TUSERDATA: return svtUserData;
-		case ANY_TVECTOR: return svtObject;
-		default: return svtNull;
+			case ANY_ANY:       return svtNull;
+			case ANY_TNIL:      return svtNull;
+			case ANY_TBOOLEAN:  return svtBool;
+			case ANY_THANDLE:   return svtPointer;
+			case ANY_TNUMBER:   return svtNumber;
+			case ANY_TSTRING:   return svtString;
+			case ANY_TTABLE:    return svtObject;
+			case ANY_TFUNCTION: return svtFunction;
+			case ANY_TUSERDATA: return svtUserData;
+			case ANY_TVECTOR:   return svtObject;
 		}
+
+		return svtNull;
 	}
 };
 
@@ -405,14 +361,13 @@ struct IScriptSystem
 	virtual void SetGCThreshhold(int nKb) = 0;
 
 	/*! release and destroy the script system*/
-	virtual void Release() = 0;
+	virtual void Release() {}
 
-	//!debug functions
-	//##@{
-	virtual void ShowDebugger(const char *pszSourceFile, int iLine, const char *pszReason) = 0;
+	virtual void ShowDebugger(const char *file, int line, const char *reason) {}
+	virtual int AddBreakPoint(const char *file, int line) { return 0; }
 
-	virtual HBREAKPOINT AddBreakPoint(const char *sFile,int nLineNumber)=0;
-	virtual IScriptTable *GetLocalVariables(int nLevel = 0) = 0;
+	virtual IScriptTable *GetLocalVariables(int nLevel = 0) { return 0; }
+
 	/*!return a table containing 1 entry per stack level(aka per call)
 		an entry will look like this table
 		
@@ -423,20 +378,22 @@ struct IScriptSystem
 		}
 	 
 	 */
-	virtual IScriptTable *GetCallsStack() = 0;
-	virtual void DebugContinue() = 0;
-	virtual void DebugStepNext() = 0;
-	virtual void DebugStepInto() = 0;
-	virtual void DebugDisable() = 0;
-	virtual BreakState GetBreakState() = 0;
-	//##@}
+	virtual IScriptTable *GetCallsStack() { return 0; }
+
+	virtual void DebugContinue() {}
+	virtual void DebugStepNext() {}
+	virtual void DebugStepInto() {}
+	virtual void DebugDisable() {}
+	virtual int GetBreakState() { return 4; }  // bsNoBreak
+
 	virtual void GetMemoryStatistics(ICrySizer *pSizer) = 0;
+
 	//! Is not recursive but combines the hash values of the whole table when the specifies variable is a table
 	//! otherwise is has to be a lua function
 	//!	@param sPath zero terminated path to the variable (e.g. _localplayer.cnt), max 255 characters
 	//!	@param szKey zero terminated name of the variable (e.g. luaFunc), max 255 characters
 	//! @param dwHash is used as input and output
-	virtual void GetScriptHash( const char *sPath, const char *szKey, unsigned int &dwHash )=0;
+	virtual void GetScriptHash( const char *sPath, const char *szKey, unsigned int &dwHash ) {}
 
 	virtual void RaiseError( const char *format,... ) PRINTF_PARAMS(2, 3) = 0;
 
@@ -446,7 +403,7 @@ struct IScriptSystem
 	virtual void PostInit() = 0;
 
 	//////////////////////////////////////////////////////////////////////////
-	virtual void LoadScriptedSurfaceTypes( const char *sFolder,bool bReload ) = 0;
+	virtual void LoadScriptedSurfaceTypes( const char *sFolder,bool bReload ) {}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Serializes script timers.
@@ -462,36 +419,6 @@ struct IScriptSystem
 	virtual uint32 GetScriptAllocSize() = 0;
 };
 
-class CCheckScriptStack
-{
-public:
-	CCheckScriptStack( IScriptSystem * pSS, const char * file, int line )
-	{
-		m_pSS = pSS;
-		m_stackSize = pSS->GetStackSize();
-		m_file = file;
-		m_line = line;
-	}
-
-	~CCheckScriptStack()
-	{
-#if defined(_DEBUG)
-		int stackSize = m_pSS->GetStackSize();
-		assert(stackSize == m_stackSize);
-#endif
-	}
-
-private:
-	IScriptSystem * m_pSS;
-	int m_stackSize;
-	const char * m_file;
-	int m_line;
-};
-
-#define CHECK_SCRIPT_STACK_2(x,y) x##y
-#define CHECK_SCRIPT_STACK_1(x,y) CHECK_SCRIPT_STACK_2(x,y)
-#define CHECK_SCRIPT_STACK CCheckScriptStack CHECK_SCRIPT_STACK_1(css_,__COUNTER__)(gEnv->pScriptSystem, __FILE__, __LINE__)
-
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
@@ -499,23 +426,6 @@ struct IScriptTableDumpSink
 {
 	virtual void OnElementFound(const char *sName,ScriptVarType type) = 0;
 	virtual void OnElementFound(int nIdx,ScriptVarType type) = 0;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Interface to the iterator of values in script table.
-// This is reference counted interface, when last reference to this interface
-// is release, object is deleted.
-// Use together with smart_ptr.
-//////////////////////////////////////////////////////////////////////////
-struct IScriptTableIterator
-{
-	virtual void AddRef();
-	// Call to decrement reference delete script table iterator.
-	virtual void Release();
-
-	// Description:
-	//    Get next value in the table.
-	virtual bool Next( ScriptAnyValue &var );
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -534,15 +444,7 @@ struct IScriptTable
 	virtual void Release() = 0;
 
 	virtual void Delegate(IScriptTable *pObj) = 0;
-	virtual void * GetUserDataValue() = 0;
-
-	/*
-	// Description:
-    //    Creates a new table iterator, with this iterator you can enumerate all members of the table.
-	//    This iterator must be freed with calling Release method of IScriptTableIterator.
-	IScriptTableIterator* GetIterator() = 0;
-	*/
-	
+	virtual void *GetUserDataValue() = 0;
 
 	// Set the value of a table memeber.
 	virtual void SetValueAny( const char *sKey,const ScriptAnyValue &any,bool bChain=false ) = 0;
@@ -688,17 +590,6 @@ struct IScriptTable
 	//virtual bool GetValueRecursive( const char *szPath, IScriptTable *pObj ) = 0;
 };
 
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//DOC-IGNORE-BEGIN
-/*! internal use*/
-struct IWeakScriptObject
-{
-	virtual IScriptTable *GetScriptObject() = 0;
-	virtual void Release() = 0 ;
-};
-//DOC-IGNORE-END
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -850,47 +741,7 @@ struct IFunctionHandler
 		if (!GetParam(9,p9) || !GetParam(10,p10)) return false;
 		return true;
 	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// To be removed later (FC Compatability).
-	//////////////////////////////////////////////////////////////////////////
-/*
-	bool GetParamUDVal(int nIdx,ULONG_PTR &nValue,int &nCookie)
-	{
-		ScriptUserData ud;
-		if (!GetParam( nIdx,ud ))
-			return false;
-		nValue = ud.nVal;
-		nCookie = ud.nCookie;
-		return true;
-	}
-	bool GetParamUDVal(int nIdx,INT_PTR &nValue,int &nCookie)
-	{
-		ScriptUserData ud;
-		if (!GetParam( nIdx,ud ))
-			return false;
-		nValue = ud.nVal;
-		nCookie = ud.nCookie;
-		return true;
-	}
-*/
 };
-
-//DOC-IGNORE-BEGIN
-//! under development
-struct ScriptDebugInfo
-{
-	const char *sSourceName;
-	int nCurrentLine;
-};
-
-//! under development
-struct IScriptDebugSink
-{
-	virtual void OnLoadSource(const char *sSourceName,unsigned char *sSource,long nSourceSize)=0;
-	virtual void OnExecuteLine(ScriptDebugInfo &sdiDebugInfo)=0;
-};
-//DOC-IGNORE-END
 
 /////////////////////////////////////////////////////////////////////////////
 //Utility classes
@@ -1666,20 +1517,3 @@ inline void ScriptAnyValue::Swap( ScriptAnyValue& value )
 	memcpy( this, &value, sizeof(ScriptAnyValue) );
 	memcpy( &value, temp, sizeof(ScriptAnyValue) );
 }
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-#ifdef CRYSCRIPTSYSTEM_EXPORTS
-	#define CRYSCRIPTSYSTEM_API DLL_EXPORT
-#else // CRYSCRIPTSYSTEM_EXPORTS
-	#define CRYSCRIPTSYSTEM_API DLL_IMPORT
-#endif // CRYSCRIPTSYSTEM_EXPORTS
-
-extern "C"
-{
-	CRYSCRIPTSYSTEM_API IScriptSystem *CreateScriptSystem( ISystem *pSystem,bool bStdLibs );
-}
-typedef IScriptSystem *(*CREATESCRIPTSYSTEM_FNCPTR)( ISystem *pSystem,bool bStdLibs );
-
-#endif //_ISCRIPTSYSTEM_H_
