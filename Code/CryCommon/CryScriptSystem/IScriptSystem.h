@@ -139,8 +139,8 @@ struct ScriptAnyValue
 	ScriptAnyValue( HSCRIPTFUNCTION,int ) : type(ANY_TFUNCTION) {};
 	ScriptAnyValue( Vec3&,int ) : type(ANY_TVECTOR) {};
 	ScriptAnyValue( Ang3&,int ) : type(ANY_TVECTOR) {};
-	ScriptAnyValue( IScriptTable* _table,int ) : type(ANY_TTABLE) {};
-	ScriptAnyValue( const SmartScriptTable &value,int ) : type(ANY_TTABLE) {};
+	ScriptAnyValue( IScriptTable*,int ) : type(ANY_TTABLE), table(nullptr) {};
+	ScriptAnyValue( const SmartScriptTable&,int ) : type(ANY_TTABLE), table(nullptr) {};
 
 	ScriptVarType GetVarType() const
 	{
