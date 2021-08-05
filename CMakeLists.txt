@@ -225,7 +225,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryRenderer/VertexBufferSource.h
   Code/CryCommon/CryRenderer/VertexFormats.h
   Code/CryCommon/CryScriptSystem/IScriptSystem.h
-  Code/CryCommon/CryScriptSystem/ScriptHelpers.h
   Code/CryCommon/CrySoundSystem/IMusicSystem.h
   Code/CryCommon/CrySoundSystem/IReverbManager.h
   Code/CryCommon/CrySoundSystem/ISound.h
