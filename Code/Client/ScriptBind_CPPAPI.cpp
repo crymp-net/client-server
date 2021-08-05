@@ -50,6 +50,9 @@ int ScriptBind_CPPAPI::AddCCommand(IFunctionHandler *pH, const char *name, HSCRI
 {
 	bool success = gClient->GetScriptCommands()->AddCommand(name, handler);
 
+	if (!success)
+		m_pSS->ReleaseFunc(handler);
+
 	return pH->EndFunction(success);
 }
 
@@ -143,9 +146,14 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 
 	const char *url;
 	if (params->GetValue("url", url))
+	{
 		request.url = url;
+	}
 	else
+	{
+		m_pSS->ReleaseFunc(callback);
 		return pH->EndFunction(false, "url not provided");
+	}
 
 	const char *method;
 	if (params->GetValue("method", method))
@@ -173,19 +181,21 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 		headersTable->EndIteration(it);
 	}
 
-	request.callback = [callback, this](HTTPClientResult & result)
+	request.callback = [callback, pSS = m_pSS](HTTPClientResult & result)
 	{
-		if (m_pSS->BeginCall(callback))
+		if (pSS->BeginCall(callback))
 		{
 			if (result.error)
-				m_pSS->PushFuncParam(result.error.what());
+				pSS->PushFuncParam(result.error.what());
 			else
-				m_pSS->PushFuncParam(false);
+				pSS->PushFuncParam(false);
 
-			m_pSS->PushFuncParam(result.response.c_str());
-			m_pSS->PushFuncParam(result.code);
-			m_pSS->EndCall();
+			pSS->PushFuncParam(result.response.c_str());
+			pSS->PushFuncParam(result.code);
+			pSS->EndCall();
 		}
+
+		pSS->ReleaseFunc(callback);
 	};
 
 	gClient->GetHTTPClient()->Request(std::move(request));
@@ -196,6 +206,9 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 int ScriptBind_CPPAPI::SetCallback(IFunctionHandler *pH, int callback, HSCRIPTFUNCTION handler)
 {
 	bool success = gClient->GetScriptCallbacks()->SetHandler(static_cast<EScriptCallback>(callback), handler);
+
+	if (!success)
+		m_pSS->ReleaseFunc(handler);
 
 	return pH->EndFunction(success);
 }

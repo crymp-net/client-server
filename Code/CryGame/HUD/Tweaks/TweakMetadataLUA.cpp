@@ -47,6 +47,14 @@ CTweakMetadataLUA::CTweakMetadataLUA(IScriptTable *pTable) : CTweakMetadata(pTab
 
 }
 
+CTweakMetadataLUA::~CTweakMetadataLUA()
+{
+	IScriptSystem *pSS = gEnv->pScriptSystem;
+
+	pSS->ReleaseFunc(m_incrementer);
+	pSS->ReleaseFunc(m_decrementer);
+}
+
 //-------------------------------------------------------------------------
 
 string CTweakMetadataLUA::GetValue(void) {

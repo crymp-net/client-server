@@ -30,7 +30,7 @@ public:
 
 	CTweakMetadataLUA(IScriptTable *pTable);
 
-	~CTweakMetadataLUA() {}
+	~CTweakMetadataLUA();
 
 	string GetValue(void);
 

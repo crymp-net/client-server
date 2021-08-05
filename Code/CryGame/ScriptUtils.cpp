@@ -166,5 +166,6 @@ bool DumpLuaTable( IScriptTable * table, FILE * file, string &result ) {
 	//SmartScriptFunction fun( pScript, pScript->GetFunctionPtr("DumpTableAsLuaString") );
 	bool success = Script::CallReturn( pScript, f, table, "Tweaks.TweaksSave", str );
 	result = str;
+	pScript->ReleaseFunc(f);
 	return success;
 }

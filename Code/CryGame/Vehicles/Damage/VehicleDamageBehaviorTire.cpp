@@ -331,6 +331,8 @@ void CVehicleDamageBehaviorBlowTire::OnVehicleEvent(EVehicleEvent event, const S
         if (pTable && pTable->GetValue("OnVehicleImmobilized", scriptFunction) && scriptFunction)
         {
           Script::Call(gEnv->pScriptSystem, scriptFunction, pTable);
+
+          gEnv->pScriptSystem->ReleaseFunc(scriptFunction);
         }
 
         m_aiImmobilizedTimer = -1;

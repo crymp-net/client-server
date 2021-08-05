@@ -21,17 +21,16 @@ void ScriptCommands::OnCommand(IConsoleCmdArgs *pArgs)
 		return;
 	}
 
-	IScriptSystem *pScriptSystem = gEnv->pScriptSystem;
-	HSCRIPTFUNCTION function = it->second;
+	HSCRIPTFUNCTION handler = it->second;
 
-	if (pScriptSystem->BeginCall(function))
+	if (m_pScriptSystem->BeginCall(handler))
 	{
 		for (int i = 1; i < argCount; i++)
 		{
-			pScriptSystem->PushFuncParam(pArgs->GetArg(i));
+			m_pScriptSystem->PushFuncParam(pArgs->GetArg(i));
 		}
 
-		pScriptSystem->EndCall();
+		m_pScriptSystem->EndCall();
 	}
 }
 
@@ -42,10 +41,17 @@ void ScriptCommands::OnCommandWrapper(IConsoleCmdArgs *pArgs)
 
 ScriptCommands::ScriptCommands()
 {
+	m_pConsole = gEnv->pConsole;
+	m_pScriptSystem = gEnv->pScriptSystem;
 }
 
 ScriptCommands::~ScriptCommands()
 {
+	for (const auto & [name, handler] : m_commands)
+	{
+		m_pConsole->RemoveCommand(name.c_str());
+		m_pScriptSystem->ReleaseFunc(handler);
+	}
 }
 
 bool ScriptCommands::AddCommand(const char *name, HSCRIPTFUNCTION handler)
@@ -63,7 +69,7 @@ bool ScriptCommands::AddCommand(const char *name, HSCRIPTFUNCTION handler)
 		return false;
 	}
 
-	gEnv->pConsole->AddCommand(name, OnCommandWrapper, VF_RESTRICTEDMODE);
+	m_pConsole->AddCommand(name, OnCommandWrapper, VF_RESTRICTEDMODE);
 
 	CryLog("Added console command '%s'", name);
 

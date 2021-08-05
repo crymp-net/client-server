@@ -5,8 +5,12 @@
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
+struct IConsole;
+
 class ScriptCommands
 {
+	IConsole *m_pConsole = nullptr;
+	IScriptSystem *m_pScriptSystem = nullptr;
 	std::map<std::string, HSCRIPTFUNCTION> m_commands;
 
 	void OnCommand(IConsoleCmdArgs *pArgs);

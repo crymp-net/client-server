@@ -176,6 +176,8 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 					float frozen = 0.f;
 					Script::CallReturn(gEnv->pScriptSystem, func, pScriptTable, frozen);
 
+					gEnv->pScriptSystem->ReleaseFunc(func);
+
 					if (frozen > 0.f)
 						pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "Frozen: %.2f", frozen);
 				}
@@ -226,6 +228,8 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 						{
 							pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.0f health", health);
 						}
+
+						gEnv->pScriptSystem->ReleaseFunc(func);
 					}
 				}
 			}

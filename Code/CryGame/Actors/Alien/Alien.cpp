@@ -2038,6 +2038,8 @@ void CAlien::OnAction(const ActionId& actionId, int activationMode, float value)
 				}
 
 				Script::Call(gEnv->pScriptSystem, scriptOnAction, scriptTbl, actionId.c_str(), activation, value);
+
+				gEnv->pScriptSystem->ReleaseFunc(scriptOnAction);
 			}
 		}
 	}

@@ -10,6 +10,11 @@ ScriptCallbacks::ScriptCallbacks()
 
 ScriptCallbacks::~ScriptCallbacks()
 {
+	for (HSCRIPTFUNCTION handler : m_handlers)
+	{
+		if (handler)
+			m_pSS->ReleaseFunc(handler);
+	}
 }
 
 bool ScriptCallbacks::SetHandler(EScriptCallback callback, HSCRIPTFUNCTION handler)
