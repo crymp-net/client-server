@@ -5,7 +5,7 @@
 class ScriptBind_Physics : public CScriptableBase
 {
 public:
-	ScriptBind_Physics(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_Physics(IScriptSystem *pSS);
 
 	//! <code>Physics.SimulateExplosion( explosionParams )</code>
 	//! <description>

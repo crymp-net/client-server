@@ -28,9 +28,9 @@ enum
 	SCANDIR_SUBDIRS = 2
 };
 
-ScriptBind_System::ScriptBind_System(ISystem *pSystem, IScriptSystem *pSS)
+ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("System");
 
 	m_pScriptTimeTable.Create(pSS);

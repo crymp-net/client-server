@@ -1,8 +1,14 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "ScriptTimerManager.h"
+
+uint64_t ScriptTimerManager::GetCurrentTime()
+{
+	return gEnv->pTimer->GetFrameStartTime().GetMilliSecondsAsInt64();
+}
 
 long ScriptTimerManager::GetFreeTimerSlot()
 {
@@ -14,7 +20,7 @@ long ScriptTimerManager::GetFreeTimerSlot()
 		}
 	}
 
-	if (m_timers.size() >= 0xFFFF)  // timer index is uint16_t
+	if (m_timers.size() >= 0xFFFF)  // timer slot is 16-bit unsigned integer
 	{
 		// all timer slots are used
 		return -1;
@@ -25,91 +31,72 @@ long ScriptTimerManager::GetFreeTimerSlot()
 	return m_timers.size() - 1;
 }
 
-uint64_t ScriptTimerManager::GetCurrentTime()
+ScriptTimerID ScriptTimerManager::MakeTimerID(long slot)
 {
-	return gEnv->pTimer->GetFrameStartTime().GetMilliSecondsAsInt64();
+	return (static_cast<uint32_t>(slot) << 16) | m_timers[slot].serialNumber;
 }
 
-ScriptTimerID ScriptTimerManager::CreateTimer(uint64_t milliseconds, HSCRIPTFUNCTION pFunction,
-                                              const char *functionName, IScriptTable *pData)
+uint16_t ScriptTimerManager::ToSlot(ScriptTimerID timerID)
 {
-	const long index = GetFreeTimerSlot();
-	if (index < 0)
-	{
-		CryLogWarning("[ScriptTimerManager] Too many timers");
-		return 0;
-	}
+	return static_cast<uint16_t>(timerID >> 16);
+}
 
-	Timer & timer = m_timers[index];
+uint16_t ScriptTimerManager::ToSerial(ScriptTimerID timerID)
+{
+	return static_cast<uint16_t>(timerID & 0xFFFF);
+}
 
-	timer.exists = true;
+void ScriptTimerManager::UpdateTimerSerial(Timer & timer)
+{
 	timer.serialNumber++;
 
 	// make sure the serial number is never zero
+	// so the resulting timer ID is never zero as well
+	// zero timer ID is reserved as invalid timer ID
 	if (timer.serialNumber == 0)
 		timer.serialNumber++;
-
-	timer.milliseconds = milliseconds;
-	timer.endTime = GetCurrentTime() + milliseconds;
-	timer.pFunction = pFunction;
-
-	if (functionName)
-		timer.functionName = functionName;
-	else
-		timer.functionName.clear();
-
-	timer.pData = pData;
-
-	if (pData)
-		pData->AddRef();
-
-	const ScriptTimerID timerID = (index << 16) | timer.serialNumber;
-
-	CryLogAlways("[ScriptTimerManager] Add   0x%08x %6lld ms 0x%p %s", timerID, milliseconds, pFunction, functionName);
-
-	return timerID;
 }
 
 void ScriptTimerManager::TriggerTimer(ScriptTimerID timerID)
 {
-	const uint16_t index = timerID >> 16;
+	const uint16_t slot = ToSlot(timerID);
 
-	HSCRIPTFUNCTION pFunction = m_timers[index].pFunction;
-	IScriptTable *pData = m_timers[index].pData;
+	HSCRIPTFUNCTION pFunction = m_timers[slot].pFunction;
+	IScriptTable *pData = m_timers[slot].pData;
 
 	if (!pFunction)
 	{
 		// use function name instead
-		m_pScriptSystem->GetGlobalValue(m_timers[index].functionName.c_str(), pFunction);
+		m_pSS->GetGlobalValue(m_timers[slot].functionName.c_str(), pFunction);
 	}
 
 	// destroy the timer before calling its function because a new timer can be added there
-	m_timers[index].exists = false;
-	m_timers[index].pFunction = nullptr;
-	m_timers[index].pData = nullptr;
+	m_timers[slot].exists = false;
+	m_timers[slot].pFunction = nullptr;
+	m_timers[slot].pData = nullptr;
 
 	if (pFunction)
 	{
 		if (pData)
-			Script::Call(m_pScriptSystem, pFunction, pData, timerID);
+			Script::Call(m_pSS, pFunction, pData, timerID);
 		else
-			Script::Call(m_pScriptSystem, pFunction, timerID);
+			Script::Call(m_pSS, pFunction, timerID);
 	}
 
 	if (pFunction)
-		m_pScriptSystem->ReleaseFunc(pFunction);
+		m_pSS->ReleaseFunc(pFunction);
 
 	if (pData)
 		pData->Release();
 }
 
-void ScriptTimerManager::ResetTimer(Timer & timer)
+void ScriptTimerManager::DestroyTimer(Timer & timer)
 {
 	timer.exists = false;
 
 	if (timer.pFunction)
 	{
-		m_pScriptSystem->ReleaseFunc(timer.pFunction);
+		m_pSS->ReleaseFunc(timer.pFunction);
 		timer.pFunction = nullptr;
 	}
 
@@ -118,13 +105,12 @@ void ScriptTimerManager::ResetTimer(Timer & timer)
 		timer.pData->Release();
 		timer.pData = nullptr;
 	}
+
+	timer.functionName.clear();
 }
 
-ScriptTimerManager::ScriptTimerManager(IScriptSystem *pScriptSystem)
+ScriptTimerManager::ScriptTimerManager()
 {
-	m_pScriptSystem = pScriptSystem;
-
-	m_timers.reserve(10);
 }
 
 ScriptTimerManager::~ScriptTimerManager()
@@ -132,22 +118,11 @@ ScriptTimerManager::~ScriptTimerManager()
 	Reset();
 }
 
-void ScriptTimerManager::RemoveTimer(ScriptTimerID timerID)
+void ScriptTimerManager::Init(IScriptSystem *pSS)
 {
-	const uint16_t index = timerID >> 16;
-	const uint16_t serialNumber = timerID & 0xFFFF;
+	m_pSS = pSS;
 
-	if (index < m_timers.size())
-	{
-		Timer & timer = m_timers[index];
-
-		if (timer.exists && timer.serialNumber == serialNumber)
-		{
-			ResetTimer(timer);
-
-			CryLogAlways("[ScriptTimerManager] Del   0x%08x", timerID);
-		}
-	}
+	m_timers.reserve(10);
 }
 
 void ScriptTimerManager::Update()
@@ -160,11 +135,11 @@ void ScriptTimerManager::Update()
 	{
 		if (m_timers[i].exists && currentTime >= m_timers[i].endTime)
 		{
-			const ScriptTimerID timerID = (i << 16) | m_timers[i].serialNumber;
+			const ScriptTimerID timerID = MakeTimerID(i);
 
 			TriggerTimer(timerID);
 
-			CryLogAlways("[ScriptTimerManager] Tick  0x%08x", timerID);
+			CryLog("[Script] Timer TICK 0x%08x", timerID);
 		}
 	}
 }
@@ -173,16 +148,91 @@ void ScriptTimerManager::Reset()
 {
 	for (Timer & timer : m_timers)
 	{
-		ResetTimer(timer);
+		DestroyTimer(timer);
 	}
 
 	m_timers.clear();
-
-	CryLogAlways("[ScriptTimerManager] Reset");
 }
 
-void ScriptTimerManager::Serialize(TSerialize & ser)
+ScriptTimerID ScriptTimerManager::AddTimer(uint64_t milliseconds, HSCRIPTFUNCTION pFunction, IScriptTable *pData)
 {
+	const long slot = GetFreeTimerSlot();
+	if (slot < 0)
+	{
+		CryLogError("[Script] Too many timers!");
+		return 0;
+	}
+
+	Timer & timer = m_timers[slot];
+
+	timer.exists = true;
+	timer.milliseconds = milliseconds;
+	timer.endTime = GetCurrentTime() + milliseconds;
+	timer.pFunction = pFunction;
+	timer.pData = pData;
+
+	if (timer.pData)
+		timer.pData->AddRef();
+
+	UpdateTimerSerial(timer);
+
+	const ScriptTimerID timerID = MakeTimerID(slot);
+
+	CryLog("[Script] Timer ADD  0x%08x | %8llu ms | 0x%p", timerID, milliseconds, pFunction);
+
+	return timerID;
+}
+
+ScriptTimerID ScriptTimerManager::AddTimer(uint64_t milliseconds, const char *functionName, IScriptTable *pData)
+{
+	const long slot = GetFreeTimerSlot();
+	if (slot < 0)
+	{
+		CryLogError("[Script] Too many timers!");
+		return 0;
+	}
+
+	Timer & timer = m_timers[slot];
+
+	timer.exists = true;
+	timer.milliseconds = milliseconds;
+	timer.endTime = GetCurrentTime() + milliseconds;
+	timer.functionName = functionName;
+	timer.pData = pData;
+
+	if (timer.pData)
+		timer.pData->AddRef();
+
+	UpdateTimerSerial(timer);
+
+	const ScriptTimerID timerID = MakeTimerID(slot);
+
+	CryLog("[Script] Timer ADD  0x%08x | %8llu ms | %s", timerID, milliseconds, functionName);
+
+	return timerID;
+}
+
+void ScriptTimerManager::StopTimer(ScriptTimerID timerID)
+{
+	const uint16_t slot = ToSlot(timerID);
+
+	if (slot < m_timers.size())
+	{
+		Timer & timer = m_timers[slot];
+
+		if (timer.exists && timer.serialNumber == ToSerial(timerID))
+		{
+			DestroyTimer(timer);
+
+			CryLog("[Script] Timer STOP 0x%08x", timerID);
+		}
+	}
+}
+
+void ScriptTimerManager::Serialize(ISerialize *pSer)
+{
+	TSerialize ser(pSer);
+
 	if (ser.GetSerializationTarget() == eST_Network)
 		return;
 
@@ -204,32 +254,33 @@ void ScriptTimerManager::Serialize(TSerialize & ser)
 			int timerID = 0;
 			ser.Value("id", timerID);
 
-			int64 milliseconds = 0;
+			int64_t milliseconds = 0;
 			ser.Value("millis", milliseconds);
 
 			CryStringT<char> functionName;
 			ser.Value("func", functionName);
 
-			const uint16_t index = timerID >> 16;
-			const uint16_t serialNumber = timerID & 0xFFFF;
+			const uint16_t slot = ToSlot(timerID);
+			const uint16_t serial = ToSerial(timerID);
 
-			if (m_timers.size() <= index)
-				m_timers.resize(index + 1);
+			if (m_timers.size() <= slot)
+				m_timers.resize(slot + 1);
 
-			Timer & timer = m_timers[index];
+			Timer & timer = m_timers[slot];
 
 			timer.exists = true;
-			timer.serialNumber = serialNumber;
+			timer.serialNumber = serial;
 			timer.milliseconds = milliseconds;
 			timer.endTime = currentTime + milliseconds;
 			timer.functionName = functionName.c_str();  // Crytek's string to std::string
 
-			uint32 entityID = 0;
+			uint32_t entityID = 0;
 			ser.Value("entity", entityID);
 
-			if (entityID && gEnv->pEntitySystem)
+			IEntitySystem *pEntitySystem = gEnv->pEntitySystem;
+			if (entityID && pEntitySystem)
 			{
-				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityID);
+				IEntity* pEntity = pEntitySystem->GetEntity(entityID);
 				if (pEntity)
 				{
 					timer.pData = pEntity->GetScriptTable();
@@ -247,40 +298,36 @@ void ScriptTimerManager::Serialize(TSerialize & ser)
 	{
 		int timerCount = 0;
 
-		for (size_t index = 0; index < m_timers.size(); index++)
+		for (size_t slot = 0; slot < m_timers.size(); slot++)
 		{
-			const Timer & timer = m_timers[index];
+			const Timer & timer = m_timers[slot];
 
 			if (!timer.exists || timer.pFunction)  // do not save timers that have script handle callback
 				continue;
 
-			uint32 dataEntityID = 0;
+			uint32_t dataEntityID = 0;
 
 			// save timer if there is either no user data or if the user data is an entity table
 			if (timer.pData)
 			{
 				ScriptHandle handle;
-
 				if (timer.pData->GetValue("id", handle))
 				{
-					dataEntityID = static_cast<uint32>(handle.n);
+					dataEntityID = static_cast<uint32_t>(handle.n);
 				}
 				else
 				{
-					CryLogWarning("[ScriptTimerManager] Cannot to save timer with function '%s'",
-						timer.functionName.c_str()
-					);
-
+					CryLogWarning("[Script] Cannot to save timer %s", timer.functionName.c_str());
 					continue;
 				}
 			}
 
 			ser.BeginGroup("timer");
 
-			int timerID = (index << 16) | timer.serialNumber;
+			int timerID = MakeTimerID(slot);
 			ser.Value("id", timerID);
 
-			int64 milliseconds = timer.milliseconds;
+			int64_t milliseconds = timer.milliseconds;
 			ser.Value("millis", milliseconds);
 
 			CryStringT<char> functionName = timer.functionName.c_str();  // std::string to Crytek's string

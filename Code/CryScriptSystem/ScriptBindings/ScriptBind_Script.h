@@ -6,10 +6,10 @@ class ScriptTimerManager;
 
 class ScriptBind_Script : public CScriptableBase
 {
-	ScriptTimerManager *GetTimerManager();
+	ScriptTimerManager & GetTimerManager();
 
 public:
-	ScriptBind_Script(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_Script(IScriptSystem *pSS);
 
 	//! <code>Script.LoadScript(scriptName)</code>
 	//! <description>Loads the script.</description>

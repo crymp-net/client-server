@@ -4,9 +4,9 @@
 
 #include "ScriptBind_Particle.h"
 
-ScriptBind_Particle::ScriptBind_Particle(ISystem *pSystem, IScriptSystem *pSS)
+ScriptBind_Particle::ScriptBind_Particle(IScriptSystem *pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Particle");
 
 #undef SCRIPT_REG_CLASSNAME

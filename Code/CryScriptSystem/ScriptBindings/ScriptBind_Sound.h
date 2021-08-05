@@ -14,7 +14,7 @@ class ScriptBind_Sound : public CScriptableBase
 	static int SoundTableDestructor(IFunctionHandler *pH, void *buffer, int size);
 
 public:
-	ScriptBind_Sound(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_Sound(IScriptSystem *pSS);
 
 	// sound
 	int AddToScaleGroup(IFunctionHandler *pH);

@@ -67,9 +67,9 @@ int ScriptBind_Sound::SoundTableDestructor(IFunctionHandler *pH, void *buffer, i
 	return pH->EndFunction();
 }
 
-ScriptBind_Sound::ScriptBind_Sound(ISystem *pSystem, IScriptSystem *pSS)
+ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Sound");
 
 	pSS->SetGlobalValue("SOUND_LOOP", FLAG_SOUND_LOOP);

@@ -1,22 +1,30 @@
 #pragma once
 
-#include "ScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+
+struct lua_State;
+
+class ScriptSystem;
 
 class FunctionHandler : public IFunctionHandler
 {
 	lua_State *m_L = nullptr;
-	CScriptSystem *m_pSS = nullptr;
+	ScriptSystem *m_pSS = nullptr;
 	const char *m_funcName = nullptr;
 	int m_paramIdOffset = 0;
 
 public:
-	FunctionHandler(lua_State *L, CScriptSystem *pSS, const char *funcName, int paramIdOffset)
+	FunctionHandler(lua_State *L, ScriptSystem *pSS, const char *funcName, int paramIdOffset)
 	: m_L(L),
 	  m_pSS(pSS),
 	  m_funcName(funcName),
 	  m_paramIdOffset(paramIdOffset)
 	{
 	}
+
+	//////////////////////
+	// IFunctionHandler //
+	//////////////////////
 
 	IScriptSystem *GetIScriptSystem() override;
 

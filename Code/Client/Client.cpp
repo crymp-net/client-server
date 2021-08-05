@@ -233,6 +233,8 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
+	gEnv->pScriptSystem->ForceGarbageCollection();
+
 	m_pEngineCache->OnLoadingStart(pLevel);
 	m_pScriptCallbacks->OnLoadingStart();
 }

@@ -5,7 +5,7 @@
 class ScriptBind_Movie : public CScriptableBase
 {
 public:
-	ScriptBind_Movie(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_Movie(IScriptSystem *pSS);
 
 	//! <code>Movie.PlaySequence(sSequenceName)</code>
 	//! <param name="sSequenceName">Sequence name.</param>

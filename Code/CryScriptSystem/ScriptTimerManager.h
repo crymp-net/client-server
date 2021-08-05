@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
-#include "CryCommon/CryNetwork/ISerialize.h"
+
+struct ISerialize;
 
 using ScriptTimerID = uint32_t;
 
@@ -22,35 +23,31 @@ class ScriptTimerManager
 		std::string functionName;  // alternative to pFunction
 	};
 
-	IScriptSystem *m_pScriptSystem = nullptr;
+	IScriptSystem *m_pSS = nullptr;
 	std::vector<Timer> m_timers;
 
-	long GetFreeTimerSlot();
 	uint64_t GetCurrentTime();
-	ScriptTimerID CreateTimer(uint64_t milliseconds, HSCRIPTFUNCTION pFunction,
-	                          const char *functionName, IScriptTable *pData);
+	long GetFreeTimerSlot();
+
+	ScriptTimerID MakeTimerID(long slot);
+	uint16_t ToSlot(ScriptTimerID timerID);
+	uint16_t ToSerial(ScriptTimerID timerID);
+
+	void UpdateTimerSerial(Timer & timer);
 	void TriggerTimer(ScriptTimerID timerID);
-	void ResetTimer(Timer & timer);
+	void DestroyTimer(Timer & timer);
 
 public:
-	ScriptTimerManager(IScriptSystem *pScriptSystem);
+	ScriptTimerManager();
 	~ScriptTimerManager();
 
-	ScriptTimerID AddTimer(uint64_t milliseconds, HSCRIPTFUNCTION pFunction, IScriptTable *pData = nullptr)
-	{
-		return CreateTimer(milliseconds, pFunction, nullptr, pData);
-	}
-
-	ScriptTimerID AddTimer(uint64_t milliseconds, const char *functionName, IScriptTable *pData = nullptr)
-	{
-		return CreateTimer(milliseconds, nullptr, functionName, pData);
-	}
-
-	void RemoveTimer(ScriptTimerID timerID);
-
+	void Init(IScriptSystem *pSS);
 	void Update();
-
 	void Reset();
 
-	void Serialize(TSerialize & ser);
+	ScriptTimerID AddTimer(uint64_t milliseconds, HSCRIPTFUNCTION pFunction, IScriptTable *pData = nullptr);
+	ScriptTimerID AddTimer(uint64_t milliseconds, const char *functionName, IScriptTable *pData = nullptr);
+	void StopTimer(ScriptTimerID timerID);
+
+	void Serialize(ISerialize *pSer);
 };

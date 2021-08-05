@@ -5,14 +5,14 @@
 #include "../ScriptSystem.h"
 #include "../ScriptTimerManager.h"
 
-ScriptTimerManager *ScriptBind_Script::GetTimerManager()
+ScriptTimerManager & ScriptBind_Script::GetTimerManager()
 {
-	return static_cast<CScriptSystem*>(m_pSS)->GetScriptTimerManager();
+	return static_cast<ScriptSystem*>(m_pSS)->GetScriptTimerManager();
 }
 
-ScriptBind_Script::ScriptBind_Script(ISystem *pSystem, IScriptSystem *pSS)
+ScriptBind_Script::ScriptBind_Script(IScriptSystem *pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Script");
 
 #undef SCRIPT_REG_CLASSNAME
@@ -109,11 +109,14 @@ int ScriptBind_Script::SetTimer(IFunctionHandler *pH, int nMilliseconds, HSCRIPT
 	if (nMilliseconds < 0)
 		nMilliseconds = 0;
 
-	IScriptTable *pData = nullptr;
+	SmartScriptTable pData;
 	if (pH->GetParamCount() > 2)
 		pH->GetParam(3, pData);
 
-	const int timerID = GetTimerManager()->AddTimer(nMilliseconds, hFunc, pData);
+	const int timerID = GetTimerManager().AddTimer(nMilliseconds, hFunc, pData);
+
+	if (!timerID)
+		m_pSS->ReleaseFunc(hFunc);
 
 	ScriptHandle timerHandle;
 	timerHandle.n = timerID;
@@ -126,11 +129,11 @@ int ScriptBind_Script::SetTimerForFunction(IFunctionHandler *pH, int nMillisecon
 	if (nMilliseconds < 0)
 		nMilliseconds = 0;
 
-	IScriptTable *pData = nullptr;
+	SmartScriptTable pData;
 	if (pH->GetParamCount() > 2)
 		pH->GetParam(3, pData);
 
-	const ScriptTimerID timerID = GetTimerManager()->AddTimer(nMilliseconds, sFunctionName, pData);
+	const ScriptTimerID timerID = GetTimerManager().AddTimer(nMilliseconds, sFunctionName, pData);
 
 	ScriptHandle timerHandle;
 	timerHandle.n = timerID;
@@ -140,7 +143,7 @@ int ScriptBind_Script::SetTimerForFunction(IFunctionHandler *pH, int nMillisecon
 
 int ScriptBind_Script::KillTimer(IFunctionHandler *pH, ScriptHandle nTimerId)
 {
-	GetTimerManager()->RemoveTimer(static_cast<ScriptTimerID>(nTimerId.n));
+	GetTimerManager().StopTimer(static_cast<ScriptTimerID>(nTimerId.n));
 
 	return pH->EndFunction();
 }

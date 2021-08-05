@@ -25,12 +25,10 @@ namespace
 	{
 		CryLogAlways("$3[CryMP] Using the new Script System");
 
-		std::unique_ptr<CScriptSystem> pScriptSystem = std::make_unique<CScriptSystem>();
+		ScriptSystem *pScriptSystem = new ScriptSystem();
+		pScriptSystem->Init();
 
-		if (!pScriptSystem->Init(pSystem, bStdLibs, 1024))
-			return nullptr;
-
-		return pScriptSystem.release();
+		return pScriptSystem;
 	}
 
 	void ReplaceScriptSystem(const DLL & CrySystem)

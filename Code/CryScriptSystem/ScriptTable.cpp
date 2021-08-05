@@ -1,12 +1,42 @@
 #include <stdio.h>
 #include <string.h>
+#include <new>
+
+#include "CryCommon/CrySystem/ISystem.h"
+
+extern "C"
+{
+#include "Library/External/Lua/src/lua.h"
+#include "Library/External/Lua/src/lauxlib.h"
+}
 
 #include "ScriptTable.h"
+#include "ScriptSystem.h"
+#include "ScriptUtil.h"
 #include "FunctionHandler.h"
 
-ScriptTable *ScriptTable::Create(CScriptSystem *pSS, lua_State *L, bool empty)
+struct FunctionData
 {
-	ScriptTable *pTable = new ScriptTable;
+	ScriptSystem *pSS;
+	char signature[256];
+	int paramIdOffset;
+	IScriptTable::FunctionFunctor functor;
+	IScriptTable::UserDataFunction userDataFunc;
+	int userDataSize;
+	unsigned char userDataBuffer[1];  // this must be at the end of this structure !!
+
+	void SetSignature(const IScriptTable::SUserFunctionDesc & fd)
+	{
+		if (*fd.sGlobalName)
+			snprintf(signature, sizeof signature, "%s.%s(%s)", fd.sGlobalName, fd.sFunctionName, fd.sFunctionParams);
+		else
+			snprintf(signature, sizeof signature, "%s(%s)", fd.sFunctionName, fd.sFunctionParams);
+	}
+};
+
+ScriptTable *ScriptTable::Create(ScriptSystem *pSS, lua_State *L, bool empty)
+{
+	ScriptTable *pTable = AllocateTable(pSS);
 
 	pTable->m_L = L;
 	pTable->m_pSS = pSS;
@@ -35,12 +65,6 @@ void ScriptTable::Attach()
 	m_ref = lua_ref(m_L, 1);
 }
 
-void ScriptTable::AttachToObject(IScriptTable *pObject)
-{
-	PushRef(pObject);
-	Attach();
-}
-
 void ScriptTable::PushRef()
 {
 	if (m_ref > 0)
@@ -49,33 +73,7 @@ void ScriptTable::PushRef()
 	}
 	else
 	{
-		if (m_ref == DELETED_REF)
-		{
-			gEnv->pSystem->Error("Access to deleted script object %p", this);
-		}
-
-		CryLogWarning("Pushing Nil table reference");
-
-		lua_pushnil(m_L);
-	}
-}
-
-void ScriptTable::PushRef(IScriptTable *pObject)
-{
-	const int ref = static_cast<ScriptTable*>(pObject)->m_ref;
-
-	if (ref > 0)
-	{
-		lua_getref(m_L, ref);
-	}
-	else
-	{
-		if (ref == DELETED_REF)
-		{
-			gEnv->pSystem->Error("Access to deleted script object %p", pObject);
-		}
-
-		CryLogWarning("Pushing Nil table reference");
+		CryLogWarning("[Script] Pushing Nil table reference");
 
 		lua_pushnil(m_L);
 	}
@@ -83,13 +81,20 @@ void ScriptTable::PushRef(IScriptTable *pObject)
 
 void ScriptTable::SetMetatable(IScriptTable *pMetatable)
 {
-	PushRef();            // -2
-	PushRef(pMetatable);  // -1
+	// -2
+	PushRef();
+	// -1
+	static_cast<ScriptTable*>(pMetatable)->PushRef();
 
 	lua_setmetatable(m_L, -2);
 
-	lua_pop(m_L, 1);  // pop table
+	// pop table
+	lua_pop(m_L, 1);
 }
+
+//////////////////
+// IScriptTable //
+//////////////////
 
 IScriptSystem *ScriptTable::GetScriptSystem() const
 {
@@ -107,22 +112,13 @@ void ScriptTable::Release()
 
 	if (m_refCount <= 0)
 	{
-		if (m_ref == DELETED_REF)
+		if (m_ref > 0)
 		{
-			gEnv->pSystem->Error("Attempt to Release already released script table.");
+			lua_unref(m_L, m_ref);
+			m_ref = 0;
 		}
-		else
-		{
-			if (m_ref != NULL_REF)
-			{
-				lua_unref(m_L, m_ref);
-			}
 
-			m_ref = DELETED_REF;
-
-			// TODO
-			delete this;
-		}
+		DeallocateTable(this, m_pSS);
 	}
 }
 
@@ -131,10 +127,10 @@ void ScriptTable::Delegate(IScriptTable *pMetatable)
 	if (!pMetatable)
 		return;
 
-	PushRef(pMetatable);
+	static_cast<ScriptTable*>(pMetatable)->PushRef();
 	lua_pushstring(m_L, "__index");  // push key
-	PushRef(pMetatable);
-	lua_rawset(m_L, -3);  // sets metatable.__index = metatable
+	static_cast<ScriptTable*>(pMetatable)->PushRef();
+	lua_rawset(m_L, -3);  // set metatable.__index = metatable
 	lua_pop(m_L, 1);      // pop metatable from stack
 
 	SetMetatable(pMetatable);
@@ -169,7 +165,7 @@ void ScriptTable::SetValueAny(const char *key, const ScriptAnyValue & any, bool 
 			lua_pushstring(m_L, "x");
 			lua_gettable(m_L, -2);
 
-			const bool isNumber = lua_isnumber(m_L, -1) != 0;
+			const bool isNumber = (lua_isnumber(m_L, -1) != 0);
 
 			// pop x value
 			lua_pop(m_L, 1);
@@ -238,7 +234,7 @@ void ScriptTable::EndSetGetChain()
 	}
 	else
 	{
-		gEnv->pSystem->Error("[ScriptTable] Mismatch in Set/Get Chain");
+		CryLogErrorAlways("[ScriptTable] Mismatch in Set/Get Chain");
 	}
 }
 
@@ -248,7 +244,7 @@ ScriptVarType ScriptTable::GetValueType(const char *key)
 	lua_pushstring(m_L, key);
 	lua_gettable(m_L, -2);
 
-	const ScriptVarType type = CScriptSystem::LuaTypeToScriptVarType(lua_type(m_L, -1));
+	const ScriptVarType type = ScriptUtil::LuaTypeToScriptVarType(lua_type(m_L, -1));
 
 	lua_pop(m_L, 2);
 
@@ -268,7 +264,7 @@ ScriptVarType ScriptTable::GetAtType(int index)
 	else
 	{
 		lua_rawgeti(m_L, -1, index);
-		type = CScriptSystem::LuaTypeToScriptVarType(lua_type(m_L, -1));
+		type = ScriptUtil::LuaTypeToScriptVarType(lua_type(m_L, -1));
 		lua_pop(m_L, 2);
 	}
 
@@ -321,7 +317,7 @@ bool ScriptTable::MoveNext(Iterator & it)
 		lua_pop(m_L, 1);
 	}
 
-	bool status = lua_next(m_L, top + 1) != 0;
+	bool status = (lua_next(m_L, top + 1) != 0);
 
 	if (status)
 	{
@@ -401,7 +397,7 @@ bool ScriptTable::Clone(IScriptTable *pSourceTable, bool isDeepCopy)
 {
 	const int top = lua_gettop(m_L);
 
-	PushRef(pSourceTable);
+	static_cast<ScriptTable*>(pSourceTable)->PushRef();
 	PushRef();
 
 	const int srcTable = top + 1;
@@ -421,6 +417,77 @@ bool ScriptTable::Clone(IScriptTable *pSourceTable, bool isDeepCopy)
 
 	return true;
 }
+
+void ScriptTable::Dump(IScriptTableDumpSink *pSink)
+{
+	if (!pSink)
+		return;
+
+	const int top = lua_gettop(m_L);
+
+	PushRef();
+
+	DumpTable(pSink);
+
+	if (lua_getmetatable(m_L, -1))
+	{
+		lua_pushstring(m_L, "__index");
+		lua_rawget(m_L, -2);
+
+		if (lua_type(m_L, -1) == LUA_TTABLE)
+		{
+			DumpTable(pSink);
+		}
+	}
+
+	lua_settop(m_L, top + 1);
+
+	// pop table ref
+	lua_pop(m_L, 1);
+}
+
+bool ScriptTable::AddFunction(const SUserFunctionDesc & fd)
+{
+	PushRef();
+	lua_pushstring(m_L, fd.sFunctionName);
+
+	if (fd.pFunctor)
+	{
+		FunctionData *pData = static_cast<FunctionData*>(lua_newuserdata(m_L, sizeof (FunctionData)));
+
+		pData->pSS = m_pSS;
+		pData->SetSignature(fd);
+		pData->paramIdOffset = fd.nParamIdOffset;
+		pData->functor = fd.pFunctor;
+
+		lua_pushcclosure(m_L, StdCFunction, 1);
+	}
+	else
+	{
+		// user data buffer at the end of function data
+		const size_t totalDataSize = sizeof (FunctionData) + fd.nDataSize;
+
+		FunctionData *pData = static_cast<FunctionData*>(lua_newuserdata(m_L, totalDataSize));
+
+		pData->pSS = m_pSS;
+		pData->SetSignature(fd);
+		pData->paramIdOffset = fd.nParamIdOffset;
+		pData->userDataFunc = fd.pUserDataFunc;
+		pData->userDataSize = fd.nDataSize;
+		memcpy(pData->userDataBuffer, fd.pDataBuffer, fd.nDataSize);
+
+		lua_pushcclosure(m_L, StdCUserDataFunction, 1);
+	}
+
+	lua_rawset(m_L, -3);
+	lua_pop(m_L, 1);  // pop table
+
+	return true;
+}
+
+///////////////////////
+// Private functions //
+///////////////////////
 
 void ScriptTable::CloneTable(int srcTableIndex, int dstTableIndex)
 {
@@ -484,34 +551,6 @@ void ScriptTable::CloneTableRecursive(int srcTableIndex, int dstTableIndex)
 	lua_settop(m_L, top);
 }
 
-void ScriptTable::Dump(IScriptTableDumpSink *pSink)
-{
-	if (!pSink)
-		return;
-
-	const int top = lua_gettop(m_L);
-
-	PushRef();
-
-	DumpTable(pSink);
-
-	if (lua_getmetatable(m_L, -1))
-	{
-		lua_pushstring(m_L, "__index");
-		lua_rawget(m_L, -2);
-
-		if (lua_type(m_L, -1) == LUA_TTABLE)
-		{
-			DumpTable(pSink);
-		}
-	}
-
-	lua_settop(m_L, top + 1);
-
-	// pop table ref
-	lua_pop(m_L, 1);
-}
-
 void ScriptTable::DumpTable(IScriptTableDumpSink *pSink)
 {
 	// first key
@@ -519,7 +558,7 @@ void ScriptTable::DumpTable(IScriptTableDumpSink *pSink)
 
 	while (lua_next(m_L, -2))
 	{
-		const ScriptVarType valueType = CScriptSystem::LuaTypeToScriptVarType(lua_type(m_L, -1));
+		const ScriptVarType valueType = ScriptUtil::LuaTypeToScriptVarType(lua_type(m_L, -1));
 
 		if (lua_type(m_L, -2) == LUA_TSTRING)  // key type
 		{
@@ -542,64 +581,23 @@ void ScriptTable::DumpTable(IScriptTableDumpSink *pSink)
 	}
 }
 
-struct FunctionData
+ScriptTable *ScriptTable::AllocateTable(ScriptSystem *pSS)
 {
-	CScriptSystem *pSS;
-	char signature[256];
-	int paramIdOffset;
-	IScriptTable::FunctionFunctor functor;
-	IScriptTable::UserDataFunction userDataFunc;
-	int userDataSize;
-	unsigned char userDataBuffer[1];  // this must be at the end of the structure
+	// allocate memory
+	// always succeeds
+	void *buffer = pSS->Allocate(sizeof (ScriptTable));
 
-	void setSignature(const IScriptTable::SUserFunctionDesc & fd)
-	{
-		snprintf(signature, sizeof signature, "%s%s%s(%s)",
-			fd.sGlobalName,
-			(*fd.sGlobalName) ? "." : "",
-			fd.sFunctionName,
-			fd.sFunctionParams
-		);
-	}
-};
+	// call constructor
+	return new (buffer) ScriptTable();
+}
 
-bool ScriptTable::AddFunction(const SUserFunctionDesc & fd)
+void ScriptTable::DeallocateTable(ScriptTable *pTable, ScriptSystem *pSS)
 {
-	PushRef();
-	lua_pushstring(m_L, fd.sFunctionName);
+	// call destructor
+	pTable->~ScriptTable();
 
-	if (fd.pFunctor)
-	{
-		FunctionData *pData = static_cast<FunctionData*>(lua_newuserdata(m_L, sizeof (FunctionData)));
-
-		pData->pSS = m_pSS;
-		pData->setSignature(fd);
-		pData->paramIdOffset = fd.nParamIdOffset;
-		pData->functor = fd.pFunctor;
-
-		lua_pushcclosure(m_L, StdCFunction, 1);
-	}
-	else
-	{
-		// user data buffer at the end of function data
-		const size_t totalDataSize = sizeof (FunctionData) + fd.nDataSize;
-
-		FunctionData *pData = static_cast<FunctionData*>(lua_newuserdata(m_L, totalDataSize));
-
-		pData->pSS = m_pSS;
-		pData->setSignature(fd);
-		pData->paramIdOffset = fd.nParamIdOffset;
-		pData->userDataFunc = fd.pUserDataFunc;
-		pData->userDataSize = fd.nDataSize;
-		memcpy(pData->userDataBuffer, fd.pDataBuffer, fd.nDataSize);
-
-		lua_pushcclosure(m_L, StdCUserDataFunction, 1);
-	}
-
-	lua_rawset(m_L, -3);
-	lua_pop(m_L, 1);  // pop table
-
-	return true;
+	// deallocate memory
+	pSS->Deallocate(pTable);
 }
 
 int ScriptTable::StdCFunction(lua_State *L)

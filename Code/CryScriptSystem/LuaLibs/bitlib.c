@@ -110,7 +110,7 @@ static const struct luaL_reg bitlib[] = {
 	{ NULL, NULL }
 };
 
-int lua_bitlib_init(lua_State *L)
+int bitlib_init(lua_State *L)
 {
 	lua_pushvalue(L, LUA_GLOBALSINDEX);
 	luaL_openlib(L, NULL, bitlib, 0);  // open lib into global table

@@ -1,42 +1,33 @@
 #pragma once
 
-#include "ScriptSystem.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+
+struct lua_State;
+
+class ScriptSystem;
 
 class ScriptTable : public IScriptTable
 {
-	enum
-	{
-		DELETED_REF = -1,
-		NULL_REF    = 0,
-	};
-
-	int m_ref = NULL_REF;
+	int m_ref = 0;
 	int m_refCount = 0;
 	lua_State *m_L = nullptr;
-	CScriptSystem *m_pSS = nullptr;
+	ScriptSystem *m_pSS = nullptr;
 
-	void Init();
-
-	void CloneTable(int srcTableIndex, int dstTableIndex);
-	void CloneTableRecursive(int srcTableIndex, int dstTableIndex);
-
-	void DumpTable(IScriptTableDumpSink *pSink);
-
-	static int StdCFunction(lua_State *L);
-	static int StdCUserDataFunction(lua_State *L);
-
-public:
 	ScriptTable() = default;
 
-	static ScriptTable *Create(CScriptSystem *pSS, lua_State *L, bool empty);
+public:
+	static ScriptTable *Create(ScriptSystem *pSS, lua_State *L, bool empty);
 
+	void Init();
 	void Attach();
-	void AttachToObject(IScriptTable *pObject);
 
 	void PushRef();
-	void PushRef(IScriptTable *pObject);
 
 	void SetMetatable(IScriptTable *pMetatable);
+
+	//////////////////
+	// IScriptTable //
+	//////////////////
 
 	IScriptSystem *GetScriptSystem() const override;
 
@@ -72,4 +63,16 @@ public:
 	void Dump(IScriptTableDumpSink *pSink) override;
 
 	bool AddFunction(const SUserFunctionDesc & fd) override;
+
+private:
+	void CloneTable(int srcTableIndex, int dstTableIndex);
+	void CloneTableRecursive(int srcTableIndex, int dstTableIndex);
+
+	void DumpTable(IScriptTableDumpSink *pSink);
+
+	static ScriptTable *AllocateTable(ScriptSystem *pSS);
+	static void DeallocateTable(ScriptTable *pTable, ScriptSystem *pSS);
+
+	static int StdCFunction(lua_State *L);
+	static int StdCUserDataFunction(lua_State *L);
 };

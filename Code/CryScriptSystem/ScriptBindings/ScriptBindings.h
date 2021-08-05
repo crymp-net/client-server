@@ -2,7 +2,6 @@
 
 #include <memory>
 
-struct ISystem;
 struct IScriptSystem;
 
 class CScriptableBase;
@@ -17,7 +16,5 @@ class ScriptBindings
 	std::unique_ptr<CScriptableBase> m_pBindPhysics;
 
 public:
-	ScriptBindings() = default;
-
-	void Init(ISystem *pSystem, IScriptSystem *pSS);
+	void Init(IScriptSystem *pSS);
 };

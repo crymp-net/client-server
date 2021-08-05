@@ -7,7 +7,7 @@ class ScriptBind_System : public CScriptableBase
 	SmartScriptTable m_pScriptTimeTable;
 
 public:
-	ScriptBind_System(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_System(IScriptSystem *pSS);
 
 	//! <code>System.LoadFont(pszName)</code>
 	//! <param name="pszName">Font name.</param>

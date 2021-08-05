@@ -1,6 +1,19 @@
 #include <algorithm>
 
+#include "CryCommon/CrySystem/ISystem.h"
+
+extern "C"
+{
+#include "Library/External/Lua/src/lua.h"
+}
+
 #include "FunctionHandler.h"
+#include "ScriptSystem.h"
+#include "ScriptUtil.h"
+
+//////////////////////
+// IFunctionHandler //
+//////////////////////
 
 IScriptSystem *FunctionHandler::GetIScriptSystem()
 {
@@ -57,7 +70,7 @@ ScriptVarType FunctionHandler::GetParamType(int index)
 	const int realIndex = index + m_paramIdOffset;
 	const int type = lua_type(m_L, realIndex);
 
-	return CScriptSystem::LuaTypeToScriptVarType(type);
+	return ScriptUtil::LuaTypeToScriptVarType(type);
 }
 
 bool FunctionHandler::GetParamAny(int index, ScriptAnyValue & any)
@@ -70,14 +83,12 @@ bool FunctionHandler::GetParamAny(int index, ScriptAnyValue & any)
 	}
 	else
 	{
-		CryLogWarning("[Script Error] Function %s expects parameter %d to be type %s and not %s",
+		m_pSS->RaiseError("Function %s expects parameter %d to be type %s and not %s",
 			m_funcName,
 			index,
-			CScriptSystem::ScriptAnyTypeToString(any.type),
-			CScriptSystem::ScriptVarTypeToString(GetParamType(index))
+			ScriptUtil::ScriptAnyTypeToString(any.type),
+			ScriptUtil::ScriptVarTypeToString(GetParamType(index))
 		);
-
-		m_pSS->LogStackTrace();
 
 		return false;
 	}

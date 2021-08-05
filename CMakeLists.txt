@@ -623,6 +623,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryScriptSystem/ScriptTable.h
   Code/CryScriptSystem/ScriptTimerManager.cpp
   Code/CryScriptSystem/ScriptTimerManager.h
+  Code/CryScriptSystem/ScriptUtil.cpp
+  Code/CryScriptSystem/ScriptUtil.h
   Code/Launcher/CrashLogger.cpp
   Code/Launcher/CrashLogger.h
   Code/Launcher/CryMemoryManager.cpp

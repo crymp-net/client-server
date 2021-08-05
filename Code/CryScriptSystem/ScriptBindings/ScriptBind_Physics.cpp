@@ -5,9 +5,9 @@
 
 #include "ScriptBind_Physics.h"
 
-ScriptBind_Physics::ScriptBind_Physics(ISystem *pSystem, IScriptSystem *pSS)
+ScriptBind_Physics::ScriptBind_Physics(IScriptSystem *pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Physics");
 
 #undef SCRIPT_REG_CLASSNAME

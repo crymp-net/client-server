@@ -3,9 +3,9 @@
 
 #include "ScriptBind_Movie.h"
 
-ScriptBind_Movie::ScriptBind_Movie(ISystem *pSystem, IScriptSystem* pSS)
+ScriptBind_Movie::ScriptBind_Movie(IScriptSystem* pSS)
 {
-	CScriptableBase::Init(pSS, pSystem);
+	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Movie");
 
 #undef SCRIPT_REG_CLASSNAME

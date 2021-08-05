@@ -5,7 +5,7 @@
 class ScriptBind_Particle : public CScriptableBase
 {
 public:
-	ScriptBind_Particle(ISystem *pSystem, IScriptSystem *pSS);
+	ScriptBind_Particle(IScriptSystem *pSS);
 
 	//! <code>Particle.SpawnEffect( effectName, pos, dir )</code>
 	//! <param name="effectName">Effect name.</param>
