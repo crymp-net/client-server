@@ -9,13 +9,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <map>
+#include <list>
+#include <vector>
+
 #include "CryCommon/CryNetwork/SerializeFwd.h"
 #include "CryCommon/CryMath/Cry_Math.h"
 #include "CryCommon/CrySystem/TimeValue.h"
+#include "CryCommon/CryEntitySystem/IEntity.h"
 #include "AIFormationDescriptor.h"
 #include "AITrackPatternDescriptor.h"
-#include <list>
-#include <map>
 #include "IAIRecorder.h"
 
 struct IPhysicalEntity;
