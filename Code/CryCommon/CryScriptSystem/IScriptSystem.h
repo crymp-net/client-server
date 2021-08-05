@@ -139,8 +139,8 @@ struct ScriptAnyValue
 	ScriptAnyValue( HSCRIPTFUNCTION,int ) : type(ANY_TFUNCTION) {};
 	ScriptAnyValue( Vec3&,int ) : type(ANY_TVECTOR) {};
 	ScriptAnyValue( Ang3&,int ) : type(ANY_TVECTOR) {};
-	ScriptAnyValue( IScriptTable* _table,int );
-	ScriptAnyValue( const SmartScriptTable &value,int );
+	ScriptAnyValue( IScriptTable* _table,int ) : type(ANY_TTABLE) {};
+	ScriptAnyValue( const SmartScriptTable &value,int ) : type(ANY_TTABLE) {};
 
 	ScriptVarType GetVarType() const
 	{
@@ -509,7 +509,6 @@ struct IScriptTable
 	{
 		ScriptAnyValue any( value,0 );
 		return GetAtAny(nIndex,any) && any.CopyTo(value);
-		return 0;
 	}
 	bool HaveAt( int elem )
 	{
@@ -644,12 +643,6 @@ struct IFunctionHandler
 	//    @param val reference to the C++ variable that will store the value
 	template <class T>
 	bool GetParam( int nIdx,T &value )
-	{
-		ScriptAnyValue any(value,0);
-		return GetParamAny(nIdx,any) && any.CopyTo(value);
-	}
-	template <class T>
-	bool GetParam( int nIdx,const T &value )
 	{
 		ScriptAnyValue any(value,0);
 		return GetParamAny(nIdx,any) && any.CopyTo(value);
@@ -889,7 +882,16 @@ public:
 	}
 	virtual void Done()
 	{
-		SAFE_RELEASE(m_pMethodsTable);
+		if (m_pSS && *m_sGlobalName)
+		{
+			m_pSS->SetGlobalToNull(m_sGlobalName);
+		}
+
+		if (m_pMethodsTable)
+		{
+			m_pMethodsTable->Release();
+			m_pMethodsTable = nullptr;
+		}
 	}
 	virtual void GetMemoryStatistics(ICrySizer *pSizer) {};
 
@@ -956,13 +958,9 @@ protected:
 	//////////////////////////////////////////////////////////////////////////
 };
 
-// This define SCRIPT_REG_CLASSNAME needed for Xenon compiler.
 #define SCRIPT_REG_CLASSNAME
-
 #define SCRIPT_REG_FUNC(func) RegisterFunction( #func,functor_ret(*this,SCRIPT_REG_CLASSNAME func) );
 #define SCRIPT_REG_GLOBAL(var) RegisterGlobal( #var,var );
-
-// Because Xenon compiler cannot do it correctly.
 #define SCRIPT_REG_TEMPLFUNC(func,sFuncParams) RegisterTemplateFunction( #func,sFuncParams,*this,SCRIPT_REG_CLASSNAME func );
 
 #define SCRIPT_CHECK_PARAMETERS(_n) \
@@ -990,76 +988,110 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 class SmartScriptTable
 {
+	IScriptTable *m_pTable = nullptr;
+
 public:
-	SmartScriptTable() : p(NULL) {};
-	SmartScriptTable( const SmartScriptTable& st )
+	SmartScriptTable() = default;
+
+	explicit SmartScriptTable(IScriptSystem *pSS, bool empty = false)
 	{
-		p = st.p;
-		if (p) p->AddRef();
-	}
-	SmartScriptTable( IScriptTable *newp )
-	{
-		if (newp) newp->AddRef();
-		p = newp;
+		m_pTable = pSS->CreateTable(empty);
+
+		if (m_pTable)
+			m_pTable->AddRef();
 	}
 
-	// Copy operator.
-	SmartScriptTable& operator =( IScriptTable *newp )
+	SmartScriptTable(const SmartScriptTable & other)
 	{
-		if (newp) newp->AddRef();
-		if (p) p->Release();
-		p = newp;
-		return *this;
+		m_pTable = other.m_pTable;
+
+		if (m_pTable)
+			m_pTable->AddRef();
 	}
-	// Copy operator.
-	SmartScriptTable& operator =( const SmartScriptTable &st )
+
+	SmartScriptTable(IScriptTable *pTable)
 	{
-		if (st.p) st.p->AddRef();
-		if (p) p->Release();
-		p = st.p;
+		m_pTable = pTable;
+
+		if (m_pTable)
+			m_pTable->AddRef();
+	}
+
+	SmartScriptTable & operator=(const SmartScriptTable & other)
+	{
+		if (m_pTable != other.m_pTable)
+		{
+			if (m_pTable)
+				m_pTable->Release();
+
+			m_pTable = other.m_pTable;
+
+			if (m_pTable)
+				m_pTable->AddRef();
+		}
+
 		return *this;
 	}
 
-	explicit SmartScriptTable( IScriptSystem *pSS,bool bCreateEmpty=false )
+	SmartScriptTable & operator=(IScriptTable *pTable)
 	{
-		p = pSS->CreateTable(bCreateEmpty);
-		p->AddRef();
+		if (m_pTable != pTable)
+		{
+			if (m_pTable)
+				m_pTable->Release();
+
+			m_pTable = pTable;
+
+			if (m_pTable)
+				m_pTable->AddRef();
+		}
+
+		return *this;
 	}
-	~SmartScriptTable() { if (p) p->Release(); }
+
+	~SmartScriptTable()
+	{
+		if (m_pTable)
+			m_pTable->Release();
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Casts
 	//////////////////////////////////////////////////////////////////////////
-	IScriptTable *operator->() const { return p; }
-	IScriptTable *operator*() const { return p; }
-	operator const IScriptTable*() const { return p; }
-	operator IScriptTable*() const { return p; }
+	IScriptTable *operator->() const { return m_pTable; }
+	IScriptTable *operator*() const { return m_pTable; }
+	operator IScriptTable*() const { return m_pTable; }
+	explicit operator bool() const { return (m_pTable != nullptr); }
 
 	//////////////////////////////////////////////////////////////////////////
 	// Boolean comparasions.
 	//////////////////////////////////////////////////////////////////////////
-	bool operator ! () const { return p == NULL; };
-	bool operator ==(const IScriptTable* p2) const { return p == p2; };
-	bool operator ==(IScriptTable* p2) const  { return p == p2; };
-	bool operator !=(const IScriptTable* p2) const { return p != p2; };
-	bool operator !=(IScriptTable* p2) const { return p != p2; };
-	bool operator < (const IScriptTable* p2) const { return p < p2; };
-	bool operator > (const IScriptTable* p2) const { return p > p2; };
+	bool operator ==(const IScriptTable* p2) const { return m_pTable == p2; };
+	bool operator !=(const IScriptTable* p2) const { return m_pTable != p2; };
+	bool operator < (const IScriptTable* p2) const { return m_pTable < p2; };
+	bool operator > (const IScriptTable* p2) const { return m_pTable > p2; };
 
 	//////////////////////////////////////////////////////////////////////////
-	IScriptTable* GetPtr() const { return p; }
+	IScriptTable* GetPtr() const { return m_pTable; }
 	//////////////////////////////////////////////////////////////////////////
 
-	bool Create( IScriptSystem *pSS,bool bCreateEmpty=false )
+	bool Create(IScriptSystem *pSS, bool empty = false)
 	{
-		if (p) p->Release();
-		p = pSS->CreateTable(bCreateEmpty);
-		p->AddRef();
-		return (p)?true:false;
-	}
+		if (m_pTable)
+			m_pTable->Release();
 
-private:
-	IScriptTable *p;
+		m_pTable = pSS->CreateTable(empty);
+
+		if (m_pTable)
+		{
+			m_pTable->AddRef();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1067,84 +1099,51 @@ private:
 //////////////////////////////////////////////////////////////////////////
 class SmartScriptFunction
 {
+	HSCRIPTFUNCTION m_hFunc = nullptr;
+	IScriptSystem *m_pSS = nullptr;
+
 public:
-	SmartScriptFunction() { m_pSS=0;m_hFunc=0;};
-	SmartScriptFunction(IScriptSystem *pSS) { m_pSS=pSS;m_hFunc=0;}
-	SmartScriptFunction(IScriptSystem *pSS,HSCRIPTFUNCTION hFunc) { m_pSS=pSS;m_hFunc=0;}
-	~SmartScriptFunction() { if(m_hFunc)m_pSS->ReleaseFunc(m_hFunc);m_hFunc=0; }
-	void Init(IScriptSystem *pSS,HSCRIPTFUNCTION hFunc)
+	SmartScriptFunction() = default;
+
+	SmartScriptFunction(IScriptSystem *pSS, HSCRIPTFUNCTION hFunc)
+	: m_hFunc(hFunc),
+	  m_pSS(pSS)
 	{
-		m_pSS = pSS;
-		if(m_hFunc)
-			m_pSS->ReleaseFunc(m_hFunc);
-		m_hFunc=hFunc;
 	}
+
+	SmartScriptFunction(const SmartScriptFunction &) = delete;
+
+	SmartScriptFunction & operator=(const SmartScriptFunction &) = delete;
+
+	SmartScriptFunction & operator=(HSCRIPTFUNCTION hFunc)
+	{
+		if (m_hFunc)
+			m_pSS->ReleaseFunc(m_hFunc);
+
+		m_hFunc = hFunc;
+
+		return *this;
+	}
+
+	~SmartScriptFunction()
+	{
+		if (m_hFunc)
+			m_pSS->ReleaseFunc(m_hFunc);
+	}
+
+	void Init(IScriptSystem *pSS, HSCRIPTFUNCTION hFunc)
+	{
+		if (m_hFunc)
+			m_pSS->ReleaseFunc(m_hFunc);
+
+		m_pSS = pSS;
+		m_hFunc = hFunc;
+	}
+
 	operator HSCRIPTFUNCTION() const
 	{
 		return m_hFunc;
 	}
-	SmartScriptFunction& operator =(HSCRIPTFUNCTION f)
-	{
-		if (m_hFunc)
-			m_pSS->ReleaseFunc(m_hFunc);
-		m_hFunc=f;
-		return *this;
-	}
-private:
-	HSCRIPTFUNCTION m_hFunc;
-	IScriptSystem *m_pSS;
-};
-
-/*! this calss map an 3d vector to a LUA table with x,y,z members
-*/
-class CScriptVector : public SmartScriptTable
-{
-public:
-	CScriptVector() {}
-	CScriptVector( IScriptSystem *pSS,bool bCreateEmpty=false) : SmartScriptTable(pSS,bCreateEmpty) {}
-	void Set( const Vec3 &v )
-	{
-		CScriptSetGetChain chain(*this);
-		chain.SetValue("x",v.x);
-		chain.SetValue("y",v.y);
-		chain.SetValue("z",v.z);
-	}
-	Vec3 Get()
-	{
-		Vec3 v(0,0,0);
-		CScriptSetGetChain chain(*this);
-		chain.GetValue("x",v.x);
-		chain.GetValue("y",v.y);
-		chain.GetValue("z",v.z);
-		return v;
-	}
-	CScriptVector& operator=( const Vec3 &v3 ) { Set(v3); return *this; }
-};
-
-/*! this calss map an "color" to a LUA table with indexed 3 numbers [1],[2],[3] members.
-*/
-class CScriptColor : public SmartScriptTable
-{
-public:
-	CScriptColor() {}
-	CScriptColor( IScriptSystem *pSS,bool bCreateEmpty=false) : SmartScriptTable(pSS,bCreateEmpty) {}
-	void Set( const Vec3 &v )
-	{
-		IScriptTable *pTable = *this;
-		pTable->SetAt(1,v.x);
-		pTable->SetAt(2,v.y);
-		pTable->SetAt(3,v.z);
-	}
-	Vec3 Get()
-	{
-		IScriptTable *pTable = *this;
-		Vec3 v(0,0,0);
-		pTable->GetAt(1,v.x);
-		pTable->GetAt(2,v.y);
-		pTable->GetAt(3,v.z);
-		return v;
-	}
-	CScriptColor& operator=(const Vec3 &v3) { Set(v3); return *this; }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1414,103 +1413,109 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // After SmartScriptTable defined, now implement ScriptAnyValue constructor for it.
 //////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::ScriptAnyValue( IScriptTable *value ) : type(ANY_TTABLE)
-{
-	table = value;
-	if (table)
-		table->AddRef();
-};
-//////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::ScriptAnyValue( const SmartScriptTable &value ) : type(ANY_TTABLE)
+inline ScriptAnyValue::ScriptAnyValue(IScriptTable *value)
+: type(ANY_TTABLE)
 {
 	table = value;
 	if (table)
 		table->AddRef();
 };
 
-//////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::ScriptAnyValue( IScriptTable* _table,int ) : type(ANY_TTABLE)
-{
-	table = _table;
-	if (table)
-		table->AddRef();
-};
-
-//////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::ScriptAnyValue( const SmartScriptTable &value,int ) : type(ANY_TTABLE) 
+inline ScriptAnyValue::ScriptAnyValue(const SmartScriptTable & value)
+: type(ANY_TTABLE)
 {
 	table = value;
 	if (table)
 		table->AddRef();
 };
 
-//////////////////////////////////////////////////////////////////////////
-inline bool ScriptAnyValue::CopyTo( IScriptTable *value ) {
-	if (type==ANY_TTABLE) { value = table; return true; }; return false;
+inline bool ScriptAnyValue::CopyTo(IScriptTable *value)
+{
+	if (type == ANY_TTABLE)
+	{
+		value = table;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 };
-//////////////////////////////////////////////////////////////////////////
-inline bool ScriptAnyValue::CopyTo( SmartScriptTable &value ) {
-	if (type==ANY_TTABLE) { value = table; return true; }; return false;
+
+inline bool ScriptAnyValue::CopyTo(SmartScriptTable & value)
+{
+	if (type == ANY_TTABLE)
+	{
+		value = table;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
-//////////////////////////////////////////////////////////////////////////
+
 inline void ScriptAnyValue::Clear()
 {
 	if (type == ANY_TTABLE && table)
 	{
 		table->Release();
 	}
-	table = 0;
+
+	table = nullptr;
 	type = ANY_ANY;
 }
-//////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::~ScriptAnyValue() {
-	if (type == ANY_TTABLE && table)
-		table->Release();
-}
-//////////////////////////////////////////////////////////////////////////
-inline ScriptAnyValue::ScriptAnyValue( const ScriptAnyValue& rhs )
+
+inline ScriptAnyValue::~ScriptAnyValue()
 {
-	type = rhs.type;
-	switch (type)
+	if (type == ANY_TTABLE && table)
 	{
-	case ANY_ANY:
-		table = 0;
-		break;
-	case ANY_TBOOLEAN:
-		b = rhs.b;
-		break;
-	case ANY_TFUNCTION:
-		function = rhs.function;
-		break;
-	case ANY_THANDLE:
-		ptr = rhs.ptr;
-		break;
-	case ANY_TNIL:
-		table = 0;
-		break;
-	case ANY_TNUMBER:
-		number = rhs.number;
-		break;
-	case ANY_TSTRING:
-		str = rhs.str;
-		break;
-	case ANY_TTABLE:
-		table = rhs.table;
-		if (table)
-			table->AddRef();
-		break;
-	case ANY_TUSERDATA:
-		break;
-	case ANY_TVECTOR:
-		vec3.x = rhs.vec3.x;
-		vec3.y = rhs.vec3.y;
-		vec3.z = rhs.vec3.z;
-		break;
-	default:
-		break;
+		table->Release();
 	}
 }
-inline void ScriptAnyValue::Swap( ScriptAnyValue& value )
+
+inline ScriptAnyValue::ScriptAnyValue(const ScriptAnyValue & rhs)
+: type(rhs.type)
+{
+	switch (type)
+	{
+		case ANY_ANY:
+			table = nullptr;
+			break;
+		case ANY_TBOOLEAN:
+			b = rhs.b;
+			break;
+		case ANY_TFUNCTION:
+			function = rhs.function;
+			break;
+		case ANY_THANDLE:
+			ptr = rhs.ptr;
+			break;
+		case ANY_TNIL:
+			table = nullptr;
+			break;
+		case ANY_TNUMBER:
+			number = rhs.number;
+			break;
+		case ANY_TSTRING:
+			str = rhs.str;
+			break;
+		case ANY_TTABLE:
+			table = rhs.table;
+			if (table)
+				table->AddRef();
+			break;
+		case ANY_TUSERDATA:
+			break;
+		case ANY_TVECTOR:
+			vec3.x = rhs.vec3.x;
+			vec3.y = rhs.vec3.y;
+			vec3.z = rhs.vec3.z;
+			break;
+	}
+}
+
+inline void ScriptAnyValue::Swap(ScriptAnyValue & value)
 {
 	char temp[sizeof(ScriptAnyValue)];
 	memcpy( temp, this, sizeof(ScriptAnyValue) );

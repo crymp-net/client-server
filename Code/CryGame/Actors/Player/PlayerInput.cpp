@@ -512,17 +512,15 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 					IScriptTable* scriptTbl = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
 					if (scriptTbl)
 					{
-						SmartScriptTable server;
-						if (scriptTbl->GetValue("server", server))
-						{
-							if (!server->HaveValue("RequestSpectatorTarget"))
-								return;
+						IScriptSystem *pSS = gEnv->pScriptSystem;
 
-							gEnv->pScriptSystem->BeginCall(server, "RequestSpectatorTarget");
-							gEnv->pScriptSystem->PushFuncParam(server);
-							gEnv->pScriptSystem->PushFuncParam(ScriptHandle(m_pPlayer->GetEntityId()));
-							gEnv->pScriptSystem->PushFuncParam(1);
-							gEnv->pScriptSystem->EndCall();
+						SmartScriptTable server;
+						if (scriptTbl->GetValue("server", server) && pSS->BeginCall(server, "RequestSpectatorTarget"))
+						{
+							pSS->PushFuncParam(server);
+							pSS->PushFuncParam(ScriptHandle(m_pPlayer->GetEntityId()));
+							pSS->PushFuncParam(1);
+							pSS->EndCall();
 						}
 					}
 				}

@@ -122,9 +122,8 @@ void CTrooper::SetParams(SmartScriptTable &rTable,bool resetFirst)
 			m_jumpParams.bUseLandAnim = true;
 		rTable->GetValue("specialAnimAGInput",(int&)m_jumpParams.specialAnimAGInput);
 		char* szValue=NULL;
-		if(rTable->HaveValue("specialAnimAGInputValue"))
+		if(rTable->GetValue("specialAnimAGInputValue",szValue))
 		{
-			rTable->GetValue("specialAnimAGInputValue",szValue);
 			m_jumpParams.specialAnimAGInputValue = szValue;
 		}
 		return;
