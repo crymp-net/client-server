@@ -1,6 +1,7 @@
 #include <malloc.h>  // _msize
 #include <stdlib.h>
 #include <string.h>
+#include <mutex>
 
 #include "Library/DLL.h"
 #include "Library/WinAPI.h"
@@ -9,7 +10,6 @@
 #include "CryCommon/CrySystem/IConsole.h"
 
 #include "CryMemoryManager.h"
-#include <Windows.h>
 
 #define ALLOC_DEBUG
 #define ALLOC_ALIGNMENT 128
@@ -17,7 +17,7 @@
 
 namespace
 {
-	CRITICAL_SECTION cs;
+	std::mutex mtx;
 	CryMemoryManager::Statistics stats;
 
 	void* CryMalloc_hook(size_t size, size_t& allocatedSize)
@@ -30,12 +30,12 @@ namespace
 			size += waste;
 
 #ifdef ALLOC_DEBUG
-			EnterCriticalSection(&cs);
+			mtx.lock();
 			stats.activeAllocations++;
 			stats.totalAllocations++;
 			stats.totalWaste += waste;
 			stats.activeMemory += size;
-			LeaveCriticalSection(&cs);
+			mtx.unlock();
 #endif
 
 			result = malloc(size);
@@ -60,12 +60,12 @@ namespace
 			size += waste;
 
 #ifdef ALLOC_DEBUG
-			EnterCriticalSection(&cs);
+			mtx.lock();
 			stats.totalAllocations++;
 			stats.totalWaste += waste;
 			stats.activeMemory += size;
 			if (mem) stats.activeMemory -= _msize(mem);
-			LeaveCriticalSection(&cs);
+			mtx.unlock();
 #endif
 			result = realloc(mem, size);
 
@@ -76,10 +76,10 @@ namespace
 			if (mem)
 			{
 #ifdef ALLOC_DEBUG
-				EnterCriticalSection(&cs);
+				mtx.lock();
 				stats.activeMemory -= _msize(mem);
 				stats.activeAllocations--;
-				LeaveCriticalSection(&cs);
+				mtx.unlock();
 #endif
 				free(mem);
 			}
@@ -99,10 +99,10 @@ namespace
 			size = _msize(mem);
 
 #ifdef ALLOC_DEBUG
-			EnterCriticalSection(&cs);
+			mtx.lock();
 			stats.activeMemory -= size;
 			stats.activeAllocations--;
-			LeaveCriticalSection(&cs);
+			mtx.unlock();
 #endif
 
 			free(mem);
@@ -121,11 +121,11 @@ namespace
 			size += waste;
 
 #ifdef ALLOC_DEBUG
-			EnterCriticalSection(&cs);
+			mtx.lock();
 			stats.totalAllocations++;
 			stats.totalWaste += waste;
 			stats.activeMemory += size;
-			LeaveCriticalSection(&cs);
+			mtx.unlock();
 #endif
 			result = malloc(size);
 		}
@@ -138,10 +138,10 @@ namespace
 		if (mem)
 		{
 #ifdef ALLOC_DEBUG
-			EnterCriticalSection(&cs);
+			mtx.lock();
 			stats.activeMemory -= _msize(mem);
 			stats.activeAllocations--;
-			LeaveCriticalSection(&cs);
+			mtx.unlock();
 #endif
 			free(mem);
 		}
@@ -190,8 +190,6 @@ namespace
 
 void CryMemoryManager::Init(const DLL& CrySystem)
 {
-	ZeroMemory(&cs, sizeof(cs));
-	InitializeCriticalSection(&cs);
 	Hook(CrySystem.GetSymbolAddress("CryMalloc"), CryMalloc_hook);
 	Hook(CrySystem.GetSymbolAddress("CryRealloc"), CryRealloc_hook);
 	Hook(CrySystem.GetSymbolAddress("CryFree"), CryFree_hook);
@@ -203,9 +201,9 @@ CryMemoryManager::Statistics CryMemoryManager::GetStatistics()
 {
 	CryMemoryManager::Statistics statsCopy;
 #ifdef ALLOC_DEBUG
-	EnterCriticalSection(&cs);
+	mtx.lock();
 	statsCopy = stats;
-	LeaveCriticalSection(&cs);
+	mtx.unlock();
 #else
 	statsCopy.available = false;
 #endif
