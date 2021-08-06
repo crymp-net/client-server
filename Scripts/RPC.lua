@@ -376,7 +376,7 @@ function CreateRPC(localState, _L)
 				local lang, tz = _L.CPPAPI.GetLocaleInformation()
 				lang = lang or "unknown"
 				tz = tz or "unknown"
-				Self:Reply("UUID", id, { salt = salt, uuid = _L.CPPAPI.MakeUUID(salt), static_id = localState.STATIC_ID, static_proof = "s" .. _L.CPPAPI.SHA256("S" .. localState.STATIC_HASH .. "ID"), locale = lang, timezone = tz, version = SFWCL_VERSION, latest = "11" })
+				Self:Reply("UUID", id, { salt = salt, uuid = _L.CPPAPI.MakeUUID(salt), static_id = localState.STATIC_ID, static_proof = "s" .. _L.CPPAPI.SHA256("S" .. localState.STATIC_HASH .. "ID"), locale = lang, timezone = tz, version = CRYMP_CLIENT })
 			end
 		end,
 		GetLocale = function(params, id)
