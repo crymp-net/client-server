@@ -144,41 +144,44 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 {
 	HTTPClientRequest request;
 
-	const char *url;
-	if (params->GetValue("url", url))
 	{
+		CScriptSetGetChain chain(params);
+
+		const char *url = "";
+		const char *method = "GET";
+		const char *body = "";
+		SmartScriptTable headers;
+		int timeout = 4000;
+
+		chain.GetValue("url", url);
+		chain.GetValue("method", method);
+		chain.GetValue("body", body);
+		chain.GetValue("headers", headers);
+		chain.GetValue("timeout", timeout);
+
 		request.url = url;
+		request.method = method;
+		request.data = body;
+		request.timeout = timeout;
+
+		if (headers)
+		{
+			auto it = headers->BeginIteration();
+			while (headers->MoveNext(it))
+			{
+				if (it.sKey && it.value.GetVarType() == ScriptVarType::svtString)
+				{
+					request.headers[it.sKey] = it.value.str;
+				}
+			}
+			headers->EndIteration(it);
+		}
 	}
-	else
+
+	if (request.url.empty())
 	{
 		m_pSS->ReleaseFunc(callback);
 		return pH->EndFunction(false, "url not provided");
-	}
-
-	const char *method;
-	if (params->GetValue("method", method))
-		request.method = method;
-
-	const char *body;
-	if (params->GetValue("body", body))
-		request.data = body;
-
-	int timeout;
-	if (params->GetValue("timeout", timeout))
-		request.timeout = timeout;
-
-	SmartScriptTable headersTable;
-	if (params->GetValue("headers", headersTable))
-	{
-		auto it = headersTable->BeginIteration();
-		while (headersTable->MoveNext(it))
-		{
-			if (it.value.GetVarType() == ScriptVarType::svtString)
-			{
-				request.headers[it.sKey] = it.value.str;
-			}
-		}
-		headersTable->EndIteration(it);
 	}
 
 	request.callback = [callback, pSS = m_pSS](HTTPClientResult & result)
@@ -225,14 +228,12 @@ int ScriptBind_CPPAPI::URLEncode(IFunctionHandler *pH, const char *text)
 
 int ScriptBind_CPPAPI::GetMasters(IFunctionHandler *pH)
 {
-	SmartScriptTable table;
-	if (!table.Create(m_pSS))
-		return pH->EndFunction(false);
+	SmartScriptTable masters(m_pSS);
 
 	for (const std::string & master : gClient->GetMasters())
 	{
-		table->PushBack(master.c_str());
+		masters->PushBack(master.c_str());
 	}
 
-	return pH->EndFunction(table);
+	return pH->EndFunction(masters);
 }
