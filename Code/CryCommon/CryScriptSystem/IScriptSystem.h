@@ -139,8 +139,8 @@ struct ScriptAnyValue
 	ScriptAnyValue( HSCRIPTFUNCTION,int ) : type(ANY_TFUNCTION) {};
 	ScriptAnyValue( Vec3&,int ) : type(ANY_TVECTOR) {};
 	ScriptAnyValue( Ang3&,int ) : type(ANY_TVECTOR) {};
-	ScriptAnyValue( IScriptTable*,int ) : type(ANY_TTABLE), table(nullptr) {};
-	ScriptAnyValue( const SmartScriptTable&,int ) : type(ANY_TTABLE), table(nullptr) {};
+	ScriptAnyValue(IScriptTable *value, int);
+	ScriptAnyValue(const SmartScriptTable & value, int);
 
 	ScriptVarType GetVarType() const
 	{
@@ -1105,7 +1105,7 @@ class SmartScriptFunction
 public:
 	SmartScriptFunction() = default;
 
-	SmartScriptFunction(IScriptSystem *pSS, HSCRIPTFUNCTION hFunc)
+	explicit SmartScriptFunction(IScriptSystem *pSS, HSCRIPTFUNCTION hFunc = nullptr)
 	: m_hFunc(hFunc),
 	  m_pSS(pSS)
 	{
@@ -1428,6 +1428,22 @@ inline ScriptAnyValue::ScriptAnyValue(const SmartScriptTable & value)
 	if (table)
 		table->AddRef();
 };
+
+inline ScriptAnyValue::ScriptAnyValue(IScriptTable *value, int)
+: type(ANY_TTABLE)
+{
+	table = value;
+	if (table)
+		table->AddRef();
+}
+
+inline ScriptAnyValue::ScriptAnyValue(const SmartScriptTable & value, int)
+: type(ANY_TTABLE)
+{
+	table = value;
+	if (table)
+		table->AddRef();
+}
 
 inline bool ScriptAnyValue::CopyTo(IScriptTable *value)
 {
