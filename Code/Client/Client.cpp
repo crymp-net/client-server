@@ -25,6 +25,8 @@
 #include "ServerPAK.h"
 #include "EngineCache.h"
 
+#include "config.h"
+
 void Client::InitMasters()
 {
 	std::string content;
@@ -59,6 +61,11 @@ void Client::InitMasters()
 	}
 
 	m_pScriptCallbacks->OnMasterResolved();
+}
+
+void Client::SetVersionInLua()
+{
+	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT", CRYMP_CLIENT_VERSION);
 }
 
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
@@ -136,6 +143,8 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 
+	SetVersionInLua();
+
 	// execute Lua scripts
 	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
@@ -200,6 +209,9 @@ void Client::OnActionEvent(const SActionEvent & event)
 
 			m_pScriptCallbacks->OnDisconnect(reason, message);
 			m_pServerPAK->OnDisconnect(reason, message);
+
+			// prevent evil servers from changing the client version
+			SetVersionInLua();
 
 			break;
 		}

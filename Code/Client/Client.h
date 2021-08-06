@@ -56,6 +56,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::vector<std::string> m_masters;
 
 	void InitMasters();
+	void SetVersionInLua();
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
