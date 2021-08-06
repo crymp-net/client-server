@@ -181,7 +181,7 @@ namespace
 			return;
 		}
 		CryLogAlways("$3[alloc] Total accumulated waste: $6%.2f kB", stats.totalWaste / 1024.0f);
-		CryLogAlways("$3[alloc] Average accumulated waste: $6%.2f kB", stats.totalWaste / stats.totalAllocations / 1024.0f);
+		CryLogAlways("$3[alloc] Average accumulated waste: $6%llu B", stats.totalWaste / stats.totalAllocations);
 		CryLogAlways("$3[alloc] Active memory: $6%.2f kB", stats.activeMemory / 1024.0f);
 		CryLogAlways("$3[alloc] Active allocations: $6%llu", stats.activeAllocations);
 		CryLogAlways("$3[alloc] Estimated active waste: $6%.2f kB", stats.activeAllocations * stats.totalWaste / stats.totalAllocations / 1024.0f);
