@@ -7,10 +7,10 @@ namespace CryMemoryManager
 {
 	struct Statistics {
 		bool available = true;
-		unsigned long long allocTotalWaste = 0;
-		unsigned long long allocTotalAllocations = 0;
-		unsigned long long allocActiveAllocations = 0;
-		unsigned long long allocActiveMemory = 0;
+		unsigned long long totalWaste = 0;
+		unsigned long long totalAllocations = 0;
+		unsigned long long activeAllocations = 0;
+		unsigned long long activeMemory = 0;
 	};
 	void Init(const DLL & CrySystem);
 	void RegisterConsoleCommands(IConsole* pConsole);

@@ -17,7 +17,6 @@
 
 namespace
 {
-
 	CRITICAL_SECTION cs;
 	CryMemoryManager::Statistics stats;
 
@@ -32,10 +31,10 @@ namespace
 
 #ifdef ALLOC_DEBUG
 			EnterCriticalSection(&cs);
-			stats.allocActiveAllocations++;
-			stats.allocTotalAllocations++;
-			stats.allocTotalWaste += waste;
-			stats.allocActiveMemory += size;
+			stats.activeAllocations++;
+			stats.totalAllocations++;
+			stats.totalWaste += waste;
+			stats.activeMemory += size;
 			LeaveCriticalSection(&cs);
 #endif
 
@@ -62,10 +61,10 @@ namespace
 
 #ifdef ALLOC_DEBUG
 			EnterCriticalSection(&cs);
-			stats.allocTotalAllocations++;
-			stats.allocTotalWaste += waste;
-			stats.allocActiveMemory += size;
-			if (mem) stats.allocActiveMemory -= _msize(mem);
+			stats.totalAllocations++;
+			stats.totalWaste += waste;
+			stats.activeMemory += size;
+			if (mem) stats.activeMemory -= _msize(mem);
 			LeaveCriticalSection(&cs);
 #endif
 			result = realloc(mem, size);
@@ -78,8 +77,8 @@ namespace
 			{
 #ifdef ALLOC_DEBUG
 				EnterCriticalSection(&cs);
-				stats.allocActiveMemory -= _msize(mem);
-				stats.allocActiveAllocations--;
+				stats.activeMemory -= _msize(mem);
+				stats.activeAllocations--;
 				LeaveCriticalSection(&cs);
 #endif
 				free(mem);
@@ -101,8 +100,8 @@ namespace
 
 #ifdef ALLOC_DEBUG
 			EnterCriticalSection(&cs);
-			stats.allocActiveMemory -= size;
-			stats.allocActiveAllocations--;
+			stats.activeMemory -= size;
+			stats.activeAllocations--;
 			LeaveCriticalSection(&cs);
 #endif
 
@@ -123,9 +122,9 @@ namespace
 
 #ifdef ALLOC_DEBUG
 			EnterCriticalSection(&cs);
-			stats.allocTotalAllocations++;
-			stats.allocTotalWaste += waste;
-			stats.allocActiveMemory += size;
+			stats.totalAllocations++;
+			stats.totalWaste += waste;
+			stats.activeMemory += size;
 			LeaveCriticalSection(&cs);
 #endif
 			result = malloc(size);
@@ -140,8 +139,8 @@ namespace
 		{
 #ifdef ALLOC_DEBUG
 			EnterCriticalSection(&cs);
-			stats.allocActiveMemory -= _msize(mem);
-			stats.allocActiveAllocations--;
+			stats.activeMemory -= _msize(mem);
+			stats.activeAllocations--;
 			LeaveCriticalSection(&cs);
 #endif
 			free(mem);
@@ -181,11 +180,11 @@ namespace
 			CryLogAlways("$4[alloc] Memory statistics are disabled");
 			return;
 		}
-		CryLogAlways("$3[alloc] Total accumulated waste: $6%.2f kB", stats.allocTotalWaste / 1024.0f);
-		CryLogAlways("$3[alloc] Average accumulated waste: $6%.2f kB", stats.allocTotalWaste / stats.allocTotalAllocations / 1024.0f);
-		CryLogAlways("$3[alloc] Active memory: $6%.2f kB", stats.allocActiveMemory / 1024.0f);
-		CryLogAlways("$3[alloc] Active allocations: $6%llu", stats.allocActiveAllocations);
-		CryLogAlways("$3[alloc] Estimated active waste: $6%.2f kB", stats.allocActiveAllocations * stats.allocTotalWaste / stats.allocTotalAllocations / 1024.0f);
+		CryLogAlways("$3[alloc] Total accumulated waste: $6%.2f kB", stats.totalWaste / 1024.0f);
+		CryLogAlways("$3[alloc] Average accumulated waste: $6%.2f kB", stats.totalWaste / stats.totalAllocations / 1024.0f);
+		CryLogAlways("$3[alloc] Active memory: $6%.2f kB", stats.activeMemory / 1024.0f);
+		CryLogAlways("$3[alloc] Active allocations: $6%llu", stats.activeAllocations);
+		CryLogAlways("$3[alloc] Estimated active waste: $6%.2f kB", stats.activeAllocations * stats.totalWaste / stats.totalAllocations / 1024.0f);
 	}
 }
 
