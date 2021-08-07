@@ -20,13 +20,17 @@ namespace
 	std::mutex mtx;
 	CryMemoryManager::Statistics stats;
 
+	size_t GetAllocationMargin(size_t size) {
+		return ALLOC_ALIGNMENT_LOW & (ALLOC_ALIGNMENT - (size & ALLOC_ALIGNMENT_LOW));
+	}
+
 	void* CryMalloc_hook(size_t size, size_t& allocatedSize)
 	{
 		void* result = nullptr;
 
 		if (size)
 		{
-			size_t waste = ALLOC_ALIGNMENT_LOW & (ALLOC_ALIGNMENT - (size & ALLOC_ALIGNMENT_LOW));
+			size_t waste = GetAllocationMargin(size);
 			size += waste;
 
 #ifdef ALLOC_DEBUG
@@ -56,7 +60,7 @@ namespace
 
 		if (size)
 		{
-			size_t waste = ALLOC_ALIGNMENT_LOW & (ALLOC_ALIGNMENT - (size & ALLOC_ALIGNMENT_LOW));
+			size_t waste = GetAllocationMargin(size);
 			size += waste;
 
 #ifdef ALLOC_DEBUG
@@ -117,7 +121,7 @@ namespace
 
 		if (size)
 		{
-			size_t waste = ALLOC_ALIGNMENT_LOW & (ALLOC_ALIGNMENT - (size & ALLOC_ALIGNMENT_LOW));
+			size_t waste = GetAllocationMargin(size);
 			size += waste;
 
 #ifdef ALLOC_DEBUG
