@@ -24,6 +24,7 @@
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryCommon/CryMath/Cry_GeoDistance.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
@@ -156,6 +157,8 @@ CScriptBind_Actor::CScriptBind_Actor(ISystem* pSystem)
 	SCRIPT_REG_TEMPLFUNC(SetDeathCamTarget, "");
 	SCRIPT_REG_FUNC(GetFlyMode);
 	SCRIPT_REG_FUNC(GetPhysicalColliderMode);
+	SCRIPT_REG_FUNC(GetLookAtEntity);
+	SCRIPT_REG_TEMPLFUNC(GetLookAtPoint, "");
 
 	m_pSS->SetGlobalValue("STANCE_PRONE", STANCE_PRONE);
 	m_pSS->SetGlobalValue("STANCE_CROUCH", STANCE_CROUCH);
@@ -1834,4 +1837,46 @@ int CScriptBind_Actor::GetPhysicalColliderMode(IFunctionHandler* pH)
 	}
 
 	return pH->EndFunction(-1);
+}
+
+int CScriptBind_Actor::GetLookAtEntity(IFunctionHandler* pH)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction();
+
+	IWorldQuery* pWQ = pActor->GetGameObject()->GetWorldQuery();
+	if (pWQ)
+	{
+		const EntityId lookAtId = pWQ->GetLookAtEntityId();
+		if (lookAtId)
+		{
+			IEntity *pEntity = gEnv->pEntitySystem->GetEntity(lookAtId);
+			if (pEntity)
+			{
+				return pH->EndFunction(pEntity->GetScriptTable());
+			}
+		}
+	}
+
+	return pH->EndFunction();
+}
+
+int CScriptBind_Actor::GetLookAtPoint(IFunctionHandler* pH, float maxDist)
+{
+	CActor* pActor = GetActor(pH);
+	if (!pActor)
+		return pH->EndFunction();
+
+	IWorldQuery* pWQ = pActor->GetGameObject()->GetWorldQuery();
+	if (pWQ)
+	{
+		const ray_hit* point = pWQ->GetLookAtPoint(maxDist);
+		if (point)
+		{
+			return pH->EndFunction(point->pt, point->dist);
+		}
+	}
+
+	return pH->EndFunction();
 }

@@ -149,6 +149,8 @@ public:
 	virtual int SetDeathCamTarget(IFunctionHandler* pH, ScriptHandle targetId);
 	virtual int GetFlyMode(IFunctionHandler* pH);
 	virtual int GetPhysicalColliderMode(IFunctionHandler* pH);
+	int GetLookAtEntity(IFunctionHandler* pH);
+	int GetLookAtPoint(IFunctionHandler* pH, float maxDist);
 
 	//misc
 	//virtual int MeleeEffect(IFunctionHandler *pH);
