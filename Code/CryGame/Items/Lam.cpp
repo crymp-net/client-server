@@ -494,7 +494,7 @@ bool CLam::CanUpdate(CActor* pActor)
 
 	if (pActor && !pActor->IsClient() && m_pParent)
 	{
-		if (!pActor->GetGameObject()->IsProbablyVisible() || pActor->GetGameObject()->IsProbablyDistant())
+		if (!pActor->GetGameObject()->IsProbablyVisible() && pActor->GetGameObject()->IsProbablyDistant())
 		{
 			if (!m_DotHidden)
 			{
