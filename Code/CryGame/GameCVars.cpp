@@ -1288,7 +1288,7 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 		if (!players.empty())
 		{
 			const Vec3 clientPos = pClientActor->GetEntity()->GetWorldPos();
-			CryLogAlways("  [chan] [name]               [dist]  [physDist]  [profile] [viewDist]   [team]");
+			CryLogAlways("  [chan] [name]               [dist]  [physDist]  [profile] [viewDist]   [team]  [lastSeen]  [visible]");
 
 			for (CGameRules::TPlayers::iterator it = players.begin(); it != players.end(); ++it)
 			{
@@ -1314,11 +1314,19 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 					else
 						profileName = "none";
 
-					int ViewDist = -1;
+					const char* visible = pActor->GetGameObject()->IsProbablyVisible() ? "$5yes" : "$9no";
+
 					IEntityRenderProxy* pProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
-					if (pProxy && pProxy->GetRenderNode())
+					IRenderNode *pRenderNode = pProxy ? pProxy->GetRenderNode() : nullptr;
+
+					auto ViewDist = pRenderNode ? pRenderNode->GetViewDistRatio() : -1;
+
+					auto lastSeen = pProxy ? pProxy->GetLastSeenTime() : -1.0f;
+					auto timeSinceLastSeen = gEnv->pTimer->GetCurrTime() - lastSeen;
+
+					if (pRenderNode)
 					{
-						ViewDist = pProxy->GetRenderNode()->GetViewDistRatio();
+						ViewDist = pRenderNode->GetViewDistRatio();
 					}
 
 					if (IPhysicalEntity* pPhysics = pActor->GetEntity()->GetPhysics())
@@ -1331,7 +1339,16 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 					}
 
 					const float WorldDistance = (clientPos - pActor->GetEntity()->GetWorldPos()).len();
-					CryLogAlways("  %5d  %-19s $6%6i$9m     $8%6i$9m  $3%-10s    $7%4i       $9%i", pActor->GetChannelId(), pActor->GetEntity()->GetName(), (int)WorldDistance, (int)PhysDistance, profileName, ViewDist, pGameRules->GetTeam(pActor->GetEntityId()));
+					CryLogAlways("  %5d  %-19s $6%6i$9m     $8%6i$9m  $3%-10s    $7%4i       $9%i    $8%7.fs        %s", 
+						pActor->GetChannelId(), 
+						pActor->GetCleanNick().c_str(), 
+						(int)WorldDistance, 
+						(int)PhysDistance, 
+						profileName, 
+						ViewDist, 
+						pGameRules->GetTeam(pActor->GetEntityId()), 
+						timeSinceLastSeen,
+						visible);
 				}
 			}
 		}
