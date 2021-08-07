@@ -3368,6 +3368,17 @@ void CPlayer::ToggleThirdPerson()
 //-----------------------------------------------------------------------------
 void CPlayer::EnableThirdPerson(bool enable)
 {
+	if (enable)
+	{
+		//CryMP: Remove annoying blood effect spawning everytime
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+		IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+		if (pIAttachmentManager)
+		{
+			pIAttachmentManager->RemoveAttachmentByName("wound");
+		}
+	}
+
 	m_stats.isThirdPerson = enable;
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
