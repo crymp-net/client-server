@@ -34,6 +34,7 @@ History:
 #include "ShotValidator.h"
 
 #include "CryCommon/CryCore/StlUtils.h"
+#include "Library/Util.h"
 
 
 //------------------------------------------------------------------------
@@ -775,10 +776,16 @@ IMPLEMENT_RMI(CGameRules, ClRenameEntity)
 	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(params.entityId);
 	if (pEntity)
 	{
-		string old = pEntity->GetName();
+		std::string old = pEntity->GetName();
 		pEntity->SetName(params.name.c_str());
 
 		CryLogAlways("$8%s$o renamed to $8%s", old.c_str(), params.name.c_str());
+
+		CActor* pActor = GetActorByEntityId(params.entityId);
+		if (pActor)
+		{
+			pActor->SaveNick(params.name.c_str());
+		}
 
 		// if this was a remote player, check we're not spectating them.
 		//	If we are, we need to trigger a spectator hud update for the new name

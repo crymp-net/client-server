@@ -32,6 +32,8 @@
 #include "GrabHandler.h"
 #include "Player/WeaponAttachmentManager.h"
 
+#include "Library/Util.h"
+
 struct SActorFrameMovementParams
 {
 	SActorFrameMovementParams() :
@@ -710,6 +712,11 @@ public:
 		eASM_Cutscene,												// HUDInterfaceEffects.cpp sets this
 	};
 
+	enum class ReasonForRevive
+	{
+		NONE, FROM_INIT, START_SPECTATING, SPAWN, SCRIPT_BIND
+	};
+
 	DECLARE_SERVER_RMI_NOATTACH_FAST(SvRequestDropItem, DropItemParams, eNRT_ReliableOrdered);
 	DECLARE_SERVER_RMI_NOATTACH_FAST(SvRequestPickUpItem, ItemIdParam, eNRT_ReliableOrdered);
 	DECLARE_SERVER_RMI_NOATTACH_FAST(SvRequestUseItem, ItemIdParam, eNRT_ReliableOrdered);
@@ -764,12 +771,6 @@ public:
 public:
 	CActor();
 	virtual ~CActor();
-
-	//CryMP:
-	enum class ReasonForRevive
-	{
-		NONE, FROM_INIT, START_SPECTATING, SPAWN, SCRIPT_BIND
-	};
 
 	// IActor
 	virtual void ProcessEvent(SEntityEvent& event);
@@ -1128,12 +1129,35 @@ public:
 
 	virtual bool IsAlien() { return false; }
 
+
+//CryMP 
+public:
+
 	//CryMP First Person Spectators
 	virtual bool IsFpSpectator() const { return false; }
 	virtual bool IsFpSpectatorTarget() const { return false; }
 
 	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
 	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
+
+	void SaveNick(const std::string& name)
+	{
+		m_playerNameClean = Util::RemoveColorCodes(name);
+	}
+
+	std::string GetCleanNick()
+	{
+		if (m_playerNameClean.empty())
+		{
+			SaveNick(GetEntity()->GetName());
+		}
+		return m_playerNameClean;
+	}
+
+private:
+
+	std::string m_playerNameClean = "";
+
 
 protected:
 
