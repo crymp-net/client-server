@@ -1,4 +1,4 @@
-function CreateRPC(localState, _L)
+function CreateRPC(localState, _L, _Private)
 	local Self = {}
 	local function MergeRPC(Output, Input)
 		for i, v in pairs(Input) do
@@ -376,7 +376,28 @@ function CreateRPC(localState, _L)
 				local lang, tz = _L.CPPAPI.GetLocaleInformation()
 				lang = lang or "unknown"
 				tz = tz or "unknown"
-				Self:Reply("UUID", id, { salt = salt, uuid = _L.CPPAPI.MakeUUID(salt), static_id = localState.STATIC_ID, static_proof = "s" .. _L.CPPAPI.SHA256("S" .. localState.STATIC_HASH .. "ID"), locale = lang, timezone = tz, version = CRYMP_CLIENT, latest = CRYMP_CLIENT })
+				local response = {
+					salt = salt,
+					uuid = _L.CPPAPI.MakeUUID(salt),
+					static_id = localState.STATIC_ID,
+					static_proof = "s" .. _L.CPPAPI.SHA256("S" .. localState.STATIC_HASH .. "ID"),
+					locale = lang,
+					timezone = tz,
+					version = CRYMP_CLIENT,
+					latest = CRYMP_CLIENT 
+				}
+				if params.validate or params.auth then
+					_Private.Authenticate(false)
+					:Then(function(auth)
+						response.auth = auth
+						Self:Reply("UUID", id, response)
+					end)
+					:Catch(function(err)
+						Self:Reply("UUID", id, response)
+					end)
+				else
+					Self:Reply("UUID", id, response)
+				end
 			end
 		end,
 		GetLocale = function(params, id)

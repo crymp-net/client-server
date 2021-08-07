@@ -670,7 +670,7 @@ function InitializeClient()
 	ObtainStaticID()
 	RemoveFlaws()
 
-	ACTIVE_RPC = CreateRPC(localState, _L)
+	ACTIVE_RPC = CreateRPC(localState, _L, { Authenticate = Authenticate })
 	EXPORTED.RPC = ACTIVE_RPC
 	EXPORTED.ActiveAnims = localState.ACTIVE_ANIMATIONS
 	EXPORTED._pcall = _pcall
@@ -682,7 +682,6 @@ function InitializeClient()
 	EXPORTED.AddHook = AddHook
 	EXPORTED.RemoveHook = RemoveHook
 	EXPORTED.CreateBinding = CreateBinding
-	EXPORTED.Authenticate = Authenticate
 
 	if EXPORT then
 		EXPORTED.Request = Request
