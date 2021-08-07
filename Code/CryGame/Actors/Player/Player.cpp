@@ -1606,51 +1606,13 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 			SMovementState info;
 			m_pMovementController->GetMovementState(info);
 
-			const Vec3 p = curMovementState.fireDirection;
-
-			//CryMP: Weapon direction in 3rd person matching 1st person 
-			if (g_pGameCVars->cl_usePostProcessAimDir && IsThirdPerson())
+			if (!GetAimTargetAdjusted(aimTarget))
 			{
-				auto* pWeapon = GetCurrentItem();
-				if (!pWeapon)
-					return;
-
-				const auto* pW = static_cast<CWeapon*>(pWeapon->GetIWeapon());
-				if (pW && pW->IsWeaponRaised())
-					return;
-
-				Vec3 cameraPosition;
-				if (IsClient())
-					cameraPosition = GetViewMatrix().GetTranslation();
-				else
-					cameraPosition = curMovementState.eyePosition;
-
-				const Vec3 startPos = curMovementState.weaponPosition;
-				Vec3 HitPos = startPos;
-				const Vec3 WPos = pWeapon->GetEntity()->GetWorldPos();
-				float distance = 250.f;
-				HitPos = startPos + curMovementState.fireDirection * distance;
-				const Vec3 direction = (HitPos - WPos);
-				const Vec3 cameraAimDirection = curMovementState.aimDirection.normalized() * distance;
-				ray_hit hit;
-				const uint32 flags = rwi_colltype_any | rwi_force_pierceable_noncoll | rwi_stop_at_pierceable;
-				IPhysicalEntity* pSkipEnt = pEntity->GetPhysics();
-
-				if (GetGameObject()->IsProbablyVisible() && !GetGameObject()->IsProbablyDistant())
-					gEnv->pPhysicalWorld->RayWorldIntersection(startPos, direction, ent_all, flags, &hit, 1, &pSkipEnt, 1);
-
-				if (hit.dist >= 1.0f) // Target is actually in front of the gun
-				{
-					aimTarget = hit.pt;
-				}
-				else
-				{
-					aimTarget = startPos + direction;
-				}
+				//Fall back to default code otherwise
+				aimTarget = info.eyePosition + info.aimDirection * 5.0f; // If this is too close the aiming will fade out.
 			}
 
-			CWeapon* pW = GetWeapon(GetCurrentItemId());
-			aimEnabled = !IsSprinting() || (pW && pW->IsReloading());
+			aimEnabled = true;
 
 			// TODO: This should probably be moved somewhere else and not done every frame.
 			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
@@ -1682,6 +1644,57 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 
 		pGraph->SetInput(m_inputAiming, aimEnabled ? 1 : 0);
 	}
+}
+
+//CryMP: Weapon direction in 3rd person matching 1st person 
+bool CPlayer::GetAimTargetAdjusted(Vec3 & aimTarget)
+{
+	if (!g_pGameCVars->cl_usePostProcessAimDir)
+		return false;
+
+	if (!IsThirdPerson() || IsSprinting())
+		return false;
+
+	if (!GetGameObject()->IsProbablyVisible() || GetGameObject()->IsProbablyDistant())
+		return false;
+
+	SMovementState info;
+	m_pMovementController->GetMovementState(info);
+	const Vec3 p = info.fireDirection;
+
+	CWeapon* pWeapon = GetCurrentWeapon(false);
+	if (!pWeapon || pWeapon->IsWeaponRaised() || pWeapon->IsReloading())
+		return false;
+
+	Vec3 cameraPosition;
+	if (IsClient())
+		cameraPosition = GetViewMatrix().GetTranslation();
+	else
+		cameraPosition = info.eyePosition;
+
+	const Vec3 startPos = info.weaponPosition;
+	Vec3 HitPos = startPos;
+	const Vec3 WPos = pWeapon->GetEntity()->GetWorldPos();
+	float distance = 250.f;
+	HitPos = startPos + info.fireDirection * distance;
+	const Vec3 direction = (HitPos - WPos);
+	const Vec3 cameraAimDirection = info.aimDirection.normalized() * distance;
+	ray_hit hit;
+	const uint32 flags = rwi_colltype_any | rwi_force_pierceable_noncoll | rwi_stop_at_pierceable;
+	IPhysicalEntity* pSkipEnt = GetEntity()->GetPhysics();
+
+	gEnv->pPhysicalWorld->RayWorldIntersection(startPos, direction, ent_all, flags, &hit, 1, &pSkipEnt, 1);
+
+	if (hit.dist >= 1.0f) // Target is actually in front of the gun
+	{
+		aimTarget = hit.pt;
+	}
+	else
+	{
+		aimTarget = startPos + direction;
+	}
+
+	return true;
 }
 
 bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)

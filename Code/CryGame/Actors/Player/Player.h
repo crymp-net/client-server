@@ -424,6 +424,8 @@ protected:
 	virtual IActorMovementController* CreateMovementController();
 	virtual void SetIK(const SActorFrameMovementParams&);
 
+	bool GetAimTargetAdjusted(Vec3& aimTarget);
+
 	//CryMP FP Spec
 	SViewParams m_FirstPersonSpectatorParams;
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
