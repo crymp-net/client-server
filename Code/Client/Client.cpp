@@ -5,7 +5,6 @@
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Launcher/Resources.h"
-#include "Launcher/CryMemoryManager.h"
 #include "Library/RandomSeeder.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
@@ -102,7 +101,6 @@ Client::Client()
 
 Client::~Client()
 {
-	CryMemoryManager::ReleaseConsoleCommands(gEnv->pConsole);
 }
 
 void Client::Init(IGameFramework *pGameFramework)
@@ -128,9 +126,6 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerConnector   = std::make_unique<ServerConnector>();
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 	m_pEngineCache		 = std::make_unique<EngineCache>();
-
-	// initialize allocator debug commands
-	CryMemoryManager::RegisterConsoleCommands(gEnv->pConsole);
 
 	// prepare Lua scripts
 	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
