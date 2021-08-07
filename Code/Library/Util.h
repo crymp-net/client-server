@@ -28,6 +28,7 @@ namespace Util
 
 	const char *CopyToBuffer(char *buffer, size_t bufferSize, const std::string_view & text);
 
+	std::string RemoveColorCodes(const std::string& text);
 	std::string MakeHumanReadableBytes(uint64_t bytes);
 
 	std::string SecondsToString(uint64_t seconds);

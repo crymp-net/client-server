@@ -148,6 +148,29 @@ const char *Util::CopyToBuffer(char *buffer, size_t bufferSize, const std::strin
 	return buffer;
 }
 
+std::string Util::RemoveColorCodes(const std::string& text)
+{
+	std::string result;
+	result.reserve(text.length());
+
+	for (size_t i = 0; i < text.length(); i++)
+	{
+		const char ch = text[i];
+
+		if (ch == '$')
+		{
+			// drop color codes
+			i++;
+		}
+		else
+		{
+			result += ch;
+		}
+	}
+
+	return result;
+}
+
 std::string Util::MakeHumanReadableBytes(uint64_t bytes)
 {
 	constexpr std::array<char, 7> PREFIXES = { 'k', 'M', 'G', 'T', 'P', 'E', 'Z' };
