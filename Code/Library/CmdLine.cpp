@@ -1,130 +1,136 @@
-#include <ctype.h>
 #include <stdlib.h>  // atoi
+#include <string_view>
 
 #include "CmdLine.h"
 #include "WinAPI.h"
 
 namespace
 {
-	const char *GetCmdLineWithoutAppName()
+	std::string_view TrimSpacesStart(std::string_view text)
 	{
-		const char *result = WinAPI::GetCmdLine();
+		const auto pos = text.find_first_not_of(' ');
 
-		// skip program name
-		if (*result == '\"')
-		{
-			for (result++; *result && *result != '\"'; result++);
-		}
-		else if (*result == '\'')
-		{
-			for (result++; *result && *result != '\''; result++);
-		}
-		else
-		{
-			for (result++; *result && !isspace(*result); result++);
-		}
+		text.remove_prefix((pos != std::string_view::npos) ? pos : text.length());
 
-		// skip spaces after program name
-		while (isspace(*result))
-		{
-			result++;
-		}
-
-		return result;
+		return text;
 	}
 
-	const char *GetArgValueBegin(const char *arg)
+	std::string_view GetCmdLineWithoutAppName()
 	{
-		const char *result = GetCmdLineWithoutAppName();
+		std::string_view cmdLine = WinAPI::GetCmdLine();
 
-		// find the argument
-		for (; *result; result++)
+		if (!cmdLine.empty())
 		{
-			if (tolower(*result) == tolower(*arg))
+			auto appNameEndPos = std::string_view::npos;
+
+			// remove program name
+			if (cmdLine.front() == '\"' || cmdLine.front() == '\'')
 			{
-				const char *name = arg + 1;  // the first letter already matches
+				appNameEndPos = cmdLine.find(cmdLine.front(), 1);
+			}
+			else
+			{
+				appNameEndPos = cmdLine.find(' ');
+			}
 
-				for (result++; *result && *name; result++, name++)
-				{
-					if (tolower(*result) != tolower(*name))
-					{
-						// skip the rest of argument name
-						while (*result && !isspace(*result))
-						{
-							result++;
-						}
+			if (appNameEndPos != std::string_view::npos)
+			{
+				cmdLine.remove_prefix(appNameEndPos + 1);
 
-						// and try again with other one
-						break;
-					}
-				}
-
-				// make sure the argument name really matches
-				if (!*name && (!*result || isspace(*result)))
-				{
-					// skip spaces before argument value
-					while (isspace(*result))
-					{
-						result++;
-					}
-
-					return result;
-				}
+				// remove spaces after program name
+				cmdLine = TrimSpacesStart(cmdLine);
+			}
+			else
+			{
+				cmdLine.remove_prefix(cmdLine.length());
 			}
 		}
 
-		return nullptr;
+		return cmdLine;
+	}
+
+	std::string_view FindArg(const std::string_view & arg)
+	{
+		std::string_view cmdLine = GetCmdLineWithoutAppName();
+
+		auto pos = cmdLine.find(arg);
+
+		while (pos != std::string_view::npos)
+		{
+			char before = ' ';
+			char after = ' ';
+
+			if (pos > 0)
+			{
+				before = cmdLine[pos - 1];
+			}
+
+			if ((pos + arg.length()) < cmdLine.length())
+			{
+				after = cmdLine[pos + arg.length()];
+			}
+
+			// TODO: ignore arguments inside values (quotation marks)
+
+			if (before == ' ' && after == ' ')
+			{
+				cmdLine.remove_prefix(pos);
+
+				return cmdLine;
+			}
+
+			pos = cmdLine.find(arg, pos);
+		}
+
+		// not found
+		return std::string_view();
 	}
 }
 
-bool CmdLine::HasArg(const char *arg)
+bool CmdLine::HasArg(const std::string_view & arg)
 {
-	return GetArgValueBegin(arg) != nullptr;
+	return !FindArg(arg).empty();
 }
 
-std::string CmdLine::GetArgValue(const char *arg, const char *defaultValue)
+std::string CmdLine::GetArgValue(const std::string_view & arg, const std::string_view & defaultValue)
 {
-	const char *value = GetArgValueBegin(arg);
+	std::string_view cmdLine = FindArg(arg);
 
-	if (value && *value)
+	if (!cmdLine.empty())
 	{
-		const char *end = value;
+		cmdLine.remove_prefix(arg.length());
 
-		if (*value == '\"')
+		// remove spaces before argument value
+		cmdLine = TrimSpacesStart(cmdLine);
+
+		if (!cmdLine.empty())
 		{
-			value++;
-			end++;
+			auto valueEndPos = std::string_view::npos;
 
-			while (*end && *end != '\"')
+			if (cmdLine.front() == '\"' || cmdLine.front() == '\'')
 			{
-				end++;
+				const char endMark = cmdLine.front();
+				cmdLine.remove_prefix(1);
+				valueEndPos = cmdLine.find(endMark);
 			}
-		}
-		else if (*value == '\'')
-		{
-			value++;
-			end++;
+			else
+			{
+				valueEndPos = cmdLine.find(' ');
+			}
 
-			while (*end && *end != '\'')
+			if (valueEndPos != std::string_view::npos)
 			{
-				end++;
+				cmdLine.remove_suffix(cmdLine.length() - valueEndPos);
 			}
-		}
-		else
-		{
-			while (*end && !isspace(*end))
-			{
-				end++;
-			}
-		}
 
-		return std::string(value, end-value);
+			return std::string(cmdLine);
+		}
 	}
 
-	return (defaultValue) ? std::string(defaultValue) : std::string();
+	return std::string(defaultValue);
 }
 
-int CmdLine::GetArgValueInt(const char *arg, int defaultValue)
+int CmdLine::GetArgValueInt(const std::string_view & arg, int defaultValue)
 {
 	const std::string value = GetArgValue(arg);
 
