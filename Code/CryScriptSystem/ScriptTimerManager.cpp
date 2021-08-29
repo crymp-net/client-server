@@ -159,7 +159,7 @@ ScriptTimerID ScriptTimerManager::AddTimer(uint64_t milliseconds, HSCRIPTFUNCTIO
 	const long slot = GetFreeTimerSlot();
 	if (slot < 0)
 	{
-		CryLogError("[Script] Too many timers!");
+		CryLogErrorAlways("[Script] Too many timers!");
 		return 0;
 	}
 
@@ -188,7 +188,7 @@ ScriptTimerID ScriptTimerManager::AddTimer(uint64_t milliseconds, const char *fu
 	const long slot = GetFreeTimerSlot();
 	if (slot < 0)
 	{
-		CryLogError("[Script] Too many timers!");
+		CryLogErrorAlways("[Script] Too many timers!");
 		return 0;
 	}
 

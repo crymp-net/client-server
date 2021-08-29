@@ -482,7 +482,7 @@ bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const ch
 	{
 		const char *message = lua_tostring(m_L, -1);
 
-		CryLogError("[Script] Parse error (%s): %s", bufferDescription, message);
+		CryLogErrorAlways("[Script] Parse error (%s): %s", bufferDescription, message);
 
 		return false;
 	}
@@ -552,7 +552,7 @@ int ScriptSystem::BeginCall(HSCRIPTFUNCTION func)
 	lua_getref(m_L, funcHandle);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(%d): Function not found", funcHandle);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%d): Function not found", funcHandle);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -569,7 +569,7 @@ int ScriptSystem::BeginCall(const char *funcName)
 	lua_getglobal(m_L, funcName);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(%s): Function not found", funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s): Function not found", funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -586,7 +586,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(%s, %s): Table not found", tableName, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Table not found", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -596,7 +596,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(%s, %s): Function not found", tableName, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Function not found", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -617,7 +617,7 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(0x%p, %s): Function not found", pTable, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(0x%p, %s): Function not found", pTable, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -762,11 +762,11 @@ void ScriptSystem::RaiseError(const char *format, ...)
 	vsnprintf(buffer, sizeof buffer, format, args);
 	va_end(args);
 
-	CryLogError("[Script] %s", buffer);
+	CryLogErrorAlways("[Script] %s", buffer);
 
 	for (const std::string & line : ScriptUtil::GetCallStack(m_L))
 	{
-		CryLog("$4    %s", line.c_str());
+		CryLogErrorAlways("    %s", line.c_str());
 	}
 }
 
@@ -875,11 +875,11 @@ int ScriptSystem::ErrorHandler(lua_State *L)
 {
 	const char *message = lua_tostring(L, 1);
 
-	CryLogError("[Script] %s", message);
+	CryLogErrorAlways("[Script] %s", message);
 
 	for (const std::string & line : ScriptUtil::GetCallStack(L, 1))
 	{
-		CryLog("$4    %s", line.c_str());
+		CryLogErrorAlways("    %s", line.c_str());
 	}
 
 	return 0;
