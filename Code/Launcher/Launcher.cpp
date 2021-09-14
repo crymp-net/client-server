@@ -87,13 +87,15 @@ void Launcher::InitWorkingDirectory()
 	const std::string dirArg = CmdLine::GetArgValue("-dir");
 	if (!dirArg.empty())
 	{
-		// sanitize the path
-		dir = std::filesystem::canonical(dirArg);
+		dir = dirArg;
 	}
 	else
 	{
 		dir = WinAPI::GetApplicationPath().remove_filename();
 	}
+
+	// sanitize the path
+	dir = std::filesystem::canonical(dir);
 
 #ifdef BUILD_64BIT
 	constexpr std::string_view BIN_DIR = "Bin64";
