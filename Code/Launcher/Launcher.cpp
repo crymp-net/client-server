@@ -92,7 +92,7 @@ void Launcher::InitWorkingDirectory()
 	}
 	else
 	{
-		dir = std::filesystem::current_path();
+		dir = WinAPI::GetApplicationPath().remove_filename();
 	}
 
 #ifdef BUILD_64BIT
