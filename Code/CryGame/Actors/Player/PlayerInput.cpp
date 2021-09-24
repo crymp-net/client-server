@@ -1544,6 +1544,10 @@ bool CPlayerInput::OnActionSuitCloak(EntityId entityId, const ActionId& actionId
 
 bool CPlayerInput::OnActionThirdPerson(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
+	if (!g_pGameCVars->cl_thirdPerson && !gEnv->pSystem->IsDevMode())
+	{
+		return false;
+	}
 	if (!m_pPlayer->m_stats.spectatorMode && m_pPlayer->GetPhysicsProfile() != eAP_Ragdoll)
 	{
 		if (!m_pPlayer->GetLinkedVehicle())
@@ -1560,13 +1564,21 @@ bool CPlayerInput::OnActionThirdPerson(EntityId entityId, const ActionId& action
 bool CPlayerInput::OnActionFlyMode(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
 	if (!g_pGameCVars->cl_flyMode && !gEnv->pSystem->IsDevMode())
+	{
 		return false;
+	}
 
 	if (!m_pPlayer->m_stats.spectatorMode && (m_pPlayer->m_pGameFramework->CanCheat() || g_pGameCVars->cl_flyMode))
 	{
 		uint8 flyMode = m_pPlayer->GetFlyMode() + 1;
 		if (flyMode > 2)
 			flyMode = 0;
+
+		if (g_pGameCVars->cl_flyMode)
+		{
+			flyMode = g_pGameCVars->cl_flyMode;
+		}
+
 		m_pPlayer->SetFlyMode(flyMode);
 
 		switch (m_pPlayer->m_stats.flyMode)

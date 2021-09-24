@@ -29,6 +29,29 @@
 #include "Menus/FlashMenuObject.h"
 #include "Menus/MPHub.h"
 
+static void OnChangeThirdPerson(ICVar* pCVar)
+{
+	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	if (pPlayer)
+	{
+		const int iThirdPerson = pCVar->GetIVal();
+		if (!iThirdPerson)
+		{
+			pPlayer->EnableThirdPerson(false);
+		}
+	}
+}
+
+static void OnChangeFlyMode(ICVar* pCVar)
+{
+	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	if (pPlayer)
+	{
+		const int iFlyMode = pCVar->GetIVal();
+		pPlayer->SetFlyMode(iFlyMode);
+	}
+}
+
 static void BroadcastChangeSafeMode(ICVar*)
 {
 	SGameObjectEvent event(eCGE_ResetMovementController, eGOEF_ToExtensions);
@@ -559,13 +582,16 @@ void SCVars::InitCVars(IConsole* pConsole)
 	NetInputChainInitCVars();
 
 	//CryMP CVars 
-	pConsole->Register("cl_crymp", &cl_crymp, 0);
-	pConsole->Register("cl_circleJump", &cl_circleJump, 0.0f);
-	pConsole->Register("cl_wallJump", &cl_wallJump, 1.0f);
-	pConsole->Register("cl_flyMode", &cl_flyMode, 0);
-	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0);
+	const int OPTIONAL_SYNC = 0;	
+
+	pConsole->Register("cl_crymp", &cl_crymp, 0, OPTIONAL_SYNC, "Enable high precision look direction serialization");
+	pConsole->Register("cl_circleJump", &cl_circleJump, 0.0f, OPTIONAL_SYNC, "Enable circle jumping as in 5767");
+	pConsole->Register("cl_wallJump", &cl_wallJump, 1.0f, OPTIONAL_SYNC, "WallJump multiplier");
+	pConsole->Register("cl_flyMode", &cl_flyMode, 0, OPTIONAL_SYNC, "Enable FlyMode", OnChangeFlyMode);
+	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0, OPTIONAL_SYNC, "Allow pickup and throw objects in DX10");
+	pConsole->Register("cl_thirdPerson", &cl_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
 	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
-	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1);
+	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1, OPTIONAL_SYNC);
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");

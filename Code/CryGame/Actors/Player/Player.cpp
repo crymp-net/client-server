@@ -1941,8 +1941,11 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 	else
 	{
 		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
-		const bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-
+		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+		if (!g_pGameCVars->cl_thirdPerson)
+		{
+			shouldStayInTp = false;
+		}
 		EnableThirdPerson(shouldStayInTp);
 
 		CALL_PLAYER_EVENT_LISTENERS(OnExitVehicle(this));
@@ -3502,7 +3505,11 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 		//Restore Third person mode settings
 		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
-		const bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+		if (!g_pGameCVars->cl_thirdPerson)
+		{
+			shouldStayInTp = false;
+		}
 
 		EnableThirdPerson(shouldStayInTp);
 	}
