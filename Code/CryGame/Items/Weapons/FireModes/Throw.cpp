@@ -70,7 +70,7 @@ void CThrow::Update(float frameTime, uint frameId)
 						m_throwableAction->execute(m_pWeapon);
 
 					IPhysicalEntity *pPE=pEntity->GetPhysics();
-					if (pPE&&(pPE->GetType()==PE_RIGID||pPE->GetType()==PE_PARTICLE))
+					if (pPE&&(pPE->GetType()==PE_RIGID || pPE->GetType()==PE_PARTICLE || pPE->GetType() == PE_WHEELEDVEHICLE)) //CryMP: support for vehicles too
 						ThrowObject(pEntity,pPE);
 					else if (pPE&&(pPE->GetType()==PE_LIVING||pPE->GetType()==PE_ARTICULATED))
 						ThrowLivingEntity(pEntity,pPE);

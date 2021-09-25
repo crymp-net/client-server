@@ -755,7 +755,9 @@ void COffHand::UpdateCrosshairUsabilitySP()
 				else if (isLadder)
 					pHUDCrosshair->SetUsability(1, "@use_ladder");
 				else if (!pItem)
+				{
 					pHUDCrosshair->SetUsability(1, "@grab_object");
+				}
 				else if (pItem)
 				{
 					CryFixedStringT<128> itemName = "@";
@@ -2021,6 +2023,12 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				if (getEntityInfo)
 					m_preHeldEntityId = pEntity->GetId();
 
+				if (g_pGameCVars->cl_pickupVehiclesMP)
+				{
+					//CryMP: Crouch to pickup vehicles :D
+					if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(pEntity->GetId()))
+						return OH_GRAB_OBJECT;
+				}
 				//1.- Player can grab some NPCs
 				//Let the actor decide if it can be grabbed
 				if (CActor* pActorAI = static_cast<CActor*>(m_pActorSystem->GetActor(pEntity->GetId())))
@@ -2284,6 +2292,11 @@ bool COffHand::PerformPickUp()
 		pEntity->SendEvent(entityEvent);
 
 		m_holdScale = pEntity->GetScale();
+
+		//if (m_pVehicleSystem->GetVehicle(pEntity->GetId()))
+		//{
+		//	m_holdScale *= 0.3f;
+		//}
 
 		IgnoreCollisions(true, m_heldEntityId);
 		

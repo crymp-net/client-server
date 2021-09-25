@@ -589,6 +589,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("cl_wallJump", &cl_wallJump, 1.0f, OPTIONAL_SYNC, "WallJump multiplier");
 	pConsole->Register("cl_flyMode", &cl_flyMode, 0, OPTIONAL_SYNC, "Enable FlyMode", OnChangeFlyMode);
 	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0, OPTIONAL_SYNC, "Allow pickup and throw objects in DX10");
+	pConsole->Register("cl_pickupVehiclesMP", &cl_pickupVehiclesMP, 0, OPTIONAL_SYNC, "Allow pickup and throw vehicles (requires cl_pickupObjectsMP 1)");
 	pConsole->Register("cl_thirdPerson", &cl_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
 	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1, OPTIONAL_SYNC);

@@ -438,6 +438,7 @@ struct SCVars
 	float		cl_wallJump;
 	int			cl_flyMode;
 	int			cl_pickupObjectsMP;
+	int			cl_pickupVehiclesMP;
 	int	        cl_thirdPerson;
 	int			g_ragdollUnrestrictedSP;
 	int			g_ragdollUnrestrictedMP;
