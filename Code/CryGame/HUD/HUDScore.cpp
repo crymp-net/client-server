@@ -200,6 +200,10 @@ void CHUDScore::Render()
 	IActorIteratorPtr actorIt = g_pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
 	while (IActor* pActor = actorIt->Next())
 	{
+		//CryMP: For MisterSD :s
+		if (!pActor->IsPlayer())
+			continue;
+
 		const EntityId playerId = pActor->GetEntityId();
 		const int KEY_KILL = 100;
 		const int KEY_DEATH = 101;
