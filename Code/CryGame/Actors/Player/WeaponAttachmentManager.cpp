@@ -16,6 +16,7 @@ History:
 #include "WeaponAttachmentManager.h"
 #include "../Actor.h"
 #include "CryGame/Items/Item.h"
+#include "CryGame/GameCVars.h"
 
 
 #define MAX_WEAPON_ATTACHMENTS 3 
@@ -75,10 +76,11 @@ CWeaponAttachmentManager::~CWeaponAttachmentManager()
 
 bool CWeaponAttachmentManager::Init()
 {
-	if(gEnv->bMultiplayer)
+	if (gEnv->bMultiplayer)
 	{
 		CreatePlayerBoneAttachments(); //Only create the attachment, some are needed
-		return false;
+
+		return g_pGameCVars->cl_weaponsOnBackMP;
 	}
 	else if(m_pOwner->GetActorSpecies()!=eGCT_HUMAN)
 		return false;

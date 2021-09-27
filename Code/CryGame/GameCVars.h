@@ -439,6 +439,7 @@ struct SCVars
 	int			cl_flyMode;
 	int			cl_pickupObjectsMP;
 	int			cl_pickupVehiclesMP;
+	int			cl_weaponsOnBackMP;
 	int	        cl_thirdPerson;
 	int			g_ragdollUnrestrictedSP;
 	int			g_ragdollUnrestrictedMP;

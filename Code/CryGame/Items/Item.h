@@ -1337,6 +1337,10 @@ public:
 
 	bool									m_noDrop;				//Fix reseting problem in editor
 	static IEntityClass*	sOffHandClass;
+	static IEntityClass*	sSCARClass;
+	static IEntityClass*	sFY71Class;
+	static IEntityClass*	sSMGClass;
+	static IEntityClass*    sShotgunClass;
 	static IEntityClass*	sFistsClass;
 	static IEntityClass*	sAlienCloak;
 	static IEntityClass*	sSOCOMClass;

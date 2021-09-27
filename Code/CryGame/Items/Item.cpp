@@ -45,6 +45,10 @@ IGameFramework* CItem::m_pGameFramework = 0;
 IGameplayRecorder* CItem::m_pGameplayRecorder = 0;
 
 IEntityClass* CItem::sOffHandClass = 0;
+IEntityClass* CItem::sSCARClass = 0;
+IEntityClass* CItem::sFY71Class = 0;
+IEntityClass* CItem::sSMGClass = 0;
+IEntityClass* CItem::sShotgunClass = 0;
 IEntityClass* CItem::sFistsClass = 0;
 IEntityClass* CItem::sAlienCloak = 0;
 IEntityClass* CItem::sSOCOMClass = 0;
@@ -173,6 +177,10 @@ bool CItem::Init(IGameObject* pGameObject)
 
 		IEntityClassRegistry *pRegistry = gEnv->pEntitySystem->GetClassRegistry();
 		sOffHandClass = pRegistry->FindClass("OffHand");
+		sSCARClass = pRegistry->FindClass("SCAR");
+		sFY71Class = pRegistry->FindClass("FY71");
+		sSMGClass = pRegistry->FindClass("SMG");
+		sShotgunClass = pRegistry->FindClass("Shotgun");
 		sFistsClass = pRegistry->FindClass("Fists");
 		sAlienCloak = pRegistry->FindClass("AlienCloak");
 		sSOCOMClass = pRegistry->FindClass("SOCOM");
@@ -265,6 +273,7 @@ void CItem::Reset()
 	m_scheduler.Reset();
 
 	m_params = SParams();
+
 	//	m_mountparams=SMountParams();
 	m_enableAnimations = true;
 	// detach any effects
@@ -1088,6 +1097,8 @@ struct CItem::SelectAction
 
 void CItem::Select(bool select)
 {
+	CActor* pOwner = GetOwnerActor();
+
 	if (!m_ownerId)
 		select = false;
 
@@ -1107,7 +1118,7 @@ void CItem::Select(bool select)
 
 	IAISystem* pAISystem = gEnv->pAISystem;
 
-	CWeaponAttachmentManager* pWAM = GetOwnerActor() ? GetOwnerActor()->GetWeaponAttachmentManager() : NULL;
+	CWeaponAttachmentManager* pWAM = pOwner ? pOwner->GetWeaponAttachmentManager() : NULL;
 
 	if (select)
 	{
@@ -1125,10 +1136,10 @@ void CItem::Select(bool select)
 		if (!m_stats.mounted && GetOwner())
 			GetEntity()->SetWorldTM(GetOwner()->GetWorldTM());	// move somewhere near the owner so the sound can play
 		float speedOverride = -1.0f;
-		CActor* owner = GetOwnerActor();
-		if (owner && owner->GetActorClass() == CPlayer::GetActorClassType())
+
+		if (pOwner && pOwner->GetActorClass() == CPlayer::GetActorClassType())
 		{
-			CPlayer* pPlayer = (CPlayer*)owner;
+			CPlayer* pPlayer = (CPlayer*)pOwner;
 			if (pPlayer->GetNanoSuit())
 			{
 				ENanoMode curMode = pPlayer->GetNanoSuit()->GetMode();
@@ -1167,19 +1178,19 @@ void CItem::Select(bool select)
 
 		AttachToBack(false);
 
-		if (owner)
+		if (pOwner)
 		{
 			// update smart objects states
 			if (pAISystem)
 			{
-				IEntity* pOwnerEntity = owner->GetEntity();
+				IEntity* pOwnerEntity = pOwner->GetEntity();
 				pAISystem->ModifySmartObjectStates(pOwnerEntity, GetEntity()->GetClass()->GetName());
 				pAISystem->ModifySmartObjectStates(pOwnerEntity, "WeaponDrawn");
 			}
 
 			//[kirill] make sure AI gets passed the new weapon properties
-			if (GetIWeapon() && owner->GetEntity() && owner->GetEntity()->GetAI())
-				owner->GetEntity()->GetAI()->SetWeaponDescriptor(GetIWeapon()->GetAIWeaponDescriptor());
+			if (GetIWeapon() && pOwner->GetEntity() && pOwner->GetEntity()->GetAI())
+				pOwner->GetEntity()->GetAI()->SetWeaponDescriptor(GetIWeapon()->GetAIWeaponDescriptor());
 		}
 	}
 	else
@@ -1193,7 +1204,7 @@ void CItem::Select(bool select)
 		}
 
 		// set no-weapon pose on actor (except for the Offhand)
-		CActor* pOwner = GetOwnerActor();
+
 		if (pOwner && (GetEntity()->GetClass() != CItem::sOffHandClass) && g_pItemStrings)
 			pOwner->PlayAction(g_pItemStrings->idle, ITEM_DESELECT_POSE);
 
@@ -1232,7 +1243,7 @@ void CItem::Select(bool select)
 	else
 		CloakEnable(false, false);
 
-	if (CActor* pOwner = GetOwnerActor())
+	if (pOwner)
 	{
 		//CryMP: Fp spec support
 		if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
@@ -2295,8 +2306,19 @@ bool CItem::AttachToHand(bool attach, bool checkAttachment)
 bool CItem::AttachToBack(bool attach)
 {
 	if (gEnv->bMultiplayer || !m_params.attach_to_back)
-		return false;
-
+	{
+		if (!g_pGameCVars->cl_weaponsOnBackMP)
+		{
+			return false;
+		}
+		//missing xml info
+		IEntityClass* pWeaponClass = GetEntity()->GetClass();
+		const bool supportedClass = (pWeaponClass == sDSG1Class || pWeaponClass == sShotgunClass || pWeaponClass == sSCARClass || pWeaponClass == sFY71Class || pWeaponClass == sGaussRifleClass || pWeaponClass == sRocketLauncherClass);
+		if (!supportedClass)
+		{
+			return false;
+		}
+	}
 	IEntity* pOwner = GetOwner();
 	if (!pOwner)
 		return false;
@@ -2328,6 +2350,10 @@ bool CItem::AttachToBack(bool attach)
 	FrostSync(false);
 	WetSync(false);
 
+	//CryMP: These won't change anyways
+	const char* bone_1 = "back_item_attachment_01";
+	const char* bone_2 = "back_item_attachment_02";
+
 	if (attach)
 	{
 		/*if(SupportsDualWield(GetEntity()->GetClass()->GetName()))
@@ -2350,22 +2376,23 @@ bool CItem::AttachToBack(bool attach)
 		}
 		else*/
 		{
-			pAttachment = pAttachmentManager->GetInterfaceByName(m_params.bone_attachment_01.c_str());
+			pAttachment = pAttachmentManager->GetInterfaceByName(bone_1);
+
 			m_stats.backAttachment = eIBA_Primary;
 			if (pAttachment && pAttachment->GetIAttachmentObject())
 			{
-				pAttachment = pAttachmentManager->GetInterfaceByName(m_params.bone_attachment_02.c_str());
+				pAttachment = pAttachmentManager->GetInterfaceByName(bone_2);
 				m_stats.backAttachment = eIBA_Secondary;
 			}
 		}
 	}
 	else if (m_stats.backAttachment == eIBA_Primary)
 	{
-		pAttachment = pAttachmentManager->GetInterfaceByName(m_params.bone_attachment_01.c_str());
+		pAttachment = pAttachmentManager->GetInterfaceByName(bone_1);
 	}
 	else if (m_stats.backAttachment == eIBA_Secondary)
 	{
-		pAttachment = pAttachmentManager->GetInterfaceByName(m_params.bone_attachment_02.c_str());
+		pAttachment = pAttachmentManager->GetInterfaceByName(bone_2);
 	}
 	else
 	{
@@ -2374,12 +2401,18 @@ bool CItem::AttachToBack(bool attach)
 
 	if (!pAttachment)
 	{
-		if (m_stats.backAttachment == eIBA_Primary)
-			GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_01.c_str());
-		else
-			GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_02.c_str());
+		//Maybe owner changed character? Need to recreate attachments
+		pWAM->Init();
+		
+		if (!pAttachment)
+		{
+			if (m_stats.backAttachment == eIBA_Primary)
+				GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_01.c_str());
+			else
+				GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_02.c_str());
 
-		m_stats.backAttachment = eIBA_Unknown;
+			m_stats.backAttachment = eIBA_Unknown;
+		}
 		return false;
 	}
 
@@ -2399,9 +2432,9 @@ bool CItem::AttachToBack(bool attach)
 		}
 		pAttachment->ClearBinding();
 		if (temp == eIBA_Primary)
-			pWAM->SetWeaponAttachment(false, m_params.bone_attachment_01.c_str(), GetEntityId());
+			pWAM->SetWeaponAttachment(false, bone_1, GetEntityId());
 		else
-			pWAM->SetWeaponAttachment(false, m_params.bone_attachment_02.c_str(), GetEntityId());
+			pWAM->SetWeaponAttachment(false, bone_2, GetEntityId());
 	}
 	else
 	{
@@ -2440,9 +2473,9 @@ bool CItem::AttachToBack(bool attach)
 				Hide(false);
 		}
 		if (m_stats.backAttachment == eIBA_Primary)
-			pWAM->SetWeaponAttachment(true, m_params.bone_attachment_01.c_str(), GetEntityId());
+			pWAM->SetWeaponAttachment(true, bone_1, GetEntityId());
 		else
-			pWAM->SetWeaponAttachment(true, m_params.bone_attachment_02.c_str(), GetEntityId());
+			pWAM->SetWeaponAttachment(true, bone_2, GetEntityId());
 	}
 
 	return true;
