@@ -339,7 +339,7 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 					{
 						pe_action_impulse impulse;
 						impulse.iApplyTime = 1;
-						impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->cl_wallJump;
+						impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->mp_wallJump;
 						playerPhysics->Action(&impulse);
 					}
 

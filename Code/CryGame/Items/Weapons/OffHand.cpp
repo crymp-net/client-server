@@ -680,7 +680,7 @@ void COffHand::UpdateFPView(float frameTime)
 
 	if (m_currentState == eOHS_INIT_STATE)
 	{
-		if (!gEnv->bMultiplayer || (g_pGameCVars->cl_pickupObjectsMP && m_pGameFramework->IsImmersiveMPEnabled()))
+		if (!gEnv->bMultiplayer || (g_pGameCVars->mp_pickupObjects && m_pGameFramework->IsImmersiveMPEnabled()))
 			UpdateCrosshairUsabilitySP();
 		else
 			UpdateCrosshairUsabilityMP();
@@ -1475,7 +1475,7 @@ bool COffHand::PreExecuteAction(int requestedAction, int activationMode, bool fo
 
 	if (exec)
 	{
-		if (!gEnv->bMultiplayer || (requestedAction != eOHA_SWITCH_GRENADE))
+		if (gEnv->bMultiplayer || (requestedAction != eOHA_SWITCH_GRENADE))
 		{
 			SetHand(eIH_Left);		//Here??
 
@@ -1930,7 +1930,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 	SMovementState info;
 	pMC->GetMovementState(info);
 
-	if (gEnv->bMultiplayer && !g_pGameCVars->cl_pickupObjectsMP)
+	if (gEnv->bMultiplayer && !g_pGameCVars->mp_pickupObjects)
 	{
 		return CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
 	}
@@ -1966,7 +1966,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 	{
 		m_crosshairId = 0;
 
-		if (gEnv->bMultiplayer && g_pGameCVars->cl_pickupObjectsMP)
+		if (gEnv->bMultiplayer && g_pGameCVars->mp_pickupObjects)
 		{
 			if (!pEntity)
 			{
@@ -2022,7 +2022,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				if (getEntityInfo)
 					m_preHeldEntityId = pEntity->GetId();
 
-				if (g_pGameCVars->cl_pickupVehiclesMP)
+				if (g_pGameCVars->mp_pickupVehicles)
 				{
 					//CryMP: Crouch to pickup vehicles :D
 					if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(pEntity->GetId()))
@@ -2810,7 +2810,7 @@ void COffHand::PickUpObject(bool isLivingEnt /* = false */)
 	RequireUpdate(eIUS_General);
 
 	//CryMP notify server
-	if (!isLivingEnt && gEnv->bMultiplayer && g_pGameCVars->cl_pickupObjectsMP && m_pGameFramework->IsImmersiveMPEnabled())
+	if (!isLivingEnt && gEnv->bMultiplayer && g_pGameCVars->mp_pickupObjects && m_pGameFramework->IsImmersiveMPEnabled())
 	{
 		CActor* pOwner = GetOwnerActor();
 		if (pOwner && pOwner->IsClient())

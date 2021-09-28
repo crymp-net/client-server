@@ -1649,7 +1649,7 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 //CryMP: Weapon direction in 3rd person matching 1st person 
 bool CPlayer::GetAimTargetAdjusted(Vec3 & aimTarget)
 {
-	if (!g_pGameCVars->cl_usePostProcessAimDir)
+	if (!g_pGameCVars->mp_usePostProcessAimDir)
 		return false;
 
 	if (!IsThirdPerson() || IsSprinting())
@@ -1724,7 +1724,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			auto netAimFactor(g_pGameCVars->cl_netAimLerpFactor);
 			if (netAimFactor < 50.f)
 			{
-				const bool CryMP_Enhanced(g_pGameCVars->cl_crymp);
+				const bool CryMP_Enhanced(g_pGameCVars->mp_crymp);
 				if (CryMP_Enhanced)
 				{
 					//only little smoothing needed, but we'll keep it for now
@@ -1942,7 +1942,7 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 	{
 		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
 		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-		if (!g_pGameCVars->cl_thirdPerson)
+		if (!g_pGameCVars->mp_thirdPerson)
 		{
 			shouldStayInTp = false;
 		}
@@ -3506,7 +3506,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 		//Restore Third person mode settings
 		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
 		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-		if (!g_pGameCVars->cl_thirdPerson)
+		if (!g_pGameCVars->mp_thirdPerson)
 		{
 			shouldStayInTp = false;
 		}
@@ -3734,10 +3734,9 @@ void CPlayer::RagDollize(bool fallAndPlay)
 		//sp.damping = 1.0f;
 		sp.dampingFreefall = 0.0f;
 
-		const bool MP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedMP;
-		const bool SP_ragdolls = g_pGameCVars->g_ragdollUnrestrictedSP;
+		const bool bUnrestrictedRagdolls = g_pGameCVars->mp_ragdollUnrestricted;
 
-		if (gEnv->bMultiplayer && !MP_ragdolls || !gEnv->bMultiplayer && !SP_ragdolls)
+		if (!bUnrestrictedRagdolls)
 		{
 			//CryMP: Default code
 			sp.mass = m_stats.mass * 2.0f;	
@@ -3769,7 +3768,7 @@ void CPlayer::RagDollize(bool fallAndPlay)
 			}
 		}
 
-		if (gEnv->bMultiplayer && !MP_ragdolls)
+		if (gEnv->bMultiplayer && !bUnrestrictedRagdolls)
 		{
 			pe_params_part pp;
 			pp.flagsAND = ~(geom_colltype_player | geom_colltype_vehicle | geom_colltype6);
@@ -3777,7 +3776,7 @@ void CPlayer::RagDollize(bool fallAndPlay)
 			pPhysEnt->SetParams(&pp);
 		}
 
-		if (gEnv->bMultiplayer && MP_ragdolls || !gEnv->bMultiplayer && SP_ragdolls)
+		if (bUnrestrictedRagdolls)
 		{
 			//CryMP
 			//Enable reaction to explosions, bullets and vehicles;
@@ -4466,8 +4465,8 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 			m_pPlayerInput->GetState(serializedInput);
 
 		//CryMP: improved serialization accuracy for clients with CryMP mod
-		//Smoother weapon dir changes (Server enables it with cl_crymp 1, else default serialization)
-		if (g_pGameCVars->cl_crymp == 1)
+		//Smoother weapon dir changes (Server enables it with mp_crymp 1, else default serialization)
+		if (g_pGameCVars->mp_crymp == 1)
 			serializedInput.Serialize_CryMP(ser);
 		else
 			serializedInput.Serialize_Default(ser);

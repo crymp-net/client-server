@@ -584,24 +584,23 @@ void SCVars::InitCVars(IConsole* pConsole)
 	//CryMP CVars 
 	const int OPTIONAL_SYNC = 0;	
 
-	pConsole->Register("cl_crymp", &cl_crymp, 0, OPTIONAL_SYNC, "Enable high precision look direction serialization");
-	pConsole->Register("cl_circleJump", &cl_circleJump, 0.0f, OPTIONAL_SYNC, "Enable circle jumping as in 5767");
-	pConsole->Register("cl_wallJump", &cl_wallJump, 1.0f, OPTIONAL_SYNC, "WallJump multiplier");
-	pConsole->Register("cl_flyMode", &cl_flyMode, 0, OPTIONAL_SYNC, "Enable FlyMode", OnChangeFlyMode);
-	pConsole->Register("cl_pickupObjectsMP", &cl_pickupObjectsMP, 0, OPTIONAL_SYNC, "Allow pickup and throw objects in DX10");
-	pConsole->Register("cl_pickupVehiclesMP", &cl_pickupVehiclesMP, 0, OPTIONAL_SYNC, "Allow pickup and throw vehicles (requires cl_pickupObjectsMP 1)");
-	pConsole->Register("cl_weaponsOnBackMP", &cl_weaponsOnBackMP, 1, OPTIONAL_SYNC, "Attach weapons to back as in SP");
-	pConsole->Register("cl_thirdPerson", &cl_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
-	pConsole->Register("g_ragdollUnrestrictedSP", &g_ragdollUnrestrictedSP, 1, VF_NOT_NET_SYNCED, "");
-	pConsole->Register("g_ragdollUnrestrictedMP", &g_ragdollUnrestrictedMP, 1, OPTIONAL_SYNC);
+	pConsole->Register("mp_crymp", &mp_crymp, 0, OPTIONAL_SYNC, "Enable high precision look direction serialization");
+	pConsole->Register("mp_circleJump", &mp_circleJump, 0.0f, OPTIONAL_SYNC, "Enable circle jumping as in 5767");
+	pConsole->Register("mp_wallJump", &mp_wallJump, 1.0f, OPTIONAL_SYNC, "WallJump multiplier");
+	pConsole->Register("mp_flyMode", &mp_flyMode, 0, OPTIONAL_SYNC, "Enable FlyMode", OnChangeFlyMode);
+	pConsole->Register("mp_pickupObjects", &mp_pickupObjects, 0, OPTIONAL_SYNC, "Allow pickup and throw objects in DX10");
+	pConsole->Register("mp_pickupVehicles", &mp_pickupVehicles, 0, OPTIONAL_SYNC, "Allow pickup and throw vehicles (requires mp_pickupObjects 1)");
+	pConsole->Register("mp_weaponsOnBack", &mp_weaponsOnBack, 1, OPTIONAL_SYNC, "Attach weapons to back as in SP");
+	pConsole->Register("mp_thirdPerson", &mp_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
+	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
 
 	//CryMP CVars (un-synced)
-	pConsole->Register("cl_usePostProcessAimDir", &cl_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
-	pConsole->Register("cl_messageCenterColor", &cl_messageCenterColor, 1, VF_NOT_NET_SYNCED);
-	pConsole->Register("cl_animationWeaponMult", &cl_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
-	pConsole->Register("cl_animationWeaponMultSpeed", &cl_animationWeaponMultSpeed, 3.0f, VF_NOT_NET_SYNCED);
-	pConsole->Register("cl_animationModelMult", &cl_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
-	pConsole->Register("cl_animationModelMultSpeed", &cl_animationModelMultSpeed, 1.3f, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_usePostProcessAimDir", &mp_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
+	pConsole->Register("mp_messageCenterColor", &mp_messageCenterColor, 1, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_animationWeaponMult", &mp_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_animationWeaponMultSpeed", &mp_animationWeaponMultSpeed, 3.0f, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_animationModelMult", &mp_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_animationModelMultSpeed", &mp_animationModelMultSpeed, 1.3f, VF_NOT_NET_SYNCED);
 }
 
 //------------------------------------------------------------------------
@@ -908,11 +907,11 @@ void SCVars::ReleaseCVars()
 	pConsole->UnregisterVariable("aim_assistCrosshairSize", true);
 	pConsole->UnregisterVariable("aim_assistCrosshairDebug", true);
 
-	pConsole->UnregisterVariable("cl_crymp", true);
-	pConsole->UnregisterVariable("cl_circleJump", true);
-	pConsole->UnregisterVariable("cl_wallJump", true);
-	pConsole->UnregisterVariable("cl_flyMode", true);
-	pConsole->UnregisterVariable("cl_messageCenterColor", true);
+	pConsole->UnregisterVariable("mp_crymp", true);
+	pConsole->UnregisterVariable("mp_circleJump", true);
+	pConsole->UnregisterVariable("mp_wallJump", true);
+	pConsole->UnregisterVariable("mp_flyMode", true);
+	pConsole->UnregisterVariable("mp_messageCenterColor", true);
 }
 
 //------------------------------------------------------------------------

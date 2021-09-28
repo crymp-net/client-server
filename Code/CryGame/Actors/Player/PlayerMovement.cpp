@@ -1336,10 +1336,10 @@ void CPlayerMovement::ProcessOnGroundOrJumping(CPlayer& player)
 				desiredVel = LERP(desiredVel, m_stats.velocityUnconstrained, unconstrainedFallBlend);
 		/**/
 
-		//if (g_pGameCVars->cl_circleJump == 0)
+		//if (g_pGameCVars->mp_circleJump == 0)
 		//{
 			//be sure desired velocity is flat to the ground
-			Vec3 vz = (1.0f - g_pGameCVars->cl_circleJump) * desiredVel * baseMtxZ;
+			Vec3 vz = (1.0f - g_pGameCVars->mp_circleJump) * desiredVel * baseMtxZ;
 			desiredVel -= vz;
 		//}
 

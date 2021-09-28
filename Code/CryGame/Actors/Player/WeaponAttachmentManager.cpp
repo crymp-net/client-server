@@ -80,7 +80,7 @@ bool CWeaponAttachmentManager::Init()
 	{
 		CreatePlayerBoneAttachments(); //Only create the attachment, some are needed
 
-		return g_pGameCVars->cl_weaponsOnBackMP;
+		return g_pGameCVars->mp_weaponsOnBack;
 	}
 	else if(m_pOwner->GetActorSpecies()!=eGCT_HUMAN)
 		return false;

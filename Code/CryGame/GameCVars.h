@@ -433,22 +433,22 @@ struct SCVars
 	int			g_deathEffects;
 
 	//CryMP
-	int			cl_crymp;
-	float		cl_circleJump;
-	float		cl_wallJump;
-	int			cl_flyMode;
-	int			cl_pickupObjectsMP;
-	int			cl_pickupVehiclesMP;
-	int			cl_weaponsOnBackMP;
-	int	        cl_thirdPerson;
-	int			g_ragdollUnrestrictedSP;
-	int			g_ragdollUnrestrictedMP;
-	int			cl_usePostProcessAimDir;
-	int			cl_messageCenterColor;
-	float		cl_animationWeaponMult;
-	float		cl_animationWeaponMultSpeed;
-	float		cl_animationModelMult;
-	float		cl_animationModelMultSpeed;
+	int			mp_crymp;
+	float		mp_circleJump;
+	float		mp_wallJump;
+	int			mp_flyMode;
+	int			mp_pickupObjects;
+	int			mp_pickupVehicles;
+	int			mp_weaponsOnBack;
+	int	        mp_thirdPerson;
+	int			mp_offhandAnimations;
+	int			mp_ragdollUnrestricted;
+	int			mp_usePostProcessAimDir;
+	int			mp_messageCenterColor;
+	float		mp_animationWeaponMult;
+	float		mp_animationWeaponMultSpeed;
+	float		mp_animationModelMult;
+	float		mp_animationModelMultSpeed;
 
 	SCVars()
 	{

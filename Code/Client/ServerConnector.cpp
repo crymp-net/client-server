@@ -104,12 +104,12 @@ void ServerConnector::ResetCVars()
 {
 	SCVars *pGameCVars = g_pGame->GetCVars();
 
-	pGameCVars->cl_crymp = 0;
-	pGameCVars->cl_circleJump = 0.0f;
-	pGameCVars->cl_wallJump = 1.0f;
-	pGameCVars->cl_flyMode = 0;
-	pGameCVars->cl_pickupObjectsMP = 0;
-	pGameCVars->cl_thirdPerson = 1;
+	pGameCVars->mp_crymp = 0;
+	pGameCVars->mp_circleJump = 0.0f;
+	pGameCVars->mp_wallJump = 1.0f;
+	pGameCVars->mp_flyMode = 0;
+	pGameCVars->mp_pickupObjects = 0;
+	pGameCVars->mp_thirdPerson = 1;
 }
 
 void ServerConnector::Step1_RequestServerInfo()

@@ -2303,7 +2303,7 @@ bool CItem::AttachToBack(bool attach)
 {
 	if (gEnv->bMultiplayer || !m_params.attach_to_back)
 	{
-		if (!g_pGameCVars->cl_weaponsOnBackMP)
+		if (!g_pGameCVars->mp_weaponsOnBack)
 		{
 			return false;
 		}

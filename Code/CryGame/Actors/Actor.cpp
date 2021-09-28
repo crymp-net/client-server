@@ -3950,7 +3950,7 @@ IMPLEMENT_RMI(CActor, ClPickUp)
 	{
 		//CryMP: Add support for pick up objects in Multiplayer
 		//Here is client handler 
-		if (gEnv->bMultiplayer && m_pGameFramework->IsImmersiveMPEnabled() && g_pGameCVars->cl_pickupObjectsMP)
+		if (gEnv->bMultiplayer && m_pGameFramework->IsImmersiveMPEnabled() && g_pGameCVars->mp_pickupObjects)
 		{
 			IEntity* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
 			if (pObject)

@@ -725,10 +725,10 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 	ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
 	if (pSkeletonAnim)
 	{
-		const float multWeapon = g_pGameCVars->cl_animationWeaponMult;
-		const float multWeaponSpeed = g_pGameCVars->cl_animationWeaponMultSpeed;
-		const float multModel = g_pGameCVars->cl_animationModelMult;
-		const float multModelSpeed = g_pGameCVars->cl_animationModelMultSpeed;
+		const float multWeapon = g_pGameCVars->mp_animationWeaponMult;
+		const float multWeaponSpeed = g_pGameCVars->mp_animationWeaponMultSpeed;
+		const float multModel = g_pGameCVars->mp_animationModelMult;
+		const float multModelSpeed = g_pGameCVars->mp_animationModelMultSpeed;
 		//Weapon Animations
 		pSkeletonAnim->SetLayerUpdateMultiplier(1, ((mode == NANOMODE_SPEED) ? multWeaponSpeed : multWeapon)); //Speed up 3rd person weapon animation to match 1st person 
 		//Character Animations
