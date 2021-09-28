@@ -773,8 +773,13 @@ void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 			laserLength = hit.dist;
 			hitPos = hit.pt;
 		}
-		if (GetOwnerActor() && GetOwnerActor()->GetActorParams())
-			dotScale *= GetOwnerActor()->GetActorParams()->viewFoVScale;
+		if (CActor* pOwner = parent->GetOwnerActor())
+		{
+			if (SActorParams* pParams = pOwner->GetActorParams())
+			{
+				dotScale *= pParams->viewFoVScale;
+			}
+		}
 	}
 	else
 	{
