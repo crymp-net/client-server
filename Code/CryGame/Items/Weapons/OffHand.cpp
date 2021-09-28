@@ -1475,7 +1475,7 @@ bool COffHand::PreExecuteAction(int requestedAction, int activationMode, bool fo
 
 	if (exec)
 	{
-		if (gEnv->bMultiplayer || (requestedAction != eOHA_SWITCH_GRENADE))
+		if ((!gEnv->bMultiplayer || g_pGameCVars->mp_animationGrenadeSwitch) || (requestedAction != eOHA_SWITCH_GRENADE))
 		{
 			SetHand(eIH_Left);		//Here??
 
@@ -1718,7 +1718,8 @@ void COffHand::StartSwitchGrenade(bool xi_switch, bool fakeSwitch)
 		RequestFireMode(newMode);
 
 	//No animation in multiplayer or when using the gamepad
-	if (gEnv->bMultiplayer || xi_switch)
+	//CryMP: Optional animations
+	if ((gEnv->bMultiplayer && !g_pGameCVars->mp_animationGrenadeSwitch) || xi_switch)
 	{
 		m_currentState = eOHS_SWITCHING_GRENADE;
 		SetResetTimer(0.3f); //Avoid spamming keyboard issues

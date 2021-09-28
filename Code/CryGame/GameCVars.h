@@ -441,7 +441,7 @@ struct SCVars
 	int			mp_pickupVehicles;
 	int			mp_weaponsOnBack;
 	int	        mp_thirdPerson;
-	int			mp_offhandAnimations;
+	int			mp_animationGrenadeSwitch;
 	int			mp_ragdollUnrestricted;
 	int			mp_usePostProcessAimDir;
 	int			mp_messageCenterColor;
