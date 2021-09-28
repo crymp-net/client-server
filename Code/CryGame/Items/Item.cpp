@@ -1137,15 +1137,11 @@ void CItem::Select(bool select)
 			GetEntity()->SetWorldTM(GetOwner()->GetWorldTM());	// move somewhere near the owner so the sound can play
 		float speedOverride = -1.0f;
 
-		if (pOwner && pOwner->GetActorClass() == CPlayer::GetActorClassType())
+		if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pOwner))
 		{
-			CPlayer* pPlayer = (CPlayer*)pOwner;
-			if (pPlayer->GetNanoSuit())
-			{
-				ENanoMode curMode = pPlayer->GetNanoSuit()->GetMode();
-				if (curMode == NANOMODE_SPEED)
-					speedOverride = 1.75f;
-			}
+			ENanoMode curMode = pNanoSuit->GetMode();
+			if (curMode == NANOMODE_SPEED)
+				speedOverride = 1.75f;
 		}
 
 		const char* select_animation;

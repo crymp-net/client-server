@@ -5266,11 +5266,10 @@ void CPlayer::UpdateFootSteps(float frameTime)
 			}
 
 			// Handle nano-suit sound dampening
-			CPlayer* pPlayer = (this->GetActorClass() == CPlayer::GetActorClassType()) ? (CPlayer*)this : 0;
 			float soundDamp = 1.0f;
-			if (pPlayer != 0)
-				if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
-					soundDamp = pSuit->GetCloak()->GetSoundDamp();
+			if (CNanoSuit* pSuit = GetNanoSuit())
+				soundDamp = pSuit->GetCloak()->GetSoundDamp();
+
 			footstepRadius *= soundDamp;
 
 			if (GetEntity()->GetAI())

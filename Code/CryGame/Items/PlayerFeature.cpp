@@ -114,9 +114,9 @@ void CPlayerFeature::ActivateFeature(CActor *pActor, const char *feature)
 //------------------------------------------------------------------------
 void CPlayerFeature::NanoSuit(CActor *pActor)
 {
-	if (pActor && pActor->GetActorClass()==CPlayer::GetActorClassType())
+	CPlayer* pPlayer = CPlayer::FromActor(pActor);
+	if (pPlayer)
 	{
-		CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
 		pPlayer->ActivateNanosuit(true);
 	}
 }
@@ -124,9 +124,9 @@ void CPlayerFeature::NanoSuit(CActor *pActor)
 //------------------------------------------------------------------------
 void CPlayerFeature::Parachute(CActor *pActor)
 {
-	if (pActor && pActor->GetActorClass()==CPlayer::GetActorClassType())
+	CPlayer* pPlayer = CPlayer::FromActor(pActor);
+	if (pPlayer)
 	{
-		CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
 		pPlayer->EnableParachute(true);
 	}
 }
@@ -134,27 +134,21 @@ void CPlayerFeature::Parachute(CActor *pActor)
 //------------------------------------------------------------------------
 void CPlayerFeature::AlienCloak(CActor *pActor)
 {
-	if (pActor && pActor->GetActorClass()==CPlayer::GetActorClassType())
+	CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor);
+	if (pSuit)
 	{
-		CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
-		CNanoSuit *pSuit=pPlayer->GetNanoSuit();
-
-		if (pSuit)
-		{
-			pSuit->ActivateMode(NANOMODE_CLOAK, true);
-			pSuit->SetCloakLevel(CLOAKMODE_REFRACTION);
-		}
+		pSuit->ActivateMode(NANOMODE_CLOAK, true);
+		pSuit->SetCloakLevel(CLOAKMODE_REFRACTION);
 	}
 }
 
 //------------------------------------------------------------------------
 void CPlayerFeature::NightVision(CActor *pActor)
 {
-	if (pActor && pActor->GetActorClass()==CPlayer::GetActorClassType())
+	CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor);
+	if (pSuit)
 	{
-		CPlayer *pPlayer=static_cast<CPlayer *>(pActor);
-		if (CNanoSuit *pSuit=pPlayer->GetNanoSuit())
-			pSuit->EnableNightVision(true);
+		pSuit->EnableNightVision(true);
 	}
 }
 

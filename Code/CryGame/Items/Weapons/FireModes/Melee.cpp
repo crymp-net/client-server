@@ -90,19 +90,15 @@ void CMelee::Update(float frameTime, uint frameId)
 					return;
 
 				float strength = 1.0f;//pActor->GetActorStrength();
-				if (pActor->GetActorClass() == CPlayer::GetActorClassType())
+				if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 				{
-					CPlayer* pPlayer = (CPlayer*)pActor;
-					if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
+					ENanoMode curMode = pSuit->GetMode();
+					if (curMode == NANOMODE_STRENGTH)
 					{
-						ENanoMode curMode = pSuit->GetMode();
-						if (curMode == NANOMODE_STRENGTH)
-						{
-							strength = pActor->GetActorStrength();
-							strength = strength * (1.0f + 2.0f * pSuit->GetSlotValue(NANOSLOT_STRENGTH) * STRENGTH_MULT);
-							if (!pPlayer->IsPlayer() && g_pGameCVars->g_difficultyLevel < 4)
-								strength *= g_pGameCVars->g_AiSuitStrengthMeleeMult;
-						}
+						strength = pActor->GetActorStrength();
+						strength = strength * (1.0f + 2.0f * pSuit->GetSlotValue(NANOSLOT_STRENGTH) * STRENGTH_MULT);
+						if (!pActor->IsPlayer() && g_pGameCVars->g_difficultyLevel < 4)
+							strength *= g_pGameCVars->g_AiSuitStrengthMeleeMult;
 					}
 				}
 
@@ -460,18 +456,14 @@ void CMelee::Hit(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysicalE
 	// called so that the death handler in AIsystem understands that the hit
 	// came from the player.
 	CActor* pActor = m_pWeapon->GetOwnerActor();
-	if (pActor && pActor->GetActorClass() == CPlayer::GetActorClassType())
+	if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pActor))
 	{
-		CPlayer* pPlayer = (CPlayer*)pActor;
-		if (pPlayer && pPlayer->GetNanoSuit())
+		if (pActor->GetEntity()->GetAI())
 		{
-			if (pPlayer->GetEntity() && pPlayer->GetEntity()->GetAI())
-			{
-				SAIEVENT AIevent;
-				AIevent.targetId = pTarget ? pTarget->GetId() : 0;
-				// pPlayer->GetNanoSuit()->GetMode() == NANOMODE_STRENGTH
-				pPlayer->GetEntity()->GetAI()->Event(AIEVENT_PLAYER_STUNT_PUNCH, &AIevent);
-			}
+			SAIEVENT AIevent;
+			AIevent.targetId = pTarget ? pTarget->GetId() : 0;
+			// pPlayer->GetNanoSuit()->GetMode() == NANOMODE_STRENGTH
+			pActor->GetEntity()->GetAI()->Event(AIEVENT_PLAYER_STUNT_PUNCH, &AIevent);
 		}
 	}
 
@@ -645,15 +637,11 @@ void CMelee::Impulse(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysi
 		if (pBrush)
 		{
 			CActor* pActor = m_pWeapon->GetOwnerActor();
-			if (pActor && (pActor->GetActorClass() == CPlayer::GetActorClassType()))
+			if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 			{
-				CPlayer* pPlayer = (CPlayer*)pActor;
-				if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
-				{
-					ENanoMode curMode = pSuit->GetMode();
-					if (curMode != NANOMODE_STRENGTH)
-						speed = 0.003f;
-				}
+				ENanoMode curMode = pSuit->GetMode();
+				if (curMode != NANOMODE_STRENGTH)
+					speed = 0.003f;
 			}
 		}
 
@@ -760,17 +748,13 @@ float CMelee::GetOwnerStrength() const
 		return 1.0f;
 
 	float strength = 1.0f;//pActor->GetActorStrength();
-	if (pActor->GetActorClass() == CPlayer::GetActorClassType())
+	if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 	{
-		CPlayer* pPlayer = (CPlayer*)pActor;
-		if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
+		ENanoMode curMode = pSuit->GetMode();
+		if (curMode == NANOMODE_STRENGTH)
 		{
-			ENanoMode curMode = pSuit->GetMode();
-			if (curMode == NANOMODE_STRENGTH)
-			{
-				strength = pActor->GetActorStrength();
-				strength = strength * (1.0f + 2.0f * pSuit->GetSlotValue(NANOSLOT_STRENGTH) * STRENGTH_MULT);
-			}
+			strength = pActor->GetActorStrength();
+			strength = strength * (1.0f + 2.0f * pSuit->GetSlotValue(NANOSLOT_STRENGTH) * STRENGTH_MULT);
 		}
 	}
 

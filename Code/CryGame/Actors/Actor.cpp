@@ -2595,14 +2595,11 @@ bool CActor::CanPickUpObject(IEntity* obj, float& heavyness, float& volume)
 		if (mass > 30.0f)
 			heavyness = 0.6f;
 
-		if (GetActorClass() == CPlayer::GetActorClassType())
+		CNanoSuit* pSuit = CPlayer::GetNanoSuit(this);
+		if (pSuit)
 		{
-			CNanoSuit* pSuit = ((CPlayer*)this)->GetNanoSuit();
-			if (pSuit)
-			{
-				if (strength > 1.5f && !(mass <= pParams->maxGrabMass && volume <= pParams->maxGrabVolume) && pSuit->GetSuitEnergy() > 25.0f)
-					heavyness = 1.0f;
-			}
+			if (strength > 1.5f && !(mass <= pParams->maxGrabMass && volume <= pParams->maxGrabVolume) && pSuit->GetSuitEnergy() > 25.0f)
+				heavyness = 1.0f;
 		}
 	}
 
@@ -2923,26 +2920,18 @@ bool CActor::PickUpItem(EntityId itemId, bool sound)
 	{
 		pItem->PickUp(GetEntityId(), true);
 
-		if (heavyness == 1.0f) // nanosuit has to be used
+		CNanoSuit* pSuit = CPlayer::GetNanoSuit(this);
+		if (pSuit)
 		{
-			if (GetActorClass() == CPlayer::GetActorClassType())
+			if (heavyness == 1.0f) // nanosuit has to be used
 			{
-				CNanoSuit* pSuit = ((CPlayer*)this)->GetNanoSuit();
-				if (pSuit)
-					pSuit->SetSuitEnergy(pSuit->GetSuitEnergy() - 25.0f);
+				pSuit->SetSuitEnergy(pSuit->GetSuitEnergy() - 25.0f);
 			}
-		}
 
-		if (GetActorClass() == CPlayer::GetActorClassType())
-		{
-			CNanoSuit* pSuit = ((CPlayer*)this)->GetNanoSuit();
-			if (pSuit)
+			if (pSuit->GetMode() == NANOMODE_STRENGTH)
 			{
-				if (pSuit->GetMode() == NANOMODE_STRENGTH)
-				{
-					if (heavyness > 0.33f)
-						pSuit->PlaySound(STRENGTH_LIFT_SOUND, heavyness);
-				}
+				if (heavyness > 0.33f)
+					pSuit->PlaySound(STRENGTH_LIFT_SOUND, heavyness);
 			}
 		}
 
@@ -3257,10 +3246,11 @@ void CActor::SerializeSpawnInfo(TSerialize ser)
 void CActor::SerializeLevelToLevel(TSerialize& ser)
 {
 	GetInventory()->SerializeInventoryForLevelChange(ser);
-	if (GetActorClass() == CPlayer::GetActorClassType())
+
+	CNanoSuit* pSuit = CPlayer::GetNanoSuit(this);
+	if (pSuit)
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(this);
-		pPlayer->GetNanoSuit()->Serialize(ser, 0);
+		pSuit->Serialize(ser, 0);
 	}
 }
 
@@ -3475,7 +3465,9 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 	static char weaponClassName[129] = { 0 };
 	m_pGameFramework->GetNetworkSafeClassName(weaponClassName, 128, weaponClassId);
 
-	g_pGame->GetGameRules()->OnKill(this, shooterId, weaponClassName, damage, material, hit_type);
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+
+	pGameRules->OnKill(this, shooterId, weaponClassName, damage, material, hit_type);
 
 	m_netLastSelectablePickedUp = 0;
 
@@ -3484,18 +3476,20 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 
 	Kill();
 
-	g_pGame->GetGameRules()->OnKillMessage(GetEntityId(), shooterId, weaponClassName, damage, material, hit_type);
+	pGameRules->OnKillMessage(GetEntityId(), shooterId, weaponClassName, damage, material, hit_type);
 
 	CHUD* pHUD = g_pGame->GetHUD();
 	if (!pHUD)
 		return;
 
-	bool ranked = pHUD->GetPlayerRank(shooterId) != 0 || pHUD->GetPlayerRank(GetEntityId()) != 0;
+	CActor* pShooter = shooterId ? GetActor(shooterId) : nullptr;
+
+	const bool ranked = pHUD->GetPlayerRank(shooterId) != 0 || pHUD->GetPlayerRank(GetEntityId()) != 0;
 
 	if ((IsClient() || IsFpSpectatorTarget()) && gEnv->bMultiplayer)
 	{
 		// use the spectator target to store who killed us (used for the MP death cam - not quite spectator mode but similar...).
-		if (m_pGameFramework->GetIActorSystem()->GetActor(shooterId))
+		if (pShooter)
 		{
 			if (g_pGameCVars->g_deathCam && shooterId != GetEntityId())
 			{
@@ -3505,13 +3499,13 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 			if (!IsFpSpectatorTarget())
 			{
 				// Also display the name of the enemy who shot you...
-				if (shooterId != GetEntityId() && !g_pGame->GetGameRules()->IsSameTeam(shooterId, GetEntityId()))
+				if (shooterId != GetEntityId() && !pGameRules->IsSameTeam(shooterId, GetEntityId()))
 				{
 					SAFE_HUD_FUNC(GetTagNames()->AddEnemyTagName(shooterId));
 				}
 
 				// ensure full body is displayed (otherwise player is headless)
-				if (CPlayer* pPlayer = static_cast<CPlayer*>(this))
+				if (CPlayer* pPlayer = CPlayer::FromActor(this))
 				{
 					pPlayer->EnableThirdPerson(true);
 				}
@@ -3521,22 +3515,20 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 
 	if (IsClient())
 	{
-		IActor* pActor = shooterId ? m_pGameFramework->GetIActorSystem()->GetActor(shooterId) : 0;
-		if (!pActor || shooterId == GetEntityId())
+		if (!pShooter || shooterId == GetEntityId())
 			pHUD->BattleLogEvent(eBLE_Warning, "@mp_BLYouDied");
-		else if (IGameRules* pGameRules = g_pGame->GetGameRules())
+		else if (pGameRules)
 		{
-			IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(shooterId);
-			if (pActor && ranked)
-				g_pGame->GetHUD()->BattleLogEvent(eBLE_Warning, "@mp_BLKilledYouRank", pActor->GetEntity()->GetName(), pHUD->GetPlayerRank(shooterId, true));
+			if (pShooter && ranked)
+				pHUD->BattleLogEvent(eBLE_Warning, "@mp_BLKilledYouRank", pShooter->GetEntity()->GetName(), pHUD->GetPlayerRank(shooterId, true));
 			else
-				g_pGame->GetHUD()->BattleLogEvent(eBLE_Warning, "@mp_BLKilledYou", pActor ? pActor->GetEntity()->GetName() : weaponClassName);
+				pHUD->BattleLogEvent(eBLE_Warning, "@mp_BLKilledYou", pShooter ? pShooter->GetEntity()->GetName() : weaponClassName);
 		}
 	}
 	else
 	{
 		bool display = true;
-		bool clientShooter = (shooterId == m_pGameFramework->GetClientActorId());
+		const bool clientShooter = pShooter ? pShooter->IsClient() : false;
 
 		if (!clientShooter)
 		{
@@ -3553,8 +3545,6 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 
 		if (display)
 		{
-			IActor* pActor = shooterId ? m_pGameFramework->GetIActorSystem()->GetActor(shooterId) : 0;
-
 			if (clientShooter)
 			{
 				if (ranked)
@@ -3562,7 +3552,7 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 				else
 					pHUD->BattleLogEvent(eBLE_Information, "@mp_BLYouKilled", GetEntity()->GetName());
 			}
-			else if (pActor && shooterId != GetEntityId())
+			else if (pShooter && shooterId != GetEntityId())
 			{
 				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(shooterId);
 				if (ranked)
@@ -3596,12 +3586,9 @@ bool CActor::LooseHelmet(Vec3 hitDir, Vec3 hitPos, bool simulate)
 	if (gEnv->bMultiplayer) // this feature is SP only
 		return false;
 
-	if (GetActorClass() == CPlayer::GetActorClassType())
-	{
-		CNanoSuit* pSuit = ((CPlayer*)this)->GetNanoSuit();
-		if (pSuit)
-			return false;
-	}
+	CNanoSuit* pSuit = CPlayer::GetNanoSuit(this);
+	if (pSuit)
+		return false;
 
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (!pCharacter)

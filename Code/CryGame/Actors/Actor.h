@@ -1130,35 +1130,6 @@ public:
 	virtual bool IsAlien() { return false; }
 
 
-//CryMP 
-public:
-
-	//CryMP First Person Spectators
-	virtual bool IsFpSpectator() const { return false; }
-	virtual bool IsFpSpectatorTarget() const { return false; }
-
-	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
-	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
-
-	void SaveNick(const std::string& name)
-	{
-		m_playerNameClean = Util::RemoveColorCodes(name);
-	}
-
-	std::string GetCleanNick()
-	{
-		if (m_playerNameClean.empty())
-		{
-			SaveNick(GetEntity()->GetName());
-		}
-		return m_playerNameClean;
-	}
-
-private:
-
-	std::string m_playerNameClean = "";
-
-
 protected:
 
 	virtual void SetMaterialRecursive(ICharacterInstance* charInst, bool undo, IMaterial* newMat = 0);
@@ -1292,6 +1263,45 @@ public:
 		return m_currentPhysProfile;
 	} 
 
+//////////////////////////////////////////////////////////////////////////////////
+//CryMP 
+//////////////////////////////////////////////////////////////////////////////////
+public:
+
+	//First Person Spectators
+	virtual bool IsFpSpectator() const { return false; }
+	virtual bool IsFpSpectatorTarget() const { return false; }
+
+	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
+	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
+
+	void SaveNick(const std::string& name)
+	{
+		m_playerNameClean = Util::RemoveColorCodes(name);
+	}
+
+	std::string GetCleanNick()
+	{
+		if (m_playerNameClean.empty())
+		{
+			SaveNick(GetEntity()->GetName());
+		}
+		return m_playerNameClean;
+	}
+
+	CActor* GetActor(EntityId actorId)
+	{
+		return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActor(actorId));
+	}
+
+	CActor* GetActorByChannel(uint16 actorId)
+	{
+		return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActorByChannelId(actorId));
+	}
+
+private:
+
+	std::string m_playerNameClean = "";
 };
 
 #endif //__Actor_H__

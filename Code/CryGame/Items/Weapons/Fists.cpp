@@ -306,15 +306,11 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 		float speedOverride = -1.0f;
 
 		CActor* pActor = GetOwnerActor();
-		if (pActor && pActor->GetActorClass() == CPlayer::GetActorClassType())
+		if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 		{
-			CPlayer* pPlayer = (CPlayer*)pActor;
-			if (pPlayer->GetNanoSuit())
+			if (pSuit->GetMode() == NANOMODE_SPEED)
 			{
-				if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED)
-				{
-					speedOverride = 1.75f;
-				}
+				speedOverride = 1.75f;
 			}
 		}
 

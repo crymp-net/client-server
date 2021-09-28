@@ -407,28 +407,9 @@ public:
 	static  const char* GetActorClassType() { return "CPlayer"; }
 	virtual const char* GetActorClass() const { return CPlayer::GetActorClassType(); }
 
-	//CryMP 
-	//First Person Spectator
-	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
-	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
-	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
-	void SetFpSpectatorTarget(bool activate);
-	IActor* GetSpectatorTargetPlayer();
-
-	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
-	Vec3 GetNetAimDir() const { return m_netAimDir; }
-	Vec3 GetNetAimDirSmooth() const { return m_netAimDirSmooth; }
-	//CryMP 
-
 protected:
 	virtual IActorMovementController* CreateMovementController();
 	virtual void SetIK(const SActorFrameMovementParams&);
-
-	bool GetAimTargetAdjusted(Vec3& aimTarget);
-
-	//CryMP FP Spec
-	SViewParams m_FirstPersonSpectatorParams;
-	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
 public:
 	struct SAlienInterferenceParams
@@ -859,14 +840,6 @@ protected:
 	CVehicleClient* m_pVehicleClient;
 	Vec3 m_vehicleViewDir;
 
-	//CryMP
-	float m_tpLeanOffset;
-	float m_tpProneOffset;
-	Vec3 m_vehicleViewDirSmooth;
-	Vec3 m_netAimDir;
-	Vec3 m_netAimDirSmooth;
-	//CryMP
-
 	//sound loops that are played when we don't have a nanosuit
 	float		 m_sprintTimer;
 	tSoundID m_sounds[ESound_Player_Last];
@@ -891,6 +864,59 @@ protected:
 public:
 	IDebugHistoryManager* m_pDebugHistoryManager;
 	void DebugGraph_AddValue(const char* id, float value) const;
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//CryMP 
+//////////////////////////////////////////////////////////////////////////////////
+
+protected:
+
+	float m_tpLeanOffset = 0.0f;
+	float m_tpProneOffset = 0.0f;
+	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
+	Vec3 m_netAimDir = Vec3(ZERO);
+	Vec3 m_netAimDirSmooth = Vec3(ZERO);
+
+	bool GetAimTargetAdjusted(Vec3& aimTarget);
+
+	SViewParams m_FirstPersonSpectatorParams = SViewParams();
+	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
+
+public:
+
+	//First Person Spectator
+	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
+	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
+	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
+	void SetFpSpectatorTarget(bool activate);
+	IActor* GetSpectatorTargetPlayer();
+
+	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
+	Vec3 GetNetAimDir() const { return m_netAimDir; }
+	Vec3 GetNetAimDirSmooth() const { return m_netAimDirSmooth; }
+
+	static CPlayer* FromActor(CActor* pActor)
+	{
+		if (!pActor)
+			return nullptr;
+
+		if (pActor->GetActorClass() == CPlayer::GetActorClassType())
+			return static_cast<CPlayer*>(pActor);
+		else
+			return nullptr;
+	}
+
+	static CNanoSuit* GetNanoSuit(CActor* pActor)
+	{
+		if (!pActor)
+			return nullptr;
+
+		if (CPlayer* pPlayer = FromActor(pActor))
+			return pPlayer->GetNanoSuit();
+		else
+			return nullptr;
+	}
 
 };
 

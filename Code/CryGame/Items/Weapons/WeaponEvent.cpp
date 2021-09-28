@@ -127,14 +127,10 @@ void CWeapon::OnStartFire(EntityId shooterId)
 	{
 		if(CActor* pOwner = static_cast<CActor *>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId)))
 		{
-			if (pOwner->GetActorClass()==CPlayer::GetActorClassType())
+			if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pOwner))
 			{
-				CPlayer *pPlayer = static_cast<CPlayer *>(pOwner);
-				if(CNanoSuit *pSuit = pPlayer->GetNanoSuit())
-				{
-					if (pSuit->IsInvulnerable())
-						pSuit->SetInvulnerability(false);
-				}
+				if (pSuit->IsInvulnerable())
+					pSuit->SetInvulnerability(false);
 			}
 		}
 	}

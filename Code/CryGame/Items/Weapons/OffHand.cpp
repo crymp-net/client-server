@@ -1585,11 +1585,10 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 		IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
 		if (pEntity)
 		{
-			CActor* pPlayer = GetOwnerActor();
-
-			if (pPlayer && pPlayer->GetActorClass() == CPlayer::GetActorClassType())
+			CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
+			if (pPlayer)
 			{
-				static_cast<CPlayer*>(pPlayer)->NotifyObjectGrabbed(false, m_heldEntityId, false);
+				pPlayer->NotifyObjectGrabbed(false, m_heldEntityId, false);
 			}
 
 			IPhysicalEntity* pPhys = pEntity->GetPhysics();
@@ -2314,21 +2313,23 @@ bool COffHand::PerformPickUp()
 					m_intialBoidLocalMatrix = pEntity->GetSlotLocalTM(0, false);
 			}
 			// only if we're picking up a normal (non Item) object
-			if ((m_currentState & eOHS_PICKING) && pActor->GetActorClass() == CPlayer::GetActorClassType())
+			if (m_currentState & eOHS_PICKING)
 			{
-				CPlayer* pPlayer = static_cast<CPlayer*> (pActor);
-				pPlayer->NotifyObjectGrabbed(true, m_heldEntityId, false, (m_grabType == GRAB_TYPE_TWO_HANDED));
-			}
-		}
-
-		// disable leg IK if we are grabbing something with two hands
-		if (pActor->IsClient() && m_grabType == GRAB_TYPE_TWO_HANDED)
-		{
-			if (ICharacterInstance* pCharacter = pActor->GetEntity()->GetCharacter(0))
-			{
-				if (ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose())
+				if (CPlayer* pPlayer = CPlayer::FromActor(pActor))
 				{
-					pSkeletonPose->EnableFootGroundAlignment(false);
+					pPlayer->NotifyObjectGrabbed(true, m_heldEntityId, false, (m_grabType == GRAB_TYPE_TWO_HANDED));
+				}
+			}
+
+			// disable leg IK if we are grabbing something with two hands
+			if (pActor->IsClient() && m_grabType == GRAB_TYPE_TWO_HANDED)
+			{
+				if (ICharacterInstance* pCharacter = pActor->GetEntity()->GetCharacter(0))
+				{
+					if (ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose())
+					{
+						pSkeletonPose->EnableFootGroundAlignment(false);
+					}
 				}
 			}
 		}
@@ -2958,9 +2959,9 @@ bool COffHand::GrabNPC()
 	m_killNPC = m_effectRunning = m_npcWasDead = false;
 	m_grabbedNPCInitialHealth = pActor->GetHealth();
 
-	if (pPlayer->GetActorClass() == CPlayer::GetActorClassType())
+	if (CPlayer* pPlayer = CPlayer::FromActor(pActor))
 	{
-		static_cast<CPlayer*>(pPlayer)->NotifyObjectGrabbed(true, m_heldEntityId, true);
+		pPlayer->NotifyObjectGrabbed(true, m_heldEntityId, true);
 	}
 
 	//Hide attachments on the back
@@ -3069,9 +3070,9 @@ void COffHand::ThrowNPC(bool kill /*= true*/)
 			pRenderNode->SetRndFlags(ERF_RENDER_ALWAYS, false);
 	}
 
-	if (pPlayer && pPlayer->GetActorClass() == CPlayer::GetActorClassType())
+	if (CPlayer* pPlayer = CPlayer::FromActor(pActor))
 	{
-		static_cast<CPlayer*>(pPlayer)->NotifyObjectGrabbed(false, pEntity->GetId(), true);
+		pPlayer->NotifyObjectGrabbed(false, pEntity->GetId(), true);
 	}
 
 	GetGameObject()->DisablePostUpdates(this); //Disable again

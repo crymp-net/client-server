@@ -2588,10 +2588,9 @@ void CSingle::UpdateRecoil(float frameTime)
 	//Nano-suit stuff
 	float nanoSuitScale = 1.0f;
 	float strenghtScale = 1.0f;
-	if (pActor && pActor->GetActorClass() == CPlayer::GetActorClassType())
+
+	if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
-		CNanoSuit* pSuit = pPlayer->GetNanoSuit();
 		float strength = 0.0f;
 		if (pSuit)
 		{

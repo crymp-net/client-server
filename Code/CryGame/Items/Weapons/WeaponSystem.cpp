@@ -632,7 +632,7 @@ void CWeaponSystem::ApplyEnvironmentChanges()
 		IActorIteratorPtr it = pAS->CreateActorIterator();
 		while (CActor* pActor = (CActor*)it->Next())
 		{
-			CPlayer *pPlayer = (pActor->GetActorClass() == CPlayer::GetActorClassType()) ? static_cast<CPlayer*>(pActor) : 0;
+			CPlayer* pPlayer = CPlayer::FromActor(pActor);
 			if (pPlayer && pPlayer->GetNanoSuit())
 			{
 				// go through all players and turn their ice effects on/off

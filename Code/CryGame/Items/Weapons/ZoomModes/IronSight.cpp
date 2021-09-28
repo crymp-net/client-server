@@ -673,13 +673,10 @@ void CIronSight::OnEnterZoom()
 			gEnv->p3DEngine->SetPostEffectParamString("FilterMaskedBlurring_MaskTexName", m_zoomparams.blur_mask);
 		}
 
-		if (pActor->GetActorClass() == CPlayer::GetActorClassType())
+		CPlayer* pPlayer = CPlayer::FromActor(pActor);
+		if (pPlayer && g_pGameCVars->bt_ironsight && (!g_pGameCVars->bt_speed || (pPlayer->GetNanoSuit() && (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED))))
 		{
-			CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
-			if (g_pGameCVars->bt_ironsight && (!g_pGameCVars->bt_speed || (pPlayer->GetNanoSuit() && (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED))))
-			{
-				g_pGame->GetBulletTime()->Activate(true);
-			}
+			g_pGame->GetBulletTime()->Activate(true);
 		}
 	}
 	m_swayTime = 0.0f;
@@ -964,9 +961,9 @@ void CIronSight::ClearDoF()
 	{
 		gEnv->p3DEngine->SetPostEffectParam("Dof_Active", 0.0f);
 
-		if (pActor->GetActorClass() == CPlayer::GetActorClassType())
+		CPlayer* pPlayer = CPlayer::FromActor(pActor);
+		if (pPlayer)
 		{
-			CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
 			if (g_pGameCVars->bt_ironsight && (!g_pGameCVars->bt_speed || (pPlayer->GetNanoSuit() && (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED))))
 			{
 				g_pGame->GetBulletTime()->Activate(false);

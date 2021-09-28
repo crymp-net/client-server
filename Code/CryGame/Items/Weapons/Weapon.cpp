@@ -2805,16 +2805,12 @@ void CWeapon::StartChangeFireMode()
 	float speedOverride = -1.0f;
 	float mult = 1.0f;
 	CActor* owner = GetOwnerActor();
-	if (owner && owner->GetActorClass() == CPlayer::GetActorClassType())
+	if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(owner))
 	{
-		CPlayer* pPlayer = (CPlayer*)owner;
-		if (pPlayer->GetNanoSuit())
+		if (pNanoSuit->GetMode() == NANOMODE_SPEED)
 		{
-			if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED)
-			{
-				speedOverride = 1.75f;
-				mult = 1.0f / 1.75f;
-			}
+			speedOverride = 1.75f;
+			mult = 1.0f / 1.75f;
 		}
 	}
 
@@ -3021,15 +3017,11 @@ void CWeapon::RaiseWeapon(bool raise, bool faster /* = false */)
 			float speedOverride = -1.0f;
 
 			CActor* owner = GetOwnerActor();
-			if (owner && owner->GetActorClass() == CPlayer::GetActorClassType())
+			if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(owner))
 			{
-				CPlayer* pPlayer = (CPlayer*)owner;
-				if (pPlayer->GetNanoSuit())
+				if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED)
 				{
-					if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED)
-					{
-						speedOverride = 1.75f;
-					}
+					speedOverride = 1.75f;
 				}
 			}
 
@@ -3052,12 +3044,10 @@ void CWeapon::RaiseWeapon(bool raise, bool faster /* = false */)
 			float speedOverride = -1.0f;
 
 			CActor* owner = GetOwnerActor();
-			if (owner && owner->GetActorClass() == CPlayer::GetActorClassType())
+			if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(owner))
 			{
-				CPlayer* pPlayer = (CPlayer*)owner;
-				if (pPlayer->GetNanoSuit())
-					if (pPlayer->GetNanoSuit()->GetMode() == NANOMODE_SPEED || faster)
-						speedOverride = 1.75f;
+				if (pNanoSuit->GetMode() == NANOMODE_SPEED || faster)
+					speedOverride = 1.75f;
 			}
 
 			if (speedOverride > 0.0f)

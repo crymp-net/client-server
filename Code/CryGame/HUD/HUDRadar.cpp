@@ -850,11 +850,9 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 
 					if (unknownEnemyActor || scannedEnemy)	//unknown or known enemy in MP !?
 					{
-						CPlayer* pPlayer = 0;
-						if (tempActor->GetActorClass() == CPlayer::GetActorClassType())
-							pPlayer = static_cast<CPlayer*>(tempActor);
+						CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(tempActor);
 
-						if (pPlayer && !(pPlayer->GetNanoSuit() && pPlayer->GetNanoSuit()->GetCloak()->GetState() != 0))
+						if (pNanoSuit && !(pNanoSuit->GetCloak()->GetState() != 0))
 						{
 							float length = vTransformed.GetLength();
 							if (length < 20.0f)
@@ -1175,14 +1173,10 @@ bool CHUDRadar::ScanObject(EntityId id)
 	{
 		if (CActor* pCActor = static_cast<CActor*>(pActor))
 		{
-			if (pCActor->GetActorClass() == CPlayer::GetActorClassType())
+			if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pCActor))
 			{
-				CPlayer* pPlayer = static_cast<CPlayer*>(pCActor);
-				if (CNanoSuit* pNanoSuit = pPlayer->GetNanoSuit())
-				{
-					if (pNanoSuit->GetMode() == NANOMODE_CLOAK && pNanoSuit->GetCloak()->GetType() == CLOAKMODE_REFRACTION)
-						return false;
-				}
+				if (pNanoSuit->GetMode() == NANOMODE_CLOAK && pNanoSuit->GetCloak()->GetType() == CLOAKMODE_REFRACTION)
+					return false;
 			}
 		}
 	}

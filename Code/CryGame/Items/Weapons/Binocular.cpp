@@ -97,10 +97,9 @@ void CBinocular::UpdateFPView(float frameTime)
 bool CBinocular::OnActionZoom(EntityId actorId, const ActionId& actionId, int activationMode, float value)
 {
 	CActor* pOwner = GetOwnerActor();
-	if (pOwner && (pOwner->GetActorClass() == CPlayer::GetActorClassType()))
+	if (pOwner)
 	{
-		CPlayer* pPlayer = (CPlayer*)pOwner;
-		pPlayer->SelectLastItem(false, true);
+		pOwner->SelectLastItem(false, true);
 	}
 
 	return true;
@@ -113,7 +112,7 @@ bool CBinocular::OnActionZoomIn(EntityId actorId, const ActionId& actionId, int 
 	if (ok && m_zm && (m_zm->GetCurrentStep() < m_zm->GetMaxZoomSteps()) && m_zm->StartZoom(false, false))
 	{
 		CActor* pOwner = GetOwnerActor();
-		if (pOwner == g_pGame->GetIGameFramework()->GetClientActor())
+		if (pOwner && pOwner->IsClient())
 			SAFE_HUD_FUNC(PlaySound(ESound_BinocularsZoomIn));
 	}
 
