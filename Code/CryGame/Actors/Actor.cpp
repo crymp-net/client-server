@@ -3513,6 +3513,9 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 		}
 	}
 
+	if (!g_pGameCVars->mp_killMessages)
+		return;
+
 	if (IsClient())
 	{
 		if (!pShooter || shooterId == GetEntityId())

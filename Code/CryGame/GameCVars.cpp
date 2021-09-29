@@ -594,6 +594,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_thirdPerson", &mp_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
 	pConsole->Register("mp_animationGrenadeSwitch", &mp_animationGrenadeSwitch, 1, OPTIONAL_SYNC, "Enable FP animations for grenade switching");
 	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
+	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("mp_usePostProcessAimDir", &mp_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
