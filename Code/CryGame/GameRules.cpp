@@ -518,6 +518,8 @@ void CGameRules::OnConnect(struct INetChannel* pNetChannel)
 //------------------------------------------------------------------------
 void CGameRules::OnDisconnect(EDisconnectionCause cause, const char* desc)
 {
+	g_pGame->DestroyHUD();
+
 	m_pClientNetChannel = 0;
 	int icause = (int)cause;
 	CallScript(m_clientStateScript, "OnDisconnect", icause, desc);
