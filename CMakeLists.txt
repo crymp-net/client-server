@@ -56,6 +56,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/MapDownloader.h
   Code/Client/MapExtractor.cpp
   Code/Client/MapExtractor.h
+  Code/Client/ParticleManager.cpp
+  Code/Client/ParticleManager.h
   Code/Client/ScriptBind_CPPAPI.cpp
   Code/Client/ScriptBind_CPPAPI.h
   Code/Client/ScriptCallbacks.cpp
