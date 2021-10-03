@@ -1,3 +1,6 @@
+#include "CryGame/StdAfx.h"
+#include "CryGame/GameCVars.h"
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
@@ -31,6 +34,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(ApplyMaskOne, "entity, mask, apply");
 	SCRIPT_REG_TEMPLFUNC(ApplyMaskAll, "mask, apply");
 	SCRIPT_REG_TEMPLFUNC(FSetCVar, "cvar, value");
+	SCRIPT_REG_TEMPLFUNC(Alter, "cvar, value");
 	SCRIPT_REG_TEMPLFUNC(GetLocaleInformation, "");
 	SCRIPT_REG_TEMPLFUNC(GetMapName, "");
 	SCRIPT_REG_TEMPLFUNC(MakeUUID, "salt");
@@ -115,6 +119,39 @@ int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const ch
 	{
 		pCvar->ForceSet(value);
 		success = true;
+	}
+
+	return pH->EndFunction(success);
+}
+
+
+int ScriptBind_CPPAPI::Alter(IFunctionHandler* pH, const char* cvar, const char* value)
+{
+	std::map<std::string, std::tuple<char, void*>> table;
+
+	table["cl_circleJump"] = std::make_tuple('F', (void*)&g_pGameCVars->cl_circleJump);
+	table["cl_wallJump"] = std::make_tuple('F', (void*)&g_pGameCVars->cl_wallJump);
+	table["cl_flyMode"] = std::make_tuple('I', (void*)&g_pGameCVars->cl_flyMode);
+
+	auto it = table.find(cvar);
+	bool success = false;
+	if (it != table.end()) {
+		success = true;
+		auto& [type, ref] = it->second;
+		switch (type) {
+		case 'F':
+			*(float*)ref = atof(value);
+			break;
+		case 'I':
+			*(int*)ref = atoi(value);
+			break;
+		case 'S':
+			((ICVar*)ref)->ForceSet(value);
+			break;
+		default:
+			success = false;
+			break;
+		}
 	}
 
 	return pH->EndFunction(success);

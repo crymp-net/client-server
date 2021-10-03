@@ -12,6 +12,7 @@ public:
 	int ApplyMaskOne(IFunctionHandler *pH, ScriptHandle entity, int mask, bool apply);
 	int ApplyMaskAll(IFunctionHandler* pH, int mask, bool apply);
 	int FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value);
+	int Alter(IFunctionHandler* pH, const char* cvar, const char* value);
 	int GetLocaleInformation(IFunctionHandler *pH);
 	int GetMapName(IFunctionHandler *pH);
 	int MakeUUID(IFunctionHandler *pH, const char *salt);
