@@ -109,15 +109,41 @@ int ScriptBind_CPPAPI::ApplyMaskAll(IFunctionHandler* pH, int applyMask, bool ap
 
 int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value)
 {
-	bool success = false;
-
-	if (ICVar *pCvar = gEnv->pConsole->GetCVar(cvar))
+	if (ICVar * pCVar = gEnv->pConsole->GetCVar(cvar))
 	{
-		pCvar->ForceSet(value);
-		success = true;
+		const std::string previousVal = pCVar->GetString();
+			
+		pCVar->ForceSet(value);
+
+		//CVar still the same, is it synced?
+		if (previousVal == (std::string)pCVar->GetString())
+		{
+			const int previousFlags = pCVar->GetFlags();
+
+			//disable sync
+			pCVar->SetFlags(VF_NOT_NET_SYNCED);
+
+			//2nd attempt
+			pCVar->ForceSet(value);
+
+			//now restore the flags
+			pCVar->SetFlags(previousFlags);
+			//CVar value won't change untill server changes it to something else
+
+			if ((std::string)value == (std::string)pCVar->GetString())
+			{
+				//all good!
+				return pH->EndFunction(true);
+			}
+			else
+				CryLogAlways("$4[CryMP] Failed to change CVar %s - value still %s", cvar, pCVar->GetString());
+		}
+		else
+			return pH->EndFunction(true);
+
 	}
 
-	return pH->EndFunction(success);
+	return pH->EndFunction(false);
 }
 
 int ScriptBind_CPPAPI::GetLocaleInformation(IFunctionHandler *pH)
