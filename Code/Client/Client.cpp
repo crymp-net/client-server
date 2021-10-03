@@ -24,6 +24,7 @@
 #include "ServerConnector.h"
 #include "ServerPAK.h"
 #include "EngineCache.h"
+#include "ParticleManager.h"
 
 #include "config.h"
 
@@ -126,6 +127,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerConnector   = std::make_unique<ServerConnector>();
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 	m_pEngineCache		 = std::make_unique<EngineCache>();
+	m_pParticleManager   = std::make_unique<ParticleManager>();
 
 	// prepare Lua scripts
 	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
@@ -180,10 +182,22 @@ std::string Client::GetHWID(const std::string_view & salt)
 	return hwid;
 }
 
+void Client::OnTick() //each sec
+{
+}
+
 void Client::OnPostUpdate(float deltaTime)
 {
 	m_pExecutor->OnUpdate();
 	m_pScriptCallbacks->OnUpdate(deltaTime);
+
+	m_FrameCounter += deltaTime;
+	if (m_FrameCounter > 1.0f)
+	{
+		OnTick();
+		m_FrameCounter = 0.0f;
+	}
+	
 }
 
 void Client::OnSaveGame(ISaveGame *pSaveGame)

@@ -27,6 +27,7 @@ class ServerBrowser;
 class ServerConnector;
 class ServerPAK;
 class EngineCache;
+class ParticleManager;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
@@ -50,6 +51,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ServerConnector> m_pServerConnector;
 	std::unique_ptr<ServerPAK> m_pServerPAK;
 	std::unique_ptr<EngineCache> m_pEngineCache;
+	std::unique_ptr<ParticleManager> m_pParticleManager;
 
 	std::minstd_rand m_randomEngine;
 
@@ -61,6 +63,8 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
 
+	float m_FrameCounter = 0.0f;
+
 public:
 	Client();
 	~Client();
@@ -69,6 +73,7 @@ public:
 
 	std::string GetMasterServerAPI(const std::string & master);
 	std::string GetHWID(const std::string_view & salt);
+	void OnTick();
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
