@@ -112,7 +112,10 @@ int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const ch
 	if (ICVar * pCVar = gEnv->pConsole->GetCVar(cvar))
 	{
 		const std::string previousVal = pCVar->GetString();
-			
+
+		if (previousVal == (std::string)value)
+			return pH->EndFunction(true);
+
 		pCVar->ForceSet(value);
 
 		//CVar still the same, is it synced?
