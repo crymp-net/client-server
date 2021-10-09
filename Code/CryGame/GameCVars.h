@@ -444,6 +444,7 @@ struct SCVars
 	int			mp_animationGrenadeSwitch;
 	int			mp_ragdollUnrestricted;
 	int			mp_killMessages;
+	int			mp_newSpectator;
 	int			mp_usePostProcessAimDir;
 	int			mp_messageCenterColor;
 	float		mp_animationWeaponMult;

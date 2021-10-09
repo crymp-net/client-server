@@ -262,7 +262,13 @@ void CPlayerView::ViewProcess(SViewParams& viewParams)
 	else if (m_in.stats_spectatorMode == CActor::eASM_Follow)
 	{
 		ViewFirstThirdSharedPre(viewParams);
-		ViewSpectatorTarget(viewParams);
+
+		//New Spectator (TP)
+		if (g_pGameCVars->mp_newSpectator)
+			ViewSpectatorTarget_CryMP(viewParams);
+		else
+			ViewSpectatorTarget(viewParams);
+
 		ViewFirstThirdSharedPost(viewParams);
 	}
 	else
@@ -455,16 +461,16 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	}
 
 	Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
-	Vec3 current(target);
+	static Vec3 current(target);
 
-	float yOffsetTarget = current.y;
+	Interpolate(current, target, 5.0f, m_in.frameTime);
 
 	// make sure we don't clip through stuff that much
 	Vec3 offsetX(0, 0, 0);
 	Vec3 offsetY(0, 0, 0);
 	Vec3 offsetZ(0, 0, 0);
 	offsetX = m_io.viewQuatFinal.GetColumn0() * current.x;
-	offsetY = m_io.viewQuatFinal.GetColumn1() * current.y;
+	offsetY = m_io.viewQuatFinal.GetColumn1() * (current.y - 0.25f);
 	offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
 
 	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
@@ -482,64 +488,21 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 		}
 
 		float oldLen = offsetY.len();
-		Vec3 start = pActor->GetEntity()->GetWorldPos();
-		SMovementState sMovementState;
-		if (IMovementController* pMC = pActor->GetMovementController())
+
+		Vec3 start = m_io.baseQuat * m_io.eyeOffsetView + viewParams.position + offsetX + offsetZ;
+		if (gEnv->pPhysicalWorld->RayWorldIntersection(start, offsetY, ent_static | ent_terrain | ent_rigid,
+			rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
 		{
-			pMC->GetMovementState(sMovementState);
-			start = sMovementState.eyePosition;
+			offsetY = hit.pt - start;
+			current.y = current.y * (hit.dist / oldLen);
 		}
-		Vec3 cameraPos = (start + offsetX + offsetY + offsetZ);
-		Vec3 newDir = cameraPos - start;
-		//if (gEnv->pPhysicalWorld->RayWorldIntersection(start, newDir, ent_static|ent_terrain|ent_rigid,
-		//	rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
-
-		static float minDist = 0.4f;	// how close we're allowed to get to the target
-		static float wallSafeDistance = 0.3f; // how far to keep camera from walls
-		primitives::sphere sphere;
-		sphere.center = start;
-		sphere.r = wallSafeDistance;
-
-		geom_contact* pContact = 0;
-		float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir, ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid,
-			&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
-		if (hitDist > 0 && pContact)
-		{
-			MAX(hitDist, minDist);
-			yOffsetTarget = yOffsetTarget * (hitDist / oldLen);
-
-			//static float color[] = { 1,1,1,1 };
-			//gEnv->pRenderer->Draw2dLabel(200, 200, 1.5, color, false, "Hit dist: %f", hitDist);
-			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(start, ColorB(200, 0, 0, 200), pContact->pt, ColorB(200, 0, 0, 200));
-		}
-
-	}
-	Vec3 currentPos = viewParams.position;
-	currentPos += m_io.viewQuatFinal.GetColumn0() * target.x;		// right 
-	currentPos += m_io.viewQuatFinal.GetColumn2() * target.z;	// up
-
-	Vec3 targetPos = currentPos + m_io.viewQuatFinal.GetColumn1() * yOffsetTarget; //back
-	//Interpolate(currentPos, targetPos, 1.0f, m_in.frameTime);
-
-	viewParams.position = targetPos;
-}
-
-
-#if 0
-void CPlayerView::ViewThirdPersonDirected(SViewParams& viewParams)
-{
-	if (m_in.thirdPersonYaw > 0.001f)
-	{
-		viewParams.rotation *= Quat::CreateRotationXYZ(Ang3(0, 0, m_in.thirdPersonYaw * gf_PI / 180.0f));
-		m_io.viewQuatFinal = Matrix33(viewParams.rotation);
 	}
 
-	if (m_io.bUsePivot)
-		viewParams.position += m_io.viewQuatFinal.GetColumn1() * m_in.params_viewDistance + m_io.viewQuatFinal.GetColumn2() * (0.25f + m_in.params_viewHeightOffset);
-	else
-		viewParams.position += m_io.viewQuatFinal.GetColumn1() * -m_in.thirdPersonDistance + m_io.viewQuatFinal.GetColumn2() * (0.25f + m_in.params_viewHeightOffset);
+	//viewParams.position += m_io.viewQuatFinal.GetColumn0() * current.x;		// right 
+	//viewParams.position += m_io.viewQuatFinal.GetColumn1() * current.y;	// back
+	//viewParams.position += m_io.viewQuatFinal.GetColumn2() * current.z;	// up
+	viewParams.position += offsetX + offsetY + offsetZ;
 }
-#endif
 
 // jump/land spring effect. Adjust the eye and weapon pos as required.
 void CPlayerView::FirstPersonJump(SViewParams& viewParams, Vec3& weaponOffset, Ang3& weaponAngleOffset)
@@ -1151,6 +1114,154 @@ void CPlayerView::ViewSpectatorTarget(SViewParams& viewParams)
 	}
 
 	Matrix33 rotation = Matrix33::CreateRotationVDir((entPos - viewParams.position).GetNormalizedSafe());
+	viewParams.rotation = GetQuatFromMat33(rotation);
+	m_io.bUsePivot = true;
+	m_io.stats_bobCycle = 0.0;
+}
+
+void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
+{
+	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget);
+	if (!pTarget)
+		return;
+
+	Matrix34 worldTM = pTarget->GetEntity()->GetWorldTM();
+
+	Vec3 worldPos = worldTM.GetTranslation();
+	worldPos.z += 1.5f;
+
+	Ang3 worldAngles = Ang3::GetAnglesXYZ(Matrix33(worldTM));
+	float rot = worldAngles.z;// + m_rot;
+	float distance = 3;//(m_defaultDistance != 0) ? m_defaultDistance : m_distance;
+
+	if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
+	{
+		AABB vehicleBox;
+		pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
+		distance = 2.0f * vehicleBox.GetRadius();
+	}
+
+	Vec3 goal;
+	float zoom = 1.0f;
+	goal.x = distance * zoom * cosf(rot + gf_PI * 1.5f) + worldPos.x;
+	goal.y = distance * zoom * sinf(rot - gf_PI / 2.0f) + worldPos.y;
+
+	AABB targetBounds;
+	pTarget->GetEntity()->GetLocalBounds(targetBounds);
+	goal.z = targetBounds.max.z;
+	static float defaultOffset = 0.75f;
+	float offset = defaultOffset;
+	if (pTarget->GetLinkedVehicle())
+		offset = 2.0f;
+	goal.z += pTarget->GetEntity()->GetWorldPos().z + offset;
+
+	// store / interpolate the offset, not the world pos (reduces percieved jitter in vehicles)
+	static Vec3 viewOffset(goal - worldPos);
+	static Vec3 position(goal);
+	static Vec3 entPos(worldPos);
+	static EntityId lastSpectatorTarget(m_in.stats_spectatorTarget);
+
+	// do a ray cast to check for camera intersection
+	static ray_hit hit;
+	IPhysicalEntity* pSkipEntities[10];
+	int nSkip = 0;
+	IItem* pItem = pTarget->GetCurrentItem();
+	if (pItem)
+	{
+		CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
+		if (pWeapon)
+			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+	}
+	else if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
+	{
+		// vehicle drivers don't seem to have current items, so need to add the vehicle itself here
+		nSkip = pVehicle->GetSkipEntities(pSkipEntities, 10);
+	}
+
+	const float wallSafeDistance = 0.2f; // how far to keep camera from walls
+
+	Vec3 dir = goal - worldPos;
+
+	primitives::sphere sphere;
+	sphere.center = worldPos;
+	sphere.r = wallSafeDistance;
+
+	geom_contact* pContact = 0;
+	float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, dir, ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid,
+		&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
+
+	// even when we have contact, keep the camera the same height above the target
+	float minHeightDiff = dir.z;
+
+	if (hitDist > 0 && pContact)
+	{
+		goal = worldPos + (hitDist * dir.GetNormalizedSafe());
+
+		if (goal.z - worldPos.z < minHeightDiff)
+		{
+			// can't move the camera far enough away from the player in this direction. Try moving it directly up a bit
+			sphere.center = goal;
+
+			// (move back just slightly to avoid colliding with the wall we've already found...)
+			sphere.center -= dir.GetNormalizedSafe() * 0.05f;
+
+			float newHitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, Vec3(0, 0, minHeightDiff), ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid,
+				&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
+
+			float raiseDist = minHeightDiff - (goal.z - worldPos.z) - wallSafeDistance;
+			if (newHitDist != 0)
+			{
+				raiseDist = MIN(minHeightDiff, newHitDist);
+			}
+
+			raiseDist = MAX(0.0f, raiseDist);
+
+			goal.z += raiseDist;
+			worldPos.z += raiseDist * 0.8f;
+		}
+	}
+
+	int thisFrameId = gEnv->pRenderer->GetFrameID();
+	static int frameNo(thisFrameId);
+	if (thisFrameId - frameNo > 5)
+	{
+		// reset positions
+		viewOffset = goal - worldPos;
+		entPos = worldPos;
+		position = goal;
+	}
+	if (lastSpectatorTarget != m_in.stats_spectatorTarget)
+	{
+		viewOffset = goal - worldPos;
+		entPos = worldPos;
+		position = goal;
+		lastSpectatorTarget = m_in.stats_spectatorTarget;
+	}
+	frameNo = thisFrameId;
+	if (pTarget->GetLinkedVehicle())
+	{
+		Interpolate(viewOffset, goal - worldPos, 5.0f, viewParams.frameTime);
+		entPos = worldPos;
+		viewParams.position = worldPos + viewOffset;
+		position = viewParams.position;
+	}
+	else
+	{
+		Vec3 camPosChange = goal - position;
+		Vec3 entPosChange = worldPos - entPos;
+
+		if (camPosChange.GetLengthSquared() > 100.0f)
+			position = goal;
+		if (entPosChange.GetLengthSquared() > 100.0f)
+			entPos = worldPos;
+
+		Interpolate(position, goal, 5.0f, viewParams.frameTime);
+		Interpolate(entPos, worldPos, 5.0f, viewParams.frameTime);
+		viewParams.position = position;
+	}
+
+	Matrix33 rotation = Matrix33::CreateRotationVDir((entPos - viewParams.position).GetNormalizedSafe());
+
 	viewParams.rotation = GetQuatFromMat33(rotation);
 	m_io.bUsePivot = true;
 	m_io.stats_bobCycle = 0.0;

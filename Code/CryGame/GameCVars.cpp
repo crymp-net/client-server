@@ -597,6 +597,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 
 	//CryMP CVars (un-synced)
+	pConsole->Register("mp_newSpectator", &mp_newSpectator, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("mp_usePostProcessAimDir", &mp_usePostProcessAimDir, 1, VF_NOT_NET_SYNCED, "");
 	pConsole->Register("mp_messageCenterColor", &mp_messageCenterColor, 1, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_animationWeaponMult", &mp_animationWeaponMult, 1.5f, VF_NOT_NET_SYNCED);
