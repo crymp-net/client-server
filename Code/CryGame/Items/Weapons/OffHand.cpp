@@ -1980,7 +1980,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 			{
 				return OH_NO_GRAB;
 			}
-			if (pEntity->GetClass() == CItem::sDoorClass)
+			if (pEntity->GetClass() == CItem::sDoorClass || pEntity->GetClass() == CItem::sElevatorSwitchClass)
 			{
 				return OH_NO_GRAB;
 			}

@@ -80,6 +80,7 @@ IEntityClass* CItem::sRepairKitClass = 0;
 IEntityClass* CItem::sLockpickKitClass = 0;
 IEntityClass* CItem::sHurricaneClass = 0;
 IEntityClass* CItem::sDoorClass = 0;
+IEntityClass* CItem::sElevatorSwitchClass = 0;
 IEntityClass* CItem::sFlagClass = 0;
 IEntityClass* CItem::sAsian_apc = 0;
 IEntityClass* CItem::sAsian_tank = 0;
@@ -211,6 +212,7 @@ bool CItem::Init(IGameObject* pGameObject)
 		sScarGrenadeClass = pRegistry->FindClass("scargrenade");
 
 		sDoorClass = pRegistry->FindClass("Door");
+		sElevatorSwitchClass = pRegistry->FindClass("ElevatorSwitch");
 		sRadarKitClass = pRegistry->FindClass("RadarKit");
 		sRepairKitClass = pRegistry->FindClass("RepairKit");
 		sLockpickKitClass = pRegistry->FindClass("LockpickKit");

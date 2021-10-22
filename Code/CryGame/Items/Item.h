@@ -1376,6 +1376,7 @@ public:
 	static IEntityClass*    sLockpickKitClass;
 	static IEntityClass*	sHurricaneClass;
 	static IEntityClass*	sDoorClass;
+	static IEntityClass*	sElevatorSwitchClass;
 	static IEntityClass*	sFlagClass;
 	static IEntityClass*    sAsian_apc;
 	static IEntityClass*	sAsian_tank;
