@@ -223,12 +223,12 @@ bool CWeaponAttachmentManager::IsAttachmentFree(const char* attachmentName)
 //========================================================================
 void CWeaponAttachmentManager::HideAllAttachments(bool hide)
 {
-	TAttachedWeaponsList::const_iterator it = m_attachedWeaponList.begin();
-	while(it!=m_attachedWeaponList.end())
+/*
+	for (const EntityId weaponId : m_attachedWeaponList)
 	{
-		CItem *pItem = static_cast<CItem*>(m_pItemSystem->GetItem(*it));
-		if(pItem)
+		CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(weaponId)); 
+		if (pItem)
 			pItem->Hide(hide);
-		it++;
 	}
+*/
 }
