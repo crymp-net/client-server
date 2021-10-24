@@ -1127,7 +1127,7 @@ void CFlashMenuObject::OnLoadingComplete(ILevel* pLevel)
 
 	//CryMP : Stop loading music
 	m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
-
+	
 	g_pGame->ShowMousePointer(false);
 
 	m_bInLoading = false;
@@ -3243,7 +3243,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 		if (m_bExclusiveVideo == false && m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->IsLoaded())
 		{
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Advance(fDeltaTime);
+			//CryMP: Speed up menu animations
+			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Advance(fDeltaTime * 3.0f);
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Render();
 		}
 	}
