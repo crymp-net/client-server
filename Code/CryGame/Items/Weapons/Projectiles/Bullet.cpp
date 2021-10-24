@@ -50,6 +50,14 @@ void CBullet::HandleEvent(const SGameObjectEvent& event)
 
 		IEntity* pTarget = pCollision->iForeignData[1] == PHYS_FOREIGN_ID_ENTITY ? (IEntity*)pCollision->pForeignData[1] : 0;
 
+		//CryMP: This should fix most rail glitches
+		const int idmat = pCollision->idmat[1];
+		if (!pTarget && (idmat == 140 || idmat == 180 || idmat == 189 || idmat == 193 || idmat == 219))
+		{
+			//CryLogAlways("$3Rail Glitch: $8Mat: %d This hit would have been blocked otherwise", idmat);
+			return;
+		}
+
 		//Only process hits that have a target
 		if (pTarget)
 		{
