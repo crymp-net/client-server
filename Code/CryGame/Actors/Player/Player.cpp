@@ -2034,8 +2034,13 @@ void CPlayer::SufferingHighLatency(bool highLatency)
 	// the following is done each frame on the server, and once on the client, when we're suffering high latency
 	if (highLatency)
 	{
+		const EStance previousStance = GetStance();
+
 		if (m_pPlayerInput)
 			m_pPlayerInput->Reset();
+
+		//CryMP: Restore stance after network lag
+		SetStance(previousStance);
 
 		if (IVehicle* pVehicle = GetLinkedVehicle())
 		{
