@@ -152,7 +152,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 		if (m_in.stats_followCharacterHead || m_in.isFirstPersonSpecTarget) //CryMP FP spec
 		{
 			int16 joint_id = rPlayer.GetBoneID(BONE_HEAD);
-			if (joint_id >= 0)
+			if (joint_id >= 0 && m_in.pCharacter)
 				m_in.headMtxLocal = Matrix33(m_in.pCharacter->GetISkeletonPose()->GetAbsJointByID(joint_id).q.GetNormalized());
 		}
 
