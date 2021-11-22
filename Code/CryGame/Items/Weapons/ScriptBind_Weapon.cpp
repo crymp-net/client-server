@@ -492,8 +492,11 @@ int CScriptBind_Weapon::GetShooter(IFunctionHandler* pH)
 	if (!pWeapon)
 		return pH->EndFunction();
 
-	IEntity* owner = pWeapon->GetOwner();
-	return pH->EndFunction(owner->GetScriptTable());
+	IEntity* pOwner = pWeapon->GetOwner();
+	if (!pOwner)
+		return pH->EndFunction();
+
+	return pH->EndFunction(pOwner->GetScriptTable());
 }
 
 //------------------------------------------------------------------------
