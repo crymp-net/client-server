@@ -24,7 +24,7 @@ public:
 	int Load3DSound(IFunctionHandler *pH, const char *sound);
 	int LoadSound(IFunctionHandler *pH, const char *sound);
 	int LoadStreamSound(IFunctionHandler *pH, const char *sound);
-	int Play(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags, uint32_t semantic);
+	int Play(IFunctionHandler* pH, const char* sound, Vec3 pos, uint32_t flags);
 	int PlayEx(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags, float volume, float minRadius, float maxRadius, uint32_t semantic);
 	int PlaySound(IFunctionHandler *pH);
 	int Precache(IFunctionHandler *pH, const char *sound, uint32_t flags);

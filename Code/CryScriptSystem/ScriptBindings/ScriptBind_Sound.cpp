@@ -387,7 +387,7 @@ int ScriptBind_Sound::LoadStreamSound(IFunctionHandler *pH, const char *sound)
 	}
 }
 
-int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags, uint32_t semantic)
+int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags)
 {
 	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
 	if (!pSoundSystem)
@@ -398,6 +398,11 @@ int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos, ui
 	if (pSound)
 	{
 		pSound->SetPosition(pos);
+
+		uint32_t semantic = 0;
+		if (pH->GetParamCount() > 3)
+			pH->GetParam(4, semantic);
+
 		pSound->SetSemantic(static_cast<ESoundSemantic>(semantic));
 		pSound->Play();
 
