@@ -1016,8 +1016,15 @@ void CTrooper::ProcessMovement(float frameTime)
 				pData = gEnv->pAISystem->CreateSignalExtraData();
 				pData->iValue = 1;
 			}
-			// send land event/signal			
-			gEnv->pAISystem->SendSignal(SIGNALFILTER_SENDER,1,"OnLand",GetEntity()->GetAI(),pData);
+			// send land event/signal	
+
+			//CryMP: Fix crash
+			IAIObject* pAI = GetEntity()->GetAI();
+			if (pAI)
+			{
+				gEnv->pAISystem->SendSignal(SIGNALFILTER_SENDER, 1, "OnLand", pAI, pData);
+			}
+
 			if(m_jumpParams.bUseLandEvent)
 			{
 				SEntityEvent event( ENTITY_EVENT_SCRIPT_EVENT );
