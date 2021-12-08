@@ -21,4 +21,5 @@ public:
 	int SHA256(IFunctionHandler *pH, const char *text);
 	int URLEncode(IFunctionHandler *pH, const char *text);
 	int GetMasters(IFunctionHandler *pH);
+	int GetRenderType(IFunctionHandler* pH);
 };

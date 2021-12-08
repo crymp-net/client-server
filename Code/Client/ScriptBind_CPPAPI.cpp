@@ -40,6 +40,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(SHA256, "text");
 	SCRIPT_REG_TEMPLFUNC(URLEncode, "text");
 	SCRIPT_REG_TEMPLFUNC(GetMasters, "");
+	SCRIPT_REG_FUNC(GetRenderType);
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -265,4 +266,9 @@ int ScriptBind_CPPAPI::GetMasters(IFunctionHandler *pH)
 	}
 
 	return pH->EndFunction(masters);
+}
+
+int ScriptBind_CPPAPI::GetRenderType(IFunctionHandler* pH)
+{
+	return pH->EndFunction(static_cast<int>(gEnv->pRenderer->GetRenderType()));
 }
