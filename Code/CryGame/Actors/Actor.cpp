@@ -35,6 +35,8 @@
 #include "CryGame/Items/Weapons/OffHand.h"
 #include "CryCommon/CryAISystem/IAgent.h"
 #include "Player/IPlayerInput.h"
+#include "Client/Client.h"
+#include "Client/ScriptCallbacks.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
 
@@ -2271,6 +2273,8 @@ void CActor::HandleEvent(const SGameObjectEvent& event)
 
 		//Init HUD
 		g_pGame->InitHUD((IActor*)(this));
+
+		gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
 	}
 }
 

@@ -11,7 +11,6 @@ function InitializeClient()
 	local EXPORTED = {}
 	local RED, GREEN, YELLOW = "$4", "$3", "$6"
 	local DEBUG_MODE = false
-	local LAST_ACTOR = nil
 	local LAST_RULES = nil
 	local ACTIVE_RPC = nil
 	local RPC_STATE  = true
@@ -503,10 +502,10 @@ function InitializeClient()
 
 		return Promise(function(resolve, reject)
 			if not System.IsMultiplayer() then return resolve(false) end
-			if not g_localActor then
-				printf(RED .. "[CryMP] You are not in-game")
-				return resolve(false)
-			end
+			-- not g_localActor then
+			--	printf(RED .. "[CryMP] You are not in-game")
+			--	return resolve(false)
+			--end
 			local profile = GetProfile()
 			if profile then
 				RefreshSession()
@@ -554,17 +553,9 @@ function InitializeClient()
 	end
 
 	local function OnUpdate(dt)
-		if g_gameRules ~= nil then
+		if g_gameRules then
 			if g_gameRules ~= LAST_RULES then
 				LAST_RULES = g_gameRules
-				LAST_ACTOR = nil
-			end
-
-			if g_localActor ~= LAST_ACTOR then
-				LAST_ACTOR = g_localActor
-				if g_localActor ~= nil then
-					Authenticate(true, false)
-				end
 			end
 
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
@@ -578,6 +569,10 @@ function InitializeClient()
 	local function OnLoadingStart()
 		printf(YELLOW .. "[CryMP] Resetting local state")
 		ResetState()
+	end
+
+	local function OnBecomeLocalActor(localActorId)
+		Authenticate(true, false);
 	end
 
 	local function OnDisconnect(reason, message)
@@ -641,6 +636,7 @@ function InitializeClient()
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, OnMasterResolved)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_LOADING_START, OnLoadingStart)
+	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, OnBecomeLocalActor)
 
 	CPPAPI.AddCCommand("secu_login", LoginCCommandHandler)
 	CPPAPI.AddCCommand("simple_login", LoginCCommandHandler)

@@ -41,12 +41,12 @@ void ScriptCallbacks::OnUpdate(float deltaTime)
 	Call(SCRIPT_CALLBACK_ON_UPDATE, deltaTime);
 }
 
-void ScriptCallbacks::OnDisconnect(int reason, const char *message)
+void ScriptCallbacks::OnDisconnect(int reason, const char* message)
 {
 	Call(SCRIPT_CALLBACK_ON_DISCONNECT, reason, message);
 }
 
-void ScriptCallbacks::OnSpawn(IEntity *pEntity)
+void ScriptCallbacks::OnSpawn(IEntity* pEntity)
 {
 	ScriptHandle entityId;
 	entityId.n = pEntity->GetId();
@@ -62,4 +62,11 @@ void ScriptCallbacks::OnMasterResolved()
 void ScriptCallbacks::OnLoadingStart()
 {
 	Call(SCRIPT_CALLBACK_ON_LOADING_START);
+}
+
+void ScriptCallbacks::OnBecomeLocalActor(EntityId localActorId)
+{
+	ScriptHandle id;
+	id.n = localActorId;
+	Call(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, id);
 }

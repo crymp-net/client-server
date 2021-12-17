@@ -13,6 +13,7 @@ enum EScriptCallback
 	SCRIPT_CALLBACK_ON_SPAWN,
 	SCRIPT_CALLBACK_ON_MASTER_RESOLVED,
 	SCRIPT_CALLBACK_ON_LOADING_START,
+	SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR,
 
 	// must be last
 	SCRIPT_CALLBACK_COUNT
@@ -20,7 +21,7 @@ enum EScriptCallback
 
 class ScriptCallbacks
 {
-	IScriptSystem *m_pSS = nullptr;
+	IScriptSystem* m_pSS = nullptr;
 	std::array<HSCRIPTFUNCTION, SCRIPT_CALLBACK_COUNT> m_handlers = {};
 
 	template<class... Params>
@@ -44,6 +45,7 @@ public:
 	void OnUpdate(float deltaTime);
 	void OnDisconnect(int reason, const char* message);
 	void OnLoadingStart();
-	void OnSpawn(IEntity *pEntity);
+	void OnBecomeLocalActor(EntityId localActorId);
+	void OnSpawn(IEntity* pEntity);
 	void OnMasterResolved();
 };
