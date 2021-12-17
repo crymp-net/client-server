@@ -387,11 +387,15 @@ int ScriptBind_Sound::LoadStreamSound(IFunctionHandler *pH, const char *sound)
 	}
 }
 
-int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos, uint32_t flags)
+int ScriptBind_Sound::Play(IFunctionHandler *pH, const char *sound, Vec3 pos)
 {
 	ISoundSystem *pSoundSystem = gEnv->pSoundSystem;
 	if (!pSoundSystem)
 		return pH->EndFunction();
+
+	uint32_t flags = 0;
+	if (pH->GetParamCount() > 2)
+		pH->GetParam(3, flags);
 
 	_smart_ptr<ISound> pSound = pSoundSystem->CreateSound(sound, flags);
 
