@@ -2,9 +2,12 @@
 
 #include <string>
 
+struct ILevelInfo;
+
 class ServerPAK
 {
 	std::string m_path;
+	bool m_bResetRequired = false;
 
 public:
 	ServerPAK();
@@ -13,6 +16,7 @@ public:
 	bool IsZipFile(const std::string & path);
 	bool Load(const std::string & path);
 	bool Unload();
+	void OnLoadingStart(ILevelInfo* pLevel);
 	void OnDisconnect(int reason, const char* message);
 	void ReloadEntityScripts();
 };

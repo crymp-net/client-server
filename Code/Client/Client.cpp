@@ -261,6 +261,7 @@ void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
 	gEnv->pScriptSystem->ForceGarbageCollection();
 
+	m_pServerPAK->OnLoadingStart(pLevel);
 	m_pEngineCache->OnLoadingStart(pLevel);
 	m_pScriptCallbacks->OnLoadingStart();
 }

@@ -8,6 +8,7 @@
 #include "Library/WinAPI.h"
 
 #include "ServerPAK.h"
+#include "Client/Client.h"
 
 ServerPAK::ServerPAK()
 {
@@ -85,14 +86,21 @@ bool ServerPAK::Unload()
 	return closed;
 }
 
+void ServerPAK::OnLoadingStart(ILevelInfo* pLevel)
+{
+	m_bResetRequired = true;
+}
+
 void ServerPAK::OnDisconnect(int reason, const char* message)
 {
 	gEnv->pScriptSystem->ResetTimers();
 
 	const bool unloaded = Unload();
-	if (unloaded || (reason != eDC_ServerFull && reason != eDC_AuthenticationFailed))
+	if (unloaded || m_bResetRequired)
 	{
 		ReloadEntityScripts();
+
+		m_bResetRequired = false;
 	}
 }
 
@@ -104,43 +112,19 @@ void ServerPAK::ReloadEntityScripts()
 
 	IEntityClass* pEntityClass = nullptr;
 	int counter = 0;
-	bool itemLuaLoaded = false;
-	bool vehicleLuaLoaded = false;
 	while (pEntityClass = pClassRegistry->IteratorNext())
 	{
 		const char* file = pEntityClass->GetScriptFile();
 		if (strlen(file) > 0)
 		{
-			const bool isVehicleClass = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(pEntityClass->GetName());
-			const bool isItemClass = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->IsItemClass(pEntityClass->GetName());
-			
-			if (isVehicleClass)
-			{
-				if (vehicleLuaLoaded)
-					continue;
-			}
-			else if (isItemClass)
-			{
-				if (itemLuaLoaded)
-					continue;
-			}
-			else
-			{
-				SmartScriptTable entityTable;
-				if (!gEnv->pScriptSystem->GetGlobalValue(pEntityClass->GetName(), entityTable))
-					continue;
-			}
 
-			gEnv->pScriptSystem->SetGlobalToNull(pEntityClass->GetName());
+			SmartScriptTable entityTable;
+			if (!gEnv->pScriptSystem->GetGlobalValue(pEntityClass->GetName(), entityTable))
+				continue;
 
 			const bool ok = pEntityClass->LoadScript(true);
 			if (ok)
 			{
-				if (isItemClass)
-					itemLuaLoaded = true;
-				else if (isVehicleClass)
-					vehicleLuaLoaded = true;
-
 				++counter;
 			}
 			
