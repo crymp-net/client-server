@@ -436,7 +436,10 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 				continue; // ignore grenades behind the camera
 
 			float distSq=(player-proj).len2();
-			if (distSq>20.0f*20.0f)
+
+			const bool bIsMyProjectile = pProjectile->GetOwnerId() == pPlayerActor->GetEntityId();
+			//CryMP: Own grenades visible all times
+			if (!bIsMyProjectile && distSq > 400.0f)
 				continue;
 
 			int projTeamId=g_pGame->GetGameRules()->GetTeam(pProjectile->GetOwnerId());
