@@ -44,6 +44,7 @@ History:
 #include "CryGame/SPAnalyst.h"
 
 #include "config.h"
+#include "Client/Client.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS
 
@@ -663,6 +664,11 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 		{
 			m_repeatEvent.keyId = eKI_Unknown;
 			return false;
+		}
+		else if (eIS_Pressed == rInputEvent.state)
+		{
+			//CryMP: KeyBinds
+			gClient->OnKeyPress(rInputEvent.keyName.c_str());
 		}
 
 		if (m_bUpdate && (eIS_Pressed == rInputEvent.state || eIS_Released == rInputEvent.state))

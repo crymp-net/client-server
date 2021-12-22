@@ -61,7 +61,9 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	void SetVersionInLua();
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
-	static void OnDisconnectCmd(IConsoleCmdArgs *pArgs);
+	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);
+	static void OnAddKeyBind(IConsoleCmdArgs* pArgs);
+	static void OnDumpKeyBindings(IConsoleCmdArgs* pArgs);
 
 	float m_FrameCounter = 0.0f;
 
@@ -73,6 +75,7 @@ public:
 
 	std::string GetMasterServerAPI(const std::string & master);
 	std::string GetHWID(const std::string_view & salt);
+	void OnKeyPress(const char* key);
 	void OnTick();
 
 	// IGameFrameworkListener
@@ -174,6 +177,8 @@ public:
 	{
 		return m_masters;
 	}
+
+	std::map<std::string, std::string> m_keyBinds;
 
 	// ints
 	template<class T>

@@ -94,6 +94,41 @@ void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 	gClient->GetServerConnector()->Disconnect();
 }
 
+void Client::OnAddKeyBind(IConsoleCmdArgs* pArgs)
+{
+	const int count = pArgs->GetArgCount();
+
+	if (pArgs->GetArgCount() >= 3)
+	{
+		std::string arg;
+		for (int i = 2; i < pArgs->GetArgCount(); ++i)
+		{
+			arg += pArgs->GetArg(i);
+			arg += " ";
+		}
+		const auto [it, added] = gClient->m_keyBinds.emplace(pArgs->GetArg(1), arg.c_str());
+	}
+}
+
+struct KeyBindDumpSink : public IKeyBindDumpSink
+{
+	virtual void OnKeyBindFound(const char* sBind, const char* sCommand)
+	{
+		CryLogAlways("$8%10s : %s", sBind, sCommand);
+	}
+};
+
+void Client::OnDumpKeyBindings(IConsoleCmdArgs* pArgs)
+{
+	KeyBindDumpSink dump;
+	gEnv->pConsole->DumpKeyBinds(&dump);
+
+	for (const auto& [name, handler] : gClient->m_keyBinds)
+	{
+		CryLogAlways("%10s : %s", name.c_str(), handler.c_str());
+	}
+}
+
 Client::Client()
 {
 	RandomSeeder seeder;
@@ -139,11 +174,14 @@ void Client::Init(IGameFramework *pGameFramework)
 	pGameFramework->GetILevelSystem()->AddListener(this);
 	pEntitySystem->AddSink(this);
 
-	// replace connect and disconnect console commands
+	// replace connect, disconnect, and bind console commands
 	pConsole->RemoveCommand("connect");
 	pConsole->RemoveCommand("disconnect");
+	pConsole->RemoveCommand("bind");
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
+	pConsole->AddCommand("bind", OnAddKeyBind, VF_NOT_NET_SYNCED, "Usage: bind key");
+	pConsole->AddCommand("dumpbindings", OnDumpKeyBindings, VF_RESTRICTEDMODE, "Usage: bind key");
 
 	SetVersionInLua();
 
@@ -180,6 +218,17 @@ std::string Client::GetHWID(const std::string_view & salt)
 		hwid += ':' + Util::SHA256(hwid + std::string(salt));
 
 	return hwid;
+}
+
+void Client::OnKeyPress(const char* key)
+{
+	for (auto &m : m_keyBinds) 
+	{
+		if (!strcmp(key, m.first.c_str()))
+		{
+			gEnv->pConsole->ExecuteString(m.second.c_str());
+		}
+	}
 }
 
 void Client::OnTick() //each sec
@@ -226,6 +275,9 @@ void Client::OnActionEvent(const SActionEvent & event)
 
 			// prevent evil servers from changing the client version
 			SetVersionInLua();
+
+			// clear binds on disconnect
+			m_keyBinds.clear();
 
 			break;
 		}
