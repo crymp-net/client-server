@@ -42,6 +42,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(URLEncode, "text");
 	SCRIPT_REG_TEMPLFUNC(GetMasters, "");
 	SCRIPT_REG_FUNC(GetRenderType);
+	SCRIPT_REG_TEMPLFUNC(GetKeyName, "action");
+	SCRIPT_REG_TEMPLFUNC(IsKeyUsed, "key");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -272,4 +274,40 @@ int ScriptBind_CPPAPI::GetMasters(IFunctionHandler *pH)
 int ScriptBind_CPPAPI::GetRenderType(IFunctionHandler* pH)
 {
 	return pH->EndFunction(static_cast<int>(gEnv->pRenderer->GetRenderType()));
+}
+
+int ScriptBind_CPPAPI::GetKeyName(IFunctionHandler* pH, const char* action)
+{
+	IActionMapManager* pAM = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	IActionMapIteratorPtr iter = pAM->CreateActionMapIterator();
+	while (IActionMap* pMap = iter->Next())
+	{
+		const char* actionMapName = pMap->GetName();
+		IActionMapBindInfoIteratorPtr pIter = pMap->CreateBindInfoIterator();
+		while (const SActionMapBindInfo* pInfo = pIter->Next())
+		{
+			if (!strcmp(pInfo->action, action))
+				return pH->EndFunction(pInfo->keys[0]);
+		}
+	}
+
+	return pH->EndFunction("");
+}
+
+int ScriptBind_CPPAPI::IsKeyUsed(IFunctionHandler* pH, const char* key)
+{
+	IActionMapManager* pAM = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	IActionMapIteratorPtr iter = pAM->CreateActionMapIterator();
+	while (IActionMap* pMap = iter->Next())
+	{
+		const char* actionMapName = pMap->GetName();
+		IActionMapBindInfoIteratorPtr pIter = pMap->CreateBindInfoIterator();
+		while (const SActionMapBindInfo* pInfo = pIter->Next())
+		{
+			if (!strcmp(pInfo->keys[0], key))
+				return pH->EndFunction(true);
+		}
+	}
+
+	return pH->EndFunction(false);
 }

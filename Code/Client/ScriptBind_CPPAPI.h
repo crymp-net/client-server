@@ -22,4 +22,6 @@ public:
 	int URLEncode(IFunctionHandler *pH, const char *text);
 	int GetMasters(IFunctionHandler *pH);
 	int GetRenderType(IFunctionHandler* pH);
+	int GetKeyName(IFunctionHandler* pH, const char* action);
+	int IsKeyUsed(IFunctionHandler* pH, const char* key);
 };
