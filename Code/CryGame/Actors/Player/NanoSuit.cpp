@@ -922,11 +922,17 @@ void CNanoSuit::SetCloak(bool on, bool force)
 
 			// new cloak effect
 			IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)m_pOwner->GetEntity()->GetProxy(ENTITY_PROXY_RENDER);
-			uint8 mask = pRenderProxy->GetMaterialLayersMask();
-			uint32 blend = pRenderProxy->GetMaterialLayersBlend();
-			mask = g_pGame->GetWeaponSystem()->IsFrozenEnvironment() ? mask | MTL_LAYER_DYNAMICFROZEN : mask & ~MTL_LAYER_DYNAMICFROZEN;
-			pRenderProxy->SetMaterialLayersMask(on ? mask | MTL_LAYER_CLOAK : mask & ~MTL_LAYER_CLOAK);
-			pRenderProxy->SetMaterialLayersBlend((blend & 0xffffff00) | ((mask & MTL_LAYER_DYNAMICFROZEN) ? 0xff : 0x00));
+			if (pRenderProxy)
+			{
+				uint8 mask = pRenderProxy->GetMaterialLayersMask();
+				uint32 blend = pRenderProxy->GetMaterialLayersBlend();
+
+				mask = g_pGame->GetWeaponSystem()->IsFrozenEnvironment() ? mask | MTL_LAYER_DYNAMICFROZEN : mask & ~MTL_LAYER_DYNAMICFROZEN;
+
+				pRenderProxy->SetMaterialLayersMask(on ? mask | MTL_LAYER_CLOAK : mask & ~MTL_LAYER_CLOAK);
+				pRenderProxy->SetMaterialLayersBlend((blend & 0xffffff00) | ((mask & MTL_LAYER_DYNAMICFROZEN) ? 0xff : 0x00));
+			}
+
 			if (CItem* pItem = static_cast<CItem*>(m_pOwner->GetCurrentItem(true)))
 			{
 				pItem->CloakSync(!force);
