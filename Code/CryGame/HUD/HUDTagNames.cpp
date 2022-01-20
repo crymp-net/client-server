@@ -31,6 +31,7 @@ History:
 #define COLOR_DEAD		ColorF(0.4f,0.4f,0.4f)
 #define COLOR_ENEMY		ColorF(0.9f,0.1f,0.1f)
 #define COLOR_FRIEND	ColorF(0.0353f,0.6235f,0.9137f)
+#define COLOR_TAGGED	ColorF(0.6f, 0.8f, 0.196078f)
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -192,7 +193,8 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	if (!pActor)
 		return;
 
-	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
+	CActor* pClientActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
+
 	CGameRules* pGameRules = g_pGame->GetGameRules();
 	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
 
@@ -261,8 +263,18 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 		{
 			// Teammate is selected in radar, force the visibility of that name					
 			bDrawOnTop = true;
+
+			rgbTagName = COLOR_TAGGED;
+
 			break;
 		}
+	}
+
+	//CryMP: Always draw killer tag
+	const EntityId killerId = pClientActor->GetSpectatorTarget();
+	if (killerId && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
+	{
+		bDrawOnTop = true;
 	}
 
 	STagName* pTagName = &m_tagNamesVector[0];
@@ -435,6 +447,12 @@ void CHUDTagNames::Update()
 		if (pActor == pClientActor && (!gEnv->bMultiplayer || !pActor->IsThirdPerson()))
 			continue;
 
+		const EntityId killerId = pClientActor->GetSpectatorTarget();
+		if (killerId && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
+		{		
+			DrawTagName(pActor);
+			continue;
+		}
 		// Skip enemies, they need to be added only when shot
 		// (except in spectator mode when we display everyone)
 		int iTeam = pGameRules->GetTeam(pActor->GetEntityId());
