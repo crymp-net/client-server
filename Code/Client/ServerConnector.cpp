@@ -240,6 +240,8 @@ void ServerConnector::Step3_DownloadPAK()
 
 void ServerConnector::Step4_TryConnect()
 {
+	gClient->GetServerPAK()->OnConnect();
+
 	const std::string endpoint = m_server.host + ':' + std::to_string(m_server.port);
 
 	if (m_server.name.empty())

@@ -17,6 +17,7 @@ public:
 	bool Load(const std::string & path);
 	bool Unload();
 	void OnLoadingStart(ILevelInfo* pLevel);
+	void OnConnect();
 	void OnDisconnect(int reason, const char* message);
-	void ReloadEntityScripts();
+	void ResetSubSystems();
 };

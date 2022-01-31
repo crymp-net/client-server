@@ -5,6 +5,7 @@
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IMaterialEffects.h"
 #include "Library/WinAPI.h"
 
 #include "ServerPAK.h"
@@ -54,7 +55,8 @@ bool ServerPAK::Load(const std::string & path)
 		CryLogAlways("$3[CryMP] Loaded server PAK $6%s$3", path.c_str());
 		m_path = path;
 
-		ReloadEntityScripts();
+		//Trigger a subsystem reset
+		m_bResetRequired = true;
 	}
 	else
 	{
@@ -91,25 +93,59 @@ void ServerPAK::OnLoadingStart(ILevelInfo* pLevel)
 	m_bResetRequired = true;
 }
 
+void ServerPAK::OnConnect()
+{
+	if (!m_bResetRequired)
+		return;
+
+	ResetSubSystems();
+}
+
 void ServerPAK::OnDisconnect(int reason, const char* message)
 {
 	gEnv->pScriptSystem->ResetTimers();
 
 	const bool unloaded = Unload();
-	if (unloaded || m_bResetRequired)
+	if (unloaded)
 	{
-		ReloadEntityScripts();
-
-		m_bResetRequired = false;
+		m_bResetRequired = true;
 	}
 }
 
-void ServerPAK::ReloadEntityScripts()
+void ServerPAK::ResetSubSystems()
 {
-	//CryMP reset scripts to avoid disconnect bugs caused by possible new rmis in PAK
-	IEntityClassRegistry* pClassRegistry = gEnv->pEntitySystem->GetClassRegistry();
-	pClassRegistry->IteratorMoveFirst();
+	IGameFramework* pGameFrameWork = gEnv->pGame->GetIGameFramework();
 
+	//Reset a bunch of subsystems
+	gEnv->p3DEngine->ResetPostEffects();
+	gEnv->p3DEngine->ResetParticlesAndDecals();
+	pGameFrameWork->ResetBrokenGameObjects();
+	gEnv->pPhysicalWorld->ResetDynamicEntities();
+	//gEnv->pFlowSystem->Reset();
+	pGameFrameWork->GetIItemSystem()->Reset();
+	//gEnv->pDialogSystem->Reset();
+	pGameFrameWork->GetIMaterialEffects()->Reset();
+	pGameFrameWork->GetIVehicleSystem()->Reset();
+
+	//Reset scripts to avoid disconnect bugs caused by possible new rmis in PAK
+	IEntityClassRegistry* pClassRegistry = gEnv->pEntitySystem->GetClassRegistry();
+
+	//Parent classes: BasicEntity and Chickens are parent classes and have to be loaded before others
+	IEntityClass *pBasicEntityClass = pClassRegistry->FindClass("BasicEntity");
+	if (pBasicEntityClass)
+	{
+		pBasicEntityClass->LoadScript(true);
+	}
+	IEntityClass* pChickensClass = pClassRegistry->FindClass("Chickens");
+	if (pChickensClass)
+	{
+		pChickensClass->LoadScript(true);
+	}
+
+	IEntityClass* pGUI = pClassRegistry->FindClass("GUI");
+
+	std::vector<IEntityClass*> classes;
+	pClassRegistry->IteratorMoveFirst();
 	IEntityClass* pEntityClass = nullptr;
 	int counter = 0;
 	while (pEntityClass = pClassRegistry->IteratorNext())
@@ -117,27 +153,34 @@ void ServerPAK::ReloadEntityScripts()
 		const char* file = pEntityClass->GetScriptFile();
 		if (strlen(file) > 0)
 		{
+			if (pEntityClass == pBasicEntityClass || pEntityClass == pChickensClass)
+				continue;
 
+			//GUI corrupts Lua environment :S Hope there aren't any others..
+			if (pEntityClass == pGUI)
+				continue;
+			
 			SmartScriptTable entityTable;
 			if (!gEnv->pScriptSystem->GetGlobalValue(pEntityClass->GetName(), entityTable))
 				continue;
 
-			const bool ok = pEntityClass->LoadScript(true);
-			if (ok)
-			{
-				++counter;
-			}
-			
-			/*if (ok)
-				CryLogAlways("$3[CryMP] Loaded Script file %s successfully (%s)", pEntityClass->GetName(), pEntityClass->GetScriptFile());
-			else
-				CryLogAlways("$4[CryMP] Failed to load %s script", pEntityClass->GetName()); 
-			*/
+			classes.push_back(pEntityClass);
 		}
+	}
+
+	for (IEntityClass* pClass : classes)
+	{
+		const bool bReloaded = pClass->LoadScript(true);
+		if (bReloaded)
+		{
+			++counter;
+		}
+
 	}
 
 	if (counter)
 	{
 		CryLogAlways("$3[CryMP] Reloaded %d scripts", counter);
+		m_bResetRequired = false;
 	}
 }
