@@ -563,6 +563,7 @@ function InitializeClient()
 			end
 
 			UpdateWorld(localState, dt)
+
 		end
 	end
 
@@ -580,52 +581,49 @@ function InitializeClient()
 		ResetState()
 	end
 
-	local function OnSpawn(entityId)
-		local entity = _L.System.GetEntity(entityId)
-		if entity then
-			local name = entity:GetName() or "<unknown>"
-			if localState.ACTIVE_LAYERS > 0 then
-				local mask = localState.ACTIVE_LAYERS
-				-- vehicles cannot be frozen, only dynfrozen, otherwise they are impossible to enter / drive
-				if entity.vehicle then
-					if band(mask, MASK_FROZEN) > 0 then
-						mask = bor(mask, MASK_DYNFROZEN) - MASK_FROZEN
-					end
+	local function OnSpawn(entity)
+		local name = entity:GetName();
+		if localState.ACTIVE_LAYERS > 0 then
+			local mask = localState.ACTIVE_LAYERS
+			-- vehicles cannot be frozen, only dynfrozen, otherwise they are impossible to enter / drive
+			if entity.vehicle then
+				if band(mask, MASK_FROZEN) > 0 then
+					mask = bor(mask, MASK_DYNFROZEN) - MASK_FROZEN
 				end
-				_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
 			end
-			if entity.class == "CustomAmmoPickup" then
-				entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
-			end
-			if entity.class == "Player" then return; end
-			if name == "frozen:all" then
-				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_FROZEN)
-				_L.CPPAPI.ApplyMaskAll(MASK_FROZEN, 1)
-				entity:SetPos({x=256; y=256; z=4096;})
-			elseif name == "dynfrozen:all" then
-				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_DYNFROZEN)
-				_L.CPPAPI.ApplyMaskAll(MASK_DYNFROZEN, 1)
-				entity:SetPos({x=256; y=256; z=4096;})
-			elseif name == "wet:all" then
-				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_WET)
-				_L.CPPAPI.ApplyMaskAll(MASK_WET, 1)
-				entity:SetPos({x=256; y=256; z=4096;})
-			elseif name == "cloak:all" then
-				localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_CLOAK)
-				_L.CPPAPI.ApplyMaskAll(MASK_CLOAK, 1)
-				entity:SetPos({x=256; y=256; z=4096;})
-			elseif name:sub(1,3) == "fx:" then
-				Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
-				entity:SetPos({x=256; y=256; z=4096;})
-			elseif name:sub(1,7) == "frozen:" then
-				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_FROZEN, 1)
-			elseif name:sub(1,10) == "dynfrozen:" then
-				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_DYNFROZEN, 1)
-			elseif name:sub(1,4) == "wet:" then
-				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_WET, 1)
-			elseif name:sub(1,6) == "cloak:" then
-				_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
-			end
+			_L.CPPAPI.ApplyMaskOne(entity.id, mask, 1)
+		end
+		if entity.class == "CustomAmmoPickup" then
+			entity:SetFlags(ENTITY_FLAG_CASTSHADOW, 0)
+		end
+		if entity.class == "Player" then return; end
+		if name == "frozen:all" then
+			localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_FROZEN)
+			_L.CPPAPI.ApplyMaskAll(MASK_FROZEN, 1)
+			entity:SetPos({x=256; y=256; z=4096;})
+		elseif name == "dynfrozen:all" then
+			localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_DYNFROZEN)
+			_L.CPPAPI.ApplyMaskAll(MASK_DYNFROZEN, 1)
+			entity:SetPos({x=256; y=256; z=4096;})
+		elseif name == "wet:all" then
+			localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_WET)
+			_L.CPPAPI.ApplyMaskAll(MASK_WET, 1)
+			entity:SetPos({x=256; y=256; z=4096;})
+		elseif name == "cloak:all" then
+			localState.ACTIVE_LAYERS = bor(localState.ACTIVE_LAYERS, MASK_CLOAK)
+			_L.CPPAPI.ApplyMaskAll(MASK_CLOAK, 1)
+			entity:SetPos({x=256; y=256; z=4096;})
+		elseif name:sub(1,3) == "fx:" then
+			Particle.SpawnEffect(name:sub(4), entity:GetPos(), entity:GetDirectionVector(1), 1)
+			entity:SetPos({x=256; y=256; z=4096;})
+		elseif name:sub(1,7) == "frozen:" then
+			_L.CPPAPI.ApplyMaskOne(entity.id, MASK_FROZEN, 1)
+		elseif name:sub(1,10) == "dynfrozen:" then
+			_L.CPPAPI.ApplyMaskOne(entity.id, MASK_DYNFROZEN, 1)
+		elseif name:sub(1,4) == "wet:" then
+			_L.CPPAPI.ApplyMaskOne(entity.id, MASK_WET, 1)
+		elseif name:sub(1,6) == "cloak:" then
+			_L.CPPAPI.ApplyMaskOne(entity.id, MASK_CLOAK, 1)
 		end
 	end
 

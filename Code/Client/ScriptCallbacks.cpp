@@ -48,10 +48,11 @@ void ScriptCallbacks::OnDisconnect(int reason, const char* message)
 
 void ScriptCallbacks::OnSpawn(IEntity* pEntity)
 {
-	ScriptHandle entityId;
-	entityId.n = pEntity->GetId();
-
-	Call(SCRIPT_CALLBACK_ON_SPAWN, entityId);
+	IScriptTable* pScript = pEntity->GetScriptTable();
+	if (pScript)
+	{
+		Call(SCRIPT_CALLBACK_ON_SPAWN, pScript);
+	}
 }
 
 void ScriptCallbacks::OnMasterResolved()
