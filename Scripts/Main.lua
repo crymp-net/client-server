@@ -661,6 +661,16 @@ function InitializeClient()
 		end
 	end)
 
+	CPPAPI.AddCCommand("say", function(...)
+		local text = table.concat(arg, " ")
+		
+		if g_gameRules then
+			g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, text)
+		else
+			printf(RED .. "Chat is not available")
+		end
+	end)
+
 	ObtainStaticID()
 	RemoveFlaws()
 
