@@ -451,6 +451,7 @@ struct SCVars
 	float		mp_animationWeaponMultSpeed;
 	float		mp_animationModelMult;
 	float		mp_animationModelMultSpeed;
+	float		mp_menuSpeed;
 
 	SCVars()
 	{

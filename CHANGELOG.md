@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `cursor_increment` and `cursor_decrement` console commands to change mouse cursor visibility.
 - Optional `-dir` command line parameter to specify Crysis main directory. It allows the EXE to be placed anywhere.
 - Features from [c1-launcher](https://github.com/ccomrade/c1-launcher).
+- `mp_menuSpeed` client-side cvar for changing speed of menu animations.
 
 ### Changed
 - Ranked servers are now marked with `^`.

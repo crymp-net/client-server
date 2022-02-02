@@ -3249,8 +3249,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 		if (m_bExclusiveVideo == false && m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->IsLoaded())
 		{
-			//CryMP: Speed up menu animations
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Advance(fDeltaTime * 3.0f);
+			//CryMP: Custom menu animations speed
+			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Advance(fDeltaTime * g_pGameCVars->mp_menuSpeed);
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->Render();
 		}
 	}
