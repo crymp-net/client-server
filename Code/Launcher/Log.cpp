@@ -498,7 +498,7 @@ void CLog::Init(const char *defaultFileName)
 	}
 	catch (const std::exception & ex)
 	{
-		throw Error(std::string("Failed to open the log file!\n\n") + ex.what());
+		//throw Error(std::string("Failed to open the log file!\n\n") + ex.what());
 	}
 
 	CryLogAlways(FormatLogPrefix("BackupNameAttachment=\" Date(%Y %m %d) Time(%H %M %S)\"").c_str());
