@@ -272,11 +272,8 @@ void CHUDTextChat::Flush(bool close)
 					{
 						IGameRules* pGameRules = pGameRulesSystem->GetCurrentGameRules();
 						IActor* pClientActor = pGameFramework->GetClientActor();
-						EntityId id = 0;
-						if (pClientActor)
-							id = pClientActor->GetEntityId();
-						if (pGameRules)
-							pGameRules->SendChatMessage(type, id, 0, m_inputText.c_str());
+						if (pGameRules && pClientActor)
+							pGameRules->SendChatMessage(type, pClientActor->GetEntityId(), 0, m_inputText.c_str());
 					}
 				}
 			}
