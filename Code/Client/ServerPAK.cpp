@@ -10,6 +10,9 @@
 
 #include "ServerPAK.h"
 #include "Client/Client.h"
+#include "CryGame/Items/ItemSharedParams.h"
+#include "CryGame/Game.h"
+#include "CryGame/Items/Weapons/WeaponSystem.h"
 
 ServerPAK::ServerPAK()
 {
@@ -45,14 +48,14 @@ bool ServerPAK::Load(const std::string & path)
 	// Crytek's CryPak crashes when it tries to load something that's not a zip file
 	if (!IsZipFile(path))
 	{
-		CryLogAlways("$4[CryMP] Invalid PAK file $6%s$4", path.c_str());
+		CryLogAlways("$4[CryMP] [ServerPAK] Invalid file $8%s", path.c_str());
 		return false;
 	}
 	
 	const bool opened = gEnv->pCryPak->OpenPack("game\\", path.c_str());
 	if (opened)
 	{
-		CryLogAlways("$3[CryMP] Loaded server PAK $6%s$3", path.c_str());
+		CryLogAlways("$3[CryMP] [ServerPAK] Loaded $6%s", path.c_str());
 		m_path = path;
 
 		//Trigger a subsystem reset
@@ -60,7 +63,7 @@ bool ServerPAK::Load(const std::string & path)
 	}
 	else
 	{
-		CryLogAlways("$4[CryMP] Loading server PAK $6%s$4 failed", path.c_str());
+		CryLogAlways("$4[CryMP] [ServerPAK] Failed to load $8%s", path.c_str());
 	}
 	
 	return opened;
@@ -76,14 +79,15 @@ bool ServerPAK::Unload()
 	const bool closed = gEnv->pCryPak->ClosePack(m_path.c_str());
 	if (closed)
 	{
-		CryLogAlways("$3[CryMP] Unloaded server PAK $6%s$3", m_path.c_str());
+		CryLogAlways("$3[CryMP] [ServerPAK] Unloaded $6%s", m_path.c_str());
+		m_path.clear();
 	}
 	else
 	{
-		CryLogAlways("$4[CryMP] Unloading server PAK $6%s$4 failed", m_path.c_str());
+		CryLogAlways("$4[CryMP] [ServerPAK] Failed to unload $8%s", m_path.c_str());
 	}
 
-	m_path.clear();
+	m_bResetRequired = true;
 
 	return closed;
 }
@@ -95,6 +99,8 @@ void ServerPAK::OnLoadingStart(ILevelInfo* pLevel)
 
 void ServerPAK::OnConnect()
 {
+	Unload();
+
 	if (!m_bResetRequired)
 		return;
 
@@ -104,12 +110,6 @@ void ServerPAK::OnConnect()
 void ServerPAK::OnDisconnect(int reason, const char* message)
 {
 	gEnv->pScriptSystem->ResetTimers();
-
-	const bool unloaded = Unload();
-	if (unloaded)
-	{
-		m_bResetRequired = true;
-	}
 }
 
 void ServerPAK::ResetSubSystems()
@@ -122,7 +122,9 @@ void ServerPAK::ResetSubSystems()
 	pGameFrameWork->ResetBrokenGameObjects();
 	gEnv->pPhysicalWorld->ResetDynamicEntities();
 	//gEnv->pFlowSystem->Reset();
-	pGameFrameWork->GetIItemSystem()->Reset();
+	g_pGame->GetItemSharedParamsList()->Reset();
+	g_pGame->GetIGameFramework()->GetIItemSystem()->Reload();
+	g_pGame->GetWeaponSystem()->Reload();
 	//gEnv->pDialogSystem->Reset();
 	pGameFrameWork->GetIMaterialEffects()->Reset();
 	pGameFrameWork->GetIVehicleSystem()->Reset();
@@ -175,12 +177,8 @@ void ServerPAK::ResetSubSystems()
 		{
 			++counter;
 		}
-
 	}
 
-	if (counter)
-	{
-		CryLogAlways("$3[CryMP] Reloaded %d scripts", counter);
-		m_bResetRequired = false;
-	}
+	CryLogAlways("$3[CryMP] Reset subsystems and %d scripts", counter);
+	m_bResetRequired = false;
 }

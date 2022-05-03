@@ -240,8 +240,6 @@ void ServerConnector::Step3_DownloadPAK()
 
 void ServerConnector::Step4_TryConnect()
 {
-	gClient->GetServerPAK()->OnConnect();
-
 	const std::string endpoint = m_server.host + ':' + std::to_string(m_server.port);
 
 	if (m_server.name.empty())
@@ -279,6 +277,8 @@ void ServerConnector::Connect(const std::string_view & master, const std::string
 {
 	Disconnect();
 
+	gClient->GetServerPAK()->OnConnect();
+
 	m_server.clear();
 	m_server.host = host;
 	m_server.port = port;
@@ -314,6 +314,4 @@ void ServerConnector::Disconnect()
 	}
 
 	gClient->GetGameFramework()->EndGameContext();
-
-	gClient->GetServerPAK()->Unload();
 }
