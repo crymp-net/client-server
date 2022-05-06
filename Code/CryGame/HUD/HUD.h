@@ -483,6 +483,9 @@ public:
 
 	void CheckSpectatorTarget(float deltaTime);
 
+	CPlayer* m_pClientActor = nullptr;
+	CGameRules* m_pGameRules = nullptr;
+
 private:
 
 	//some Update functions
@@ -546,8 +549,6 @@ private:
 	IRenderer			*m_pRenderer;
 	IUIDraw				*m_pUIDraw;
 
-	IActor				*m_pClientActor;
-	CGameRules          *m_pGameRules;
 	IActor				*GetSpectatorTarget();
 	EntityId			m_pCurrentSpecTarget;
 	IItemSystem			*m_pItemSystem;

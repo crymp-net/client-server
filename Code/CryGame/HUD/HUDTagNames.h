@@ -26,8 +26,8 @@ class CHUDTagNames
 
 public:
 
-		CHUDTagNames();
-	~	CHUDTagNames();
+		CHUDTagNames(CHUD* pHUD);
+		~	CHUDTagNames();
 
 	void Update();
 
@@ -42,8 +42,9 @@ private:
 
 	bool IsFriendlyToClient(EntityId uiEntityId);
 
-	IUIDraw *m_pUIDraw;
-	IFFont *m_pMPNamesFont;
+	IUIDraw *m_pUIDraw = nullptr;
+	IFFont *m_pMPNamesFont = nullptr;
+	CHUD* m_pHUD = nullptr;
 
 	struct STagName
 	{

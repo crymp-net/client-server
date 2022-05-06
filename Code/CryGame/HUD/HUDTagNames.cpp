@@ -35,11 +35,13 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-CHUDTagNames::CHUDTagNames()
+CHUDTagNames::CHUDTagNames(CHUD *pHUD)
 {
+	m_pHUD = pHUD;
+
 	m_pUIDraw = gEnv->pGame->GetIGameFramework()->GetIUIDraw();
 
-	m_pMPNamesFont = NULL;
+	m_pMPNamesFont = nullptr;
 
 	if (gEnv->bMultiplayer)
 	{
@@ -48,7 +50,7 @@ CHUDTagNames::CHUDTagNames()
 	}
 
 	// Maximum number of players
-	m_tagNamesVector.reserve(32);
+	m_tagNamesVector.reserve(64);
 
 	m_rankNames.reserve(9);  // "", "PVT", ..., "GEN"
 	m_rankNames.resize(1);   // the default empty rank name at index 0
@@ -82,7 +84,7 @@ const std::string & CHUDTagNames::GetPlayerRank(EntityId entityId)
 	constexpr TSynchedKey RANK_KEY = 202;
 
 	int rank = 0;
-	g_pGame->GetGameRules()->GetSynchedEntityValue(entityId, RANK_KEY, rank);
+	m_pHUD->m_pGameRules->GetSynchedEntityValue(entityId, RANK_KEY, rank);
 
 	if (rank < 0 || rank >= m_rankNames.size())
 		rank = 0;
@@ -141,8 +143,8 @@ bool CHUDTagNames::ProjectOnSphere(Vec3& rvWorldPos, const AABB& rBBox)
 
 bool CHUDTagNames::IsFriendlyToClient(EntityId uiEntityId)
 {
-	IActor* client = g_pGame->GetIGameFramework()->GetClientActor();
-	CGameRules* pGameRules = g_pGame->GetGameRules();
+	IActor* client = m_pHUD->m_pClientActor;
+	CGameRules* pGameRules = m_pHUD->m_pGameRules;
 	if (!client || !pGameRules)
 		return false;
 
@@ -193,35 +195,27 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	if (!pActor)
 		return;
 
-	CActor* pClientActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
-
-	CGameRules* pGameRules = g_pGame->GetGameRules();
-	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
-
 	if (!bLocalVehicle && pActor->GetLinkedVehicle())
 		return;
 
-	const std::string & rank = GetPlayerRank(pActor->GetEntityId());
-
 	IEntity* pEntity = pActor->GetEntity();
-	if (!pEntity)
-		return;
+	Vec3 vWorldPos = pEntity->GetWorldPos();
 
 	ICharacterInstance* pCharacterInstance = pEntity->GetCharacter(0);
-	if (!pCharacterInstance)
-		return;
+	if (pCharacterInstance)
+	{
+		ISkeletonPose* pSkeletonPose = pCharacterInstance->GetISkeletonPose();
+		if (pSkeletonPose)
+		{
+			int16 sHeadID = pSkeletonPose->GetJointIDByName("Bip01 Head");
+			if (sHeadID != -1)
+			{
+				Matrix34 matWorld = pEntity->GetWorldTM() * Matrix34(pSkeletonPose->GetAbsJointByID(sHeadID));
 
-	ISkeletonPose* pSkeletonPose = pCharacterInstance->GetISkeletonPose();
-	if (!pSkeletonPose)
-		return;
-
-	int16 sHeadID = pSkeletonPose->GetJointIDByName("Bip01 Head");
-	if (-1 == sHeadID)
-		return;
-
-	Matrix34 matWorld = pEntity->GetWorldTM() * Matrix34(pSkeletonPose->GetAbsJointByID(sHeadID));
-
-	Vec3 vWorldPos = matWorld.GetTranslation();
+				vWorldPos = matWorld.GetTranslation();
+			}
+		}
+	}
 
 	// Who has a bigger head? :)
 	vWorldPos.z += 0.4f;
@@ -237,6 +231,10 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	}
 
 	ColorF rgbTagName = COLOR_ENEMY;
+
+	CPlayer* pClientActor = m_pHUD->m_pClientActor;
+	CGameRules* pGameRules = m_pHUD->m_pGameRules;
+	const int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
 
 	if (0 == iClientTeam)
 	{
@@ -257,7 +255,9 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 
 	m_tagNamesVector.resize(1);
 
-	for (std::vector<EntityId>::iterator iter = SAFE_HUD_FUNC_RET(GetRadar()->GetSelectedTeamMates())->begin(); iter != SAFE_HUD_FUNC_RET(GetRadar()->GetSelectedTeamMates())->end(); ++iter)
+	auto *teamMates = m_pHUD->GetRadar()->GetSelectedTeamMates();
+
+	for (std::vector<EntityId>::iterator iter = teamMates->begin(); iter != teamMates->end(); ++iter)
 	{
 		if (pActor->GetEntityId() == *iter)
 		{
@@ -278,6 +278,9 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	}
 
 	STagName* pTagName = &m_tagNamesVector[0];
+
+
+	const std::string& rank = GetPlayerRank(pActor->GetEntityId());
 
 	if (rank.empty())
 	{
@@ -305,7 +308,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 	if (!pVehicle)
 		return;
 
-	CActor* pClientActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
+	CPlayer* pClientActor = m_pHUD->m_pClientActor;
 	CGameRules* pGameRules = g_pGame->GetGameRules();
 	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
 	bool bThirdPerson = pClientActor->IsThirdPerson();
@@ -313,7 +316,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 	bool bDrawSeatTagNames = false;
 	if (pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
 	{
-		IActor* pFollowedActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pClientActor->GetSpectatorTarget());
+		IActor* pFollowedActor = pClientActor->GetSpectatorTargetPlayer();
 		if (pFollowedActor)
 			bDrawSeatTagNames = (pVehicle == pFollowedActor->GetLinkedVehicle());
 	}
@@ -430,12 +433,11 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 
 void CHUDTagNames::Update()
 {
-	CActor* pClientActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetClientActor());
+	CPlayer* pClientActor = m_pHUD->m_pClientActor;
 	CGameRules* pGameRules = g_pGame->GetGameRules();
 
-	if (!pClientActor || !pGameRules || !gEnv->bMultiplayer)
+	if (!pGameRules || !gEnv->bMultiplayer)
 		return;
-
 
 	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
 
@@ -444,7 +446,7 @@ void CHUDTagNames::Update()
 	while (IActor* pActor = it->Next())
 	{
 		//CryMP: Display tag name in third person mode
-		if (pActor == pClientActor && (!gEnv->bMultiplayer || !pActor->IsThirdPerson()))
+		if (pActor->IsClient() && (!gEnv->bMultiplayer || !pActor->IsThirdPerson()))
 			continue;
 
 		const EntityId killerId = pClientActor->GetSpectatorTarget();
@@ -546,8 +548,6 @@ void CHUDTagNames::DrawTagNames()
 	{
 		STagName* pTagName = &(*iter);
 
-		const char* szText = pTagName->text.c_str();
-
 		// It's important that the projection is done outside the UIDraw->PreRender/PostRender because of the Set2DMode(true) which is done internally
 
 		Vec3 vScreenSpace;
@@ -577,8 +577,7 @@ void CHUDTagNames::DrawTagNames()
 		float fMaxDistance = (float)g_pGameCVars->hud_mpNamesFarDistance;
 
 		// if local player is in a vehicle, increase the max distance
-		IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor();
-		if (pActor && pActor->GetLinkedVehicle())
+		if (m_pHUD->m_pClientActor->GetLinkedVehicle())
 		{
 			fMaxDistance *= 3.0f;
 		}
@@ -619,6 +618,8 @@ void CHUDTagNames::DrawTagNames()
 		m_pMPNamesFont->UseRealPixels(true);
 		m_pMPNamesFont->SetSize(vector2f(fSize, fSize));
 		m_pMPNamesFont->SetSameSize(false);
+
+		const char* szText = pTagName->text.c_str();
 
 		vector2f vDim = m_pMPNamesFont->GetTextSize(szText);
 
