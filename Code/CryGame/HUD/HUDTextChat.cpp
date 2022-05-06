@@ -20,13 +20,14 @@ History:
 #include "CryGame/GameActions.h"
 #include "CryGame/GameRules.h"
 #include "CryGame/Voting.h"
+#include "CryGame/GameCVars.h"
 
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
 
-CHUDTextChat::CHUDTextChat() : m_flashChat(NULL), m_isListening(false), m_repeatTimer(0.0f), m_chatHead(0), m_cursor(0),
-m_anyCurrentText(false), m_teamChat(false), m_showVirtualKeyboard(false), m_textInputActive(false)
+CHUDTextChat::CHUDTextChat(CHUD* pHUD)
 {
+	m_pHUD = pHUD;
 }
 
 CHUDTextChat::~CHUDTextChat()
@@ -85,7 +86,7 @@ void CHUDTextChat::Update(float fDeltaTime)
 	//render input text and cursor
 	if (m_repeatEvent.keyId != eKI_Unknown)
 	{
-		float repeatSpeed = 40.0;
+		float repeatSpeed = 150.f; //CryMP: Default 40.f
 		float nextTimer = (1000.0f / repeatSpeed); // repeat speed
 
 		if (now - m_repeatTimer > nextTimer)
@@ -193,7 +194,7 @@ bool CHUDTextChat::OnInputEventUI(const SInputEvent& event)
 
 	Insert(keyName);
 
-	if (m_inputText.length() > 60)
+	if (m_inputText.length() > 75) //CryMP: Default 60
 		Flush(false);
 
 	return true;
@@ -261,25 +262,8 @@ void CHUDTextChat::Flush(bool close)
 
 		if (!ProcessCommands(m_inputText))
 		{
-			IGame* pGame = gEnv->pGame;
-			if (pGame)
-			{
-				IGameFramework* pGameFramework = pGame->GetIGameFramework();
-				if (pGameFramework)
-				{
-					IGameRulesSystem* pGameRulesSystem = pGameFramework->GetIGameRulesSystem();
-					if (pGameRulesSystem)
-					{
-						IGameRules* pGameRules = pGameRulesSystem->GetCurrentGameRules();
-						IActor* pClientActor = pGameFramework->GetClientActor();
-						EntityId id = 0;
-						if (pClientActor)
-							id = pClientActor->GetEntityId();
-						if (pGameRules)
-							pGameRules->SendChatMessage(type, id, 0, m_inputText.c_str());
-					}
-				}
-			}
+			const EntityId id = m_pHUD->m_pClientActor->GetEntityId();
+			m_pHUD->m_pGameRules->SendChatMessage(type, id, 0, m_inputText.c_str());
 		}
 
 
@@ -376,7 +360,7 @@ void CHUDTextChat::AddChatMessage(const char* nick, const wchar_t* msg, int team
 
 	if (teamChat)
 	{
-		wstring nameAndTarget = g_pGame->GetHUD()->LocalizeWithParams("@ui_chat_team", true, nick);
+		wstring nameAndTarget = m_pHUD->LocalizeWithParams("@ui_chat_team", true, nick);
 		SFlashVarValue args[3] = { nameAndTarget.c_str(), msg, teamFaction };
 		m_flashChat->Invoke("setChatText", args, 3);
 	}
@@ -419,9 +403,7 @@ void CHUDTextChat::AddChatMessage(const char* nick, const char* msg, int teamFac
 	if (idx != -1)
 	{
 		message = message.substr(idx + strlen("@mp_vote_initialized_kick:#:"));
-		wstring localizedString;
-		if (g_pGame->GetHUD())
-			localizedString = g_pGame->GetHUD()->LocalizeWithParams("@mp_vote_initialized_kick", true, message.c_str());
+		wstring localizedString = m_pHUD->LocalizeWithParams("@mp_vote_initialized_kick", true, message.c_str());
 		AddChatMessage(nick, localizedString.c_str(), teamFaction, teamChat);
 		return;
 	}
@@ -431,7 +413,7 @@ void CHUDTextChat::AddChatMessage(const char* nick, const char* msg, int teamFac
 	// flash stuff
 	if (teamChat)
 	{
-		wstring nameAndTarget = g_pGame->GetHUD()->LocalizeWithParams("@ui_chat_team", true, nick);
+		wstring nameAndTarget = m_pHUD->LocalizeWithParams("@ui_chat_team", true, nick);
 		SFlashVarValue args[3] = { nameAndTarget.c_str(), msg, teamFaction };
 		m_flashChat->Invoke("setChatText", args, 3);
 	}
@@ -512,14 +494,6 @@ void CHUDTextChat::OpenChat(int type)
 
 bool CHUDTextChat::Vote(const char* type, const char* params)
 {
-	CActor* pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (!pActor)
-		return true;
-
-	CGameRules* gameRules = g_pGame->GetGameRules();
-	if (!gameRules)
-		return true;
-
 	EVotingState vote = eVS_none;
 	EntityId id = 0;
 	if (type && type[0])
@@ -542,41 +516,26 @@ bool CHUDTextChat::Vote(const char* type, const char* params)
 		}
 	}
 
-	if (gameRules->GetVotingSystem() && gameRules->GetVotingSystem()->IsInProgress())
+	if (m_pHUD->m_pGameRules->GetVotingSystem() && m_pHUD->m_pGameRules->GetVotingSystem()->IsInProgress())
 	{
 		AddChatMessage("", "@mp_vote_in_progress", 0, false);
 		return true;
 	}
 
-	gameRules->StartVoting(pActor, vote, id, params);
+	m_pHUD->m_pGameRules->StartVoting(m_pHUD->m_pClientActor, vote, id, params);
+
 	return true;
 }
 
 bool CHUDTextChat::VoteYes(const char* param1, const char* param2)
 {
-	CActor* pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (!pActor)
-		return true;
-
-	CGameRules* gameRules = g_pGame->GetGameRules();
-	if (!gameRules)
-		return true;
-
-	gameRules->Vote(pActor, true);
+	m_pHUD->m_pGameRules->Vote(m_pHUD->m_pClientActor, true);
 	return true;
 }
 
 bool CHUDTextChat::VoteNo(const char* param1, const char* param2)
 {
-	CActor* pActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (!pActor)
-		return true;
-
-	CGameRules* gameRules = g_pGame->GetGameRules();
-	if (!gameRules)
-		return true;
-
-	gameRules->Vote(pActor, false);
+	m_pHUD->m_pGameRules->Vote(m_pHUD->m_pClientActor, false);
 	return true;
 }
 

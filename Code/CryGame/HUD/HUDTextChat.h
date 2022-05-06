@@ -22,6 +22,7 @@ History:
 #include "CryCommon/CryAction/IActionMapManager.h"
 
 class CGameFlashAnimation;
+class CHUD;
 
 static const int CHAT_LENGTH = 6;
 
@@ -32,7 +33,7 @@ class CHUDTextChat : public CHUDObject,public IInputEventListener, public IFSCom
 	typedef bool (CHUDTextChat::*OpFuncPtr) (const char*, const char*);
 
 public:
-	CHUDTextChat();
+	CHUDTextChat(CHUD *pHUD);
 
 	~CHUDTextChat();
 
@@ -86,23 +87,25 @@ private:
 
 	CGameFlashAnimation *m_flashChat;
 
+	CHUD *m_pHUD = nullptr;
+
 	string				m_inputText;
 	string				m_lastInputText;
-	int						m_cursor;
-	bool					m_isListening;
-	bool					m_teamChat;
+	int m_cursor = 0;
+	bool m_isListening = false;
+	bool m_teamChat = false;
 
-	string				m_chatStrings[CHAT_LENGTH];
-	float					m_chatSpawnTime[CHAT_LENGTH];
-	int						m_chatHead;
+	string m_chatStrings[CHAT_LENGTH];
+	float m_chatSpawnTime[CHAT_LENGTH];
+	int m_chatHead = 0;
 
-	bool					m_textInputActive;
-	bool					m_showVirtualKeyboard;
+	bool m_textInputActive = false;
+	bool m_showVirtualKeyboard = false;
 
-	bool					m_anyCurrentText;
+	bool m_anyCurrentText = false;
 	/*bool					m_showing;
 	float					m_lastUpdate;*/
-	float					m_repeatTimer;
+	float m_repeatTimer = 0.0f;
 	SInputEvent		m_repeatEvent;
 };
 
