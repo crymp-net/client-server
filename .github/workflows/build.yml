@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build_windows_msvc:
     runs-on: windows-latest
 
     strategy:
@@ -32,4 +32,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: CryMP-Client${{ matrix.build_bits }}-${{ matrix.build_type }}
-        path: ${{ env.BUILD_DIR }}/*.exe
+        path: ${{ env.BUILD_DIR }}/${{ matrix.build_type }}/*.exe
