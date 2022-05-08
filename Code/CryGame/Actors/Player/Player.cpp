@@ -5175,9 +5175,8 @@ void CPlayer::UpdateFootSteps(float frameTime)
 		if (m_stats.relativeWaterLevel < 0.0f)
 			CreateScriptEvent("splash", 0);
 
-		bool playFirstPerson = !IsFpSpectatorTarget(); //CryMP Fp Spec
-		if (IsClient() && !IsThirdPerson())
-			playFirstPerson = true;
+		bool playFirstPerson = (IsFpSpectatorTarget() || (IsClient() && !IsThirdPerson())); //CryMP Fp Spec
+
 		params.playSoundFP = playFirstPerson;
 
 		bool inWater = false;
