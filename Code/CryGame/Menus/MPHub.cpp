@@ -670,24 +670,8 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 	switch (dc)
 	{
 	case eDC_Kicked:
-	{
-		if (strlen(serverMsg) > 21 && strncmp(serverMsg + 21, "None", 4) != 0)
-		{
-			ILocalizationManager* pLoc = gEnv->pSystem->GetLocalizationManager();
-			if (pLoc)
-			{
-				wstring final;
-				wstring localised, tmp;
-				ExpandToWChar(serverMsg + 21, tmp);
-				pLoc->LocalizeLabel(msg, localised);
-				wstring newstring = L"%1\nReason: %2";
-				pLoc->FormatStringMessage(final, newstring, localised, tmp);
-				ShowErrorText(final);
-				break;
-			}
-		}
-	}
 	case eDC_Banned:
+	case eDC_PunkDetected:
 	{
 		if (strlen(serverMsg) > 21 && strncmp(serverMsg + 21, "None", 4) != 0)
 		{
