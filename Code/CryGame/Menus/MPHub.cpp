@@ -727,17 +727,25 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 	}
 	case eDC_MapNotFound:
 	{
-		// localise the msg ourselves to add the information retrieved from the server...
-		ILocalizationManager* pLoc = gEnv->pSystem->GetLocalizationManager();
-		if (pLoc)
+		if (connecting)
 		{
-			wstring final;
-			wstring localised, tmp;
-			ExpandToWChar(serverMsg, tmp);
-			pLoc->LocalizeLabel(msg, localised);
-			pLoc->FormatStringMessage(final, localised, tmp);
+			// localise the msg ourselves to add the information retrieved from the server...
+			ILocalizationManager* pLoc = gEnv->pSystem->GetLocalizationManager();
+			if (pLoc)
+			{
+				wstring final;
+				wstring localised, tmp;
+				ExpandToWChar(serverMsg, tmp);
+				pLoc->LocalizeLabel(msg, localised);
+				pLoc->FormatStringMessage(final, localised, tmp);
 
-			ShowErrorText(final);
+				ShowErrorText(final);
+			}
+		}
+		else
+		{
+			//CryMP: Try to download map and reconnect to server
+			gEnv->pConsole->ExecuteString("connect");
 		}
 		break;
 	}
