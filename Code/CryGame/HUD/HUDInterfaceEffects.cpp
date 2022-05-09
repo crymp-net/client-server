@@ -177,6 +177,12 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 
 	Vec3 vEntityScreenSpace;
 	m_pRenderer->ProjectToScreen(	vWorldPos.x, vWorldPos.y,	vWorldPos.z, &vEntityScreenSpace.x, &vEntityScreenSpace.y, &vEntityScreenSpace.z);
+	
+	if (vEntityScreenSpace.z > 1.0f)
+	{
+		return; // ignore objectives behind the camera
+	}
+
 	Vec3 vEntityTargetSpace;
 	bool useTarget = false;
 	if(!rotationTarget.IsZero())
@@ -185,13 +191,13 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 		useTarget = true;
 	}
 
-	CPlayer *pPlayer = (CPlayer*)(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	CPlayer *pPlayer = m_pClientActor;
 	
 	//CryMP: Spectator check 
-	auto pTarget = pPlayer ? pPlayer->GetSpectatorTargetPlayer() : nullptr;
+	CActor* pTarget = static_cast<CActor*>(m_pClientActor->GetSpectatorTargetPlayer());
 	if (pTarget)
 	{
-		pPlayer = (CPlayer*)(pTarget);
+		pPlayer = CPlayer::FromActor(pTarget);
 	}
 
 	if (!pPlayer)
@@ -380,7 +386,7 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 	//CryMP track projectiles in Fp Spec
 	if (pPlayerActor && pPlayerActor->IsFpSpectator())
 	{
-		CPlayer* pTarget = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+		CPlayer* pTarget = CPlayer::FromActor(static_cast<CActor*>(pPlayerActor->GetSpectatorTargetPlayer()));
 		if (pTarget)
 			pPlayerActor = pTarget;
 		else
@@ -433,7 +439,9 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 			m_pRenderer->ProjectToScreen(	proj.x, proj.y,	proj.z, &screen.x,	&screen.y, &screen.z );
 
 			if (screen.z > 1.0f)
+			{
 				continue; // ignore grenades behind the camera
+			}
 
 			float distSq=(player-proj).len2();
 
@@ -902,17 +910,13 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 						CProjectile *pProjectile = g_pGame->GetWeaponSystem()->GetProjectile(explosiveId);
 						if(pProjectile && pProjectile->GetEntity())
 						{
-							const bool pOwnerOfExplosive(pProjectile->GetOwnerId() == pActor->GetEntityId());
+							const bool bOwnerOfExplosive(pProjectile->GetOwnerId() == pActor->GetEntityId());
 							const bool bEnemyExplosive(explosiveTeam != playerTeam);
-
+						
 							// in IA, only display mines/claymores placed by this player
-							//CryMP: But for spectator mode, always show
-							if (!bSpectating)
-							{
-								if(InstantAction && !pOwnerOfExplosive)
-									continue;
-							}
-
+							if (InstantAction && !bOwnerOfExplosive)
+								continue;
+							
 							IEntityClass* pClass = pProjectile->GetEntity()->GetClass();
 							if(pClass == m_pClaymore)
 							{
@@ -929,11 +933,6 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 								icon = eOS_Mine;
 							}
 
-							if (bSpectating)
-							{	
-								if (bEnemyExplosive || (InstantAction && !pOwnerOfExplosive))
-									color = 2; //CryMP: Red color for enemy explosives
-							}
 							UpdateMissionObjectiveIcon(explosiveId, color, icon, true, targetPoint);
 						}
 					}
