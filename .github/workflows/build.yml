@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build_windows_msvc:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        build_type: [ Release ]
+        build_bits: [ 32, 64 ]
+
+    env:
+      BUILD_DIR: ${{ github.workspace }}/Build${{ matrix.build_bits }}
+      BUILD_PLATFORM: ${{ matrix.build_bits == '32' && 'Win32' || 'x64' }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.build_type }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: CryMP-Client${{ matrix.build_bits }}-${{ matrix.build_type }}
+        path: ${{ env.BUILD_DIR }}/${{ matrix.build_type }}/*.exe
