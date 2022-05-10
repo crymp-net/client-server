@@ -399,6 +399,8 @@ void CActor::PostInit(IGameObject* pGameObject)
 		if (pCharacter)
 			pCharacter->GetISkeletonPose()->SetAimIKFadeOut(0);
 
+	    //Disabled 
+		/*
 		//CryMP: Fix Ghost #4
 		IEntityRenderProxy* pProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 		if (pProxy && pProxy->GetRenderNode())
@@ -406,6 +408,7 @@ void CActor::PostInit(IGameObject* pGameObject)
 			pProxy->GetRenderNode()->SetViewDistUnlimited(); //default is 100m
 			pProxy->GetRenderNode()->SetLodRatio(255);
 		}
+		*/
 	}
 
 	InitActorAttachments();

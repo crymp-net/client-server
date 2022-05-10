@@ -1388,7 +1388,7 @@ void CPlayer::PrePhysicsUpdate()
 	else
 		params.flags |= eACF_ImmediateStance | eACF_PerAnimGraph | eACF_UseHumanBlending | eACF_ConstrainDesiredSpeedToXY;
 
-	bool firstperson = IsClient() && !TP;
+	const bool firstperson = IsClient() && !TP;
 	if (firstperson)
 	{
 		params.flags &= ~(eACF_AlwaysAnimation | eACF_PerAnimGraph);
@@ -1523,6 +1523,17 @@ void CPlayer::PrePhysicsUpdate()
 				CMovementRequest mr;
 				mr.ClearLookTarget();
 				m_pMovementController->RequestMovement(mr);
+			}
+		}
+		else
+		{
+			//CryMP: Ghost Bug Fix 10.05.2022
+			if (IsPlayer() && GetPhysicsProfile() == eAP_Alive)
+			{
+				if (IPhysicalEntity* pPhysics = GetEntity()->GetPhysics())
+				{
+					pCharacter->GetISkeletonPose()->SynchronizeWithPhysicalEntity(pPhysics);
+				}
 			}
 		}
 	}

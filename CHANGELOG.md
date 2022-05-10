@@ -60,7 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Missing bunker attack info.
 - Some game crashes.
 - Some minor player animation issues.
-- *Some* ghost bugs.
+- Ghost bug.
 - Disappearing enemies on radar during continuous scanning.
 - AA tank low FPS bug.
 - StopFire RMI flood bug.

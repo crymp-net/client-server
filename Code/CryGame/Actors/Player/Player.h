@@ -896,6 +896,17 @@ public:
 	Vec3 GetNetAimDir() const { return m_netAimDir; }
 	Vec3 GetNetAimDirSmooth() const { return m_netAimDirSmooth; }
 
+	static CPlayer* FromIActor(IActor* pActor)
+	{
+		if (!pActor)
+			return nullptr;
+
+		if (static_cast<CActor*>(pActor)->GetActorClass() == CPlayer::GetActorClassType())
+			return static_cast<CPlayer*>(pActor);
+		else
+			return nullptr;
+	}
+
 	static CPlayer* FromActor(CActor* pActor)
 	{
 		if (!pActor)

@@ -19,5 +19,5 @@ The next generation [Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) 
 - [ ] New CryPak implementation
 - [x] UI for CryMP profiles
 - [x] Get rid of GameSpy stuff
-- [ ] Fix ghost bug
+- [x] Fix ghost bug
 - [ ] SDK code cleanup
