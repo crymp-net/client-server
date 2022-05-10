@@ -83,9 +83,11 @@ void CHUDScopes::SetSilhouette(IActor* pActor, IAIObject* pAIObject)
 	int iAlertnessState = pUnknownProxy ? pUnknownProxy->GetAlertnessState() : 0;
 	if (0 == iAlertnessState)
 	{
-		float r = ((unsigned char)((g_pGameCVars->hud_colorLine >> 16) & 0xFF)) / 255.0f;
-		float g = ((unsigned char)((g_pGameCVars->hud_colorLine >> 8) & 0xFF)) / 255.0f;
-		float b = ((unsigned char)((g_pGameCVars->hud_colorLine >> 0) & 0xFF)) / 255.0f;
+		const auto ct = g_pGameCVars->hud_colorLine;
+		const float r = ((ct >> 16) & 0xFF) / 255.0f;
+		const float g = ((ct >> 8) & 0xFF) / 255.0f;
+		const float b = ((ct >> 0) & 0xFF) / 255.0f;
+
 		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, r, g, b, 1.0f, -1);
 	}
 	else if (1 == iAlertnessState)

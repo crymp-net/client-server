@@ -3320,7 +3320,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 				state = "In Game";
 				break;
 			}
-			sprintf(status, "%s...", state, pNC->GetChannelConnectionState());
+			sprintf(status, "%s...", state);
 		}
 		break;
 		case eCCS_InGame:
@@ -3342,9 +3342,9 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			const float sy = gEnv->pRenderer->ScaleCoordY(y);
 			const float sx = gEnv->pRenderer->ScaleCoordX(x + x * 0.5f);
 			const auto ct = g_pGameCVars->hud_colorOver;
-			const float r = ((unsigned char)((ct >> 16) & 0xFF)) / 255.0f;
-			const float g = ((unsigned char)((ct >> 8) & 0xFF)) / 255.0f;
-			const float b = ((unsigned char)((ct >> 0) & 0xFF)) / 255.0f;
+			const float r = ((ct >> 16) & 0xFF) / 255.0f;
+			const float g = ((ct >> 8) & 0xFF) / 255.0f;
+			const float b = ((ct >> 0) & 0xFF) / 255.0f;
 
 			float color[] = { r, g, b, 1.0 };
 			const float size = 0.7f + (width / 800.f) * 0.3f;
