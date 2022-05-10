@@ -3320,7 +3320,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 				state = "In Game";
 				break;
 			}
-			sprintf(status, "%s [%d]", state, pNC->GetContextViewStateDebugCode());
+			sprintf(status, "%s...", state, pNC->GetChannelConnectionState());
 		}
 		break;
 		case eCCS_InGame:
@@ -3337,12 +3337,19 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 		if (show)
 		{
-			float posX = width / 2;
-			float posY = height / 4;
-			float size = 1.0 + (1.0 / (800.0 / width));
-			float color[] = { 1.0, 1.0, 1.0, 1.0 };
+			const float y = 580.f;
+			const float x = 250.f;
+			const float sy = gEnv->pRenderer->ScaleCoordY(y);
+			const float sx = gEnv->pRenderer->ScaleCoordX(x + x * 0.5f);
+			const auto ct = g_pGameCVars->hud_colorOver;
+			const float r = ((unsigned char)((ct >> 16) & 0xFF)) / 255.0f;
+			const float g = ((unsigned char)((ct >> 8) & 0xFF)) / 255.0f;
+			const float b = ((unsigned char)((ct >> 0) & 0xFF)) / 255.0f;
 
-			gEnv->pRenderer->Draw2dLabel(posX, posY, size, color, true, "Connection State: %s", status);
+			float color[] = { r, g, b, 1.0 };
+			const float size = 0.7f + (width / 800.f) * 0.3f;
+
+			gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "Connection State: %s", status);
 		}
 	}
 }
