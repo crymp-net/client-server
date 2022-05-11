@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Map downloader. Maps are stored in the user folder to avoid write permission issues.
 - CryMP profiles.
 - RPC from the old multiplayer client.
-- Multiplayer object pickup and throw. Requires compatible SSM to be activated.
+- Multiplayer object pickup and throw. Requires compatible SSM to be activated. See `mp_pickup*` cvars.
 - First person spectator mode.
 - `mp_circleJump` server-side cvar to enable the old circle jump glitch from 5767. Disabled by default.
 - `mp_wallJump` server-side cvar to modify the wall jump glitch. The default value `1.0` means no modification.
@@ -25,18 +25,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New log implementation compatible with the old one.
 - `mp_crymp` server-side cvar allowing server to enable new features incompatible with vanilla clients.
 - `cursor_increment` and `cursor_decrement` console commands to change mouse cursor visibility.
+- `say` console command useful mainly for binding chat commands to keys.
 - Optional `-dir` command line parameter to specify Crysis main directory. It allows the EXE to be placed anywhere.
 - Features from [c1-launcher](https://github.com/ccomrade/c1-launcher).
 - `mp_menuSpeed` client-side cvar for changing speed of menu animations.
+- `mp_weaponsOnBack` server-side cvar for activating the weapons-on-back feature from singleplayer.
+- `mp_animationGrenadeSwitch` server-side cvar for activating the first person grenade switch animation.
+- `mp_killMessages` server-side cvar for disabling the kill log.
 
 ### Changed
 - Ranked servers are now marked with `^`.
 - Unreachable servers are now grayed out.
 - The log file is now stored in the user folder as `CryMP-Client.log` by default.
-- Unlocked physical interactions with ragdolls. Useful mainly in singleplayer. See `g_ragdollUnrestricted*` cvars.
+- Unlocked physical interactions with ragdolls. Useful mainly in singleplayer. See the `mp_ragdollUnrestricted` cvar.
 - Binoculars now tag vehicles with drivers.
 - Show radar effect when nearby teammates are scanning and highlight them on radar.
 - Show friendly C4.
+- Show killer name tag always.
 - Allow some actions during network lag (chat, look around, modify weapon, zoom).
 - Enable weapon raise near doors to fix weapon/laser glitching through them.
 - Show player health/energy/suit/weapon info in spectator mode.
@@ -51,7 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - All log messages can be disabled by setting `log_Verbosity` or `log_FileVerbosity` to `-1`.
 - Optional high precision look direction serialization for the first person spectator mode. Enabled via `mp_crymp 1`.
 - No automatic switch to menu when game window loses focus.
-- Third person view can be used without DEVMODE.
+- Third person view can be used without DEVMODE. Enabled via `mp_thirdPerson 1`.
 - The CryGame DLL is not being used anymore.
 
 ### Fixed
@@ -60,6 +65,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Missing bunker attack info.
 - Some game crashes.
 - Some minor player animation issues.
+- Some third person mode issues.
+- Some rail glitches.
 - Ghost bug.
 - Disappearing enemies on radar during continuous scanning.
 - AA tank low FPS bug.
