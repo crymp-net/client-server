@@ -159,7 +159,6 @@ CHUD::CHUD()
 	m_missionObjectiveValues.clear();
 	m_bAirStrikeAvailable = false;
 	m_fAirStrikeStarted = 0.0f;
-	m_fDamageIndicatorTimer = 0;
 	m_fNightVisionTimer = 0;
 	m_fPlayerFallAndPlayTimer = 0.0f;
 	m_bExclusiveListener = false;
@@ -3809,15 +3808,6 @@ bool CHUD::UpdateTimers(float frameTime)
 			}
 			m_fSuitChangeSoundTimer = 0;
 		}
-	}
-
-	if (m_fDamageIndicatorTimer && (gEnv->pTimer->GetFrameStartTime().GetSeconds() - m_fDamageIndicatorTimer) < 2.0f)
-	{
-		float angle = ((m_pClientActor->GetAngles().z * 180.0f / gf_PI) + 180.0f);
-		if (angle < 0.0f)
-			angle = 360.0f - angle;
-		m_pHUDCrosshair->GetFlashAnim()->CheckedSetVariable("DamageDirection._rotation", SFlashVarValue(angle));
-
 	}
 
 	if (m_fSpeedTimer != 0)

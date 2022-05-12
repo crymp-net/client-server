@@ -55,13 +55,18 @@ public:
 
 	void Reset();
 
+	void SetDamageIndicatorTimer(float time)
+	{
+		m_fDamageIndicatorTimer = time;
+	}
+
 private:
 
 	//update function
 	void UpdateCrosshair();
 
 	//the main HUD
-	CHUD	*g_pHUD;
+	CHUD* m_pHUD = nullptr;
 	//the crosshair flash asset
 	CGameFlashAnimation	m_animCrossHair;
 	//the friend-cross flash asset
@@ -69,21 +74,24 @@ private:
 	//the use icons flash asset
 	CGameFlashAnimation m_animInterActiveIcons;
 	//usability flag (can use lookat object)
-	bool m_bUsable;
+	bool m_bUsable = false;
 	// targetted friendly unit
-	int m_iFriendlyTarget;
+	int m_iFriendlyTarget = 0;
 	// crosshair type cache value
-	int m_iCrosshair;
+	int m_iCrosshair = -1;
 	// maps usability strings to icons
 	std::map<string, int> m_useIcons;
 	//hide the use icon in special cases
-	bool m_bHideUseIconTemp;
+	bool m_bHideUseIconTemp = false;
 	//broken hud state
-	bool m_bBroken;
+	bool m_bBroken = false;
 	// crosshair opacity
-	float m_opacity;
-	float m_spread;
-	float m_smoothSpread;
+	float m_opacity = false;
+	float m_spread = false;
+	float m_smoothSpread = false;
+	
+	//CryMP
+	float m_fDamageIndicatorTimer = 0.0f;
 };
 
 #endif

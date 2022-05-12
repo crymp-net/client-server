@@ -615,7 +615,7 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 		pAnim->Invoke("setDamageDirection", 4);
 	}
 
-	m_fDamageIndicatorTimer = gEnv->pTimer->GetFrameStartTime().GetSeconds();
+	m_pHUDCrosshair->SetDamageIndicatorTimer(2.0f);
 }													
 
 void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedback)

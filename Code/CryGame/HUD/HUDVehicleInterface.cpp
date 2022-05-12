@@ -78,6 +78,10 @@ CHUDVehicleInterface::~CHUDVehicleInterface()
 
 void CHUDVehicleInterface::Update(float fDeltaTime)
 {
+	//CryMP do not update this mess while not in vehicle...
+	if (!m_pVehicle)
+		return;
+
 	if (m_animMainWindow.GetVisible())
 	{
 		if (m_friendlyFire != m_lastSetFriendly)

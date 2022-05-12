@@ -723,7 +723,6 @@ private:
 	bool m_bSuitMenuFilter;
 
 	//timers
-	float m_fDamageIndicatorTimer;
 	float m_fPlayerFallAndPlayTimer;
 //	float m_fSetAgressorIcon;
 //	EntityId  m_agressorIconID;
