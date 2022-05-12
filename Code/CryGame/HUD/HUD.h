@@ -849,6 +849,14 @@ private:
 	int m_prevSpectatorMode;
 	int m_prevSpectatorHealth;
 	EntityId m_prevSpectatorTarget;
+
+//CryMP:
+protected:
+
+	void GatherUnderAttackBuildings();
+	bool IsUnderAttackFast(EntityId entId);
+	std::vector<EntityId> m_underAttackBuildings;
+	float m_underAttackCheck = 0.0f;
 };
 
 //-----------------------------------------------------------------------------------------------------

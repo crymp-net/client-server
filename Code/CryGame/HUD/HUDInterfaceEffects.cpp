@@ -386,12 +386,11 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 	//CryMP track projectiles in Fp Spec
 	if (pPlayerActor && pPlayerActor->IsFpSpectator())
 	{
-		CPlayer* pTarget = CPlayer::FromActor(static_cast<CActor*>(pPlayerActor->GetSpectatorTargetPlayer()));
-		if (pTarget)
-			pPlayerActor = pTarget;
-		else
-			return;
+		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetPlayer());
 	}
+
+	if (!pPlayerActor)
+		return;
 
 	if(m_trackedProjectiles.empty())
 	{
@@ -421,7 +420,7 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 	float closestFriendly=999999.0;
 	float closestHostile=999999.0f;
 
-	int teamId=g_pGame->GetGameRules()->GetTeam(pPlayerActor->GetEntityId());
+	const int teamId = m_pGameRules->GetTeam(pPlayerActor->GetEntityId());
 
 	auto end = m_trackedProjectiles.end();
 	auto it = m_trackedProjectiles.begin();
@@ -443,15 +442,15 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 				continue; // ignore grenades behind the camera
 			}
 
-			float distSq=(player-proj).len2();
+			const float distSq=(player-proj).len2();
 
 			const bool bIsMyProjectile = pProjectile->GetOwnerId() == pPlayerActor->GetEntityId();
 			//CryMP: Own grenades visible all times
 			if (!bIsMyProjectile && distSq > 400.0f)
 				continue;
 
-			int projTeamId=g_pGame->GetGameRules()->GetTeam(pProjectile->GetOwnerId());
-			bool hostile=(!teamId || teamId!=projTeamId) && (pProjectile->GetOwnerId()!=pPlayerActor->GetEntityId());
+			const int projTeamId = m_pGameRules->GetTeam(pProjectile->GetOwnerId());
+			const bool hostile=(!teamId || teamId!=projTeamId) && (pProjectile->GetOwnerId()!=pPlayerActor->GetEntityId());
 
 			if (distSq<closestHostile && hostile)
 			{
@@ -545,10 +544,6 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 	Vec3 vlookingDirection = FORWARD_DIRECTION;
 	CGameFlashAnimation* pAnim = NULL;
 
-	CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if(!pPlayerActor)
-		return;
-
 	if(IEntity *pEntity = gEnv->pEntitySystem->GetEntity(weaponId))
 	{
 		if(pEntity->GetClass() == CItem::sGaussRifleClass)
@@ -567,10 +562,10 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 	{
 		if(!g_pGameCVars->hud_chDamageIndicator)
 			return;
-		pMovementController = pPlayerActor->GetMovementController();
+		pMovementController = m_pClientActor->GetMovementController();
 		pAnim = m_pHUDCrosshair->GetFlashAnim();
 	}
-	else if(IVehicle *pVehicle = pPlayerActor->GetLinkedVehicle())
+	else if(IVehicle *pVehicle = m_pClientActor->GetLinkedVehicle())
 	{
 		pMovementController = pVehicle->GetMovementController();
 		pAnim = &(m_pHUDVehicleInterface->m_animStats);
@@ -621,18 +616,19 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 	}
 
 	m_fDamageIndicatorTimer = gEnv->pTimer->GetFrameStartTime().GetSeconds();
-}
+}													
 
 void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedback)
 {
 	if(explosionFeedback)
 		PlaySound(ESound_SpecialHitFeedback);
 
-	if(!m_pClientActor->GetLinkedVehicle())
+	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
+	if (!pVehicle)
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 	else
 	{
-		IVehicleSeat *pSeat = m_pClientActor->GetLinkedVehicle()->GetSeatForPassenger(m_pClientActor->GetEntityId());
+		IVehicleSeat *pSeat = pVehicle->GetSeatForPassenger(m_pClientActor->GetEntityId());
 		if(pSeat && !pSeat->IsDriver())
 			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 		else
@@ -762,10 +758,10 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		IEntity *pEntity = NULL;
 		if(type == ENuclearWeapon)
 		{
-			if(IItem *pWeapon = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(mEntity.entityId))
+			if(IItem *pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(mEntity.entityId))
 			{
 				pEntity = gEnv->pEntitySystem->GetEntity(mEntity.entityId);
-				if(EntityId ownerId=pWeapon->GetOwnerId())
+				if(EntityId ownerId = pItem->GetOwnerId())
 				{
 					pEntity = gEnv->pEntitySystem->GetEntity(ownerId);
 
@@ -839,6 +835,9 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		}
 	}
 	
+	//CryMP
+	GatherUnderAttackBuildings();
+
 	auto it = m_pHUDRadar->GetObjectives()->begin();
 	for(; it != m_pHUDRadar->GetObjectives()->end(); ++it)
 	{
@@ -847,7 +846,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		{
 			int friendly = m_pHUDRadar->FriendOrFoe(gEnv->bMultiplayer, team, pEntity, m_pGameRules);
 			FlashRadarType type = m_pHUDRadar->ChooseType(pEntity);
-			const bool pUnderAttack = IsUnderAttack(pEntity);
+			const bool pUnderAttack = IsUnderAttackFast(*it);
 			if(friendly==1 && pUnderAttack)
 			{
 				friendly = 3;
@@ -931,6 +930,46 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 	}
 
 	UpdateAllMissionObjectives();
+}
+
+void CHUD::GatherUnderAttackBuildings()
+{
+	m_underAttackCheck += gEnv->pTimer->GetRealFrameTime();
+	if (m_underAttackCheck < 0.5f)
+		return;
+
+	//CryMP: Optimization
+	//Only do slow lua checks each 1/2 sec, instead of each frame for (~20) objectives 
+
+	m_underAttackCheck = 0.0f;
+	m_underAttackBuildings.clear();
+
+	const int team = m_pGameRules->GetTeam(m_pClientActor->GetEntityId());
+
+	auto it = m_pHUDRadar->GetObjectives()->begin();
+	for (; it != m_pHUDRadar->GetObjectives()->end(); ++it)
+	{
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
+		if (pEntity)
+		{
+			const bool pUnderAttack = IsUnderAttack(pEntity);
+			if (pUnderAttack)
+			{
+				//save info here for fast access
+				m_underAttackBuildings.push_back(*it);
+			}
+		}
+	}
+}
+
+bool CHUD::IsUnderAttackFast(EntityId entId)
+{	
+	for (EntityId m : m_underAttackBuildings)
+	{
+		if (m == entId)
+			return true;
+	}
+	return false;
 }
 
 bool CHUD::IsUnderAttack(IEntity *pEntity)
