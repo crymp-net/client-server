@@ -272,7 +272,7 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 
 	//CryMP: Always draw killer tag
 	const EntityId killerId = pClientActor->GetSpectatorTarget();
-	if (killerId && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
+	if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
 	{
 		bDrawOnTop = true;
 	}
