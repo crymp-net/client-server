@@ -951,7 +951,8 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	}
 
 	// need to create this even when player is dead, otherwise spectators don't see tank turrets rotate etc until they spawn in.
-	if (client)
+	
+	if (IsClient()) //CryMP - this should be called on client only
 		GetGameObject()->AttachDistanceChecker();
 
 	if (m_pPlayerInput)
