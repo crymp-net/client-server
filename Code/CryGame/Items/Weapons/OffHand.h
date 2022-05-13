@@ -94,6 +94,7 @@ public:
 	virtual ~COffHand();
 
 	virtual void Update(SEntityUpdateContext& ctx, int slot);
+	void CheckTimers(float frameTime);
 	virtual void PostUpdate(float frameTime);
 	virtual void PostInit(IGameObject* pGameObject);
 	virtual void Reset();
@@ -188,8 +189,8 @@ public:
 
 	virtual void ForcePendingActions() {}
 
-	virtual void OnEnterFirstPerson();
-	virtual void OnEnterThirdPerson();
+	virtual void OnEnterFirstPerson() override;
+	virtual void OnEnterThirdPerson() override;
 
 private:
 

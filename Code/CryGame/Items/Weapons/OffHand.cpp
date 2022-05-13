@@ -510,8 +510,11 @@ void COffHand::PostPostSerialize()
 //=======================================
 void COffHand::OnEnterFirstPerson()
 {
+	//CryLogAlways("$6%s OnEnterFirstPerson", GetEntity()->GetName());
+
 	//CryMP: Check 1st/3rd person transition
-	if (GetOwnerActor() && GetOwnerActor()->IsClient())
+	CActor* pActor = GetOwnerActor();
+	if (pActor && pActor->IsClient())
 	{
 		const EntityId heldEntityId = m_heldEntityId;
 		m_isClient = true;
@@ -526,10 +529,11 @@ void COffHand::OnEnterFirstPerson()
 			ThrowObject(eAAM_OnPress, false);
 			ThrowObject(eAAM_OnRelease, false);
 		}
+		
 		m_wasThirdPerson = false;
 	}
 
-	CItem::OnEnterFirstPerson();
+	CWeapon::OnEnterFirstPerson();
 }
 
 //=======================================
@@ -544,7 +548,7 @@ void COffHand::OnEnterThirdPerson()
 	}
 
 	//CryMP: Check 1st/3rd person transition
-	CItem::OnEnterThirdPerson();
+	CWeapon::OnEnterThirdPerson();
 }
 
 //=============================================================
@@ -564,104 +568,85 @@ void COffHand::Update(SEntityUpdateContext& ctx, int slot)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
-	bool keepUpdating = false;
-
 	CWeapon::Update(ctx, slot);
+}
 
-	//float white[4] = { 1,1,1,1 };
-	//gEnv->pRenderer->Draw2dLabel(100, 150, 2, white, false, "state %d",  m_currentState);
-
-	if (slot == eIUS_General)
+//=============================================================
+void COffHand::CheckTimers(float frameTime)
+{
+	if (m_resetTimer >= 0.0f)
 	{
-		//CryMP: Update held items in TP mode as well
-		if (!m_stats.fp)
+		m_resetTimer -= frameTime;
+		if (m_resetTimer < 0.0f)
 		{
-			UpdateFPView(ctx.fFrameTime);
-			UpdateFPPosition(ctx.fFrameTime);
-			UpdateFPCharacter(ctx.fFrameTime);
+			SetOffHandState(eOHS_INIT_STATE);
+			m_resetTimer = -1.0f;
+		}
+	}
+	if (m_nextGrenadeThrow >= 0.0f)
+	{
+		//Grenade throw fire rate
+		m_nextGrenadeThrow -= frameTime;
+	}
+	if (m_fGrenadeToggleTimer >= 0.0f)
+	{
+		m_fGrenadeToggleTimer += frameTime;
+		if (m_fGrenadeToggleTimer > 1.0f)
+		{
+			StartSwitchGrenade(true);
+			m_fGrenadeToggleTimer = 0.0f;
+		}
+	}
+
+	if (m_fGrenadeThrowTimer >= 0.0f)
+	{
+		m_fGrenadeThrowTimer += frameTime;
+		if (m_fGrenadeThrowTimer > 0.5f)
+		{
+			m_fGrenadeThrowTimer = -1.0f;
+		}
+	}
+
+	if (m_pickingTimer >= 0.0f)
+	{
+		m_pickingTimer -= frameTime;
+
+		if (m_pickingTimer < 0.0f)
+		{
+			PerformPickUp();
 		}
 
-		if (m_resetTimer >= 0.0f)
+	}
+	if (m_killTimeOut >= 0.0f)
+	{
+		m_killTimeOut -= frameTime;
+		if (m_killTimeOut < 0.0f)
 		{
-			m_resetTimer -= ctx.fFrameTime;
-			if (m_resetTimer < 0.0f)
-			{
-				SetOffHandState(eOHS_INIT_STATE);
-				m_resetTimer = -1.0f;
-			}
-			else
-			{
-				keepUpdating = true;
-			}
+			m_killTimeOut = -1.0f;
+			m_killNPC = true;
 		}
-		if (m_nextGrenadeThrow >= 0.0f)
-		{
-			//Grenade throw fire rate
-			m_nextGrenadeThrow -= ctx.fFrameTime;
-			keepUpdating = true;
-		}
-		if (m_fGrenadeToggleTimer >= 0.0f)
-		{
-			m_fGrenadeToggleTimer += ctx.fFrameTime;
-			if (m_fGrenadeToggleTimer > 1.0f)
-			{
-				StartSwitchGrenade(true);
-				m_fGrenadeToggleTimer = 0.0f;
-			}
-			keepUpdating = true;
-		}
-
-		if (m_fGrenadeThrowTimer >= 0.0f)
-		{
-			m_fGrenadeThrowTimer += ctx.fFrameTime;
-			if (m_fGrenadeThrowTimer > 0.5f)
-			{
-				m_fGrenadeThrowTimer = -1.0f;
-			}
-			else
-			{
-				keepUpdating = true;
-			}
-		}
-
-		if (m_pickingTimer >= 0.0f)
-		{
-			m_pickingTimer -= ctx.fFrameTime;
-
-			if (m_pickingTimer < 0.0f)
-			{
-				PerformPickUp();
-			}
-			else
-			{
-				keepUpdating = true;
-			}
-		}
-		if (m_killTimeOut >= 0.0f)
-		{
-			m_killTimeOut -= ctx.fFrameTime;
-			if (m_killTimeOut < 0.0f)
-			{
-				m_killTimeOut = -1.0f;
-				m_killNPC = true;
-			}
-			else
-			{
-				keepUpdating = true;
-			}
-		}
-
-		if (keepUpdating || m_isClient)
-			RequireUpdate(eIUS_General);
-		else
-			EnableUpdate(false, eIUS_General);
 	}
 }
 
 //=============================================================
+//CryMP: Called always on the client, even in ThirdPerson
+//Called on other clients, if spectating them in FirstPerson
+
 void COffHand::UpdateFPView(float frameTime)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
+
+	if (m_isClient)
+	{
+		CheckTimers(frameTime);
+
+		//CryMP: Update held items in TP mode as well
+		if (!m_stats.fp && m_heldEntityId)
+		{
+			UpdateFPPosition(frameTime);
+			UpdateFPCharacter(frameTime);
+		}
+	}
 
 	if (m_stats.selected)
 	{
@@ -670,6 +655,10 @@ void COffHand::UpdateFPView(float frameTime)
 		if (m_fm)
 			m_fm->UpdateFPView(frameTime);
 
+	}
+	else
+	{
+		//CryMP need to do this here, not checked in CItem::UpdateFPView if deselected
 		CheckViewChange();
 	}
 
@@ -690,8 +679,9 @@ void COffHand::UpdateFPView(float frameTime)
 		//Fix offhand floating on spawn (not really nice fix...)
 		if (m_stats.hand == 0)
 		{
-			SetHand(eIH_Left);					//This will be only done once after loading
-			Select(true);Select(false);
+			SetHand(eIH_Left); //This will be only done once after loading
+			
+			//Select(true);Select(false); //CryMP not needed anymore
 		}
 		//=========================================================
 	}
@@ -711,12 +701,10 @@ void COffHand::UpdateFPView(float frameTime)
 			UpdateWeaponLowering(frameTime);
 		else if (CActor* pActor = GetOwnerActor())
 		{
-			if (CItem* pItem = static_cast<CItem*>(pActor->GetCurrentItem()))
+			if (CWeapon* pWeapon = pActor->GetCurrentWeapon(false))
 			{
-				if (CWeapon* pWeapon = static_cast<CWeapon*>(pItem->GetIWeapon()))
-					LowerWeapon(pWeapon->IsWeaponLowered());
+				LowerWeapon(pWeapon->IsWeaponLowered());
 			}
-
 		}
 	}
 }
@@ -735,7 +723,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 	CActor* pActor = GetOwnerActor();
 	if (pActor)
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
+		CPlayer* pPlayer = CPlayer::FromActor(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
 		bool onLadder = false;
@@ -836,17 +824,16 @@ void COffHand::UpdateCrosshairUsabilityMP()
 	else
 		return;
 
-	CActor* pActor = GetOwnerActor();
-	if (pActor)
+	CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
+	if (pPlayer)
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
 		bool onLadder = false;
 		if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
 			onLadder = pStats->isOnLadder;
 
-		IMovementController* pMC = pActor->GetMovementController();
+		IMovementController* pMC = pPlayer->GetMovementController();
 		if (!pMC)
 			return;
 
@@ -893,7 +880,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 						}
 						else
 						{
-							int typ = CanPerformPickUp(GetOwnerActor(), NULL, true);
+							int typ = CanPerformPickUp(pPlayer, NULL, true);
 							if (m_preHeldEntityId && !pPlayer->CheckInventoryRestrictions(m_pEntitySystem->GetEntity(m_preHeldEntityId)->GetClass()->GetName()))
 							{
 								IItem* pExchangedItem = GetExchangeItem(pPlayer);
@@ -1719,7 +1706,7 @@ void COffHand::StartSwitchGrenade(bool xi_switch, bool fakeSwitch)
 
 	//No animation in multiplayer or when using the gamepad
 	//CryMP: Optional animations
-	if ((gEnv->bMultiplayer && !g_pGameCVars->mp_animationGrenadeSwitch) || xi_switch)
+	if ((gEnv->bMultiplayer && (!g_pGameCVars->mp_animationGrenadeSwitch || !m_stats.fp)) || xi_switch)
 	{
 		m_currentState = eOHS_SWITCHING_GRENADE;
 		SetResetTimer(0.3f); //Avoid spamming keyboard issues
@@ -1963,222 +1950,218 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 
 	IEntity* pEntity = m_pEntitySystem->GetEntityFromPhysics(pPhysicalEntity);
 
-	//if (pMC)
-	{
-		m_crosshairId = 0;
+	m_crosshairId = 0;
 
-		if (gEnv->bMultiplayer && g_pGameCVars->mp_pickupObjects)
+	Vec3 pos = info.eyePosition;
+	float lenSqr = 0.0f;
+	bool  breakable = false;
+	pe_params_part pPart;
+		
+	//Check if entity is in range
+	if (pEntity)
+	{
+		const bool bDefaultClass = pEntity->GetClass() == gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass();
+			
+		lenSqr = (pos - pEntity->GetWorldPos()).len2();
+		if (pPhysicalEntity->GetType() == PE_RIGID && !bDefaultClass)
 		{
-			if (!pEntity)
+			//Procedurally breakable object (most likely...)
+			//I need to adjust the distance, since the pivot of the entity could be anywhere
+			pPart.ipart = 0;
+			if (pPhysicalEntity->GetParams(&pPart) && pPart.pPhysGeom)
 			{
-				return OH_NO_GRAB;
-			}
-			//CryMP: Objects that are not bound to network, cannot be picked up in MP (except chickens etc)
-			const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
-			const bool bIsBound = m_pGameFramework->GetNetContext()->IsBound(pEntity->GetId());
-			if (!bIsBound && !bClientEntity)
-			{
-				return OH_NO_GRAB;
-			}
-			if (pEntity->GetClass() == CItem::sDoorClass || pEntity->GetClass() == CItem::sElevatorSwitchClass)
-			{
-				return OH_NO_GRAB;
+				lenSqr -= pPart.pPhysGeom->origin.len2();
+				breakable = true;
 			}
 		}
 
-		Vec3 pos = info.eyePosition;
-		float lenSqr = 0.0f;
-		bool  breakable = false;
-		pe_params_part pPart;
-		
-		//Check if entity is in range
+	}
+
+	if (lenSqr < m_range * m_range)
+	{
 		if (pEntity)
 		{
-			const bool bDefaultClass = !strcmp(pEntity->GetClass()->GetName(), "Default");
-			
-			lenSqr = (pos - pEntity->GetWorldPos()).len2();
-			if (pPhysicalEntity->GetType() == PE_RIGID && !bDefaultClass)
+			const EntityId entityId = pEntity->GetId();
+			// check if we have to pickup with two hands or just on hand
+			SelectGrabType(pEntity);
+			m_crosshairId = pEntity->GetId();
+
+			if (getEntityInfo)
+				m_preHeldEntityId = pEntity->GetId();
+
+			//1.- Player can grab some NPCs
+			//Let the actor decide if it can be grabbed
+			if (CActor* pActorAI = static_cast<CActor*>(m_pActorSystem->GetActor(entityId)))
 			{
-				//Procedurally breakable object (most likely...)
-				//I need to adjust the distance, since the pivot of the entity could be anywhere
-				pPart.ipart = 0;
-				if (pPhysicalEntity->GetParams(&pPart) && pPart.pPhysGeom)
+				if (((playerStance != STANCE_STAND) && (playerStance != STANCE_ZEROG)) || pActor->IsSwimming())
+					return OH_NO_GRAB;
+
+				//Check Player position vs AI position
+				if (pActorAI->GetActorSpecies() == eGCT_HUMAN)
 				{
-					lenSqr -= pPart.pPhysGeom->origin.len2();
-					breakable = true;
-				}
-			}
-
-		}
-
-		if (lenSqr < m_range * m_range)
-		{
-			if (pEntity)
-			{
-				
-				// check if we have to pickup with two hands or just on hand
-				SelectGrabType(pEntity);
-				m_crosshairId = pEntity->GetId();
-
-				if (getEntityInfo)
-					m_preHeldEntityId = pEntity->GetId();
-
-				if (g_pGameCVars->mp_pickupVehicles)
-				{
-					//CryMP: Crouch to pickup vehicles :D
-					if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(pEntity->GetId()))
-						return OH_GRAB_OBJECT;
-				}
-				//1.- Player can grab some NPCs
-				//Let the actor decide if it can be grabbed
-				if (CActor* pActorAI = static_cast<CActor*>(m_pActorSystem->GetActor(pEntity->GetId())))
-				{
-					if (((playerStance != STANCE_STAND) && (playerStance != STANCE_ZEROG)) || pActor->IsSwimming())
+					float playerZ = pActor->GetEntity()->GetWorldPos().z;
+					Vec3 aiPos = pActorAI->GetEntity()->GetWorldPos();
+					if (aiPos.z - playerZ > 1.0f)
 						return OH_NO_GRAB;
 
-					//Check Player position vs AI position
-					if (pActorAI->GetActorSpecies() == eGCT_HUMAN)
-					{
-						float playerZ = pActor->GetEntity()->GetWorldPos().z;
-						Vec3 aiPos = pActorAI->GetEntity()->GetWorldPos();
-						if (aiPos.z - playerZ > 1.0f)
-							return OH_NO_GRAB;
+					Line aim = Line(info.eyePosition, info.eyeDirection);
 
-						Line aim = Line(info.eyePosition, info.eyeDirection);
+					float dst = LinePointDistanceSqr(aim, aiPos, 0.75f);
+					if (dst < 0.6f)
+						return OH_NO_GRAB;
 
-						float dst = LinePointDistanceSqr(aim, aiPos, 0.75f);
-						if (dst < 0.6f)
-							return OH_NO_GRAB;
-
-						if (((SPlayerStats*)pActorAI->GetActorStats())->isStandingUp)
-							return OH_NO_GRAB;
-					}
-
-					if (pEntity->GetAI() && pActor->GetEntity() && !pActorAI->GetLinkedVehicle())
-					{
-						//Check script table (maybe is not possible to grab)
-						SmartScriptTable props;
-						SmartScriptTable propsDamage;
-						IScriptTable* pScriptTable = pEntity->GetScriptTable();
-						if (pScriptTable && pScriptTable->GetValue("Properties", props))
-						{
-							if (props->GetValue("Damage", propsDamage))
-							{
-								int noGrab = 0;
-								if (propsDamage->GetValue("bNoGrab", noGrab) && noGrab != 0)
-									return OH_NO_GRAB;
-
-								float customGrabDistance;
-								if (propsDamage->GetValue("customGrabDistance", customGrabDistance))
-								{
-									if (lenSqr > customGrabDistance * customGrabDistance)
-										return OH_NO_GRAB;
-								}
-							}
-						}
-
-						if (pActorAI->GetActorSpecies() != eGCT_UNKNOWN && pActorAI->GetHealth() > 0 && !pActorAI->IsFallen() && pEntity->GetAI()->IsHostile(pActor->GetEntity()->GetAI(), false))
-							return OH_GRAB_NPC;
-						else
-							return OH_NO_GRAB;
-					}
-					return OH_NO_GRAB;
+					if (((SPlayerStats*)pActorAI->GetActorStats())->isStandingUp)
+						return OH_NO_GRAB;
 				}
 
-				//2. -if it's an item, let the item decide if it can be picked up or not
-				if (CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(pEntity->GetId())))
+				if (pEntity->GetAI() && pActor->GetEntity() && !pActorAI->GetLinkedVehicle())
 				{
-					if (pItem->CanPickUp(pActor->GetEntityId()))
-						return OH_GRAB_ITEM;
+					//Check script table (maybe is not possible to grab)
+					SmartScriptTable props;
+					SmartScriptTable propsDamage;
+					IScriptTable* pScriptTable = pEntity->GetScriptTable();
+					if (pScriptTable && pScriptTable->GetValue("Properties", props))
+					{
+						if (props->GetValue("Damage", propsDamage))
+						{
+							int noGrab = 0;
+							if (propsDamage->GetValue("bNoGrab", noGrab) && noGrab != 0)
+								return OH_NO_GRAB;
+
+							float customGrabDistance;
+							if (propsDamage->GetValue("customGrabDistance", customGrabDistance))
+							{
+								if (lenSqr > customGrabDistance * customGrabDistance)
+									return OH_NO_GRAB;
+							}
+						}
+					}
+
+					if (pActorAI->GetActorSpecies() != eGCT_UNKNOWN && pActorAI->GetHealth() > 0 && !pActorAI->IsFallen() && pEntity->GetAI()->IsHostile(pActor->GetEntity()->GetAI(), false))
+						return OH_GRAB_NPC;
 					else
 						return OH_NO_GRAB;
 				}
+				return OH_NO_GRAB;
+			}
 
-				//Items have priority over the rest of pickables
-				if (CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo) == OH_GRAB_ITEM)
+			//2. -if it's an item, let the item decide if it can be picked up or not
+			if (CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(pEntity->GetId())))
+			{
+				if (pItem->CanPickUp(pActor->GetEntityId()))
 					return OH_GRAB_ITEM;
-
-				if (pActor->IsSwimming() || playerStance == STANCE_PRONE)
+				else
 					return OH_NO_GRAB;
+			}
 
-				//3. -If we found a helper, it has to be pickable
-				if (m_hasHelper && pPhysicalEntity->GetType() == PE_RIGID)
-				{
-					SmartScriptTable props;
-					IScriptTable* pEntityScript = pEntity->GetScriptTable();
-					if (pEntityScript && pEntityScript->GetValue("Properties", props))
-					{
-						//If it's not pickable, ignore helper
-						int pickable = 0;
-						if (props->GetValue("bPickable", pickable) && !pickable)
-							return OH_NO_GRAB;
-					}
+			//Items have priority over the rest of pickables
+			if (CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo) == OH_GRAB_ITEM)
+				return OH_GRAB_ITEM;
+
+			if (pActor->IsSwimming() || playerStance == STANCE_PRONE)
+				return OH_NO_GRAB;
+
+			//2.5. -CryMP Custom pickups in MP
+			if (g_pGameCVars->mp_pickupVehicles)
+			{
+				//CryMP: Crouch to pickup vehicles :D
+				if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(entityId))
 					return OH_GRAB_OBJECT;
-				}
+			}
 
-				//4. Pick boid object
-				if ((pPhysicalEntity->GetType() == PE_PARTICLE || (pPhysicalEntity->GetType() == PE_ARTICULATED && m_grabType == GRAB_TYPE_TWO_HANDED)) && m_hasHelper)
-					return OH_GRAB_OBJECT;
-
-				//5. -Procedurally breakable object (most likely...)
-				if (breakable)
+			const bool bPICK_UP_OBJECTS_MP = gEnv->bMultiplayer && g_pGameCVars->mp_pickupObjects;
+			if (bPICK_UP_OBJECTS_MP)
+			{
+				//CryMP: Objects that are not bound to network, cannot be picked up in MP (except chickens etc)
+				const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
+				const bool bIsBound = m_pGameFramework->GetNetContext()->IsBound(entityId);
+				if (!bIsBound && !bClientEntity)
 				{
-					//Set "hold" matrix
-					if (pPart.pPhysGeom->V < 0.35f && pPart.pPhysGeom->Ibody.len() < 0.1)
-					{
-						m_holdOffset.SetTranslation(pPart.pPhysGeom->origin + Vec3(0.0f, -0.15f, 0.0f));
-						m_holdOffset.InvertFast();
-						return OH_GRAB_OBJECT;
-					}
-
+					return OH_NO_GRAB;
 				}
-
-				//6.- Temp? solution for spawned rocks (while they don't have helpers)
-				if (pPhysicalEntity->GetType() == PE_RIGID && !strcmp(pEntity->GetClass()->GetName(), "rock"))
+				if (pEntity->GetClass() == CItem::sDoorClass || pEntity->GetClass() == CItem::sElevatorSwitchClass)
 				{
-					m_grabType = GRAB_TYPE_ONE_HANDED;
-					return OH_GRAB_OBJECT;
+					return OH_NO_GRAB;
 				}
+			}
 
-				//7.- Legacy system...
+			//3. -If we found a helper, it has to be pickable
+			if (m_hasHelper && pPhysicalEntity->GetType() == PE_RIGID)
+			{
 				SmartScriptTable props;
 				IScriptTable* pEntityScript = pEntity->GetScriptTable();
-				if (pPhysicalEntity->GetType() == PE_RIGID && pEntityScript && pEntityScript->GetValue("Properties", props))
+				if (pEntityScript && pEntityScript->GetValue("Properties", props))
 				{
+					//If it's not pickable, ignore helper
 					int pickable = 0;
-					int usable = 0;
-					if (props->GetValue("bPickable", pickable) && !pickable) 
-						return false;
-					else if (pickable)
-						if (props->GetValue("bUsable", usable) && !usable)
-							return OH_GRAB_OBJECT;
-
-					return false;
+					if (props->GetValue("bPickable", pickable) && !pickable)
+						return OH_NO_GRAB;
 				}
-
-				if (getEntityInfo)
-					m_preHeldEntityId = 0;
-
-				return OH_NO_GRAB;//CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
+				return OH_GRAB_OBJECT;
 			}
-			else if (pPhysicalEntity->GetType() == PE_STATIC)
-			{
-				//Rocks and small static vegetation marked as pickable
-				IRenderNode* pRenderNode = 0;
-				pe_params_foreign_data pfd;
-				if (pPhysicalEntity->GetParams(&pfd) && pfd.iForeignData == PHYS_FOREIGN_ID_STATIC)
-					pRenderNode = static_cast<IRenderNode*>(pfd.pForeignData);
 
-				if (pRenderNode && pRenderNode->GetRndFlags() & ERF_PICKABLE)
+			//4. Pick boid object
+			if ((pPhysicalEntity->GetType() == PE_PARTICLE || (pPhysicalEntity->GetType() == PE_ARTICULATED && m_grabType == GRAB_TYPE_TWO_HANDED)) && m_hasHelper)
+				return OH_GRAB_OBJECT;
+
+			//5. -Procedurally breakable object (most likely...)
+			if (breakable)
+			{
+				//Set "hold" matrix
+				if (pPart.pPhysGeom->V < 0.35f && pPart.pPhysGeom->Ibody.len() < 0.1)
 				{
-					if (getEntityInfo)
-					{
-						m_grabType = GRAB_TYPE_ONE_HANDED;
-						m_pRockRN = pRenderNode;
-						m_preHeldEntityId = 0;
-					}
+					m_holdOffset.SetTranslation(pPart.pPhysGeom->origin + Vec3(0.0f, -0.15f, 0.0f));
+					m_holdOffset.InvertFast();
 					return OH_GRAB_OBJECT;
 				}
+
+			}
+
+			//6.- Temp? solution for spawned rocks (while they don't have helpers)
+			if (pPhysicalEntity->GetType() == PE_RIGID && !strcmp(pEntity->GetClass()->GetName(), "rock"))
+			{
+				m_grabType = GRAB_TYPE_ONE_HANDED;
+				return OH_GRAB_OBJECT;
+			}
+
+			//7.- Legacy system...
+			SmartScriptTable props;
+			IScriptTable* pEntityScript = pEntity->GetScriptTable();
+			if (pPhysicalEntity->GetType() == PE_RIGID && pEntityScript && pEntityScript->GetValue("Properties", props))
+			{
+				int pickable = 0;
+				int usable = 0;
+				if (props->GetValue("bPickable", pickable) && !pickable) 
+					return false;
+				else if (pickable)
+					if (props->GetValue("bUsable", usable) && !usable)
+						return OH_GRAB_OBJECT;
+
+				return false;
+			}
+
+			if (getEntityInfo)
+				m_preHeldEntityId = 0;
+
+			return OH_NO_GRAB;//CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
+		}
+		else if (pPhysicalEntity->GetType() == PE_STATIC)
+		{
+			//Rocks and small static vegetation marked as pickable
+			IRenderNode* pRenderNode = 0;
+			pe_params_foreign_data pfd;
+			if (pPhysicalEntity->GetParams(&pfd) && pfd.iForeignData == PHYS_FOREIGN_ID_STATIC)
+				pRenderNode = static_cast<IRenderNode*>(pfd.pForeignData);
+
+			if (pRenderNode && pRenderNode->GetRndFlags() & ERF_PICKABLE)
+			{
+				if (getEntityInfo)
+				{
+					m_grabType = GRAB_TYPE_ONE_HANDED;
+					m_pRockRN = pRenderNode;
+					m_preHeldEntityId = 0;
+				}
+				return OH_GRAB_OBJECT;
 			}
 		}
 	}
@@ -2854,6 +2837,10 @@ void COffHand::ThrowObject(int activationMode, bool isLivingEnt /*= false*/)
 			pFireMode->SetRecoilMultiplier(1.0f);		//Restore normal recoil for the weapon
 		}
 	}
+
+	//CryMP reset
+	m_heldEntityId = 0;
+	m_preHeldEntityId = 0;
 
 }
 

@@ -314,3 +314,15 @@ void CWeapon::OnSelected(bool selected)
 {
 	BROADCAST_WEAPON_EVENT(OnSelected,(this, selected));
 }
+
+//------------------------------------------------------
+void CWeapon::OnEnterFirstPerson()
+{
+	CItem::OnEnterFirstPerson();
+}
+
+//------------------------------------------------------
+void CWeapon::OnEnterThirdPerson()
+{
+	CItem::OnEnterThirdPerson();
+}

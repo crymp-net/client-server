@@ -618,6 +618,9 @@ public:
 
 	virtual void ForcePendingActions();
 
+	virtual void OnEnterFirstPerson() override;
+	virtual void OnEnterThirdPerson() override;
+
 protected:
 	virtual bool ReadItemParams(const IItemParamsNode* params);
 	const IItemParamsNode* GetFireModeParams(const char* name);
