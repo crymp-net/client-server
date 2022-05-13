@@ -1870,7 +1870,15 @@ Vec3 CSingle::GetFiringPos(const Vec3& probableHit) const
 		// FIXME
 		// should be getting it from MovementCotroller (same for AIProxy::QueryBodyInfo)
 		// update: now AI always should be using the fire_pos from movement controller
-		if (/*pActor->IsPlayer() && */(HasFireHelper() && ShootFromHelper(pos, probableHit)))
+
+		if (!m_pWeapon->GetStats().fp)
+		{
+			//CryMP: Fix throwing grenades in ThirdPerson
+			if (m_pWeapon->GetEntity()->GetClass() == CItem::sOffHandClass)
+				return pos;
+		}
+
+		if (HasFireHelper() && ShootFromHelper(pos, probableHit))
 		{
 			// FIXME
 			// making fire pos be at eye when animation is not updated (otherwise shooting from ground)
