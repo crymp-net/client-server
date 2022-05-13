@@ -24,4 +24,7 @@ public:
 	int GetRenderType(IFunctionHandler* pH);
 	int GetKeyName(IFunctionHandler* pH, const char* action);
 	int IsKeyUsed(IFunctionHandler* pH, const char* key);
+	int CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action);
+	int ClearKeyBinds(IFunctionHandler* pH);
+	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
 };

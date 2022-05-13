@@ -3,6 +3,7 @@
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryMath/Cry_Camera.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -44,6 +45,9 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_FUNC(GetRenderType);
 	SCRIPT_REG_TEMPLFUNC(GetKeyName, "action");
 	SCRIPT_REG_TEMPLFUNC(IsKeyUsed, "key");
+	SCRIPT_REG_TEMPLFUNC(CreateKeyBind, "key, command");
+	SCRIPT_REG_FUNC(ClearKeyBinds);
+	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -310,4 +314,35 @@ int ScriptBind_CPPAPI::IsKeyUsed(IFunctionHandler* pH, const char* key)
 	}
 
 	return pH->EndFunction(false);
+}
+
+int ScriptBind_CPPAPI::CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action)
+{
+	const auto [it, added] = gClient->m_keyBinds.emplace(key, action);
+
+	return pH->EndFunction(added);
+}
+
+int ScriptBind_CPPAPI::ClearKeyBinds(IFunctionHandler* pH)
+{
+	gClient->m_keyBinds.clear();
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+	if (!pEntity)
+		return pH->EndFunction();
+
+	if (ICharacterInstance* pCharacter = pEntity->GetCharacter(slot))
+	{
+		return pH->EndFunction(pCharacter->GetFilePath());
+	}
+	if (IStatObj* pObject = pEntity->GetStatObj(slot))
+	{
+		return pH->EndFunction(pObject->GetFilePath());
+	}
+	return pH->EndFunction();
 }
