@@ -2061,8 +2061,8 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 			if (pActor->IsSwimming() || playerStance == STANCE_PRONE)
 				return OH_NO_GRAB;
 
-			//2.5. -CryMP Custom pickups in MP
-			if (g_pGameCVars->mp_pickupVehicles)
+			//2.5. -CryMP Custom pickups 
+			if (g_pGameCVars->mp_pickupVehicles || !gEnv->bMultiplayer)
 			{
 				//CryMP: Crouch to pickup vehicles :D
 				if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(entityId))
@@ -2082,6 +2082,16 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				if (pEntity->GetClass() == CItem::sDoorClass || pEntity->GetClass() == CItem::sElevatorSwitchClass)
 				{
 					return OH_NO_GRAB;
+				}
+			}
+
+			if (bPICK_UP_OBJECTS_MP || !gEnv->bMultiplayer)
+			{
+				//CryMP: Allow picking up projectiles 
+				if (g_pGame->GetWeaponSystem()->GetProjectile(entityId))
+				{
+					m_grabType = GRAB_TYPE_ONE_HANDED;
+					return OH_GRAB_OBJECT;
 				}
 			}
 
