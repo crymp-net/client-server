@@ -296,16 +296,32 @@ struct CFists::EndRaiseWeaponAction
 
 void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 {
+	CActor* pActor = GetOwnerActor();
+	if (!pActor)
+		return;
+
+	const bool bIsClient = pActor->IsClient();
+	if (!bIsClient && !IsOwnerFP()) //FP spec support
+		return;
+
 	//Only when colliding something while running
-	if (raise && (GetCurrentAnimState() == eFAS_RUNNING || GetCurrentAnimState() == eFAS_JUMPING) && !IsWeaponRaised())
+	if (raise)
 	{
-		if ((m_fm && m_fm->IsFiring()) || (m_melee && m_melee->IsFiring()))
-			return;
+		//Skip these checks for other clients
+		if (bIsClient)
+		{
+			const bool bAllow = ((GetCurrentAnimState() == eFAS_RUNNING || GetCurrentAnimState() == eFAS_JUMPING) && !IsWeaponRaised());
+
+			if (!bAllow)
+				return;
+
+			if ((m_fm && m_fm->IsFiring()) || (m_melee && m_melee->IsFiring()))
+				return;
+		}
 
 		//If NANO speed selected...
 		float speedOverride = -1.0f;
 
-		CActor* pActor = GetOwnerActor();
 		if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
 		{
 			if (pSuit->GetMode() == NANOMODE_SPEED)
@@ -324,29 +340,30 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 
 		//Also give the player some impulse into the opposite direction
 		Vec3 pos = ZERO;
-		if (pActor)
+
+		IPhysicalEntity* playerPhysics = pActor->GetEntity()->GetPhysics();
+		if (playerPhysics)
 		{
-			IPhysicalEntity* playerPhysics = pActor->GetEntity()->GetPhysics();
-			if (playerPhysics)
+			IMovementController* pMC = pActor->GetMovementController();
+			if (pMC)
 			{
-				IMovementController* pMC = pActor->GetMovementController();
-				if (pMC)
+				SMovementState state;
+				pMC->GetMovementState(state);
+
+				if (bIsClient)
 				{
-					SMovementState state;
-					pMC->GetMovementState(state);
+					pe_action_impulse impulse;
+					impulse.iApplyTime = 1;
+					impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->mp_wallJump;
+					playerPhysics->Action(&impulse);
 
-					if (pActor->IsClient())
-					{
-						pe_action_impulse impulse;
-						impulse.iApplyTime = 1;
-						impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->mp_wallJump;
-						playerPhysics->Action(&impulse);
-					}
-
-					pos = state.eyePosition + state.eyeDirection * 0.5f;
+					//CryMP: Send walljump request to server
+					RequestWeaponRaised(true);
 				}
 
+				pos = state.eyePosition + state.eyeDirection * 0.5f;
 			}
+
 		}
 
 		GetScheduler()->TimerAction(GetCurrentAnimationTime(eIGS_FirstPerson), CSchedulerAction<EndRaiseWeaponAction>::Create(EndRaiseWeaponAction(this)), true);
@@ -355,14 +372,16 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 		CollisionFeeback(pos, m_currentAnimState);
 	}
 	else if (!raise)
+	{
 		SetWeaponRaised(false);
+	}
 
 }
 
 //---------------------------------------------------------------
 void CFists::CollisionFeeback(Vec3& pos, int eFAS)
 {
-	CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
+	CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
 	if (pPlayer)
 	{
 		switch (eFAS)
