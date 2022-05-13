@@ -420,8 +420,23 @@ void CShotgun::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, con
 	if (ammoCount == 1)
 		action = m_actions.fire.c_str();
 
-	m_pWeapon->ResetAnimation();
-	m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default|CItem::eIPAF_NoBlend);
+	//CryMP: FP spec
+	if (m_pWeapon->GetStats().fp)
+	{
+		const char* action = m_actions.fire_cock.c_str();
+		bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
+		if (ammoCount == 1 || zoomedCock)
+			action = m_actions.fire.c_str();
+
+		m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default | CItem::eIPAF_RestartAnimation | CItem::eIPAF_CleanBlending);
+		if (zoomedCock)
+			m_pWeapon->GetScheduler()->TimerAction(250, CSchedulerAction<ZoomedCockAction>::Create(this), false);
+	}
+	else
+	{
+		m_pWeapon->ResetAnimation();
+		m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
+	}
 
 	Vec3 pdir;
 
