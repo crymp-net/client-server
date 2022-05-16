@@ -9,18 +9,15 @@
 
 namespace
 {
-	// FIXME: temporary workaround for the file check crash
-	constexpr size_t OVERALLOCATION_SIZE = 128;
-
 	void *CryMalloc_hook(size_t size, size_t & allocatedSize)
 	{
 		void *result = nullptr;
 
 		if (size)
 		{
-			result = malloc(size + OVERALLOCATION_SIZE);
+			result = malloc(size);
 
-			allocatedSize = _msize(result) - OVERALLOCATION_SIZE;
+			allocatedSize = _msize(result);
 		}
 		else
 		{
@@ -36,9 +33,9 @@ namespace
 
 		if (size)
 		{
-			result = realloc(mem, size + OVERALLOCATION_SIZE);
+			result = realloc(mem, size);
 
-			allocatedSize = _msize(result) - OVERALLOCATION_SIZE;
+			allocatedSize = _msize(result);
 		}
 		else
 		{
@@ -59,7 +56,7 @@ namespace
 
 		if (mem)
 		{
-			size = _msize(mem) - OVERALLOCATION_SIZE;
+			size = _msize(mem);
 
 			free(mem);
 		}
@@ -73,7 +70,7 @@ namespace
 
 		if (size)
 		{
-			result = malloc(size + OVERALLOCATION_SIZE);
+			result = malloc(size);
 		}
 
 		return result;
