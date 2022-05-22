@@ -4,8 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
-
+## [v13] - 2022-05-22
 ### Added
 - Server PAK feature.
 - New internet server browser backend using the CryMP HTTP API. Replaces the GameSpy stuff.
