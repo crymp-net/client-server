@@ -9,9 +9,6 @@ jobs:
   build_32:
     runs-on: windows-latest
 
-    needs:
-    - bump_version
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -30,9 +27,6 @@ jobs:
 
   build_64:
     runs-on: windows-latest
-
-    needs:
-    - bump_version
 
     steps:
     - name: Checkout repository
