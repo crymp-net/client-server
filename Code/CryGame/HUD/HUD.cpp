@@ -4379,6 +4379,9 @@ void CHUD::ShowSoundOnRadar(const Vec3& pos, float intensity) const
 
 void CHUD::SetRadarScanningEffect(bool show)
 {
+	if (m_bRadarScanningEffect == show)
+		return;
+
 	if (!m_animRadarCompassStealth.IsLoaded()) return;
 	if (show)
 	{
@@ -4388,6 +4391,7 @@ void CHUD::SetRadarScanningEffect(bool show)
 	{
 		m_animRadarCompassStealth.Invoke("setScanningEffect", false);
 	}
+	m_bRadarScanningEffect = show;
 }
 
 //-----------------------------------------------------------------------------------------------------

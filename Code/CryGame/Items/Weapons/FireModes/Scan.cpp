@@ -200,8 +200,6 @@ void CScan::StartFire()
 		{
 			ShowFlashAnimation(true);
 
-			SAFE_HUD_FUNC(SetRadarScanningEffect(true));
-
 			m_scanning=true;
 			m_delayTimer=m_scanparams.delay;
 			m_durationTimer=m_scanparams.duration;
@@ -222,8 +220,6 @@ void CScan::StopFire()
 		return;
 
 	ShowFlashAnimation(false);
-
-	SAFE_HUD_FUNC(SetRadarScanningEffect(false));
 
 	m_pWeapon->PlayAction(m_scanactions.spin_down, 0, false, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
 
@@ -248,22 +244,6 @@ void CScan::NetStartFire()
 	if (pOwner)
 	{
 		m_scanning = true;
-
-		IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor();
-		CGameRules* pGameRules = g_pGame->GetGameRules();
-		if (pClient && pClient->GetHealth() > 0 && pGameRules)
-		{
-			const bool hostile = pGameRules->IsHostile(pClient->GetEntityId(), pOwner->GetEntityId());
-			const Vec3 clientPos(pClient->GetEntity()->GetWorldPos());
-			const Vec3 pOwnerPos(pOwner->GetEntity()->GetWorldPos());
-
-			if (!hostile && clientPos.GetDistance(pOwnerPos) < 60)
-			{
-				//CryMP: Also show, when team mate is scanning near you
-
-				SAFE_HUD_FUNC(SetRadarScanningEffect(true));
-			}
-		}
 
 		if (pOwner->IsFpSpectatorTarget()) //CryMP: Fp spec support
 		{
@@ -301,17 +281,6 @@ void CScan::NetStopFire()
 	auto* pOwner = m_pWeapon->GetOwnerActor();
 	if (pOwner)
 	{
-		CActor* pClient = (CActor*)g_pGame->GetIGameFramework()->GetClientActor();
-		CGameRules* pGameRules = g_pGame->GetGameRules();
-		if (pClient && pGameRules)
-		{
-			const bool hostile = pGameRules->IsHostile(pClient->GetEntityId(), pOwner->GetEntityId());
-			if (!hostile && !IsClientScanning())
-			{	
-				SAFE_HUD_FUNC(SetRadarScanningEffect(false));
-			}
-		}
-
 		if (pOwner && pOwner->IsFpSpectatorTarget()) //CryMP: Fp spec support
 		{
 			ShowFlashAnimation(false);

@@ -856,6 +856,14 @@ protected:
 	bool IsUnderAttackFast(EntityId entId);
 	std::vector<EntityId> m_underAttackBuildings;
 	float m_underAttackCheck = 0.0f;
+	bool m_bRadarScanningEffect = false;
+
+public:
+
+	bool IsRadarScanEffectActive() const
+	{
+		return m_bRadarScanningEffect;
+	}
 };
 
 //-----------------------------------------------------------------------------------------------------

@@ -187,6 +187,39 @@ protected:
 	float				m_delayTimer;
 	float				m_durationTimer;
 	float       m_tagEntitiesDelay;
+
+	float m_fPulse = 0.0f;
+	bool m_rTop = false;
+
+public:
+
+	float Pulse(float min, float max, float speed)
+	{
+		if (!m_rTop && m_fPulse < max)
+		{
+			m_fPulse += speed;
+			m_rTop = m_fPulse > max;
+		}
+		else
+		{
+			m_fPulse -= speed;
+			m_rTop = !(m_fPulse < min);
+		}
+		return m_fPulse;
+	}
+
+	static CScan* FromCWeapon(CWeapon* pWeapon)
+	{
+		if (!pWeapon)
+			return nullptr;
+
+		if (pWeapon->GetEntity()->GetClass() == CItem::sRadarKitClass)
+		{
+			return static_cast<CScan*>(pWeapon->GetActiveFireMode());
+		}
+
+		return nullptr;
+	}
 };
 
 #endif //__SCAN_H__

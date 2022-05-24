@@ -612,7 +612,7 @@ void CHUDRadar::Update(float fDeltaTime)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& playerViewMtxInverted, int& numOfValues, ArrayFillHelper<double, FVAT_Double, NUM_ARRAY_FILL_HELPER_SIZE>* entityValues)
+void CHUDRadar::UpdateRadarEntities(CActor* pClientActor, float& fRadius, Matrix34& playerViewMtxInverted, int& numOfValues, ArrayFillHelper<double, FVAT_Double, NUM_ARRAY_FILL_HELPER_SIZE>* entityValues)
 {
 	float fCos = cosf(m_fTime);
 	float lowerBoundX = m_fX - fRadarSizeOverTwo;	//used for flash radar position computation
@@ -621,7 +621,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 	//singleplayer squadmates are now 100% design controlled, see "SetTeamMate"
 
 	//we get the player's team mates for team-based MP
-	int clientTeam = m_pGameRules->GetTeam(pActor->GetEntityId());
+	int clientTeam = m_pGameRules->GetTeam(pClientActor->GetEntityId());
 	if (gEnv->bMultiplayer)
 	{
 		m_teamMates.clear();
@@ -632,8 +632,9 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 	//extra vehicle checks
 	bool inVehicle = false;
 	bool inAAA = false;
+	bool bShowScan = false;
 	float aaaDamage = 0.0f;
-	if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+	if (IVehicle* pVehicle = pClientActor->GetLinkedVehicle())
 	{
 		fRadius *= 2.0f;
 		inVehicle = true;
@@ -665,8 +666,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				continue;
 
 			//is it the player ?
-			if (pActor->GetEntityId() == id)
-				continue;
+			const bool bIsClient = pClientActor->GetEntityId() == id;
 
 			//lets find out whether this entity belongs on the radar
 			bool isOnRadar = false;
@@ -702,7 +702,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				//which is not yet on the radar
 			{
 				IAIObject* pTemp = pEntity->GetAI();
-				if (pTemp && AIOBJECT_VEHICLE != pTemp->GetAIType() && pTemp->IsHostile(pActor->GetEntity()->GetAI(), false))
+				if (pTemp && AIOBJECT_VEHICLE != pTemp->GetAIType() && pTemp->IsHostile(m_pClientActor->GetEntity()->GetAI(), false))
 				{
 					isOnRadar = true;
 					unknownEnemyObject = true;
@@ -728,7 +728,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				continue;
 			vTransformed.z = 0;
 
-			float sizeScale = GetRadarSize(pEntity, pActor);
+			float sizeScale = GetRadarSize(pEntity, pClientActor);
 			float scaledX = (vTransformed.x / fRadius) * fEntityMaxDistance;
 			float scaledY = (vTransformed.y / fRadius) * fEntityMaxDistance;
 
@@ -755,7 +755,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 			else		//far away
 				continue;
 
-			float fAngle = pActor->GetAngles().z - pEntity->GetWorldAngles().z;
+			float fAngle = pClientActor->GetAngles().z - pEntity->GetWorldAngles().z;
 			float fAlpha = 0.85f;
 
 			//faction***************************************************************************************
@@ -786,7 +786,7 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 					}
 				}
 
-				if ((unknownEnemyObject || pAIObject->IsHostile(pActor->GetEntity()->GetAI(), false)) && (checkDriver || AIOBJECT_VEHICLE != pAIObject->GetAIType()))
+				if ((unknownEnemyObject || pAIObject->IsHostile(pClientActor->GetEntity()->GetAI(), false)) && (checkDriver || AIOBJECT_VEHICLE != pAIObject->GetAIType()))
 				{
 					friendly = EEnemy;
 
@@ -889,21 +889,25 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 				continue;
 			//**********************************************************************************************
 
+			FlashRadarType FlashType = ChooseType(pEntity, true);
+
 			if (mate)
 			{
-				bool scan(false);
 				CWeapon* pWeapon = tempActor ? tempActor->GetCurrentWeapon(false) : nullptr;
-				if (pWeapon && pWeapon->GetEntity()->GetClass() == CItem::sRadarKitClass)
+				if (pWeapon)
 				{
-					CScan* pScan = static_cast<CScan*>(pWeapon->GetActiveFireMode());
+					CScan* pScan = CScan::FromCWeapon(pWeapon);
 					if (pScan && pScan->IsScanning())
 					{
-						scan = true;
-						fAlpha *= 3.0f; //highlite scanning teammates
+						bShowScan = true;
+						FlashType = static_cast<FlashRadarType>(5); //CryMP: special green arrow
+						sizeScale *= 1.5f;
+						const float speed = gEnv->pTimer->GetRealFrameTime();
+						fAlpha *= pScan->Pulse(0.1f, 0.7f, speed); //highlite scanning teammates
 					}
 				}
 
-				if (!scan)
+				if (!bShowScan)
 				{
 					//requested by Sten : teammates should be more transparent
 					fAlpha *= 0.50f;
@@ -914,9 +918,30 @@ void CHUDRadar::UpdateRadarEntities(CActor* pActor, float& fRadius, Matrix34& pl
 			float lowerBoundY = m_fY - fRadarSizeOverTwo;
 			float dimX = (m_fX + fRadarSizeOverTwo) - lowerBoundX;
 			float dimY = (m_fY + fRadarSizeOverTwo) - lowerBoundY;
-			numOfValues += ::FillUpDoubleArray(entityValues, pEntity->GetId(), ChooseType(pEntity, true), (fX - lowerBoundX) / dimX, (fY - lowerBoundY) / dimY, 180.0f + RAD2DEG(fAngle), friendly, sizeScale * 25.0f, fAlpha * 100.0f);
+
+			if (!bIsClient || bShowScan)
+			{
+				numOfValues += ::FillUpDoubleArray(entityValues, pEntity->GetId(),
+					FlashType, (fX - lowerBoundX) / dimX, (fY - lowerBoundY) / dimY,
+					180.0f + RAD2DEG(fAngle), friendly, sizeScale * 25.0f, fAlpha * 100.0f);
+			}
 		}
 	}
+
+	if (!bShowScan)
+	{
+		CWeapon* pWeapon = m_pHUD->GetCurrentWeapon();
+		if (pWeapon)
+		{
+			CScan* pScan = CScan::FromCWeapon(pWeapon);
+			if (pScan)
+			{
+				bShowScan = pScan->IsScanning();
+			}
+		}
+	}
+
+	m_pHUD->SetRadarScanningEffect(bShowScan);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -1221,7 +1246,7 @@ void CHUDRadar::UpdateScanner(float frameTime)
 				{
 					if (!gEnv->bMultiplayer || CheckObjectMultiplayer(m_scannerObjectID))
 					{
-						EntityId clientId = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
+						EntityId clientId = m_pClientActor->GetEntityId();
 						m_pGameRules->ClientSimpleHit(SimpleHitInfo(clientId, m_scannerObjectID, 0, 0));
 						m_pHUD->PlaySound(ESound_BinocularsLock);
 					}
@@ -1324,7 +1349,7 @@ bool CHUDRadar::CheckObject(IEntity* pEntity, bool checkVelocity, bool checkVisi
 
 		if (checkVisibility)
 		{
-			IPhysicalEntity* pSkipEnt = m_pClientActor ? m_pClientActor->GetEntity()->GetPhysics() : 0;
+			IPhysicalEntity* pSkipEnt = m_pClientActor->GetEntity()->GetPhysics();
 
 			ray_hit hit;
 			Vec3 dir = (dyn.centerOfMass - rCamera.GetPosition()) * 1.15f;
@@ -2570,7 +2595,7 @@ FlashRadarFaction CHUDRadar::FriendOrFoe(bool multiplayer, int playerTeam, IEnti
 		}
 		if (pAI && pAI->GetAIType() != AIOBJECT_VEHICLE) //also checking driver from former vehicle
 		{
-			IEntity* playerEntity = g_pGame->GetIGameFramework()->GetClientActor()->GetEntity();
+			IEntity* playerEntity = m_pClientActor->GetEntity();
 			if (playerEntity && pAI->IsHostile(playerEntity->GetAI(), false))
 				val = EEnemy;
 			else
@@ -2619,10 +2644,6 @@ int CHUDRadar::FillUpDoubleArray(std::vector<double>* doubleArray, double a, dou
 
 void CHUDRadar::StartBroadScan(bool useParameters, bool keepEntities, Vec3 pos, float radius)
 {
-	IActor* pClient = g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClient)
-		return;
-
 	if (!m_startBroadScanTime) //wait (1.5) seconds before actually scanning - delete timer after scan 
 	{
 		m_startBroadScanTime = gEnv->pTimer->GetFrameStartTime().GetSeconds();
@@ -2643,7 +2664,7 @@ void CHUDRadar::StartBroadScan(bool useParameters, bool keepEntities, Vec3 pos, 
 	else	//this is a quick proximity scan
 		m_bsKeepEntries = false;
 
-	int playerTeam = m_pGameRules->GetTeam(pClient->GetEntityId());
+	int playerTeam = m_pGameRules->GetTeam(m_pClientActor->GetEntityId());
 
 	for (const EntityId id : m_entitiesInProximity)
 	{
@@ -2653,7 +2674,7 @@ void CHUDRadar::StartBroadScan(bool useParameters, bool keepEntities, Vec3 pos, 
 		if (stl::find(m_teamMates, id))
 			continue;
 
-		m_pGameRules->AddTaggedEntity(pClient->GetEntityId(), id, m_bsKeepEntries ? false : true);
+		m_pGameRules->AddTaggedEntity(m_pClientActor->GetEntityId(), id, m_bsKeepEntries ? false : true);
 	}
 	m_startBroadScanTime = 0.0f;
 	m_bsKeepEntries = false;
@@ -2738,12 +2759,12 @@ void CHUDRadar::ScanProximity(Vec3& pos, float& radius)
 	query.nEntityFlags = ENTITY_FLAG_ON_RADAR; // Filter by entity flag.
 	gEnv->pEntitySystem->QueryProximity(query);
 
-	IEntity* pActorEntity = g_pGame->GetIGameFramework()->GetClientActor()->GetEntity();
+	IEntity* pActorEntity = m_pClientActor->GetEntity();
 
 	for (int iEntity = 0; iEntity < query.nCount; iEntity++)
 	{
 		IEntity* pEntity = query.pEntities[iEntity];
-		if (pEntity && !pEntity->IsHidden() && pEntity != pActorEntity)
+		if (pEntity && !pEntity->IsHidden())
 		{
 			EntityId id = pEntity->GetId();
 			if (g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(id))
