@@ -759,6 +759,9 @@ void CGameRules::OnKill(CActor* pActor, EntityId shooterId, const char* weaponCl
 //------------------------------------------------------------------------
 void CGameRules::OnReviveInVehicle(CActor* pActor, EntityId vehicleId, int seatId, int teamId)
 {
+	if (g_pGame->GetHUD())
+		g_pGame->GetHUD()->ActorRevive(pActor, vehicleId);
+
 	SGameObjectEvent evt(eCGE_ActorRevive, eGOEF_ToAll, IGameObjectSystem::InvalidExtensionID, (void*)pActor);
 	SAFE_HUD_FUNC(HandleEvent(evt));
 

@@ -4056,7 +4056,7 @@ void CHUD::ActorDeath(IActor* pActor)
 }
 
 
-void CHUD::ActorRevive(IActor* pActor)
+void CHUD::ActorRevive(IActor* pActor, EntityId vehicleId)
 {
 	if (!pActor)
 		return;

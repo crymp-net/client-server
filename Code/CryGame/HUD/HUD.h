@@ -121,7 +121,7 @@ public:
 	void AutoAimLocked(EntityId id);
 	void AutoAimUnlock(EntityId id);
 	void ActorDeath(IActor* pActor);
-	void ActorRevive(IActor* pActor);
+	void ActorRevive(IActor* pActor, EntityId vehicleId = 0);
 	void VehicleDestroyed(EntityId id);
 	void TextMessage(const char* message);
 
