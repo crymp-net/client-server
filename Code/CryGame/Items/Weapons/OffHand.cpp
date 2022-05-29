@@ -681,7 +681,7 @@ void COffHand::UpdateFPView(float frameTime)
 		{
 			SetHand(eIH_Left); //This will be only done once after loading
 			
-			//Select(true);Select(false); //CryMP not needed anymore
+			Select(true);Select(false);
 		}
 		//=========================================================
 	}
@@ -1519,13 +1519,43 @@ void COffHand::NetStartFire()
 	CWeapon::NetStartFire();
 
 	AttachGrenadeToHand(GetCurrentFireMode(), false, true);
+
+	//Handle FP Spectator
+	if (m_stats.fp)
+	{
+		m_mainHand = static_cast<CItem*>(GetOwnerActor()->GetCurrentItem());
+		if (m_mainHand)
+		{
+			//if (!(m_currentState & (eOHS_THROWING_NPC | eOHS_THROWING_OBJECT)))
+			{
+				if (m_mainHandWeapon && m_mainHandWeapon->IsWeaponRaised())
+				{
+					m_mainHandWeapon->RaiseWeapon(false, true);
+					m_mainHandWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, g_pItemStrings->idle);
+				}
+				m_mainHand->PlayAction(g_pItemStrings->offhand_on);
+				m_mainHand->SetActionSuffix("akimbo_");
+			}
+		}
+		if (m_mainHandWeapon && m_mainHandWeapon->GetEntity()->GetClass() == CItem::sFistsClass)
+		{
+			CFists* pFists = static_cast<CFists*>(m_mainHandWeapon);
+			pFists->RequestAnimState(CFists::eFAS_FIGHT);
+		}
+	}
 }
 
 void COffHand::NetStopFire()
 {
 	CWeapon::NetStopFire();
 
-	AttachGrenadeToHand(GetCurrentFireMode(), false, false);
+	AttachGrenadeToHand(GetCurrentFireMode(), m_stats.fp, false);
+
+	//Handle FP Spectator
+	if (m_stats.fp)
+	{
+		GetScheduler()->TimerAction(GetCurrentAnimationTime(CItem::eIGS_FirstPerson), CSchedulerAction<FinishGrenadeAction>::Create(FinishGrenadeAction(this, m_mainHand)), false);
+	}
 }
 
 
@@ -2847,11 +2877,6 @@ void COffHand::ThrowObject(int activationMode, bool isLivingEnt /*= false*/)
 			pFireMode->SetRecoilMultiplier(1.0f);		//Restore normal recoil for the weapon
 		}
 	}
-
-	//CryMP reset
-	m_heldEntityId = 0;
-	m_preHeldEntityId = 0;
-
 }
 
 //==========================================================================================
