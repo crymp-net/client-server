@@ -77,7 +77,7 @@ void ServerConnector::SetLoadingDialogText(const char *text)
 	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)
 	{
-		pMPHub->SetLoadingDlgText(text, false);
+		pMPHub->ShowLoadingDlg(text, false);
 	}
 }
 
@@ -86,7 +86,7 @@ void ServerConnector::SetLoadingDialogText(const char *label, const char *param)
 	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)
 	{
-		pMPHub->SetLoadingDlgText(label, param);
+		pMPHub->ShowLoadingDlg(label, param);
 	}
 }
 
