@@ -183,7 +183,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_EXITMENULOOP:  // 0x212
 		case WM_EXITSIZEMOVE:  // 0x232
 		{
-			if (g_pGame)
+			if (g_pGame && !g_pGame->GetMenu())
 			{
 				g_pGame->ShowMousePointer(false);
 			}
@@ -193,6 +193,20 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_MOUSEACTIVATE:
 		{
 			return MA_ACTIVATEANDEAT;
+		}
+		case EVENT_SYSTEM_MENUPOPUPSTART:
+		{
+			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+			break;
+		}
+		case EVENT_SYSTEM_MENUPOPUPEND:
+		{
+			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
+			break;
+		}
+		default:
+		{
+			break;
 		}
 	}
 
