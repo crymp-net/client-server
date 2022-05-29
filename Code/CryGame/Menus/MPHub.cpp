@@ -667,6 +667,16 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 {
 	const char* msg = VALUE_BY_KEY(dc, gDisconnectErrors);
 
+	//CryMP: Default to ServerList, if server disconnected us
+	if (!connecting)
+	{
+		CFlashMenuObject* pMenu = g_pGame->GetMenu();
+		if (pMenu)
+		{
+			pMenu->ShowInGameMenu(true);
+		}
+	}
+
 	switch (dc)
 	{
 	case eDC_Kicked:
@@ -744,8 +754,8 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 		}
 		else
 		{
-			//CryMP: Try to download map and reconnect to server
-			gEnv->pConsole->ExecuteString("connect");
+			//CryMP: Attempt to download map and reconnect to server
+			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame("connect");
 		}
 		break;
 	}
