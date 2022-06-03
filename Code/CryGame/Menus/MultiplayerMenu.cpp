@@ -1138,7 +1138,7 @@ bool CMultiPlayerMenu::CUI::OnHandleCommand(EGsUiCommand cmd, const char* pArgs)
 			SServerInfo si;
 			if (GetSelectedServer(si))
 			{
-				m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", si.m_hostName.c_str());
+				//m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", si.m_hostName.c_str());
 				ResetServerDetails();
 				RefreshServer();
 			}
@@ -1159,7 +1159,7 @@ bool CMultiPlayerMenu::CUI::OnHandleCommand(EGsUiCommand cmd, const char* pArgs)
 		else
 		{
 			SetJoinPassword();
-			m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", pArgs);
+			//m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", pArgs);
 			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(m_joinIpCmd.c_str());
 		}
 	}
@@ -1169,7 +1169,7 @@ bool CMultiPlayerMenu::CUI::OnHandleCommand(EGsUiCommand cmd, const char* pArgs)
 		{
 			gEnv->pConsole->ExecuteString("disconnect");
 			SetJoinPassword();
-			m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", m_joinServerName.c_str());
+			//m_menu->m_hub->ShowLoadingDlg("@ui_connecting_to", m_joinServerName.c_str());
 			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(m_joinIpCmd.c_str());
 		}
 		else if (!strcmp(pArgs, "disconnect_join"))

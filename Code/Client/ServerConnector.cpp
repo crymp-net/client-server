@@ -77,7 +77,7 @@ void ServerConnector::SetLoadingDialogText(const char *text)
 	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)
 	{
-		pMPHub->ShowLoadingDlg(text, false);
+		pMPHub->SetLoadingDlgText(text, false);
 	}
 }
 
@@ -86,7 +86,7 @@ void ServerConnector::SetLoadingDialogText(const char *label, const char *param)
 	CMPHub *pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)
 	{
-		pMPHub->ShowLoadingDlg(label, param);
+		pMPHub->SetLoadingDlgText(label, param);
 	}
 }
 
@@ -277,12 +277,18 @@ void ServerConnector::Connect(const std::string_view & master, const std::string
 {
 	Disconnect();
 
-	gClient->GetServerPAK()->OnConnect();
-
 	m_server.clear();
 	m_server.host = host;
 	m_server.port = port;
 	m_server.master = master;
+
+	CMPHub* pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
+	if (pMPHub)
+	{
+		pMPHub->ShowLoadingDlg("@ui_connecting_to", m_server.host.c_str());
+	}
+
+	gClient->GetServerPAK()->OnConnect();
 
 	// IP:PORT host workaround
 	const size_t colonPos = host.find(':');
