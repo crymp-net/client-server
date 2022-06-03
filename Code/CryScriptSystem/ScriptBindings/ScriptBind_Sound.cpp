@@ -151,6 +151,7 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	pSS->SetGlobalValue("SOUND_SEMANTIC_EXPLOSION", eSoundSemantic_Explosion);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_PLAYER_FOLEY", eSoundSemantic_Player_Foley);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_ANIMATION", eSoundSemantic_Animation);
+	pSS->SetGlobalValue("SOUND_SEMANTIC_FOOTSTEP", eSoundSemantic_Physics_Footstep); //for Hunter_x.lua scriptbug
 
 #undef SCRIPT_REG_CLASSNAME
 #define SCRIPT_REG_CLASSNAME &ScriptBind_Sound::
