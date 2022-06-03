@@ -36,7 +36,8 @@ bool CTornado::Init(IGameObject* pGameObject)
 {
 	SetGameObject(pGameObject);
 
-	GetGameObject()->EnablePhysicsEvent(true, eEPE_OnCollisionLogged);
+	if (gEnv->bServer)
+		GetGameObject()->EnablePhysicsEvent(true, eEPE_OnCollisionLogged);
 
 	if (!Reset())
 		return false;
@@ -86,7 +87,7 @@ bool CTornado::Reset()
 	m_nextEntitiesCheck = 0;
 
 	Vec3 pos = GetEntity()->GetWorldPos();
-	gEnv->pLog->Log("TORNADO INIT POS: %f %f %f", pos.x, pos.y, pos.z);
+
 	m_points[0] = pos;
 	m_points[1] = pos + Vec3(0, 0, m_cloudHeight / 8.0f);
 	m_points[2] = pos + Vec3(0, 0, m_cloudHeight / 2.0f);
@@ -157,7 +158,7 @@ void CTornado::Update(SEntityUpdateContext& ctx, int updateSlot)
 	m_wanderDir += wanderOffset * wanderRate + (m_wanderDir - wanderPos) * wanderStrength;
 	m_wanderDir = (m_wanderDir - wanderPos).GetNormalized() + wanderPos;
 
-	Vec3 wanderSteer = (dir + m_wanderDir * gEnv->pTimer->GetFrameTime());
+	Vec3 wanderSteer = (dir + m_wanderDir * ctx.fFrameTime);
 	wanderSteer.z = 0;
 	wanderSteer.NormalizeSafe(Vec3(1, 0, 0));
 
@@ -189,7 +190,7 @@ void CTornado::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 	Vec3 steerDir = (0.4f * wanderSteer + 0.6f * targetSteer).GetNormalized();
 	Matrix34 tm = Matrix34(Matrix33::CreateRotationVDir(steerDir));
-	pos = pos + steerDir * gEnv->pTimer->GetFrameTime() * m_wanderSpeed;
+	pos = pos + steerDir * ctx.fFrameTime * m_wanderSpeed;
 	pos.z = gEnv->p3DEngine->GetTerrainElevation(pos.x, pos.y);
 	float waterLevel = gEnv->p3DEngine->GetWaterLevel(&pos);
 
@@ -425,10 +426,31 @@ void CTornado::UpdateFlow()
 			// add check for spectating players...
 			EntityId id = ppWorld->GetPhysicalEntityId(ppList[i]);
 			CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id));
-			if (!pActor || !pActor->GetSpectatorMode())
+
+			if (!gEnv->bServer)
 			{
-				m_spinningEnts.push_back(id);
+				//Don't impulse other entities on client, server takes care about that
+				if (!pActor)
+					continue;
+
+				//Don't impulse spectators, or other clients
+				if (pActor->GetSpectatorMode() || !pActor->IsClient())
+					continue;
+
+				if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+				{
+					//Impulse our vehicle instead
+					id = pVehicle->GetEntityId();
+				}
 			}
+			else
+			{
+				if (pActor && pActor->GetSpectatorMode())
+					continue;
+			}
+
+			m_spinningEnts.push_back(id);
+
 		}
 		//OutputDistance();
 	}
@@ -471,7 +493,6 @@ void CTornado::UpdateFlow()
 				attractionImpulse *= 0.35f;
 				spinImpulse *= 1.5f;
 			}
-
 
 			if (IVehicle* pVehicle = pVehicleSystem->GetVehicle(m_spinningEnts[i]))
 			{
