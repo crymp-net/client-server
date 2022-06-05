@@ -812,6 +812,10 @@ public:
 	virtual void EnableSound(bool enable);
 	virtual bool IsSoundEnabled() const;
 	virtual bool IsModifying() { return m_modifying || m_transitioning; }
+	bool IsModifyingNoTS()
+	{ 
+		return m_modifying; 
+	}
   virtual bool IsDestroyed() { return m_properties.hitpoints > 0 && m_stats.health <= 0.f; }
 
 	virtual void EnterWater(bool enter) {};

@@ -463,6 +463,21 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
 	static Vec3 current(target);
 
+	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
+
+	CWeapon* pWeapon = pActor ? pActor->GetCurrentWeapon(false) : nullptr;
+	if (pWeapon)
+	{
+		if (pWeapon->IsModifyingNoTS())
+		{
+			viewParams.rotation *= Quat::CreateRotationX(-0.8f);
+
+			target.x = 0.3f;
+			target.y = -0.3f;
+			target.z = 0.6f;
+		}
+	}
+
 	Interpolate(current, target, 5.0f, m_in.frameTime);
 
 	// make sure we don't clip through stuff that much
@@ -473,18 +488,15 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	offsetY = m_io.viewQuatFinal.GetColumn1() * (current.y - 0.25f);
 	offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
 
-	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
 	if (pActor)
 	{
 		static ray_hit hit;
 		IPhysicalEntity* pSkipEntities[10];
 		int nSkip = 0;
-		IItem* pItem = pActor->GetCurrentItem();
-		if (pItem)
+
+		if (pWeapon)
 		{
-			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-			if (pWeapon)
-				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
 		}
 
 		float oldLen = offsetY.len();

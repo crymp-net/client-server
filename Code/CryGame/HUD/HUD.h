@@ -260,6 +260,7 @@ public:
 	void LoadWeaponsAccessories();
 	void AdjustWeaponAccessory(const char *szWeapon,const char *szHelper,Vec3 *pvScreenSpace);
 	bool UpdateWeaponAccessoriesScreen();
+	void UpdateWeaponModify();
 	void UpdateBuyMenuPages();
 
   void SetInMenu(bool m);
@@ -864,6 +865,8 @@ public:
 	{
 		return m_bRadarScanningEffect;
 	}
+
+	bool m_bWeaponModifyOpen = false;
 };
 
 //-----------------------------------------------------------------------------------------------------

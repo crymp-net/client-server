@@ -6,6 +6,7 @@
 
 #include "HUD.h"
 #include "CryGame/Items/Weapons/Weapon.h"
+#include "CryGame/HUD/GameFlashLogic.h"
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -150,4 +151,98 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 }
 
 //-----------------------------------------------------------------------------------------------------
+void CHUD::UpdateWeaponModify()
+{
+	if (!m_bWeaponModifyOpen)
+		return;
 
+	CWeapon* pCurrentWeapon = GetCurrentWeapon();
+	if (!pCurrentWeapon || !pCurrentWeapon->IsModifying())
+		return;
+
+	IGameTokenSystem* pGameTokenSystem = gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem();
+	char tempBuf[HUD_MAX_STRING_SIZE];
+	const bool bThirdPerson = m_pClientActor->IsThirdPerson();
+	const CItem::THelperVector& helpers = pCurrentWeapon->GetAttachmentHelpers();
+
+	float c = 0.0f;
+	float fScaleX = 0.0f;
+	float fScaleY = 0.0f;
+	float fHalfUselessSize = 0.0f;
+	GetProjectionScale(&m_animWeaponAccessories, &fScaleX, &fScaleY, &fHalfUselessSize);
+
+	if (bThirdPerson)
+	{
+		for (const auto &helper : helpers)
+		{
+			const auto mode = CItem::eIGS_FirstPerson;
+		    if (helper.slot != mode)
+				continue;
+	
+			Vec3 position = Vec3(ZERO);
+			{
+				SEntitySlotInfo info;
+				if (pCurrentWeapon->GetEntity()->GetSlotInfo(CItem::eIGS_ThirdPerson, info))
+				{
+					if (info.pStatObj)
+					{
+						IStatObj* pStatsObj = info.pStatObj;
+						position = pStatsObj->GetHelperPos(helper.name.c_str());
+						position = pCurrentWeapon->GetEntity()->GetSlotLocalTM(CItem::eIGS_ThirdPerson, false).TransformPoint(position);
+					}
+
+					pCurrentWeapon->GetEntity()->GetWorldTM().TransformPoint(position);
+				}
+			}
+
+			if (position.IsZero())
+				continue;
+
+			Matrix34 localTM(Matrix34::CreateIdentity());
+			localTM.SetTranslation(position);
+
+			const auto &wTM = pCurrentWeapon->GetEntity()->GetWorldTM() * localTM;
+
+			Vec3 vWorldPos = wTM.GetTranslation();
+			
+			Vec3 vScreenSpace = Vec3(ZERO);
+			m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
+
+			vScreenSpace.x = vScreenSpace.x * fScaleX + fHalfUselessSize;
+			vScreenSpace.y = vScreenSpace.y * fScaleY;
+
+			_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sX", helper.name.c_str());
+			tempBuf[sizeof(tempBuf) - 1] = '\0';
+			pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.x, true));
+			_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sY", helper.name.c_str());
+			tempBuf[sizeof(tempBuf) - 1] = '\0';
+			pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.y, true));
+		}
+	}
+	else
+	{
+		for (const auto& helper : helpers)
+		{
+			const auto mode = CItem::eIGS_FirstPerson;
+			if (helper.slot != mode)
+				continue;
+
+			Vec3 vWorldPos = pCurrentWeapon->GetSlotHelperPos(mode, helper.bone, true);
+			
+			Vec3 vScreenSpace = Vec3(ZERO);
+			m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
+
+			vScreenSpace.x = vScreenSpace.x * fScaleX + fHalfUselessSize;
+			vScreenSpace.y = vScreenSpace.y * fScaleY;
+
+			AdjustWeaponAccessory(pCurrentWeapon->GetEntity()->GetClass()->GetName(), helper.name, &vScreenSpace);
+	
+			_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sX", helper.name.c_str());
+			tempBuf[sizeof(tempBuf) - 1] = '\0';
+			pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.x, true));
+			_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sY", helper.name.c_str());
+			tempBuf[sizeof(tempBuf) - 1] = '\0';
+			pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.y, true));
+		}
+	}
+}

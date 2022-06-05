@@ -3169,43 +3169,8 @@ void CHUD::OnPostUpdate(float frameTime)
 
 	if (m_bShow && (m_cineState == eHCS_None || gEnv->bMultiplayer) && m_pClientActor && !m_bInMenu)
 	{
-		CWeapon* pCurrentWeapon = GetCurrentWeapon();
-		if (pCurrentWeapon && pCurrentWeapon->IsModifying())
-		{
-			IGameTokenSystem* pGameTokenSystem = gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem();
-
-			char tempBuf[HUD_MAX_STRING_SIZE];
-
-			const CItem::THelperVector& helpers = pCurrentWeapon->GetAttachmentHelpers();
-
-			for (int i = 0; i < helpers.size(); i++)
-			{
-				CItem::SAttachmentHelper helper = helpers[i];
-				if (helper.slot != CItem::eIGS_FirstPerson)
-					continue;
-
-				Vec3 vWorldPos = pCurrentWeapon->GetSlotHelperPos(CItem::eIGS_FirstPerson, helper.bone, true);
-				Vec3 vScreenSpace;
-				m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
-
-				float fScaleX = 0.0f;
-				float fScaleY = 0.0f;
-				float fHalfUselessSize = 0.0f;
-				GetProjectionScale(&m_animWeaponAccessories, &fScaleX, &fScaleY, &fHalfUselessSize);
-
-				vScreenSpace.x = vScreenSpace.x * fScaleX + fHalfUselessSize;
-				vScreenSpace.y = vScreenSpace.y * fScaleY;
-
-				AdjustWeaponAccessory(pCurrentWeapon->GetEntity()->GetClass()->GetName(), helper.name, &vScreenSpace);
-
-				_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sX", helper.name.c_str());
-				tempBuf[sizeof(tempBuf) - 1] = '\0';
-				pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.x, true));
-				_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sY", helper.name.c_str());
-				tempBuf[sizeof(tempBuf) - 1] = '\0';
-				pGameTokenSystem->SetOrCreateToken(tempBuf, TFlowInputData(vScreenSpace.y, true));
-			}
-		}
+		// Weapon Modification
+		UpdateWeaponModify();
 
 		UpdateVoiceChat();
 
@@ -4930,6 +4895,8 @@ bool CHUD::ShowWeaponAccessories(bool enable)
 		return false;
 
 	IPlayerInput* pPlayerInput = m_pClientActor->GetPlayerInput();
+
+	m_bWeaponModifyOpen = enable;
 
 	if (enable)
 	{
