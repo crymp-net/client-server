@@ -9,12 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Scanning teammates are now highlighted on radar with a green triangle.
 - Multiplayer lobby stays open after disconnecting from a server.
 - Player view distance is now explicitly set to unlimited again, hopefully fixing the still occurring ghost bug.
-- Reworked TP attachment menu.
+- Reworked Third Person attachment menu.
 
 ### Fixed
 - Missing HP/Energy bar when spectating and then spawning in a spawn truck.
 - Minor issues with game window.
 - Object and grenade throw in FP spectator.
+- Optimized Tornado
+- Hunter Sound script error (new ScriptSystem)
 
 ## [v13] - 2022-05-22
 ### Added
