@@ -859,10 +859,6 @@ void CHUD::ShowGamepadConnected(bool active)
 
 void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, int material, int hit_type)
 {
-	CGameRules *pGameRules=g_pGame->GetGameRules();
-	if (!pGameRules)
-		return;
-
 	if(!m_animKillLog.IsLoaded())
 		return;
 
@@ -886,22 +882,22 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	bool melee=false;
 	if (hit_type>0)
 	{
-		const char *hittypename=pGameRules->GetHitType(hit_type);
+		const char *hittypename=m_pGameRules->GetHitType(hit_type);
 		melee=strstr(hittypename?hittypename:"", "melee") != 0;
 	}
 
 	bool headshot=false;
 	if (material>0)
 	{
-		if (ISurfaceType *pSurfaceType=pGameRules->GetHitMaterial(material))
+		if (ISurfaceType *pSurfaceType= m_pGameRules->GetHitMaterial(material))
 		{
 			const char *matname=pSurfaceType->GetName();
 			headshot=strstr(matname?matname:"", "head") != 0;
 		}
 	}
 
-	const char *targetName=g_pGame->GetGameRules()->GetActorNameByEntityId(targetId);
-	const char *shooterName=g_pGame->GetGameRules()->GetActorNameByEntityId(shooterId);
+	const char *targetName = m_pGameRules->GetActorNameByEntityId(targetId);
+	const char *shooterName = m_pGameRules->GetActorNameByEntityId(shooterId);
 	wstring entity;
 
 	SUIWideString shooter(shooterName);
@@ -910,65 +906,62 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	int shooterFriendly = 0;
 	int targetFriendly = 0;
 
-	const EntityId pClientActorId = g_pGame->GetIGameFramework()->GetClientActorId();
+	const EntityId pClientActorId = m_pClientActor->GetEntityId();
 
-	if (CGameRules *pGameRules=g_pGame->GetGameRules())
+
+	if (m_pGameRules->GetTeamCount() > 1)
 	{
-		if (pGameRules->GetTeamCount() > 1)
+		int ownteam = m_pGameRules->GetTeam(pClientActorId);
+		if(shooterId)
 		{
-			int ownteam = pGameRules->GetTeam(pClientActorId);
-			if(shooterId)
+			int team = m_pGameRules->GetTeam(shooterId);
+			if(team!=0)
 			{
-				int team = pGameRules->GetTeam(shooterId);
-				if(team!=0)
-				{
-					if(team==ownteam)
-						shooterFriendly = 1;
-					else
-						shooterFriendly = 2;
-				}    
-			}
-			if(targetId)
-			{
-				int team = pGameRules->GetTeam(targetId);
-				if(team!=0)
-				{
-					if(team==ownteam)
-						targetFriendly = 1;
-					else
-						targetFriendly = 2;
-				}
-			}
+				if(team==ownteam)
+					shooterFriendly = 1;
+				else
+					shooterFriendly = 2;
+			}    
 		}
-		else
+		if(targetId)
 		{
-			//CryMP IA kill log colors
-			if (shooterId == pClientActorId)
+			int team = m_pGameRules->GetTeam(targetId);
+			if(team!=0)
 			{
-				if (targetId != shooterId)
-					targetFriendly = 2;
-			}
-			else
-			{
-				shooterFriendly = 2;
-				if (targetId != pClientActorId)
+				if(team==ownteam)
+					targetFriendly = 1;
+				else
 					targetFriendly = 2;
 			}
 		}
 	}
+	else
+	{
+		//CryMP IA kill log colors
+		if (shooterId == pClientActorId)
+		{
+			if (targetId != shooterId)
+				targetFriendly = 2;
+		}
+		else
+		{
+			shooterFriendly = 2;
+			if (targetId != pClientActorId)
+				targetFriendly = 2;
+		}
+	}
+
 
 	bool processed = false;
 
-	IEntityClass* pWeaponClass = NULL;
+	const IEntityClass* pWeaponClass =gEnv->pEntitySystem->GetClassRegistry()->FindClass(weaponClassName);
 
-	pWeaponClass=gEnv->pEntitySystem->GetClassRegistry()->FindClass(weaponClassName);
-
-	if(pWeaponClass == CItem::sSOCOMClass)
+	if (pWeaponClass == CItem::sSOCOMClass)
 	{
-		CPlayer *pPlayer = static_cast<CPlayer *>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId));
-		if(pPlayer)
+		CActor *pShooter = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId));
+		if (pShooter)
 		{
-			if(pPlayer->GetCurrentItem() && pPlayer->GetCurrentItem()->IsDualWield())
+			if (pShooter->GetCurrentItem() && pShooter->GetCurrentItem()->IsDualWield())
 			{
 				pLM->LocalizeString("doubleSOCOM", entity, true);
 				processed = true;
@@ -987,6 +980,9 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	// if there is no shooter, use the suicide icon
 	if ((!shooterName || !shooterName[0]) && !g_pGame->GetIGameFramework()->GetIItemSystem()->IsItemClass(weaponClassName))
 		bSuicide=true;
+
+	//CryMP: For throwing objects, always show "RunOver" icon instead of random guns
+	const bool bHitTypeCollision = hit_type == 13;
 		
 	if(bSuicide)
 	{
@@ -998,7 +994,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 		SFlashVarValue args[6] = {"", "AutoTurret", target.c_str(), headshot, shooterFriendly, targetFriendly};
 		m_animKillLog.Invoke("addLog",args,6);
 	}
-	else if(g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName))
+	else if (bHitTypeCollision || g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName))
 	{
 		SFlashVarValue args[6] = {shooter.c_str(), "RunOver", target.c_str(), headshot, shooterFriendly, targetFriendly};
 		m_animKillLog.Invoke("addLog",args,6);
