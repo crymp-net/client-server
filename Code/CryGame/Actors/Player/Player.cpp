@@ -1011,10 +1011,9 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		}
 
 		// also, after the player we are spectating dies (or goes into spectator mode), wait 3s then switch to new target
-		CActor* pCActor = static_cast<CActor*>(pActor);
-		if (pCActor && pCActor->GetActorClass() == CPlayer::GetActorClassType())
+		CPlayer* pTargetPlayer = CPlayer::FromIActor(pActor);
+		if (pTargetPlayer)
 		{
-			CPlayer* pTargetPlayer = static_cast<CPlayer*>(pCActor);
 			float timeSinceDeath = gEnv->pTimer->GetFrameStartTime().GetSeconds() - pTargetPlayer->GetDeathTime();
 			if (pTargetPlayer && (pTargetPlayer->GetHealth() <= 0 && timeSinceDeath > 3.0f) || pTargetPlayer->GetSpectatorMode() != eASM_None)
 			{
@@ -1966,6 +1965,10 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		// don't interpolate back from vehicle camera (otherwise you see your own legs)
 		if (IsClient())
 			SupressViewBlending();
+		else
+		{
+			m_currentSeatId = -1;
+		}
 	}
 
 	return pLinkedEntity;

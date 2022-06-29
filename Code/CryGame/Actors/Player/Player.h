@@ -877,7 +877,7 @@ protected:
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
-
+	int m_currentSeatId = -1;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
