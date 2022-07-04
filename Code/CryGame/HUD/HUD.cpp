@@ -3013,7 +3013,8 @@ void CHUD::OnPostUpdate(float frameTime)
 		bool noConnectivity = !gEnv->pNetwork->HasNetworkConnectivity();
 		bool highLatency = false;
 
-		if (INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetClientChannel())
+		INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetClientChannel();
+		if (pNetChannel)
 			highLatency = pNetChannel->IsSufferingHighLatency(gEnv->pTimer->GetAsyncTime());
 
 		if ((noConnectivity || highLatency) && !m_animNetworkConnection.GetVisible())
@@ -3022,6 +3023,7 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			if (!gEnv->bServer)
 				m_pClientActor->SufferingHighLatency(true);
+
 		}
 		else if (!noConnectivity && !highLatency && m_animNetworkConnection.GetVisible())
 		{
@@ -4099,20 +4101,20 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 	if (oldTargetId != 0)
 	{
 		//Leaving spectator target
-		CPlayer* pOldTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(oldTargetId));
+		CPlayer* pOldTarget = CPlayer::FromIActor(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(oldTargetId));
 		if (pOldTarget)
 		{
-			auto* pOldSuit = pOldTarget->GetNanoSuit();
+			CNanoSuit* pOldSuit = pOldTarget->GetNanoSuit();
 			if (pOldSuit)
 				pOldSuit->RemoveListener(this);
 		}
 	}
 	if (newTargetid)
 	{
-		CPlayer* pNewTarget = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(newTargetid));
+		CPlayer* pNewTarget = CPlayer::FromIActor(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(newTargetid));
 		if (pNewTarget)
 		{
-			auto* pNewSuit = pNewTarget->GetNanoSuit();
+			CNanoSuit* pNewSuit = pNewTarget->GetNanoSuit();
 			if (pNewSuit)
 			{
 				pNewSuit->AddListener(this);

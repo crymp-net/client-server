@@ -493,7 +493,7 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 				}
 				else if (actions.thirdperson == actionId) //CryMP F1 Button: Toggle First Person Spectator (see PlayerView)
 				{
-					auto *pTarget = static_cast<CPlayer*>(m_pPlayer->GetSpectatorTargetPlayer());
+					CPlayer *pTarget = CPlayer::FromIActor(m_pPlayer->GetSpectatorTargetPlayer());
 					if (pTarget)
 					{
 						const bool bEnableSpectator(!m_pPlayer->IsFpSpectator());

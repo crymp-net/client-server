@@ -84,7 +84,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 		m_in.defaultFov = g_pGameCVars->cl_fov;
 
 		m_in.frameTime = min(gEnv->pTimer->GetFrameTime(), 0.1f);
-		viewParams.frameTime = m_in.frameTime; //CryMP frameTime 0 :S
+		viewParams.frameTime = m_in.frameTime; 
 
 		m_in.pCharacter = rPlayer.GetEntity()->GetCharacter(0);
 		m_in.pVehicle = rPlayer.GetLinkedVehicle();
@@ -358,7 +358,7 @@ void CPlayerView::ViewFirstThirdSharedPre(SViewParams& viewParams)
 	// don't blend view when spectating
 	if (m_in.stats_spectatorMode >= CActor::eASM_FirstMPMode && m_in.stats_spectatorMode <= CActor::eASM_LastMPMode)
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
+		CPlayer* pPlayer = CPlayer::FromIActor(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
 		if (pPlayer)
 			pPlayer->SupressViewBlending();
 	}
@@ -854,7 +854,7 @@ void CPlayerView::ViewFirstPerson(SViewParams& viewParams)
 
 void CPlayerView::ViewVehicle(SViewParams& viewParams)
 {
-	auto* pVehicle = m_in.pVehicle;
+	IVehicle* pVehicle = m_in.pVehicle;
 	if (pVehicle)
 	{
 		if (m_in.isFirstPersonSpecTarget)
@@ -1017,7 +1017,7 @@ void CPlayerView::ViewSpectatorTarget(SViewParams& viewParams)
 	// if freelook allowed, get orientation and distance from player entity
 	if (g_pGameCVars->g_spectate_FixedOrientation == 0)
 	{
-		CPlayer* pThisPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
+		CPlayer* pThisPlayer = CPlayer::FromIActor(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
 		if (!pThisPlayer)
 			return;
 		Matrix34 ownOrientation = pThisPlayer->GetEntity()->GetWorldTM();

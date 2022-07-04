@@ -878,50 +878,53 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 			pCurrentPlayer = CPlayer::FromIActor(pTarget);
 			bSpectating = true;
 		}
-		
-		const int playerTeam = m_pGameRules->GetTeam(pCurrentPlayer->GetEntityId());
-		for (const auto explosiveId : m_explosiveList)
-		{
-			const int explosiveTeam = m_pGameRules->GetTeam(explosiveId);
-			const bool InstantAction(m_pGameRules->GetTeamCount() < 2);
-			if(bSpectating || (explosiveTeam != 0 && explosiveTeam == playerTeam) || (explosiveTeam == 0 && InstantAction))
-			{
-				// quick check for proximity
-				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(explosiveId);
-				if(pEntity)
-				{
-					Vec3 dir = pEntity->GetWorldPos() - pCurrentPlayer->GetEntity()->GetWorldPos();
-					if(dir.GetLengthSquared() <= 100.0f)
-					{
-						Vec3 targetPoint(0,0,0);
-						FlashOnScreenIcon icon = eOS_Bottom;
-						CProjectile *pProjectile = g_pGame->GetWeaponSystem()->GetProjectile(explosiveId);
-						if(pProjectile && pProjectile->GetEntity())
-						{
-							const bool bOwnerOfExplosive(pProjectile->GetOwnerId() == pCurrentPlayer->GetEntityId());
-							const bool bEnemyExplosive(explosiveTeam != playerTeam);
-						
-							// in IA, only display mines/claymores placed by this player
-							if (InstantAction && !bOwnerOfExplosive)
-								continue;
-							
-							IEntityClass* pClass = pProjectile->GetEntity()->GetClass();
-							if(pClass == m_pClaymore)
-							{
-								icon = eOS_Claymore;
-								CClaymore *pClaymore = static_cast<CClaymore *>(pProjectile);
-								if(pClaymore)
-								{
-									targetPoint = pEntity->GetWorldPos() + pClaymore->GetTriggerDirection();
-								}
-							}
-							//CryMP: Also display friendly C4
-							else if(pClass == m_pAVMine || pClass == m_pC4)
-							{
-								icon = eOS_Mine;
-							}
 
-							UpdateMissionObjectiveIcon(explosiveId, color, icon, true, targetPoint);
+		if (pCurrentPlayer)
+		{ 
+			const int playerTeam = m_pGameRules->GetTeam(pCurrentPlayer->GetEntityId());
+			for (const auto explosiveId : m_explosiveList)
+			{
+				const int explosiveTeam = m_pGameRules->GetTeam(explosiveId);
+				const bool InstantAction(m_pGameRules->GetTeamCount() < 2);
+				if (bSpectating || (explosiveTeam != 0 && explosiveTeam == playerTeam) || (explosiveTeam == 0 && InstantAction))
+				{
+					// quick check for proximity
+					IEntity* pEntity = gEnv->pEntitySystem->GetEntity(explosiveId);
+					if (pEntity)
+					{
+						Vec3 dir = pEntity->GetWorldPos() - pCurrentPlayer->GetEntity()->GetWorldPos();
+						if (dir.GetLengthSquared() <= 100.0f)
+						{
+							Vec3 targetPoint(0, 0, 0);
+							FlashOnScreenIcon icon = eOS_Bottom;
+							CProjectile* pProjectile = g_pGame->GetWeaponSystem()->GetProjectile(explosiveId);
+							if (pProjectile && pProjectile->GetEntity())
+							{
+								const bool bOwnerOfExplosive(pProjectile->GetOwnerId() == pCurrentPlayer->GetEntityId());
+								const bool bEnemyExplosive(explosiveTeam != playerTeam);
+
+								// in IA, only display mines/claymores placed by this player
+								if (InstantAction && !bOwnerOfExplosive)
+									continue;
+
+								IEntityClass* pClass = pProjectile->GetEntity()->GetClass();
+								if (pClass == m_pClaymore)
+								{
+									icon = eOS_Claymore;
+									CClaymore* pClaymore = static_cast<CClaymore*>(pProjectile);
+									if (pClaymore)
+									{
+										targetPoint = pEntity->GetWorldPos() + pClaymore->GetTriggerDirection();
+									}
+								}
+								//CryMP: Also display friendly C4
+								else if (pClass == m_pAVMine || pClass == m_pC4)
+								{
+									icon = eOS_Mine;
+								}
+
+								UpdateMissionObjectiveIcon(explosiveId, color, icon, true, targetPoint);
+							}
 						}
 					}
 				}

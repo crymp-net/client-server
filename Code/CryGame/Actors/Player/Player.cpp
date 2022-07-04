@@ -5349,7 +5349,7 @@ void CPlayer::ActivateNanosuit(bool active)
 IActor* CPlayer::GetSpectatorTargetPlayer()
 {
 	const EntityId sTargetId = GetSpectatorTarget();
-	if (sTargetId)
+	if (sTargetId && GetPhysicsProfile() == eAP_Spectator)
 	{
 		return m_pGameFramework->GetIActorSystem()->GetActor(sTargetId);
 	}
@@ -5477,7 +5477,7 @@ void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
 	if (oldTargetId)
 	{
 		//Leaving spectator target
-		CPlayer* pOldTarget = static_cast<CPlayer*>(m_pGameFramework->GetIActorSystem()->GetActor(oldTargetId));
+		CPlayer* pOldTarget = CPlayer::FromIActor(m_pGameFramework->GetIActorSystem()->GetActor(oldTargetId));
 		if (pOldTarget && pOldTarget->IsFpSpectatorTarget())
 		{
 			pOldTarget->SetFpSpectatorTarget(false);
@@ -5490,7 +5490,7 @@ void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
 
 	if (newTargetId)
 	{
-		CPlayer* pNewTarget = static_cast<CPlayer*>(m_pGameFramework->GetIActorSystem()->GetActor(newTargetId));
+		CPlayer* pNewTarget = CPlayer::FromIActor(m_pGameFramework->GetIActorSystem()->GetActor(newTargetId));
 		if (pNewTarget)
 		{
 			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());

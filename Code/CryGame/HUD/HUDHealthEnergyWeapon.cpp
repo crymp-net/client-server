@@ -75,11 +75,11 @@ void CHUD::EnergyChanged(float energy)
 
 	// Crytek FIXME: this should be moved to ::EnergyChanged | CTAO : Done
 
-	auto* pTarget = GetSpectatorTarget();
-	CPlayer* pTargetActor = pTarget ? static_cast<CPlayer*>(pTarget) : 0;
-	float nanoEnergy = pTargetActor ? pTargetActor->GetNanoSuit()->GetSuitEnergy() : m_pNanoSuit->GetSuitEnergy();
+	CPlayer* pTargetPlayer = CPlayer::FromIActor(GetSpectatorTarget());
+	CNanoSuit* pTargetSuit = pTargetPlayer ? pTargetPlayer->GetNanoSuit() : nullptr;
+	const float nanoEnergy = pTargetSuit ? pTargetSuit->GetSuitEnergy() : m_pNanoSuit->GetSuitEnergy();
 
-	if ((pTargetActor || m_fSuitEnergy > (NANOSUIT_ENERGY * 0.25f)) && nanoEnergy < (NANOSUIT_ENERGY * 0.25f))
+	if ((m_fSuitEnergy > (NANOSUIT_ENERGY * 0.25f)) && nanoEnergy < (NANOSUIT_ENERGY * 0.25f))
 	{
 		CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 		if (now.GetMilliSeconds() - m_fLastSoundPlayedCritical > 30000)
