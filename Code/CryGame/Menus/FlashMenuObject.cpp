@@ -45,6 +45,7 @@ History:
 
 #include "config.h"
 #include "Client/Client.h"
+#include "Library/Format.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS
 
@@ -1133,7 +1134,7 @@ void CFlashMenuObject::OnLoadingComplete(ILevel* pLevel)
 
 	//CryMP : Stop loading music
 	m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
-	
+
 	g_pGame->ShowMousePointer(false);
 
 	m_bInLoading = false;
@@ -2935,7 +2936,6 @@ void CFlashMenuObject::UpdateMenuColor()
 }
 
 //-----------------------------------------------------------------------------------------------------
-
 void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 {
 	if (gEnv->pSystem->IsEditor() || gEnv->pSystem->IsDedicated()) return;
@@ -3287,69 +3287,92 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 	if (INetChannel* pNC = g_pGame->GetIGameFramework()->GetClientChannel())
 	{
 		bool show = true;
-		char status[512];
+		bool skipDots = false;
+		std::string status;
 		switch (pNC->GetChannelConnectionState())
 		{
 		case eCCS_StartingConnection:
-			strcpy(status, "Waiting for server");
+			status = "Waiting for server";
 			break;
 		case eCCS_InContextInitiation:
 		{
-			const char* state = "<unknown state>";
 			switch (pNC->GetContextViewState())
 			{
 			case eCVS_Initial:
-				state = "Requesting Game Environment";
+				status = "Requesting Game Environment";
 				break;
 			case eCVS_Begin:
-				state = "Receiving Game Environment";
+				status = "Receiving Game Environment";
 				break;
 			case eCVS_EstablishContext:
-				state = "Loading Game Assets";
+				status = "Loading Game Assets";
 				break;
 			case eCVS_ConfigureContext:
-				state = "Configuring Game Settings";
+				status = "Configuring Game Settings";
 				break;
 			case eCVS_SpawnEntities:
-				state = "Spawning Entities";
-				break;
-			case eCVS_PostSpawnEntities:
-				state = "Initializing Entities";
-				break;
-			case eCVS_InGame:
-				state = "In Game";
+			{
+				const EntityId id = gClient->GetLastSpawnId();
+				IEntity* pLastSpawn = gEnv->pEntitySystem->GetEntity(id);
+				skipDots = true;
+				status = Format("Spawning Entities: %-22s", pLastSpawn ? pLastSpawn->GetClass()->GetName() : "");
 				break;
 			}
-			sprintf(status, "%s...", state);
+			case eCVS_PostSpawnEntities:
+				status = "Initializing Entities";
+				break;
+			case eCVS_InGame:
+				status = "In Game";
+				break;
+			}
 		}
 		break;
 		case eCCS_InGame:
 			show = m_bInLoading;
-			strcpy(status, "In Game");
+			skipDots = true;
+			status = "Getting Ready";
 			break;
 		case eCCS_Disconnecting:
-			strcpy(status, "Disconnecting");
+			status = "Disconnecting";
 			break;
 		default:
-			strcpy(status, "Unknown State");
+			status = "Unknown State";
 			break;
 		}
 
 		if (show)
 		{
 			const float y = 580.f;
-			const float x = 250.f;
+			const float x = 235.f;
 			const float sy = gEnv->pRenderer->ScaleCoordY(y);
 			const float sx = gEnv->pRenderer->ScaleCoordX(x + x * 0.5f);
-			const auto ct = g_pGameCVars->hud_colorOver;
+			auto ct = g_pGameCVars->hud_colorOver + 50;
+
 			const float r = ((ct >> 16) & 0xFF) / 255.0f;
 			const float g = ((ct >> 8) & 0xFF) / 255.0f;
 			const float b = ((ct >> 0) & 0xFF) / 255.0f;
 
-			float color[] = { r, g, b, 1.0 };
-			const float size = 0.7f + (width / 800.f) * 0.3f;
+			float color[]{ r, g, b, 1.0 };
+			const float size = 1.0f + (width / 800.f) * 0.3f;
 
-			gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "Connection State: %s", status);
+			std::string points;
+			if (!skipDots)
+			{
+				for (int i = 0; i < m_iDotCounter; i++)
+				{
+					points += ".";
+				}
+			}
+
+			++m_iDotCounter;
+			if (m_iDotCounter > 7)
+				m_iDotCounter = 1;
+
+			gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s%s", status.c_str(), points.c_str());
+
+			//Will replace Draw2dLabel once we can load custom HUDs..
+			//string s = status.c_str();
+			//m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setLoadingText", s.MakeUpper().c_str());
 		}
 	}
 }

@@ -66,6 +66,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	static void OnDumpKeyBindings(IConsoleCmdArgs* pArgs);
 
 	float m_FrameCounter = 0.0f;
+	EntityId m_lastSpawnId = 0;
 
 public:
 	Client();
@@ -179,6 +180,11 @@ public:
 	}
 
 	std::map<std::string, std::string> m_keyBinds;
+
+	EntityId GetLastSpawnId() const
+	{
+		return m_lastSpawnId;
+	}
 
 	// ints
 	template<class T>

@@ -339,6 +339,8 @@ bool Client::OnBeforeSpawn(SEntitySpawnParams & params)
 void Client::OnSpawn(IEntity *pEntity, SEntitySpawnParams & params)
 {
 	m_pScriptCallbacks->OnSpawn(pEntity);
+
+	m_lastSpawnId = pEntity->GetId();
 }
 
 bool Client::OnRemove(IEntity *pEntity)

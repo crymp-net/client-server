@@ -400,6 +400,9 @@ private:
 
 
 
+private:
+	int m_iDotCounter = 0;
+
 
 };
 
