@@ -493,6 +493,7 @@ void CHUDRadar::Update(float fDeltaTime)
 
 			float fAngle = pActor->GetAngles().z - pEntity->GetWorldAngles().z;
 			float fAlpha = 0.85f;
+			
 			float sizeScale = GetRadarSize(pEntity, pActor);
 
 			//in flash
@@ -501,10 +502,16 @@ void CHUDRadar::Update(float fDeltaTime)
 			float dimY = (m_fY + fRadarSizeOverTwo) - lowerBoundY;
 
 			int playerTeam = m_pGameRules->GetTeam(pActor->GetEntityId());
+			const auto friendOrFoe = FriendOrFoe(gEnv->bMultiplayer, playerTeam, pEntity,
+				m_pGameRules);
 
+			//CryMP: Brighter red color for Enemy
+			if (friendOrFoe == EEnemy)
+			{
+				fAlpha = 1.0f;
+			}
 			numOfValues += ::FillUpDoubleArray(&entityValues, temp.m_id, temp.m_type, (fX - lowerBoundX) / dimX, (fY - lowerBoundY) / dimY,
-				180.0f + RAD2DEG(fAngle), FriendOrFoe(gEnv->bMultiplayer, playerTeam, pEntity,
-					m_pGameRules), sizeScale * 25.0f, fAlpha * 100.0f);
+				180.0f + RAD2DEG(fAngle), friendOrFoe, sizeScale * 25.0f, fAlpha * 100.0f);
 		}
 	}
 
