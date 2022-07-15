@@ -2105,11 +2105,14 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				//CryMP: Objects that are not bound to network, cannot be picked up in MP (except chickens etc)
 				const bool bClientEntity = (pEntity->GetFlags() & ENTITY_FLAG_CLIENT_ONLY);
 				const bool bIsBound = m_pGameFramework->GetNetContext()->IsBound(entityId);
+				const IEntityClass* pClass = pEntity->GetClass();
 				if (!bIsBound && !bClientEntity)
 				{
 					return OH_NO_GRAB;
 				}
-				if (pEntity->GetClass() == CItem::sDoorClass || pEntity->GetClass() == CItem::sElevatorSwitchClass)
+				if (pClass == CItem::sDoorClass ||
+					pClass == CItem::sElevatorSwitchClass ||
+					pClass == CItem::sFlagClass)
 				{
 					return OH_NO_GRAB;
 				}
