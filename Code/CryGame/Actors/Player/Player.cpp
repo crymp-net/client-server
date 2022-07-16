@@ -271,12 +271,6 @@ bool CPlayer::Init(IGameObject* pGameObject)
 	if (GetEntityId() == LOCAL_PLAYER_ENTITY_ID && !m_pNanoSuit) //client player always has a nanosuit (else the HUD doesn't work)
 		m_pNanoSuit = new CNanoSuit();
 
-	if (IEntityRenderProxy* pProxy = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER))
-	{
-		if (IRenderNode* pRenderNode = pProxy->GetRenderNode())
-			pRenderNode->SetRndFlags(ERF_REGISTER_BY_POSITION, true);
-	}
-
 	return true;
 }
 
@@ -289,6 +283,23 @@ void CPlayer::PostInit(IGameObject* pGameObject)
 	if (gEnv->bMultiplayer && !gEnv->bServer)
 	{
 		GetGameObject()->SetUpdateSlotEnableCondition(this, 0, eUEC_WithoutAI); //CryMP: Ghost Bug Fix #3
+	
+		if (IEntityRenderProxy* pProxy = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER))
+		{
+			if (IRenderNode* pRenderNode = pProxy->GetRenderNode())
+			{
+				//CryMP: Added ERF_RENDER_ALWAYS
+				const auto CryMPflags = pRenderNode->GetRndFlags() | ERF_RENDER_ALWAYS;
+				pRenderNode->SetRndFlags(CryMPflags, true);
+				pRenderNode->SetViewDistUnlimited(); //default is 100m, depends on settings
+				//pProxy->GetRenderNode()->SetLodRatio(255);
+			}
+			if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+			{
+				//CryMP: Added ERF_RENDER_ALWAYS
+				pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
+			}
+		}
 	}
 }
 
