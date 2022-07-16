@@ -78,6 +78,7 @@ struct SPlayerStats : public SActorStats
 	//cheating stuff
 	uint8 flyMode;//0 no fly, 1 fly mode, 2 fly mode + noclip
 	EntityId spectatorTarget;	// which player we are watching
+	EntityId deathCamTarget;
 	int spectatorHealth;
 	int spectatorZoom;
 	uint8 spectatorMode;
@@ -185,6 +186,7 @@ struct SPlayerStats : public SActorStats
 
 		spectatorMode = 0;
 		spectatorTarget = 0;
+		deathCamTarget = 0;
 		spectatorZoom = 2;
 
 		grabbedHeavyEntity = 0;
@@ -547,7 +549,9 @@ public:
 	virtual void SetSpectatorMode(uint8 mode, EntityId targetId);
 	virtual uint8 GetSpectatorMode() const { return m_stats.spectatorMode; };
 	virtual void SetSpectatorTarget(EntityId targetId) { m_stats.spectatorTarget = targetId; };
+	virtual void SetDeathCamTarget(EntityId targetId) { m_stats.deathCamTarget = targetId; };
 	virtual EntityId GetSpectatorTarget() const { return m_stats.spectatorTarget; };
+	virtual EntityId GetDeathCamTarget() const { return m_stats.deathCamTarget; };
 	virtual void SetSpectatorHealth(int health) { m_stats.spectatorHealth = health; };
 	virtual int GetSpectatorHealth() const { return m_stats.spectatorHealth; };
 	virtual void ChangeSpectatorZoom(int zoomChange) { m_stats.spectatorZoom = CLAMP(m_stats.spectatorZoom + zoomChange, 2, 6); }

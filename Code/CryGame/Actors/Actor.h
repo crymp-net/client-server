@@ -859,6 +859,8 @@ public:
 	virtual uint8 GetSpectatorMode() const { return 0; };
 	virtual void SetSpectatorTarget(EntityId targetId) {};
 	virtual EntityId GetSpectatorTarget() const { return 0; };
+	virtual void SetDeathCamTarget(EntityId targetId) {};
+	virtual EntityId GetDeathCamTarget() const { return 0; };
 	virtual void SetSpectatorHealth(int health) {};
 	virtual int GetSpectatorHealth() const { return 0; };
 

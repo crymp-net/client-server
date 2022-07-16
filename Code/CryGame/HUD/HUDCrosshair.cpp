@@ -635,5 +635,7 @@ void CHUD::UpdateCrosshairVisibility()
 		//turn off damage circle
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("clearDamageDirection");
 		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->Advance(0.1f);
+
+		m_pHUDCrosshair->SetDamageIndicatorTimer(0.0f);
 	}
 }

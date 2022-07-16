@@ -66,6 +66,7 @@ protected:
 		uint8 stats_flyMode;
 		uint8 stats_spectatorMode;
 		EntityId stats_spectatorTarget;
+		EntityId stats_deathCamTarget;
 		bool  stats_onLadder;
 		
 		float params_viewFoVScale;

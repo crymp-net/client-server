@@ -270,7 +270,7 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	}
 
 	//CryMP: Always draw killer tag
-	const EntityId killerId = pClientActor->GetSpectatorTarget();
+	const EntityId killerId = pClientActor->GetDeathCamTarget();
 	if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
 	{
 		bDrawOnTop = true;
@@ -405,7 +405,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		}
 
 		//CryMP: Always draw killer tag
-		const EntityId killerId = pClientActor->GetSpectatorTarget();
+		const EntityId killerId = pClientActor->GetDeathCamTarget();
 		if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
 		{
 			bDrawOnTop = true;
@@ -454,7 +454,7 @@ void CHUDTagNames::Update()
 		if (pActor->IsClient() && (!gEnv->bMultiplayer || !pActor->IsThirdPerson()))
 			continue;
 
-		const EntityId killerId = pClientActor->GetSpectatorTarget();
+		const EntityId killerId = pClientActor->GetDeathCamTarget();
 		if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
 		{	
 			IVehicle* pKillerVehicle = pActor->GetLinkedVehicle();

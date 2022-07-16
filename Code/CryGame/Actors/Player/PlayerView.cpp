@@ -224,6 +224,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 	m_in.stats_flyMode = rPlayer.m_stats.flyMode;
 	m_in.stats_spectatorMode = rPlayer.m_stats.spectatorMode;
 	m_in.stats_spectatorTarget = rPlayer.m_stats.spectatorTarget;
+	m_in.stats_deathCamTarget = rPlayer.m_stats.deathCamTarget;
 
 	m_io.stats_smoothViewZ = rPlayer.m_stats.smoothViewZ;
 	m_io.stats_smoothZType = rPlayer.m_stats.smoothZType;
@@ -239,7 +240,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 //--------------------------------------------------------------------------
 void CPlayerView::ViewProcess(SViewParams& viewParams)
 {
-	if (gEnv->bMultiplayer && m_in.stats_spectatorTarget && g_pGameCVars->g_deathCam != 0 && ((m_in.isFirstPersonSpecTarget && m_in.stats_isRagDoll /*CryMP: other clients hp is not serialized*/) || (m_in.stats_spectatorMode == 0 && m_in.health <= 0)))
+	if (gEnv->bMultiplayer && m_in.stats_deathCamTarget && g_pGameCVars->g_deathCam != 0 && ((m_in.isFirstPersonSpecTarget && m_in.stats_isRagDoll /*CryMP: other clients hp is not serialized*/) || (m_in.stats_spectatorMode == 0 && m_in.health <= 0)))
 	{
 		ViewFirstThirdSharedPre(viewParams);
 		ViewDeathCamTarget(viewParams);
@@ -1322,7 +1323,7 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 
 void CPlayerView::ViewDeathCamTarget(SViewParams& viewParams)
 {
-	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget);
+	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_deathCamTarget);
 	if (!pTarget)
 		return;
 

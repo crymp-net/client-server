@@ -3489,7 +3489,8 @@ void CActor::NetKill(EntityId shooterId, uint16 weaponClassId, int damage, int m
 		{
 			if (g_pGameCVars->g_deathCam && shooterId != GetEntityId())
 			{
-				SetSpectatorTarget(shooterId);
+				//CryMP: new function to not cause any confusion, and possible bugs
+				SetDeathCamTarget(shooterId);
 			}
 
 			if (!IsFpSpectatorTarget())
