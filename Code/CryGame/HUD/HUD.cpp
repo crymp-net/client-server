@@ -2130,7 +2130,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				g_pGameActions->FilterSuitMenu()->Enable(true);
 				g_pGameActions->FilterInVehicleSuitMenu()->Enable(true);
 				m_bAutosnap = true;
-				UpdateCrosshairVisibility();
+				//UpdateCrosshairVisibility();
 				SwitchToModalHUD(&m_animQuickMenu, false);
 				m_animQuickMenu.CheckedInvoke("destroy", m_iBreakHUD);
 			}
@@ -2159,7 +2159,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 			g_pGameActions->FilterSuitMenu()->Enable(false);
 			g_pGameActions->FilterInVehicleSuitMenu()->Enable(false);
 			m_bAutosnap = false;
-			UpdateCrosshairVisibility();
+			//UpdateCrosshairVisibility();
 			if (&m_animQuickMenu == m_pModalHUD)
 			{
 				SwitchToModalHUD(NULL, false);
@@ -3015,22 +3015,52 @@ void CHUD::OnPostUpdate(float frameTime)
 
 		INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetClientChannel();
 		if (pNetChannel)
+		{
 			highLatency = pNetChannel->IsSufferingHighLatency(gEnv->pTimer->GetAsyncTime());
-
-		if ((noConnectivity || highLatency) && !m_animNetworkConnection.GetVisible())
-		{
-			m_animNetworkConnection.SetVisible(true);
-
-			if (!gEnv->bServer)
-				m_pClientActor->SufferingHighLatency(true);
-
 		}
-		else if (!noConnectivity && !highLatency && m_animNetworkConnection.GetVisible())
-		{
-			m_animNetworkConnection.SetVisible(false);
 
-			if (!gEnv->bServer)
-				m_pClientActor->SufferingHighLatency(false);
+		if (noConnectivity || highLatency || g_pGameCVars->cl_bob > 5.9f)
+		{
+			if (!m_animNetworkConnection.GetVisible())
+			{
+				m_animNetworkConnection.SetVisible(true);
+
+				if (!gEnv->bServer)
+					m_pClientActor->SufferingHighLatency(true);
+			}
+
+			/*
+			if (pNetChannel)
+			{
+				const char* descr = noConnectivity ? "No Connectivity" : "High Latency";
+				const float up = pNetChannel->GetStatistics().bandwidthUp / 1000.f;
+				const float down = pNetChannel->GetStatistics().bandwidthDown / 1000.f;
+
+				const float y = 580.f;
+				const float x = 250.f;
+				const float sy = gEnv->pRenderer->ScaleCoordY(y);
+				const float sx = gEnv->pRenderer->ScaleCoordX(x + x * 0.5f);
+				const auto ct = g_pGameCVars->hud_colorOver;
+				const float r = ((ct >> 16) & 0xFF) / 255.0f;
+				const float g = ((ct >> 8) & 0xFF) / 255.0f;
+				const float b = ((ct >> 0) & 0xFF) / 255.0f;
+
+				float color[] = { r, g, b, 1.0 };
+				const float size = 1.0f + (width / 800.f) * 0.3f;
+
+				gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s: Up %4.1fk/s  Down %4.1fk/s", descr, up, down);
+			}
+			*/
+		}
+		else
+		{
+			if (m_animNetworkConnection.GetVisible())
+			{
+				m_animNetworkConnection.SetVisible(false);
+
+				if (!gEnv->bServer)
+					m_pClientActor->SufferingHighLatency(false);
+			}
 		}
 	}
 	else if (m_animNetworkConnection.GetVisible())
@@ -3176,6 +3206,8 @@ void CHUD::OnPostUpdate(float frameTime)
 
 		UpdateVoiceChat();
 
+		UpdateCrosshairVisibility();
+
 		// Target autoaim and locking
 		Targetting(0, false);
 
@@ -3244,8 +3276,11 @@ void CHUD::OnPostUpdate(float frameTime)
 					m_animSpectate.GetFlashPlayer()->Advance(frameTime);
 					m_animSpectate.GetFlashPlayer()->Render();
 
-					m_animNetworkConnection.GetFlashPlayer()->Advance(frameTime);
-					m_animNetworkConnection.GetFlashPlayer()->Render();
+					if (m_animNetworkConnection.GetVisible())
+					{
+						m_animNetworkConnection.GetFlashPlayer()->Advance(frameTime);
+						m_animNetworkConnection.GetFlashPlayer()->Render();
+					}
 
 					if (m_prevSpectatorMode != specMode || m_prevSpectatorTarget != m_pClientActor->GetSpectatorTarget() || m_prevSpectatorHealth != m_pClientActor->GetSpectatorHealth())
 					{
@@ -3949,7 +3984,7 @@ void CHUD::AutoAimNoText(EntityId id)
 void CHUD::AutoAimLocked(EntityId id)
 {
 	m_bHideCrosshair = true;
-	UpdateCrosshairVisibility();
+	//UpdateCrosshairVisibility();
 	LockTarget(id, eLT_Locked);
 	PlaySound(ESound_BinocularsLock);
 }
@@ -3959,7 +3994,7 @@ void CHUD::AutoAimLocked(EntityId id)
 void CHUD::AutoAimUnlock(EntityId id)
 {
 	m_bHideCrosshair = false;
-	UpdateCrosshairVisibility();
+	//UpdateCrosshairVisibility();
 	UnlockTarget(id);
 	PlaySound(ESound_BinocularsLock);
 }

@@ -182,7 +182,7 @@ void CHUDCommon::CursorIncrementCounter()
 		{
 			g_pGameActions->FilterNoMouse()->Enable(true);
 		}
-		UpdateCrosshairVisibility();
+		//UpdateCrosshairVisibility();
 	}
 }
 
@@ -196,7 +196,7 @@ void CHUDCommon::CursorDecrementCounter()
 		{
 			g_pGameActions->FilterNoMouse()->Enable(false);
 		}
-		UpdateCrosshairVisibility();
+		//UpdateCrosshairVisibility();
 	}
 }
 

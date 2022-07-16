@@ -24,6 +24,7 @@ History:
 #include "GameFlashAnimation.h"
 
 class CHUD;
+class CPlayer;
 
 class CHUDCrosshair : public CHUDObject
 {
@@ -34,6 +35,7 @@ public:
 
 	// CHUDObject
 	virtual void Update(float fDeltaTime);
+	void UpdateDamageIndicator(CPlayer* pPlayer, float fDeltaTime);
 	// ~CHUDObject
 
 	//use-icon
@@ -58,6 +60,10 @@ public:
 	void SetDamageIndicatorTimer(float time)
 	{
 		m_fDamageIndicatorTimer = time;
+	}
+	bool IsDamageIndicatorProcessing()
+	{
+		return m_fDamageIndicatorTimer > 0.0f;
 	}
 
 private:

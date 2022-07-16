@@ -79,34 +79,7 @@ void CHUDCrosshair::Update(float fDeltaTime)
 	if (!pPlayer)
 		return;
 
-	if (m_fDamageIndicatorTimer > 0.0f)
-	{
-		m_fDamageIndicatorTimer -= fDeltaTime;
-
-		float angle = ((pPlayer->GetAngles().z * 180.0f / gf_PI) + 180.0f);
-		if (angle < 0.0f)
-			angle = 360.0f - angle;
-
-		GetFlashAnim()->CheckedSetVariable("DamageDirection._rotation", SFlashVarValue(angle));
-
-		if (m_fDamageIndicatorTimer < 0.1f)
-		{
-			m_fDamageIndicatorTimer = 0.0f;
-			
-			if (GetCrosshairType() == 0)
-			{
-				GetFlashAnim()->SetVisible(false);
-			}
-		}
-		else
-		{
-			//Damage indicator is part of crosshair, so we have to show it for a couple seconds...
-			if (!GetFlashAnim()->GetVisible())
-			{
-				GetFlashAnim()->SetVisible(true);
-			}
-		}
-	}
+	UpdateDamageIndicator(pPlayer, fDeltaTime);
 
 	IInventory* pInventory = pPlayer->GetInventory();
 	if (!pInventory)
@@ -235,6 +208,28 @@ void CHUDCrosshair::Update(float fDeltaTime)
 	UpdateCrosshair();
 }
 
+void CHUDCrosshair::UpdateDamageIndicator(CPlayer *pPlayer, float fDeltaTime)
+{
+	if (!pPlayer)
+		return;
+
+	if (m_fDamageIndicatorTimer > 0.0f)
+	{
+		m_fDamageIndicatorTimer -= fDeltaTime;
+
+		float angle = ((pPlayer->GetAngles().z * 180.0f / gf_PI) + 180.0f);
+		if (angle < 0.0f)
+			angle = 360.0f - angle;
+
+		GetFlashAnim()->CheckedSetVariable("DamageDirection._rotation", SFlashVarValue(angle));
+
+		if (m_fDamageIndicatorTimer < 0.1f)
+		{
+			m_fDamageIndicatorTimer = 0.0f;
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------------------------------
 
 void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB)
@@ -317,10 +312,6 @@ void CHUDCrosshair::SetCrosshair(int iCrosshair)
 		m_animCrossHair.Invoke("setCrossHair", iCrosshair);
 		m_animCrossHair.Invoke("setUsable", m_bUsable);
 	}
-
-	//CryMP: Completely stop rendering crosshair if not visible anyway..
-	const bool visible = iCrosshair != 0;
-	m_animCrossHair.SetVisible(visible);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -517,9 +508,13 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 		if (!pItem)
 			pItem = pPlayer->GetCurrentItem();
 
+		const IEntityClass *pClass = pItem ? pItem->GetEntity()->GetClass() : nullptr;
+
 		if (!pItem ||
-			pItem->GetEntity()->GetClass() == CItem::sFistsClass ||
-			pItem->GetEntity()->GetClass() == CItem::sAlienCloak)
+			pClass == CItem::sFistsClass ||
+			pClass == CItem::sOffHandClass ||
+			pClass == CItem::sBinocularsClass ||
+			pClass == CItem::sAlienCloak)
 		{
 			SetCrosshair(0); //was 10 
 			bSpecialCrosshairSet = true;
@@ -536,13 +531,13 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 		// No current item or current item are fists or AlienCloak or LAW
 		if (!bSpecialCrosshairSet)
 		{
-			if (pItem->GetEntity()->GetClass() == CItem::sRocketLauncherClass ||
-				pItem->GetEntity()->GetClass() == CItem::sTACGunFleetClass)
+			if (pClass == CItem::sRocketLauncherClass ||
+				pClass == CItem::sTACGunFleetClass)
 			{
 				SetCrosshair(0);
 				bSpecialCrosshairSet = true;
 			}
-			else if (pItem->GetEntity()->GetClass() == CItem::sTACGunClass)
+			else if (pClass == CItem::sTACGunClass)
 			{
 				SetCrosshair(11);
 				bSpecialCrosshairSet = true;
@@ -573,5 +568,72 @@ void CHUDCrosshair::Break(bool state)
 	{
 		pAnim->Invoke("clearDamageDirection");
 		pAnim->GetFlashPlayer()->Advance(0.1f);
+	}
+}
+
+bool CHUD::ShouldRenderCrosshair() const
+{
+	if (!m_pHUDCrosshair)
+		return false;
+
+	if (m_pHUDCrosshair->IsDamageIndicatorProcessing())
+		return true; //always render
+
+	if (m_bHideCrosshair)
+		return false;
+
+	if (m_pHUDCrosshair->GetCrosshairType() == 0)
+		return false;
+
+	if (m_animScoreBoard.GetVisible() || m_animObjectivesTab.GetVisible())
+		return false;
+
+	if (m_pModalHUD && m_pModalHUD->GetVisible())
+		return false;
+
+	CPlayer* pPlayer = m_pClientActor;
+
+	if (IActor* pSpec = pPlayer->GetSpectatorTargetPlayer())
+	{
+		pPlayer = CPlayer::FromIActor(pSpec);
+		if (!pPlayer)
+			return false;
+
+		if (IVehicle *pVehicle = pPlayer->GetLinkedVehicle())
+		{
+			if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(pPlayer->GetEntityId()))
+			{
+				bool b(pSeat->IsGunner());
+				
+				return b;
+			}
+		}
+	}
+
+	if (CWeapon* pWeapon = pPlayer->GetCurrentWeapon(false))
+	{
+		if (pWeapon->IsLamAttached() || pWeapon->IsModifyingNoTS())
+			return false;
+	}
+
+	if (m_pHUDVehicleInterface->GetVehicle())
+	{
+		return m_pHUDVehicleInterface->ForceCrosshair();
+	}
+	return true;
+}
+void CHUD::UpdateCrosshairVisibility()
+{
+	if (!m_pHUDCrosshair)
+		return;
+
+	const bool bShow = ShouldRenderCrosshair();
+	if (bShow != m_pHUDCrosshair->GetFlashAnim()->GetVisible())
+	{
+		m_pHUDCrosshair->GetFlashAnim()->SetVisible(bShow);
+
+		//turn off damage circle
+		m_pHUDCrosshair->GetFlashAnim()->Invoke("clearDamageDirection");
+		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->Advance(0.1f);
 	}
 }

@@ -99,7 +99,7 @@ void CHUDVehicleInterface::Update(float fDeltaTime)
 		m_animStats.GetFlashPlayer()->Advance(fDeltaTime);
 		m_animStats.GetFlashPlayer()->Render();
 	}
-	g_pHUD->UpdateCrosshairVisibility();
+	//g_pHUD->UpdateCrosshairVisibility();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -235,7 +235,7 @@ void CHUDVehicleInterface::OnEnterVehicle(CPlayer* pPlayer)
 		if (IVehicleSeat* seat = m_pVehicle->GetSeatForPassenger(pPlayer->GetEntityId()))
 		{
 			m_seatId = seat->GetSeatId();
-			g_pHUD->UpdateCrosshairVisibility();
+			//g_pHUD->UpdateCrosshairVisibility();
 		}
 	}
 
@@ -249,7 +249,7 @@ void CHUDVehicleInterface::OnEnterVehicle(CPlayer* pPlayer)
 	//setup flash hud
 	InitVehicleHuds();
 
-	g_pHUD->UpdateCrosshairVisibility();
+	//g_pHUD->UpdateCrosshairVisibility();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -284,7 +284,7 @@ void CHUDVehicleInterface::OnExitVehicle(IActor* pActor)
 	m_animMainWindow.Unload();
 	m_animStats.Unload();
 
-	g_pHUD->UpdateCrosshairVisibility();
+	//g_pHUD->UpdateCrosshairVisibility();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -661,7 +661,7 @@ void CHUDVehicleInterface::UpdateVehicleHUDDisplay()
 		g_pAmmo->Invoke("setAmmoMode", 21);
 	}
 
-	g_pHUD->UpdateCrosshairVisibility();
+	//g_pHUD->UpdateCrosshairVisibility();
 }
 
 //-----------------------------------------------------------------------------------------------------

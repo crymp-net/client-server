@@ -129,6 +129,7 @@ public:
 
 	void UpdateHUDElements();
 	void UpdateCrosshair(IItem *pItem = NULL);
+	bool ShouldRenderCrosshair() const;
 	virtual void UpdateCrosshairVisibility();
 	bool ReturnFromLastModalScreen();
 

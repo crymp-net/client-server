@@ -1195,49 +1195,6 @@ void CHUD::UpdateVoiceChat()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::UpdateCrosshairVisibility()
-{
-	if (!m_pHUDCrosshair)
-		return;
-	
-	// marcok: don't touch this, please
-	if (g_pGameCVars->goc_enable)
-	{
-		m_pHUDCrosshair->GetFlashAnim()->Invoke("setVisible", 1);
-		return;
-	}
-
-	bool wasVisible = false;
-
-	if(!m_pHUDCrosshair->GetFlashAnim()->IsLoaded())
-		return;
-	if(m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->GetVisible())
-	{
-		wasVisible = true;
-		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->SetVisible(false);
-	}
-
-  bool forceVehicleCrosshair = m_pHUDVehicleInterface->GetVehicle() && m_pHUDVehicleInterface->ForceCrosshair();
-	
-	if(!g_pGame->IsMousePointerVisible() && !m_bAutosnap && !m_bHideCrosshair && (!m_bThirdPerson || forceVehicleCrosshair) && !m_pHUDScopes->IsBinocularsShown())
-	{
-		// Do not show crosshair while in vehicle
-		if((!m_pHUDVehicleInterface->GetVehicle() && !m_pHUDVehicleInterface->IsParachute()) || forceVehicleCrosshair)
-		{
-			m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->SetVisible(true);
-		}
-	}
-
-	if(wasVisible != m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->GetVisible())
-	{
-		//turn off damage circle
-		m_pHUDCrosshair->GetFlashAnim()->Invoke("clearDamageDirection");
-		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->Advance(0.1f);
-	}
-}
-
-//-----------------------------------------------------------------------------------------------------
-
 void CHUD::UpdateCrosshair(IItem *pItem) 
 { 
 	m_pHUDCrosshair->SelectCrosshair(pItem); 
@@ -1261,7 +1218,7 @@ void CHUD::OnToggleThirdPerson(IActor *pActor,bool bThirdPerson)
 		m_pHUDScopes->OnToggleThirdPerson(bThirdPerson);
 	}
 
-	UpdateCrosshairVisibility();
+	//UpdateCrosshairVisibility();
 }
 
 //-----------------------------------------------------------------------------------------------------
