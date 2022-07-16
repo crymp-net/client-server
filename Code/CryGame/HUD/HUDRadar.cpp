@@ -2800,7 +2800,7 @@ EntityId CHUDRadar::RayCastBinoculars(CPlayer* pPlayer, ray_hit* pRayHit)
 	if (!pPhysEnt)
 		return 0;
 
-	static const int obj_types = ent_rigid|ent_sleeping_rigid|ent_living; //CryMP optimization: these are enough, default was ent_all
+	static const int obj_types = ent_all;
 	static const unsigned int flags = rwi_pierceability(1);
 
 	right = right * g_pGameCVars->hud_binocsScanningWidth;
