@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+## [v15] - 2022-07-18
 ### Changed
 - Using the new script system by default, you can still switch to the old one using `-oldss` command line parameter
 - Kill log now shows RunOver icon when killing players with object
