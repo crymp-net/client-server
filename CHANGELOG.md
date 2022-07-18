@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Crashes occuring with Aliens
 - Crosshair disappearing in Third Person
 - Randomly closing binoculars
+- Sporadic file check crash (in 64-bit version only)
 
 ### Added
 - Scanning objects with binoculars highlights team color (Neutral = white, Team = blue, Enemy = red)
