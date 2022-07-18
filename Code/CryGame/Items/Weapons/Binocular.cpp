@@ -43,7 +43,12 @@ CBinocular::CBinocular()
 //------------------------------------------------------------------------
 CBinocular::~CBinocular()
 {
-	SAFE_HUD_FUNC(GetScopes()->ShowBinoculars(0));
+	//CryMP: Add missing client check
+	CActor* pOwner = GetOwnerActor();
+	if (pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
+	{
+		SAFE_HUD_FUNC(GetScopes()->ShowBinoculars(false));
+	}
 }
 
 //------------------------------------------------------------------------
