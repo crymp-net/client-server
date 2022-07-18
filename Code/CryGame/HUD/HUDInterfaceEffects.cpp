@@ -677,7 +677,11 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		}
 		else
 		{
-			m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, 0.8f, 0.8f, 1.0f, 0.5f, -1.0f);
+			if (!gEnv->bMultiplayer)
+			{
+				//Not sure why it's added here as well, let's keep it in SP for now
+				m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, 0.8f, 0.8f, 1.0f, 0.5f, -1.0f);
+			}
 		}
 	}
 
