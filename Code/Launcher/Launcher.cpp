@@ -210,7 +210,10 @@ void Launcher::PatchEngine()
 			Patch::Disable3DNow(m_CrySystem);
 		}
 
-		ReplaceScriptSystem(m_CrySystem);
+		if (!CmdLine::HasArg("-oldss"))
+		{
+			ReplaceScriptSystem(m_CrySystem);
+		}
 	}
 }
 
