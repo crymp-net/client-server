@@ -9,6 +9,7 @@ namespace Patch
 	void DisableBreakLog(const DLL & CryAction);
 
 	// CryNetwork
+	void FixFileCheckCrash(const DLL & CryNetwork);
 	void FixInternetConnect(const DLL & CryNetwork);
 	void EnablePreordered(const DLL & CryNetwork);
 	void AllowSameCDKeys(const DLL & CryNetwork);

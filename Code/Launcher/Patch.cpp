@@ -46,6 +46,22 @@ void Patch::DisableBreakLog(const DLL & CryAction)
 ////////////////
 
 /**
+ * @brief Fixes the sporadic crash when file check AKA sv_cheatProtection is enabled.
+ */
+void Patch::FixFileCheckCrash(const DLL & CryNetwork)
+{
+	void *pCryNetwork = CryNetwork.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillNOP(RVA(pCryNetwork, 0x14F5B1), 0x4);
+	FillNOP(RVA(pCryNetwork, 0x14F5C9), 0x4);
+	FillNOP(RVA(pCryNetwork, 0x1533E0), 0x4B);
+#else
+	// TODO
+#endif
+}
+
+/**
  * @brief Allows connecting to Internet servers without GameSpy account.
  */
 void Patch::FixInternetConnect(const DLL & CryNetwork)

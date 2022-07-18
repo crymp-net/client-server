@@ -191,6 +191,7 @@ void Launcher::PatchEngine()
 
 	if (m_CryNetwork)
 	{
+		Patch::FixFileCheckCrash(m_CryNetwork);
 		Patch::FixInternetConnect(m_CryNetwork);
 		Patch::EnablePreordered(m_CryNetwork);
 		Patch::AllowSameCDKeys(m_CryNetwork);
