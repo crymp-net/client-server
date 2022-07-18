@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-[Unreleased]
-
+## [Unreleased]
 ### Changed
 - Using the new script system by default
-- Killlog now shows RunOver icon when killing players with object
+- Kill log now shows RunOver icon when killing players with object
 - Improve First Person spectator vehicle view
 - Remove transparency for enemy in radar
 - All vehicles can be tagged by binoculars now
@@ -16,10 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - Crashes occuring with Aliens
 - Crosshair disappearing in Third Person
-- Fixed Binoculars closing randomly
+- Randomly closing binoculars
 
 ### Added
-- Scanning objects with binoculars highlights team color (Neutral=white,Team=blue,Enemy=red)
+- Scanning objects with binoculars highlights team color (Neutral = white, Team = blue, Enemy = red)
 - Spawn info for level loading message
 - Draw killer tag also when inside a vehicle
 
