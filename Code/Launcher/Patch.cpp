@@ -56,6 +56,9 @@ void Patch::FixFileCheckCrash(const DLL & CryNetwork)
 	FillNOP(RVA(pCryNetwork, 0x14F5B1), 0x4);
 	FillNOP(RVA(pCryNetwork, 0x14F5C9), 0x4);
 	FillNOP(RVA(pCryNetwork, 0x1533E0), 0x4B);
+	FillNOP(RVA(pCryNetwork, 0x14F8E1), 0x4);
+	FillNOP(RVA(pCryNetwork, 0x14F8F9), 0x4);
+	FillNOP(RVA(pCryNetwork, 0x153823), 0x4A);
 #else
 	// TODO
 #endif
