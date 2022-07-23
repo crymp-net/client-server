@@ -46,6 +46,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Client/FileDownloader.h
   Code/Client/FileRedirector.cpp
   Code/Client/FileRedirector.h
+  Code/Client/FlashFileHooks.cpp
+  Code/Client/FlashFileHooks.h
   Code/Client/GSMasterHook.cpp
   Code/Client/GSMasterHook.h
   Code/Client/HTTP.cpp

@@ -28,6 +28,7 @@ class ServerConnector;
 class ServerPAK;
 class EngineCache;
 class ParticleManager;
+class FlashFileHooks;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
@@ -52,6 +53,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ServerPAK> m_pServerPAK;
 	std::unique_ptr<EngineCache> m_pEngineCache;
 	std::unique_ptr<ParticleManager> m_pParticleManager;
+	std::unique_ptr<FlashFileHooks> m_pFlashFileHooks;
 
 	std::minstd_rand m_randomEngine;
 
@@ -59,6 +61,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	void InitMasters();
 	void SetVersionInLua();
+	void AddFlashFileHook(const std::string_view& path, int resourceID);
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);

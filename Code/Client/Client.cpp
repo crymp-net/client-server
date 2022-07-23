@@ -25,6 +25,7 @@
 #include "ServerPAK.h"
 #include "EngineCache.h"
 #include "ParticleManager.h"
+#include "FlashFileHooks.h"
 
 #include "config.h"
 
@@ -67,6 +68,11 @@ void Client::InitMasters()
 void Client::SetVersionInLua()
 {
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT", CRYMP_CLIENT_VERSION);
+}
+
+void Client::AddFlashFileHook(const std::string_view& path, int resourceID)
+{
+	m_pFlashFileHooks->Add(path, WinAPI::GetDataResource(nullptr, resourceID));
 }
 
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
@@ -161,8 +167,9 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerBrowser     = std::make_unique<ServerBrowser>();
 	m_pServerConnector   = std::make_unique<ServerConnector>();
 	m_pServerPAK         = std::make_unique<ServerPAK>();
-	m_pEngineCache		 = std::make_unique<EngineCache>();
+	m_pEngineCache       = std::make_unique<EngineCache>();
 	m_pParticleManager   = std::make_unique<ParticleManager>();
+	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
 
 	// prepare Lua scripts
 	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
