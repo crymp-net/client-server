@@ -765,6 +765,7 @@ set(CRYMP_CLIENT_RESOURCES
   ${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
   ${PROJECT_SOURCE_DIR}/Resources/CursorRed.cur
   ${PROJECT_SOURCE_DIR}/Resources/CursorWhite.cur
+  ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem.gfx
   ${PROJECT_SOURCE_DIR}/Resources/Icon.ico
   ${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
   ${PROJECT_SOURCE_DIR}/Scripts/Main.lua

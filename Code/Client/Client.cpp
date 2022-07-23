@@ -176,6 +176,8 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_scriptJSON = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
 	m_scriptRPC  = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
 
+	AddFlashFileHook("Libs/UI/HUD_ChatSystem.gfx", RESOURCE_HUD_CHAT_SYSTEM_GFX);
+
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
 	pGameFramework->GetILevelSystem()->AddListener(this);

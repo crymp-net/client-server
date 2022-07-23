@@ -12,4 +12,6 @@
 #define RESOURCE_SCRIPT_JSON              203
 #define RESOURCE_SCRIPT_RPC               204
 
+#define RESOURCE_HUD_CHAT_SYSTEM_GFX      205
+
 #define RESOURCE_MASTERS                  301
