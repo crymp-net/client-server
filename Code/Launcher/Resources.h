@@ -13,5 +13,6 @@
 #define RESOURCE_SCRIPT_RPC               204
 
 #define RESOURCE_HUD_CHAT_SYSTEM_GFX      205
+#define RESOURCE_HUD_VEHICLE_STATS_GFX    206
 
 #define RESOURCE_MASTERS                  301
