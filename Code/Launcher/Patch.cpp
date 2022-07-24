@@ -60,7 +60,33 @@ void Patch::FixFileCheckCrash(const DLL & CryNetwork)
 	FillNOP(RVA(pCryNetwork, 0x14F8F9), 0x4);
 	FillNOP(RVA(pCryNetwork, 0x153823), 0x4A);
 #else
-	// TODO
+	const uint8_t clientCode[] = {
+		0x8B, 0x4D, 0xC0,              // mov ecx, dword ptr ss:[ebp-0x40]
+		0x83, 0xC1, 0xF4,              // add ecx, 0xFFFFFFF4
+		0xFF, 0x09,                    // dec dword ptr ds:[ecx]
+		0x8B, 0x4D, 0xBC,              // mov ecx, dword ptr ss:[ebp-0x44]
+		0x83, 0xC1, 0xF4,              // add ecx, 0xFFFFFFF4
+		0xFF, 0x09,                    // dec dword ptr ds:[ecx]
+		0x57,                          // push edi
+		0xE8, 0x4F, 0xFA, 0xFF, 0xFF,  // call <crynetwork.sub_39549E03>
+		0x8B, 0xF8,                    // mov edi, eax
+		0xE8, 0xCA, 0xF7, 0xFF, 0xFF   // call <crynetwork.sub_39549B85>
+	};
+
+	FillNOP(RVA(pCryNetwork, 0x4A34F), 0xC);
+	FillNOP(RVA(pCryNetwork, 0x4A39E), 0x2F);
+	FillMem(RVA(pCryNetwork, 0x4A39E), clientCode, sizeof clientCode);
+
+	const uint8_t serverCode[] = {
+		0x8B, 0x75, 0x08,              // mov esi, dword ptr ss:[ebp+0x8]
+		0xE8, 0xF0, 0x06, 0xFD, 0xFF,  // call <crynetwork.sub_39501575>
+		0x83, 0xC6, 0x04,              // add esi, 0x4
+		0xE8, 0xE8, 0x06, 0xFD, 0xFF   // call <crynetwork.sub_39501575>
+	};
+
+	FillNOP(RVA(pCryNetwork, 0x30E4F), 0x6);
+	FillNOP(RVA(pCryNetwork, 0x30E60), 0xC);
+	FillMem(RVA(pCryNetwork, 0x30E7D), serverCode, sizeof serverCode);
 #endif
 }
 

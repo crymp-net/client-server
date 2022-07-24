@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - CD key is now random to avoid kicks from legacy servers. Can be disabled with `-keepcdkey`.
 
+### Fixed
+- Sporadic file check crash is now fixed in both 32-bit and 64-bit version.
+
 ## [v15] - 2022-07-18
 ### Changed
 - Using the new script system by default, you can still switch to the old one using `-oldss` command line parameter
