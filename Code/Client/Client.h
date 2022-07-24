@@ -63,6 +63,9 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	void SetVersionInLua();
 	void AddFlashFileHook(const std::string_view& path, int resourceID);
 
+	std::string GenerateRandomCDKey();
+	void SetRandomCDKey();
+
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);
 	static void OnAddKeyBind(IConsoleCmdArgs* pArgs);

@@ -5,6 +5,7 @@
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "Launcher/Resources.h"
+#include "Library/CmdLine.h"
 #include "Library/RandomSeeder.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
@@ -73,6 +74,30 @@ void Client::SetVersionInLua()
 void Client::AddFlashFileHook(const std::string_view& path, int resourceID)
 {
 	m_pFlashFileHooks->Add(path, WinAPI::GetDataResource(nullptr, resourceID));
+}
+
+std::string Client::GenerateRandomCDKey()
+{
+	constexpr std::string_view TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+	std::string key;
+	key.resize(20);
+
+	for (char& ch : key)
+	{
+		ch = TABLE[GetRandomNumber<std::string_view::size_type>(0, TABLE.length() - 1)];
+	}
+
+	return key;
+}
+
+void Client::SetRandomCDKey()
+{
+	const std::string key = GenerateRandomCDKey();
+
+	CryLogAlways("[CryMP] Using random CD-Key '%s'", key.c_str());
+
+	gEnv->pNetwork->SetCDKey(key.c_str());
 }
 
 void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
@@ -191,6 +216,12 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 	pConsole->AddCommand("bind", OnAddKeyBind, VF_NOT_NET_SYNCED, "Usage: bind key");
 	pConsole->AddCommand("dumpbindings", OnDumpKeyBindings, VF_RESTRICTEDMODE, "Usage: bind key");
+
+	if (!CmdLine::HasArg("-keepcdkey"))
+	{
+		// workaround for legacy servers with CD-Key check
+		SetRandomCDKey();
+	}
 
 	SetVersionInLua();
 

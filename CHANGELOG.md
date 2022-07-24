@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Changed
+- CD key is now random to avoid kicks from legacy servers. Can be disabled with `-keepcdkey`.
 
 ## [v15] - 2022-07-18
 ### Changed
