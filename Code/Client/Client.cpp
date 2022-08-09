@@ -203,6 +203,7 @@ void Client::Init(IGameFramework *pGameFramework)
 
 	AddFlashFileHook("Libs/UI/HUD_ChatSystem.gfx", RESOURCE_HUD_CHAT_SYSTEM_GFX);
 	AddFlashFileHook("Libs/UI/HUD_VehicleStats.gfx", RESOURCE_HUD_VEHICLE_STATS_GFX);
+	AddFlashFileHook("Libs/UI/HUD_PDA_Buy.gfx", RESOURCE_HUD_PDA_BUY_GFX);
 
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
