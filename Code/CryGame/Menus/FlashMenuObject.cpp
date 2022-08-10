@@ -45,6 +45,7 @@ History:
 
 #include "config.h"
 #include "Client/Client.h"
+#include "Client/ServerConnector.h"
 #include "Library/Format.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"
@@ -3346,7 +3347,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			const float x = 235.f;
 			const float sy = gEnv->pRenderer->ScaleCoordY(y);
 			const float sx = gEnv->pRenderer->ScaleCoordX(x + x * 0.5f);
-			auto ct = g_pGameCVars->hud_colorOver + 50;
+			const auto ct = g_pGameCVars->hud_colorOver + 50;
 
 			const float r = ((ct >> 16) & 0xFF) / 255.0f;
 			const float g = ((ct >> 8) & 0xFF) / 255.0f;
@@ -3368,11 +3369,40 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			if (m_iDotCounter > 7)
 				m_iDotCounter = 1;
 
-			gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s%s", status.c_str(), points.c_str());
+			CFlashMenuScreen* pLS = m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING];
 
-			//Will replace Draw2dLabel once we can load custom HUDs..
-			//string s = status.c_str();
-			//m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setLoadingText", s.MakeUpper().c_str());
+			if (pLS->IsLoaded())
+			{
+				std::string loadingMsg = Format("%s%s", status.c_str(), points.c_str());
+				loadingMsg = ToUpper(loadingMsg);
+				pLS->Invoke("setLoadingText", loadingMsg.c_str());
+				
+				const auto &pInfo = gClient->GetServerConnector()->GetLastServer();
+				
+				pLS->Invoke("setServerInfo1", pInfo.name.c_str());
+				
+				ICVar* pCVar2 = gEnv->pConsole->GetCVar("mp_pickupObjects");
+				if (pCVar2 && pCVar2->GetIVal())
+				{
+					pLS->Invoke("setServerInfo2","Pick/Throw Objects: Enabled" );
+				}
+				ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
+				if (pCVar3 && pCVar3->GetIVal())
+				{
+					pLS->Invoke("setServerInfo3", "CircleJump: Enabled");
+				}
+				ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
+				if (pCVar4 && pCVar4->GetIVal())
+				{
+					pLS->Invoke("setServerInfo4", "CryMP Enhanced: Enabled");
+				}
+			}
+			else
+			{
+				//if(m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME] && m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
+				//m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText", status.c_str());
+				gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s%s", status.c_str(), points.c_str());
+			}
 		}
 	}
 }

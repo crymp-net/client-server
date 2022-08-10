@@ -55,3 +55,43 @@ std::string FormatV(const char *format, va_list args)
 
 	return result;
 }
+
+std::string ToUpper(const std::string_view& text)
+{
+	std::string result(text);
+
+	for (char& ch : result)
+	{
+		ch = toupper(ch);
+	}
+
+	return result;
+}
+
+void ToUpperFast(std::string& text)
+{
+	for (char& ch : text)
+	{
+		ch = toupper(ch);
+	}
+}
+
+std::string ToLower(const std::string_view& text)
+{
+	std::string result(text);
+
+	for (char& ch : result)
+	{
+		ch = tolower(ch);
+	}
+
+	return result;
+}
+
+void ToLowerFast(std::string& text)
+{
+	for (char& ch : text)
+	{
+		ch = tolower(ch);
+	}
+}
