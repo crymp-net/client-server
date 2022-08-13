@@ -1103,6 +1103,10 @@ void CItem::Select(bool select)
 
 	if (!m_ownerId)
 		select = false;
+	
+	if (!pOwner || !m_ownerId || m_stats.selected == select)
+	//CryMP: don't proceed...
+		return;
 
 	m_stats.selected = select;
 

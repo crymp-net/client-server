@@ -743,7 +743,7 @@ void CActor::PostPhysicalize()
 
 			if (pRenderNode)
 			{
-				pRenderNode->SetViewDistRatio(255);
+				pRenderNode->SetViewDistUnlimited(); //255 -> Unlimited
 				pRenderNode->SetLodRatio(80); //IVO: changed to fix LOD problem in MP
 			}
 		}
@@ -3344,6 +3344,10 @@ IMPLEMENT_RMI(CActor, SvRequestUseItem)
 //------------------------------------------------------------------------
 void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 {
+	if (CWeaponAttachmentManager* pWAM = GetWeaponAttachmentManager())
+	{
+		pWAM->OnRevive(this);
+	}
 	if (IVehicle* pVehicle = GetLinkedVehicle())
 	{
 		if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId()))
@@ -3399,6 +3403,10 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 //------------------------------------------------------------------------
 void CActor::NetReviveInVehicle(EntityId vehicleId, int seatId, int teamId)
 {
+	if (CWeaponAttachmentManager* pWAM = GetWeaponAttachmentManager())
+	{
+		pWAM->OnRevive(this);
+	}
 	// stop using any mounted weapons before reviving
 	CItem* pItem = static_cast<CItem*>(GetCurrentItem());
 	if (pItem)

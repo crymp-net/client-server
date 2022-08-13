@@ -76,6 +76,8 @@ CWeaponAttachmentManager::~CWeaponAttachmentManager()
 
 bool CWeaponAttachmentManager::Init()
 {
+	m_pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
+
 	if (gEnv->bMultiplayer)
 	{
 		CreatePlayerBoneAttachments(); //Only create the attachment, some are needed
@@ -85,12 +87,32 @@ bool CWeaponAttachmentManager::Init()
 	else if(m_pOwner->GetActorSpecies()!=eGCT_HUMAN)
 		return false;
 
-	m_pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
-
 	CreatePlayerBoneAttachments();
 	CreatePlayerProjectedAttachments();
 
 	return true;
+}
+
+void CWeaponAttachmentManager::OnRevive(CActor *pActor)
+{
+	ICharacterInstance* pCharacter = pActor->GetEntity()->GetCharacter(0);
+	IAttachmentManager* pAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+	if (pAttachmentManager)
+	{
+		//CryMP: These won't change anyways
+		const char* bone_1 = "back_item_attachment_01";
+		const char* bone_2 = "back_item_attachment_02";
+		IAttachment *pAttachment = pAttachmentManager->GetInterfaceByName(bone_1);
+		if (pAttachment)
+		{
+			pAttachment->ClearBinding();
+		}
+		IAttachment* pAttachment2 = pAttachmentManager->GetInterfaceByName(bone_2);
+		if (pAttachment2)
+		{
+			pAttachment2->ClearBinding();
+		}
+	}
 }
 
 //======================================================================
@@ -223,12 +245,10 @@ bool CWeaponAttachmentManager::IsAttachmentFree(const char* attachmentName)
 //========================================================================
 void CWeaponAttachmentManager::HideAllAttachments(bool hide)
 {
-/*
 	for (const EntityId weaponId : m_attachedWeaponList)
 	{
 		CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(weaponId)); 
 		if (pItem)
 			pItem->Hide(hide);
 	}
-*/
 }

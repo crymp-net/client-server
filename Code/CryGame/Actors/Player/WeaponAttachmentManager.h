@@ -36,6 +36,7 @@ public:
 	~CWeaponAttachmentManager();
 
 	bool Init();
+	void OnRevive(CActor* pActor);
 	void HideAllAttachments(bool hide);
 
 	void RequestAttachWeaponToBack(EntityId weaponId) { m_itemToBack = weaponId; }
