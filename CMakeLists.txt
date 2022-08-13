@@ -15,6 +15,8 @@ if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
+add_compile_options(/ZI)
+
 ################################################################################
 
 # detect 64-bit compiler
