@@ -1602,12 +1602,6 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 		IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
 		if (pEntity)
 		{
-			CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
-			if (pPlayer)
-			{
-				pPlayer->NotifyObjectGrabbed(false, m_heldEntityId, false);
-			}
-
 			IPhysicalEntity* pPhys = pEntity->GetPhysics();
 			if (pPhys && pPhys->GetType() == PE_PARTICLE)
 				pEntity->SetSlotLocalTM(0, m_intialBoidLocalMatrix);
@@ -1846,6 +1840,12 @@ void COffHand::PerformThrow(int activationMode, EntityId throwableId, int oldFMI
 	{
 		if (!isLivingEnt)
 		{
+			CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
+			if (pPlayer)
+			{
+				pPlayer->NotifyObjectGrabbed(false, throwableId, false);
+			}
+
 			m_currentState = eOHS_THROWING_OBJECT;
 			CThrow* pThrow = static_cast<CThrow*>(m_fm);
 			pThrow->SetThrowable(throwableId, m_forceThrow, CSchedulerAction<FinishOffHandAction>::Create(FinishOffHandAction(eOHA_THROW_OBJECT, this)));
