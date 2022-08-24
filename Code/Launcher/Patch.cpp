@@ -273,3 +273,14 @@ void Patch::DisableIOErrorLog(const DLL & CrySystem)
 	FillNOP(RVA(pCrySystem, 0x78744), 0x5);
 #endif
 }
+
+void Patch::FixLowRefreshRateBug(const DLL & CryRenderD3D10)
+{
+	void *pCryRenderD3D10 = CryRenderD3D10.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillNOP(RVA(pCryRenderD3D10, 0x1C8F45), 0x4);
+#else
+	FillNOP(RVA(pCryRenderD3D10, 0x16F3E0), 0x6);
+#endif
+}

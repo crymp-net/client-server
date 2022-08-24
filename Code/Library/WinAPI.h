@@ -246,6 +246,8 @@ namespace WinAPI
 	std::string GetMachineGUID();
 	std::string GetLocale();
 
+	bool IsVistaOrLater();
+
 	//////////
 	// HTTP //
 	//////////

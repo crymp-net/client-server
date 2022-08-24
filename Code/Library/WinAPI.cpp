@@ -673,6 +673,15 @@ std::string WinAPI::GetLocale()
 	return ConvertUTF16To8(buffer);
 }
 
+bool WinAPI::IsVistaOrLater()
+{
+	OSVERSIONINFOW info = {};
+	info.dwOSVersionInfoSize = sizeof info;
+	GetVersionExW(&info);
+
+	return info.dwMajorVersion >= 6;
+}
+
 //////////
 // HTTP //
 //////////

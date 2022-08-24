@@ -22,4 +22,7 @@ namespace Patch
 	void UnhandledExceptions(const DLL & CrySystem);
 	void Disable3DNow(const DLL & CrySystem);
 	void DisableIOErrorLog(const DLL & CrySystem);
+
+	// CryRenderD3D10
+	void FixLowRefreshRateBug(const DLL & CryRenderD3D10);
 }

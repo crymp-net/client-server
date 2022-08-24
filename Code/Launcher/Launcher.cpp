@@ -179,6 +179,16 @@ void Launcher::LoadEngine()
 	{
 		throw SystemError("Failed to load the CryNetwork DLL!");
 	}
+
+	const bool isDX10 = !CmdLine::HasArg("-dx9") && (CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
+
+	if (isDX10)
+	{
+		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
+		{
+			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
+		}
+	}
 }
 
 void Launcher::PatchEngine()
@@ -215,6 +225,11 @@ void Launcher::PatchEngine()
 		{
 			ReplaceScriptSystem(m_CrySystem);
 		}
+	}
+
+	if (m_CryRenderD3D10)
+	{
+		Patch::FixLowRefreshRateBug(m_CryRenderD3D10);
 	}
 }
 

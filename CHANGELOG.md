@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - Sporadic file check crash is now fixed in both 32-bit and 64-bit version.
+- DX10 fullscreen low refresh rate bug
 
 ## [v15] - 2022-07-18
 ### Changed
