@@ -117,44 +117,43 @@ int ScriptBind_CPPAPI::ApplyMaskAll(IFunctionHandler* pH, int applyMask, bool ap
 
 int ScriptBind_CPPAPI::FSetCVar(IFunctionHandler *pH, const char *cvar, const char *value)
 {
-	if (ICVar * pCVar = gEnv->pConsole->GetCVar(cvar))
+	ICVar* pCVar = gEnv->pConsole->GetCVar(cvar);
+	if (!pCVar)
 	{
-		const std::string previousVal = pCVar->GetString();
+		return pH->EndFunction(false);
+	}
 
-		if (previousVal == (std::string)value)
-			return pH->EndFunction(true);
+	const std::string previousVal = pCVar->GetString();
 
+	if (previousVal != std::string_view(value))
+	{
 		pCVar->ForceSet(value);
 
-		//CVar still the same, is it synced?
-		if (previousVal == (std::string)pCVar->GetString())
+		// CVar still the same, is it synced?
+		if (previousVal == std::string_view(pCVar->GetString()))
 		{
 			const int previousFlags = pCVar->GetFlags();
 
-			//disable sync
+			// disable sync
 			pCVar->SetFlags(VF_NOT_NET_SYNCED);
 
-			//2nd attempt
+			// 2nd attempt
 			pCVar->ForceSet(value);
 
-			//now restore the flags
+			// now restore the flags
 			pCVar->SetFlags(previousFlags);
-			//CVar value won't change untill server changes it to something else
+			// CVar value won't change untill server changes it to something else
 
-			if ((std::string)value == (std::string)pCVar->GetString())
+			if (std::string_view(value) != std::string_view(pCVar->GetString()))
 			{
-				//all good!
-				return pH->EndFunction(true);
-			}
-			else
 				CryLogAlways("$4[CryMP] Failed to change CVar %s - value still %s", cvar, pCVar->GetString());
+				return pH->EndFunction(false);
+			}
 		}
-		else
-			return pH->EndFunction(true);
-
 	}
 
-	return pH->EndFunction(false);
+	// all good!
+	return pH->EndFunction(true);
 }
 
 int ScriptBind_CPPAPI::GetLocaleInformation(IFunctionHandler *pH)
