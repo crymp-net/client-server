@@ -18,6 +18,7 @@ function InitializeClient()
 	local MASK_WET = 2
 	local MASK_CLOAK = 4
 	local MASK_DYNFROZEN = 8
+	local DEFAULT_MASTER = "crymp.net"
 
 	local pendingMasterResolves = {}
 	local activeProfile = {
@@ -28,7 +29,7 @@ function InitializeClient()
 			id = nil,
 			token = nil,
 			display = nil,
-			master = "crymp.net"
+			master = DEFAULT_MASTER
 		},
 		real = {
 			logged = false,
@@ -37,7 +38,7 @@ function InitializeClient()
 			id = nil,
 			token = nil,
 			display = nil,
-			master = "crymp.net"
+			master = DEFAULT_MASTER
 		}
 	};
 
@@ -440,7 +441,7 @@ function InitializeClient()
 			local profile = GetProfile()
 			if not profile then return reject("Couldn't find any profile") end
 			local profileName = profile.name
-			if profile.master ~= "crymp.net" then
+			if profile.master ~= DEFAULT_MASTER then
 				profileName = profileName .. "@" .. profile.master
 			end
 			Login(profileName, profile.password)
@@ -465,7 +466,7 @@ function InitializeClient()
 
 	local function GetValidateCommand(profile)
 		local id = profile.id
-		if profile.master ~= "crymp.net" then
+		if profile.master ~= DEFAULT_MASTER then
 			id = id .. "@" .. profile.master
 		end
 		local command = string.format("!validate %s %s %s", id, profile.token, profile.display or "Nomad")
@@ -663,7 +664,7 @@ function InitializeClient()
 
 	CPPAPI.AddCCommand("say", function(...)
 		local text = table.concat(arg, " ")
-		
+
 		if g_gameRules then
 			g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, text)
 		else
