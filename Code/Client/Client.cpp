@@ -60,7 +60,7 @@ void Client::InitMasters()
 
 	if (m_masters.empty())
 	{
-		m_masters.emplace_back("crymp.net");
+		m_masters.emplace_back("crymp.nullptr.one");
 	}
 
 	m_pScriptCallbacks->OnMasterResolved();

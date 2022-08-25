@@ -101,4 +101,4 @@ jobs:
         asset_content_type: application/zip
 
     - name: Notify CryMP master server
-      run: curl --silent --show-error -X POST "https://crymp.net/api/release"
+      run: curl --silent --show-error -X POST "https://crymp.nullptr.one/api/release"

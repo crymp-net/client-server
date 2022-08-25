@@ -18,7 +18,7 @@ function InitializeClient()
 	local MASK_WET = 2
 	local MASK_CLOAK = 4
 	local MASK_DYNFROZEN = 8
-	local DEFAULT_MASTER = "crymp.net"
+	local DEFAULT_MASTER = "crymp.nullptr.one"
 
 	local pendingMasterResolves = {}
 	local activeProfile = {
