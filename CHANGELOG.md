@@ -5,12 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Added
+- New multiplayer map loading screen
+- New buy screen in PDA HUD
+- New vehicle statistics HUD
+- Improved chat HUD from Crysis Wars
+
 ### Changed
 - CD key is now random to avoid kicks from legacy servers. Can be disabled with `-keepcdkey`.
+- Master server domain changed from `crymp.net` to `crymp.nullptr.one`, which is more reliable.
 
 ### Fixed
 - Sporadic file check crash is now fixed in both 32-bit and 64-bit version.
 - DX10 fullscreen low refresh rate bug
+- Nonexistent weapons on back
+- Attempt to fix sporadic super low sensivity after picking up heavy objects
 
 ## [v15] - 2022-07-18
 ### Changed
