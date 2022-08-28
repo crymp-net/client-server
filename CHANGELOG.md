@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+### Added
+- Hit indicator (mp_hitIndicator 1/0 [on/off])
+### Changed
+### Fixed
+
 ## [v17] - 2022-08-28
 ### Fixed
 - Temporarily disabled loading of CryRenderD3D10 DLL causing crash on startup
