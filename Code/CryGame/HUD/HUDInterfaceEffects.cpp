@@ -623,6 +623,12 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	if(explosionFeedback)
 		PlaySound(ESound_SpecialHitFeedback);
 
+	if (g_pGameCVars->mp_hitIndicator)
+	{
+		m_animHitIndicator.Invoke("indicateHit");
+		m_hitIndicatorTimer = 1.0f;
+	}
+
 	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
 	if (!pVehicle)
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
@@ -653,8 +659,29 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	}
 }
 
+void CHUD::UpdateHitIndicator()
+{
+	//CryMP hit indicator
+	bool bVisible = m_hitIndicatorTimer > 0.0f;
+	if (g_pGameCVars->mp_hitIndicator || bVisible)
+	{
+		if (bVisible)
+		{
+			m_hitIndicatorTimer -= gEnv->pTimer->GetRealFrameTime();
+			bVisible = m_hitIndicatorTimer >= 0.0f;
+		}
+		if (m_animHitIndicator.GetVisible() != bVisible)
+		{
+			m_animHitIndicator.SetVisible(bVisible);
+		}
+	}
+
+}
+
 void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 {
+	UpdateHitIndicator();
+
 	if(IsAirStrikeAvailable() && GetScopes()->IsBinocularsShown())
 	{
 		float fCos = fabsf(cosf(gEnv->pTimer->GetAsyncCurTime()));

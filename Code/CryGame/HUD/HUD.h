@@ -413,6 +413,7 @@ public:
 	//interface effects
 	void IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle = false);
 	void IndicateHit(bool enemyIndicator = false,IEntity *pEntity = NULL, bool explosionFeedback = false);
+	void UpdateHitIndicator();
 	void ShowKillAreaWarning(bool active, int timer);
 	void ShowTargettingAI(EntityId id);
 	void ShowProgress(int progress = -1, bool init = false, int posX = 0, int posY = 0, const char* text = NULL, bool topText = true, bool lockingBar = false);
@@ -697,6 +698,8 @@ private:
 	CGameFlashAnimation m_animAmmoPickup;
 	CGameFlashAnimation m_animTeamSelection;
 	CGameFlashAnimation m_animNetworkConnection;
+	//CryMP
+	CGameFlashAnimation m_animHitIndicator;
 
 	// HUD objects
 	typedef std::list<CHUDObject *> THUDObjectsList;
@@ -859,6 +862,7 @@ protected:
 	std::vector<EntityId> m_underAttackBuildings;
 	float m_underAttackCheck = 0.0f;
 	bool m_bRadarScanningEffect = false;
+	float m_hitIndicatorTimer = 0.0f;
 
 public:
 

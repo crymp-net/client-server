@@ -494,6 +494,9 @@ bool CHUD::Init(IActor* pActor)
 	m_animPDA.Load("Libs/UI/HUD_PDA_Map.gfx", eFD_Right, eFAF_ThisHandler);
 	m_animDownloadEntities.Load("Libs/UI/HUD_DownloadEntities.gfx");
 
+	//CryMP
+	m_animHitIndicator.Load("Libs/UI/HUD_HitIndicator.gfx", eFD_Center, eFAF_Visible);
+
 	// these are delay-loaded elsewhere!!!
 	if (loadEverything)
 	{
@@ -3317,8 +3320,8 @@ void CHUD::OnPostUpdate(float frameTime)
 							mapText = L"";
 							functionalityText = LocalizeWithParams("@ui_spectate_functionality_dead");
 						}
-						SFlashVarValue textArgs[2] = { mapText.c_str(), functionalityText.c_str() };
-						m_animSpectate.Invoke("setText", textArgs, 2);
+						SFlashVarValue textArgs[3] = { mapText.c_str(), functionalityText.c_str(), true };
+						m_animSpectate.Invoke("setText", textArgs, 3);
 
 						if (specMode == CActor::eASM_Follow && m_pClientActor->GetSpectatorTarget() != 0)
 						{

@@ -605,6 +605,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_animationModelMult", &mp_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_animationModelMultSpeed", &mp_animationModelMultSpeed, 1.3f, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_menuSpeed", &mp_menuSpeed, 3.0f, VF_NOT_NET_SYNCED);
+	pConsole->Register("mp_hitIndicator", &mp_hitIndicator, 1, VF_NOT_NET_SYNCED);
 }
 
 //------------------------------------------------------------------------
