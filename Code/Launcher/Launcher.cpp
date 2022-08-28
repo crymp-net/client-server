@@ -184,10 +184,11 @@ void Launcher::LoadEngine()
 
 	if (isDX10)
 	{
-		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
-		{
-			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
-		}
+		// FIXME: loading this DLL here causes crash on startup
+//		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
+//		{
+//			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
+//		}
 	}
 }
 
