@@ -48,6 +48,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(CreateKeyBind, "key, command");
 	SCRIPT_REG_FUNC(ClearKeyBinds);
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
+	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
+	SCRIPT_REG_TEMPLFUNC(SetOpacity, "entityId, fAmount");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -344,4 +346,51 @@ int ScriptBind_CPPAPI::GetModelFilePath(IFunctionHandler* pH, ScriptHandle entit
 		return pH->EndFunction(pObject->GetFilePath());
 	}
 	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath)
+{
+	IMaterialManager* pMatMan(gEnv->p3DEngine->GetMaterialManager());
+	IMaterial* pMat(pMatMan->FindMaterial(materialName));
+	if (pMat)
+	{
+		CryLog("[CryMP] Material '%s' already created!", pMat->GetName());
+		return pH->EndFunction();
+	}
+
+	IMaterial* pMatSrc(pMatMan->LoadMaterial("Materials/Decals/Default", false, true));
+	if (pMatSrc)
+	{
+		IMaterial* pMatDst(pMatMan->CreateMaterial(materialName, pMatSrc->GetFlags() | MTL_FLAG_NON_REMOVABLE));
+		if (pMatDst)
+		{
+			SShaderItem& si(pMatSrc->GetShaderItem());
+			
+			SInputShaderResources isr(si.m_pShaderResources);
+			isr.m_Textures[EFTT_DIFFUSE].m_Name = texturePath;
+
+			CryLog("[CryMP] Created Material '%s' successfully (%s)", pMatDst->GetName(), si.m_pShader->GetName());
+
+			SShaderItem siDst(gEnv->pRenderer->EF_LoadShaderItem(si.m_pShader->GetName(), true, 0, &isr, si.m_pShader->GetGenerationMask()));
+			pMatDst->AssignShaderItem(siDst);
+
+			return pH->EndFunction();
+		}
+	}
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::SetOpacity(IFunctionHandler* pH, ScriptHandle entity, float fAmount)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entity.n);
+	if (!pEntity)
+		return pH->EndFunction(false);
+
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pEntity->GetProxy(ENTITY_PROXY_RENDER));
+	if (!pRenderProxy)
+		return pH->EndFunction(false);
+
+	pRenderProxy->SetOpacity(fAmount);
+
+	return pH->EndFunction(true);
 }

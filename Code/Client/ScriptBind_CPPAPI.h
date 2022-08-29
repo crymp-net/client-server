@@ -27,4 +27,6 @@ public:
 	int CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action);
 	int ClearKeyBinds(IFunctionHandler* pH);
 	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
+	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
+	int SetOpacity(IFunctionHandler* pH, ScriptHandle entity, float fAmount);
 };

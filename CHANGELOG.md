@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 ### Added
 - Hit indicator (mp_hitIndicator 1/0 [on/off])
+- New Lua API function for creating a material from any texture in the game, example usage:
+```lua
+CPPAPI.CreateMaterialFromTexture("MyNewMaterial", "Libs/UI/HUD_PDA_Map_FLAG_NK.dds")
+```
+- New Lua API function for changing entity opacity, example usage:
+```lua
+CPPAPI.SetOpacity(entity.id, 0.2) [min 0 : max 1]
+```
 ### Changed
 ### Fixed
 
