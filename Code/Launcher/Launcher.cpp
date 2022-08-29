@@ -130,6 +130,8 @@ void Launcher::LoadEngine()
 		throw SystemError("Failed to get the game version!");
 	}
 
+	CryMemoryManager::Init(m_CrySystem);
+
 	switch (gameVersion)
 	{
 		case 5767:
@@ -184,11 +186,10 @@ void Launcher::LoadEngine()
 
 	if (isDX10)
 	{
-		// FIXME: loading this DLL here causes crash on startup
-//		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
-//		{
-//			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
-//		}
+		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
+		{
+			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
+		}
 	}
 }
 
@@ -409,8 +410,6 @@ void Launcher::Run()
 	// load and patch Crysis DLLs
 	LoadEngine();
 	PatchEngine();
-
-	CryMemoryManager::Init(m_CrySystem);
 
 	// the multiplayer client
 	Client client;
