@@ -137,6 +137,7 @@ public:
 
 	// IGameFrameworkListener
 	virtual void OnPostUpdate(float fDeltaTime);
+	void UpdateSpectator(CPlayer* spectatorTarget, float frameTime);
 	virtual void OnSaveGame(ISaveGame* pSaveGame);
 	virtual void OnLoadGame(ILoadGame* pLoadGame) {};
 	virtual void OnLevelEnd(const char* nextLevel) {};
@@ -484,7 +485,7 @@ public:
 	// marcok: I know it's bad to even have this in the HUD, but the way gamerulessystem is currently used I don't want to duplicate this elsewhere
 	EHUDGAMERULES GetCurrentGameRules()	{	return m_currentGameRules;	}
 
-	void CheckSpectatorTarget(float deltaTime);
+	void CheckSpectatorTarget(CPlayer *pTarget, float deltaTime);
 
 	CPlayer* m_pClientActor = nullptr;
 	CGameRules* m_pGameRules = nullptr;

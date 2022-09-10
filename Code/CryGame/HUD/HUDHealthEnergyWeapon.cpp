@@ -20,11 +20,12 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::CheckSpectatorTarget(float deltaTime)
+void CHUD::CheckSpectatorTarget(CPlayer* pActor, float deltaTime)
 {
-	auto* Target = GetSpectatorTarget();
-	CPlayer* pActor = Target ? static_cast<CPlayer*>(Target) : 0;
-	float pTargetHealth = static_cast<CActor*>(m_pClientActor)->GetSpectatorHealth();
+	if (!pActor)
+		return;
+
+	const float pTargetHealth = m_pClientActor->GetSpectatorHealth();
 
 	if (pActor && pTargetHealth > 0)
 	{

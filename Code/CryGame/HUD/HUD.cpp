@@ -68,6 +68,10 @@ History:
 #include "CryGame/Items/Weapons/WeaponSystem.h"
 #include "CryGame/Radio.h"
 
+#include "Client/Client.h"
+#include "Client/ServerConnector.h"
+#include "Library/Format.h"
+
 static const float NIGHT_VISION_ENERGY = 30.0f;
 
 //-----------------------------------------------------------------------------------------------------
@@ -3262,7 +3266,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			if (!m_animSpectate.IsLoaded())
 			{
 				m_animSpectate.Load("Libs/UI/HUD_Spectate.gfx", eFD_Center, eFAF_Visible | eFAF_ManualRender);
-
+				
 				FadeCinematicBars(3);
 
 				// SNH: moved text setting to further down (with player name display)
@@ -3271,10 +3275,11 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			if (m_pClientActor)
 			{
-				uint8 specMode = m_pClientActor->GetSpectatorMode();
+				const uint8 specMode = m_pClientActor->GetSpectatorMode();
 				if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
 				{
-					CheckSpectatorTarget(frameTime);
+					CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetPlayer());
+					CheckSpectatorTarget(pSpectatorTarget, frameTime);
 
 					m_animSpectate.GetFlashPlayer()->Advance(frameTime);
 					m_animSpectate.GetFlashPlayer()->Render();
@@ -3285,64 +3290,7 @@ void CHUD::OnPostUpdate(float frameTime)
 						m_animNetworkConnection.GetFlashPlayer()->Render();
 					}
 
-					if (m_prevSpectatorMode != specMode || m_prevSpectatorTarget != m_pClientActor->GetSpectatorTarget() || m_prevSpectatorHealth != m_pClientActor->GetSpectatorHealth())
-					{
-						m_prevSpectatorMode = specMode;
-						m_prevSpectatorTarget = m_pClientActor->GetSpectatorTarget();
-						m_prevSpectatorHealth = m_pClientActor->GetSpectatorHealth();
-
-						wstring mapText, functionalityText;
-						// don't want the 'press m to...' text if waiting to respawn
-						if (!m_pGameRules->IsPlayerActivelyPlaying(m_pClientActor->GetEntityId()))
-						{
-							if (m_currentGameRules == EHUD_POWERSTRUGGLE)
-							{
-								mapText = LocalizeWithParams("@ui_open_map");
-							}
-							else
-							{
-								mapText = LocalizeWithParams("@ui_open_map_dm");
-							}
-
-							// second line of text depends on current spectator mode
-							if (m_pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
-							{
-								functionalityText = LocalizeWithParams("@ui_spectate_functionality_tp");
-							}
-							else
-							{
-								functionalityText = LocalizeWithParams("@ui_spectate_functionality");
-							}
-						}
-						else
-						{
-							// waiting to respawn - must be in 3rd person mode. Just show 'press left/right to switch player'
-							mapText = L"";
-							functionalityText = LocalizeWithParams("@ui_spectate_functionality_dead");
-						}
-						SFlashVarValue textArgs[3] = { mapText.c_str(), functionalityText.c_str(), true };
-						m_animSpectate.Invoke("setText", textArgs, 3);
-
-						if (specMode == CActor::eASM_Follow && m_pClientActor->GetSpectatorTarget() != 0)
-						{
-							IActor* pTarget = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_pClientActor->GetSpectatorTarget());
-							if (pTarget)
-							{
-								CryFixedStringT<128> text = pTarget->GetEntity()->GetName();
-								text += " (%d)";
-								int health = max(0, m_pClientActor->GetSpectatorHealth());
-								text.Format(text.c_str(), health);
-								SFlashVarValue args[2] = { text.c_str(),m_pGameRules->GetTeam(pTarget->GetEntityId()) };
-								m_animSpectate.Invoke("setPlayer", args, 2);
-							}
-						}
-						else
-						{
-							// reset player name / flag when going back to free camera / fixed camera
-							SFlashVarValue args[2] = { "", 0 };
-							m_animSpectate.Invoke("setPlayer", args, 2);
-						}
-					}
+					UpdateSpectator(pSpectatorTarget, frameTime);
 				}
 			}
 
@@ -3556,6 +3504,122 @@ void CHUD::OnPostUpdate(float frameTime)
 
 	// Modal dialog box must be always rendered last
 	UpdateWarningMessages(frameTime);
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
+{
+	const uint8 specMode = m_pClientActor->GetSpectatorMode();
+	bool changedTarget = false;
+	if (m_prevSpectatorMode != specMode || m_prevSpectatorTarget != m_pClientActor->GetSpectatorTarget())
+	{
+		m_prevSpectatorMode = specMode;
+		m_prevSpectatorTarget = m_pClientActor->GetSpectatorTarget();
+
+		wstring mapText, functionalityText;
+		// don't want the 'press m to...' text if waiting to respawn
+		if (!m_pGameRules->IsPlayerActivelyPlaying(m_pClientActor->GetEntityId()))
+		{
+			if (m_currentGameRules == EHUD_POWERSTRUGGLE)
+			{
+				mapText = LocalizeWithParams("@ui_open_map");
+			}
+			else
+			{
+				mapText = LocalizeWithParams("@ui_open_map_dm");
+			}
+
+			// second line of text depends on current spectator mode
+			if (m_pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
+			{
+				functionalityText = LocalizeWithParams("@ui_spectate_functionality_tp");
+			}
+			else
+			{
+				functionalityText = LocalizeWithParams("@ui_spectate_functionality");
+			}
+		}
+		else
+		{
+			// waiting to respawn - must be in 3rd person mode. Just show 'press left/right to switch player'
+			mapText = L"";
+			functionalityText = LocalizeWithParams("@ui_spectate_functionality_dead");
+		}
+		SFlashVarValue textArgs[3] = { mapText.c_str(), functionalityText.c_str(), true };
+		m_animSpectate.Invoke("setText", textArgs, 3);
+
+		if (specMode == CActor::eASM_Follow && m_pClientActor->GetSpectatorTarget() != 0)
+		{
+			IActor* pTarget = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_pClientActor->GetSpectatorTarget());
+			if (pTarget)
+			{
+				SFlashVarValue args[2] = { pTarget->GetEntity()->GetName(),m_pGameRules->GetTeam(pTarget->GetEntityId()) };
+				m_animSpectate.Invoke("setPlayer", args, 2);
+
+				changedTarget = true;
+			}
+
+			m_animSpectate.Invoke("clearServerInfo");
+		}
+		else
+		{
+			// reset player name / flag when going back to free camera / fixed camera
+			SFlashVarValue args[2] = { "", 0 };
+			m_animSpectate.Invoke("setPlayer", args, 2);
+			m_animSpectate.Invoke("clearPlayerInfo");
+
+			//CryMP begin
+			const auto& s = gClient->GetServerConnector()->GetLastServer();
+
+			std::string text = Format("%s (%s:%d)", s.name.c_str(), s.host.c_str(), s.port);
+
+			SFlashVarValue sArgs[1] = { text.c_str() };
+			m_animSpectate.Invoke("setServerInfo", sArgs, 1);
+			//CryMP end
+		}
+	}
+
+	if (pSpectatorTarget)
+	{
+		ILocalizationManager* pLoc = gEnv->pSystem->GetLocalizationManager();
+		if (pLoc)
+		{
+			const int KEY_PING = 103;
+			int ping = 0;
+			m_pGameRules->GetSynchedEntityValue(m_pClientActor->GetSpectatorTarget(), KEY_PING, ping);
+
+			wstring tmp, tmp2;
+			gEnv->pSystem->GetLocalizationManager()->LocalizeLabel("@ui_mp_PING", tmp);
+			tmp2.Format(L": %d", ping);
+			tmp += tmp2;
+
+			SFlashVarValue sArgs[1] = { tmp.c_str() };
+			m_animSpectate.Invoke("setPing", sArgs, 1);
+
+			//These values never change
+			if (changedTarget)
+			{
+				const int channelId = pSpectatorTarget->GetChannelId();
+				std::string channelInfo = Format("CHANNEL: %d", channelId);
+				SFlashVarValue sArgs2[1] = { channelInfo.c_str() };
+				m_animSpectate.Invoke("setChannel", sArgs2, 1);
+
+				if (IScriptTable * pScriptTable = pSpectatorTarget->GetEntity()->GetScriptTable())
+				{
+					const char* info;
+					if (pScriptTable->GetValue("SPECTATOR_INFO", info))
+					{
+						if (strlen(info))
+						{
+							SFlashVarValue sArgs3[1] = { info };
+							m_animSpectate.Invoke("setCountry", sArgs3, 1);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------
