@@ -50,6 +50,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
 	SCRIPT_REG_TEMPLFUNC(SetOpacity, "entityId, fAmount");
+	SCRIPT_REG_TEMPLFUNC(LocalizeLabel, "string");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -393,4 +394,13 @@ int ScriptBind_CPPAPI::SetOpacity(IFunctionHandler* pH, ScriptHandle entity, flo
 	pRenderProxy->SetOpacity(fAmount);
 
 	return pH->EndFunction(true);
+}
+
+int ScriptBind_CPPAPI::LocalizeLabel(IFunctionHandler* pH, const char* label)
+{
+	wstring tmp;
+	if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(label, tmp))
+		return pH->EndFunction(tmp.c_str());
+
+	return pH->EndFunction("");
 }
