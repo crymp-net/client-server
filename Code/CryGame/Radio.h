@@ -11,12 +11,14 @@
 #include "CryCommon/CryInput/IInput.h"
 
 class CGameRules;
+class SmartScriptTable;
 
 class CRadio:public IInputEventListener
 {
 public:
 	CRadio(CGameRules*);
 	~CRadio();
+	bool GetRadioSoundName(const string& teamName, const int groupId, const int keyId, char** ppSoundName, char** ppSoundText, int* pVariations);
 	bool OnAction(const ActionId& actionId, int activationMode, float value);
 
 	void Update();
@@ -44,6 +46,12 @@ private:
 	bool		UpdatePendingGroup();
 
 	void		CloseRadioMenu();
+
+	bool GetTeamRadioTable(const string& team_name, SmartScriptTable& out_table);
+	int GetExtendedRadioId(int keyId, int groupId);
+	bool GetGroupAndKeyFromExtendedRadioId(int radioId, int& group, int& newId);
+	int GetExtendedRadioId(int keyId, int groupId, SmartScriptTable radioTable);
+	bool IsExtendedRadio();
 };
 
 #endif

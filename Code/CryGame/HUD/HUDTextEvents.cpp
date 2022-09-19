@@ -820,7 +820,7 @@ void CHUD::InternalShowSubtitle(const char* subtitleLabel, ISound* pSound, bool 
 	}
 }
 
-void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */)
+void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended /* = false */)
 {
 	if(active)
 	{
@@ -829,7 +829,11 @@ void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */)
 		else if(GetModalHUD() == &m_animBuyMenu)
 			ShowPDA(false, true);
 
-		m_animRadioButtons.Invoke("showRadioButtons", buttonNo);
+		if (extended)
+			m_animRadioButtons.Invoke("showRadioButtons_extended", buttonNo); //CryMP: Show the extended radio
+		else
+			m_animRadioButtons.Invoke("showRadioButtons", buttonNo); //CryMP: Default radio
+
 		m_animRadioButtons.SetVisible(true);
 		wstring group0(LocalizeWithParams("@mp_radio_group_0"));
 		wstring group1(LocalizeWithParams("@mp_radio_group_1"));
@@ -840,7 +844,7 @@ void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */)
 	}
 	else
 	{
-		m_animRadioButtons.Invoke("showRadioButtons", 0);
+		m_animRadioButtons.Invoke("showRadioButtons_extended", 0);
 		m_animRadioButtons.SetVisible(false);
 	}
 }

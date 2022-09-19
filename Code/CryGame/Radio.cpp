@@ -62,12 +62,12 @@ void CRadio::CancelRadio()
 	}
 }
 
-static bool GetTeamRadioTable(CGameRules *gr,const string& team_name,SmartScriptTable& out_table)
+bool CRadio::GetTeamRadioTable(const string& team_name,SmartScriptTable& out_table)
 {
-	if(!gr)
+	if(!m_pGameRules)
 		return false;
 
-	IScriptTable *pTable=gr->GetEntity()->GetScriptTable();
+	IScriptTable *pTable= m_pGameRules->GetEntity()->GetScriptTable();
 
 	if(!pTable)
 		return false;
@@ -76,22 +76,21 @@ static bool GetTeamRadioTable(CGameRules *gr,const string& team_name,SmartScript
 	if(!pTable->GetValue("teamRadio",pTeamRadio))
 		return false;
 
-	if(!pTeamRadio->GetValue(team_name,out_table))
+	if(!pTeamRadio->GetValue(team_name.c_str(),out_table))
 		return false;
 
 	return true;
 }
 
-static bool GetRadioSoundName(CGameRules *gr,const string &teamName,const int groupId,const int keyId,char **ppSoundName=0,char **ppSoundText=0, int* pVariations = 0)
+bool CRadio::GetRadioSoundName(const string &teamName,const int groupId,const int keyId,char **ppSoundName=0,char **ppSoundText=0, int* pVariations = 0)
 {
 	SmartScriptTable radioTable;
-	if(!GetTeamRadioTable(gr,teamName,radioTable))
+	if (!GetTeamRadioTable(teamName, radioTable))
 		return false;
 
 	SmartScriptTable groupTable;
 	if(!radioTable->GetAt(groupId,groupTable))
 		return false;
-
 
 	SmartScriptTable soundTable;
 	if(!groupTable->GetAt(keyId,soundTable))
@@ -119,6 +118,105 @@ static bool GetRadioSoundName(CGameRules *gr,const string &teamName,const int gr
 		if(!soundText.CopyTo(*ppSoundText))
 			return false;
 	}
+	
+	return true;
+}
+
+int CRadio::GetExtendedRadioId(int keyId, int groupId)
+{
+	SmartScriptTable radioTable;
+	if (!GetTeamRadioTable(m_TeamName, radioTable))
+		return 0;
+
+	//CryMP: Extended radio. Default radio has 5 radios per column
+	int addedRadioCounter = 0;
+	for (int index = 1; index < RADIO_GROUP_SIZE; ++index)
+	{
+		SmartScriptTable sGroupTable;
+		if (radioTable->GetAt(index, sGroupTable))
+		{
+			SmartScriptTable sRadioInfo;
+			if (index == groupId)
+			{
+				if (sGroupTable->GetAt(keyId, sRadioInfo))
+				{
+					int radioId = (RADIO_GROUP_SIZE * RADIO_GROUPS);
+					radioId += (addedRadioCounter + (keyId - RADIO_GROUP_SIZE));
+					return radioId;
+				}
+			}
+			else
+			{
+				addedRadioCounter += (MAX(0, (sGroupTable->Count() - RADIO_GROUP_SIZE)));
+			}
+		}
+	}
+
+	return 0;
+}
+
+bool CRadio::IsExtendedRadio()
+{
+	SmartScriptTable radioTable;
+	if (!GetTeamRadioTable(m_TeamName, radioTable))
+		return false;
+
+	SmartScriptTable sGroupTable;
+	if (radioTable->GetAt(1, sGroupTable))
+	{
+		//There are more than 5 radios -> show m
+		return sGroupTable->Count() > RADIO_GROUP_SIZE;
+	}
+
+	return false;
+}
+
+bool CRadio::GetGroupAndKeyFromExtendedRadioId(int radioId, int &groupId, int &keyId)
+{
+	SmartScriptTable radioTable;
+	if (!GetTeamRadioTable(m_TeamName, radioTable))
+		return false;
+
+	int totalDefaultRadioCount = (RADIO_GROUP_SIZE * RADIO_GROUPS);
+
+	/*
+	//CryMP: Extended radio. Default radio has 5 radios per column
+	//The extended radio is 'hardcoded' like the original, the previously unused radio commands
+	//have been added. Don't expect anyone to create any new radio commands from scratch :)
+	
+	//1st group + 4 commands
+	//2nd group + 2 commands
+	//3rd group + 1 command
+	//4th group + 1 command
+
+	//lets say, newId comes in as '24' - will be the 4th new command 
+	*/
+	int subtract = 0;
+	if (radioId > 19 && radioId < 24)
+	{
+		groupId = 0;
+	}
+	else if (radioId > 23 && radioId < 26)
+	{
+		groupId = 1;
+		subtract = 4;
+	}
+	else if (radioId == 26)
+	{
+		groupId = 2;
+		subtract = 6;
+	}
+	else if (radioId == 27)
+	{
+		groupId = 3;
+		subtract = 7;
+	}
+
+	keyId = radioId - totalDefaultRadioCount + RADIO_GROUP_SIZE - subtract;
+
+	SmartScriptTable groupTable;
+	if (!radioTable->GetAt(groupId+1, groupTable))
+		return false;
 
 	return true;
 }
@@ -204,7 +302,7 @@ bool CRadio::UpdatePendingGroup()
 	m_requestedGroup = -1;
 
 	if(g_pGame->GetHUD())
-		g_pGame->GetHUD()->SetRadioButtons(true, m_currentGroup+1);
+		g_pGame->GetHUD()->SetRadioButtons(true, m_currentGroup+1, IsExtendedRadio());
 
 	m_menuOpenTime = gEnv->pTimer->GetCurrTime();
 
@@ -214,7 +312,7 @@ bool CRadio::UpdatePendingGroup()
 	g_pGameActions->FilterMPRadio()->Enable(true);
 
 	SmartScriptTable radioTable;
-	if(!GetTeamRadioTable(m_pGameRules,m_TeamName,radioTable))
+	if(!GetTeamRadioTable(m_TeamName,radioTable))
 		return false;
 
 	SmartScriptTable groupTable;
@@ -276,7 +374,9 @@ bool CRadio::OnInputEvent( const SInputEvent &event )
 	if (!pressed)
 		return false;
 
-	if(!GetRadioSoundName(m_pGameRules,m_TeamName,m_currentGroup+1,iKey))
+	const bool bSuccess = GetRadioSoundName(m_TeamName, m_currentGroup + 1, iKey);
+
+	if(!bSuccess)
 		return false;
 
 	m_keyState[iKey] = false; // release will never come, since the input event listened is unregistered.
@@ -292,6 +392,15 @@ bool CRadio::OnInputEvent( const SInputEvent &event )
 	//PlayVoice(pSoundName);
 
 	int id=(m_currentGroup*RADIO_GROUP_SIZE+iKey)-1;
+
+	//CryMP: Extended Menu support
+	const bool bExtendedMenu = iKey > RADIO_GROUP_SIZE;
+	if (bExtendedMenu)
+	{
+		int radioId = GetExtendedRadioId(iKey, m_currentGroup + 1);
+		id = radioId - 1;
+	}
+
 	m_pGameRules->SendRadioMessage(gEnv->pGame->GetIGameFramework()->GetClientActor()->GetEntityId(),id);
 
 	CancelRadio();
@@ -312,11 +421,21 @@ void CRadio::OnRadioMessage(int id, EntityId fromId)
 	int groupId=id/RADIO_GROUP_SIZE;
 	int keyId=id%RADIO_GROUP_SIZE;
 
+	//CryMP: Extended menu
+	if (id > ((RADIO_GROUP_SIZE * RADIO_GROUPS) - 1))
+	{
+		if (!GetGroupAndKeyFromExtendedRadioId(id, groupId, keyId))
+			return;
+	}
+
+	//CryLogAlways("OnRadioMessage id %d, groupId %d - keyId %d", id, groupId, keyId);
+
 	char *pSoundName,*pSoundText;
 	int variations = 1;
-	bool result=GetRadioSoundName(m_pGameRules,m_TeamName,groupId+1,keyId+1,&pSoundName,&pSoundText, &variations);
+	const bool bSuccess=GetRadioSoundName(m_TeamName,groupId+1,keyId+1,&pSoundName,&pSoundText, &variations);
 
-	assert(result);
+	if (!bSuccess)
+		return;
 
 	if(g_pGame->GetGameRules() && g_pGame->GetHUD())
 	{		
