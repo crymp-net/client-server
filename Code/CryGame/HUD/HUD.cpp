@@ -416,6 +416,31 @@ CWeapon* CHUD::GetCurrentWeapon()
 	return 0;
 }
 
+void OnChangeChatResolution(ICVar* p)
+{
+	const int mode = p->GetIVal();
+
+	if (g_pGame->GetHUD())
+	{
+		g_pGame->GetHUD()->EnableChatGfx(mode > 0);
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::EnableChatGfx(bool highResolution)
+{
+	if (m_animChat.IsLoaded())
+	{
+		m_animChat.Unload();
+	}
+
+	const char* path = highResolution ? "Libs/UI/HUD_ChatSystem_HR.gfx" : "Libs/UI/HUD_ChatSystem.gfx";
+	m_animChat.Load(path, eFD_Left);
+	if (m_pHUDTextChat)
+		m_pHUDTextChat->Init(&m_animChat);
+}
+
 //-----------------------------------------------------------------------------------------------------
 
 bool CHUD::Init(IActor* pActor)
@@ -638,6 +663,11 @@ bool CHUD::Init(IActor* pActor)
 	m_hudAmmunition["incendiarybullet"] = 15;
 	m_hudAmmunition["tacbullet"] = 16;
 	m_hudAmmunition["avexplosive"] = 17;
+
+	if (ICVar* pChatResolutionCVar = gEnv->pConsole->GetCVar("mp_chatHighResolution"))
+	{
+		pChatResolutionCVar->SetOnChangeCallback(OnChangeChatResolution);
+	}
 
 	return true;
 }
@@ -4723,9 +4753,7 @@ void CHUD::LoadGameRulesHUD(bool load)
 			}
 			if (!m_animChat.IsLoaded())
 			{
-				m_animChat.Load("Libs/UI/HUD_ChatSystem.gfx", eFD_Left);
-				if (m_pHUDTextChat)
-					m_pHUDTextChat->Init(&m_animChat);
+				EnableChatGfx(g_pGameCVars->mp_chatHighResolution > 0);
 			}
 			if (!m_animVoiceChat.IsLoaded())
 				m_animVoiceChat.Load("Libs/UI/HUD_MultiPlayer_VoiceChat.gfx", eFD_Right, eFAF_ThisHandler);
@@ -4752,9 +4780,12 @@ void CHUD::LoadGameRulesHUD(bool load)
 			}
 			if (!m_animChat.IsLoaded())
 			{
-				m_animChat.Load("Libs/UI/HUD_ChatSystem.gfx", eFD_Left);
+				/*const char* path = g_pGameCVars->mp_chatHighResolution ? "Libs/UI/HUD_ChatSystem_HR.gfx" : "Libs/UI/HUD_ChatSystem.gfx";
+				m_animChat.Load(path, eFD_Left);
 				if (m_pHUDTextChat)
-					m_pHUDTextChat->Init(&m_animChat);
+					m_pHUDTextChat->Init(&m_animChat);*/
+
+				EnableChatGfx(g_pGameCVars->mp_chatHighResolution > 0);
 			}
 			if (!m_animObjectivesTab.IsLoaded())
 			{

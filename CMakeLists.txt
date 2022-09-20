@@ -774,6 +774,7 @@ set(CRYMP_CLIENT_RESOURCES
   ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_HitIndicator.gfx
   ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_Spectate.gfx
   ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_MP_Radio_Buttons.gfx
+  ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem_HR.gfx
   ${PROJECT_SOURCE_DIR}/Resources/Icon.ico
   ${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
   ${PROJECT_SOURCE_DIR}/Scripts/Main.lua

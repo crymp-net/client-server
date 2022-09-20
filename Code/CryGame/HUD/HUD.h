@@ -101,6 +101,8 @@ public:
 	CHUD();
 	virtual	~	CHUD();
 
+	void EnableChatGfx(bool highResolution);
+
 	//HUD initialisation
 	bool Init(IActor* pActor);
 	//setting local actor / player id
