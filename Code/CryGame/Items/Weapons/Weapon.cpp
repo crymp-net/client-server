@@ -658,8 +658,15 @@ void CWeapon::FullSerialize(TSerialize ser)
 			if (numFiremodes != GetNumOfFireModes())
 				GameWarning("Num of firemodes changed - loading will be corrupted.");
 		}
-		for (int i = 0; i < numFiremodes; ++i)
-			m_firemodes[i]->Serialize(ser);
+		
+		//for (int i = 0; i < numFiremodes; ++i)
+		//	m_firemodes[i]->Serialize(ser);
+
+		//CryMP: Corrupted SP savegame fix
+		for (const auto fm : m_firemodes)
+		{
+			fm->Serialize(ser);
+		}
 
 		bool hasZoom = (m_zm) ? true : false;
 		ser.Value("hasZoom", hasZoom);
