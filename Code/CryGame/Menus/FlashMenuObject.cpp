@@ -3376,25 +3376,31 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 				std::string loadingMsg = Format("%s%s", status.c_str(), points.c_str());
 				loadingMsg = ToUpper(loadingMsg);
 				pLS->Invoke("setLoadingText", loadingMsg.c_str());
-				
-				const auto &pInfo = gClient->GetServerConnector()->GetLastServer();
-				
-				pLS->Invoke("setServerInfo1", pInfo.name.c_str());
-				
-				ICVar* pCVar2 = gEnv->pConsole->GetCVar("mp_pickupObjects");
-				if (pCVar2 && pCVar2->GetIVal())
+
+				if (gEnv->bMultiplayer)
 				{
-					pLS->Invoke("setServerInfo2","Pick/Throw Objects: Enabled" );
-				}
-				ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
-				if (pCVar3 && pCVar3->GetIVal())
-				{
-					pLS->Invoke("setServerInfo3", "CircleJump: Enabled");
-				}
-				ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
-				if (pCVar4 && pCVar4->GetIVal())
-				{
-					pLS->Invoke("setServerInfo4", "CryMP Enhanced: Enabled");
+					const auto& pInfo = gClient->GetServerConnector()->GetLastServer();
+
+					pLS->Invoke("setServerInfo1", pInfo.name.c_str());
+
+					ICVar* pCVar2 = gEnv->pConsole->GetCVar("mp_pickupObjects");
+					if (pCVar2 && pCVar2->GetIVal())
+					{
+						SFlashVarValue args[2] = { "PICKUP/THROW OBJECTS:", "ON" };
+						pLS->Invoke("setServerInfo2", args, 2);
+					}
+					ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
+					if (pCVar3 && pCVar3->GetIVal())
+					{
+						SFlashVarValue args[2] = { "CIRCLEJUMP:", "ON" };
+						pLS->Invoke("setServerInfo3", args, 2);
+					}
+					ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
+					if (pCVar4 && pCVar4->GetIVal())
+					{
+						SFlashVarValue args[2] = { "ENHANCED:", "ON" };
+						pLS->Invoke("setServerInfo4", args, 2);
+					}
 				}
 			}
 			else
