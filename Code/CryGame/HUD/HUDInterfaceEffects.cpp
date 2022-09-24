@@ -623,7 +623,7 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	if(explosionFeedback)
 		PlaySound(ESound_SpecialHitFeedback);
 
-	if (g_pGameCVars->mp_hitIndicator)
+	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
 	{
 		m_animHitIndicator.Invoke("indicateHit");
 		m_hitIndicatorTimer = 1.0f;
