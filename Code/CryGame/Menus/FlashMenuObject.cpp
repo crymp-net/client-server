@@ -677,6 +677,13 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 		}
 		else if (eIS_Pressed == rInputEvent.state)
 		{
+			//CryMP: F5 for refreshing serverlist
+			if (rInputEvent.keyId == eKI_F5)
+			{
+				if (m_multiplayerMenu)
+					m_multiplayerMenu->HandleFSCommand("UpdateServerList", "");
+			}
+
 			//CryMP: KeyBinds
 			gClient->OnKeyPress(rInputEvent.keyName.c_str());
 		}
