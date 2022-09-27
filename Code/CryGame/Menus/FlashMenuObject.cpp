@@ -641,20 +641,28 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 
 	if (IsActive())
 	{
-		if (rInputEvent.deviceId == eDI_Mouse && rInputEvent.state == eIS_Pressed)
+		if (rInputEvent.deviceId == eDI_Mouse)
 		{
-			if (rInputEvent.keyId == eKI_MouseWheelDown)
+			if (rInputEvent.state == eIS_Pressed)
 			{
-				if (m_pCurrentFlashMenuScreen)
+				if (rInputEvent.keyId == eKI_MouseWheelDown)
 				{
-					m_pCurrentFlashMenuScreen->Invoke("mouseWheelDown");
+					if (m_pCurrentFlashMenuScreen)
+					{
+						m_pCurrentFlashMenuScreen->Invoke("mouseWheelDown");
+					}
 				}
-			}
-			else if (rInputEvent.keyId == eKI_MouseWheelUp)
-			{
-				if (m_pCurrentFlashMenuScreen)
+				else if (rInputEvent.keyId == eKI_MouseWheelUp)
 				{
-					m_pCurrentFlashMenuScreen->Invoke("mouseWheelUp");
+					if (m_pCurrentFlashMenuScreen)
+					{
+						m_pCurrentFlashMenuScreen->Invoke("mouseWheelUp");
+					}
+				}
+				//CryMP: Mouse4 button acts as going back in menu
+				else if (rInputEvent.keyId == eKI_Mouse4)
+				{
+					m_pCurrentFlashMenuScreen->CheckedInvoke("onBack");
 				}
 			}
 		}
