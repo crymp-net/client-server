@@ -416,26 +416,38 @@ void CTornado::UpdateFlow()
 
 		Vec3 radiusVec(m_radius, m_radius, 0);
 
-		IPhysicalEntity** ppList = NULL;
+		IPhysicalEntity** ppList = nullptr;
 
-		int	numEnts = ppWorld->GetEntitiesInBox(pos - radiusVec, pos + radiusVec + Vec3(0, 0, m_cloudHeight * 0.5f), ppList, ent_sleeping_rigid | ent_rigid | ent_living);
+		const int numEnts = ppWorld->GetEntitiesInBox(pos - radiusVec, pos + radiusVec + Vec3(0, 0, m_cloudHeight * 0.5f), ppList, ent_sleeping_rigid | ent_rigid | ent_living);
 
 		m_spinningEnts.clear();
 		for (int i = 0;i < numEnts;++i)
 		{
 			// add check for spectating players...
-			EntityId id = ppWorld->GetPhysicalEntityId(ppList[i]);
-			CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id));
+			//EntityId id = ppWorld->GetPhysicalEntityId(ppList[i]); //Doesn't work with actors...
+
+			IEntity* pEnt = (IEntity*)ppList[i]->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+			EntityId id = pEnt ? pEnt->GetId() : 0;
+			CActor* pActor = id ? static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id)) : nullptr;
 
 			if (!gEnv->bServer)
 			{
 				//Don't impulse other entities on client, server takes care about that
 				if (!pActor)
+				{
 					continue;
+				}
 
 				//Don't impulse spectators, or other clients
-				if (pActor->GetSpectatorMode() || !pActor->IsClient())
+				if (pActor->GetSpectatorMode())
+				{
 					continue;
+				}
+					
+				if (!pActor->IsClient())
+				{
+					continue;
+				}
 
 				if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 				{
@@ -458,7 +470,11 @@ void CTornado::UpdateFlow()
 	//mess entities around
 	for (int i = 0;i < m_spinningEnts.size();++i)
 	{
-		IPhysicalEntity* ppEnt = ppWorld->GetPhysicalEntityById(m_spinningEnts[i]);
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_spinningEnts[i]);
+		if (!pEntity)
+			continue;
+
+		IPhysicalEntity* ppEnt = pEntity->GetPhysics();
 		if (ppEnt)
 		{
 			pe_status_pos spos;
