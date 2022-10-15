@@ -3300,8 +3300,11 @@ void CGameRules::CreateScriptHitInfo(SmartScriptTable& scriptHitInfo, const HitI
 
 			if (pActor && pActor->IsPlayer())
 			{
-				CPlayer* player = (CPlayer*)pActor;
-				assist = player->HasHitAssistance() ? 1.0f : 0.0f;
+				CPlayer* pPlayer = CPlayer::FromIActor(pActor);
+				if (pPlayer)
+				{
+					assist = pPlayer->HasHitAssistance() ? 1.0f : 0.0f;
+				}
 			}
 		}
 

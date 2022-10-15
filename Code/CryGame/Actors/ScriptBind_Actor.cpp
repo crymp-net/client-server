@@ -1821,7 +1821,11 @@ int CScriptBind_Actor::GetFlyMode(IFunctionHandler* pH)
 	if (!pActor)
 		return pH->EndFunction(-1);
 
-	return pH->EndFunction(((CPlayer*)(pActor))->GetFlyMode());
+	CPlayer *pPlayer = CPlayer::FromActor(pActor)
+	if (!pPlayer)
+		return pH->EndFunction(-1);
+
+	return pH->EndFunction(pPlayer->GetFlyMode());
 }
 
 int CScriptBind_Actor::GetPhysicalColliderMode(IFunctionHandler* pH)

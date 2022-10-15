@@ -137,7 +137,6 @@ void CRapid::Update(float frameTime, uint frameId)
 					CActor* act = m_pWeapon->GetOwnerActor();
 					if (act && act->IsClient())
 					{
-						CPlayer* plr = (CPlayer*)act;
 						IView* pView = g_pGame->GetIGameFramework()->GetIViewSystem()->GetActiveView();
 						if (pView)
 							pView->SetViewShake(Ang3(m_rapidparams.camshake_rotate), m_rapidparams.camshake_shift, m_next_shot_dt / m_rapidparams.camshake_perShot, m_next_shot_dt / m_rapidparams.camshake_perShot, 0, 1);

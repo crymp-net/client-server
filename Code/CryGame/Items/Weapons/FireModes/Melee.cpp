@@ -220,15 +220,18 @@ void CMelee::StartFire()
 
 	float speedOverride = -1.0f;
 
-	CPlayer* pPlayer = (CPlayer*)pOwner;
-	if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
+	CPlayer* pPlayer = CPlayer::FromActor(pOwner);
+	if (pPlayer)
 	{
-		ENanoMode curMode = pSuit->GetMode();
-		if (curMode == NANOMODE_SPEED && pSuit->GetSuitEnergy() > NANOSUIT_ENERGY * 0.1f)
-			speedOverride = 1.5f;
-	}
+		if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
+		{
+			ENanoMode curMode = pSuit->GetMode();
+			if (curMode == NANOMODE_SPEED && pSuit->GetSuitEnergy() > NANOSUIT_ENERGY * 0.1f)
+				speedOverride = 1.5f;
+		}
 
-	pPlayer->PlaySound(CPlayer::ESound_Melee);
+		pPlayer->PlaySound(CPlayer::ESound_Melee);
+	}
 
 	m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
 	m_pWeapon->SetBusy(true);
@@ -263,12 +266,16 @@ void CMelee::NetStartFire()
 
 	float speedOverride = -1.0f;
 
-	CPlayer* pPlayer = (CPlayer*)pOwner;
-	if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())
+	CPlayer* pPlayer = CPlayer::FromActor(pOwner);
+	if (pPlayer)
 	{
-		ENanoMode curMode = pSuit->GetMode();
-		if (curMode == NANOMODE_SPEED)
-			speedOverride = 1.5f;
+		CNanoSuit* pSuit = pPlayer->GetNanoSuit();
+		if (pSuit)
+		{
+			ENanoMode curMode = pSuit->GetMode();
+			if (curMode == NANOMODE_SPEED)
+				speedOverride = 1.5f;
+		}
 	}
 
 	//CryMP exit zoom modes just incase, like in StartFire
@@ -277,7 +284,8 @@ void CMelee::NetStartFire()
 	if (pOwner->IsFpSpectatorTarget())
 	{
 		//CryMP Handle Fp targets
-		pPlayer->PlaySound(CPlayer::ESound_Melee);
+		if (pPlayer)
+			pPlayer->PlaySound(CPlayer::ESound_Melee);
 
 		m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
 		m_durationTimer = m_meleeparams.duration;
@@ -537,7 +545,7 @@ void CMelee::Impulse(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysi
 	if (pCollider && m_meleeparams.impulse > 0.001f)
 	{
 		bool strengthMode = false;
-		CPlayer* pPlayer = (CPlayer*)m_pWeapon->GetOwnerActor();
+		CPlayer* pPlayer = CPlayer::FromActor(m_pWeapon->GetOwnerActor();
 		if (pPlayer)
 		{
 			if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())

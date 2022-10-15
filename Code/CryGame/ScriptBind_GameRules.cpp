@@ -991,7 +991,7 @@ int CScriptBind_GameRules::GetNextSpectatorTarget(IFunctionHandler* pH, ScriptHa
 						continue;
 
 					// skip spectating players
-					if (((CPlayer*)pActor)->GetSpectatorMode() != CActor::eASM_None)
+					if (static_cast<CActor*>(pActor)->GetSpectatorMode() != CActor::eASM_None)
 						continue;
 
 					// otherwise this one will do.
