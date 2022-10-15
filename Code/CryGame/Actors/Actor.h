@@ -34,6 +34,14 @@
 
 #include "Library/Util.h"
 
+enum class ActorType
+{
+	CActor,
+	CPlayer,
+	CAlien,
+	CShark,
+};
+
 struct SActorFrameMovementParams
 {
 	SActorFrameMovementParams() :
@@ -1113,9 +1121,10 @@ public:
 	virtual void ReplaceMaterial(const char* strMaterial);
 	virtual void SendMusicLogicEvent(EMusicLogicEvents event) {};
 
-	// ugly: replace by real class system
-	static  const char* GetActorClassType() { return "CActor"; }
-	virtual const char* GetActorClass() const { return CActor::GetActorClassType(); }
+	//Crytek ugly: replace by real class system
+	//CryMP: Here you go
+	static ActorType GetActorClassType() { return ActorType::CActor; }
+	virtual ActorType GetActorClass() const { return GetActorClassType(); }
 
 	//For sleeping bullets
 	virtual bool  CanSleep() { return false; }

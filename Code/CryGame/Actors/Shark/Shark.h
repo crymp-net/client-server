@@ -296,8 +296,8 @@ public:
 
 	virtual void UpdateFootSteps(float frameTime) {};
 
-	static  const char* GetActorClassType() { return "CShark"; }
-	virtual const char* GetActorClass() const { return CShark::GetActorClassType(); }
+	static ActorType GetActorClassType() { return ActorType::CShark; }
+	virtual ActorType GetActorClass() const { return GetActorClassType(); }
 
 	ILINE const Vec3& GetWeaponOffset() const { return m_weaponOffset; }
 	ILINE const Vec3& GetEyeOffset() const { return m_eyeOffset; }

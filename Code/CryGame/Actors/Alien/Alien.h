@@ -446,8 +446,8 @@ public:
 
 	virtual bool IsAlien() {return true;}
 	
-	static  const char* GetActorClassType() { return "CAlien"; }
-	virtual const char* GetActorClass() const { return CAlien::GetActorClassType(); }
+	static ActorType GetActorClassType() { return ActorType::CAlien; }
+	virtual ActorType GetActorClass() const { return GetActorClassType(); }
 
 	ILINE const Vec3& GetWeaponOffset() const { return m_weaponOffset; }
 	ILINE const Vec3& GetEyeOffset() const { return m_eyeOffset; }

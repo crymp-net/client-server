@@ -406,8 +406,8 @@ public:
 	bool ProcessProceduralLean(float frameTime);
 	void SufferingHighLatency(bool highLatency);
 
-	static  const char* GetActorClassType() { return "CPlayer"; }
-	virtual const char* GetActorClass() const { return CPlayer::GetActorClassType(); }
+	static ActorType GetActorClassType() { return ActorType::CPlayer; }
+	virtual ActorType GetActorClass() const { return GetActorClassType(); }
 
 protected:
 	virtual IActorMovementController* CreateMovementController();
