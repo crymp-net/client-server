@@ -545,7 +545,7 @@ void CMelee::Impulse(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysi
 	if (pCollider && m_meleeparams.impulse > 0.001f)
 	{
 		bool strengthMode = false;
-		CPlayer* pPlayer = CPlayer::FromActor(m_pWeapon->GetOwnerActor();
+		CPlayer* pPlayer = CPlayer::FromActor(m_pWeapon->GetOwnerActor());
 		if (pPlayer)
 		{
 			if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())

@@ -1821,7 +1821,7 @@ int CScriptBind_Actor::GetFlyMode(IFunctionHandler* pH)
 	if (!pActor)
 		return pH->EndFunction(-1);
 
-	CPlayer *pPlayer = CPlayer::FromActor(pActor)
+	CPlayer* pPlayer = CPlayer::FromActor(pActor);
 	if (!pPlayer)
 		return pH->EndFunction(-1);
 
