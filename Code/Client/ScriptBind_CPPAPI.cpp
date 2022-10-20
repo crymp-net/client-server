@@ -4,6 +4,8 @@
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
+#include "CrySystem/LocalizationManager.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -50,7 +52,11 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
 	SCRIPT_REG_TEMPLFUNC(SetOpacity, "entityId, fAmount");
-	SCRIPT_REG_TEMPLFUNC(LocalizeLabel, "string");
+
+	// Localization
+	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
+	SCRIPT_REG_TEMPLFUNC(LocalizeText, "text");
+	SCRIPT_REG_TEMPLFUNC(AddLocalizedLabel, "name, params");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -366,7 +372,7 @@ int ScriptBind_CPPAPI::CreateMaterialFromTexture(IFunctionHandler* pH, const cha
 		if (pMatDst)
 		{
 			SShaderItem& si(pMatSrc->GetShaderItem());
-			
+
 			SInputShaderResources isr(si.m_pShaderResources);
 			isr.m_Textures[EFTT_DIFFUSE].m_Name = texturePath;
 
@@ -396,11 +402,89 @@ int ScriptBind_CPPAPI::SetOpacity(IFunctionHandler* pH, ScriptHandle entity, flo
 	return pH->EndFunction(true);
 }
 
-int ScriptBind_CPPAPI::LocalizeLabel(IFunctionHandler* pH, const char* label)
-{
-	wstring tmp;
-	if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(label, tmp))
-		return pH->EndFunction(tmp.c_str());
+////////////////////////////////////////////////////////////////////////////////
+// Localization
+////////////////////////////////////////////////////////////////////////////////
 
-	return pH->EndFunction("");
+int ScriptBind_CPPAPI::GetLanguage(IFunctionHandler* pH)
+{
+	const char* language = LocalizationManager::GetInstance().GetCurrentLanguage().name.c_str();
+
+	return pH->EndFunction(language);
 }
+
+int ScriptBind_CPPAPI::LocalizeText(IFunctionHandler* pH, const char* text)
+{
+	const std::string result = LocalizationManager::GetInstance().Localize(text);
+
+	return pH->EndFunction(result.c_str());
+}
+
+int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name, SmartScriptTable params)
+{
+	LocalizationManager& localization = LocalizationManager::GetInstance();
+
+	LocalizationManager::Label label;
+	bool keepExisting = false;
+
+	const auto readData = [&label, &keepExisting](CScriptSetGetChain& chain)
+	{
+		const char* value;
+
+		if (chain.GetValue("english_text", value))
+			label.englishText = value;
+
+		if (chain.GetValue("english_subtitle", value))
+			label.englishSubtitle = value;
+
+		if (chain.GetValue("localized_text", value))
+			StringTools::AssignTo(label.localizedText, value);
+
+		if (chain.GetValue("localized_subtitle", value))
+			StringTools::AssignTo(label.localizedSubtitle, value);
+
+		if (chain.GetValue("character_name", value))
+			StringTools::AssignTo(label.characterName, value);
+
+		if (chain.GetValue("sound_event", value))
+			label.soundEvent = value;
+
+		chain.GetValue("sound_volume",           label.soundVolume);
+		chain.GetValue("sound_ducking",          label.soundDucking);
+		chain.GetValue("sound_radio_ratio",      label.soundRadioRatio);
+		chain.GetValue("sound_radio_background", label.soundRadioBackground);
+		chain.GetValue("sound_radio_squelch",    label.soundRadioSquelch);
+		chain.GetValue("use_subtitle",           label.useSubtitle);
+
+		chain.GetValue("keep_existing", keepExisting);
+	};
+
+	label.name = name;
+
+	if (params)
+	{
+		CScriptSetGetChain rootChain(params);
+
+		readData(rootChain);
+
+		SmartScriptTable languageList;
+		if (rootChain.GetValue("languages", languageList))
+		{
+			const char* languageName = localization.GetCurrentLanguage().name.c_str();
+
+			SmartScriptTable language;
+			if (languageList->GetValue(languageName, language))
+			{
+				CScriptSetGetChain languageChain(language);
+
+				readData(languageChain);
+			}
+		}
+	}
+
+	const bool success = localization.Add(std::move(label), keepExisting);
+
+	return pH->EndFunction(success);
+}
+
+////////////////////////////////////////////////////////////////////////////////

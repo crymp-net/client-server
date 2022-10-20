@@ -1,9 +1,12 @@
+#include <cstring>
+
 #include "Client/Client.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
 #include "CryScriptSystem/ScriptSystem.h"
+#include "CrySystem/LocalizationManager.h"
 #include "Library/CmdLine.h"
 #include "Library/CPU.h"
 #include "Library/Error.h"
@@ -63,6 +66,64 @@ namespace
 
 		FillMem(RVA(pCrySystem, codeOffset), code, sizeof code);
 		FillNOP(RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+	}
+
+	void ReplaceLocalizationManager(const DLL & CrySystem)
+	{
+		struct DummyCSystem
+		{
+			ILocalizationManager* GetLocalizationManager()
+			{
+				return &LocalizationManager::GetInstance();
+			}
+
+			static void InitLocalizationManager()
+			{
+				CryLogAlways("$3[CryMP] Using the new Localization Manager");
+			}
+		};
+
+		using TGetLocalizationManager = decltype(&DummyCSystem::GetLocalizationManager);
+
+		using WinAPI::RVA;
+		using WinAPI::FillNOP;
+		using WinAPI::FillMem;
+
+		void* pCrySystem = CrySystem.GetHandle();
+		void* pNewFunc = &DummyCSystem::InitLocalizationManager;
+
+#ifdef BUILD_64BIT
+		const std::size_t vtableOffset = 0x26ACF8;
+
+		unsigned char code[] = {
+			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+			0xFF, 0xD0                                                   // call rax
+		};
+
+		std::memcpy(&code[2], &pNewFunc, 8);
+
+		FillNOP(RVA(pCrySystem, 0x453A7), 0x62);
+		FillMem(RVA(pCrySystem, 0x453A7), code, sizeof code);
+		FillNOP(RVA(pCrySystem, 0x50A5C), 0x28);
+#else
+		const std::size_t vtableOffset = 0x1BC5F8;
+
+		unsigned char code[] = {
+			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+			0xFF, 0xD0                     // call eax
+		};
+
+		std::memcpy(&code[1], &pNewFunc, 4);
+
+		FillNOP(RVA(pCrySystem, 0x56B1D), 0x29);
+		FillMem(RVA(pCrySystem, 0x56B1D), code, sizeof code);
+		FillNOP(RVA(pCrySystem, 0x624E1), 0x23);
+#endif
+		void** vtable = static_cast<void**>(RVA(pCrySystem, vtableOffset));
+
+		// vtable hook
+		TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
+		FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
 	}
 }
 
@@ -227,6 +288,8 @@ void Launcher::PatchEngine()
 		{
 			ReplaceScriptSystem(m_CrySystem);
 		}
+
+		ReplaceLocalizationManager(m_CrySystem);
 	}
 
 	if (m_CryRenderD3D10)

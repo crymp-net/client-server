@@ -29,5 +29,14 @@ public:
 	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
 	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
 	int SetOpacity(IFunctionHandler* pH, ScriptHandle entity, float fAmount);
-	int LocalizeLabel(IFunctionHandler* pH, const char* label);
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Localization
+	////////////////////////////////////////////////////////////////////////////////
+
+	int GetLanguage(IFunctionHandler* pH);
+	int LocalizeText(IFunctionHandler* pH, const char* text);
+	int AddLocalizedLabel(IFunctionHandler* pH, const char* name, SmartScriptTable params);
+
+	////////////////////////////////////////////////////////////////////////////////
 };
