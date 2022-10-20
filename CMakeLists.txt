@@ -781,6 +781,7 @@ set(CRYMP_CLIENT_RESOURCES
   ${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem_HR.gfx
   ${PROJECT_SOURCE_DIR}/Resources/Icon.ico
   ${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
+  ${PROJECT_SOURCE_DIR}/Scripts/Localization.lua
   ${PROJECT_SOURCE_DIR}/Scripts/Main.lua
   ${PROJECT_SOURCE_DIR}/Scripts/RPC.lua
   ${PROJECT_SOURCE_DIR}/masters.txt

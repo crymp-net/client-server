@@ -197,9 +197,10 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
 
 	// prepare Lua scripts
-	m_scriptMain = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
-	m_scriptJSON = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
-	m_scriptRPC  = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
+	m_scriptMain         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
+	m_scriptJSON         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
+	m_scriptRPC          = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
+	m_scriptLocalization = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_LOCALIZATION);
 
 	AddFlashFileHook("Libs/UI/HUD_ChatSystem.gfx", RESOURCE_HUD_CHAT_SYSTEM_GFX);
 	AddFlashFileHook("Libs/UI/HUD_VehicleStats.gfx", RESOURCE_HUD_VEHICLE_STATS_GFX);
@@ -236,6 +237,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
 	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
+	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
 
 	InitMasters();
 }
@@ -269,7 +271,7 @@ std::string Client::GetHWID(const std::string_view & salt)
 
 void Client::OnKeyPress(const char* key)
 {
-	for (auto &m : m_keyBinds) 
+	for (auto &m : m_keyBinds)
 	{
 		if (!strcmp(key, m.first.c_str()))
 		{
@@ -293,7 +295,6 @@ void Client::OnPostUpdate(float deltaTime)
 		OnTick();
 		m_FrameCounter = 0.0f;
 	}
-	
 }
 
 void Client::OnSaveGame(ISaveGame *pSaveGame)

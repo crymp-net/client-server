@@ -37,6 +37,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::string_view m_scriptMain;
 	std::string_view m_scriptJSON;
 	std::string_view m_scriptRPC;
+	std::string_view m_scriptLocalization;
 
 	std::unique_ptr<Executor> m_pExecutor;
 	std::unique_ptr<HTTPClient> m_pHTTPClient;
