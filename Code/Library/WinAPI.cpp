@@ -641,6 +641,60 @@ std::string WinAPI::ConvertUTF16To8(const std::wstring_view & text)
 	return result;
 }
 
+std::size_t WinAPI::RawANSIToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize)
+{
+	return MultiByteToWideChar(
+		CP_ACP, 0,
+		string, static_cast<int>(stringSize),
+		buffer, static_cast<int>(bufferSize)
+	);
+}
+
+std::size_t WinAPI::RawUTF8ToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize)
+{
+	return MultiByteToWideChar(
+		CP_UTF8, 0,
+		string, static_cast<int>(stringSize),
+		buffer, static_cast<int>(bufferSize)
+	);
+}
+
+std::size_t WinAPI::RawWideToUTF8(const wchar_t* string, std::size_t stringSize, char* buffer, std::size_t bufferSize)
+{
+	return WideCharToMultiByte(
+		CP_UTF8, 0,
+		string, static_cast<int>(stringSize),
+		buffer, static_cast<int>(bufferSize),
+		nullptr, nullptr
+	);
+}
+
+wchar_t WinAPI::WideCharToLower(wchar_t ch, int languageID)
+{
+	wchar_t result;
+	if (LCMapStringW(languageID, LCMAP_LOWERCASE, &ch, 1, &result, 1))
+	{
+		return result;
+	}
+	else
+	{
+		return ch;
+	}
+}
+
+wchar_t WinAPI::WideCharToUpper(wchar_t ch, int languageID)
+{
+	wchar_t result;
+	if (LCMapStringW(languageID, LCMAP_UPPERCASE, &ch, 1, &result, 1))
+	{
+		return result;
+	}
+	else
+	{
+		return ch;
+	}
+}
+
 /////////////////
 // System info //
 /////////////////

@@ -750,6 +750,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/RandomSeeder.h
   Code/Library/StringBuffer.cpp
   Code/Library/StringBuffer.h
+  Code/Library/StringTools.cpp
+  Code/Library/StringTools.h
   Code/Library/Util.cpp
   Code/Library/Util.h
   Code/Library/WinAPI.cpp

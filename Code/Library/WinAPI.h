@@ -239,6 +239,13 @@ namespace WinAPI
 	std::wstring ConvertUTF8To16(const std::string_view & text);
 	std::string ConvertUTF16To8(const std::wstring_view & text);
 
+	std::size_t RawANSIToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize);
+	std::size_t RawUTF8ToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize);
+	std::size_t RawWideToUTF8(const wchar_t* string, std::size_t stringSize, char* buffer, std::size_t bufferSize);
+
+	wchar_t WideCharToLower(wchar_t ch, int languageID);
+	wchar_t WideCharToUpper(wchar_t ch, int languageID);
+
 	/////////////////
 	// System info //
 	/////////////////
