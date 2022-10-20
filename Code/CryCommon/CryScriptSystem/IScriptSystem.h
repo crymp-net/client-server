@@ -77,7 +77,7 @@ struct ScriptAnyValue
 		struct { float x,y,z; } vec3;
 		struct { void * ptr; int nRef; } ud;
 	};
-	
+
 	~ScriptAnyValue(); // implemented at the end of header
 
 	ScriptAnyValue() : type(ANY_ANY) { table = 0; };
@@ -168,7 +168,7 @@ struct ScriptAnyValue
 //   Scripting Engine interface
 // Description
 //	 This interface is mapped 1:1 on a script state.
-//	 All scripts loaded from the same interface instance are visible with 
+//	 All scripts loaded from the same interface instance are visible with
 //   each others.
 struct IScriptSystem
 {
@@ -186,26 +186,26 @@ struct IScriptSystem
 	//   Loads and runs a script file
 	// Parameters
 	//   sFileName - Path of the script file
-	//   bRaiseError - When set to true, the script engine will call CryWarning	
+	//   bRaiseError - When set to true, the script engine will call CryWarning
 	//                 when an error in the script file occurs
 	// Returns
 	//   false if the execution fails, otherwise it will be true
 	// Remarks
-	//   All global variables and functions declared in the executed script will 
+	//   All global variables and functions declared in the executed script will
 	//   persist for all the script system lifetime.
-	virtual bool ExecuteFile(const char *sFileName,bool bRaiseError = true, bool bForceReload=false) = 0; 
+	virtual bool ExecuteFile(const char *sFileName,bool bRaiseError = true, bool bForceReload=false) = 0;
 
 	// Summary
 	//   Executes an ASCII buffer
 	// Parameters
 	//   sBuffer - an 8bit ASCII buffer containing the script that must be executed
-	//   bRaiseError - When set to true, the script engine will call CryWarning	
+	//   bRaiseError - When set to true, the script engine will call CryWarning
 	//                 when an error in the script file occurs
 	//   sBufferDescription - Used as a name to describe the buffer
 	// Returns
 	//   false if the execution fails, otherwise it will be true
 	// Remarks
-	//   All global variables and functions declared in the executed script will 
+	//   All global variables and functions declared in the executed script will
 	//   persist for all the script system lifetime.
 	virtual bool ExecuteBuffer(const char *sBuffer, size_t nSize,const char *sBufferDescription="") = 0;
 
@@ -213,9 +213,9 @@ struct IScriptSystem
 	//   Unloads a script
 	// Parameters
 	//   sFileName - path of the script file
-	// Remarks 
-	//   the script engine never loads twice the same file because it internally 
-	//   stores a list of the loaded files. Calling this functions will remove 
+	// Remarks
+	//   the script engine never loads twice the same file because it internally
+	//   stores a list of the loaded files. Calling this functions will remove
 	//   the script file from this list.
 	// See Also
 	//   UnloadScripts
@@ -231,7 +231,7 @@ struct IScriptSystem
 	//   Reloads a script
 	// Parameters
 	//   sFileName - path of the script file to reload
-	//   bRaiseError - When set to true, the script engine will call CryWarning	
+	//   bRaiseError - When set to true, the script engine will call CryWarning
 	//                 when an error in the script file occurs
 	// Returns
 	//   false if the execution fails, otherwise it will be true
@@ -242,7 +242,7 @@ struct IScriptSystem
 	// Summary
 	//   Reloads all the scripts previously loaded
 	// Returns
-	//   false if the execution of one of the script fails, otherwise it will be 
+	//   false if the execution of one of the script fails, otherwise it will be
 	//   true.
 	virtual bool ReloadScripts() = 0;
 
@@ -252,12 +252,12 @@ struct IScriptSystem
 
 	// Summary
 	//   Creates a new table accessible to the scripts
-	/*!	create a new IScriptTable 
+	/*!	create a new IScriptTable
 		@return a pointer to the created object, with the reference count of 0
 	*/
 	virtual IScriptTable* CreateTable( bool bEmpty=false ) = 0;
 
-	
+
 	/*! start a call to script function
 		@param sTableName name of the script table that contai the function
 		@param sFuncName function name
@@ -269,7 +269,7 @@ struct IScriptSystem
 			push all parameters whit PushParam
 			call EndCall
 
-	
+
 		EXAMPLE:
 
 			m_ScriptSystem->BeginCall("Player","OnInit");
@@ -279,10 +279,10 @@ struct IScriptSystem
 			m_ScriptSystem->PushParam(nTime);
 
 			m_ScriptSystem->EndCall();
-			
+
 	*/
 	//##@{
-	virtual int BeginCall(HSCRIPTFUNCTION hFunc) = 0;						 // Márcio: changed the return type 
+	virtual int BeginCall(HSCRIPTFUNCTION hFunc) = 0;						 // Márcio: changed the return type
 	// Calls a named method inside specified table.
 	virtual int BeginCall(const char *sFuncName) = 0;						 // from void to int for error checking
 	virtual int BeginCall(const char *sTableName, const char *sFuncName) = 0;//
@@ -314,11 +314,11 @@ struct IScriptSystem
 	virtual HSCRIPTFUNCTION GetFunctionPtr(const char *sFuncName) = 0;
 	virtual	HSCRIPTFUNCTION GetFunctionPtr(const char *sTableName, const char *sFuncName) = 0;
 	//##@}
-	
+
 	// Description:
 	//    Frees references created with GetFunctionPtr or GetValue for HSCRIPTFUNCTION.
 	virtual void ReleaseFunc(HSCRIPTFUNCTION f) = 0;
-	
+
 	// Description:
 	//    Push a parameter during a function call
 	virtual void PushFuncParamAny( const ScriptAnyValue &any ) = 0;
@@ -370,13 +370,13 @@ struct IScriptSystem
 
 	/*!return a table containing 1 entry per stack level(aka per call)
 		an entry will look like this table
-		
+
 		[1]={
 			description="function bau()",
 			line=234,
 			sourcefile="/scripts/bla/bla/bla.lua"
 		}
-	 
+
 	 */
 	virtual IScriptTable *GetCallsStack() { return 0; }
 
@@ -414,7 +414,7 @@ struct IScriptSystem
 	virtual void ResetTimers(  ) = 0;
 
 	virtual int GetStackSize() = 0;
-	
+
 	// Retrieve size of memory allocated in script.
 	virtual uint32 GetScriptAllocSize() = 0;
 };
@@ -472,7 +472,7 @@ struct IScriptTable
 	// Chain Set/Get.
 	// Is a faster version when doing a big ammount of SetValue/GetValue.
 	//////////////////////////////////////////////////////////////////////////
-	virtual bool BeginSetGetChain() = 0; 
+	virtual bool BeginSetGetChain() = 0;
 	virtual void EndSetGetChain() = 0;
 	// Set value of a table member.
 	template <class T> void SetValueChain( const char *sKey,const T &value ) { SetValueAny(sKey,value,true); }
@@ -483,8 +483,8 @@ struct IScriptTable
 		return GetValueAny(sKey,any,true) && any.CopyTo(value);
 	}
 	void SetToNullChain( const char *sKey )  { SetValueChain(sKey,ScriptAnyValue(ANY_TNIL)); }
-	
-	/*!Get the value type of a table member 
+
+	/*!Get the value type of a table member
 		@param sKey variable name
 		@return the value type (svtNull if doesn't exist)
 	*/
@@ -495,11 +495,11 @@ struct IScriptTable
 	//    Set the value of a memeber varible at the specified index
 	//    this mean that you will use the object as vector into the script.
 	virtual void SetAtAny( int nIndex,const ScriptAnyValue &any ) = 0;
-	
+
 	// Description:
 	//    Get the value of a memeber varible at the specified index
 	virtual bool GetAtAny( int nIndex,ScriptAnyValue &any ) = 0;
-	
+
 	// Description:
 	//    Set the value of a memeber varible at the specified index
 	template <class T> void SetAt( int nIndex,const T &value ) { SetAtAny(nIndex,value); }
@@ -555,7 +555,7 @@ struct IScriptTable
 	//                 if bDeepCopy is false Only does shallow copy (no deep copy, table entries are not cloned hierarchically).
 	//                 If bDeepCopy is true, all sub tables are also cloned recursively.
 	virtual bool Clone( IScriptTable *pSrcTable,bool bDeepCopy=false )=0;
-	
+
 	// Description:
 	//    Dump all table entries to the IScriptTableDumpSink interface.
 	virtual void Dump(IScriptTableDumpSink *p) = 0;
@@ -583,7 +583,7 @@ struct IScriptTable
 	//    Add a C++ callback function to the table.
 	//    The function a standart function that returns number of arguments and accept IFunctionHandler as argument.
 	virtual bool AddFunction( const SUserFunctionDesc &fd ) = 0;
-	
+
 	//! @param szPath e.g. "cnt.table1.table2", "", "mytable", max 255 characters
 	//! @return true=path was valid, false otherwise
 	//virtual bool GetValueRecursive( const char *szPath, IScriptTable *pObj ) = 0;
@@ -649,7 +649,7 @@ struct IFunctionHandler
 	}
 
 	// Description:
-	//    
+	//
 	virtual int EndFunctionAny( const ScriptAnyValue &any ) = 0;
 	virtual int EndFunctionAny( const ScriptAnyValue &any1,const ScriptAnyValue &any2 ) = 0;
 	virtual int EndFunctionAny( const ScriptAnyValue &any1,const ScriptAnyValue &any2, const ScriptAnyValue &any3) = 0;
@@ -745,20 +745,35 @@ struct IFunctionHandler
 //////////////////////////////////////////////////////////////////////////
 class CScriptSetGetChain
 {
+	IScriptTable* m_pTable;
+
 public:
-	CScriptSetGetChain( IScriptTable *pTable )
+	CScriptSetGetChain(IScriptTable* pTable) : m_pTable(pTable)
 	{
-		m_pTable = pTable;
 		m_pTable->BeginSetGetChain();
 	}
-	~CScriptSetGetChain() { m_pTable->EndSetGetChain(); }
 
-	void SetToNull( const char *sKey ) { m_pTable->SetToNull(sKey); }
-	template <class T> ILINE void SetValue( const char *sKey, const T &value ) const { m_pTable->SetValueChain(sKey,value); }
-	template <class T> ILINE bool GetValue( const char *sKey, T &value ) const { return m_pTable->GetValueChain(sKey,value); }
+	~CScriptSetGetChain()
+	{
+		m_pTable->EndSetGetChain();
+	}
 
-private:
-	IScriptTable *m_pTable;
+	void SetToNull(const char* key)
+	{
+		m_pTable->SetToNull(key);
+	}
+
+	template<typename T>
+	void SetValue(const char* key, const T& value)
+	{
+		m_pTable->SetValueChain(key, value);
+	}
+
+	template<typename T>
+	bool GetValue(const char* key, T& value)
+	{
+		return m_pTable->GetValueChain(key, value);
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////
