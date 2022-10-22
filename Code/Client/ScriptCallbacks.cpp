@@ -64,10 +64,3 @@ void ScriptCallbacks::OnLoadingStart()
 {
 	Call(SCRIPT_CALLBACK_ON_LOADING_START);
 }
-
-void ScriptCallbacks::OnBecomeLocalActor(EntityId localActorId)
-{
-	ScriptHandle id;
-	id.n = localActorId;
-	Call(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, id);
-}

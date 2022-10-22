@@ -384,10 +384,10 @@ function CreateRPC(localState, _L, _Private)
 					locale = lang,
 					timezone = tz,
 					version = CRYMP_CLIENT,
-					latest = CRYMP_CLIENT 
+					latest = CRYMP_CLIENT
 				}
 				if params.validate or params.auth then
-					_Private.Authenticate(false)
+					_Private.Authenticate(false, true)
 					:Then(function(auth)
 						response.auth = auth
 						Self:Reply("UUID", id, response)

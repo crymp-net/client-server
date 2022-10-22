@@ -6,11 +6,11 @@ function InitializeClient()
 	local masters = nil
 	local _L = {}
 	local logAlways = System.LogAlways
-	local validateDelay = 2500
 	local EXPORT = false
 	local EXPORTED = {}
 	local RED, GREEN, YELLOW = "$4", "$3", "$6"
 	local DEBUG_MODE = false
+	local LAST_ACTOR = nil
 	local LAST_RULES = nil
 	local ACTIVE_RPC = nil
 	local RPC_STATE  = true
@@ -473,9 +473,9 @@ function InitializeClient()
 		return command
 	end
 
-	local function Authenticate(chat, immediate)
+	local function Authenticate(chat, refresh)
 		if chat == nil then chat = false end
-		if immediate == nil then immediate = true end
+		if refresh == nil then refresh = false end
 
 		local function MainResolver(resolve, profile)
 			local profile = GetProfile()
@@ -487,15 +487,8 @@ function InitializeClient()
 				display = profile.display
 			}
 			if chat then
-				if immediate then
-					g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-					resolve(retval)
-				else
-					Script.SetTimer(validateDelay, function()
-						g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
-						resolve(retval)
-					end)
-				end
+				g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+				resolve(retval)
 			else
 				resolve(retval)
 			end
@@ -503,20 +496,24 @@ function InitializeClient()
 
 		return Promise(function(resolve, reject)
 			if not System.IsMultiplayer() then return resolve(false) end
-			-- not g_localActor then
-			--	printf(RED .. "[CryMP] You are not in-game")
-			--	return resolve(false)
-			--end
+			if not g_localActor then
+				printf(RED .. "[CryMP] You are not in-game")
+				return resolve(false)
+			end
 			local profile = GetProfile()
 			if profile then
-				RefreshSession()
-				:Then(function(session)
+				if refresh then
+					RefreshSession()
+					:Then(function(session)
+						MainResolver(resolve)
+					end)
+					:Catch(function(error)
+						printf(RED .. "[CryMP] Failed to reactivate session, using old profile")
+						MainResolver(resolve)
+					end)
+				else
 					MainResolver(resolve)
-				end)
-				:Catch(function(error)
-					printf(RED .. "[CryMP] Failed to reactivate session, using old profile")
-					MainResolver(resolve)
-				end)
+				end
 			else
 				printf(RED .. "[CryMP] Cannot authenticate due to missing profile")
 				return resolve(false)
@@ -553,14 +550,31 @@ function InitializeClient()
 		end
 	end
 
+	local function HookedClSetupPlayer(self, playerId)
+		self:SetupPlayer(System.GetEntity(playerId))
+		Authenticate(true, false)
+	end
+
 	local function OnUpdate(dt)
-		if g_gameRules then
+		if g_gameRules ~= nil then
 			if g_gameRules ~= LAST_RULES then
 				LAST_RULES = g_gameRules
+				LAST_ACTOR = nil
+			end
+
+			if g_localActor ~= LAST_ACTOR then
+				LAST_ACTOR = g_localActor
+				if g_localActor ~= nil then
+					Authenticate(true, true)
+				end
 			end
 
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
 				g_gameRules.Client.ClStartWorking = HookedStartWorking
+			end
+
+			if g_gameRules.Client.ClSetupPlayer ~= HookedClSetupPlayer then
+				g_gameRules.Client.ClSetupPlayer = HookedClSetupPlayer
 			end
 
 			UpdateWorld(localState, dt)
@@ -571,10 +585,6 @@ function InitializeClient()
 	local function OnLoadingStart()
 		printf(YELLOW .. "[CryMP] Resetting local state")
 		ResetState()
-	end
-
-	local function OnBecomeLocalActor(localActorId)
-		Authenticate(true, false);
 	end
 
 	local function OnDisconnect(reason, message)
@@ -635,7 +645,6 @@ function InitializeClient()
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, OnMasterResolved)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_LOADING_START, OnLoadingStart)
-	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, OnBecomeLocalActor)
 
 	CPPAPI.AddCCommand("secu_login", LoginCCommandHandler)
 	CPPAPI.AddCCommand("simple_login", LoginCCommandHandler)
@@ -651,7 +660,7 @@ function InitializeClient()
 		end)
 	end)
 	CPPAPI.AddCCommand("auth_login", function()
-		Authenticate(true)
+		Authenticate(true, true)
 	end)
 	CPPAPI.AddCCommand("sfwcl_debug", function()
 		DEBUG_MODE = not DEBUG_MODE

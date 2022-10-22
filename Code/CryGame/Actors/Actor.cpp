@@ -35,8 +35,6 @@
 #include "CryGame/Items/Weapons/OffHand.h"
 #include "CryCommon/CryAISystem/IAgent.h"
 #include "Player/IPlayerInput.h"
-#include "Client/Client.h"
-#include "Client/ScriptCallbacks.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
 
@@ -81,7 +79,7 @@ void SIKLimb::SetWPos(IEntity* pOwner, const Vec3& pos, const Vec3& normal, floa
 
 	// NOTE Dez 13, 2006: <pvl> request ID's work like priorities - if
 	// the new request has an ID lower than the one currently being performed,
-	// nothing happens. 
+	// nothing happens.
 	if (requestID < blendID)
 		return;
 
@@ -1820,7 +1818,7 @@ void CActor::SetFrozenAmount(float amount)
 
 void CActor::AddFrost(float frost)
 {
-	// add scaling/multipliers here if needed    
+	// add scaling/multipliers here if needed
 
 	if (!IsFrozen())
 		SetFrozenAmount(m_frozenAmount + frost);
@@ -2033,7 +2031,7 @@ bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 				}
 				//else
 				//	CryLogAlways("$3Skipping %s rephysicalization after vehicle exit", GetEntity()->GetName());
-				
+
 				//m_stance = STANCE_NULL;
 				//SetStance(STANCE_STAND);
 			}
@@ -2265,8 +2263,6 @@ void CActor::HandleEvent(const SGameObjectEvent& event)
 
 		//Init HUD
 		g_pGame->InitHUD((IActor*)(this));
-
-		gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
 	}
 }
 
@@ -3957,7 +3953,7 @@ IMPLEMENT_RMI(CActor, ClPickUp)
 	else
 	{
 		//CryMP: Add support for pick up objects in Multiplayer
-		//Here is client handler 
+		//Here is client handler
 		if (gEnv->bMultiplayer && m_pGameFramework->IsImmersiveMPEnabled() && g_pGameCVars->mp_pickupObjects)
 		{
 			IEntity* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
