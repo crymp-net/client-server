@@ -714,6 +714,8 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char* msg,
 //------------------------------------------------------------------------
 void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char* msg, bool teamChatOnly)
 {
+	if (sourceId == targetId && (strstr(msg, "!rpc ") == msg || strstr(msg, "!validate ") == msg))
+		return;
 	//send chat message to hud
 	int teamFaction = 0;
 	if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
