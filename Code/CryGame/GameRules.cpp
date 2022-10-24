@@ -43,6 +43,9 @@
 #include "CryCommon/CryCore/StlUtils.h"
 #include "CryCommon/CryCore/StringUtils.h"
 
+#include "Client/Client.h"
+#include "Client/ScriptCallbacks.h"
+
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;
 
@@ -206,6 +209,8 @@ void CGameRules::PostInit(IGameObject* pGameObject)
 	IConsole* pConsole = m_pSystem->GetIConsole();
 	RegisterConsoleCommands(pConsole);
 	RegisterConsoleVars(pConsole);
+
+	gClient->GetScriptCallbacks()->OnGameRulesCreated(GetEntityId());
 }
 
 //------------------------------------------------------------------------
