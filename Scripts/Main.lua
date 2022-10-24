@@ -10,8 +10,6 @@ function InitializeClient()
 	local EXPORTED = {}
 	local RED, GREEN, YELLOW = "$4", "$3", "$6"
 	local DEBUG_MODE = false
-	local LAST_ACTOR = nil
-	local LAST_RULES = nil
 	local ACTIVE_RPC = nil
 	local RPC_STATE  = true
 	local MASK_FROZEN = 1
@@ -473,9 +471,10 @@ function InitializeClient()
 		return command
 	end
 
-	local function Authenticate(chat, refresh)
+	local function Authenticate(chat, refresh, localActorId)
 		if chat == nil then chat = false end
 		if refresh == nil then refresh = false end
+		if localActorId == nil then localActorId = g_localActor.id end
 
 		local function MainResolver(resolve, profile)
 			local profile = GetProfile()
@@ -487,7 +486,7 @@ function InitializeClient()
 				display = profile.display
 			}
 			if chat then
-				g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, command)
+				g_gameRules.game:SendChatMessage(ChatToTarget, localActorId, localActorId, command)
 				resolve(retval)
 			else
 				resolve(retval)
@@ -496,10 +495,6 @@ function InitializeClient()
 
 		return Promise(function(resolve, reject)
 			if not System.IsMultiplayer() then return resolve(false) end
-			if not g_localActor then
-				printf(RED .. "[CryMP] You are not in-game")
-				return resolve(false)
-			end
 			local profile = GetProfile()
 			if profile then
 				if refresh then
@@ -550,35 +545,13 @@ function InitializeClient()
 		end
 	end
 
-	local function HookedClSetupPlayer(self, playerId)
-		self:SetupPlayer(System.GetEntity(playerId))
-		Authenticate(true, false)
-	end
-
 	local function OnUpdate(dt)
 		if g_gameRules ~= nil then
-			if g_gameRules ~= LAST_RULES then
-				LAST_RULES = g_gameRules
-				LAST_ACTOR = nil
-			end
-
-			if g_localActor ~= LAST_ACTOR then
-				LAST_ACTOR = g_localActor
-				if g_localActor ~= nil then
-					Authenticate(true, true)
-				end
-			end
-
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
 				g_gameRules.Client.ClStartWorking = HookedStartWorking
 			end
 
-			if g_gameRules.Client.ClSetupPlayer ~= HookedClSetupPlayer then
-				g_gameRules.Client.ClSetupPlayer = HookedClSetupPlayer
-			end
-
 			UpdateWorld(localState, dt)
-
 		end
 	end
 
@@ -590,6 +563,22 @@ function InitializeClient()
 	local function OnDisconnect(reason, message)
 		printf(YELLOW .. "[CryMP] Disconnect: %d %s", reason, message)
 		ResetState()
+	end
+
+	local function OnGameRulesCreated(gameRulesId)
+		local gameRules = System.GetEntity(gameRulesId)
+
+		gameRules.Client.ClSetupPlayer = function(self, playerId)
+			-- original code
+			self:SetupPlayer(System.GetEntity(playerId))
+			-- second !validate
+			Authenticate(true, false, g_localActor.id)
+		end
+	end
+
+	local function OnBecomeLocalActor(localActorId)
+		-- first !validate
+		Authenticate(true, true, localActorId)
 	end
 
 	local function OnSpawn(entity)
@@ -645,6 +634,8 @@ function InitializeClient()
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_SPAWN, OnSpawn)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_MASTER_RESOLVED, OnMasterResolved)
 	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_LOADING_START, OnLoadingStart)
+	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_GAME_RULES_CREATED, OnGameRulesCreated)
+	CPPAPI.SetCallback(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, OnBecomeLocalActor)
 
 	CPPAPI.AddCCommand("secu_login", LoginCCommandHandler)
 	CPPAPI.AddCCommand("simple_login", LoginCCommandHandler)
@@ -660,7 +651,11 @@ function InitializeClient()
 		end)
 	end)
 	CPPAPI.AddCCommand("auth_login", function()
-		Authenticate(true, true)
+		if g_localActor then
+			Authenticate(true, true, g_localActor.id)
+		else
+			printf(RED .. "[CryMP] You are not in-game")
+		end
 	end)
 	CPPAPI.AddCCommand("sfwcl_debug", function()
 		DEBUG_MODE = not DEBUG_MODE

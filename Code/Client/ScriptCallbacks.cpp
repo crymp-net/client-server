@@ -64,3 +64,17 @@ void ScriptCallbacks::OnLoadingStart()
 {
 	Call(SCRIPT_CALLBACK_ON_LOADING_START);
 }
+
+void ScriptCallbacks::OnGameRulesCreated(EntityId gameRulesId)
+{
+	ScriptHandle id;
+	id.n = gameRulesId;
+	Call(SCRIPT_CALLBACK_ON_GAME_RULES_CREATED, id);
+}
+
+void ScriptCallbacks::OnBecomeLocalActor(EntityId localActorId)
+{
+	ScriptHandle id;
+	id.n = localActorId;
+	Call(SCRIPT_CALLBACK_ON_BECOME_LOCAL_ACTOR, id);
+}
