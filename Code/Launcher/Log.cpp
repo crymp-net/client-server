@@ -276,7 +276,7 @@ void CLog::WriteToFile(const LogMessage & message)
 
 	for (char ch : message.content)
 	{
-		if (ch < 32 || ch == 127)
+		if (static_cast<unsigned char>(ch) < 32 || ch == 127)
 		{
 			// drop control characters
 		}
