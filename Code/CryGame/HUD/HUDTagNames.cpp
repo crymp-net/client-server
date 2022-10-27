@@ -272,10 +272,7 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 		bDrawOnTop = true;
 	}
 
-	m_nameTags.resize(1);
-	NameTag& nameTag = m_nameTags[0];
-
-	nameTag.text.clear();
+	NameTag& nameTag = m_nameTags.emplace_back();
 
 	if (const std::wstring& rank = GetPlayerRank(entityId); !rank.empty())
 	{
@@ -288,8 +285,6 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 	nameTag.pos = vWorldPos;
 	nameTag.drawOnTop = bDrawOnTop;
 	nameTag.color = tagColor;
-
-	DrawTagNames();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -360,8 +355,6 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		bDrawOnTop = true;
 	}
 
-	m_nameTags.resize(0);
-
 	for (int iSeatId = 1; iSeatId <= pVehicle->GetLastSeatId(); iSeatId++)
 	{
 		IVehicleSeat* pVehicleSeat = pVehicle->GetSeatById(iSeatId);
@@ -402,10 +395,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 			bDrawOnTop = true;
 		}
 
-		m_nameTags.resize(m_nameTags.size() + 1);
-		NameTag& nameTag = m_nameTags[m_nameTags.size() - 1];
-
-		nameTag.text.clear();
+		NameTag& nameTag = m_nameTags.emplace_back();
 
 		if (const std::wstring& rank = GetPlayerRank(uiEntityId); !rank.empty())
 		{
@@ -419,24 +409,27 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		nameTag.drawOnTop = bDrawOnTop;
 		nameTag.color = rgbTagName;
 	}
-
-	DrawTagNames();
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CHUDTagNames::Update()
 {
+	IActorSystem* pActorSystem = g_pGame->GetIGameFramework()->GetIActorSystem();
 	CPlayer* pClientActor = m_pHUD->m_pClientActor;
 	CGameRules* pGameRules = g_pGame->GetGameRules();
 
 	if (!pGameRules || !gEnv->bMultiplayer)
+	{
 		return;
+	}
+
+	m_nameTags.clear();
 
 	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
 
 	// previous approach didn't work in IA as there are no teams.
-	IActorIteratorPtr it = g_pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
+	IActorIteratorPtr it = pActorSystem->CreateActorIterator();
 	while (IActor* pActor = it->Next())
 	{
 		//CryMP: Display tag name in third person mode
@@ -476,7 +469,10 @@ void CHUDTagNames::Update()
 
 	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
 	if (!pVehicleSystem)
+	{
+		DrawTagNames();
 		return;
+	}
 
 	IVehicleIteratorPtr pVehicleIter = pVehicleSystem->CreateVehicleIterator();
 	while (IVehicle* pVehicle = pVehicleIter->Next())
@@ -516,9 +512,6 @@ void CHUDTagNames::Update()
 	// don't need to do any of this if we're in spectator mode - all player names will have been drawn above.
 	if (pClientActor->GetSpectatorMode() == CActor::eASM_None)
 	{
-		IActorSystem* pActorSystem = g_pGame->GetIGameFramework()->GetIActorSystem();
-		IVehicleSystem* pVehicleSystem = g_pGame->GetIGameFramework()->GetIVehicleSystem();
-
 		const float currentTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
 		const float tagDuration = g_pGameCVars->hud_mpNamesDuration;
 
@@ -546,18 +539,16 @@ void CHUDTagNames::Update()
 			}
 		}
 	}
+
+	DrawTagNames();
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CHUDTagNames::DrawTagNames()
 {
-	int iTagName = -1;
-
 	for (const NameTag& nameTag : m_nameTags)
 	{
-		iTagName++;
-
 		// It's important that the projection is done outside the UIDraw->PreRender/PostRender because of the Set2DMode(true) which is done internally
 
 		Vec3 vScreenSpace;
@@ -634,7 +625,7 @@ void CHUDTagNames::DrawTagNames()
 		vector2f vDim = m_pMPNamesFont->GetTextSizeW(text);
 
 		float fTextX = vScreenSpace.x - vDim.x * 0.5f;
-		float fTextY = vScreenSpace.y - vDim.y * (m_nameTags.size() * 0.5f - iTagName);
+		float fTextY = vScreenSpace.y - vDim.y * 0.5f;
 
 		if (nameTag.drawOnTop)
 		{
