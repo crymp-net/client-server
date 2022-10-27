@@ -13,6 +13,8 @@ History:
 
 *************************************************************************/
 
+#include <algorithm>
+
 #include "CryGame/StdAfx.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/GameCVars.h"
@@ -24,7 +26,7 @@ History:
 #include "CryCommon/CryAction/IUIDraw.h"
 
 #include "Library/Format.h"
-#include "Library/WinAPI.h"
+#include "Library/StringTools.h"
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -49,23 +51,21 @@ CHUDTagNames::CHUDTagNames(CHUD *pHUD)
 		m_pMPNamesFont->Load("fonts/hud.xml");
 	}
 
-	// Maximum number of players
-	m_tagNamesVector.reserve(64);
+	constexpr int RANK_COUNT = 8;
 
-	m_rankNames.reserve(9);  // "", "PVT", ..., "GEN"
-	m_rankNames.resize(1);   // the default empty rank name at index 0
+	// the default empty rank name at index 0
+	m_rankNames.reserve(RANK_COUNT + 1);
+	m_rankNames.resize(1);
 
 	ILocalizationManager *pLocalizationManager = gEnv->pSystem->GetLocalizationManager();
 
-	wstring buffer;
+	wstring rankName;
 
-	for (int i = 1; i <= 8; i++)
+	for (int i = 1; i <= RANK_COUNT; i++)
 	{
-		if (pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), buffer))
+		if (pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), rankName))
 		{
-			std::wstring_view rankNameW(buffer.c_str(), buffer.length());  // buffer is CryString trash
-
-			m_rankNames.emplace_back(WinAPI::ConvertUTF16To8(rankNameW));
+			m_rankNames.emplace_back(rankName.c_str(), rankName.length());
 		}
 	}
 }
@@ -79,7 +79,7 @@ CHUDTagNames::~CHUDTagNames()
 
 //-----------------------------------------------------------------------------------------------------
 
-const std::string & CHUDTagNames::GetPlayerRank(EntityId entityId)
+const std::wstring& CHUDTagNames::GetPlayerRank(EntityId entityId)
 {
 	constexpr TSynchedKey RANK_KEY = 202;
 
@@ -170,21 +170,20 @@ bool CHUDTagNames::IsFriendlyToClient(EntityId uiEntityId)
 
 void CHUDTagNames::AddEnemyTagName(EntityId uiEntityId)
 {
-	for (TEnemyTagNamesList::iterator iter = m_enemyTagNamesList.begin(); iter != m_enemyTagNamesList.end(); ++iter)
+	for (EnemyTag& tag : m_enemyTags)
 	{
-		SEnemyTagName* pActorTagName = &(*iter);
-		if (pActorTagName->uiEntityId == uiEntityId)
+		if (tag.entityId == uiEntityId)
 		{
 			// Reset time
-			pActorTagName->fSpawnTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
+			tag.spawnTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
 			return;
 		}
 	}
 
-	SEnemyTagName actorTagName;
-	actorTagName.uiEntityId = uiEntityId;
-	actorTagName.fSpawnTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
-	m_enemyTagNamesList.push_back(actorTagName);
+	EnemyTag tag;
+	tag.entityId = uiEntityId;
+	tag.spawnTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
+	m_enemyTags.push_back(tag);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -198,6 +197,7 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 		return;
 
 	IEntity* pEntity = pActor->GetEntity();
+	EntityId entityId = pActor->GetEntityId();
 	Vec3 vWorldPos = pEntity->GetWorldPos();
 
 	ICharacterInstance* pCharacterInstance = pEntity->GetCharacter(0);
@@ -229,7 +229,7 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 		bDrawOnTop = true;
 	}
 
-	ColorF rgbTagName = COLOR_ENEMY;
+	ColorF tagColor = COLOR_ENEMY;
 
 	CPlayer* pClientActor = m_pHUD->m_pClientActor;
 	CGameRules* pGameRules = m_pHUD->m_pGameRules;
@@ -237,33 +237,29 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 
 	if (0 == iClientTeam)
 	{
-		if (IsFriendlyToClient(pActor->GetEntityId()))
+		if (IsFriendlyToClient(entityId))
 		{
-			rgbTagName = COLOR_FRIEND;
+			tagColor = COLOR_FRIEND;
 		}
 	}
-	else if (pGameRules->GetTeam(pActor->GetEntityId()) == iClientTeam)
+	else if (pGameRules->GetTeam(entityId) == iClientTeam)
 	{
-		rgbTagName = COLOR_FRIEND;
+		tagColor = COLOR_FRIEND;
 	}
 
 	if (pActor->GetHealth() <= 0)
 	{
-		rgbTagName = COLOR_DEAD;
+		tagColor = COLOR_DEAD;
 	}
 
-	m_tagNamesVector.resize(1);
-
-	auto *teamMates = m_pHUD->GetRadar()->GetSelectedTeamMates();
-
-	for (std::vector<EntityId>::iterator iter = teamMates->begin(); iter != teamMates->end(); ++iter)
+	for (EntityId teamMateId : *m_pHUD->GetRadar()->GetSelectedTeamMates())
 	{
-		if (pActor->GetEntityId() == *iter)
+		if (entityId == teamMateId)
 		{
-			// Teammate is selected in radar, force the visibility of that name					
+			// Teammate is selected in radar, force the visibility of that name
 			bDrawOnTop = true;
 
-			rgbTagName = COLOR_TAGGED;
+			tagColor = COLOR_TAGGED;
 
 			break;
 		}
@@ -271,30 +267,27 @@ void CHUDTagNames::DrawTagName(IActor* pActor, bool bLocalVehicle)
 
 	//CryMP: Always draw killer tag
 	const EntityId killerId = pClientActor->GetDeathCamTarget();
-	if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
+	if (killerId == entityId && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
 	{
 		bDrawOnTop = true;
 	}
 
-	STagName* pTagName = &m_tagNamesVector[0];
+	m_nameTags.resize(1);
+	NameTag& nameTag = m_nameTags[0];
 
+	nameTag.text.clear();
 
-	const std::string& rank = GetPlayerRank(pActor->GetEntityId());
-
-	if (rank.empty())
+	if (const std::wstring& rank = GetPlayerRank(entityId); !rank.empty())
 	{
-		pTagName->text = pEntity->GetName();
-	}
-	else
-	{
-		pTagName->text = rank;
-		pTagName->text += ' ';
-		pTagName->text += pEntity->GetName();
+		nameTag.text += rank;
+		nameTag.text += L' ';
 	}
 
-	pTagName->vWorld = vWorldPos;
-	pTagName->bDrawOnTop = bDrawOnTop;
-	pTagName->rgb = rgbTagName;
+	StringTools::AppendTo(nameTag.text, pEntity->GetName());
+
+	nameTag.pos = vWorldPos;
+	nameTag.drawOnTop = bDrawOnTop;
+	nameTag.color = tagColor;
 
 	DrawTagNames();
 }
@@ -367,7 +360,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		bDrawOnTop = true;
 	}
 
-	m_tagNamesVector.resize(0);
+	m_nameTags.resize(0);
 
 	for (int iSeatId = 1; iSeatId <= pVehicle->GetLastSeatId(); iSeatId++)
 	{
@@ -380,8 +373,6 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 		IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(uiEntityId);
 		if (!pActor)
 			continue;
-
-		const std::string & rank = GetPlayerRank(uiEntityId);
 
 		IEntity* pEntity = pActor->GetEntity();
 		if (!pEntity)
@@ -411,24 +402,22 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 			bDrawOnTop = true;
 		}
 
-		m_tagNamesVector.resize(m_tagNamesVector.size() + 1);
+		m_nameTags.resize(m_nameTags.size() + 1);
+		NameTag& nameTag = m_nameTags[m_nameTags.size() - 1];
 
-		STagName* pTagName = &m_tagNamesVector[m_tagNamesVector.size() - 1];
+		nameTag.text.clear();
 
-		if (rank.empty())
+		if (const std::wstring& rank = GetPlayerRank(uiEntityId); !rank.empty())
 		{
-			pTagName->text = pEntity->GetName();
-		}
-		else
-		{
-			pTagName->text = rank;
-			pTagName->text += ' ';
-			pTagName->text += pEntity->GetName();
+			nameTag.text += rank;
+			nameTag.text += L' ';
 		}
 
-		pTagName->vWorld = vWorldPos;
-		pTagName->bDrawOnTop = bDrawOnTop;
-		pTagName->rgb = rgbTagName;
+		StringTools::AppendTo(nameTag.text, pEntity->GetName());
+
+		nameTag.pos = vWorldPos;
+		nameTag.drawOnTop = bDrawOnTop;
+		nameTag.color = rgbTagName;
 	}
 
 	DrawTagNames();
@@ -456,14 +445,14 @@ void CHUDTagNames::Update()
 
 		const EntityId killerId = pClientActor->GetDeathCamTarget();
 		if (killerId == pActor->GetEntityId() && pClientActor->GetPhysicsProfile() == eAP_Ragdoll)
-		{	
+		{
 			IVehicle* pKillerVehicle = pActor->GetLinkedVehicle();
 			if (pKillerVehicle)
 			{
 				DrawTagName(pKillerVehicle);
 			}
 			else
-			{ 
+			{
 				DrawTagName(pActor);
 			}
 			continue;
@@ -527,26 +516,33 @@ void CHUDTagNames::Update()
 	// don't need to do any of this if we're in spectator mode - all player names will have been drawn above.
 	if (pClientActor->GetSpectatorMode() == CActor::eASM_None)
 	{
-		for (TEnemyTagNamesList::iterator iter = m_enemyTagNamesList.begin(); iter != m_enemyTagNamesList.end(); ++iter)
-		{
-			SEnemyTagName* pEnemyTagName = &(*iter);
-			if (gEnv->pTimer->GetAsyncTime().GetSeconds() >= pEnemyTagName->fSpawnTime + ((float)g_pGameCVars->hud_mpNamesDuration))
-			{
-				// Note: iter=my_list.erase(iter) may not be standard/safe
-				TEnemyTagNamesList::iterator iterNext = iter;
-				++iterNext;
-				m_enemyTagNamesList.erase(iter);
-				iter = iterNext;
-			}
-			else
-			{
-				IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEnemyTagName->uiEntityId);
-				if (pActor)
-					DrawTagName(pActor);
+		IActorSystem* pActorSystem = g_pGame->GetIGameFramework()->GetIActorSystem();
+		IVehicleSystem* pVehicleSystem = g_pGame->GetIGameFramework()->GetIVehicleSystem();
 
-				IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEnemyTagName->uiEntityId);
-				if (pVehicle)
-					DrawTagName(pVehicle);
+		const float currentTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
+		const float tagDuration = g_pGameCVars->hud_mpNamesDuration;
+
+		const auto expired = [&currentTime, &tagDuration](EnemyTag& tag) -> bool
+		{
+			const float tagEndTime = tag.spawnTime + tagDuration;
+
+			return currentTime >= tagEndTime;
+		};
+
+		m_enemyTags.erase(std::remove_if(m_enemyTags.begin(), m_enemyTags.end(), expired), m_enemyTags.end());
+
+		for (const EnemyTag& tag : m_enemyTags)
+		{
+			IActor* pActor = pActorSystem->GetActor(tag.entityId);
+			if (pActor)
+			{
+				DrawTagName(pActor);
+			}
+
+			IVehicle* pVehicle = pVehicleSystem->GetVehicle(tag.entityId);
+			if (pVehicle)
+			{
+				DrawTagName(pVehicle);
 			}
 		}
 	}
@@ -556,15 +552,16 @@ void CHUDTagNames::Update()
 
 void CHUDTagNames::DrawTagNames()
 {
-	int iTagName = 0;
-	for (TTagNamesVector::iterator iter = m_tagNamesVector.begin(); iter != m_tagNamesVector.end(); ++iter, ++iTagName)
+	int iTagName = -1;
+
+	for (const NameTag& nameTag : m_nameTags)
 	{
-		STagName* pTagName = &(*iter);
+		iTagName++;
 
 		// It's important that the projection is done outside the UIDraw->PreRender/PostRender because of the Set2DMode(true) which is done internally
 
 		Vec3 vScreenSpace;
-		gEnv->pRenderer->ProjectToScreen(pTagName->vWorld.x, pTagName->vWorld.y, pTagName->vWorld.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
+		gEnv->pRenderer->ProjectToScreen(nameTag.pos.x, nameTag.pos.y, nameTag.pos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
 
 		if (vScreenSpace.z < 0.0f || vScreenSpace.z > 1.0f)
 		{
@@ -578,7 +575,7 @@ void CHUDTagNames::DrawTagNames()
 		// Seems that Z is on range [1 .. -1]
 		vScreenSpace.z = 1.0f - (vScreenSpace.z * 2.0f);
 
-		float fDistance = (pTagName->vWorld - gEnv->pSystem->GetViewCamera().GetPosition()).len();
+		float fDistance = (nameTag.pos - gEnv->pSystem->GetViewCamera().GetPosition()).len();
 
 		// Adjust distance when zoomed. Default fov is 60, so we use (1/(60*pi/180)=3/pi)
 		fDistance *= 3.0f * gEnv->pRenderer->GetCamera().GetFov() / gf_PI;
@@ -632,25 +629,25 @@ void CHUDTagNames::DrawTagNames()
 		m_pMPNamesFont->SetSize(vector2f(fSize, fSize));
 		m_pMPNamesFont->SetSameSize(false);
 
-		const char* szText = pTagName->text.c_str();
+		const wchar_t* text = nameTag.text.c_str();
 
-		vector2f vDim = m_pMPNamesFont->GetTextSize(szText);
+		vector2f vDim = m_pMPNamesFont->GetTextSizeW(text);
 
 		float fTextX = vScreenSpace.x - vDim.x * 0.5f;
-		float fTextY = vScreenSpace.y - vDim.y * (m_tagNamesVector.size() * 0.5f - iTagName);
+		float fTextY = vScreenSpace.y - vDim.y * (m_nameTags.size() * 0.5f - iTagName);
 
-		if (pTagName->bDrawOnTop)
+		if (nameTag.drawOnTop)
 		{
 			vScreenSpace.z = 1.0f;
 		}
 
 		m_pMPNamesFont->SetEffect("simple");
 		m_pMPNamesFont->SetColor(ColorF(0, 0, 0, fAlpha));
-		m_pMPNamesFont->DrawString(fTextX + 1.0f, fTextY + 1.0f, vScreenSpace.z, szText);
+		m_pMPNamesFont->DrawStringW(fTextX + 1.0f, fTextY + 1.0f, vScreenSpace.z, text);
 
 		m_pMPNamesFont->SetEffect("default");
-		m_pMPNamesFont->SetColor(ColorF(pTagName->rgb.r, pTagName->rgb.g, pTagName->rgb.b, fAlpha));
-		m_pMPNamesFont->DrawString(fTextX, fTextY, vScreenSpace.z, szText);
+		m_pMPNamesFont->SetColor(ColorF(nameTag.color.r, nameTag.color.g, nameTag.color.b, fAlpha));
+		m_pMPNamesFont->DrawStringW(fTextX, fTextY, vScreenSpace.z, text);
 
 		m_pUIDraw->PostRender();
 	}

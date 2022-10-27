@@ -4,7 +4,7 @@ Copyright (C), Crytek Studios, 2001-2005.
 -------------------------------------------------------------------------
 $Id$
 $DateTime$
-Description: 
+Description:
 	MP TagNames
 
 -------------------------------------------------------------------------
@@ -22,12 +22,9 @@ History:
 
 class CHUDTagNames
 {
-	std::vector<std::string> m_rankNames;
-
 public:
-
-		CHUDTagNames(CHUD* pHUD);
-		~	CHUDTagNames();
+	explicit CHUDTagNames(CHUD* pHUD);
+	~CHUDTagNames();
 
 	void Update();
 
@@ -35,8 +32,7 @@ public:
 	void AddEnemyTagName(EntityId uiEntityId);
 
 private:
-
-	const std::string & GetPlayerRank(EntityId entityId);
+	const std::wstring& GetPlayerRank(EntityId entityId);
 
 	bool ProjectOnSphere(Vec3 &rvWorldPos,const AABB &rvBBox);
 
@@ -46,25 +42,25 @@ private:
 	IFFont *m_pMPNamesFont = nullptr;
 	CHUD* m_pHUD = nullptr;
 
-	struct STagName
+	struct NameTag
 	{
-		std::string text;
-		Vec3 vWorld;
-		bool bDrawOnTop;
-		ColorF rgb;
+		Vec3 pos;
+		ColorF color;
+		std::wstring text;
+		bool drawOnTop = false;
 	};
-	typedef std::vector<STagName> TTagNamesVector;
-	TTagNamesVector m_tagNamesVector;
 
-	struct SEnemyTagName
+	struct EnemyTag
 	{
-		EntityId uiEntityId;
-		float fSpawnTime;
+		EntityId entityId = 0;
+		float spawnTime = 0;
 	};
-	typedef std::list<SEnemyTagName> TEnemyTagNamesList;
-	TEnemyTagNamesList m_enemyTagNamesList;
 
-	void DrawTagName(IActor *pActor,bool bLocalVehicle=false);
+	std::vector<NameTag> m_nameTags;
+	std::vector<EnemyTag> m_enemyTags;
+	std::vector<std::wstring> m_rankNames;
+
+	void DrawTagName(IActor *pActor,bool bLocalVehicle = false);
 	void DrawTagName(IVehicle *pVehicle);
 	void DrawTagNames();
 };
