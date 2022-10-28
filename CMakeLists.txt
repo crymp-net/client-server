@@ -720,43 +720,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/ThirdParty/Lua/src/lzio.h
   Code/ThirdParty/miniz/miniz.c
   Code/ThirdParty/miniz/miniz.h
-  Code/ThirdParty/nlohmann/adl_serializer.hpp
-  Code/ThirdParty/nlohmann/byte_container_with_subtype.hpp
-  Code/ThirdParty/nlohmann/detail/conversions/from_json.hpp
-  Code/ThirdParty/nlohmann/detail/conversions/to_chars.hpp
-  Code/ThirdParty/nlohmann/detail/conversions/to_json.hpp
-  Code/ThirdParty/nlohmann/detail/exceptions.hpp
-  Code/ThirdParty/nlohmann/detail/hash.hpp
-  Code/ThirdParty/nlohmann/detail/input/binary_reader.hpp
-  Code/ThirdParty/nlohmann/detail/input/input_adapters.hpp
-  Code/ThirdParty/nlohmann/detail/input/json_sax.hpp
-  Code/ThirdParty/nlohmann/detail/input/lexer.hpp
-  Code/ThirdParty/nlohmann/detail/input/parser.hpp
-  Code/ThirdParty/nlohmann/detail/input/position_t.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/internal_iterator.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/iter_impl.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/iteration_proxy.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/iterator_traits.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/json_reverse_iterator.hpp
-  Code/ThirdParty/nlohmann/detail/iterators/primitive_iterator.hpp
-  Code/ThirdParty/nlohmann/detail/json_pointer.hpp
-  Code/ThirdParty/nlohmann/detail/json_ref.hpp
-  Code/ThirdParty/nlohmann/detail/macro_scope.hpp
-  Code/ThirdParty/nlohmann/detail/macro_unscope.hpp
-  Code/ThirdParty/nlohmann/detail/meta/cpp_future.hpp
-  Code/ThirdParty/nlohmann/detail/meta/detected.hpp
-  Code/ThirdParty/nlohmann/detail/meta/is_sax.hpp
-  Code/ThirdParty/nlohmann/detail/meta/type_traits.hpp
-  Code/ThirdParty/nlohmann/detail/meta/void_t.hpp
-  Code/ThirdParty/nlohmann/detail/output/binary_writer.hpp
-  Code/ThirdParty/nlohmann/detail/output/output_adapters.hpp
-  Code/ThirdParty/nlohmann/detail/output/serializer.hpp
-  Code/ThirdParty/nlohmann/detail/value_t.hpp
   Code/ThirdParty/nlohmann/json.hpp
   Code/ThirdParty/nlohmann/json_fwd.hpp
-  Code/ThirdParty/nlohmann/ordered_map.hpp
-  Code/ThirdParty/nlohmann/thirdparty/hedley/hedley.hpp
-  Code/ThirdParty/nlohmann/thirdparty/hedley/hedley_undef.hpp
   Code/ThirdParty/picosha2.h
   Resources/Launcher.manifest
   Resources/Launcher.rc
