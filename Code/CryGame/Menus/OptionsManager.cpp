@@ -21,7 +21,7 @@ History:
 #include "FlashMenuScreen.h"
 #include "CryGame/Game.h"
 #include "CryGame/HUD/HUD.h"
-#include "Launcher/GameWindow.h"
+#include "CrySystem/GameWindow.h"
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ void COptionsManager::SetCrysisProfileColor(const char* color)
 		m_eCrysisProfileColor = CrysisProfileColor_White;
 	}
 
-	GameWindow::UpdateCursorColor();
+	GameWindow::GetInstance().UpdateCursorColor();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -898,7 +898,7 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 	size_t pos;
 
 	// replace \ with \\ a
-	
+
 	pos = 1;
 	for (;;)
 	{
@@ -912,9 +912,9 @@ void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 		szValue.replace(pos, 1, "\\\\", 2);
 		pos += 2;
 	}
-	
 
-	// replace " with \" 
+
+	// replace " with \"
 	pos = 1;
 	for (;;)
 	{

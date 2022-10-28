@@ -6,6 +6,7 @@
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
 #include "CryScriptSystem/ScriptSystem.h"
+#include "CrySystem/GameWindow.h"
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "Library/CmdLine.h"
@@ -313,7 +314,7 @@ void Launcher::StartEngine()
 		throw Error("Failed to create the GameFramework Interface!");
 	}
 
-	m_gameWindow.Init();
+	GameWindow::GetInstance().Init();
 
 	// initialize CryEngine
 	// Launcher::OnInit is called here
@@ -347,14 +348,14 @@ void Launcher::UpdateLoop()
 
 	while (true)
 	{
-		if (!m_gameWindow.OnUpdate())
+		if (!GameWindow::GetInstance().OnUpdate())
 		{
 			break;
 		}
 
 		if (!m_pGame->Update(true, 0))
 		{
-			m_gameWindow.OnQuit();
+			GameWindow::GetInstance().OnQuit();
 			break;
 		}
 	}

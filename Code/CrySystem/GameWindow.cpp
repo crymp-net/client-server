@@ -9,10 +9,12 @@
 #include "CryCommon/CryInput/IInput.h"
 #include "CryGame/Game.h"
 #include "CryGame/Menus/OptionsManager.h"
+#include "Launcher/Resources.h"
 #include "Library/Error.h"
 
 #include "GameWindow.h"
-#include "Resources.h"
+
+GameWindow GameWindow::s_globalInstance;
 
 static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
 {

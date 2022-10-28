@@ -3,8 +3,6 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/DLL.h"
 
-#include "GameWindow.h"
-
 class CGame;
 
 class Launcher : public ISystemUserCallback
@@ -14,7 +12,6 @@ class Launcher : public ISystemUserCallback
 	DLL m_CrySystem;
 	DLL m_CryRenderD3D10;
 	SSystemInitParams m_params;
-	GameWindow m_gameWindow;
 	CGame *m_pGame = nullptr;
 
 	void SetCmdLine();
@@ -56,11 +53,6 @@ public:
 	const SSystemInitParams & GetParams() const
 	{
 		return m_params;
-	}
-
-	const GameWindow & GetGameWindow() const
-	{
-		return m_gameWindow;
 	}
 
 	CGame *GetGame()
