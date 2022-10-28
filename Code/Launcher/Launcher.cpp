@@ -7,6 +7,7 @@
 #include "CryGame/Game.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/LocalizationManager.h"
+#include "CrySystem/Logger.h"
 #include "Library/CmdLine.h"
 #include "Library/CPU.h"
 #include "Library/Error.h"
@@ -391,7 +392,7 @@ void Launcher::OnInit(ISystem *pSystem)
 	gEnv = pSystem->GetGlobalEnvironment();
 
 	// open the log file
-	m_log.Init(m_params.logFileName);
+	Logger::GetInstance().Init(m_params.logFileName);
 
 	// crash logger requires the log file
 	CrashLogger::Init();
@@ -435,7 +436,7 @@ void Launcher::OnShutdown()
 
 void Launcher::OnUpdate()
 {
-	m_log.OnUpdate();
+	Logger::GetInstance().OnUpdate();
 }
 
 void Launcher::GetMemoryUsage(ICrySizer *pSizer)
@@ -448,7 +449,7 @@ void Launcher::Run()
 
 	m_params.hInstance = WinAPI::DLL_Get(nullptr);  // EXE handle
 	m_params.pUserCallback = this;
-	m_params.pLog = &m_log;
+	m_params.pLog = &Logger::GetInstance();
 
 	SetCmdLine();
 

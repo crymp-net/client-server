@@ -6,6 +6,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "CrySystem/Logger.h"
+
 #include "Library/Format.h"
 #include "Library/WinAPI.h"
 #include "Library/DLL.h"
@@ -399,7 +401,7 @@ static const char *ExceptionCodeToString(unsigned int code)
 
 static void Log(const std::string_view & message)
 {
-	void *file = gLauncher->GetLog().GetFile();
+	void *file = Logger::GetInstance().GetFile();
 
 	if (file)
 	{

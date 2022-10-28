@@ -35,7 +35,7 @@ public:
 	bool Pop(LogMessage & message);
 };
 
-class CLog : public ILog
+class Logger : public ILog
 {
 	std::thread::id m_mainThreadID;
 	LogMessageQueue m_messageQueue;
@@ -50,6 +50,8 @@ class CLog : public ILog
 	void *m_file = nullptr;
 	int m_verbosity = 0;
 
+	static Logger s_globalInstance;
+
 	void OpenFile();
 	void CloseFile();
 
@@ -60,8 +62,14 @@ class CLog : public ILog
 	void Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend);
 
 public:
-	CLog();
-	~CLog();
+	Logger();
+	~Logger();
+
+	// to be removed once we have our own CrySystem
+	static Logger& GetInstance()
+	{
+		return s_globalInstance;
+	}
 
 	void Init(const char *defaultFileName);
 	void OnUpdate();

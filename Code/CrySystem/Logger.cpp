@@ -10,7 +10,9 @@
 #include "Library/StringBuffer.h"
 #include "Library/WinAPI.h"
 
-#include "Log.h"
+#include "Logger.h"
+
+Logger Logger::s_globalInstance;
 
 namespace
 {
@@ -205,7 +207,7 @@ bool LogMessageQueue::Pop(LogMessage & message)
 	}
 }
 
-void CLog::OpenFile()
+void Logger::OpenFile()
 {
 	CloseFile();
 
@@ -234,7 +236,7 @@ void CLog::OpenFile()
 	}
 }
 
-void CLog::CloseFile()
+void Logger::CloseFile()
 {
 	if (m_file)
 	{
@@ -243,7 +245,7 @@ void CLog::CloseFile()
 	}
 }
 
-void CLog::Write(const LogMessage & message)
+void Logger::Write(const LogMessage & message)
 {
 	if (message.isFile)
 		WriteToFile(message);
@@ -252,7 +254,7 @@ void CLog::Write(const LogMessage & message)
 		WriteToConsole(message);
 }
 
-void CLog::WriteToFile(const LogMessage & message)
+void Logger::WriteToFile(const LogMessage & message)
 {
 	if (!m_file)
 		return;
@@ -333,7 +335,7 @@ void CLog::WriteToFile(const LogMessage & message)
 	}
 }
 
-void CLog::WriteToConsole(const LogMessage & message)
+void Logger::WriteToConsole(const LogMessage & message)
 {
 	if (!gEnv)
 		return;
@@ -354,7 +356,7 @@ void CLog::WriteToConsole(const LogMessage & message)
 	}
 }
 
-void CLog::Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend)
+void Logger::Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend)
 {
 	if (!format)
 	{
@@ -475,17 +477,17 @@ void CLog::Push(ILog::ELogType type, const char *format, va_list args, bool isFi
 	}
 }
 
-CLog::CLog()
+Logger::Logger()
 {
 	m_mainThreadID = std::this_thread::get_id();
 }
 
-CLog::~CLog()
+Logger::~Logger()
 {
 	CloseFile();
 }
 
-void CLog::Init(const char *defaultFileName)
+void Logger::Init(const char *defaultFileName)
 {
 	const int defaultVerbosity = 0;
 
@@ -505,7 +507,7 @@ void CLog::Init(const char *defaultFileName)
 	CryLogAlways("");
 }
 
-void CLog::OnUpdate()
+void Logger::OnUpdate()
 {
 	LogMessage message;
 
@@ -515,26 +517,26 @@ void CLog::OnUpdate()
 	}
 }
 
-void CLog::LogV(ILog::ELogType type, const char *format, va_list args)
+void Logger::LogV(ILog::ELogType type, const char *format, va_list args)
 {
 	Push(type, format, args, true, true, false);
 }
 
-void CLog::Release()
+void Logger::Release()
 {
 }
 
-bool CLog::SetFileName(const char *fileName)
+bool Logger::SetFileName(const char *fileName)
 {
 	return false;
 }
 
-const char *CLog::GetFileName()
+const char *Logger::GetFileName()
 {
 	return m_fileName.c_str();
 }
 
-void CLog::Log(const char *format, ...)
+void Logger::Log(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -542,7 +544,7 @@ void CLog::Log(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogWarning(const char *format, ...)
+void Logger::LogWarning(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -550,7 +552,7 @@ void CLog::LogWarning(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogError(const char *format, ...)
+void Logger::LogError(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -558,7 +560,7 @@ void CLog::LogError(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogPlus(const char *format, ...)
+void Logger::LogPlus(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -566,7 +568,7 @@ void CLog::LogPlus(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogToFile(const char *format, ...)
+void Logger::LogToFile(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -574,7 +576,7 @@ void CLog::LogToFile(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogToFilePlus(const char *format, ...)
+void Logger::LogToFilePlus(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -582,7 +584,7 @@ void CLog::LogToFilePlus(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogToConsole(const char *format, ...)
+void Logger::LogToConsole(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -590,7 +592,7 @@ void CLog::LogToConsole(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::LogToConsolePlus(const char *format, ...)
+void Logger::LogToConsolePlus(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -598,7 +600,7 @@ void CLog::LogToConsolePlus(const char *format, ...)
 	va_end(args);
 }
 
-void CLog::UpdateLoadingScreen(const char *format, ...)
+void Logger::UpdateLoadingScreen(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -620,7 +622,7 @@ void CLog::UpdateLoadingScreen(const char *format, ...)
 	}
 }
 
-void CLog::RegisterConsoleVariables()
+void Logger::RegisterConsoleVariables()
 {
 	if (!gEnv)
 		return;
@@ -681,11 +683,11 @@ void CLog::RegisterConsoleVariables()
 	);
 }
 
-void CLog::UnregisterConsoleVariables()
+void Logger::UnregisterConsoleVariables()
 {
 }
 
-void CLog::SetVerbosity(int verbosity)
+void Logger::SetVerbosity(int verbosity)
 {
 	if (m_pVerbosityCVar)
 		m_pVerbosityCVar->Set(verbosity);
@@ -693,7 +695,7 @@ void CLog::SetVerbosity(int verbosity)
 		m_verbosity = verbosity;
 }
 
-int CLog::GetVerbosityLevel()
+int Logger::GetVerbosityLevel()
 {
 	if (m_pVerbosityCVar)
 		return m_pVerbosityCVar->GetIVal();
@@ -701,7 +703,7 @@ int CLog::GetVerbosityLevel()
 		return m_verbosity;
 }
 
-void CLog::AddCallback(ILogCallback *pCallback)
+void Logger::AddCallback(ILogCallback *pCallback)
 {
 	if (pCallback && std::count(m_callbacks.begin(), m_callbacks.end(), pCallback) == 0)
 	{
@@ -709,7 +711,7 @@ void CLog::AddCallback(ILogCallback *pCallback)
 	}
 }
 
-void CLog::RemoveCallback(ILogCallback *pCallback)
+void Logger::RemoveCallback(ILogCallback *pCallback)
 {
 	if (pCallback)
 	{

@@ -4,7 +4,6 @@
 #include "Library/DLL.h"
 
 #include "GameWindow.h"
-#include "Log.h"
 
 class CGame;
 
@@ -17,7 +16,6 @@ class Launcher : public ISystemUserCallback
 	SSystemInitParams m_params;
 	GameWindow m_gameWindow;
 	CGame *m_pGame = nullptr;
-	CLog m_log;
 
 	void SetCmdLine();
 	void InitWorkingDirectory();
@@ -68,11 +66,6 @@ public:
 	CGame *GetGame()
 	{
 		return m_pGame;
-	}
-
-	CLog & GetLog()
-	{
-		return m_log;
 	}
 
 	void Run();
