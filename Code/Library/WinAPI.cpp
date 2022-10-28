@@ -671,6 +671,11 @@ std::size_t WinAPI::RawWideToUTF8(const wchar_t* string, std::size_t stringSize,
 
 wchar_t WinAPI::WideCharToLower(wchar_t ch, int languageID)
 {
+	if (languageID == 0)
+	{
+		languageID = LOCALE_SYSTEM_DEFAULT;
+	}
+
 	wchar_t result;
 	if (LCMapStringW(languageID, LCMAP_LOWERCASE, &ch, 1, &result, 1))
 	{
@@ -684,6 +689,11 @@ wchar_t WinAPI::WideCharToLower(wchar_t ch, int languageID)
 
 wchar_t WinAPI::WideCharToUpper(wchar_t ch, int languageID)
 {
+	if (languageID == 0)
+	{
+		languageID = LOCALE_SYSTEM_DEFAULT;
+	}
+
 	wchar_t result;
 	if (LCMapStringW(languageID, LCMAP_UPPERCASE, &ch, 1, &result, 1))
 	{

@@ -11,7 +11,6 @@
 #include "LocalizationManager.h"
 
 LocalizationManager LocalizationManager::s_globalInstance;
-LocalizationManager::Language LocalizationManager::s_emptyLanguage;
 
 enum class ColumnID
 {
@@ -326,7 +325,7 @@ LocalizationManager::~LocalizationManager()
 
 bool LocalizationManager::Add(Label&& label, bool keepExisting)
 {
-	if (!m_currentLanguage)
+	if (m_currentLanguage == &m_emptyLanguage)
 	{
 		return false;
 	}
@@ -391,7 +390,7 @@ std::string LocalizationManager::Localize(const std::string_view& text) const
 
 const LocalizationManager::Language& LocalizationManager::GetCurrentLanguage() const
 {
-	return m_currentLanguage ? *m_currentLanguage : s_emptyLanguage;
+	return *m_currentLanguage;
 }
 
 bool LocalizationManager::SetLanguage(const char* name)
@@ -418,14 +417,14 @@ bool LocalizationManager::SetLanguage(const char* name)
 
 const char* LocalizationManager::GetLanguage()
 {
-	return m_currentLanguage ? m_currentLanguage->prettyName.c_str() : "";
+	return m_currentLanguage->prettyName.c_str();
 }
 
 bool LocalizationManager::LoadExcelXmlSpreadsheet(const char* filename, bool reload)
 {
 	const std::string loweredFilename = StringTools::ToLower(filename);
 
-	if (!m_currentLanguage)
+	if (m_currentLanguage == &m_emptyLanguage)
 	{
 		return false;
 	}
@@ -498,7 +497,7 @@ bool LocalizationManager::LoadExcelXmlSpreadsheet(const char* filename, bool rel
 
 void LocalizationManager::FreeData()
 {
-	m_currentLanguage = nullptr;
+	m_currentLanguage = &m_emptyLanguage;
 	m_languages.clear();
 	m_filenames.clear();
 }
@@ -544,12 +543,12 @@ bool LocalizationManager::GetLocalizedInfo(const char* name, SLocalizedInfo& inf
 
 int LocalizationManager::GetLocalizedStringCount()
 {
-	return m_currentLanguage ? static_cast<int>(m_currentLanguage->labels.size()) : 0;
+	return static_cast<int>(m_currentLanguage->labels.size());
 }
 
 bool LocalizationManager::GetLocalizedInfoByIndex(int index, SLocalizedInfo& info)
 {
-	if (m_currentLanguage && index >= 0 && index < static_cast<int>(m_currentLanguage->labels.size()))
+	if (index >= 0 && index < GetLocalizedStringCount())
 	{
 		AssignLocalizedInfo(info, m_currentLanguage->labels[index]);
 
@@ -668,12 +667,12 @@ void LocalizationManager::FormatStringMessage(wstring& result, const wstring& fo
 
 wchar_t LocalizationManager::ToUpperCase(wchar_t ch)
 {
-	return (m_currentLanguage) ? WinAPI::WideCharToUpper(ch, m_currentLanguage->id) : ch;
+	return WinAPI::WideCharToUpper(ch, m_currentLanguage->id);
 }
 
 wchar_t LocalizationManager::ToLowerCase(wchar_t ch)
 {
-	return (m_currentLanguage) ? WinAPI::WideCharToLower(ch, m_currentLanguage->id) : ch;
+	return WinAPI::WideCharToLower(ch, m_currentLanguage->id);
 }
 
 void LocalizationManager::LocalizeTime(time_t time, bool isLocalTime, bool showSeconds, wstring& result)
@@ -749,25 +748,23 @@ const LocalizationManager::Label* LocalizationManager::FindLabel(NameStringView 
 		name.remove_prefix(1);
 	}
 
-	if (m_currentLanguage)
+	std::string loweredName;
+	StringTools::AppendTo(loweredName, name);
+	StringTools::ToLowerInPlace(loweredName);
+
+	const std::vector<Label>& labels = m_currentLanguage->labels;
+
+	// binary search
+	const auto it = std::lower_bound(labels.begin(), labels.end(), loweredName, GetLabelNameCompare());
+
+	if (it != labels.end() && it->name == loweredName)
 	{
-		std::string loweredName;
-		StringTools::AppendTo(loweredName, name);
-		StringTools::ToLowerInPlace(loweredName);
-
-		const std::vector<Label>& labels = m_currentLanguage->labels;
-
-		// binary search
-		const auto it = std::lower_bound(labels.begin(), labels.end(), loweredName, GetLabelNameCompare());
-
-		if (it != labels.end() && it->name == loweredName)
-		{
-			return &(*it);
-		}
+		return &(*it);
 	}
-
-
-	return nullptr;
+	else
+	{
+		return nullptr;
+	}
 }
 
 template<typename NameStringView, typename ResultString>
@@ -832,7 +829,7 @@ bool LocalizationManager::LocalizeControlCode(NameStringView name, ResultString&
 	constexpr std::size_t BUFFER_SIZE = 32;
 	wchar_t buffer[BUFFER_SIZE] = {};
 	WinAPI::RawANSIToWide(localizedKeyName, StringTools::Length(localizedKeyName), buffer, BUFFER_SIZE - 1);
-	buffer[0] = (m_currentLanguage) ? WinAPI::WideCharToUpper(buffer[0], m_currentLanguage->id) : buffer[0];
+	buffer[0] = WinAPI::WideCharToUpper(buffer[0], m_currentLanguage->id);
 
 	StringTools::AppendTo(result, buffer);
 

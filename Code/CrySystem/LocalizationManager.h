@@ -43,17 +43,18 @@ private:
 		return [](const Label& label, const std::string& name) { return label.name < name; };
 	}
 
-	Language* m_currentLanguage = nullptr;
+	Language m_emptyLanguage;
+	Language* m_currentLanguage = &m_emptyLanguage;
 	std::vector<Language> m_languages;
 	std::vector<std::string> m_filenames;
 
 	static LocalizationManager s_globalInstance;
-	static Language s_emptyLanguage;
 
 public:
 	LocalizationManager();
 	~LocalizationManager();
 
+	// to be removed once we have our own CrySystem
 	static LocalizationManager& GetInstance()
 	{
 		return s_globalInstance;
