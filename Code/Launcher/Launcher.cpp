@@ -6,6 +6,7 @@
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
 #include "CryScriptSystem/ScriptSystem.h"
+#include "CrySystem/CryMemoryManager.h"
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
@@ -18,7 +19,6 @@
 #include "Launcher.h"
 #include "Patch.h"
 #include "CrashLogger.h"
-#include "CryMemoryManager.h"
 
 #include "config.h"
 
