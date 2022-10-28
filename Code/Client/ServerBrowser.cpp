@@ -3,9 +3,9 @@
 #include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "Library/External/nlohmann/json.hpp"
 #include "Library/Format.h"
 #include "Library/Util.h"
+#include "ThirdParty/nlohmann/json.hpp"
 
 #include "ServerBrowser.h"
 #include "ServerConnector.h"

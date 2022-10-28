@@ -2,7 +2,7 @@
 
 extern "C"
 {
-#include "Library/External/Lua/src/lua.h"
+#include "ThirdParty/Lua/src/lua.h"
 }
 
 #include "ScriptUtil.h"

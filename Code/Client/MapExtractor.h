@@ -3,7 +3,7 @@
 #include <string>
 #include <filesystem>
 
-#include "Library/External/miniz/miniz.h"
+#include "ThirdParty/miniz/miniz.h"
 
 class MapExtractor
 {

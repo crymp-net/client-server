@@ -655,98 +655,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/DLL.h
   Code/Library/Error.cpp
   Code/Library/Error.h
-  Code/Library/External/Lua/src/lapi.c
-  Code/Library/External/Lua/src/lapi.h
-  Code/Library/External/Lua/src/lauxlib.c
-  Code/Library/External/Lua/src/lauxlib.h
-  Code/Library/External/Lua/src/lbaselib.c
-  Code/Library/External/Lua/src/lcode.c
-  Code/Library/External/Lua/src/lcode.h
-  Code/Library/External/Lua/src/ldblib.c
-  Code/Library/External/Lua/src/ldebug.c
-  Code/Library/External/Lua/src/ldebug.h
-  Code/Library/External/Lua/src/ldo.c
-  Code/Library/External/Lua/src/ldo.h
-  Code/Library/External/Lua/src/ldump.c
-  Code/Library/External/Lua/src/lfunc.c
-  Code/Library/External/Lua/src/lfunc.h
-  Code/Library/External/Lua/src/lgc.c
-  Code/Library/External/Lua/src/lgc.h
-  Code/Library/External/Lua/src/linit.c
-  Code/Library/External/Lua/src/liolib.c
-  Code/Library/External/Lua/src/llex.c
-  Code/Library/External/Lua/src/llex.h
-  Code/Library/External/Lua/src/llimits.h
-  Code/Library/External/Lua/src/lmathlib.c
-  Code/Library/External/Lua/src/lmem.c
-  Code/Library/External/Lua/src/lmem.h
-  Code/Library/External/Lua/src/loadlib.c
-  Code/Library/External/Lua/src/lobject.c
-  Code/Library/External/Lua/src/lobject.h
-  Code/Library/External/Lua/src/lopcodes.c
-  Code/Library/External/Lua/src/lopcodes.h
-  Code/Library/External/Lua/src/loslib.c
-  Code/Library/External/Lua/src/lparser.c
-  Code/Library/External/Lua/src/lparser.h
-  Code/Library/External/Lua/src/lstate.c
-  Code/Library/External/Lua/src/lstate.h
-  Code/Library/External/Lua/src/lstring.c
-  Code/Library/External/Lua/src/lstring.h
-  Code/Library/External/Lua/src/lstrlib.c
-  Code/Library/External/Lua/src/ltable.c
-  Code/Library/External/Lua/src/ltable.h
-  Code/Library/External/Lua/src/ltablib.c
-  Code/Library/External/Lua/src/ltm.c
-  Code/Library/External/Lua/src/ltm.h
-  Code/Library/External/Lua/src/luaconf.h
-  Code/Library/External/Lua/src/lua.h
-  Code/Library/External/Lua/src/lualib.h
-  Code/Library/External/Lua/src/lundump.c
-  Code/Library/External/Lua/src/lundump.h
-  Code/Library/External/Lua/src/lvm.c
-  Code/Library/External/Lua/src/lvm.h
-  Code/Library/External/Lua/src/lzio.c
-  Code/Library/External/Lua/src/lzio.h
-  Code/Library/External/miniz/miniz.c
-  Code/Library/External/miniz/miniz.h
-  Code/Library/External/nlohmann/adl_serializer.hpp
-  Code/Library/External/nlohmann/byte_container_with_subtype.hpp
-  Code/Library/External/nlohmann/detail/conversions/from_json.hpp
-  Code/Library/External/nlohmann/detail/conversions/to_chars.hpp
-  Code/Library/External/nlohmann/detail/conversions/to_json.hpp
-  Code/Library/External/nlohmann/detail/exceptions.hpp
-  Code/Library/External/nlohmann/detail/hash.hpp
-  Code/Library/External/nlohmann/detail/input/binary_reader.hpp
-  Code/Library/External/nlohmann/detail/input/input_adapters.hpp
-  Code/Library/External/nlohmann/detail/input/json_sax.hpp
-  Code/Library/External/nlohmann/detail/input/lexer.hpp
-  Code/Library/External/nlohmann/detail/input/parser.hpp
-  Code/Library/External/nlohmann/detail/input/position_t.hpp
-  Code/Library/External/nlohmann/detail/iterators/internal_iterator.hpp
-  Code/Library/External/nlohmann/detail/iterators/iter_impl.hpp
-  Code/Library/External/nlohmann/detail/iterators/iteration_proxy.hpp
-  Code/Library/External/nlohmann/detail/iterators/iterator_traits.hpp
-  Code/Library/External/nlohmann/detail/iterators/json_reverse_iterator.hpp
-  Code/Library/External/nlohmann/detail/iterators/primitive_iterator.hpp
-  Code/Library/External/nlohmann/detail/json_pointer.hpp
-  Code/Library/External/nlohmann/detail/json_ref.hpp
-  Code/Library/External/nlohmann/detail/macro_scope.hpp
-  Code/Library/External/nlohmann/detail/macro_unscope.hpp
-  Code/Library/External/nlohmann/detail/meta/cpp_future.hpp
-  Code/Library/External/nlohmann/detail/meta/detected.hpp
-  Code/Library/External/nlohmann/detail/meta/is_sax.hpp
-  Code/Library/External/nlohmann/detail/meta/type_traits.hpp
-  Code/Library/External/nlohmann/detail/meta/void_t.hpp
-  Code/Library/External/nlohmann/detail/output/binary_writer.hpp
-  Code/Library/External/nlohmann/detail/output/output_adapters.hpp
-  Code/Library/External/nlohmann/detail/output/serializer.hpp
-  Code/Library/External/nlohmann/detail/value_t.hpp
-  Code/Library/External/nlohmann/json.hpp
-  Code/Library/External/nlohmann/json_fwd.hpp
-  Code/Library/External/nlohmann/ordered_map.hpp
-  Code/Library/External/nlohmann/thirdparty/hedley/hedley.hpp
-  Code/Library/External/nlohmann/thirdparty/hedley/hedley_undef.hpp
-  Code/Library/External/picosha2.h
   Code/Library/Format.cpp
   Code/Library/Format.h
   Code/Library/RandomSeeder.h
@@ -758,6 +666,98 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/Util.h
   Code/Library/WinAPI.cpp
   Code/Library/WinAPI.h
+  Code/ThirdParty/Lua/src/lapi.c
+  Code/ThirdParty/Lua/src/lapi.h
+  Code/ThirdParty/Lua/src/lauxlib.c
+  Code/ThirdParty/Lua/src/lauxlib.h
+  Code/ThirdParty/Lua/src/lbaselib.c
+  Code/ThirdParty/Lua/src/lcode.c
+  Code/ThirdParty/Lua/src/lcode.h
+  Code/ThirdParty/Lua/src/ldblib.c
+  Code/ThirdParty/Lua/src/ldebug.c
+  Code/ThirdParty/Lua/src/ldebug.h
+  Code/ThirdParty/Lua/src/ldo.c
+  Code/ThirdParty/Lua/src/ldo.h
+  Code/ThirdParty/Lua/src/ldump.c
+  Code/ThirdParty/Lua/src/lfunc.c
+  Code/ThirdParty/Lua/src/lfunc.h
+  Code/ThirdParty/Lua/src/lgc.c
+  Code/ThirdParty/Lua/src/lgc.h
+  Code/ThirdParty/Lua/src/linit.c
+  Code/ThirdParty/Lua/src/liolib.c
+  Code/ThirdParty/Lua/src/llex.c
+  Code/ThirdParty/Lua/src/llex.h
+  Code/ThirdParty/Lua/src/llimits.h
+  Code/ThirdParty/Lua/src/lmathlib.c
+  Code/ThirdParty/Lua/src/lmem.c
+  Code/ThirdParty/Lua/src/lmem.h
+  Code/ThirdParty/Lua/src/loadlib.c
+  Code/ThirdParty/Lua/src/lobject.c
+  Code/ThirdParty/Lua/src/lobject.h
+  Code/ThirdParty/Lua/src/lopcodes.c
+  Code/ThirdParty/Lua/src/lopcodes.h
+  Code/ThirdParty/Lua/src/loslib.c
+  Code/ThirdParty/Lua/src/lparser.c
+  Code/ThirdParty/Lua/src/lparser.h
+  Code/ThirdParty/Lua/src/lstate.c
+  Code/ThirdParty/Lua/src/lstate.h
+  Code/ThirdParty/Lua/src/lstring.c
+  Code/ThirdParty/Lua/src/lstring.h
+  Code/ThirdParty/Lua/src/lstrlib.c
+  Code/ThirdParty/Lua/src/ltable.c
+  Code/ThirdParty/Lua/src/ltable.h
+  Code/ThirdParty/Lua/src/ltablib.c
+  Code/ThirdParty/Lua/src/ltm.c
+  Code/ThirdParty/Lua/src/ltm.h
+  Code/ThirdParty/Lua/src/luaconf.h
+  Code/ThirdParty/Lua/src/lua.h
+  Code/ThirdParty/Lua/src/lualib.h
+  Code/ThirdParty/Lua/src/lundump.c
+  Code/ThirdParty/Lua/src/lundump.h
+  Code/ThirdParty/Lua/src/lvm.c
+  Code/ThirdParty/Lua/src/lvm.h
+  Code/ThirdParty/Lua/src/lzio.c
+  Code/ThirdParty/Lua/src/lzio.h
+  Code/ThirdParty/miniz/miniz.c
+  Code/ThirdParty/miniz/miniz.h
+  Code/ThirdParty/nlohmann/adl_serializer.hpp
+  Code/ThirdParty/nlohmann/byte_container_with_subtype.hpp
+  Code/ThirdParty/nlohmann/detail/conversions/from_json.hpp
+  Code/ThirdParty/nlohmann/detail/conversions/to_chars.hpp
+  Code/ThirdParty/nlohmann/detail/conversions/to_json.hpp
+  Code/ThirdParty/nlohmann/detail/exceptions.hpp
+  Code/ThirdParty/nlohmann/detail/hash.hpp
+  Code/ThirdParty/nlohmann/detail/input/binary_reader.hpp
+  Code/ThirdParty/nlohmann/detail/input/input_adapters.hpp
+  Code/ThirdParty/nlohmann/detail/input/json_sax.hpp
+  Code/ThirdParty/nlohmann/detail/input/lexer.hpp
+  Code/ThirdParty/nlohmann/detail/input/parser.hpp
+  Code/ThirdParty/nlohmann/detail/input/position_t.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/internal_iterator.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/iter_impl.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/iteration_proxy.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/iterator_traits.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/json_reverse_iterator.hpp
+  Code/ThirdParty/nlohmann/detail/iterators/primitive_iterator.hpp
+  Code/ThirdParty/nlohmann/detail/json_pointer.hpp
+  Code/ThirdParty/nlohmann/detail/json_ref.hpp
+  Code/ThirdParty/nlohmann/detail/macro_scope.hpp
+  Code/ThirdParty/nlohmann/detail/macro_unscope.hpp
+  Code/ThirdParty/nlohmann/detail/meta/cpp_future.hpp
+  Code/ThirdParty/nlohmann/detail/meta/detected.hpp
+  Code/ThirdParty/nlohmann/detail/meta/is_sax.hpp
+  Code/ThirdParty/nlohmann/detail/meta/type_traits.hpp
+  Code/ThirdParty/nlohmann/detail/meta/void_t.hpp
+  Code/ThirdParty/nlohmann/detail/output/binary_writer.hpp
+  Code/ThirdParty/nlohmann/detail/output/output_adapters.hpp
+  Code/ThirdParty/nlohmann/detail/output/serializer.hpp
+  Code/ThirdParty/nlohmann/detail/value_t.hpp
+  Code/ThirdParty/nlohmann/json.hpp
+  Code/ThirdParty/nlohmann/json_fwd.hpp
+  Code/ThirdParty/nlohmann/ordered_map.hpp
+  Code/ThirdParty/nlohmann/thirdparty/hedley/hedley.hpp
+  Code/ThirdParty/nlohmann/thirdparty/hedley/hedley_undef.hpp
+  Code/ThirdParty/picosha2.h
   Resources/Launcher.manifest
   Resources/Launcher.rc
   ${PROJECT_BINARY_DIR}/config.h
@@ -798,7 +798,7 @@ if(BUILD_64BIT)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
-target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code Code/Library/External ${PROJECT_BINARY_DIR})
+target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ws2_32 winhttp)
 

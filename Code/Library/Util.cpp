@@ -3,10 +3,11 @@
 #include <string.h>
 #include <array>
 
+#include "ThirdParty/picosha2.h"
+
 #include "Util.h"
 #include "Format.h"
 #include "StringBuffer.h"
-#include "External/picosha2.h"
 
 bool Util::LessNoCase(const std::string_view & stringA, const std::string_view & stringB)
 {
