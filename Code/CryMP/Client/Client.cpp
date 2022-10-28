@@ -4,6 +4,8 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryMP/Common/Executor.h"
+#include "CryMP/Common/GSMasterHook.h"
 #include "Launcher/Resources.h"
 #include "Library/CmdLine.h"
 #include "Library/RandomSeeder.h"
@@ -11,13 +13,10 @@
 #include "Library/WinAPI.h"
 
 #include "Client.h"
-#include "Executor.h"
-#include "HTTPClient.h"
 #include "FileDownloader.h"
 #include "FileRedirector.h"
 #include "FileCache.h"
 #include "MapDownloader.h"
-#include "GSMasterHook.h"
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
 #include "ScriptBind_CPPAPI.h"
@@ -125,38 +124,40 @@ void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 	gClient->GetServerConnector()->Disconnect();
 }
 
-void Client::OnAddKeyBind(IConsoleCmdArgs* pArgs)
+void Client::OnKeyBindCmd(IConsoleCmdArgs* pArgs)
 {
-	const int count = pArgs->GetArgCount();
+	const int argCount = pArgs->GetArgCount();
 
-	if (pArgs->GetArgCount() >= 3)
+	if (argCount > 2)
 	{
-		std::string arg;
-		for (int i = 2; i < pArgs->GetArgCount(); ++i)
+		std::string command;
+
+		for (int i = 2; i < argCount; i++)
 		{
-			arg += pArgs->GetArg(i);
-			arg += " ";
+			command += pArgs->GetArg(i);
+			command += ' ';
 		}
-		const auto [it, added] = gClient->m_keyBinds.emplace(pArgs->GetArg(1), arg.c_str());
+
+		gClient->AddKeyBind(pArgs->GetArg(1), command);
 	}
 }
 
-struct KeyBindDumpSink : public IKeyBindDumpSink
+void Client::OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs)
 {
-	virtual void OnKeyBindFound(const char* sBind, const char* sCommand)
+	struct Sink : public IKeyBindDumpSink
 	{
-		CryLogAlways("$8%10s : %s", sBind, sCommand);
-	}
-};
+		void OnKeyBindFound(const char* key, const char* command) override
+		{
+			CryLogAlways("$8%10s : %s", key, command);
+		}
+	};
 
-void Client::OnDumpKeyBindings(IConsoleCmdArgs* pArgs)
-{
-	KeyBindDumpSink dump;
-	gEnv->pConsole->DumpKeyBinds(&dump);
+	Sink sink;
+	gEnv->pConsole->DumpKeyBinds(&sink);
 
-	for (const auto& [name, handler] : gClient->m_keyBinds)
+	for (const KeyBind& bind : gClient->m_keyBinds)
 	{
-		CryLogAlways("%10s : %s", name.c_str(), handler.c_str());
+		CryLogAlways("%10s : %s", bind.key.c_str(), bind.command.c_str());
 	}
 }
 
@@ -164,6 +165,10 @@ Client::Client()
 {
 	RandomSeeder seeder;
 	m_randomEngine.seed(seeder);
+
+	m_hwid = GetHWID("idsvc");
+	m_locale = WinAPI::GetLocale();
+	m_timezone = std::to_string(WinAPI::GetTimeZoneBias());
 }
 
 Client::~Client()
@@ -180,7 +185,7 @@ void Client::Init(IGameFramework *pGameFramework)
 
 	// initialize client components
 	m_pExecutor          = std::make_unique<Executor>();
-	m_pHTTPClient        = std::make_unique<HTTPClient>();
+	m_pHTTPClient        = std::make_unique<HTTPClient>(*m_pExecutor);
 	m_pFileDownloader    = std::make_unique<FileDownloader>();
 	m_pFileRedirector    = std::make_unique<FileRedirector>();
 	m_pFileCache         = std::make_unique<FileCache>();
@@ -222,8 +227,8 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->RemoveCommand("bind");
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
-	pConsole->AddCommand("bind", OnAddKeyBind, VF_NOT_NET_SYNCED, "Usage: bind key");
-	pConsole->AddCommand("dumpbindings", OnDumpKeyBindings, VF_RESTRICTEDMODE, "Usage: bind key");
+	pConsole->AddCommand("bind", OnKeyBindCmd, VF_NOT_NET_SYNCED, "Usage: bind key command");
+	pConsole->AddCommand("dumpbinds", OnDumpKeyBindsCmd, VF_RESTRICTEDMODE, "Usage: dumpbinds");
 
 	if (!CmdLine::HasArg("-keepcdkey"))
 	{
@@ -240,6 +245,32 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
 
 	InitMasters();
+}
+
+void Client::HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback)
+{
+	HTTPClientRequest request;
+	request.method = "GET";
+	request.url = url;
+	request.callback = std::move(callback);
+
+	HttpRequest(std::move(request));
+}
+
+void Client::HttpRequest(HTTPClientRequest&& request)
+{
+	for (const std::string& master : m_masters)
+	{
+		if (Util::StartsWith(request.url, GetMasterServerAPI(master)))
+		{
+			request.headers["X-Sfwcl-HWID"] = m_hwid;
+			request.headers["X-Sfwcl-Locale"] = m_locale;
+			request.headers["X-Sfwcl-Tz"] = m_timezone;
+			break;
+		}
+	}
+
+	m_pHTTPClient->Request(std::move(request));
 }
 
 std::string Client::GetMasterServerAPI(const std::string & master)
@@ -269,32 +300,42 @@ std::string Client::GetHWID(const std::string_view & salt)
 	return hwid;
 }
 
-void Client::OnKeyPress(const char* key)
+void Client::AddKeyBind(const std::string_view& key, const std::string_view& command)
 {
-	for (auto &m : m_keyBinds)
+	for (KeyBind& bind : m_keyBinds)
 	{
-		if (!strcmp(key, m.first.c_str()))
+		if (bind.key == key)
 		{
-			gEnv->pConsole->ExecuteString(m.second.c_str());
+			bind.command = command;
+			return;
+		}
+	}
+
+	KeyBind& bind = m_keyBinds.emplace_back();
+	bind.key = key;
+	bind.command = command;
+}
+
+void Client::OnKeyPress(const std::string_view& key)
+{
+	for (const KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			gEnv->pConsole->ExecuteString(bind.command.c_str());
 		}
 	}
 }
 
-void Client::OnTick() //each sec
+void Client::ClearKeyBinds()
 {
+	m_keyBinds.clear();
 }
 
 void Client::OnPostUpdate(float deltaTime)
 {
 	m_pExecutor->OnUpdate();
 	m_pScriptCallbacks->OnUpdate(deltaTime);
-
-	m_FrameCounter += deltaTime;
-	if (m_FrameCounter > 1.0f)
-	{
-		OnTick();
-		m_FrameCounter = 0.0f;
-	}
 }
 
 void Client::OnSaveGame(ISaveGame *pSaveGame)
@@ -325,7 +366,7 @@ void Client::OnActionEvent(const SActionEvent & event)
 			SetVersionInLua();
 
 			// clear binds on disconnect
-			m_keyBinds.clear();
+			ClearKeyBinds();
 
 			break;
 		}

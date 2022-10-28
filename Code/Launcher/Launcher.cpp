@@ -1,10 +1,10 @@
 #include <cstring>
 
-#include "Client/Client.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryGame/Game.h"
+#include "CryMP/Client/Client.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CryMemoryManager.h"
 #include "CrySystem/GameWindow.h"

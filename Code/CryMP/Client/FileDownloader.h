@@ -5,9 +5,8 @@
 #include <filesystem>
 #include <functional>
 
+#include "CryMP/Common/HTTP.h"
 #include "Library/Error.h"
-
-#include "HTTP.h"
 
 struct FileDownloaderProgress
 {

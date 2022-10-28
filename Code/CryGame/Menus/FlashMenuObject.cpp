@@ -44,8 +44,8 @@ History:
 #include "CryGame/SPAnalyst.h"
 
 #include "config.h"
-#include "Client/Client.h"
-#include "Client/ServerConnector.h"
+#include "CryMP/Client/Client.h"
+#include "CryMP/Client/ServerConnector.h"
 #include "Library/Format.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"

@@ -1,8 +1,8 @@
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
 #include "HTTPClient.h"
-#include "Client.h"
 #include "Executor.h"
 
 struct HTTPClientTask : public IExecutorTask
@@ -57,50 +57,18 @@ struct HTTPClientTask : public IExecutorTask
 	}
 };
 
-void HTTPClient::AddTelemetryHeaders(HTTPClientRequest & request)
+HTTPClient::HTTPClient(Executor& executor) : m_executor(&executor)
 {
-	for (const std::string & master : gClient->GetMasters())
-	{
-		if (Util::StartsWith(request.url, gClient->GetMasterServerAPI(master)))
-		{
-			request.headers["X-Sfwcl-HWID"] = m_hwid;
-			request.headers["X-Sfwcl-Locale"] = m_locale;
-			request.headers["X-Sfwcl-Tz"] = m_timezone;
-
-			break;
-		}
-	}
-}
-
-HTTPClient::HTTPClient()
-{
-	m_hwid = gClient->GetHWID("idsvc");
-	m_locale = WinAPI::GetLocale();
-	m_timezone = std::to_string(WinAPI::GetTimeZoneBias());
 }
 
 HTTPClient::~HTTPClient()
 {
 }
 
-void HTTPClient::Request(HTTPClientRequest && request)
+void HTTPClient::Request(HTTPClientRequest&& request)
 {
 	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
 	task->request = std::move(request);
 
-	AddTelemetryHeaders(task->request);
-
-	gClient->GetExecutor()->AddTask(std::move(task));
-}
-
-void HTTPClient::GET(const std::string_view & url, std::function<void(HTTPClientResult&)> callback)
-{
-	std::unique_ptr<HTTPClientTask> task = std::make_unique<HTTPClientTask>();
-	task->request.method = "GET";
-	task->request.url = url;
-	task->request.callback = std::move(callback);
-
-	AddTelemetryHeaders(task->request);
-
-	gClient->GetExecutor()->AddTask(std::move(task));
+	m_executor->AddTask(std::move(task));
 }

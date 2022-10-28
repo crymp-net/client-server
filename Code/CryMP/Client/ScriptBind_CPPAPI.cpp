@@ -11,7 +11,6 @@
 
 #include "ScriptBind_CPPAPI.h"
 #include "Client.h"
-#include "HTTPClient.h"
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
 
@@ -247,7 +246,7 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 		pSS->ReleaseFunc(callback);
 	};
 
-	gClient->GetHTTPClient()->Request(std::move(request));
+	gClient->HttpRequest(std::move(request));
 
 	return pH->EndFunction(true);
 }
@@ -327,14 +326,14 @@ int ScriptBind_CPPAPI::IsKeyUsed(IFunctionHandler* pH, const char* key)
 
 int ScriptBind_CPPAPI::CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action)
 {
-	const auto [it, added] = gClient->m_keyBinds.emplace(key, action);
+	gClient->AddKeyBind(key, action);
 
-	return pH->EndFunction(added);
+	return pH->EndFunction(true);
 }
 
 int ScriptBind_CPPAPI::ClearKeyBinds(IFunctionHandler* pH)
 {
-	gClient->m_keyBinds.clear();
+	gClient->ClearKeyBinds();
 
 	return pH->EndFunction();
 }

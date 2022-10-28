@@ -9,6 +9,8 @@
 
 #include "HTTP.h"
 
+class Executor;
+
 struct HTTPClientResult
 {
 	Error error;           // client error
@@ -28,18 +30,11 @@ struct HTTPClientRequest
 
 class HTTPClient
 {
-	// cached telemetry headers
-	std::string m_hwid;
-	std::string m_locale;
-	std::string m_timezone;
-
-	void AddTelemetryHeaders(HTTPClientRequest & request);
+	Executor* m_executor = nullptr;
 
 public:
-	HTTPClient();
+	explicit HTTPClient(Executor& executor);
 	~HTTPClient();
 
-	void Request(HTTPClientRequest && request);
-
-	void GET(const std::string_view & url, std::function<void(HTTPClientResult&)> callback);
+	void Request(HTTPClientRequest&& request);
 };

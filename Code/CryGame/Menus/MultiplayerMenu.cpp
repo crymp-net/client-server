@@ -23,8 +23,8 @@ History:
 #include "CryGame/Game.h"
 #include "GameNetworkProfile.h"
 #include "Library/Format.h"
-#include "Client/Client.h"
-#include "Client/ServerBrowser.h"
+#include "CryMP/Client/Client.h"
+#include "CryMP/Client/ServerBrowser.h"
 
 enum EServerInfoKey
 {

@@ -43,8 +43,8 @@
 #include "CryCommon/CryCore/StlUtils.h"
 #include "CryCommon/CryCore/StringUtils.h"
 
-#include "Client/Client.h"
-#include "Client/ScriptCallbacks.h"
+#include "CryMP/Client/Client.h"
+#include "CryMP/Client/ScriptCallbacks.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;

@@ -10,11 +10,11 @@
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryMP/Common/HTTPClient.h"
 
 struct IConsoleCmdArgs;
 
 class Executor;
-class HTTPClient;
 class FileDownloader;
 class FileRedirector;
 class FileCache;
@@ -57,8 +57,21 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<FlashFileHooks> m_pFlashFileHooks;
 
 	std::minstd_rand m_randomEngine;
+	std::string m_hwid;
+	std::string m_locale;
+	std::string m_timezone;
 
 	std::vector<std::string> m_masters;
+
+	struct KeyBind
+	{
+		std::string key;
+		std::string command;
+	};
+
+	std::vector<KeyBind> m_keyBinds;
+
+	EntityId m_lastSpawnId = 0;
 
 	void InitMasters();
 	void SetVersionInLua();
@@ -69,11 +82,8 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);
-	static void OnAddKeyBind(IConsoleCmdArgs* pArgs);
-	static void OnDumpKeyBindings(IConsoleCmdArgs* pArgs);
-
-	float m_FrameCounter = 0.0f;
-	EntityId m_lastSpawnId = 0;
+	static void OnKeyBindCmd(IConsoleCmdArgs* pArgs);
+	static void OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs);
 
 public:
 	Client();
@@ -81,10 +91,15 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
+	void HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback);
+	void HttpRequest(HTTPClientRequest&& request);
+
 	std::string GetMasterServerAPI(const std::string & master);
 	std::string GetHWID(const std::string_view & salt);
-	void OnKeyPress(const char* key);
-	void OnTick();
+
+	void AddKeyBind(const std::string_view& key, const std::string_view& command);
+	void OnKeyPress(const std::string_view& key);
+	void ClearKeyBinds();
 
 	// IGameFrameworkListener
 	void OnPostUpdate(float deltaTime) override;
@@ -185,8 +200,6 @@ public:
 	{
 		return m_masters;
 	}
-
-	std::map<std::string, std::string> m_keyBinds;
 
 	EntityId GetLastSpawnId() const
 	{

@@ -35,8 +35,8 @@
 #include "CryGame/Items/Weapons/OffHand.h"
 #include "CryCommon/CryAISystem/IAgent.h"
 #include "Player/IPlayerInput.h"
-#include "Client/Client.h"
-#include "Client/ScriptCallbacks.h"
+#include "CryMP/Client/Client.h"
+#include "CryMP/Client/ScriptCallbacks.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
 

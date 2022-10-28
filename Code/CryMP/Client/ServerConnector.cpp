@@ -13,7 +13,6 @@
 
 #include "ServerConnector.h"
 #include "Client.h"
-#include "HTTPClient.h"
 #include "MapDownloader.h"
 #include "FileCache.h"
 #include "ServerPAK.h"
@@ -121,7 +120,7 @@ void ServerConnector::Step1_RequestServerInfo()
 
 	const std::string url = gClient->GetMasterServerAPI(m_server.master) + "/server?ip=" + ip + "&port=" + port + "&json";
 
-	gClient->GetHTTPClient()->GET(url, [contractID = m_contractID, this](HTTPClientResult & result)
+	gClient->HttpGet(url, [contractID = m_contractID, this](HTTPClientResult& result)
 	{
 		if (contractID == m_contractID)
 		{

@@ -10,7 +10,6 @@
 #include "ServerBrowser.h"
 #include "ServerConnector.h"
 #include "Client.h"
-#include "HTTPClient.h"
 
 using json = nlohmann::json;
 
@@ -309,14 +308,16 @@ void ServerBrowser::Update()
 
 	int contractId = ++m_contract;
 
-	for (const std::string & master : gClient->GetMasters())
+	for (const std::string& master : gClient->GetMasters())
 	{
 		const std::string url = gClient->GetMasterServerAPI(master) + "/servers?all&detailed&json";
 
-		gClient->GetHTTPClient()->GET(url, [this, master, contractId](HTTPClientResult& result)
+		gClient->HttpGet(url, [this, master, contractId](HTTPClientResult& result)
 		{
 			if (contractId != m_contract)
+			{
 				return;
+			}
 
 			m_pendingQueryCount--;
 
@@ -343,7 +344,9 @@ void ServerBrowser::Update()
 void ServerBrowser::UpdateServerInfo(int id)
 {
 	if (id < 0 || id >= m_servers.size())
+	{
 		return;
+	}
 
 	const std::string ip = IPToString(m_servers[id].ip);
 	const std::string port = std::to_string(m_servers[id].port);
@@ -351,7 +354,7 @@ void ServerBrowser::UpdateServerInfo(int id)
 
 	const std::string url = gClient->GetMasterServerAPI(master) + "/server?ip=" + ip + "&port=" + port + "&json";
 
-	gClient->GetHTTPClient()->GET(url, [id, this](HTTPClientResult & result)
+	gClient->HttpGet(url, [id, this](HTTPClientResult& result)
 	{
 		if (m_pListener)
 		{
@@ -362,9 +365,13 @@ void ServerBrowser::UpdateServerInfo(int id)
 			else
 			{
 				if (OnServerInfo(result, id))
+				{
 					m_pListener->ServerUpdateComplete(id);
+				}
 				else
+				{
 					m_pListener->ServerUpdateFailed(id);
+				}
 			}
 		}
 	});

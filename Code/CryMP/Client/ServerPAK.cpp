@@ -6,13 +6,12 @@
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
+#include "CryGame/Game.h"
+#include "CryGame/Items/ItemSharedParams.h"
+#include "CryGame/Items/Weapons/WeaponSystem.h"
 #include "Library/WinAPI.h"
 
 #include "ServerPAK.h"
-#include "Client/Client.h"
-#include "CryGame/Items/ItemSharedParams.h"
-#include "CryGame/Game.h"
-#include "CryGame/Items/Weapons/WeaponSystem.h"
 
 ServerPAK::ServerPAK()
 {

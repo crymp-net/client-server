@@ -36,46 +36,6 @@ endif()
 ################################################################################
 
 add_executable(${CRYMP_CLIENT_EXE} WIN32
-  Code/Client/Client.cpp
-  Code/Client/Client.h
-  Code/Client/EngineCache.cpp
-  Code/Client/EngineCache.h
-  Code/Client/Executor.cpp
-  Code/Client/Executor.h
-  Code/Client/FileCache.cpp
-  Code/Client/FileCache.h
-  Code/Client/FileDownloader.cpp
-  Code/Client/FileDownloader.h
-  Code/Client/FileRedirector.cpp
-  Code/Client/FileRedirector.h
-  Code/Client/FlashFileHooks.cpp
-  Code/Client/FlashFileHooks.h
-  Code/Client/GSMasterHook.cpp
-  Code/Client/GSMasterHook.h
-  Code/Client/HTTP.cpp
-  Code/Client/HTTP.h
-  Code/Client/HTTPClient.cpp
-  Code/Client/HTTPClient.h
-  Code/Client/MapDownloader.cpp
-  Code/Client/MapDownloader.h
-  Code/Client/MapExtractor.cpp
-  Code/Client/MapExtractor.h
-  Code/Client/ParticleManager.cpp
-  Code/Client/ParticleManager.h
-  Code/Client/ScriptBind_CPPAPI.cpp
-  Code/Client/ScriptBind_CPPAPI.h
-  Code/Client/ScriptCallbacks.cpp
-  Code/Client/ScriptCallbacks.h
-  Code/Client/ScriptCommands.cpp
-  Code/Client/ScriptCommands.h
-  Code/Client/ServerBrowser.cpp
-  Code/Client/ServerBrowser.h
-  Code/Client/ServerConnector.cpp
-  Code/Client/ServerConnector.h
-  Code/Client/ServerPAK.cpp
-  Code/Client/ServerPAK.h
-  Code/Client/SpeedAggregator.cpp
-  Code/Client/SpeedAggregator.h
   Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
   Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
   Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
@@ -606,6 +566,48 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryGame/Vehicles/VehicleClient.h
   Code/CryGame/Voting.cpp
   Code/CryGame/Voting.h
+  Code/CryMP/Client/Client.cpp
+  Code/CryMP/Client/Client.h
+  Code/CryMP/Client/EngineCache.cpp
+  Code/CryMP/Client/EngineCache.h
+  Code/CryMP/Client/FileCache.cpp
+  Code/CryMP/Client/FileCache.h
+  Code/CryMP/Client/FileDownloader.cpp
+  Code/CryMP/Client/FileDownloader.h
+  Code/CryMP/Client/FileRedirector.cpp
+  Code/CryMP/Client/FileRedirector.h
+  Code/CryMP/Client/FlashFileHooks.cpp
+  Code/CryMP/Client/FlashFileHooks.h
+  Code/CryMP/Client/MapDownloader.cpp
+  Code/CryMP/Client/MapDownloader.h
+  Code/CryMP/Client/MapExtractor.cpp
+  Code/CryMP/Client/MapExtractor.h
+  Code/CryMP/Client/ParticleManager.cpp
+  Code/CryMP/Client/ParticleManager.h
+  Code/CryMP/Client/ScriptBind_CPPAPI.cpp
+  Code/CryMP/Client/ScriptBind_CPPAPI.h
+  Code/CryMP/Client/ScriptCallbacks.cpp
+  Code/CryMP/Client/ScriptCallbacks.h
+  Code/CryMP/Client/ScriptCommands.cpp
+  Code/CryMP/Client/ScriptCommands.h
+  Code/CryMP/Client/ServerBrowser.cpp
+  Code/CryMP/Client/ServerBrowser.h
+  Code/CryMP/Client/ServerConnector.cpp
+  Code/CryMP/Client/ServerConnector.h
+  Code/CryMP/Client/ServerPAK.cpp
+  Code/CryMP/Client/ServerPAK.h
+  Code/CryMP/Client/SpeedAggregator.cpp
+  Code/CryMP/Client/SpeedAggregator.h
+  Code/CryMP/Common/Executor.cpp
+  Code/CryMP/Common/Executor.h
+  Code/CryMP/Common/GSMasterHook.cpp
+  Code/CryMP/Common/GSMasterHook.h
+  Code/CryMP/Common/HTTP.cpp
+  Code/CryMP/Common/HTTP.h
+  Code/CryMP/Common/HTTPClient.cpp
+  Code/CryMP/Common/HTTPClient.h
+  Code/CryMP/Server/Server.cpp
+  Code/CryMP/Server/Server.h
   Code/CryScriptSystem/LuaLibs/bitlib.c
   Code/CryScriptSystem/ScriptBindings/ScriptBindings.cpp
   Code/CryScriptSystem/ScriptBindings/ScriptBindings.h

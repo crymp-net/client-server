@@ -68,8 +68,8 @@ History:
 #include "CryGame/Items/Weapons/WeaponSystem.h"
 #include "CryGame/Radio.h"
 
-#include "Client/Client.h"
-#include "Client/ServerConnector.h"
+#include "CryMP/Client/Client.h"
+#include "CryMP/Client/ServerConnector.h"
 #include "Library/Format.h"
 
 static const float NIGHT_VISION_ENERGY = 30.0f;
