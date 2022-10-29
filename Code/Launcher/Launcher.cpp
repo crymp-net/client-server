@@ -184,7 +184,20 @@ void Launcher::LoadEngine()
 {
 	if (!m_CrySystem.Load("CrySystem.dll", DLL::NO_RELEASE))  // unloading Crysis DLLs is not safe
 	{
-		throw SystemError("Failed to load the CrySystem DLL!");
+		if (SystemError::GetCurrentCode() == 193)  // ERROR_BAD_EXE_FORMAT
+		{
+			throw Error("Failed to load the CrySystem DLL!\n\n"
+#ifdef BUILD_64BIT
+				"It seems you have 32-bit DLLs in your Bin64 directory! Please fix it."
+#else
+				"It seems you have 64-bit DLLs in your Bin32 directory! Please fix it."
+#endif
+			);
+		}
+		else
+		{
+			throw SystemError("Failed to load the CrySystem DLL!");
+		}
 	}
 
 	const int gameVersion = WinAPI::GetCrysisGameBuild(m_CrySystem.GetHandle());
