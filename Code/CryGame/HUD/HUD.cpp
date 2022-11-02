@@ -3572,6 +3572,13 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 		}
 		else
 		{
+			//CryMP: Fix team selection still showing while actively playing
+			if (GetModalHUD() == &m_animTeamSelection)
+			{
+				m_animTeamSelection.SetVisible(false);
+				SwitchToModalHUD(NULL, false);
+			}
+
 			// waiting to respawn - must be in 3rd person mode. Just show 'press left/right to switch player'
 			mapText = L"";
 			functionalityText = LocalizeWithParams("@ui_spectate_functionality_dead");
