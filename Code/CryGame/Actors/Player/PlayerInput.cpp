@@ -41,7 +41,6 @@ CPlayerInput::CPlayerInput(CPlayer* pPlayer) :
 	m_lastPos(0, 0, 0),
 	m_lookDir(0, 0, 0),
 	m_iSuitModeActionPressed(0),
-	m_iCarryingObject(0),
 	m_fSuitModeActionTime(0.0f),
 	m_lastSerializeFrameID(0)
 {
@@ -588,10 +587,6 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 
 void CPlayerInput::OnObjectGrabbed(IActor* pActor, bool bIsGrab, EntityId objectId, bool bIsNPC, bool bIsTwoHanded)
 {
-	if (m_pPlayer == pActor)
-	{
-		m_iCarryingObject = bIsGrab ? (bIsTwoHanded ? 2 : 1) : 0;
-	}
 }
 
 //this function basically returns a smoothed movement vector, for better movement responsivness in small spaces
@@ -661,15 +656,21 @@ void CPlayerInput::PreUpdate()
 	controllerSensitivity *= m_pPlayer->GetMassFactor();
 
 	COffHand* pOffHand = static_cast<COffHand*>(m_pPlayer->GetWeaponByClass(CItem::sOffHandClass));
-	if (pOffHand && (pOffHand->GetOffHandState() & eOHS_HOLDING_NPC))
+	if (pOffHand)
 	{
-		mouseSensitivity *= pOffHand->GetObjectMassScale();
-		controllerSensitivity *= pOffHand->GetObjectMassScale();
+		if ((pOffHand->GetOffHandState() & eOHS_HOLDING_NPC))
+		{
+			mouseSensitivity *= pOffHand->GetObjectMassScale();
+			controllerSensitivity *= pOffHand->GetObjectMassScale();
+		}
 	}
 
 	// When carrying object/enemy, adapt mouse sensitiviy to feel the weight
 	// Designers requested we ignore single-handed objects (1 == m_iCarryingObject)
-	if (2 == m_iCarryingObject)
+
+	// CryMP: Stats get reset OnRevive, this should be better to use
+	SPlayerStats& pStats = m_pPlayer->m_stats;
+	if (pStats.grabbedHeavyEntity == 1)
 	{
 		if (NANOMODE_STRENGTH == m_pPlayer->GetNanoSuit()->GetMode())
 		{

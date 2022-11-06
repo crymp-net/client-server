@@ -3661,6 +3661,9 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 void CPlayer::Kill()
 {
+	//CryMP 
+	NotifyObjectGrabbed(false, 0, false);
+
 	if (CNanoSuit* pSuit = GetNanoSuit())
 		pSuit->Death();
 
@@ -4656,7 +4659,7 @@ void CPlayer::PostSerialize()
 		{
 			COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
 			if (pOffHand && pOffHand->GetHeldEntityId() == 0)
-				m_stats.grabbedHeavyEntity = false;
+				m_stats.grabbedHeavyEntity = 0;
 		}
 	}
 }
@@ -6842,8 +6845,7 @@ IMPLEMENT_RMI(CPlayer, ClParachute)
 }
 
 //------------------------------------------------------------------------
-void
-CPlayer::StagePlayer(bool bStage, SStagingParams* pStagingParams /* = 0 */)
+void CPlayer::StagePlayer(bool bStage, SStagingParams* pStagingParams /* = 0 */)
 {
 	if (IsClient() == false)
 		return;
@@ -6930,7 +6932,7 @@ void CPlayer::NotifyObjectGrabbed(bool bIsGrab, EntityId objectId, bool bIsNPC, 
 			m_stats.grabbedHeavyEntity = 1;
 	}
 	else if (!bIsGrab)
-		m_stats.grabbedHeavyEntity = false;
+		m_stats.grabbedHeavyEntity = 0;
 }
 
 void CPlayer::StopLoopingSounds()

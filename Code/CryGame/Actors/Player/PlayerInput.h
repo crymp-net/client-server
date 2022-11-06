@@ -145,11 +145,9 @@ private:
 	bool m_checkZoom;
 	float m_fSuitModeActionTime;
 	int	m_iSuitModeActionPressed;
-	int m_iCarryingObject;
 	int m_lastSerializeFrameID;
 	bool m_KeepFPSpectatorMode = false;
 	bool m_KeepThirdPersonMode = false;
-
 	bool m_doubleJumped;
 
 	static TActionHandler<CPlayerInput>	s_actionHandler;
