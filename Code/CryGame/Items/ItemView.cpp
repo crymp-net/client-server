@@ -59,15 +59,13 @@ void CItem::UpdateFPView(float frameTime)
 //------------------------------------------------------------------------
 void CItem::UpdateFPPosition(float frameTime)
 {
-	CActor* pActor = GetOwnerActor();
-	if (!pActor)
+	CPlayer* pPlayer = GetOwnerPlayer();
+	if (!pPlayer)
 		return;
 
-	SPlayerStats* pStats = static_cast<SPlayerStats*>(pActor->GetActorStats());
-	if (!pStats)
-		return;
+	const SPlayerStats stats = pPlayer->GetPlayerStats();
 
-	Matrix34 tm = Matrix33::CreateRotationXYZ(pStats->FPWeaponAngles);
+	Matrix34 tm = Matrix33::CreateRotationXYZ(stats.FPWeaponAngles);
 
 	Vec3 offset(0.0f, 0.0f, 0.0f);
 
@@ -82,7 +80,7 @@ void CItem::UpdateFPPosition(float frameTime)
 		offset += tm.GetColumn(2).GetNormalized() * up;
 	}
 
-	tm.SetTranslation(pStats->FPWeaponPos + offset);
+	tm.SetTranslation(stats.FPWeaponPos + offset);
 	GetEntity()->SetWorldTM(tm);
 
 	//CryLogAlways("weaponpos: %.3f,%.3f,%.3f // weaponrot: %.3f,%.3f,%.3f", tm.GetTranslation().x,tm.GetTranslation().y,tm.GetTranslation().z, pStats->FPWeaponAngles.x, pStats->FPWeaponAngles.y, pStats->FPWeaponAngles.z);

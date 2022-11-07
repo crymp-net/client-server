@@ -726,9 +726,8 @@ void COffHand::UpdateCrosshairUsabilitySP()
 		CPlayer* pPlayer = CPlayer::FromActor(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		bool onLadder = false;
-		if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-			onLadder = pStats->isOnLadder;
+		SPlayerStats pStats = pPlayer->GetPlayerStats();
+		const bool onLadder = pStats.isOnLadder;
 
 		const int canGrab = CanPerformPickUp(pActor, NULL);
 
@@ -829,9 +828,8 @@ void COffHand::UpdateCrosshairUsabilityMP()
 	{
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		bool onLadder = false;
-		if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-			onLadder = pStats->isOnLadder;
+		SPlayerStats pStats = pPlayer->GetPlayerStats();
+		const bool onLadder = pStats.isOnLadder;
 
 		IMovementController* pMC = pPlayer->GetMovementController();
 		if (!pMC)
@@ -868,7 +866,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 					if (pItem->GetIWeapon())
 					{
 						IEntityClass* pItemClass = pItem->GetEntity()->GetClass();
-						bool isSocom = strcmp(pItemClass->GetName(), "SOCOM") ? false : true;
+						const bool isSocom = pItemClass == CItem::sSOCOMClass;
 						IItem* pCurrentItem = m_pItemSystem->GetItem(pPlayer->GetInventory()->GetItemByClass(pItemClass));
 						if ((!isSocom && pCurrentItem) ||
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
@@ -1110,13 +1108,17 @@ void COffHand::UpdateGrabbedNPCWorldPos(IEntity* pEntity, struct SViewParams* vi
 
 		if (viewParams)
 		{
-			SPlayerStats* stats = static_cast<SPlayerStats*>(GetOwnerActor()->GetActorStats());
-			Quat wQuat = (viewParams->rotation * Quat::CreateRotationXYZ(stats->FPWeaponAnglesOffset * gf_PI / 180.0f));
+			CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
+			if (!pPlayer)
+				return;
+
+			SPlayerStats stats = pPlayer->GetPlayerStats();
+			Quat wQuat = (viewParams->rotation * Quat::CreateRotationXYZ(stats.FPWeaponAnglesOffset * gf_PI / 180.0f));
 			wQuat *= Quat::CreateSlerp(viewParams->currentShakeQuat, IDENTITY, 0.5f);
 			wQuat.Normalize();
 
 			Vec3 itemAttachmentPos = GetSlotHelperPos(0, "item_attachment", false);
-			itemAttachmentPos = stats->FPWeaponPos + wQuat * itemAttachmentPos;
+			itemAttachmentPos = stats.FPWeaponPos + wQuat * itemAttachmentPos;
 
 			neckFinal.SetRotation33(Matrix33(viewParams->rotation * Quat::CreateRotationZ(gf_PI)));
 			neckFinal.SetTranslation(itemAttachmentPos);
@@ -1362,13 +1364,11 @@ bool COffHand::EvaluateStateTransition(int requestedAction, int activationMode, 
 		if (activationMode == eAAM_OnPress && m_currentState == eOHS_INIT_STATE)
 		{
 			//Don't allow throwing grenades under water.
-			if (CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor()))
+			if (CPlayer* pPlayer = GetOwnerPlayer())
 			{
-				if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-				{
-					if ((pStats->worldWaterLevel + 0.1f) > pStats->FPWeaponPos.z)
-						return false;
-				}
+				const SPlayerStats stats = pPlayer->GetPlayerStats();			
+				if ((stats.worldWaterLevel + 0.1f) > stats.FPWeaponPos.z)
+					return false;
 			}
 
 			//Don't throw if there's no ammo (or not fm)
@@ -2040,7 +2040,8 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 					if (dst < 0.6f)
 						return OH_NO_GRAB;
 
-					if (((SPlayerStats*)pActorAI->GetActorStats())->isStandingUp)
+					CPlayer* pPlayerAI = CPlayer::FromActor(pActorAI);
+					if (pPlayerAI && pPlayerAI->GetPlayerStats().isStandingUp)
 						return OH_NO_GRAB;
 				}
 
@@ -2980,8 +2981,11 @@ bool COffHand::GrabNPC()
 	}
 
 	//Disable IK
-	SPlayerStats* stats = static_cast<SPlayerStats*>(pActor->GetActorStats());
-	stats->isGrabbed = true;
+	SActorStats* stats = pActor->GetActorStats();
+	if (stats)
+	{
+		stats->isGrabbed = true;
+	}
 
 	m_heldEntityId = m_preHeldEntityId;
 	m_preHeldEntityId = 0;
@@ -3024,8 +3028,11 @@ void COffHand::ThrowNPC(bool kill /*= true*/)
 	if (!pEntity)
 		return;
 
-	SPlayerStats* stats = static_cast<SPlayerStats*>(pActor->GetActorStats());
-	stats->isGrabbed = false;
+	SActorStats* stats = pActor->GetActorStats();
+	if (stats)
+	{
+		stats->isGrabbed = false;
+	}
 
 	//Un-Hide attachments on the back
 	if (CWeaponAttachmentManager* pWAM = pActor->GetWeaponAttachmentManager())
@@ -3216,10 +3223,12 @@ void COffHand::MeleeAttack()
 {
 	if (m_melee)
 	{
-		if (CActor* pOwner = GetOwnerActor())
-			if (SPlayerStats* stats = static_cast<SPlayerStats*>(pOwner->GetActorStats()))
-				if (stats->bLookingAtFriendlyAI)
-					return;
+		if (CPlayer* pOwner = GetOwnerPlayer())
+		{
+			const SPlayerStats stats = pOwner->GetPlayerStats();
+			if (stats.bLookingAtFriendlyAI)
+				return;
+		}
 
 		CMelee* melee = static_cast<CMelee*>(m_melee);
 

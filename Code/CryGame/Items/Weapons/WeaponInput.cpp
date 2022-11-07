@@ -126,28 +126,24 @@ void CWeapon::ForcePendingActions()
 bool CWeapon::PreActionAttack(bool startFire)
 {
 	// Melee while pressing SHIFT for SP
-	CPlayer *pPlayer = static_cast<CPlayer*>(GetOwnerActor());
+	CPlayer* pPlayer = GetOwnerPlayer();
 	if(!pPlayer)
 		return false;
 
 	//if(gEnv->bMultiplayer)
 	{
+		SPlayerStats stats = pPlayer->GetPlayerStats();
 		if(startFire && pPlayer->IsSprinting())
 		{
 			//Stop sprinting, start firing
-			SPlayerStats *pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats());
-			if(pStats)
-			{
-				pStats->bSprinting = false;
-				pStats->bIgnoreSprinting = true;
-			}
+			stats.bSprinting = false;
+			stats.bIgnoreSprinting = true;
+		
 		}
 		else if(!startFire)
 		{
 			//Stop firing, continue sprinting
-			SPlayerStats *pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats());
-			if(pStats)
-				pStats->bIgnoreSprinting = false;
+			stats.bIgnoreSprinting = false;
 
 		}
 	}

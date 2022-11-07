@@ -72,11 +72,14 @@ void CSingleTG::UpdateFPView(float frameTime)
 
 		if(!m_bLocking)
 		{
-			CActor * pPlayer = m_pWeapon->GetOwnerActor();
-			SPlayerStats* stats = pPlayer?static_cast<SPlayerStats*>(pPlayer->GetActorStats()):NULL;
+			CPlayer* pPlayer = m_pWeapon->GetOwnerPlayer();
+			if (!pPlayer)
+				return;
 
-			if(stats && !gEnv->bMultiplayer)
-				stats->bLookingAtFriendlyAI = true;
+			SPlayerStats stats = pPlayer->GetPlayerStats();
+
+			if (!gEnv->bMultiplayer)
+				stats.bLookingAtFriendlyAI = true;
 
 			SAFE_HUD_FUNC(ShowProgress((int)0, true, 400, 300, "@no_lock_tac",true, true));
 		}

@@ -372,16 +372,13 @@ void CThrow::DoDrop()
 					pMC->GetMovementState(info);
 					float speed=2.5f;
 
-					CPlayer* pPlayer = static_cast<CPlayer*>(m_pWeapon->GetOwnerActor());
-					if(info.aimDirection.z<-0.1f)
+					CPlayer* pPlayer = m_pWeapon->GetOwnerPlayer();
+					if (pPlayer && info.aimDirection.z<-0.1f)
 					{
-						if(pPlayer)
+						const SPlayerStats pStats = pPlayer->GetPlayerStats();
+						if (pStats.grabbedHeavyEntity)
 						{
-							if(SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-							{
-								if(pStats->grabbedHeavyEntity)
-									speed = 4.0f;
-							}
+							speed = 4.0f;
 						}
 					}
 

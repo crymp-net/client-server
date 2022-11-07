@@ -1327,7 +1327,7 @@ void CWeapon::StartZoom(EntityId actorId, int zoomed)
 	if (IsDestroyed() || (pOwner && pOwner->GetHealth() <= 0))
 		return;
 
-	CPlayer* pPlayer = static_cast<CPlayer*>(pOwner);
+	CPlayer* pPlayer = CPlayer::FromIActor(pOwner);
 	if (pPlayer && pPlayer->IsClient() && pPlayer->IsSprinting())
 		return;
 
@@ -1336,7 +1336,7 @@ void CWeapon::StartZoom(EntityId actorId, int zoomed)
 		bool stayZoomed = (m_zm->IsZoomed() && m_zm->IsZooming() && !m_zm->IsToggle());
 		m_zm->StartZoom(stayZoomed, true, zoomed);
 	}
-	else if (pOwner->IsClient())
+	else if (pOwner && pOwner->IsClient())
 	{
 		// If the view does not zoom, we need to force aim assistance
 		AssistAiming(1, true);
@@ -1742,7 +1742,6 @@ void CWeapon::Reload(bool force)
 			if (IItem* pItem = pOwner->GetItemByClass(CItem::sOffHandClass))
 			{
 				COffHand* pOffHand = static_cast<COffHand*> (pItem);
-				CPlayer* pPlayer = static_cast<CPlayer*> (pOwner);
 				if (pOffHand->GetOffHandState() != eOHS_INIT_STATE)
 					return;
 			}
@@ -1871,7 +1870,11 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 		return;
 	}
 
-	IInventory* pInventory = GetActorInventory(GetOwnerActor());
+	CActor* pOwner = GetOwnerActor();
+	if (!pOwner)
+		return;
+
+	IInventory* pInventory = GetActorInventory(pOwner);
 	if (!pInventory)
 		return;
 
@@ -1879,7 +1882,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 	int current = pInventory->GetAmmoCount(pAmmoType);
 	if ((!gEnv->pSystem->IsEditor()) && (count > capacity))
 	{
-		if (GetOwnerActor()->IsClient())
+		if (pOwner->IsClient())
 		{
 			CryFixedStringT<64> ammoName = "@";
 			if (!strcmp(GetEntity()->GetClass()->GetName(), "CustomAmmoPickup"))
@@ -1904,7 +1907,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 		if (current < capacity)
 		{
 			pInventory->SetAmmoCount(pAmmoType, capacity);
-			if (GetOwnerActor()->IsClient() && capacity - current > 0)
+			if (pOwner->IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(capacity - current, buffer, 10);
@@ -1912,13 +1915,13 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 				SAFE_HUD_FUNC(DisplayAmmoPickup(pAmmoType->GetName(), capacity - current));
 			}
 			if (IsServer())
-				GetOwnerActor()->GetGameObject()->InvokeRMI(CActor::ClSetAmmo(), CActor::AmmoParams(pAmmoType->GetName(), count), eRMI_ToRemoteClients);
+				pOwner->GetGameObject()->InvokeRMI(CActor::ClSetAmmo(), CActor::AmmoParams(pAmmoType->GetName(), count), eRMI_ToRemoteClients);
 		}
 	}
 	else
 	{
 		pInventory->SetAmmoCount(pAmmoType, count);
-		if (GetOwnerActor()->IsClient() && count - current > 0)
+		if (pOwner->IsClient() && count - current > 0)
 		{
 			/*char buffer[5];
 			_itoa(count - current, buffer, 10);
@@ -1926,7 +1929,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 			SAFE_HUD_FUNC(DisplayAmmoPickup(pAmmoType->GetName(), count - current));
 		}
 		if (IsServer())
-			GetOwnerActor()->GetGameObject()->InvokeRMI(CActor::ClSetAmmo(), CActor::AmmoParams(pAmmoType->GetName(), count), eRMI_ToRemoteClients);
+			pOwner->GetGameObject()->InvokeRMI(CActor::ClSetAmmo(), CActor::AmmoParams(pAmmoType->GetName(), count), eRMI_ToRemoteClients);
 	}
 }
 
@@ -2965,10 +2968,10 @@ void CWeapon::RaiseWeapon(bool raise, bool faster /* = false */)
 		if (raise && !m_weaponRaised)
 		{
 			//Play the sound anyways if necessary...
-			CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
-			if ((pPlayer != NULL) && pPlayer->IsClient())
+			CPlayer* pPlayer = CPlayer::FromActor(GetOwnerActor());
+			if (pPlayer && pPlayer->IsClient())
 			{
-				SPlayerStats* stats = static_cast<SPlayerStats*>(pPlayer->GetActorStats());
+				SActorStats *stats = pPlayer->GetActorStats();
 				if (stats)
 				{
 					Vec3 vel = stats->velocity;
@@ -3390,9 +3393,7 @@ void CWeapon::UpdateWeaponRaising(float frameTime)
 			return;
 
 		IMovementController* pMC = pActor->GetMovementController();
-		SPlayerStats* stats = static_cast<SPlayerStats*>(pActor->GetActorStats());
-
-		if (pMC && stats)
+		if (pMC)
 		{
 			SMovementState info;
 			pMC->GetMovementState(info);
@@ -3513,13 +3514,14 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 	if (IsDualWield())
 		pSlave = static_cast<CWeapon*>(GetDualWieldSlave());
 
-	CActor* pActor = GetOwnerActor();
-	SPlayerStats* stats = pActor ? static_cast<SPlayerStats*>(pActor->GetActorStats()) : NULL;
-
-	if (!stats)
+	CPlayer* pPlayer = GetOwnerPlayer();
+	if (!pPlayer)
 		return;
 
-	stats->bLookingAtFriendlyAI = false;
+	SPlayerStats stats = pPlayer->GetPlayerStats();
+
+	stats.bLookingAtFriendlyAI = false;
+
 	LowerWeapon(false);
 	if (pSlave)
 		pSlave->LowerWeapon(false);
@@ -3527,7 +3529,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 	if (IsWeaponRaised() || IsModifying())
 		return;
 
-	const ray_hit* hit = pActor->GetGameObject()->GetWorldQuery()->GetLookAtPoint(200.0f);
+	const ray_hit* hit = pPlayer->GetGameObject()->GetWorldQuery()->GetLookAtPoint(200.0f);
 	IEntity* pLookAtEntity = NULL;
 	EntityId entityId = 0;
 	float    hitDistance = -1.0f;
@@ -3542,7 +3544,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 	CActor* pActorAI = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(entityId));
 
 	//First check, direct ray
-	if (IsFriendlyEntity(pLookAtEntity, pActorAI, pActor))
+	if (IsFriendlyEntity(pLookAtEntity, pActorAI, pPlayer))
 	{
 		LowerWeapon(true);
 		if (GetEntity()->GetClass() != CItem::sOffHandClass)
@@ -3552,14 +3554,14 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 			pSlave->LowerWeapon(true);
 			pSlave->StopFire();
 		}
-		Vec3 dis = pLookAtEntity->GetWorldPos() - pActor->GetEntity()->GetWorldPos();
+		Vec3 dis = pLookAtEntity->GetWorldPos() - pPlayer->GetEntity()->GetWorldPos();
 		if (dis.len2() < 5.0f)
-			stats->bLookingAtFriendlyAI = true;
+			stats.bLookingAtFriendlyAI = true;
 
 		return;
 	}
 
-	pLookAtEntity = pActor->GetGameObject()->GetWorldQuery()->GetEntityInFrontOf();
+	pLookAtEntity = pPlayer->GetGameObject()->GetWorldQuery()->GetEntityInFrontOf();
 	if (pLookAtEntity)
 	{
 		pActorAI = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pLookAtEntity->GetId()));
@@ -3569,7 +3571,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 		{
 			Vec3 entityPos = pLookAtEntity->GetWorldPos();
 			Vec3 hitPos = hit->pt;
-			Vec3 playerPos = pActor->GetEntity()->GetWorldPos();
+			Vec3 playerPos = pPlayer->GetEntity()->GetWorldPos();
 			entityPos.z = hitPos.z = playerPos.z = 0.0f;
 			if ((entityPos - playerPos).len2() > (hitPos - playerPos).len2())
 				return;
@@ -3577,7 +3579,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 	}
 
 	//If not, check entity in front
-	if (IsFriendlyEntity(pLookAtEntity, pActorAI, pActor))
+	if (IsFriendlyEntity(pLookAtEntity, pActorAI, pPlayer))
 	{
 		LowerWeapon(true);
 		if (GetEntity()->GetClass() != CItem::sOffHandClass)
@@ -3587,9 +3589,9 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 			pSlave->LowerWeapon(true);
 			pSlave->StopFire();
 		}
-		Vec3 dis = pLookAtEntity->GetWorldPos() - pActor->GetEntity()->GetWorldPos();
+		Vec3 dis = pLookAtEntity->GetWorldPos() - pPlayer->GetEntity()->GetWorldPos();
 		if (dis.len2() < 5.0f)
-			stats->bLookingAtFriendlyAI = true;
+			stats.bLookingAtFriendlyAI = true;
 	}
 
 }
@@ -3619,10 +3621,12 @@ void CWeapon::RestorePlayerSprintingStats()
 {
 	if (gEnv->bMultiplayer)
 	{
-		CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
+		CPlayer* pPlayer = GetOwnerPlayer();
 		if (pPlayer && pPlayer->IsClient())
-			if (SPlayerStats* pStats = static_cast<SPlayerStats*>(pPlayer->GetActorStats()))
-				pStats->bIgnoreSprinting = false;
+		{
+			SPlayerStats pStats = pPlayer->GetPlayerStats();
+			pStats.bIgnoreSprinting = false;
+		}
 	}
 }
 

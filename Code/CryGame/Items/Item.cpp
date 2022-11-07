@@ -2023,9 +2023,13 @@ IEntity* CItem::GetOwner() const
 //------------------------------------------------------------------------
 CActor* CItem::GetOwnerActor() const
 {
-	if (!m_pGameFramework)
-		return NULL;
 	return static_cast<CActor*>(m_pActorSystem->GetActor(m_ownerId));
+}
+
+//------------------------------------------------------------------------
+CPlayer* CItem::GetOwnerPlayer() const
+{
+	return CPlayer::FromIActor(m_pActorSystem->GetActor(m_ownerId));
 }
 
 //------------------------------------------------------------------------

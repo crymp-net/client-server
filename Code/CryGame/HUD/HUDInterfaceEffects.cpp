@@ -1358,44 +1358,40 @@ bool CHUD::OnBeginCutScene(IAnimSequence* pSeq, bool bResetFX)
 		m_cineHideHUD = true;
 	}
 
-	CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-
-	if (pPlayerActor)
+	if(m_pHUDScopes->m_animBinoculars.IsLoaded())
 	{
-		if (CPlayer* pPlayer = static_cast<CPlayer*> (pPlayerActor))
-		{
-			if(m_pHUDScopes->m_animBinoculars.IsLoaded())
-			{
-				if(m_pHUDScopes->IsBinocularsShown())
-					pPlayer->SelectLastItem(false);
-				m_pHUDScopes->ShowBinoculars(false,false,true);
-			}
-
-			pPlayer->StopLoopingSounds();
-
-			if(IAnimSequence::NO_PLAYER & flags)
-			{
-				if (SPlayerStats* pActorStats = static_cast<SPlayerStats*> (pPlayer->GetActorStats()))
-					pActorStats->spectatorMode = CActor::eASM_Cutscene;	// moved up to avoid conflict with the MP spectator modes
-				pPlayer->Draw(false);
-				if (pPlayer->GetPlayerInput())
-					pPlayer->GetPlayerInput()->Reset();
-				if(IItem* pItem = pPlayer->GetCurrentItem())
-				{
-					if(IWeapon *pWeapon = pItem->GetIWeapon())
-					{
-						if(pWeapon->IsZoomed() || pWeapon->IsZooming())
-							pWeapon->ExitZoom();
-					}
-				}
-				if(COffHand* pOffHand = static_cast<COffHand*>(pPlayer->GetItemByClass(CItem::sOffHandClass)))
-					pOffHand->OnBeginCutScene();
-				
-				pPlayer->HolsterItem(true);
-			}
-		}
+		if(m_pHUDScopes->IsBinocularsShown())
+			m_pClientActor->SelectLastItem(false);
+		m_pHUDScopes->ShowBinoculars(false,false,true);
 	}
 
+	m_pClientActor->StopLoopingSounds();
+
+	if(IAnimSequence::NO_PLAYER & flags)
+	{
+		SPlayerStats stats = m_pClientActor->GetPlayerStats();
+		stats.spectatorMode = CActor::eASM_Cutscene;	// moved up to avoid conflict with the MP spectator modes
+		
+		m_pClientActor->Draw(false);
+		
+		if (m_pClientActor->GetPlayerInput())
+			m_pClientActor->GetPlayerInput()->Reset();
+
+		if(IItem* pItem = m_pClientActor->GetCurrentItem())
+		{
+			if(IWeapon *pWeapon = pItem->GetIWeapon())
+			{
+				if(pWeapon->IsZoomed() || pWeapon->IsZooming())
+					pWeapon->ExitZoom();
+			}
+		}
+		if(COffHand* pOffHand = static_cast<COffHand*>(m_pClientActor->GetItemByClass(CItem::sOffHandClass)))
+			pOffHand->OnBeginCutScene();
+				
+		m_pClientActor->HolsterItem(true);
+	}
+	
+	
 	m_fCutsceneSkipTimer = g_pGameCVars->g_cutsceneSkipDelay;
 	m_bCutscenePlaying = true;
 	m_bCutsceneAbortPressed = false;
@@ -1438,27 +1434,23 @@ bool CHUD::OnEndCutScene(IAnimSequence* pSeq)
 
 	if(IAnimSequence::NO_PLAYER & flags)
 	{
-		if (CActor *pPlayerActor = static_cast<CActor *>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
-		{
-			if (CPlayer* pPlayer = static_cast<CPlayer*> (pPlayerActor))
-			{
-				if (SPlayerStats* pActorStats = static_cast<SPlayerStats*> (pPlayer->GetActorStats()))
-					pActorStats->spectatorMode = CActor::eASM_None;
-				pPlayer->Draw(true);
-				if(COffHand* pOffHand = static_cast<COffHand*>(pPlayer->GetItemByClass(CItem::sOffHandClass)))
-					pOffHand->OnEndCutScene();
+		SPlayerStats stats = m_pClientActor->GetPlayerStats();
+		stats.spectatorMode = CActor::eASM_None;
 
-				// restore health and nanosuit, because time has passed during cutscene
-				// and player was not-enabled
-				// -> simulate health-regen
-				pPlayer->SetHealth(pPlayer->GetMaxHealth());
-				if (pPlayer->GetNanoSuit())
-				{
-					pPlayer->GetNanoSuit()->ResetEnergy();
-				}
-				pPlayer->HolsterItem(false);
-			}
+		m_pClientActor->Draw(true);
+
+		if(COffHand* pOffHand = static_cast<COffHand*>(m_pClientActor->GetItemByClass(CItem::sOffHandClass)))
+			pOffHand->OnEndCutScene();
+
+		// restore health and nanosuit, because time has passed during cutscene
+		// and player was not-enabled
+		// -> simulate health-regen
+		m_pClientActor->SetHealth(m_pClientActor->GetMaxHealth());
+		if (m_pClientActor->GetNanoSuit())
+		{
+			m_pClientActor->GetNanoSuit()->ResetEnergy();
 		}
+		m_pClientActor->HolsterItem(false);
 	}
 
 #ifdef USER_alexl

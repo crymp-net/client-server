@@ -3120,8 +3120,8 @@ void CHUD::OnPostUpdate(float frameTime)
 
 	if (m_pModalHUD == &m_animQuickMenu)
 	{
-		SPlayerStats* stats = static_cast<SPlayerStats*>(m_pClientActor->GetActorStats());
-		if ((stats && (stats->bSprinting || (m_pClientActor->GetStance() == STANCE_PRONE && stats->speedFlat > 0.01f))) || (GetCurrentWeapon() && GetCurrentWeapon()->IsBusy()))
+		const SPlayerStats stats = m_pClientActor->GetPlayerStats();
+		if ((stats.bSprinting || (m_pClientActor->GetStance() == STANCE_PRONE && stats.speedFlat > 0.01f)) || (GetCurrentWeapon() && GetCurrentWeapon()->IsBusy()))
 		{
 			if (IsQuickMenuButtonActive(EQM_WEAPON))	//we are sprinting, but the weapon button is not disabled yet
 				ActivateQuickMenuButton(EQM_WEAPON, false);
@@ -5074,8 +5074,8 @@ bool CHUD::ShowWeaponAccessories(bool enable)
 	{
 		if (m_acceptNextWeaponCommand)
 		{
-			SPlayerStats* pStats = static_cast<SPlayerStats*>(m_pClientActor->GetActorStats());
-			if (!pStats->bSprinting)
+			const SPlayerStats stats = m_pClientActor->GetPlayerStats();
+			if (!stats.bSprinting)
 			{
 				SwitchToModalHUD(NULL, false);
 				if (pPlayerInput)

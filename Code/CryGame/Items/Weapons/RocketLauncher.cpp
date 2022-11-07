@@ -463,12 +463,15 @@ void CRocketLauncher::UpdateDotEffect(float frameTime)
 		if (laserLength <= 0.7f)
 			hitPos = laserPos + (0.7f * dir);
 
-		CPlayer* pPlayer = static_cast<CPlayer*>(GetOwnerActor());
-		SPlayerStats* pStats = pPlayer ? static_cast<SPlayerStats*>(pPlayer->GetActorStats()) : NULL;
-		if (pStats && pStats->bLookingAtFriendlyAI)
+		CPlayer* pPlayer = GetOwnerPlayer();
+		if (pPlayer)
 		{
-			hitPos = laserPos + (2.0f * dir);
-			laserLength = 2.0f;
+			const SPlayerStats stats = pPlayer->GetPlayerStats();
+			if (stats.bLookingAtFriendlyAI)
+			{
+				hitPos = laserPos + (2.0f * dir);
+				laserLength = 2.0f;
+			}
 		}
 
 		if (laserLength <= 2.0f)

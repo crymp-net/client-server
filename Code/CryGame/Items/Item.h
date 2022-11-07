@@ -42,6 +42,7 @@
 struct ICharacterInstance;
 struct AnimEventInstance;
 struct IAttachmentObject;
+class CPlayer;
 
 enum EItemUpdateSlots
 {
@@ -925,6 +926,8 @@ public:
 
 	IEntity *GetOwner() const;
 	CActor *GetOwnerActor() const;
+	//Beware: Only Player and Grunts are CPlayer
+	CPlayer* GetOwnerPlayer() const;  
 	CActor *GetActor(EntityId actorId) const;
   IInventory *GetActorInventory(IActor *pActor) const;
 	CItem *GetActorItem(IActor *pActor) const;

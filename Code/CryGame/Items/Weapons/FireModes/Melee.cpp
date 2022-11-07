@@ -201,9 +201,11 @@ void CMelee::StartFire()
 	if (pOwner->GetStance() == STANCE_PRONE)
 		return;
 
-	if (SPlayerStats* stats = static_cast<SPlayerStats*>(pOwner->GetActorStats()))
+	CPlayer* pPlayer = CPlayer::FromActor(pOwner);
+	if (pPlayer)
 	{
-		if (stats->bLookingAtFriendlyAI)
+		const SPlayerStats stats = pPlayer->GetPlayerStats();
+		if (stats.bLookingAtFriendlyAI)
 			return;
 	}
 
@@ -220,7 +222,6 @@ void CMelee::StartFire()
 
 	float speedOverride = -1.0f;
 
-	CPlayer* pPlayer = CPlayer::FromActor(pOwner);
 	if (pPlayer)
 	{
 		if (CNanoSuit* pSuit = pPlayer->GetNanoSuit())

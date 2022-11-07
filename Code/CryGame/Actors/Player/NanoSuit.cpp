@@ -413,7 +413,7 @@ void CNanoSuit::Update(float frameTime)
 	float recharge = 0.0f;
 	float rechargeTime = 20.0f;
 
-	const SPlayerStats stats = *(static_cast<SPlayerStats*>(m_pOwner->GetActorStats()));
+	const SPlayerStats stats = m_pOwner->GetPlayerStats();
 
 	if (isAI)
 		rechargeTime = g_pGameCVars->g_AiSuitEnergyRechargeTime;
