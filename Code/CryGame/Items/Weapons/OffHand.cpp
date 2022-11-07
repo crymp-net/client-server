@@ -2096,7 +2096,13 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 			{
 				//CryMP: Crouch to pickup vehicles :D
 				if (playerStance == STANCE_CROUCH && m_pVehicleSystem->GetVehicle(entityId))
-					return OH_GRAB_OBJECT;
+				{
+					//Don't allow to pickup while in vehicle, or in air
+					if (!pActor->GetLinkedVehicle() && pActor->GetActorStats() && pActor->GetActorStats()->onGround > 0.0f)
+					{
+						return OH_GRAB_OBJECT;
+					}
+				}
 			}
 
 			const bool bPICK_UP_OBJECTS_MP = gEnv->bMultiplayer && g_pGameCVars->mp_pickupObjects;
