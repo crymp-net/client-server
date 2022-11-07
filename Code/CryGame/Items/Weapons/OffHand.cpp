@@ -2130,6 +2130,13 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				//CryMP: Allow picking up projectiles 
 				if (g_pGame->GetWeaponSystem()->GetProjectile(entityId))
 				{
+					const pe_type physicsType = pEntity->GetPhysics() ? pEntity->GetPhysics()->GetType() : PE_NONE;
+					//Only allow PE_RIGID
+					if (physicsType != PE_RIGID)
+					{
+						return OH_NO_GRAB;
+					}
+
 					m_grabType = GRAB_TYPE_ONE_HANDED;
 					return OH_GRAB_OBJECT;
 				}
