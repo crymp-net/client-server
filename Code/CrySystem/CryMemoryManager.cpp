@@ -15,7 +15,7 @@ namespace
 
 		if (size)
 		{
-			result = malloc(size);
+			result = calloc(1, size);
 
 			allocatedSize = _msize(result);
 		}
@@ -70,7 +70,7 @@ namespace
 
 		if (size)
 		{
-			result = malloc(size);
+			result = calloc(1, size);
 		}
 
 		return result;
