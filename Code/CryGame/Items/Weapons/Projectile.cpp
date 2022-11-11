@@ -286,12 +286,16 @@ bool CProjectile::Init(IGameObject* pGameObject)
 	// Only for bullets
 	m_hitPoints = m_pAmmoParams->hitPoints;
 	m_hitListener = false;
-	if (m_hitPoints > 0)
+
+	if (gEnv->bServer) //CryMP: Server only (on client calls empty OnExplosion())
 	{
-		//Only projectiles with hit points are hit listeners
-		g_pGame->GetGameRules()->AddHitListener(this);
-		m_hitListener = true;
-		m_noBulletHits = m_pAmmoParams->noBulletHits;
+		if (m_hitPoints > 0)
+		{
+			//Only projectiles with hit points are hit listeners
+			g_pGame->GetGameRules()->AddHitListener(this);
+			m_hitListener = true;
+			m_noBulletHits = m_pAmmoParams->noBulletHits;
+		}
 	}
 
 	if (m_tracked) // if this is true here, it means m_tracked was serialized from spawn info
@@ -300,12 +304,21 @@ bool CProjectile::Init(IGameObject* pGameObject)
 		SetTracked(true);
 	}
 
+	m_spawnTime = gEnv->pTimer->GetCurrTime();
+
 	return true;
 }
 
 //------------------------------------------------------------------------
 void CProjectile::PostInit(IGameObject* pGameObject)
 {
+	if (gEnv->bMultiplayer)
+	{
+		//CryMP: Optimization: Claymores/C4 etc don't need to be updated
+		if (!gEnv->bServer && (GetLifeTime() == 0.0f || GetSpeed() == 0.0f))
+			return;
+	}
+
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
 
@@ -350,9 +363,31 @@ void CProjectile::FullSerialize(TSerialize ser)
 }
 
 //------------------------------------------------------------------------
+bool CProjectile::RemoveIfExpired()
+{
+	if (IsExpired())
+	{
+		gEnv->pEntitySystem->RemoveEntity(GetEntity()->GetId());
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CProjectile::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
+
+	//CryMP begin: Check for dead projectiles
+	if (gEnv->bMultiplayer)
+	{
+		m_lastUpdate = ctx.fCurrTime;
+		if (RemoveIfExpired())
+		{
+			m_spawnTime = ctx.fCurrTime;
+		}
+	}
+	//CryMP end
 
 	if (updateSlot != 0)
 		return;
@@ -367,42 +402,7 @@ void CProjectile::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 	ScaledEffect(m_pAmmoParams->pScaledEffect);
 
-	// update whiz
-	if (m_pAmmoParams->pWhiz)
-	{
-		if (m_whizSoundId == INVALID_SOUNDID)
-		{
-			IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor();
-			if (pActor && (m_ownerId != pActor->GetEntityId()))
-			{
-				float probability = 0.85f;
-
-				if (Random() <= probability)
-				{
-					Lineseg line(m_last, pos);
-					Vec3 player = pActor->GetEntity()->GetWorldPos();
-
-					float t;
-					float distanceSq = Distance::Point_LinesegSq(player, line, t);
-
-					if (distanceSq < 4.7f * 4.7f && (t >= 0.0f && t <= 1.0f))
-					{
-						if (distanceSq >= 0.65 * 0.65)
-						{
-							Sphere s;
-							s.center = player;
-							s.radius = 4.7f;
-
-							Vec3 entry, exit;
-							int intersect = Intersect::Lineseg_Sphere(line, s, entry, exit);
-							if (intersect == 0x1 || intersect == 0x3) // one entry or one entry and one exit
-								WhizSound(true, entry, (pos - m_last).GetNormalized());
-						}
-					}
-				}
-			}
-		}
-	}
+	UpdateWhiz();
 
 	if (m_trailSoundId == INVALID_SOUNDID)
 		TrailSound(true);
@@ -769,6 +769,48 @@ void CProjectile::Explode(bool destroy, bool impact, const Vec3& pos, const Vec3
 
 	if (destroy)
 		Destroy();
+}
+
+void CProjectile::UpdateWhiz()
+{
+	// update whiz
+	if (!m_pAmmoParams->pWhiz)
+		return;
+
+	if (m_whizSoundId != INVALID_SOUNDID)
+		return;
+	
+	const EntityId clientId = g_pGame->GetIGameFramework()->GetClientActorId();
+	if (clientId && (m_ownerId != clientId))
+	{
+		float probability = 0.85f;
+
+		if (Random() <= probability)
+		{
+			const Vec3 pos = GetEntity()->GetWorldPos();
+			Lineseg line(m_last, pos);
+			
+			Vec3 player = gEnv->pSystem->GetViewCamera().GetPosition(); //pActor->GetEntity()->GetWorldPos();
+
+			float t;
+			float distanceSq = Distance::Point_LinesegSq(player, line, t);
+
+			if (distanceSq < 4.7f * 4.7f && (t >= 0.0f && t <= 1.0f))
+			{
+				if (distanceSq >= 0.65 * 0.65)
+				{
+					Sphere s;
+					s.center = player;
+					s.radius = 4.7f;
+
+					Vec3 entry, exit;
+					int intersect = Intersect::Lineseg_Sphere(line, s, entry, exit);
+					if (intersect == 0x1 || intersect == 0x3) // one entry or one entry and one exit
+						WhizSound(true, entry, (pos - m_last).GetNormalized());
+				}
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -1211,7 +1253,7 @@ float CProjectile::GetSpeed() const
 }
 
 //==================================================================
-void CProjectile::OnHit(const HitInfo& hit)
+void CProjectile::OnHit(const HitInfo& hit) //server only
 {
 	//C4, special case
 	if (m_noBulletHits)

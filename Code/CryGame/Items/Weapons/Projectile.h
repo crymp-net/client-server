@@ -53,6 +53,7 @@ public:
 	virtual void PostInitClient(int channelId) {};
 	virtual void Release();
 	virtual void FullSerialize( TSerialize ser );
+	bool RemoveIfExpired();
 	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags );
 	virtual void PostSerialize();
 	virtual void SerializeSpawnInfo( TSerialize ser );
@@ -91,6 +92,7 @@ public:
 	virtual void Explode(bool destroy, bool impact=false, const Vec3 &pos=ZERO, const Vec3 &normal=FORWARD_DIRECTION, const Vec3 &vel=ZERO, EntityId targetId=0 );
 	virtual void TrailSound(bool enable, const Vec3 &dir=Vec3(0.0f,1.0f,0.0f));
 	virtual void WhizSound(bool enable, const Vec3 &pos, const Vec3 &dir);
+	void UpdateWhiz();
 	virtual void TrailEffect(bool enable, bool underWater = false);
 	virtual void FlashbangEffect(const SFlashbangParams* flashbang);
 	virtual void ScaledEffect(const SScaledEffectParams* scaledEffect);
@@ -118,6 +120,26 @@ public:
 	const SAmmoParams *GetParams() const { return m_pAmmoParams; };
 
 	virtual void InitWithAI( );
+
+	bool IsExpired() const
+	{
+		const float lifeTime = GetLifeTime();
+		if (lifeTime > 0.0f)
+		{
+			return (gEnv->pTimer->GetCurrTime() - m_spawnTime) > (lifeTime + 1.0f);
+		}
+		return false;
+	}
+
+	bool IsUpdated() const
+	{
+		return gEnv->pTimer->GetCurrTime() - m_lastUpdate < 0.1f;
+	}
+
+	float GetTotalLifeTime()
+	{
+		return m_totalLifetime;
+	}
 
 protected:
 	CWeapon *GetWeapon();
@@ -174,6 +196,9 @@ protected:
 	bool			m_hitListener;
 
 	IPhysicalEntity *m_obstructObject;
+
+	float m_spawnTime = 0.0f;
+	float m_lastUpdate = 0.0f;
 };
 
 #endif
