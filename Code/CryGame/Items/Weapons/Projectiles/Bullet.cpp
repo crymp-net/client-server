@@ -52,7 +52,7 @@ void CBullet::HandleEvent(const SGameObjectEvent& event)
 
 		//CryMP: This should fix most rail glitches
 		const int idmat = pCollision->idmat[1];
-		if (!pTarget && (idmat == 140 || idmat == 180 || idmat == 189 || idmat == 193 || idmat == 219))
+		if (!pTarget && (idmat == 180 || idmat == 189 || idmat == 219))
 		{
 			//CryLogAlways("$3Rail Glitch: $8Mat: %d This hit would have been blocked otherwise", idmat);
 			return;
