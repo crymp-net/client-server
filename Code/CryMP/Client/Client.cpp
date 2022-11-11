@@ -420,8 +420,37 @@ void Client::OnLoadingProgress(ILevelInfo *pLevel, int progressAmount)
 	m_pEngineCache->OnLoadingProgress(pLevel, progressAmount);
 }
 
-bool Client::OnBeforeSpawn(SEntitySpawnParams & params)
+bool Client::OnBeforeSpawn(SEntitySpawnParams& params)
 {
+	//CryMP: Archetype Loader
+	if (params.sName && params.sName[0] == '*')
+	{
+		const char* name = params.sName + 1;
+		const char* archetypeEnd = strchr(name, '|');
+
+		if (archetypeEnd)
+		{
+			const std::string archetypeName(name, archetypeEnd - name);
+
+			if (!gEnv->bServer)
+			{
+				params.sName = archetypeEnd + 1;
+			}
+			params.pArchetype = gEnv->pEntitySystem->LoadEntityArchetype(archetypeName.c_str());
+
+			if (!params.pArchetype && params.pClass)
+			{
+				CryLogWarningAlways("[CryMP] Archetype '%s' not found for entity %s",
+					archetypeName.c_str(),
+					params.pClass->GetName()
+				);
+
+				if (gEnv->bServer) //If archetype loading failed, don't proceed spawn on the server
+					return false;
+			}
+		}
+	}
+
 	return true;
 }
 
