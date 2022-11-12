@@ -18,6 +18,7 @@ jobs:
     env:
       BUILD_DIR: ${{ github.workspace }}/Build${{ matrix.build_bits }}
       BUILD_PLATFORM: ${{ matrix.build_bits == '32' && 'Win32' || 'x64' }}
+      EXE_PATH: ${{ env.BUILD_DIR }}/${{ matrix.build_type }}/CryMP-Client${{ matrix.build_bits }}.exe
 
     steps:
     - uses: actions/checkout@v3
@@ -28,8 +29,11 @@ jobs:
     - name: Build
       run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.build_type }}
 
+    - name: Hash
+      run: 'EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.EXE_PATH }}).Hash >> $GITHUB_ENV
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: CryMP-Client${{ matrix.build_bits }}-${{ matrix.build_type }}
-        path: ${{ env.BUILD_DIR }}/${{ matrix.build_type }}/*.exe
+        name: CryMP-Client${{ matrix.build_bits }}-${{ env.EXE_HASH }}
+        path: ${{ env.EXE_PATH }}
