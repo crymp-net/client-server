@@ -30,7 +30,7 @@ jobs:
       run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.build_type }}
 
     - name: Hash
-      run: 'EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.EXE_PATH }}).Hash >> $GITHUB_ENV
+      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.EXE_PATH }}).Hash) >> $GITHUB_ENV
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
