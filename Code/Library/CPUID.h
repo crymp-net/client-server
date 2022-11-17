@@ -17,11 +17,11 @@ struct CPUID
 		unsigned int ecx = 0;
 		unsigned int edx = 0;
 
-		explicit Query(unsigned int leaf)
+		explicit Query(unsigned int leaf, unsigned int subleaf = 0)
 		{
 #ifdef _MSC_VER
 			int regs[4];
-			__cpuid(regs, leaf);
+			__cpuidex(regs, leaf, subleaf);
 
 			this->eax = regs[0];
 			this->ebx = regs[1];
@@ -32,7 +32,7 @@ struct CPUID
 			(
 				"cpuid"
 				: "=a" (this->eax), "=b" (this->ebx), "=c" (this->ecx), "=d" (this->edx)
-				: "a" (leaf), "c" (0)
+				: "a" (leaf), "c" (subleaf)
 			);
 #endif
 		}
@@ -67,11 +67,11 @@ struct CPUID
 			{ "GenuineIntel", Vendor::INTEL },
 		};
 
-		for (unsigned int i = 0; i < (sizeof vendors / sizeof vendors[0]); i++)
+		for (const auto& vendor : vendors)
 		{
-			if (this->vendor_string == vendors[i].string)
+			if (this->vendor_string == vendor.string)
 			{
-				this->vendor = vendors[i].id;
+				this->vendor = vendor.id;
 				break;
 			}
 		}
