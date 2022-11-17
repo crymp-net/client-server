@@ -746,6 +746,14 @@ bool WinAPI::IsVistaOrLater()
 	return info.dwMajorVersion >= 6;
 }
 
+unsigned int WinAPI::GetLogicalProcessorCount()
+{
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+
+	return info.dwNumberOfProcessors;
+}
+
 //////////
 // HTTP //
 //////////

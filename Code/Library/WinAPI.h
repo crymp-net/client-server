@@ -255,6 +255,8 @@ namespace WinAPI
 
 	bool IsVistaOrLater();
 
+	unsigned int GetLogicalProcessorCount();
+
 	//////////
 	// HTTP //
 	//////////

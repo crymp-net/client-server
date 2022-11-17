@@ -11,13 +11,13 @@
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "Library/CmdLine.h"
-#include "Library/CPU.h"
 #include "Library/Error.h"
 #include "Library/Format.h"
 #include "Library/WinAPI.h"
 
 #include "Launcher.h"
 #include "Patch.h"
+#include "CPUInfo.h"
 #include "CrashLogger.h"
 
 #include "config.h"
@@ -293,11 +293,7 @@ void Launcher::PatchEngine()
 		Patch::AllowMultipleInstances(m_CrySystem);
 		Patch::UnhandledExceptions(m_CrySystem);
 		Patch::DisableIOErrorLog(m_CrySystem);
-
-		if (CPU::IsAMD() && !CPU::Has3DNow())
-		{
-			Patch::Disable3DNow(m_CrySystem);
-		}
+		Patch::HookCPUDetect(m_CrySystem, &CPUInfo::Detect);
 
 		if (!CmdLine::HasArg("-oldss"))
 		{

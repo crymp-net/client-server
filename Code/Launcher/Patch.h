@@ -1,5 +1,6 @@
 #pragma once
 
+struct CPUInfo;
 struct DLL;
 
 namespace Patch
@@ -20,7 +21,7 @@ namespace Patch
 	void AllowDX9VeryHighSpec(const DLL & CrySystem);
 	void AllowMultipleInstances(const DLL & CrySystem);
 	void UnhandledExceptions(const DLL & CrySystem);
-	void Disable3DNow(const DLL & CrySystem);
+	void HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info));
 	void DisableIOErrorLog(const DLL & CrySystem);
 
 	// CryRenderD3D10

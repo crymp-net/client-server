@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "Library/DLL.h"
 #include "Library/WinAPI.h"
 
@@ -222,20 +224,35 @@ void Patch::UnhandledExceptions(const DLL & CrySystem)
 }
 
 /**
- * @brief Disables use of 3DNow! instructions.
- * This patch correctly fixes the well-known crash of 32-bit Crysis on modern AMD processors.
+ * Hooks CryEngine CPU detection.
  */
-void Patch::Disable3DNow(const DLL & CrySystem)
+void Patch::HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info))
 {
-	// default CPU feature flags without CPUF_3DNOW
-	const uint8_t flags = 0x18;
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xE0                                                   // jmp rax
+	};
+
+	std::memcpy(&code[2], &handler, 8);
+#else
+	unsigned char code[] = {
+		0x51,                          // push ecx
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x04,              // add esp, 0x4
+		0xC3                           // ret
+	};
+
+	std::memcpy(&code[2], &handler, 4);
+#endif
 
 	void *pCrySystem = CrySystem.GetHandle();
 
 #ifdef BUILD_64BIT
-	FillMem(RVA(pCrySystem, 0xA0FF), &flags, sizeof flags);
+	FillMem(RVA(pCrySystem, 0xA7E0), &code, sizeof code);
 #else
-	FillMem(RVA(pCrySystem, 0x93E2), &flags, sizeof flags);
+	FillMem(RVA(pCrySystem, 0xA380), &code, sizeof code);
 #endif
 }
 
