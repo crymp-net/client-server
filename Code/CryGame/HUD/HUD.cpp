@@ -4172,6 +4172,13 @@ void CHUD::ActorRevive(IActor* pActor, EntityId vehicleId)
 
 	if (pActor->IsClient())
 	{
+		//CryMP: Force hide team selection on revive
+		if (GetModalHUD() == &m_animTeamSelection)
+		{
+			m_animTeamSelection.SetVisible(false);
+			SwitchToModalHUD(NULL, false);
+		}
+
 		if (m_bNightVisionActive)
 		{
 			gEnv->p3DEngine->SetPostEffectParam("NightVision_Active", 0.0f);
