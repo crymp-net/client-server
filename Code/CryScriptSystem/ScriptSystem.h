@@ -1,10 +1,9 @@
 #pragma once
 
-#include <set>
 #include <string>
+#include <vector>
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
-#include "Library/Util.h"
 
 #include "ScriptTimerManager.h"
 #include "ScriptBindings/ScriptBindings.h"
@@ -18,10 +17,21 @@ class ScriptSystem : public IScriptSystem
 	int m_funcParamCount = 0;
 	int m_errorHandlerRef = 0;
 
-	std::set<std::string, Util::TransparentStringCompareNoCase> m_loadedScripts;
-
 	ScriptTimerManager m_timers;
 	ScriptBindings m_bindings;
+
+	struct Script
+	{
+		std::string name;
+		std::string prettyName;
+	};
+
+	std::vector<Script> m_scripts;
+
+	constexpr auto GetScriptNameCompare() const
+	{
+		return [](const Script& script, const std::string& name) { return script.name < name; };
+	}
 
 public:
 	ScriptSystem();

@@ -436,7 +436,18 @@ void ScriptSystem::SetGCFrequency(const float rate)
 
 bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool forceReload)
 {
-	const auto [scriptIt, isNew] = m_loadedScripts.emplace(SanitizeScriptFileName(fileName));
+	const std::string scriptName = SanitizeScriptFileName(fileName);
+
+	bool isNew = false;
+	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
+
+	if (it == m_scripts.end() || it->name != scriptName)
+	{
+		isNew = true;
+		it = m_scripts.emplace(it);
+		it->name = scriptName;
+		it->prettyName = fileName;
+	}
 
 	if (isNew || forceReload)
 	{
@@ -445,7 +456,7 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 		CCryFile file;
 
 		// try to load and execute the script file
-		if (file.Open(scriptIt->c_str(), "rb"))
+		if (file.Open(fileName, "rb"))
 		{
 			std::vector<char> content;
 
@@ -455,7 +466,7 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 
 			// use script file path as its description
 			// TODO: maybe use real path from CryPak instead?
-			const char *description = scriptIt->c_str();
+			const char *description = fileName;
 
 			// execute the file
 			success = ExecuteBuffer(content.data(), content.size(), description);
@@ -464,9 +475,11 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 		if (!success)
 		{
 			if (raiseError)
-				CryLogErrorAlways("[Script] Failed to load %s", scriptIt->c_str());
+			{
+				CryLogErrorAlways("[Script] Failed to load %s", fileName);
+			}
 
-			m_loadedScripts.erase(scriptIt);
+			m_scripts.erase(it);
 
 			return false;
 		}
@@ -493,12 +506,19 @@ bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const ch
 
 void ScriptSystem::UnloadScript(const char *fileName)
 {
-	m_loadedScripts.erase(SanitizeScriptFileName(fileName));
+	const std::string scriptName = SanitizeScriptFileName(fileName);
+
+	const auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
+
+	if (it != m_scripts.end() && it->name == scriptName)
+	{
+		m_scripts.erase(it);
+	}
 }
 
 void ScriptSystem::UnloadScripts()
 {
-	m_loadedScripts.clear();
+	m_scripts.clear();
 }
 
 bool ScriptSystem::ReloadScript(const char *fileName, bool raiseError)
@@ -510,11 +530,13 @@ bool ScriptSystem::ReloadScript(const char *fileName, bool raiseError)
 
 bool ScriptSystem::ReloadScripts()
 {
+	const bool raiseError = true;
+
 	bool status = true;
 
-	for (const std::string & script : m_loadedScripts)
+	for (const Script& script : m_scripts)
 	{
-		if (!ReloadScript(script.c_str(), true))
+		if (!ReloadScript(script.prettyName.c_str(), raiseError))
 		{
 			status = false;
 		}
@@ -527,9 +549,9 @@ void ScriptSystem::DumpLoadedScripts()
 {
 	CryLogAlways("=== LOADED SCRIPTS BEGIN ===");
 
-	for (const std::string & script : m_loadedScripts)
+	for (const Script& script : m_scripts)
 	{
-		CryLogAlways("%s", script.c_str());
+		CryLogAlways("%s", script.prettyName.c_str());
 	}
 
 	CryLogAlways("=== LOADED SCRIPTS END ===");
@@ -864,8 +886,19 @@ std::string ScriptSystem::SanitizeScriptFileName(const char *fileName)
 	{
 		result = fileName;
 
-		// convert backslashes to normal slashes
-		std::replace(result.begin(), result.end(), '\\', '/');
+		for (char& ch : result)
+		{
+			if (ch == '\\')
+			{
+				// convert backslashes to normal slashes
+				ch = '/';
+			}
+			else if (ch >= 'A' && ch <= 'Z')
+			{
+				// convert to lowercase
+				ch += ('a' - 'A');
+			}
+		}
 	}
 
 	return result;
