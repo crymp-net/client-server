@@ -1616,7 +1616,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 				{
 					m_buildingsOnRadar.push_back(RadarEntity(pEntity->GetId()));
 				}
-				if (cls == factoryClass && pLocalActor && m_pHUD->GetPowerStruggleHUD() && m_pHUD->GetPowerStruggleHUD()->IsFactoryType(pEntity->GetId(), CHUDPowerStruggle::E_PROTOTYPES))
+				if (cls == factoryClass && pLocalActor && m_pHUD->GetPowerStruggleHUD() && m_pHUD->GetPowerStruggleHUD()->IsFactoryType(pEntity->GetId(), CHUDPowerStruggle::BUY_PAGE_PROTOTYPES))
 				{
 					Vec3 dirvec = (pLocalActor->GetPos() - pEntity->GetPos());
 					float distance = dirvec.GetLength2D();

@@ -289,10 +289,14 @@ void CMPTutorial::OnEntityAddedToRadar(EntityId id)
 
 void CMPTutorial::OnShowBuyMenuPage(int page)
 {
-	if(page == CHUDPowerStruggle::E_AMMO)
+	if (page == CHUDPowerStruggle::BUY_PAGE_AMMO)
+	{
 		TriggerEvent(eTE_BuyAmmo);
-	else if(page == CHUDPowerStruggle::E_PROTOTYPES)
+	}
+	else if (page == CHUDPowerStruggle::BUY_PAGE_PROTOTYPES)
+	{
 		TriggerEvent(eTE_PrototypeBuyMenu);
+	}
 }
 
 void CMPTutorial::OnShowScoreBoard()
@@ -891,7 +895,7 @@ bool CMPTutorial::CheckNearbyEntities(const CPlayer *pPlayer)
 			EntityId factoryId = *factIt;
 			if(g_pGame->GetHUD())
 			{
-				if(g_pGame->GetHUD()->GetPowerStruggleHUD()->IsFactoryType(factoryId, CHUDPowerStruggle::E_PROTOTYPES))
+				if(g_pGame->GetHUD()->GetPowerStruggleHUD()->IsFactoryType(factoryId, CHUDPowerStruggle::BUY_PAGE_PROTOTYPES))
 				{
 					if(g_pGame->GetGameRules()->GetTeam(factoryId) == playerTeam)
 					{
@@ -968,7 +972,7 @@ bool CMPTutorial::CheckNearbyEntities(const CPlayer *pPlayer)
 				if(distanceSq < 500.0f)
 				{
 					// prompt depends on team and factory type
-					bool inPrototypeFactory = g_pGame->GetHUD()->GetPowerStruggleHUD()->IsFactoryType(pEnt->GetId(), CHUDPowerStruggle::E_PROTOTYPES);
+					bool inPrototypeFactory = g_pGame->GetHUD()->GetPowerStruggleHUD()->IsFactoryType(pEnt->GetId(), CHUDPowerStruggle::BUY_PAGE_PROTOTYPES);
 					int team = g_pGame->GetGameRules()->GetTeam(pEnt->GetId());
 					if(team == 0)
 					{

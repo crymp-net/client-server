@@ -35,14 +35,15 @@ public:
 	void Reset();
 
 	//buyable item types
-	enum EBuyMenuPage
+	enum BuyMenuPage
 	{
-		E_WEAPONS				= 1 << 0,
-		E_VEHICLES			= 1 << 1,
-		E_EQUIPMENT			= 1 << 2,
-		E_AMMO					= 1 << 3,
-		E_PROTOTYPES		= 1 << 4,
-		E_LOADOUT				= 1 << 5
+		BUY_PAGE_NONE = 0,
+		BUY_PAGE_WEAPONS = 1 << 0,
+		BUY_PAGE_VEHICLES = 1 << 1,
+		BUY_PAGE_EQUIPMENT = 1 << 2,
+		BUY_PAGE_AMMO = 1 << 3,
+		BUY_PAGE_PROTOTYPES = 1 << 4,
+		BUY_PAGE_LOADOUT = 1 << 5
 	};
 
 	enum EHexIconState
@@ -83,7 +84,7 @@ public:
 		std::vector<SItem> itemArray;
 	};
 
-	virtual bool IsFactoryType(EntityId entity, EBuyMenuPage type);
+	virtual bool IsFactoryType(EntityId entity, BuyMenuPage type);
 	virtual bool CanBuild(IEntity *pEntity, const char *vehicle);
 
 	bool IsPlayerSpecial();
@@ -143,11 +144,11 @@ private:
 
 	bool WeaponUseAmmo(CWeapon *pWeapon, IEntityClass* pAmmoType);
 	bool CanUseAmmo(IEntityClass* pAmmoType);
-	void GetItemList(EBuyMenuPage itemType, std::vector<SItem> &itemList, bool buyMenu = true );
+	void GetItemList(BuyMenuPage itemType, std::vector<SItem> &itemList, bool buyMenu = true );
 	void PopulateBuyList();
 	void UpdateEnergyBuyList(int energy_before, int energy_after);
 	void UpdatePackageItemList(const char *page);
-	EBuyMenuPage ConvertToBuyList(const char *page);
+	BuyMenuPage ConvertToBuyList(const char *page);
 	void ActivateBuyMenuTabs();
 	void UpdatePackageList();
 	void UpdateCurrentPackage();
@@ -172,8 +173,11 @@ private:
 	SEquipmentPack m_lastPurchase;
 	//items bought in a sequence after buy menu open
 	SEquipmentPack m_thisPurchase;
+
 	//current buy menu page
-	EBuyMenuPage	m_eCurBuyMenuPage;
+	BuyMenuPage m_eCurBuyMenuPage = BUY_PAGE_LOADOUT;
+	BuyMenuPage m_restoreBuyMenuPage = BUY_PAGE_NONE;
+
 	//buy menu flash movie - managed by HUD
 	CGameFlashAnimation *g_pBuyMenu;
 	CGameFlashAnimation *g_pHexIcon;

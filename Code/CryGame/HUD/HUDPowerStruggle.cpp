@@ -58,7 +58,6 @@ void CHUDPowerStruggle::Reset()
 {
 	m_bInBuyZone = false;
 	m_bInServiceZone = false;
-	m_eCurBuyMenuPage = E_LOADOUT;
 	m_nkLeft = true; //NK is left on default
 	m_factoryTypes.resize(5);
 	m_serviceZoneTypes.resize(5);
@@ -119,19 +118,14 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 		if (g_pHUD->m_pModalHUD == &g_pHUD->m_animBuyMenu)
 			g_pHUD->m_animBuyMenu.Invoke("setPP", pp);
 
-		int teamId = 0;
-		IActor* pLocalActor = g_pGame->GetIGameFramework()->GetClientActor();
-		if (pLocalActor)
-		{
-			teamId = m_pGameRules->GetTeam(pLocalActor->GetEntityId());
+		int teamId = m_pGameRules->GetTeam(g_pHUD->m_pClientActor->GetEntityId());
 
-			// if local actor is currently spectating another player, use the team of the player we're watching...
-			CActor* pCActor = static_cast<CActor*>(pLocalActor);
-			if (pCActor && pCActor->GetSpectatorMode() == CActor::eASM_Follow)
-			{
-				teamId = m_pGameRules->GetTeam(pCActor->GetSpectatorTarget());
-			}
+		// if local actor is currently spectating another player, use the team of the player we're watching...
+		if (g_pHUD->m_pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
+		{
+			teamId = m_pGameRules->GetTeam(g_pHUD->m_pClientActor->GetSpectatorTarget());
 		}
+		
 
 		if (!m_gotpowerpoints)
 		{
@@ -407,8 +401,8 @@ void CHUDPowerStruggle::UpdateEnergyBuyList(int energy_before, int energy_after)
 {
 
 	std::vector<SItem> itemList;
-	EBuyMenuPage itemType = m_eCurBuyMenuPage;
-	if (itemType != E_PROTOTYPES) return;
+	BuyMenuPage itemType = m_eCurBuyMenuPage;
+	if (itemType != BUY_PAGE_PROTOTYPES) return;
 
 	GetItemList(itemType, itemList);
 	bool update = false;
@@ -916,22 +910,22 @@ bool CHUDPowerStruggle::CanUseAmmo(IEntityClass* pAmmoType)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDPowerStruggle::GetItemList(EBuyMenuPage itemType, std::vector<SItem>& itemList, bool bBuyMenu)
+void CHUDPowerStruggle::GetItemList(BuyMenuPage itemType, std::vector<SItem>& itemList, bool bBuyMenu)
 {
 	const char* list = "weaponList";
-	if (itemType == E_AMMO)
+	if (itemType == BUY_PAGE_AMMO)
 	{
 		list = "ammoList";
 	}
-	else if (itemType == E_VEHICLES)
+	else if (itemType == BUY_PAGE_VEHICLES)
 	{
 		list = "vehicleList";
 	}
-	else if (itemType == E_EQUIPMENT)
+	else if (itemType == BUY_PAGE_EQUIPMENT)
 	{
 		list = "equipList";
 	}
-	else if (itemType == E_PROTOTYPES)
+	else if (itemType == BUY_PAGE_PROTOTYPES)
 	{
 		list = "protoList";
 	}
@@ -987,7 +981,7 @@ void CHUDPowerStruggle::GetItemList(EBuyMenuPage itemType, std::vector<SItem>& i
 			if (pItemScriptTable->GetValue("ammo", bAmmoType) && bAmmoType)
 			{
 				IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(strId);
-				if (bBuyMenu && (itemType == E_AMMO) && !CanUseAmmo(pClass))
+				if (bBuyMenu && (itemType == BUY_PAGE_AMMO) && !CanUseAmmo(pClass))
 					continue;
 			}
 
@@ -1096,21 +1090,16 @@ void CHUDPowerStruggle::GetItemList(EBuyMenuPage itemType, std::vector<SItem>& i
 
 void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 {
-	IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pActor) return;
-
-	if (!m_pGameRules) return;
-
-	EntityId uiPlayerID = pActor->GetEntityId();
+	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
 
 	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 	bool isDead = m_pGameRules->IsDead(uiPlayerID);
 
-	EBuyMenuPage factory = E_LOADOUT;
+	BuyMenuPage factory = BUY_PAGE_LOADOUT;
 
 	if (isDead)
 	{
-		factory = E_WEAPONS;
+		factory = BUY_PAGE_WEAPONS;
 	}
 	else
 	{
@@ -1119,37 +1108,37 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		{
 			if (m_pGameRules->GetTeam(*it) == playerTeam)
 			{
-				if (IsFactoryType(*it, E_PROTOTYPES))
+				if (IsFactoryType(*it, BUY_PAGE_PROTOTYPES))
 				{
-					factory = E_PROTOTYPES;
+					factory = BUY_PAGE_PROTOTYPES;
 					break;
 				}
-				else if (IsFactoryType(*it, E_VEHICLES))
+				else if (IsFactoryType(*it, BUY_PAGE_VEHICLES))
 				{
-					factory = E_VEHICLES;
+					factory = BUY_PAGE_VEHICLES;
 					break;
 				}
-				else if (IsFactoryType(*it, E_WEAPONS))
+				else if (IsFactoryType(*it, BUY_PAGE_WEAPONS))
 				{
-					factory = E_WEAPONS;
+					factory = BUY_PAGE_WEAPONS;
 					break;
 				}
-				else if (IsFactoryType(*it, E_AMMO))
+				else if (IsFactoryType(*it, BUY_PAGE_AMMO))
 				{
-					factory = E_AMMO;
+					factory = BUY_PAGE_AMMO;
 					break;
 				}
 			}
 		}
-		if (factory == E_LOADOUT && g_pHUD->GetVehicleInterface()->IsAbleToBuy())
+		if (factory == BUY_PAGE_LOADOUT && g_pHUD->GetVehicleInterface()->IsAbleToBuy())
 		{
 			std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
 			for (; it != m_currentServiceZones.end(); ++it)
 			{
 				if (m_pGameRules->GetTeam(*it) == playerTeam)
 				{
-					if (m_eCurBuyMenuPage != E_LOADOUT)
-						factory = E_AMMO;
+					if (m_eCurBuyMenuPage != BUY_PAGE_LOADOUT)
+						factory = BUY_PAGE_AMMO;
 					break;
 				}
 			}
@@ -1157,18 +1146,27 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 	}
 
 	m_eCurBuyMenuPage = factory;
+
+	//CryMP: Restore buypage state
+	if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS && m_restoreBuyMenuPage != BUY_PAGE_NONE)
+	{
+		m_eCurBuyMenuPage = m_restoreBuyMenuPage;
+		//But do not next time
+		m_restoreBuyMenuPage = BUY_PAGE_NONE;
+	}
+
 	if (sendToFlash)
 	{
 		int page = 1;
-		if (m_eCurBuyMenuPage == E_AMMO)
+		if (m_eCurBuyMenuPage == BUY_PAGE_AMMO)
 			page = 2;
-		else if (m_eCurBuyMenuPage == E_EQUIPMENT)
+		else if (m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
 			page = 3;
-		else if (m_eCurBuyMenuPage == E_VEHICLES)
+		else if (m_eCurBuyMenuPage == BUY_PAGE_VEHICLES)
 			page = 4;
-		else if (m_eCurBuyMenuPage == E_PROTOTYPES)
+		else if (m_eCurBuyMenuPage == BUY_PAGE_PROTOTYPES)
 			page = 5;
-		else if (m_eCurBuyMenuPage == E_LOADOUT)
+		else if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
 			page = 6;
 		g_pBuyMenu->Invoke("Root.TabBar.gotoTab", (int)page);
 		PopulateBuyList();
@@ -1189,6 +1187,16 @@ void CHUDPowerStruggle::UpdateBuyList(const char* page)
 		if (page)
 		{
 			m_eCurBuyMenuPage = ConvertToBuyList(page);
+
+			//CryMP: Save buypage state
+			if (m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
+			{
+				m_restoreBuyMenuPage = m_eCurBuyMenuPage;
+			}
+			if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
+			{
+				m_restoreBuyMenuPage = BUY_PAGE_NONE;
+			}
 		}
 		PopulateBuyList();
 	}
@@ -1196,36 +1204,32 @@ void CHUDPowerStruggle::UpdateBuyList(const char* page)
 
 //-----------------------------------------------------------------------------------------------------
 
-CHUDPowerStruggle::EBuyMenuPage CHUDPowerStruggle::ConvertToBuyList(const char* page)
+CHUDPowerStruggle::BuyMenuPage CHUDPowerStruggle::ConvertToBuyList(const char* page)
 {
 	if (page)
 	{
-		static EBuyMenuPage pages[] = { E_WEAPONS, E_WEAPONS, E_AMMO, E_EQUIPMENT, E_VEHICLES, E_PROTOTYPES, E_LOADOUT };
+		static BuyMenuPage pages[] = { BUY_PAGE_WEAPONS, BUY_PAGE_WEAPONS,
+			BUY_PAGE_AMMO, BUY_PAGE_EQUIPMENT, 
+			BUY_PAGE_VEHICLES, BUY_PAGE_PROTOTYPES, BUY_PAGE_LOADOUT };
 		static const int numPages = sizeof(pages) / sizeof(pages[0]);
 		int pageIndex = atoi(page); // returns 0, if no conversion made
 		pageIndex = pageIndex < 0 ? 0 : (pageIndex < numPages ? pageIndex : 0);
 		return pages[pageIndex];
 	}
-	return E_WEAPONS;
+	return BUY_PAGE_WEAPONS;
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CHUDPowerStruggle::PopulateBuyList()
 {
-	if (!g_pGame->GetIGameFramework()->GetClientActor())
-		return;
-
 	if (!g_pBuyMenu)
 		return;
 
 	if (!g_pHUD->IsBuyMenuActive())
 		return;
 
-	if (!m_pGameRules)
-		return;
-
-	EBuyMenuPage itemType = m_eCurBuyMenuPage;
+	BuyMenuPage itemType = m_eCurBuyMenuPage;
 
 	IFlashPlayer* pFlashPlayer = g_pBuyMenu->GetFlashPlayer();
 
@@ -1237,7 +1241,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 	IEntity* pFirstVehicleFactory = NULL;
 
-	EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
+	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
 	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 	bool bInvalidBuyZone = true;
 	float CurBuyZoneLevel = 0.0f;
@@ -1256,7 +1260,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 						if (level > CurBuyZoneLevel)
 							CurBuyZoneLevel = level;
 						bInvalidBuyZone = false;
-						if (itemType == E_VEHICLES || itemType == E_PROTOTYPES)
+						if (itemType == BUY_PAGE_VEHICLES || itemType == BUY_PAGE_PROTOTYPES)
 						{
 							pFirstVehicleFactory = pEntity;
 						}
@@ -1276,7 +1280,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 					if (level > CurBuyZoneLevel)
 						CurBuyZoneLevel = level;
 					bInvalidBuyZone = false;
-					if (itemType == E_VEHICLES || itemType == E_PROTOTYPES)
+					if (itemType == BUY_PAGE_VEHICLES || itemType == BUY_PAGE_PROTOTYPES)
 					{
 						pFirstVehicleFactory = pEntity;
 					}
@@ -1306,7 +1310,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 			if (CurBuyZoneLevel < item.level)
 				sReason = "level";
 
-			if (itemType == E_VEHICLES || (itemType == E_PROTOTYPES && item.bVehicleType == true))
+			if (itemType == BUY_PAGE_VEHICLES || (itemType == BUY_PAGE_PROTOTYPES && item.bVehicleType == true))
 			{
 				if (!CanBuild(pFirstVehicleFactory, item.strName.c_str()))
 				{
@@ -1400,12 +1404,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 void CHUDPowerStruggle::ActivateBuyMenuTabs()
 {
-	if (!m_pGameRules) return;
-
-	IActor* pLocalActor = g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pLocalActor) return;
-
-	EntityId id = pLocalActor->GetEntityId();
+	const EntityId id = g_pHUD->m_pClientActor->GetEntityId();
 
 	bool isDead = m_pGameRules->IsDead(id);
 	bool inVehicle = g_pHUD->GetVehicleInterface()->IsAbleToBuy();
@@ -1552,20 +1551,17 @@ void CHUDPowerStruggle::UpdateModifyPackage(int index)
 
 void CHUDPowerStruggle::UpdatePackageItemList(const char* page)
 {
-	if (!g_pGame->GetIGameFramework()->GetClientActor())
-		return;
-
 	if (!g_pBuyMenu)
 		return;
 
 	IFlashPlayer* pFlashPlayer = g_pBuyMenu->GetFlashPlayer();
 
 	std::vector<SItem> itemList;
-	EBuyMenuPage itemType = ConvertToBuyList(page);
+	BuyMenuPage itemType = ConvertToBuyList(page);
 
 	GetItemList(itemType, itemList, false);
 
-	EntityId uiPlayerID = g_pGame->GetIGameFramework()->GetClientActor()->GetEntityId();
+	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
 	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 
 	std::vector<string> itemArray;
@@ -1651,68 +1647,64 @@ void CHUDPowerStruggle::UpdateBuyZone(bool trespassing, EntityId zone)
 	m_factoryTypes[3] = false;
 	m_factoryTypes[4] = false;
 
-	if (IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
+	//check whether the player is in a buy zone, he can use ...
+	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
+	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
+	int inBuyZone = false;
 	{
-		//check whether the player is in a buy zone, he can use ...
-		EntityId uiPlayerID = pActor->GetEntityId();
-		int playerTeam = g_pGame->GetGameRules()->GetTeam(uiPlayerID);
-		int inBuyZone = false;
+		for (const EntityId id : m_currentBuyZones)
 		{
-			std::vector<EntityId>::const_iterator it = m_currentBuyZones.begin();
-			for (; it != m_currentBuyZones.end(); ++it)
+			if (m_pGameRules->GetTeam(id) == playerTeam)
 			{
-				if (m_pGameRules->GetTeam(*it) == playerTeam)
-				{
-					if (IsFactoryType(*it, E_WEAPONS))
-						m_factoryTypes[0] = true;
-					if (IsFactoryType(*it, E_AMMO))
-						m_factoryTypes[1] = true;
-					if (IsFactoryType(*it, E_EQUIPMENT))
-						m_factoryTypes[2] = true;
-					if (IsFactoryType(*it, E_VEHICLES))
-						m_factoryTypes[3] = true;
-					if (IsFactoryType(*it, E_PROTOTYPES))
-						m_factoryTypes[4] = true;
-					inBuyZone = true;
-				}
+				if (IsFactoryType(id, BUY_PAGE_WEAPONS))
+					m_factoryTypes[0] = true;
+				if (IsFactoryType(id, BUY_PAGE_AMMO))
+					m_factoryTypes[1] = true;
+				if (IsFactoryType(id, BUY_PAGE_EQUIPMENT))
+					m_factoryTypes[2] = true;
+				if (IsFactoryType(id, BUY_PAGE_VEHICLES))
+					m_factoryTypes[3] = true;
+				if (IsFactoryType(id, BUY_PAGE_PROTOTYPES))
+					m_factoryTypes[4] = true;
+				inBuyZone = true;
 			}
 		}
+	}
 
-		if (inBuyZone)
+	if (inBuyZone)
+	{
+		if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
+			inBuyZone = 2;	//this is a service zone
+	}
+
+	if (g_pHUD->IsBuyMenuActive() && m_bInBuyZone != ((inBuyZone) ? true : false))
+	{
+		ActivateBuyMenuTabs();
+		DetermineCurrentBuyZone(true);
+	}
+
+	//update buy zone
+	m_bInBuyZone = (inBuyZone) ? true : false;
+
+	// if we leave buy zone, close the buy menu
+	if (!m_bInBuyZone && (!m_bInServiceZone || !g_pHUD->GetVehicleInterface()->IsAbleToBuy()) && wasInBuyZone)
+		g_pHUD->ShowPDA(false, true);
+
+	if (g_pHexIcon)
+	{
+		if (!m_capturing && (m_bInBuyZone || (m_bInServiceZone && g_pHUD->GetVehicleInterface()->IsAbleToBuy())))
 		{
-			if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
-				inBuyZone = 2;	//this is a service zone
-		}
-
-		if (g_pHUD->IsBuyMenuActive() && m_bInBuyZone != ((inBuyZone) ? true : false))
-		{
-			ActivateBuyMenuTabs();
-			DetermineCurrentBuyZone(true);
-		}
-
-		//update buy zone
-		m_bInBuyZone = (inBuyZone) ? true : false;
-
-		// if we leave buy zone, close the buy menu
-		if (!m_bInBuyZone && (!m_bInServiceZone || !g_pHUD->GetVehicleInterface()->IsAbleToBuy()) && wasInBuyZone)
-			g_pHUD->ShowPDA(false, true);
-
-		if (g_pHexIcon)
-		{
-			if (!m_capturing && (m_bInBuyZone || (m_bInServiceZone && g_pHUD->GetVehicleInterface()->IsAbleToBuy())))
+			if (m_currentHexIconState != E_HEX_ICON_BUY && m_currentHexIconState != E_HEX_ICON_BUILDING)
 			{
-				if (m_currentHexIconState != E_HEX_ICON_BUY && m_currentHexIconState != E_HEX_ICON_BUILDING)
-				{
-					m_currentHexIconState = E_HEX_ICON_BUY;
-					g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
-				}
-			}
-			else if (m_currentHexIconState != E_HEX_ICON_BUILDING && m_currentHexIconState != E_HEX_ICON_CAPTURING && m_currentHexIconState != E_HEX_ICON_NONE)
-			{
-				m_currentHexIconState = E_HEX_ICON_NONE;
-
+				m_currentHexIconState = E_HEX_ICON_BUY;
 				g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
 			}
+		}
+		else if (m_currentHexIconState != E_HEX_ICON_BUILDING && m_currentHexIconState != E_HEX_ICON_CAPTURING && m_currentHexIconState != E_HEX_ICON_NONE)
+		{
+			m_currentHexIconState = E_HEX_ICON_NONE;
+
+			g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
 		}
 	}
 }
@@ -1749,78 +1741,73 @@ void CHUDPowerStruggle::UpdateServiceZone(bool trespassing, EntityId zone)
 	m_serviceZoneTypes[3] = false;
 	m_serviceZoneTypes[4] = false;
 
-	if (IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
+
+	//check whether the player is in a buy zone, he can use ...
+	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
+	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
+	int inBuyZone = false;
+
+	for (const EntityId id : m_currentServiceZones)
 	{
-		//check whether the player is in a buy zone, he can use ...
-		EntityId uiPlayerID = pActor->GetEntityId();
-		int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
-		int inBuyZone = false;
-
-		std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
-		for (; it != m_currentServiceZones.end(); ++it)
+		if (m_pGameRules->GetTeam(id) == playerTeam)
 		{
-			if (m_pGameRules->GetTeam(*it) == playerTeam)
+			m_serviceZoneTypes[1] = true;
+			inBuyZone = true;
+		}
+	}
+
+	if (inBuyZone)
+	{
+		if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
+			inBuyZone = 2;	//this is a service zone
+	}
+
+	if (g_pHUD->IsBuyMenuActive())
+	{
+		ActivateBuyMenuTabs();
+	}
+
+	//update buy zone
+	//m_bInBuyZone = (inBuyZone)?true:false;
+	m_bInServiceZone = (inBuyZone) ? true : false;
+
+	// if we leave buy zone, close the buy menu
+	if (!m_bInBuyZone && !m_bInServiceZone && wasInBuyZone)
+	{
+		g_pHUD->ShowPDA(false, true);
+	}
+
+	if (g_pHexIcon)
+	{
+		if (!m_capturing && (m_bInBuyZone || (m_bInServiceZone && g_pHUD->GetVehicleInterface()->IsAbleToBuy())))
+		{
+			if (m_currentHexIconState != E_HEX_ICON_BUY && m_currentHexIconState != E_HEX_ICON_BUILDING)
 			{
-				m_serviceZoneTypes[1] = true;
-				inBuyZone = true;
-			}
-		}
-
-		if (inBuyZone)
-		{
-			if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
-				inBuyZone = 2;	//this is a service zone
-		}
-
-		if (g_pHUD->IsBuyMenuActive())
-		{
-			ActivateBuyMenuTabs();
-		}
-
-		//update buy zone
-		//m_bInBuyZone = (inBuyZone)?true:false;
-		m_bInServiceZone = (inBuyZone) ? true : false;
-
-		// if we leave buy zone, close the buy menu
-		if (!m_bInBuyZone && !m_bInServiceZone && wasInBuyZone)
-		{
-			g_pHUD->ShowPDA(false, true);
-		}
-
-		if (g_pHexIcon)
-		{
-			if (!m_capturing && (m_bInBuyZone || (m_bInServiceZone && g_pHUD->GetVehicleInterface()->IsAbleToBuy())))
-			{
-				if (m_currentHexIconState != E_HEX_ICON_BUY && m_currentHexIconState != E_HEX_ICON_BUILDING)
-				{
-					m_currentHexIconState = E_HEX_ICON_BUY;
-					g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
-				}
-			}
-			else if (m_currentHexIconState != E_HEX_ICON_BUILDING && m_currentHexIconState != E_HEX_ICON_CAPTURING && m_currentHexIconState != E_HEX_ICON_NONE)
-			{
-				m_currentHexIconState = E_HEX_ICON_NONE;
+				m_currentHexIconState = E_HEX_ICON_BUY;
 				g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
 			}
+		}
+		else if (m_currentHexIconState != E_HEX_ICON_BUILDING && m_currentHexIconState != E_HEX_ICON_CAPTURING && m_currentHexIconState != E_HEX_ICON_NONE)
+		{
+			m_currentHexIconState = E_HEX_ICON_NONE;
+			g_pHexIcon->Invoke("setHexIcon", m_currentHexIconState);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-bool CHUDPowerStruggle::IsFactoryType(EntityId entity, EBuyMenuPage type)
+bool CHUDPowerStruggle::IsFactoryType(EntityId entity, BuyMenuPage type)
 {
 	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entity);
 	if (!pEntity) return false;
-	int iBuyZoneFlags = g_pHUD->CallScriptFunction(pEntity, "GetBuyFlags");
-	if (iBuyZoneFlags & ((int)type))
+	const int iBuyZoneFlags = g_pHUD->CallScriptFunction(pEntity, "GetBuyFlags");
+	if (iBuyZoneFlags & (static_cast<int>(type)))
 	{
 		return true;
 	}
 	return false;
 }
-
-//-----------------------------------------------------------------------------------------------------
 
 bool CHUDPowerStruggle::CanBuild(IEntity* pEntity, const char* vehicle)
 {
@@ -1886,12 +1873,12 @@ void CHUDPowerStruggle::GetTeamStatus(int teamId, float& power, float& hq, int& 
 
 	float maxHP = 1.0f;
 	float currentHP = 0.0f;
-	for (int h = 0;h < m_hqs.size();h++)
+	for (const EntityId id : m_hqs)
 	{
-		if (m_pGameRules->GetTeam(m_hqs[h]) != teamId)
+		if (m_pGameRules->GetTeam(id) != teamId)
 			continue;
 
-		if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_hqs[h]))
+		if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id))
 		{
 			if (IScriptTable* pScriptTable = pEntity->GetScriptTable())
 			{
