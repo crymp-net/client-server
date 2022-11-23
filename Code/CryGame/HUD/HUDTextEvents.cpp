@@ -464,7 +464,8 @@ void CHUD::BattleLogEvent(int type, const char *msg, const char *p0, const char 
 	else
 		finalString=localizedString;
 
-	const static int maxCharsInBattleLogLine = 50;
+	//const static int maxCharsInBattleLogLine = 50;
+	const static int maxCharsInBattleLogLine = 100; 
 	int numLines = 1 + (finalString.length() / maxCharsInBattleLogLine);
 	if(numLines > 1)
 	{
