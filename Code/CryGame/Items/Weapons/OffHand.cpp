@@ -2132,11 +2132,10 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 				{
 					const pe_type physicsType = pEntity->GetPhysics() ? pEntity->GetPhysics()->GetType() : PE_NONE;
 					//Only allow PE_RIGID
-					if (physicsType != PE_RIGID)
+					if (physicsType != PE_RIGID && physicsType != PE_PARTICLE)
 					{
 						return OH_NO_GRAB;
 					}
-
 					m_grabType = GRAB_TYPE_ONE_HANDED;
 					return OH_GRAB_OBJECT;
 				}
