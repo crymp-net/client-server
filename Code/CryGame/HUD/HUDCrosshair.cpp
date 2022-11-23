@@ -599,6 +599,9 @@ bool CHUD::ShouldRenderCrosshair() const
 		if (!pPlayer)
 			return false;
 
+		if (pPlayer->GetPhysicsProfile() == eAP_Ragdoll)
+			return false;
+
 		if (IVehicle *pVehicle = pPlayer->GetLinkedVehicle())
 		{
 			if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(pPlayer->GetEntityId()))
