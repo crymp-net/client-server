@@ -2,18 +2,8 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#ifndef _CRY_SYSTEM_H_
-#define _CRY_SYSTEM_H_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif
-
-#ifdef CRYSYSTEM_EXPORTS
-	#define CRYSYSTEM_API DLL_EXPORT
-#else
-	#define CRYSYSTEM_API DLL_IMPORT
-#endif
 
 #include "CryCommon/CryCore/platform.h"
 
@@ -22,12 +12,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 #include "IXml.h"
 #include "IValidator.h"
-#include "ILog.h"
 #include "CryVersion.h"
 #include "CryCommon/CryCore/smartptr.h"
 
 struct ISystem;
 struct ILog;
+struct ILogCallback;
 struct IEntitySystem;
 struct IEntity;
 struct ICryPak;
@@ -73,8 +63,8 @@ struct IReadWriteXMLSink;
 struct IGlobalTaskScheduler;
 struct IThreadTaskManager;
 struct ITextModeConsole;
-struct IAVI_Reader;	
-class Crc32Gen; 
+struct IAVI_Reader;
+class Crc32Gen;
 class CPNoise3;
 
 #ifndef EXCLUDE_GPU_PARTICLE_PHYSICS
@@ -149,7 +139,7 @@ enum ESystemEvent
 	// Sent before starting loading a new level.
 	// Used for a more efficient resource management.
 	ESYSTEM_EVENT_LEVEL_LOAD_START,
-	
+
 	// Sent after loading a level finished.
 	// Used for a more efficient resource management.
 	ESYSTEM_EVENT_LEVEL_LOAD_END,
@@ -195,7 +185,7 @@ struct ILocalizationManager
 		const char* sSoundEvent;
 		const wchar_t* sWho;
 		float fVolume;
-		float fDucking;	
+		float fDucking;
 		float fRadioRatio;
 		float fRadioBackground;
 		float fRadioSquelch;
@@ -261,7 +251,7 @@ struct ILocalizationManager
 	//   true if successful, false otherwise (out of bounds)
 	virtual bool GetLocalizedInfoByIndex( int nIndex, SLocalizedInfo& outInfo ) = 0;
 
-	// Summary:		
+	// Summary:
 	//   Get the sound localization info structure corresponding to a key
 	// Parameters:
 	//   sKey         - Key to be looked up. Key = Label without '@' sign
@@ -279,9 +269,9 @@ struct ILocalizationManager
 	// Returns:
 	//   true if successful, false otherwise (key not found)
 	virtual bool GetEnglishString( const char *sKey, string &sLocalizedString ) = 0;
-	
+
 	// Summary:
-	//   Get Subtitle for Key or Label 
+	//   Get Subtitle for Key or Label
 	// Parameters:
 	//   sKeyOrLabel    - Key or Label to be used for subtitle lookup. Key = Label without '@' sign.
 	//   outSubtitle    - Subtitle (untouched if Key/Label not found)
@@ -317,7 +307,7 @@ struct ISystemUserCallback
 			due to crash.
 	*/
 	virtual void OnSaveDocument() = 0;
-	
+
 	/** Notify user that system wants to switch out of current process.
 			(For ex. Called when pressing ESC in game mode to go to Menu).
 	*/
@@ -490,9 +480,9 @@ struct SSystemGlobalEnvironment
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Main Engine Interface
-// initialize and dispatch all engine's subsystems 
+// initialize and dispatch all engine's subsystems
 struct ISystem
-{ 
+{
 	struct ILoadingProgressListener
 	{
 		virtual void OnLoadingProgress(int steps) = 0;
@@ -520,7 +510,7 @@ struct ISystem
 	// End rendering frame and swap back buffer.
 	virtual void	RenderEnd() = 0;
 
-	// Renders the statistics; this is called from RenderEnd, but if the 
+	// Renders the statistics; this is called from RenderEnd, but if the
 	// Host application (Editor) doesn't employ the Render cycle in ISystem,
 	// it may call this method to render the essencial statistics
 	virtual void RenderStatistics () = 0;
@@ -549,7 +539,7 @@ struct ISystem
 	virtual void	Relaunch(bool bRelaunch) = 0;
 	virtual bool IsRelaunch() const = 0;
 	// Tells the system in which way we are using the serialization system.
-	virtual void  SerializingFile(int mode) = 0;	
+	virtual void  SerializingFile(int mode) = 0;
 	virtual int IsSerializingFile() const = 0;
 	// return true if the application is in the shutdown phase
 	virtual bool	IsQuitting() = 0;
@@ -558,7 +548,7 @@ struct ISystem
 	// Logs it to console and file and error message box.
 	// Then terminates execution.
 	virtual void Error( const char *sFormat,... ) PRINTF_PARAMS(2, 3) = 0;
-	
+
 	// Report warning to current Validator object.
 	// Not terminates execution.
 	virtual void Warning( EValidatorModule module,EValidatorSeverity severity,int flags,const char *file,const char *format,... ) PRINTF_PARAMS(6, 7) = 0;
@@ -599,7 +589,7 @@ struct ISystem
 	virtual IStreamEngine *GetStreamEngine() = 0;
 	virtual ICharacterManager *GetIAnimationSystem() = 0;
 	virtual IValidator *GetIValidator() = 0;
-	virtual IFrameProfileSystem *GetIProfileSystem() = 0;	
+	virtual IFrameProfileSystem *GetIProfileSystem() = 0;
 	virtual INameTable *GetINameTable() = 0;
 	virtual IBudgetingSystem *GetIBudgetingSystem() = 0;
 	virtual IFlowSystem *GetIFlowSystem() = 0;
@@ -653,7 +643,7 @@ struct ISystem
 	//////////////////////////////////////////////////////////////////////////
 	// IXmlNode interface.
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	// Creates new xml node.
 	virtual XmlNodeRef CreateXmlNode( const char *sNodeName="" ) = 0;
 	// Load xml file, return 0 if load failed.
@@ -698,7 +688,7 @@ struct ISystem
 	//////////////////////////////////////////////////////////////////////////
 	virtual const SFileVersion& GetFileVersion() = 0;
 	virtual const SFileVersion& GetProductVersion() = 0;
-	
+
 	// Compressed file read & write
 	virtual bool WriteCompressedFile(const char *filename, void *data, unsigned int bitlen) = 0;
 	virtual unsigned int ReadCompressedFile(const char *filename, void *data, unsigned int maxbitlen) = 0;
@@ -723,12 +713,12 @@ struct ISystem
 	// Arguments:
 	//   bClient - if True returns local client config spec, if false returns server config spec.
 	virtual ESystemConfigSpec GetConfigSpec( bool bClient=true ) = 0;
-	
+
 	virtual ESystemConfigSpec GetMaxConfigSpec() const = 0;
 
 	// Changes current configuration specification for client or server.
 	// Arguments:
-	//   bClient - if True changes client config spec (sys_spec variable changed), 
+	//   bClient - if True changes client config spec (sys_spec variable changed),
 	//               if false changes only server config spec (as known on the client).
 	virtual void SetConfigSpec( ESystemConfigSpec spec,bool bClient ) = 0;
 	//////////////////////////////////////////////////////////////////////////
@@ -843,73 +833,23 @@ struct IMemoryManager
 
 // This function must be called once by each module at the begining, to setup global pointers.
 extern void ModuleInitISystem( ISystem *pSystem );
-extern bool g_bProfilerEnabled;
-extern bool g_bTraceAllocations;
 
 
-inline void CryLog(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eMessage, format, args);
-	va_end(args);
-}
-
-inline void CryLogWarning(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eWarning, format, args);
-	va_end(args);
-}
-
-inline void CryLogError(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eError, format, args);
-	va_end(args);
-}
-
-inline void CryLogAlways(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eAlways, format, args);
-	va_end(args);
-}
-
-inline void CryLogWarningAlways(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eWarningAlways, format, args);
-	va_end(args);
-}
-
-inline void CryLogErrorAlways(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eErrorAlways, format, args);
-	va_end(args);
-}
-
-inline void CryLogComment(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	gEnv->pLog->LogV(ILog::eComment, format, args);
-	va_end(args);
-}
+void CryLog(const char* format, ...);
+void CryLogWarning(const char* format, ...);
+void CryLogError(const char* format, ...);
+void CryLogAlways(const char* format, ...);
+void CryLogWarningAlways(const char* format, ...);
+void CryLogErrorAlways(const char* format, ...);
+void CryLogComment(const char* format, ...);
 
 
 // Allocation functor, for use in templates.
 struct FSystemAlloc
 {
 	static void* Alloc( void* oldptr, int oldsize,int newsize )
-	{ 
-		return gEnv ? gEnv->pSystem->AllocMem( oldptr, newsize ) : 0; 
+	{
+		return gEnv ? gEnv->pSystem->AllocMem( oldptr, newsize ) : 0;
 	}
 };
 
@@ -918,5 +858,3 @@ struct FSystemAlloc
 // Additional headers.
 //////////////////////////////////////////////////////////////////////////
 #include "FrameProfiler.h"
-
-#endif //_CRY_SYSTEM_H_

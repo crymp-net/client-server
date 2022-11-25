@@ -1,3 +1,6 @@
+#include <string>
+#include <vector>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
@@ -84,7 +87,7 @@ int EngineCache::ScanFolder(const char* folderName)
 				continue;
 
 			//skip folders
-			if (folder == "Objects/Characters/Human/asian/infantry/camp" || folder == "Objects/Characters/Human/asian/infantry/jungle" || 
+			if (folder == "Objects/Characters/Human/asian/infantry/camp" || folder == "Objects/Characters/Human/asian/infantry/jungle" ||
 				folder == "Objects/Characters/Human/asian/infantry/elite")
 				continue;
 

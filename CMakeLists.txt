@@ -213,6 +213,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CrySystem/IReadWriteXMLSink.h
   Code/CryCommon/CrySystem/IResourceCollector.h
   Code/CryCommon/CrySystem/IStreamEngine.h
+  Code/CryCommon/CrySystem/ISystem.cpp
   Code/CryCommon/CrySystem/ISystem.h
   Code/CryCommon/CrySystem/ITestSystem.h
   Code/CryCommon/CrySystem/ITextModeConsole.h
