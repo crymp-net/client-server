@@ -221,7 +221,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CrySystem/IValidator.h
   Code/CryCommon/CrySystem/IXml.h
   Code/CryCommon/CrySystem/TimeValue.h
-  Code/CryGame/Actors/AIDemoInput.h
   Code/CryGame/Actors/Actor.cpp
   Code/CryGame/Actors/Actor.h
   Code/CryGame/Actors/Alien/Alien.cpp

@@ -58,7 +58,6 @@ History:
 #include "PlayerRotation.h"
 #include "PlayerInput.h"
 #include "NetPlayerInput.h"
-#include "../AIDemoInput.h"
 
 #include "CryCommon/CryAnimation/CryCharAnimationParams.h"
 
@@ -958,18 +957,19 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		// init input systems if required
 		if (GetGameObject()->GetChannelId())
 		{
-			if (IsClient()) //|| ((demoMode == 2) && this == gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetOriginalDemoSpectator()))
+			if (IsClient())
 			{
-				if (GetISystem()->IsDedicated())
-					m_pPlayerInput = std::make_unique<CDedicatedInput>(this);
-				else
-					m_pPlayerInput = std::make_unique<CPlayerInput>(this);
+				m_pPlayerInput = std::make_unique<CPlayerInput>(this);
 			}
 			else
+			{
 				m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
+			}
 		}
 		else if (IsDemoPlayback())
+		{
 			m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
+		}
 
 		if (m_pPlayerInput)
 			GetGameObject()->EnablePostUpdates(this);
