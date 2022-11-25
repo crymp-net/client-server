@@ -87,30 +87,6 @@ typedef void *EVENT_HANDLE;
 
 //#define USE_MULTICORE_SAVE_TIMING
 
-int64 CryQueryPerformanceCounter();
-
-__forceinline int64 CryGetTicks()
-{
-	__asm {
-		rdtsc
-	}
-//#if defined(_CPU_X86)
-//	int64 nTime;
-//	int64 *pnTime = &nTime;
-//	__asm {
-//		mov ebx, pnTime
-//			rdtsc
-//			mov [ebx], eax
-//			mov [ebx+4], edx
-//	}
-//#elif defined(WIN32)
-//	LARGE_INTEGER li;
-//	QueryPerformanceCounter( &li );
-//	return li.QuadPart;
-//#endif
-	//return CryQueryPerformanceCounter();
-}
-
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p)			{ if(p) { delete (p);		(p)=NULL; } }
 #endif
@@ -127,7 +103,7 @@ __forceinline int64 CryGetTicks()
 #define DEFINE_ALIGNED_DATA_STATIC( type, name, alignment ) static _declspec(align(alignment)) type name;
 #define DEFINE_ALIGNED_DATA_CONST( type, name, alignment ) const _declspec(align(alignment)) type name;
 
-#ifndef FILE_ATTRIBUTE_NORMAL 
+#ifndef FILE_ATTRIBUTE_NORMAL
 	#define FILE_ATTRIBUTE_NORMAL 0x00000080
 #endif
 

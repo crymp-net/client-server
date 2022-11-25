@@ -82,7 +82,7 @@
 	//#define _LIB
 #endif
 
-#include "ProjectDefines.h"							// to get some defines available in every CryEngine project 
+#include "ProjectDefines.h"							// to get some defines available in every CryEngine project
 
 #include <stdlib.h>
 
@@ -208,7 +208,7 @@ inline void *ModuleAlloc(void *ptr, size_t size)
 template<bool> struct CompileTimeError;
 template<> struct CompileTimeError<true> {};
 #define STATIC_CHECK(expr, msg) \
-	{ CompileTimeError<((expr) != 0)> ERROR_##msg; (void)ERROR_##msg; } 
+	{ CompileTimeError<((expr) != 0)> ERROR_##msg; (void)ERROR_##msg; }
 
 // Assert dialog box macros
 #include "CryAssert.h"
@@ -224,13 +224,7 @@ template<> struct CompileTimeError<true> {};
 // Mostly used only for debugging!
 //////////////////////////////////////////////////////////////////////////
 void   CryDebugBreak();
-void   CrySleep( unsigned int dwMilliseconds );
-int    CryMessageBox( const char *lpText,const char *lpCaption,unsigned int uType);
-int    CryCreateDirectory( const char *lpPathName,void *lpSecurityAttributes );
 int    CryGetCurrentDirectory( unsigned int nBufferLength,char *lpBuffer );
-short  CryGetAsyncKeyState( int vKey );
-unsigned int CryGetFileAttributes( const char *lpFileName );
-bool   CrySetFileAttributes( const char *lpFileName,uint32 dwFileAttributes );
 
 #define CrySwprintf _snwprintf
 
@@ -305,7 +299,7 @@ enum ETriState
 
 
 
-		#define _ALIGN(num) 
+		#define _ALIGN(num)
 
 #endif
 

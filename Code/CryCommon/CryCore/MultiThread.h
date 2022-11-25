@@ -26,111 +26,6 @@
 		long	 CryInterlockedCompareExchange(long volatile * dst, long exchange, long comperand);
 		void*	 CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand);
 	#endif
-	void*  CryCreateCriticalSection();
-	void   CryDeleteCriticalSection( void *cs );
-	void   CryEnterCriticalSection( void *cs );
-	bool   CryTryCriticalSection( void *cs );
-	void   CryLeaveCriticalSection( void *cs );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	#define CryCreateCriticalSectionGlobal CryCreateCriticalSection
-	#define CryDeleteCriticalSectionGlobal CryDeleteCriticalSection
-	#define CryEnterCriticalSectionGlobal CryEnterCriticalSection
-	#define CryTryCriticalSectionGlobal CryTryCriticalSection
-	#define CryLeaveCriticalSectionGlobal CryLeaveCriticalSection
 
 
 ILINE void CrySpinLock(volatile int *pLock,int checkVal,int setVal)
@@ -300,26 +195,6 @@ struct WriteLockCond
 private:
 	volatile int *prw;
 	int iActive;
-};
-
-//////////////////////////////////////////////////////////////////////////
-class CCryThread
-{
-public:
-	CCryThread( void (*func)(void *), void * p );
-	~CCryThread();
-	static void SetName( const char * name );
-
-private:
-	CCryThread( const CCryThread& );
-	CCryThread& operator=( const CCryThread& );
-
-
-#if defined(LINUX)
-	pthread_t m_handle;
-#else
-	THREAD_HANDLE m_handle;
-#endif
 };
 
 #endif //__SPU__

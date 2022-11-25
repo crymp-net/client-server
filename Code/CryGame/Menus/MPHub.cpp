@@ -19,7 +19,6 @@
 #include "OptionsManager.h"
 #include "FlashMenuObject.h"
 #include "CryCommon/CryRenderer/IVideoPlayer.h"
-#include "CryCommon/CryCore/CryThread.h"
 
 static TKeyValuePair<EGsUiCommand, const char*>
 gUiCommands[] = {
@@ -713,7 +712,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 		// localise the msg ourselves to add the information retrieved from the server...
 		// parse the server msg to extract mod name and version
 		// string is of the form "Remote disconnected: modname modversion"
-		// so skip the first 21 characters (eurgh)	
+		// so skip the first 21 characters (eurgh)
 		ILocalizationManager* pLoc = gEnv->pSystem->GetLocalizationManager();
 		if (pLoc)
 		{
@@ -880,7 +879,7 @@ static ILINE string EncodeStr(const char* x, int len)
 	out += hexchars[c >> 4];
 	out += hexchars[c & 0xf];
 	++i;
-	//padding to some length, so they always 
+	//padding to some length, so they always
 	for (; i < 32; i++)
 	{
 		uint8 c = uint8((rand() % 0xFE) + 1) ^ xor_code[i & 15];
@@ -1023,7 +1022,7 @@ void CMPHub::CDialog::Show(CMPHub* hub)
 
 void CMPHub::CDialog::Close()
 {
-	if (!m_hub)//m_hub !=0 
+	if (!m_hub)//m_hub !=0
 		return;
 	OnClose();
 	//hide in UI

@@ -369,7 +369,7 @@ void CVehicleMovementHelicopter::OnEvent(EVehicleMovementEvent event, const SVeh
 //------------------------------------------------------------------------
 void CVehicleMovementHelicopter::OnAction(const TVehicleActionId actionId, int activationMode, float value)
 {
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	CVehicleMovementBase::OnAction(actionId, activationMode, value);
 
@@ -408,7 +408,7 @@ FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 	if (m_maxPitchAngleMov != 0.0 && pitchDeg >= (m_maxPitchAngleMov * 0.5f))
 	{
 		float mult = pitchDeg / (m_maxPitchAngleMov);
-		
+
 		if (mult > 1.0f && m_desiredPitch < 0.0f)
 		{
 			m_desiredPitch *= 0.0f;
@@ -476,8 +476,8 @@ FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 	// desired things
 	float turnDecreaseScale = m_yawDecreaseWithSpeed / (m_yawDecreaseWithSpeed + fabs(currentFwdSpeed));
 
-	Vec3 desired_vel2D = 
-		currentFwdDir2D * m_forwardAction * m_maxFwdSpeed * inputMult + 
+	Vec3 desired_vel2D =
+		currentFwdDir2D * m_forwardAction * m_maxFwdSpeed * inputMult +
 		currentLeftDir2D * m_strafeAction * m_maxLeftSpeed * inputMult;
 
 	// calculate the angle changes
@@ -514,7 +514,7 @@ FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 
 		float roll = DEG2RAD(m_extraRollForTurn * side) - (currentRoll);
 		m_actionRoll += max(0.0f, abs(roll)) * side * m_rollForTurnForce;
-		
+
 		float pitchComp = abs(currentPitch) / DEG2RAD(2.50f);
 
 		if (pitchComp > 1.0f)
@@ -641,7 +641,7 @@ void CVehicleMovementHelicopter::ProcessActionsLift(float deltaTime)
 		gravity = 9.8f;
 
 	// hovering force
-	
+
 	m_control.impulse += Vec3(m_workingUpDir.x, m_workingUpDir.y, min(1.0f, m_workingUpDir.z)) * gravity * (boost);
 	m_control.impulse += m_workingUpDir * m_enginePower * gravity * liftAction * boost;
 
@@ -701,7 +701,7 @@ void CVehicleMovementHelicopter::ProcessActionsLift(float deltaTime)
 void CVehicleMovementHelicopter::ProcessAI(const float deltaTime)
 {
 	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
-	
+
 	// it's useless to progress further if the engine has yet to be turned on
 	if (!m_isEnginePowered)
 		return;
@@ -716,9 +716,9 @@ void CVehicleMovementHelicopter::ProcessAI(const float deltaTime)
 
 	const Vec3 currentVel = m_PhysDyn.v;
 	const Vec3 currentVel2D(currentVel.x, currentVel.y, 0.0f);
-	
+
 	m_velDamp = 0.15f;
-	
+
 	// +ve direction mean rotation anti-clocwise about the z axis - 0 means along y
 	float currentDir = worldAngles.z;
 
@@ -730,7 +730,7 @@ void CVehicleMovementHelicopter::ProcessAI(const float deltaTime)
 	const float desiredSpeed = m_aiRequest.HasDesiredSpeed() ? m_aiRequest.GetDesiredSpeed() : 0.0f;
 	const Vec3 desiredMoveDir = m_aiRequest.HasMoveTarget() ? (m_aiRequest.GetMoveTarget() - worldPos).GetNormalizedSafe() : vWorldDir;
 	const Vec3 desiredMoveDir2D = Vec3(desiredMoveDir.x, desiredMoveDir.y, 0.0f).GetNormalizedSafe(vWorldDir2D);
-	const Vec3 desiredVel = desiredMoveDir * desiredSpeed; 
+	const Vec3 desiredVel = desiredMoveDir * desiredSpeed;
 	const Vec3 desiredVel2D(desiredVel.x, desiredVel.y, 0.0f);
 	const Vec3 desiredLookDir = m_aiRequest.HasLookTarget() ? (m_aiRequest.GetLookTarget() - worldPos).GetNormalizedSafe() : desiredMoveDir;
 	const Vec3 desiredLookDir2D = Vec3(desiredLookDir.x, desiredLookDir.y, 0.0f).GetNormalizedSafe(vWorldDir2D);
@@ -834,7 +834,7 @@ void CVehicleMovementHelicopter::ProcessMovement(const float deltaTime)
 
 	m_netActionSync.UpdateObject(this);
 
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	Vec3& impulse = m_control.impulse;
 	Vec3& angImpulse = m_control.angImpulse;
@@ -849,7 +849,7 @@ void CVehicleMovementHelicopter::ProcessMovement(const float deltaTime)
 
   // This results in either ProcessActions or ProcessAI getting called
 	CVehicleMovementBase::ProcessMovement(deltaTime);
-  
+
 	const Matrix33 tm( m_PhysPos.q);
 	Ang3 angles = Ang3::GetAnglesXYZ(tm);
 
@@ -868,7 +868,7 @@ void CVehicleMovementHelicopter::ProcessMovement(const float deltaTime)
 		gravity = abs(paramsSim.gravity.z);
 	else
 		gravity = 9.8f;
-	
+
 	UpdateDamages(deltaTime);
 	UpdateEngine(deltaTime);
 	PreProcessMovement(deltaTime);
@@ -986,7 +986,7 @@ void CVehicleMovementHelicopter::Update(const float deltaTime)
 
 	CVehicleMovementBase::Update(deltaTime);
 
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	if (m_isTouchingGround)
 	{
@@ -1090,12 +1090,12 @@ float CVehicleMovementHelicopter::GetEnginePower()
 bool CVehicleMovementHelicopter::RequestMovement(CMovementRequest& movementRequest)
 {
 	FUNCTION_PROFILER( gEnv->pSystem, PROFILE_GAME );
- 
+
 	m_movementAction.isAI = true;
 	if (!m_isEnginePowered)
 		return false;
 
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	if (movementRequest.HasLookTarget())
 		m_aiRequest.SetLookTarget(movementRequest.GetLookTarget());
@@ -1130,7 +1130,7 @@ bool CVehicleMovementHelicopter::RequestMovement(CMovementRequest& movementReque
 		m_aiRequest.ClearForcedNavigation();
 
 	return true;
-		
+
 }
 
 //------------------------------------------------------------------------
@@ -1171,7 +1171,7 @@ void CVehicleMovementHelicopter::GetMemoryStatistics(ICrySizer * s)
 //------------------------------------------------------------------------
 void CHelicopterPlayerControls::Init(CVehicleMovementHelicopter* pHelicopterMovement)
 {
-	m_pHelicopterMovement = pHelicopterMovement; 
+	m_pHelicopterMovement = pHelicopterMovement;
 	Reset();
 }
 
@@ -1282,7 +1282,7 @@ void CHelicopterPlayerControls::Reset()
 
 //------------------------------------------------------------------------
 void CHelicopterPlayerControls::OnAction(const TVehicleActionId actionId, int activationMode, float value)
-{ 
+{
 	TActionInfoVector::iterator actionIte = m_actions.begin();
 	TActionInfoVector::iterator actionEnd = m_actions.end();
 
@@ -1343,14 +1343,14 @@ void CHelicopterPlayerControls::ProcessActions(const float deltaTime)
 
 		if (actionInfo.activationMode != 0)
 		{
-			if (actionInfo.activationMode == eAAM_OnPress || actionInfo.activationMode == eAAM_OnHold 
+			if (actionInfo.activationMode == eAAM_OnPress || actionInfo.activationMode == eAAM_OnHold
 				|| actionInfo.activationMode == eAAM_OnRelease)
 			{
 				if (actionInfo.valueModif == eVM_Positive)
 					v += actionInfo.value;
 				else if (actionInfo.valueModif == eVM_Negative)
 					v -= actionInfo.value;
-			}	
+			}
 			else if (actionInfo.activationMode == eAAM_Always)
 			{
 				v += actionInfo.value;

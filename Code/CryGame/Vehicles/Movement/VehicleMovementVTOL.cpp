@@ -200,7 +200,7 @@ void CVehicleMovementVTOL::PreProcessMovement(const float deltaTime)
 
 	if (!m_isVTOLMovement)
 		return;
-	
+
 	IPhysicalEntity* pPhysics = GetPhysics();
 	assert(pPhysics);
 
@@ -222,7 +222,7 @@ void CVehicleMovementVTOL::PreProcessMovement(const float deltaTime)
 	Ang3 angles = Ang3::GetAnglesXYZ(tm);
 
  	m_workingUpDir = m_engineUpDir; //Vec3(0.0f, 0.0f, 1.0f);
-	
+
 	m_workingUpDir += (vertical * m_rotorDiskTiltScale * Vec3(angles.y, -angles.x, 0.0f));
 	m_workingUpDir += (m_horizontal * m_rotorDiskTiltScale * Vec3(0.0f, 0.0f, angles.z));
 
@@ -363,12 +363,12 @@ void CVehicleMovementVTOL::ProcessActions(const float deltaTime)
 	float currentDir = angles.z;
 
 	const float maxPitchAngle = 60.0f;
-	
+
 	float pitchDeg = RAD2DEG(currentPitch);
 	if (pitchDeg >= (maxPitchAngle * 0.75f))
 	{
 		float mult = pitchDeg / (maxPitchAngle);
-		
+
 		if (mult > 1.0f && m_desiredPitch < 0.0f)
 		{
 			m_desiredPitch *= 0.0f;
@@ -435,8 +435,8 @@ void CVehicleMovementVTOL::ProcessActions(const float deltaTime)
 	// desired things
 	float turnDecreaseScale = m_yawDecreaseWithSpeed / (m_yawDecreaseWithSpeed + fabs(currentFwdSpeed));
 
-	Vec3 desired_vel2D = 
-		currentFwdDir2D * m_forwardAction * m_maxFwdSpeed * inputMult + 
+	Vec3 desired_vel2D =
+		currentFwdDir2D * m_forwardAction * m_maxFwdSpeed * inputMult +
 		currentLeftDir2D * m_strafeAction * m_maxLeftSpeed * inputMult;
 
 	// calculate the angle changes
@@ -661,7 +661,7 @@ void CVehicleMovementVTOL::ProcessActions(const float deltaTime)
 void CVehicleMovementVTOL::ProcessAI(const float deltaTime)
 {
 	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
-	
+
 	if (!m_isVTOLMovement)
 	{
 		CVehicleMovementHelicopter::ProcessAI(deltaTime);
@@ -698,7 +698,7 @@ void CVehicleMovementVTOL::ProcessAI(const float deltaTime)
 	const float desiredSpeed = m_aiRequest.HasDesiredSpeed() ? m_aiRequest.GetDesiredSpeed() : 0.0f;
 	const Vec3 desiredMoveDir = m_aiRequest.HasMoveTarget() ? (m_aiRequest.GetMoveTarget() - worldPos).GetNormalizedSafe() : vWorldDir;
 	const Vec3 desiredMoveDir2D = Vec3(desiredMoveDir.x, desiredMoveDir.y, 0.0f).GetNormalizedSafe(vWorldDir2D);
-	const Vec3 desiredVel = desiredMoveDir * desiredSpeed; 
+	const Vec3 desiredVel = desiredMoveDir * desiredSpeed;
 	const Vec3 desiredVel2D(desiredVel.x, desiredVel.y, 0.0f);
 	const Vec3 desiredLookDir = m_aiRequest.HasLookTarget() ? (m_aiRequest.GetLookTarget() - worldPos).GetNormalizedSafe() : desiredMoveDir;
 	const Vec3 desiredLookDir2D = Vec3(desiredLookDir.x, desiredLookDir.y, 0.0f).GetNormalizedSafe(vWorldDir2D);
@@ -779,7 +779,7 @@ void CVehicleMovementVTOL::ProcessAI(const float deltaTime)
 	if ( m_aiRequest.HasMoveTarget() )
 	{
 		m_hoveringPower = m_powerPID.Update(currentVel.z, desiredVel.z, -1.0f, 4.0f);
-		
+
 		//m_hoveringPower = (m_desiredHeight - currentHeight) * m_powerInputConst;
 		//m_hoveringPower += m_powerInputDamping * (currentHeight - m_lastHeight) / deltaTime;
 
@@ -817,7 +817,7 @@ void CVehicleMovementVTOL::ProcessAI(const float deltaTime)
 
 	if (m_horizontal > 0.0001f)
 		m_desiredHeight = m_PhysPos.pos.z;
-	
+
 	Limit(m_forwardAction, -1.0f, 1.0f);
 }
 
@@ -847,7 +847,7 @@ void CVehicleMovementVTOL::Update(const float deltaTime)
 	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 
 	CVehicleMovementHelicopter::Update(deltaTime);
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	IActorSystem* pActorSystem = g_pGame->GetIGameFramework()->GetIActorSystem();
 	assert(pActorSystem);
@@ -918,9 +918,9 @@ void CVehicleMovementVTOL::Update(const float deltaTime)
 
 		float damage = GetSoundDamage();
 		if (damage > 0.1f)
-		{ 
+		{
 			//if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
-				//SetSoundParam(pSound, "damage", damage);        
+				//SetSoundParam(pSound, "damage", damage);
 		}
 	}
 }
@@ -932,7 +932,7 @@ void CVehicleMovementVTOL::UpdateEngine(float deltaTime)
 
 	float damageMult = GetDamageMult();
 
-	float enginePowerMax = m_enginePowerMax * damageMult; 
+	float enginePowerMax = m_enginePowerMax * damageMult;
 
 	if (m_isEnginePowered && !m_isEngineGoingOff)
 	{

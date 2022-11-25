@@ -82,14 +82,6 @@ typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
 
 //#define USE_MULTICORE_SAVE_TIMING
 
-int64 CryQueryPerformanceCounter();
-
-__forceinline int64 CryGetTicks()
-{
-	//return __rdtsc();
-	return CryQueryPerformanceCounter();
-}
-
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p)			{ if(p) { delete (p);		(p)=NULL; } }
 #endif
@@ -108,7 +100,7 @@ __forceinline int64 CryGetTicks()
 
 #define SIZEOF_PTR 8
 
-#ifndef FILE_ATTRIBUTE_NORMAL 
+#ifndef FILE_ATTRIBUTE_NORMAL
 	#define FILE_ATTRIBUTE_NORMAL 0x00000080
 #endif
 

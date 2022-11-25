@@ -103,7 +103,7 @@ void CVehicleMovementHovercraft::OnEvent(EVehicleMovementEvent event, const SVeh
   CVehicleMovementBase::OnEvent(event, params);
 
 	if (eVME_BecomeVisible == event)
-	{     
+	{
 		// need to kick the physics else the client vehicle sinks.
 		m_pVehicle->NeedsUpdate(IVehicle::eVUF_AwakePhysics);
 	}
@@ -112,7 +112,7 @@ void CVehicleMovementHovercraft::OnEvent(EVehicleMovementEvent event, const SVeh
 //------------------------------------------------------------------------
 void CVehicleMovementHovercraft::Physicalize()
 {
-	CVehicleMovementBase::Physicalize();	
+	CVehicleMovementBase::Physicalize();
 }
 
 //------------------------------------------------------------------------
@@ -123,7 +123,7 @@ void CVehicleMovementHovercraft::PostPhysicalize()
   pe_simulation_params paramsSim;
   if (GetPhysics()->GetParams(&paramsSim))
   {
-    m_gravity = paramsSim.gravity;	
+    m_gravity = paramsSim.gravity;
 
 // we don't need to set gravityFreefall any more
 // pe_simulation_params paramsSet;
@@ -135,7 +135,7 @@ void CVehicleMovementHovercraft::PostPhysicalize()
 
 //------------------------------------------------------------------------
 bool CVehicleMovementHovercraft::SetParams(const SmartScriptTable &table)
-{  
+{
   return true;
 }
 
@@ -144,43 +144,43 @@ bool CVehicleMovementHovercraft::Init(IVehicle* pVehicle, const SmartScriptTable
 {
   if (!CVehicleMovementBase::Init(pVehicle, table))
     return false;
-     
-  MOVEMENT_VALUE("hoverHeight", m_hoverHeight);  
+
+  MOVEMENT_VALUE("hoverHeight", m_hoverHeight);
   MOVEMENT_VALUE("hoverVariance", m_hoverVariance);
   MOVEMENT_VALUE("hoverFrequency", m_hoverFrequency);
   table->GetValue("numThrusters", m_numThrusters);
-  MOVEMENT_VALUE("thrusterMaxHeightCoeff", m_thrusterMaxHeightCoeff);   
-  MOVEMENT_VALUE("stiffness", m_stiffness);     
+  MOVEMENT_VALUE("thrusterMaxHeightCoeff", m_thrusterMaxHeightCoeff);
+  MOVEMENT_VALUE("stiffness", m_stiffness);
   MOVEMENT_VALUE("damping", m_damping);
-  MOVEMENT_VALUE("velMax", m_velMax);      
-  MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);  
-  MOVEMENT_VALUE("acceleration", m_accel);      
-  MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);     
-  table->GetValue("pushOffset", m_pushOffset);     
-  MOVEMENT_VALUE("pushTilt", m_pushTilt);     
+  MOVEMENT_VALUE("velMax", m_velMax);
+  MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);
+  MOVEMENT_VALUE("acceleration", m_accel);
+  MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);
+  table->GetValue("pushOffset", m_pushOffset);
+  MOVEMENT_VALUE("pushTilt", m_pushTilt);
   MOVEMENT_VALUE("linearDamping", m_linearDamping);
   MOVEMENT_VALUE("turnRateMax", m_turnRateMax);
   MOVEMENT_VALUE("turnRateReverse", m_turnRateReverse);
-  MOVEMENT_VALUE("turnAccel", m_turnAccel);      
-  MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);    
-  table->GetValue("cornerOffset", m_cornerOffset);    
-  MOVEMENT_VALUE("cornerTilt", m_cornerTilt);    
-  MOVEMENT_VALUE("turnDamping", m_turnDamping); 
-  MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff); 
+  MOVEMENT_VALUE("turnAccel", m_turnAccel);
+  MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);
+  table->GetValue("cornerOffset", m_cornerOffset);
+  MOVEMENT_VALUE("cornerTilt", m_cornerTilt);
+  MOVEMENT_VALUE("turnDamping", m_turnDamping);
+  MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff);
   table->GetValue("bEngineAlwaysOn", m_bEngineAlwaysOn);
   table->GetValue("retainGravity", m_bRetainGravity);
-  MOVEMENT_VALUE("dampingLimit", m_dampLimitCoeff);  
+  MOVEMENT_VALUE("dampingLimit", m_dampLimitCoeff);
   table->GetValue("sampleByHelpers", m_bSampleByHelpers);
   MOVEMENT_VALUE("thrusterHeightAdaption", m_thrusterHeightAdaption);
   table->GetValue("thrusterUpdate", m_thrusterUpdate);
 
 	m_movementTweaks.Init(table);
   m_prevAction.Clear();
-  
+
   m_maxSpeed = m_velMax;
-  	
-  InitThrusters(table);  	
-  
+
+  InitThrusters(table);
+
   // AI related
   // Initialise the direction PID.
   m_direction = 0.0f;
@@ -200,7 +200,7 @@ bool CVehicleMovementHovercraft::Init(IVehicle* pVehicle, const SmartScriptTable
 bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
 {
   // init thrusters
-  // by default put 1 on each corner of bbox and 1 in center. 
+  // by default put 1 on each corner of bbox and 1 in center.
   // (equal mass distribution should be given)
   // if sampleByHelpers is used, thrusters are placed at specified helpers
 
@@ -214,7 +214,7 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
     GameWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
     m_pEntity->GetLocalBounds(bbox);
   }
-    
+
   const Vec3 thrusterDir(0,0,1);
 
   std::for_each(m_vecThrusters.begin(), m_vecThrusters.end(), stl::container_object_deleter());
@@ -222,9 +222,9 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
 
   SmartScriptTable thrusterTable;
   if (m_bSampleByHelpers)
-  {    
-    if (table->GetValue("Thrusters", thrusterTable))    
-      m_numThrusters = thrusterTable->Count();    
+  {
+    if (table->GetValue("Thrusters", thrusterTable))
+      m_numThrusters = thrusterTable->Count();
     else
       m_bSampleByHelpers = false;
   }
@@ -238,12 +238,12 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
   if (!m_bSampleByHelpers)
   {
     // distribute thrusters
-    assert(m_numThrusters >= 1 && m_numThrusters <= 9);    
+    assert(m_numThrusters >= 1 && m_numThrusters <= 9);
 
     if (m_numThrusters >= 4)
     {
       // min & max
-      m_vecThrusters.push_back( new SThruster( bbox.min, thrusterDir ));  
+      m_vecThrusters.push_back( new SThruster( bbox.min, thrusterDir ));
       m_vecThrusters.push_back( new SThruster( Vec3( bbox.max.x, bbox.max.y, bbox.min.z ), thrusterDir ));
       // remaining corners
       m_vecThrusters.push_back( new SThruster( Vec3( bbox.min.x, bbox.max.y, bbox.min.z ), thrusterDir ));
@@ -262,7 +262,7 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
 
     // center thruster
     if (m_numThrusters == 1 || m_numThrusters == 5 || m_numThrusters == 9)
-      m_vecThrusters.push_back( new SThruster( center, thrusterDir ));      
+      m_vecThrusters.push_back( new SThruster( center, thrusterDir ));
 
     for (int i=0; i<m_numThrusters; ++i)
     {
@@ -271,13 +271,13 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
       m_vecThrusters[i]->hoverVariance = m_hoverVariance;
       m_vecThrusters[i]->heightAdaption = 0.f;
     }
-  }  
-  else 
-  { 
-    // place thrusters at helpers    
+  }
+  else
+  {
+    // place thrusters at helpers
     for (int i=0; i<m_numThrusters; ++i)
     {
-      m_vecThrusters.push_back( new SThruster( Vec3(ZERO), thrusterDir ));    
+      m_vecThrusters.push_back( new SThruster( Vec3(ZERO), thrusterDir ));
 
       SmartScriptTable thruster;
       if (thrusterTable->GetAt(i+1, thruster))
@@ -308,8 +308,8 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
         float heightAdaption = -1.f;
         thruster->GetValue("heightAdaption", heightAdaption);
         m_vecThrusters[i]->heightAdaption = (heightAdaption >= 0.f) ? heightAdaption : m_thrusterHeightAdaption;
-        
-        thruster->GetValue("cylinder", m_vecThrusters[i]->cylinderRadius);        
+
+        thruster->GetValue("cylinder", m_vecThrusters[i]->cylinderRadius);
 
         if (m_vecThrusters[i]->heightAdaption > 0.f)
         {
@@ -329,22 +329,22 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
               pParent->SetMoveable();
 
               m_vecThrusters[i]->pPart = pPart;
-              m_vecThrusters[i]->pParentPart = pParent;  
+              m_vecThrusters[i]->pParentPart = pParent;
 
               Vec3 partPos = pParent->GetLocalTM(false).GetTranslation();
               m_vecThrusters[i]->levelOffsetInitial = partPos.z;
-            }            
-          }          
+            }
+          }
         }
-        
+
         thruster->GetValue("pushing", m_vecThrusters[i]->pushing);
-      }      
+      }
     }
 
     assert(m_vecThrusters.size() == m_numThrusters);
   }
 
-  // tilt thruster direction to outside   
+  // tilt thruster direction to outside
   if (table->GetValue("thrusterTilt", m_thrusterTilt)){
     if (m_thrusterTilt > 0.f && m_thrusterTilt < 90.f)
     {
@@ -352,7 +352,7 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
       for (int i=0; i<m_numThrusters; ++i)
       {
         // tilt towards center.. rays are shot to -dir later
-        if (m_vecThrusters[i]->pos == center){          
+        if (m_vecThrusters[i]->pos == center){
           continue;
         }
         Vec3 axis = Vec3(m_vecThrusters[i]->pos - center).Cross( thrusterDir );
@@ -366,11 +366,11 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
   // add thruster offset (so they don't touch ground intially)
   float thrusterBottomOffset = 0;
   if (table->GetValue("thrusterBottomOffset", thrusterBottomOffset) && thrusterBottomOffset > 0.f)
-  {    
+  {
     for (int i=0; i<m_numThrusters; ++i){
       m_vecThrusters[i]->pos.z += thrusterBottomOffset;
     }
-    m_hoverHeight += thrusterBottomOffset; 
+    m_hoverHeight += thrusterBottomOffset;
   }
 
   float mass = m_pVehicle->GetMass();
@@ -396,15 +396,15 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
   {
     if (m_vecThrusters[i]->pushing)
       ++pushingThrusters;
-  }    
+  }
 
   float fThrusterForce = (m_numThrusters > 0) ? m_liftForce/pushingThrusters : 0.f;
-  
+
   for (int i=0; i<m_numThrusters; ++i)
   {
     if (m_vecThrusters[i]->pushing)
       m_vecThrusters[i]->maxForce = fThrusterForce;
-  }   
+  }
 
   return true;
 }
@@ -412,7 +412,7 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
 
 //------------------------------------------------------------------------
 bool CVehicleMovementHovercraft::StartEngine(EntityId driverId)
-{	
+{
   if (!CVehicleMovementBase::StartEngine(driverId))
     return false;
 
@@ -421,10 +421,10 @@ bool CVehicleMovementHovercraft::StartEngine(EntityId driverId)
   m_contacts = 0;
 
   for (int i = 0; i < m_numThrusters; i++)
-  {	
+  {
     m_vecThrusters[i]->hit = false;
     m_vecThrusters[i]->prevDist = -1.f;
-  }		
+  }
 
   return true;
 }
@@ -432,22 +432,22 @@ bool CVehicleMovementHovercraft::StartEngine(EntityId driverId)
 //------------------------------------------------------------------------
 void CVehicleMovementHovercraft::StopEngine()
 {
-  CVehicleMovementBase::StopEngine();  
+  CVehicleMovementBase::StopEngine();
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 // NOTE: This function must be thread-safe. Before adding stuff contact MarcoC.
 void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
-{ 
+{
 
 #define OPTIMIZE_HOVERCRAFT_PROCESSMOVEMENT 1
 
-  static const Vec3 thrusterForceDir(0,0,1); 
+  static const Vec3 thrusterForceDir(0,0,1);
 
   m_netActionSync.UpdateObject(this);
 
-  CryAutoLock<CryFastLock> lk(m_lock);
+  std::lock_guard lock(m_lock);
 
   CVehicleMovementBase::ProcessMovement(deltaTime);
 
@@ -461,24 +461,24 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 
   IEntity* pEntity = m_pVehicle->GetEntity();
 
-  IPhysicalEntity* pPhysics = pEntity->GetPhysics(); 
+  IPhysicalEntity* pPhysics = pEntity->GetPhysics();
   assert(pPhysics);
 
-  IPhysicalEntity *pSkip = GetPhysics();  
+  IPhysicalEntity *pSkip = GetPhysics();
   assert(pSkip);
 
-  pe_action_impulse linearImp, angularImp, dampImp, stabImp;    
-    
+  pe_action_impulse linearImp, angularImp, dampImp, stabImp;
+
   ray_hit hit;
   primitives::cylinder cyl;
-  static const int objTypes = (ent_all & ~ent_living) | ent_water;    
-  static const unsigned int flags = rwi_stop_at_pierceable|rwi_ignore_back_faces|rwi_ignore_noncolliding;  
+  static const int objTypes = (ent_all & ~ent_living) | ent_water;
+  static const unsigned int flags = rwi_stop_at_pierceable|rwi_ignore_back_faces|rwi_ignore_noncolliding;
   int hits = 0;
-      
-  m_startComplete += dt;  
+
+  m_startComplete += dt;
   m_thrusterTimer += dt;
   bool bThrusterUpdate = (m_thrusterUpdate == 0.f || m_thrusterTimer >= m_thrusterUpdate);
-  
+
   Matrix33 wTMInv( !m_PhysPos.q );
   Matrix34 wTM( m_PhysPos.q );
   wTM.AddTranslation( m_PhysPos.pos );
@@ -486,28 +486,28 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
   Vec3 localVel = wTMInv * m_PhysDyn.v;
   Vec3 localW = wTMInv * m_PhysDyn.w;
   float speed = m_PhysDyn.v.len();
-  
-  const float minContacts = 0.33f*m_numThrusters;  
 
-  // update hovering height  
+  const float minContacts = 0.33f*m_numThrusters;
+
+  // update hovering height
 #ifndef OPTIMIZE_HOVERCRAFT_PROCESSMOVEMENT
   if (m_hoverFrequency > 0.f)
   {
     m_hoverTimer += dt*m_hoverFrequency;
     if (m_hoverTimer > 2*gf_PI)
-      m_hoverTimer -= 2*gf_PI;    
+      m_hoverTimer -= 2*gf_PI;
   }
 #endif
 
     if (bThrusterUpdate)
     {
-      pe_action_impulse thrusterImp;        
-      bool bStartComplete = (m_startComplete > 1.5f);    
+      pe_action_impulse thrusterImp;
+      bool bStartComplete = (m_startComplete > 1.5f);
       m_contacts = 0;
-      
+
       TThrusters::const_iterator iter;
       for (iter=m_vecThrusters.begin(); iter!=m_vecThrusters.end(); ++iter)
-      { 
+      {
         SThruster* pThruster = *iter;
 
         if (!pThruster->enabled)
@@ -517,7 +517,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 
 		if (m_bSampleByHelpers)
         {
-          // update thruster positions        
+          // update thruster positions
           if (pThruster->pHelper)
 						pThruster->pos = pThruster->pHelper->GetVehicleTM().GetTranslation();
 					else
@@ -551,7 +551,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
         Vec3 thrusterPos = wTM.TransformPoint( pThruster->pos );
         Vec3 thrusterDir = wTM.TransformVector( pThruster->dir );
 
-        float cosAngle = cosf(pThruster->tiltAngle);            
+        float cosAngle = cosf(pThruster->tiltAngle);
         float hitDist = pThruster->prevDist;
 
         if (bThrusterUpdate)
@@ -562,7 +562,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 
           if (!(pThruster->cylinderRadius > 0.f))
           {
-            if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(thrusterPos, -m_thrusterMaxHeightCoeff*(hoverHeight/cosAngle)*thrusterDir, objTypes, flags, &hit, 1, pSkip))        
+            if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(thrusterPos, -m_thrusterMaxHeightCoeff*(hoverHeight/cosAngle)*thrusterDir, objTypes, flags, &hit, 1, pSkip))
             {
               pThruster->hit = true;
               // reset hit dist to vertical length
@@ -571,7 +571,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
             }
           }
           else
-          {        
+          {
             Vec3 ptEnd = thrusterPos - m_thrusterMaxHeightCoeff*hoverHeight*thrusterDir;
             cyl.center = thrusterPos;
             cyl.axis = ptEnd - thrusterPos;
@@ -579,7 +579,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
             cyl.hh = 0.1f;
             cyl.r = pThruster->cylinderRadius;
 
-            geom_contact *pContact = 0;          
+            geom_contact *pContact = 0;
             hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(cyl.type, &cyl, ptEnd-thrusterPos, (ent_all&~ent_living)|ent_water, &pContact, 0, geom_colltype0, 0, 0, 0, &pSkip, 1);
 
             if (hitDist > 0.f)
@@ -593,7 +593,7 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 
 #ifdef OPTIMIZE_HOVERCRAFT_PROCESSMOVEMENT
           if (false && !pThruster->hit)
-          {        
+          {
             float delta = thrusterPos.z - gEnv->p3DEngine->GetWaterLevel( &thrusterPos );
             if ( delta > 0.f && delta < m_thrusterMaxHeightCoeff * hoverHeight )
             {
@@ -602,43 +602,43 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
               pThruster->prevHit = thrusterPos - Vec3(0,0,delta);
             }
           }
-        }      
+        }
 #endif
 
         // neutral pos
         float hoverError = 0.f;
 
         if (pThruster->hit)
-        {        
+        {
           ++m_contacts;
 
           if (pThruster->pushing)
           {
-            hoverError = min(hitDist, m_thrusterMaxHeightCoeff*hoverHeight)-hoverHeight;              
+            hoverError = min(hitDist, m_thrusterMaxHeightCoeff*hoverHeight)-hoverHeight;
 
             // positive force means upward push
             float basicForce = pThruster->maxForce;
             float springForce = -hoverError/hoverHeight * m_stiffness * basicForce;
 
             // damp movement of thruster WRT ground. only damp when thruster is below hoverheight.
-            float relVel = (m_thrusterTimer > 0 && hitDist < hoverHeight && isnonneg(pThruster->prevDist)) ? (hitDist - pThruster->prevDist)/m_thrusterTimer : 0; 
+            float relVel = (m_thrusterTimer > 0 && hitDist < hoverHeight && isnonneg(pThruster->prevDist)) ? (hitDist - pThruster->prevDist)/m_thrusterTimer : 0;
 
             float dampForce = -1.f*CLAMP(relVel, -m_dampLimitCoeff, m_dampLimitCoeff) * m_damping * basicForce;
             if (abs(dampForce) < 0.05*basicForce)
               dampForce = 0;
 
-            float force = basicForce + springForce + dampForce; 
+            float force = basicForce + springForce + dampForce;
             Vec3 forceDir = pThruster->heightAdaption > 0.f ? thrusterForceDir : wTM.TransformVector(thrusterForceDir);
 
             thrusterImp.impulse = forceDir * force * m_thrusterTimer;
-            thrusterImp.point = thrusterPos; 
+            thrusterImp.point = thrusterPos;
             thrusterImp.iApplyTime = 0;
-            pPhysics->Action(&thrusterImp, PE_ACTION_THREAD_SAFE);        
+            pPhysics->Action(&thrusterImp, PE_ACTION_THREAD_SAFE);
 
-          }        
-        } 
+          }
+        }
 
-        pThruster->prevDist = hitDist;               
+        pThruster->prevDist = hitDist;
 
 	}
 
@@ -646,106 +646,106 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
       if (bThrusterUpdate)
         m_thrusterTimer = (m_thrusterUpdate == 0.f) ? 0.f : m_thrusterTimer-m_thrusterUpdate;
     }
-    
-    // flight stabilization     
+
+    // flight stabilization
     if (m_contacts < minContacts && speed > 5.f)
 	{
       ApplyAirDamp(DEG2RAD(10.f), DEG2RAD(5.f), deltaTime, PE_ACTION_THREAD_SAFE);
 	  UpdateGravity(-9.81f * 1.8f);
 	}
 
-  // apply driving force  
-  float a = 0; 
-  if (m_contacts >= minContacts)  
-  {     
+  // apply driving force
+  float a = 0;
+  if (m_contacts >= minContacts)
+  {
     a = m_movementAction.power * m_accel;
     Vec3 pushDir(FORWARD_DIRECTION);
-    
+
     if (abs(a) > 0.001f)
     {
       if (sgn(a) * sgn(localVel.y) < 0) // "braking"
         a *= m_accelCoeff;
-      
+
       if ((localVel.y > m_velMax || localVel.y < -m_velMaxReverse) && sgn(a)*sgn(localVel.y)>0) // check max vel
         a = 0;
       else
       {
-        // apply force downwards for more realistic response  
-        if (a > 0)                  
-          pushDir = Quat_tpl<float>::CreateRotationAA( DEG2RAD(m_pushTilt), Vec3(-1,0,0) ) * pushDir;      
+        // apply force downwards for more realistic response
+        if (a > 0)
+          pushDir = Quat_tpl<float>::CreateRotationAA( DEG2RAD(m_pushTilt), Vec3(-1,0,0) ) * pushDir;
 
-        linearImp.point = m_pushOffset;      
+        linearImp.point = m_pushOffset;
         linearImp.point.x += m_massOffset.x;
-        linearImp.point.y += m_massOffset.y;      
-        if (a < 0) 
+        linearImp.point.y += m_massOffset.y;
+        if (a < 0)
           linearImp.point.z = m_massOffset.z;
         linearImp.point = wTM.TransformPoint( linearImp.point );
-      }      
+      }
     }
     else
     {
-      // damp linear movement            
+      // damp linear movement
       pushDir = -localVel;
       pushDir.z = 0;
       a = m_linearDamping;
     }
-    
+
     if (a != 0)
     {
-      pushDir = wTM.TransformVector( pushDir );  
-      linearImp.impulse = pushDir * m_PhysDyn.mass * a * dt;       
+      pushDir = wTM.TransformVector( pushDir );
+      linearImp.impulse = pushDir * m_PhysDyn.mass * a * dt;
       pPhysics->Action(&linearImp, PE_ACTION_THREAD_SAFE);
     }
-  }  
+  }
 
-  // apply steering 
-  // (Momentum = alpha * I)  
-  float turnAccel = 0;  
-  Vec3 momentum(0,0,-1); // use momentum along -z to keep negative steering to the left      
-  
+  // apply steering
+  // (Momentum = alpha * I)
+  float turnAccel = 0;
+  Vec3 momentum(0,0,-1); // use momentum along -z to keep negative steering to the left
+
   if (m_contacts >= minContacts && abs(m_movementAction.rotateYaw) > 0.001f)
-  {    
+  {
     int iDir = m_movementAction.power != 0.f ? sgn(m_movementAction.power) : 1;//sgn(localVel.y);
     turnAccel = m_movementAction.rotateYaw * m_turnAccel * iDir;
-    
+
     // steering and current w in same direction?
     int sgnSteerW = sgn(m_movementAction.rotateYaw) * iDir * sgn(-localW.z);
 
-    if (sgnSteerW < 0) // "braking"          
-      turnAccel *= m_turnAccelCoeff; 
-    else if (abs(localW.z) > ((localVel.y >= 0.f) ? m_turnRateMax : m_turnRateReverse)) // check max turn vel    
-      turnAccel = 0; 
+    if (sgnSteerW < 0) // "braking"
+      turnAccel *= m_turnAccelCoeff;
+    else if (abs(localW.z) > ((localVel.y >= 0.f) ? m_turnRateMax : m_turnRateReverse)) // check max turn vel
+      turnAccel = 0;
   }
-  else 
-  { 
-    // if no steering, damp rotation                
+  else
+  {
+    // if no steering, damp rotation
     turnAccel = localW.z * m_turnDamping;
   }
-  
+
   if (abs(turnAccel) > 0.0001f)
   {
     momentum *= turnAccel * m_Inertia.z * dt;
     momentum = wTM.TransformVector( momentum );
-    angularImp.angImpulse = momentum;    
+    angularImp.angImpulse = momentum;
     pPhysics->Action(&angularImp, PE_ACTION_THREAD_SAFE);
-  }          
-  
-  // lateral force   
-  if (localVel.x != 0 && m_cornerForceCoeff > 0.f && m_contacts >= minContacts)  
+  }
+
+  // lateral force
+  if (localVel.x != 0 && m_cornerForceCoeff > 0.f && m_contacts >= minContacts)
   {
     Vec3 cornerForce(0,0,0);
-    cornerForce.x = -localVel.x * m_cornerForceCoeff * m_PhysDyn.mass * dt;    
+    cornerForce.x = -localVel.x * m_cornerForceCoeff * m_PhysDyn.mass * dt;
     cornerForce = Quat_tpl<float>::CreateRotationAA( sgn(localVel.x)*DEG2RAD(m_cornerTilt), Vec3(0,1,0) ) * cornerForce;
-    
+
     dampImp.impulse = wTM.TransformVector( cornerForce );
 
-    dampImp.point = m_cornerOffset;    
+    dampImp.point = m_cornerOffset;
     dampImp.point.x += m_massOffset.x;
     dampImp.point.y += m_massOffset.y;
     dampImp.point.x *= sgn(localVel.x);
     dampImp.point = wTM.TransformPoint( dampImp.point );
-    
-    pPhysics->Action(&dampImp, PE_ACTION_THREAD_SAFE);   
+
+    pPhysics->Action(&dampImp, PE_ACTION_THREAD_SAFE);
   }
 }
 
@@ -753,26 +753,26 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 void CVehicleMovementHovercraft::Update(const float deltaTime)
 {
   FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
- 
+
   CVehicleMovementBase::Update(deltaTime);
-    
+
   m_netActionSync.UpdateObject(this);
-     
+
 /*
 	if (IsProfilingMovement())
 	{
 		//gEnv->pRenderer->DrawLabel(thrusterPos, 1.4f, "e: %.2f, c: %.2f, a: %.2f", error, correction, RAD2DEG(deltaAngle));
-		IRenderAuxGeom* pGeom = gEnv->pRenderer->GetIRenderAuxGeom();                  
+		IRenderAuxGeom* pGeom = gEnv->pRenderer->GetIRenderAuxGeom();
 		ColorB col(0,255,255,255);
 
-		Vec3 current(pThruster->pos);        
+		Vec3 current(pThruster->pos);
 		pGeom->DrawSphere(wTM*current, 0.2f, ColorB(0,255,0,255));
 
 		if (pThruster->heightAdaption > 0.f)
 		{
 			Vec3 center(pThruster->pos.x, pThruster->pos.y, pThruster->heightInitial);
 			Vec3 min = center + Vec3(0,0,-pThruster->heightAdaption);
-			Vec3 max = center + Vec3(0,0,pThruster->heightAdaption);                  
+			Vec3 max = center + Vec3(0,0,pThruster->heightAdaption);
 
 			pGeom->DrawSphere(wTM*min, 0.2f, col);
 			pGeom->DrawSphere(wTM*max, 0.2f, col);
@@ -798,26 +798,26 @@ void CVehicleMovementHovercraft::Update(const float deltaTime)
 		float y=50.f, step1=15.f, step2=20.f, size1=1.f, size2=1.5f;
 
 		pRenderer->Draw2dLabel(5.0f,   y, size2, color, false, "Hovercraft");
-		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Speed: %.1f (%.1f km/h)", speed, speed*3.6f);    
+		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Speed: %.1f (%.1f km/h)", speed, speed*3.6f);
 		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "HoverHeight: %.2f", m_hoverHeight);
 		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, (m_contacts > minContacts) ? color : red, false, "Contacts: %i", m_contacts);
 
 		pRenderer->Draw2dLabel(5.0f,  y+=step2, size2, color, false, "Driver input");
 		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "power: %.2f", m_movementAction.power);
-		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "steer: %.2f", m_movementAction.rotateYaw); 
+		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "steer: %.2f", m_movementAction.rotateYaw);
 
-		pRenderer->Draw2dLabel(5.0f,  y+=step2, size2, color, false, "Propelling");    
-		    
-		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Accel: %.2f", a); 
-		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Impulse linear: %.0f", linearImp.impulse.len()); 
+		pRenderer->Draw2dLabel(5.0f,  y+=step2, size2, color, false, "Propelling");
+
+		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Accel: %.2f", a);
+		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "Impulse linear: %.0f", linearImp.impulse.len());
 		DrawImpulse(linearImp.impulse, linearImp.point);
 
-		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "TurnAccel: %.2f", turnAccel); 
-		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "Momentum steer: %.0f", angularImp.angImpulse.len()); 
+		pRenderer->Draw2dLabel(5.0f,  y+=step2, 1.5f, color, false, "TurnAccel: %.2f", turnAccel);
+		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "Momentum steer: %.0f", angularImp.angImpulse.len());
 
-		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "Impulse corner: %.0f", dampImp.impulse.len());     
+		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "Impulse corner: %.0f", dampImp.impulse.len());
 		DrawImpulse(dampImp.impulse, dampImp.point);
-		    
+
 		pRenderer->Draw2dLabel(5.0f,  y+=step1, 1.5f, color, false, "Impulse stabi: %.0f", is_unused(stabImp.angImpulse) ? 0.f : stabImp.angImpulse.len());
 		DrawImpulse(stabImp.angImpulse, m_statusDyn.centerOfMass);
 	}
@@ -851,7 +851,7 @@ bool CVehicleMovementHovercraft::RequestMovement(CMovementRequest& movementReque
 //------------------------------------------------------------------------
 void CVehicleMovementHovercraft::OnAction(const TVehicleActionId actionId, int activationMode, float value)
 {
-	CryAutoLock<CryFastLock> lk(m_lock);
+	std::lock_guard lock(m_lock);
 
 	CVehicleMovementBase::OnAction(actionId, activationMode, value);
 	m_prevAction = m_movementAction;
@@ -875,7 +875,7 @@ void CVehicleMovementHovercraft::Serialize(TSerialize ser, unsigned aspects)
     if (aspects & CNetworkMovementHovercraft::CONTROLLED_ASPECT)
       m_netActionSync.Serialize(ser, aspects);
   }
-  else 
+  else
   {
     ser.Value("m_startComplete", m_startComplete);
     ser.Value("m_hoverTimer", m_hoverTimer);
@@ -898,7 +898,7 @@ CNetworkMovementHovercraft::CNetworkMovementHovercraft()
 CNetworkMovementHovercraft::CNetworkMovementHovercraft(CVehicleMovementHovercraft *pMovement)
 {
   m_steer = pMovement->m_movementAction.rotateYaw;
-  m_pedal = pMovement->m_movementAction.power;  
+  m_pedal = pMovement->m_movementAction.power;
   m_boost = pMovement->m_boost;
 }
 
@@ -906,7 +906,7 @@ CNetworkMovementHovercraft::CNetworkMovementHovercraft(CVehicleMovementHovercraf
 void CNetworkMovementHovercraft::UpdateObject(CVehicleMovementHovercraft *pMovement)
 {
   pMovement->m_movementAction.rotateYaw = m_steer;
-  pMovement->m_movementAction.power = m_pedal;  
+  pMovement->m_movementAction.power = m_pedal;
   pMovement->m_boost = m_boost;
 }
 
@@ -916,7 +916,7 @@ void CNetworkMovementHovercraft::Serialize(TSerialize ser, unsigned aspects)
   if (ser.GetSerializationTarget()==eST_Network && aspects&CONTROLLED_ASPECT)
   {
     ser.Value("pedal", m_pedal, 'vPed');
-    ser.Value("steer", m_steer, 'vStr');    
+    ser.Value("steer", m_steer, 'vStr');
     ser.Value("boost", m_boost, 'bool');
   }
 }

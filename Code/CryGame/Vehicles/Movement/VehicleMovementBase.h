@@ -14,6 +14,7 @@ History:
 #ifndef __VEHICLEMOVEMENTBASE_H__
 #define __VEHICLEMOVEMENTBASE_H__
 
+#include <mutex>
 #include <vector>
 #include "CryCommon/Cry3DEngine/ParticleParams.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
@@ -21,9 +22,7 @@ History:
 #include "CryCommon/CryAction/IMaterialEffects.h"
 #include "VehicleMovementTweaks.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include "CryCommon/CryCore/platform.h"
-#include "CryCommon/CryCore/CryThread.h"
 
 #define ENGINESOUND_MAX_DIST 150.f
 #define ENGINESOUND_IDLE_RATIO 0.2f
@@ -40,9 +39,9 @@ struct SExhaustStatus
   int runSlot;
   int boostSlot;
   int enabled;
-    
+
   SExhaustStatus()
-  {    
+  {
     startStopSlot = -1;
     runSlot = -1;
     boostSlot = -1;
@@ -53,45 +52,45 @@ struct SExhaustStatus
 struct TEnvEmitter
 {
   TEnvEmitter()
-  { 
-    layer = -1;      
+  {
+    layer = -1;
     slot = -1;
     matId = -1;
     group = -1;
     bContact = false;
-    pGroundEffect = 0;    
+    pGroundEffect = 0;
     active = true;
   }
 
   QuatT quatT;  // local tm
-  int layer; // layer idx the emitter belongs to    
+  int layer; // layer idx the emitter belongs to
   int slot;  // emitter slot
-  int matId; // last surface idx    
-  int group; // optional     
+  int matId; // last surface idx
+  int group; // optional
   IGroundEffect* pGroundEffect;
-  bool bContact; // optional  
-  bool active; 
+  bool bContact; // optional
+  bool active;
 };
 
 struct SEnvParticleStatus
 {
   bool initalized;
-  
+
   typedef std::vector<TEnvEmitter> TEnvEmitters;
   TEnvEmitters emitters;  //maps emitter slots to user-defined index
-  
+
   SEnvParticleStatus() : initalized(false)
   {}
 
   void Serialize(TSerialize ser, unsigned aspects)
-  {    
-    ser.BeginGroup("EnvParticleStatus");   
-    
+  {
+    ser.BeginGroup("EnvParticleStatus");
+
     int count = emitters.size();
     ser.Value("NumEnvEmitters", count);
-    
+
     if (ser.IsWriting())
-    { 
+    {
 			for(SEnvParticleStatus::TEnvEmitters::iterator it = emitters.begin(); it != emitters.end(); ++it)
 			{
 				ser.BeginGroup("TEnvEmitterSlot");
@@ -118,24 +117,24 @@ struct SEnvParticleStatus
 /** particle status structure
 */
 struct SParticleStatus
-{  
+{
   std::vector<SExhaustStatus> exhaustStats; // can hold multiple exhausts
   SEnvParticleStatus envStats;
 
   SParticleStatus()
-  { 
+  {
   }
 
   void Serialize(TSerialize ser, unsigned aspects)
   {
-    ser.BeginGroup("ExhaustStatus");   
-    
+    ser.BeginGroup("ExhaustStatus");
+
     int count = exhaustStats.size();
     ser.Value("NumExhausts", count);
-    
+
     if (ser.IsWriting())
     {
-      for(std::vector<SExhaustStatus>::iterator it = exhaustStats.begin(); it != exhaustStats.end(); ++it)      
+      for(std::vector<SExhaustStatus>::iterator it = exhaustStats.begin(); it != exhaustStats.end(); ++it)
 			{
 				ser.BeginGroup("ExhaustRunSlot");
         ser.Value("slot", it->runSlot);
@@ -148,10 +147,10 @@ struct SParticleStatus
       for (int i=0; i<count&&i<exhaustStats.size(); ++i)
 			{
 				ser.BeginGroup("ExhaustRunSlot");
-        ser.Value("slot", exhaustStats[i].runSlot); 
+        ser.Value("slot", exhaustStats[i].runSlot);
 				ser.EndGroup();
 			}
-    }   
+    }
     ser.EndGroup();
 
     envStats.Serialize(ser, aspects);
@@ -160,7 +159,7 @@ struct SParticleStatus
 
 struct SSurfaceSoundStatus
 {
-  int matId; 
+  int matId;
   float surfaceParam;
   float slipRatio;
   float slipTimer;
@@ -183,7 +182,7 @@ struct SSurfaceSoundStatus
   void Serialize(TSerialize ser, unsigned aspects)
   {
     ser.BeginGroup("SurfaceSoundStats");
-    ser.Value("surfaceParam", surfaceParam);		
+    ser.Value("surfaceParam", surfaceParam);
     ser.EndGroup();
   }
 };
@@ -216,23 +215,23 @@ struct SMovementSoundStatus
   SMovementSoundStatus(){ Reset(); }
 
   void Reset()
-  {    
-    for (int i=0; i<eSID_Max; ++i)    
-    {      
+  {
+    for (int i=0; i<eSID_Max; ++i)
+    {
       sounds[i] = INVALID_SOUNDID;
       lastPlayed[i].SetValue(0);
     }
 
     inout = 1.f;
   }
-  
-  tSoundID sounds[eSID_Max];  
+
+  tSoundID sounds[eSID_Max];
   CTimeValue lastPlayed[eSID_Max];
   float inout;
 };
 
 
-namespace 
+namespace
 {
   bool DebugParticles()
   {
@@ -241,20 +240,20 @@ namespace
   }
 }
 
-class CVehicleMovementBase : 
-  public IVehicleMovement, 
-  public IVehicleObject, 
+class CVehicleMovementBase :
+  public IVehicleMovement,
+  public IVehicleObject,
   public ISoundEventListener
 {
   IMPLEMENT_VEHICLEOBJECT
-public:  
+public:
   CVehicleMovementBase();
   virtual ~CVehicleMovementBase();
 
 	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
 	virtual void PostInit();
   virtual void Release();
-	virtual void Reset();  
+	virtual void Reset();
 	virtual void Physicalize();
   virtual void PostPhysicalize();
 
@@ -277,7 +276,7 @@ public:
 	virtual void ProcessActions(const float deltaTime) {}
 	virtual void ProcessAI(const float deltaTime) {}
 	virtual void Update(const float deltaTime);
-  
+
 	virtual void Serialize(TSerialize ser, unsigned aspects);
 	virtual void SetChannelId(uint16 id) {};
 	virtual void SetAuthority(bool auth){};
@@ -293,12 +292,12 @@ public:
 	virtual pe_type GetPhysicalizationType() const { return PE_NONE; };
   virtual bool UseDrivingProxy() const { return false; };
   virtual int GetWheelContacts() const { return 0; }
-  
+
 	virtual void RegisterActionFilter(IVehicleMovementActionFilter* pActionFilter);
 	virtual void UnregisterActionFilter(IVehicleMovementActionFilter* pActionFilter);
 
   virtual void OnSoundEvent(ESoundCallbackEvent event,ISound *pSound);
-  
+
   virtual void EnableMovementProcessing(bool enable){ m_bMovementProcessingEnabled = enable; }
   virtual bool IsMovementProcessingEnabled(){ return m_bMovementProcessingEnabled; }
 
@@ -306,12 +305,12 @@ public:
 
   virtual void ProcessEvent(SEntityEvent& event);
   virtual void SetSoundMasterVolume(float vol);
-  
+
 protected:
 
   ILINE IPhysicalEntity* GetPhysics() const { return m_pVehicle->GetEntity()->GetPhysics(); }
   bool IsProfilingMovement();
-	
+
   // sound methods
   ISound* PlaySound(EVehicleMovementSound eSID, float pulse=0.f, const Vec3& offset=Vec3Constants<float>::fVec3_Zero, int soundFlags=0);
   ISound* GetOrPlaySound(EVehicleMovementSound eSID, float pulse=0.f, const Vec3& offset=Vec3Constants<float>::fVec3_Zero, int soundFlags=0);
@@ -328,15 +327,15 @@ protected:
   void StartAnimation(EVehicleMovementAnimation eAnim);
   void StopAnimation(EVehicleMovementAnimation eAnim);
   void SetAnimationSpeed(EVehicleMovementAnimation eAnim, float speed);
-  
+
   void SetDamage(float damage, bool fatal);
   virtual void UpdateDamage(const float deltaTime);
-  
+
   virtual void UpdateGameTokens(const float deltaTime);
   virtual void UpdateRunSound(const float deltaTime);
   virtual void UpdateSpeedRatio(const float deltaTime);
   virtual float GetEnginePedal(){ return m_movementAction.power; }
-  
+
   virtual void Boost(bool enable);
   virtual bool Boosting() { return m_boost; }
   virtual void UpdateBoost(const float deltaTime);
@@ -344,27 +343,27 @@ protected:
 
   void ApplyAirDamp(float angleMin, float angVelMin, float deltaTime, int threadSafe);
   void UpdateGravity(float gravity);
-  
+
   // surface particle/sound methods
   virtual void InitExhaust();
   virtual void InitSurfaceEffects();
   virtual void ResetParticles();
-  virtual void UpdateSurfaceEffects(const float deltaTime);  
+  virtual void UpdateSurfaceEffects(const float deltaTime);
   virtual void RemoveSurfaceEffects();
   virtual void GetParticleScale(const SEnvironmentLayer& layer, float speed, float power, float& countScale, float& sizeScale, float& speedScale);
   virtual void EnableEnvEmitter(TEnvEmitter& emitter, bool enable);
-  virtual void UpdateExhaust(const float deltaTime);  
+  virtual void UpdateExhaust(const float deltaTime);
   void FreeEmitterSlot(int& slot);
   void FreeEmitterSlot(const int& slot);
   void StartExhaust(bool ignition=true, bool reload=true);
-  void StopExhaust();  
+  void StopExhaust();
   float GetWaterMod(SExhaustStatus& exStatus);
   float GetSoundDamage();
-  
+
   SMFXResourceListPtr GetEffectNode(int matId);
   const char* GetEffectByIndex(int matId, const char* username);
   float GetSurfaceSoundParam(int matId);
-  
+
   virtual bool GenerateWind() { return true; }
   void InitWind();
   void UpdateWind(const float deltaTime);
@@ -374,13 +373,13 @@ protected:
 
 	IVehicle* m_pVehicle;
 	IEntity* m_pEntity;
-	IEntitySoundProxy* m_pEntitySoundsProxy;	
+	IEntitySoundProxy* m_pEntitySoundsProxy;
   static IGameTokenSystem* m_pGameTokenSystem;
   static IVehicleSystem* m_pVehicleSystem;
 	static IActorSystem* m_pActorSystem;
 
   SVehicleMovementAction m_movementAction;
-  
+
   bool m_isEngineDisabled;
 	bool m_isEngineStarting;
 	bool m_isEngineGoingOff;
@@ -390,25 +389,25 @@ protected:
   bool m_bMovementProcessingEnabled;
 	bool m_isEnginePowered;
 	float m_damage;
-  
+
   string m_soundNames[eSID_Max];
-  
+
   Vec3 m_enginePos;
-  float m_runSoundDelay;  
+  float m_runSoundDelay;
   float m_rpmScale, m_rpmScaleSgn;
   float m_rpmPitchSpeed;
-  float m_maxSoundSlipSpeed;  
+  float m_maxSoundSlipSpeed;
   float m_soundMasterVolume;
-  
+
   bool m_boost;
 	bool m_wasBoosting;
   float m_boostEndurance;
-  float m_boostRegen;  
+  float m_boostRegen;
   float m_boostStrength;
   float m_boostCounter;
 
   IVehicleAnimation* m_animations[eVMA_Max];
-      
+
   SParticleParams* m_pPaParams;
   SParticleStatus m_paStats;
   SSurfaceSoundStatus m_surfaceSoundStats;
@@ -418,7 +417,7 @@ protected:
   pe_status_dynamics m_statusDyn; // gets updated once per update
   pe_status_dynamics m_PhysDyn; // gets updated once per phys update
   pe_status_pos	m_PhysPos; // gets updated once per phys update
-  float m_maxSpeed; 
+  float m_maxSpeed;
   float m_speedRatio;
   float m_speedRatioUnit;
 
@@ -427,16 +426,16 @@ protected:
 
   // flight stabilization
   Vec3 m_dampAngle;
-  Vec3 m_dampAngVel;  
+  Vec3 m_dampAngVel;
 
   IPhysicalEntity* m_pWind[2];
-  
+
 	typedef std::list<IVehicleMovementActionFilter*> TVehicleMovementActionFilterList;
 	TVehicleMovementActionFilterList m_actionFilters;
 
   typedef std::vector<IVehicleComponent*> TComponents;
-  TComponents m_damageComponents;  
-  
+  TComponents m_damageComponents;
+
   struct SSurfaceSoundInfo
   {
     int paramIndex;
@@ -457,7 +456,7 @@ protected:
 
   static float m_sprintTime;
 
-	CryFastLock m_lock;
+	std::mutex m_lock;
 };
 
 struct SPID

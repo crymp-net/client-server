@@ -110,9 +110,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/CryPodArray.h
   Code/CryCommon/CryCore/CrySizer.h
   Code/CryCommon/CryCore/CryString.h
-  Code/CryCommon/CryCore/CryThread.h
-  Code/CryCommon/CryCore/CryThreadImpl.h
-  Code/CryCommon/CryCore/CryThread_windows.h
   Code/CryCommon/CryCore/Endian.h
   Code/CryCommon/CryCore/MSVCspecific.h
   Code/CryCommon/CryCore/MTPseudoRandom.cpp

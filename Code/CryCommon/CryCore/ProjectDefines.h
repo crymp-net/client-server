@@ -7,7 +7,7 @@
 //  Version:     v1.00
 //  Created:     3/30/2004 by MartinM.
 //  Compilers:   Visual Studio.NET
-//  Description: to get some defines available in every CryEngine project 
+//  Description: to get some defines available in every CryEngine project
 // -------------------------------------------------------------------------
 //  History:
 //    July 20th 2004 - Mathieu Pinard
@@ -17,9 +17,6 @@
 
 #ifndef PROJECTDEFINES_H
 #define PROJECTDEFINES_H
-
-// Needed so we use our own terminate function in platform_impl.h
-#define _STLP_DEBUG_TERMINATE
 
 //VS2005
 #if _MSC_VER >= 1400
