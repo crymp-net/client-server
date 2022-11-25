@@ -6,7 +6,7 @@
 //  File name:   MultiThread.h
 //  Version:     v1.00
 //  Compilers:   Visual Studio.NET 2003
-//  Description: 
+//  Description:
 // -------------------------------------------------------------------------
 //  History:
 //
@@ -129,12 +129,12 @@
 	#define CryCreateCriticalSectionGlobal CryCreateCriticalSection
 	#define CryDeleteCriticalSectionGlobal CryDeleteCriticalSection
 	#define CryEnterCriticalSectionGlobal CryEnterCriticalSection
-	#define CryTryCriticalSectionGlobal CryTryCriticalSection 
+	#define CryTryCriticalSectionGlobal CryTryCriticalSection
 	#define CryLeaveCriticalSectionGlobal CryLeaveCriticalSection
 
 
 ILINE void CrySpinLock(volatile int *pLock,int checkVal,int setVal)
-{ 
+{
 #ifdef _CPU_X86
 # ifdef __GNUC__
 	register int val;
@@ -157,7 +157,7 @@ Spin:
 		// Trick from Intel Optimizations guide
 #ifdef _CPU_SSE
 		pause
-#endif 
+#endif
 		mov eax, checkVal
 		lock cmpxchg [ecx], edx
 		jnz Spin
@@ -251,7 +251,7 @@ struct ReadLockCond
 		{
 			bActivated = 0;
 		}
-		prw = &rw; 
+		prw = &rw;
 	}
 	void SetActive(int bActive=1) { bActivated = bActive; }
 	void Release() { CryInterlockedAdd(prw,-bActivated); }
@@ -290,9 +290,9 @@ struct WriteLockCond
 	{
 		if (bActive)
 			CrySpinLock(&rw,0,iActive=WRITE_LOCK_VAL);
-		else 
+		else
 			iActive = 0;
-		prw = &rw; 
+		prw = &rw;
 	}
 	~WriteLockCond() { CryInterlockedAdd(prw,-iActive); }
 	void SetActive(int bActive=1) { iActive = -bActive & WRITE_LOCK_VAL; }
@@ -322,115 +322,10 @@ private:
 #endif
 };
 
-//////////////////////////////////////////////////////////////////////////
-class CCryMutex
-{
-public:
-	CCryMutex() : m_pCritSection(CryCreateCriticalSection())
-	{}
-
-	~CCryMutex()
-	{
-		CryDeleteCriticalSection(m_pCritSection);
-	}
-
-	class CLock
-	{
-	public:
-		CLock( CCryMutex& mtx ) : m_pCritSection(mtx.m_pCritSection)
-		{
-			CryEnterCriticalSection(m_pCritSection);
-		}
-		~CLock()
-		{
-			CryLeaveCriticalSection(m_pCritSection);
-		}
-
-	private:
-		CLock( const CLock& );
-		CLock& operator=( const CLock& );
-
-		void *m_pCritSection;
-	};
-
-private:
-	CCryMutex( const CCryMutex& );
-	CCryMutex& operator=( const CCryMutex& );
-
-	void *m_pCritSection;
-};
 #endif //__SPU__
 
 
 //for PS3 we need additional global locking primitives to lock between all PPU threads and all SPUs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	//no impl. needed for non PS3	
-	#define CCryMutexGlobal CCryMutex
-
-
-#if defined __CRYCG__
-class CCryMutex
-{
-public:
-	CCryMutex();
-	class CLock { public: CLock(CCryMutex&); };
-};
-class CCryMutexGlobal
-{
-public:
-	CCryMutexGlobal();
-	class CLock { public: CLock(CCryMutexGlobal&); };
-};
-class CCryThread
-{
-public:
-	CCryThread(void (*)(void *), void *);
-	static void SetName(const char *);
-};
-#endif // __CRYCG__
 
 #endif // __MultiThread_h__

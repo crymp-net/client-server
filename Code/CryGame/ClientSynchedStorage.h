@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "CryCommon/CrySystem/ISystem.h"  // required by NetHelpers.h
 #include "CryCommon/CryNetwork/NetHelpers.h"
 
@@ -34,7 +36,7 @@ class CServerSynchedStorage;
 
 class CClientSynchedStorage: public CNetMessageSinkHelper<CClientSynchedStorage, CSynchedStorage>
 {
-	CCryMutex m_mutex;
+	std::mutex m_mutex;
 
 public:
 	CClientSynchedStorage(IGameFramework *pGameFramework)
@@ -48,7 +50,7 @@ public:
 	{
 	public:
 		CResetMsg(int _channelId, CServerSynchedStorage *pStorage);
-		
+
 		int channelId;
 		CServerSynchedStorage *m_pStorage;
 

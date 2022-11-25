@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "ClientSynchedStorage.h"
 
 class CServerSynchedStorage : public CNetMessageSinkHelper<CServerSynchedStorage, CSynchedStorage>
@@ -82,7 +84,7 @@ class CServerSynchedStorage : public CNetMessageSinkHelper<CServerSynchedStorage
 	TChannelQueueMap m_channelQueue;
 	TChannelEntityQueueMap m_entityQueue;
 	TChannelMap m_channels;
-	CCryMutex m_mutex;
+	std::mutex m_mutex;
 
 	SChannel *GetChannel(int channelId);
 	SChannel *GetChannel(INetChannel *pNetChannel);

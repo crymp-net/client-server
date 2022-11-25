@@ -39,7 +39,7 @@ int CServerSynchedStorage::GetChannelId(INetChannel *pNetChannel) const
 
 void CServerSynchedStorage::Reset()
 {
-	CCryMutex::CLock lock(m_mutex);
+	std::lock_guard lock(m_mutex);
 
 	CSynchedStorage::Reset();
 
@@ -51,7 +51,7 @@ void CServerSynchedStorage::Reset()
 
 void CServerSynchedStorage::ResetChannel(int channelId)
 {
-	CCryMutex::CLock lock(m_mutex);
+	std::lock_guard lock(m_mutex);
 
 	auto cit = m_channelQueue.lower_bound(SChannelQueueEnt(channelId, 0));
 	while (cit != m_channelQueue.end() && cit->first.channel == channelId)
@@ -160,7 +160,7 @@ void CServerSynchedStorage::AddToGlobalQueueFor(int channelId, TSynchedKey key)
 
 	SSendableHandle & msgHandle = m_globalQueue[SChannelQueueEnt(channelId, key)];
 
-	TSynchedValue value; 
+	TSynchedValue value;
 	if (!GetGlobalValue(key, value))
 	{
 		return;
@@ -203,7 +203,7 @@ void CServerSynchedStorage::AddToEntityQueueFor(int channelId, EntityId entityId
 
 	SSendableHandle & msgHandle = m_entityQueue[SChannelEntityQueueEnt(channelId, entityId, key)];
 
-	TSynchedValue value; 
+	TSynchedValue value;
 	if (!GetEntityValue(entityId, key, value))
 	{
 		return;
@@ -335,7 +335,7 @@ void CServerSynchedStorage::OnClientEnteredGame(int channelId)
 
 bool CServerSynchedStorage::OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGlobalMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
 {
-	CCryMutex::CLock lock(m_mutex);
+	std::lock_guard lock(m_mutex);
 
 	if (!ack)
 	{
@@ -348,7 +348,7 @@ bool CServerSynchedStorage::OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGl
 
 bool CServerSynchedStorage::OnSetChannelMsgComplete(CClientSynchedStorage::CSetChannelMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
 {
-	CCryMutex::CLock lock(m_mutex);
+	std::lock_guard lock(m_mutex);
 
 	if (!ack)
 	{
@@ -361,7 +361,7 @@ bool CServerSynchedStorage::OnSetChannelMsgComplete(CClientSynchedStorage::CSetC
 
 bool CServerSynchedStorage::OnSetEntityMsgComplete(CClientSynchedStorage::CSetEntityMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
 {
-	CCryMutex::CLock lock(m_mutex);
+	std::lock_guard lock(m_mutex);
 
 	if (!ack)
 	{
