@@ -631,6 +631,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CrySystem/LocalizationManager.h
   Code/CrySystem/Logger.cpp
   Code/CrySystem/Logger.h
+  Code/CrySystem/RandomGenerator.cpp
+  Code/CrySystem/RandomGenerator.h
   Code/Launcher/CPUInfo.cpp
   Code/Launcher/CPUInfo.h
   Code/Launcher/CrashLogger.cpp
@@ -651,7 +653,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Library/Error.h
   Code/Library/Format.cpp
   Code/Library/Format.h
-  Code/Library/RandomSeeder.h
   Code/Library/StringBuffer.cpp
   Code/Library/StringBuffer.h
   Code/Library/StringTools.cpp

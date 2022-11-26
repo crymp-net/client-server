@@ -1,10 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <random>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 #include "CryCommon/CryAction/IGameFramework.h"
@@ -56,7 +54,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ParticleManager> m_pParticleManager;
 	std::unique_ptr<FlashFileHooks> m_pFlashFileHooks;
 
-	std::minstd_rand m_randomEngine;
 	std::string m_hwid;
 	std::string m_locale;
 	std::string m_timezone;
@@ -204,22 +201,6 @@ public:
 	EntityId GetLastSpawnId() const
 	{
 		return m_lastSpawnId;
-	}
-
-	// ints
-	template<class T>
-	typename std::enable_if<std::is_integral<T>::value, T>::type GetRandomNumber(T min, T max)
-	{
-		// uniform distribution is stateless
-		return std::uniform_int_distribution<T>(min, max)(m_randomEngine);  // [min, max]
-	}
-
-	// floats
-	template<class T>
-	typename std::enable_if<std::is_floating_point<T>::value, T>::type GetRandomNumber(T min, T max)
-	{
-		// uniform distribution is stateless
-		return std::uniform_real_distribution<T>(min, max)(m_randomEngine);  // [min, max)
 	}
 };
 

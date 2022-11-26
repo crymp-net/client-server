@@ -5,6 +5,7 @@
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
 #include "CrySystem/LocalizationManager.h"
+#include "CrySystem/RandomGenerator.h"
 #include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
@@ -182,7 +183,7 @@ int ScriptBind_CPPAPI::MakeUUID(IFunctionHandler *pH, const char *salt)
 
 int ScriptBind_CPPAPI::Random(IFunctionHandler *pH)
 {
-	return pH->EndFunction(gClient->GetRandomNumber<float>(0, 1));
+	return pH->EndFunction(RandomGenerator::GenerateFloat(0, 1));
 }
 
 int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HSCRIPTFUNCTION callback)

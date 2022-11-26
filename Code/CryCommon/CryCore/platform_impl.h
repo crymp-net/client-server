@@ -16,20 +16,3 @@
 #pragma once
 
 #include "platform.h"
-#include "CryCommon/CryCore/MTPseudoRandom.h"
-
-//////////////////////////////////////////////////////////////////////////
-CMTRand_int32 g_random_generator;
-uint32 cry_rand32()
-{
-	return g_random_generator.Generate();
-}
-unsigned int cry_rand()
-{
-	return g_random_generator.Generate() & RAND_MAX;
-}
-float cry_frand()
-{
-	return g_random_generator.GenerateFloat();
-}
-//////////////////////////////////////////////////////////////////////////

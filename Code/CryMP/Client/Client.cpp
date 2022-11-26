@@ -6,9 +6,9 @@
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
+#include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/CmdLine.h"
-#include "Library/RandomSeeder.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -85,7 +85,7 @@ std::string Client::GenerateRandomCDKey()
 
 	for (char& ch : key)
 	{
-		ch = TABLE[GetRandomNumber<std::string_view::size_type>(0, TABLE.length() - 1)];
+		ch = TABLE[RandomGenerator::GenerateIndex(TABLE.size())];
 	}
 
 	return key;
@@ -164,9 +164,6 @@ void Client::OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs)
 
 Client::Client()
 {
-	RandomSeeder seeder;
-	m_randomEngine.seed(seeder);
-
 	m_hwid = GetHWID("idsvc");
 	m_locale = WinAPI::GetLocale();
 	m_timezone = std::to_string(WinAPI::GetTimeZoneBias());

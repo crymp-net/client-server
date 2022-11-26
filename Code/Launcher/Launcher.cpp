@@ -10,6 +10,7 @@
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
+#include "CrySystem/RandomGenerator.h"
 #include "Library/CmdLine.h"
 #include "Library/Error.h"
 #include "Library/Format.h"
@@ -484,6 +485,8 @@ void Launcher::Run()
 	// load and patch Crysis DLLs
 	LoadEngine();
 	PatchEngine();
+
+	RandomGenerator::Init();
 
 	// the multiplayer client
 	Client client;
