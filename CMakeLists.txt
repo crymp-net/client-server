@@ -161,7 +161,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryMath/Cry_ValidNumber.h
   Code/CryCommon/CryMath/Cry_Vector2.h
   Code/CryCommon/CryMath/Cry_Vector3.h
-  Code/CryCommon/CryMath/Cry_XOptimise.h
   Code/CryCommon/CryMath/GeomQuery.h
   Code/CryCommon/CryMath/Range.h
   Code/CryCommon/CryMovie/AnimKey.h

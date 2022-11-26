@@ -13,7 +13,22 @@
 #include "CryCommon/CryCore/smartptr.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 
-#include "CryCommon/CryMath/Cry_XOptimise.h"
+////////////////////////////////////////////////////////////////////////////////
+// From Cry_XOptimise.h
+////////////////////////////////////////////////////////////////////////////////
+
+inline float AngleMod(float a)
+{
+  a = (float)((360.0/65536) * ((int)(a*(65536/360.0)) & 65535));
+  return a;
+}
+
+inline unsigned short Degr2Word(float f)
+{
+  return (unsigned short)(AngleMod(f)/360.0f*65536.0f);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 struct IShader;
 struct IVisArea;

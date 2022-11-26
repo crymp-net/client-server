@@ -697,13 +697,6 @@ enum type_identity { IDENTITY };
 #include "Cry_Matrix.h"
 #include "Cry_Quat.h"
 
-
-
-
-#if (defined(WIN32) || defined (_XBOX))
-#include "Cry_XOptimise.h"
-#endif
-
 inline f32 sqr(Vec3 op) { return op|op; }
 inline f64 sqr(Vec3r op) { return op|op; }
 
