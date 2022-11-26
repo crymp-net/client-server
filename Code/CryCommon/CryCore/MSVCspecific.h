@@ -36,23 +36,3 @@
 // Turn on the following very useful warnings.
 #pragma warning(3: 4264)				// no override available for virtual member function from base 'class'; function is hidden
 #pragma warning(3: 4266)				// no override available for virtual member function from base 'type'; function is hidden
-
-#include <float.h>
-
-struct ScopedSetFloatExceptionMask
-{
-	ScopedSetFloatExceptionMask( unsigned allow = _EM_INEXACT|_EM_UNDERFLOW|_EM_OVERFLOW|_EM_DENORMAL ) 
-	{
-		_clearfp();
-		_controlfp_s( &oldMask, 0, 0 );
-		unsigned blah;
-		_controlfp_s( &blah, allow, _MCW_EM );
-	}
-	~ScopedSetFloatExceptionMask()
-	{
-		unsigned blah;
-		_controlfp_s( &blah, oldMask, _MCW_EM );
-	}
-	unsigned oldMask;
-};
-#define SCOPED_ENABLE_FLOAT_EXCEPTIONS ScopedSetFloatExceptionMask scopedSetFloatExceptionMask
