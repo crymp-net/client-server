@@ -117,7 +117,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/PoolAllocator.h
   Code/CryCommon/CryCore/PoolAllocatorSynchronization.h
   Code/CryCommon/CryCore/ProjectDefines.h
-  Code/CryCommon/CryCore/ResourceCompilerHelper.h
   Code/CryCommon/CryCore/StlUtils.h
   Code/CryCommon/CryCore/StringUtils.h
   Code/CryCommon/CryCore/TArray.h
