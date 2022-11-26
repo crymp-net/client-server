@@ -1,4 +1,4 @@
 # CryMP Client and Server
 
-[Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) multiplayer client and server (coming soon) for
-[CryMP Network](https://crymp.net).
+Improved [Crysis](https://en.wikipedia.org/wiki/Crysis_(video_game)) with community multiplayer using
+[CryMP Network](https://crymp.net). Singleplayer is supported as well.
