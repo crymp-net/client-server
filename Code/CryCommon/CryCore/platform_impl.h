@@ -37,8 +37,6 @@ float cry_frand()
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "CryAssert_impl.h"
-
 //////////////////////////////////////////////////////////////////////////
 void CryDebugBreak()
 {

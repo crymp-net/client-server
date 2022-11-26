@@ -202,7 +202,7 @@ void CHUDVehicleInterface::OnEnterVehicle(IActor* pActor, const char* szVehicleC
 	{
 		bool open = (bool)(!strcmpi(szSeatName, "Open"));
 		m_animStats.Reload();
-		CRY_ASSERT_MESSAGE(NULL == m_pVehicle, "Attempt to enter in parachute while already in a vehicle!");
+		assert(NULL == m_pVehicle);  // Attempt to enter in parachute while already in a vehicle!
 		m_animStats.Invoke("setActiveParachute", open);
 		if (!open || !m_animMainWindow.GetVisible())
 			OnEnterVehicle(static_cast<CPlayer*> (pActor));

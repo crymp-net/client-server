@@ -58,7 +58,7 @@ namespace NSKeyTranslation
 			for (int i=0; i<MAX_KEYS; ++i)
 				bindInfo.keys[i] = 0;
 		}
-	
+
 		IActionMapManager* pAmMgr = g_pGame->GetIGameFramework()->GetIActionMapManager();
 		if (pAmMgr == 0)
 			return false;
@@ -100,7 +100,7 @@ namespace NSKeyTranslation
 		// no, we didn't find an xi key nor an xi action, re-do first lookup and return
 		bFound = pAM->GetBindInfo(actionId, bindInfo, MAX_KEYS);
 		return bFound;
-	}	
+	}
 
 	bool LookupBindInfo(const wchar_t* actionMap, const wchar_t* actionName, bool bPreferXI, SActionMapBindInfo& bindInfo)
 	{
@@ -111,13 +111,13 @@ namespace NSKeyTranslation
 		return LookupBindInfo(actionMapString.c_str(), actionNameString.c_str(), bPreferXI, bindInfo);
 	}
 
-	template<class T> 
+	template<class T>
 	void InsertString(T& inString, size_t pos, const wchar_t* s)
 	{
 		inString.insert(pos, s);
 	}
 
-	template<size_t S> 
+	template<size_t S>
 	void InsertString(CryFixedWStringT<S>& inString, size_t pos, const char* s)
 	{
 		CryFixedWStringT<64> wcharString;
@@ -243,7 +243,7 @@ CHUD::LocalizeWithParams(const char* label, bool bAdjustActions, const char* par
 				else
 					NSKeyTranslation::ExpandToWChar(param4, p4);
 			}
-			pLocMgr->FormatStringMessage(finalString, localizedString, 
+			pLocMgr->FormatStringMessage(finalString, localizedString,
 				p1.empty()?0:p1.c_str(),
 				p2.empty()?0:p2.c_str(),
 				p3.empty()?0:p3.c_str(),
@@ -465,7 +465,7 @@ void CHUD::BattleLogEvent(int type, const char *msg, const char *p0, const char 
 		finalString=localizedString;
 
 	//const static int maxCharsInBattleLogLine = 50;
-	const static int maxCharsInBattleLogLine = 100; 
+	const static int maxCharsInBattleLogLine = 100;
 	int numLines = 1 + (finalString.length() / maxCharsInBattleLogLine);
 	if(numLines > 1)
 	{
@@ -800,7 +800,7 @@ void CHUD::InternalShowSubtitle(const char* subtitleLabel, ISound* pSound, bool 
 			const SSubtitleEntry& entry = *iter;
 			// subtitles without associated sound are erase
 			// subtitles with associated sound are only erased if they contain chunks
-			// non-chunked sounds timeout, when the sound's time has passed 
+			// non-chunked sounds timeout, when the sound's time has passed
 			// this may introduce some subtitles staying longer on screen than the sound can be heard, but is ok I think
 			// [e.g. the sound is cancelled in the middle]
 			if (iter->key == subtitleLabel && (soundId == INVALID_SOUNDID || (iter->soundId == soundId && iter->nChunks > 0 && iter->nCurChunk < iter->nChunks-1 && iter->timeRemaining > 0.8f)))
@@ -859,7 +859,7 @@ void CHUD::ShowGamepadConnected(bool active)
 			m_animGamepadConnected.Reload();
 			m_animGamepadConnected.Invoke("GamepadAvailable", active);
 		}
-	}		
+	}
 }
 
 void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, int material, int hit_type)
@@ -926,7 +926,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 					shooterFriendly = 1;
 				else
 					shooterFriendly = 2;
-			}    
+			}
 		}
 		if(targetId)
 		{
@@ -988,7 +988,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 
 	//CryMP: For throwing objects, always show "RunOver" icon instead of random guns
 	const bool bHitTypeCollision = hit_type == 13;
-		
+
 	if(bSuicide)
 	{
 		SFlashVarValue args[6] = {"", "Suicide", target.c_str(), headshot, shooterFriendly, targetFriendly};
@@ -1198,7 +1198,7 @@ void CHUD::UpdateSubtitlesManualRender(float frameTime)
 						assert (entry.nCurChunk >= 0 && entry.nCurChunk < entry.nChunks);
 						if (entry.nCurChunk < 0 || entry.nCurChunk >= entry.nChunks)
 						{
-							CRY_ASSERT(0);
+							assert(0);
 						}
 						const SSubtitleEntry::Chunk& chunk = entry.chunks[entry.nCurChunk];
 						if (entry.bNameShown == false) // only first visible chunk will display the character's name
@@ -1270,14 +1270,14 @@ void CHUD::UpdateSubtitlesManualRender(float frameTime)
 					szLocText = tmpString.c_str();
 				}
 				pUIDraw->GetWrappedTextDimW(m_pDefaultFont,&sizeX, &sizeY, maxWidth, textSize, textSize, szLocText);
-				pUIDraw->DrawWrappedTextW(m_pDefaultFont,x, y, maxWidth, textSize, textSize, szLocText, clr.a, clr.r, clr.g, clr.b, 
+				pUIDraw->DrawWrappedTextW(m_pDefaultFont,x, y, maxWidth, textSize, textSize, szLocText, clr.a, clr.r, clr.g, clr.b,
 					// UIDRAWHORIZONTAL_LEFT,UIDRAWVERTICAL_TOP,UIDRAWHORIZONTAL_LEFT,UIDRAWVERTICAL_TOP);
 					UIDRAWHORIZONTAL_CENTER,UIDRAWVERTICAL_TOP,UIDRAWHORIZONTAL_CENTER,UIDRAWVERTICAL_TOP);
 			}
 			else
 			{
 				pUIDraw->GetTextDim(m_pDefaultFont,&sizeX, &sizeY, textSize, textSize, textLabel.c_str());
-				pUIDraw->DrawText(m_pDefaultFont,x, y, textSize, textSize, textLabel.c_str(), clr.a, clr.r, clr.g, clr.b, 
+				pUIDraw->DrawText(m_pDefaultFont,x, y, textSize, textSize, textLabel.c_str(), clr.a, clr.r, clr.g, clr.b,
 					UIDRAWHORIZONTAL_CENTER,UIDRAWVERTICAL_TOP,UIDRAWHORIZONTAL_CENTER,UIDRAWVERTICAL_TOP);
 			}
 			y+=sizeY+TEXT_SPACING;

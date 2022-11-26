@@ -4,7 +4,7 @@ Copyright (C), Crytek Studios, 2001-2005.
 -------------------------------------------------------------------------
 $Id$
 $DateTime$
-Description: 
+Description:
 	Silhouettes manager
 
 -------------------------------------------------------------------------
@@ -112,7 +112,7 @@ void CHUDSilhouettes::SetSilhouette(IEntity *pEntity,float r,float g,float b,flo
 		}
 	}
 
-	CRY_ASSERT_MESSAGE(pSilhouette,"Vector size should be increased!");
+	assert(pSilhouette);  // Vector size should be increased!
 
 	if(pSilhouette)
 	{
@@ -151,7 +151,7 @@ void CHUDSilhouettes::SetSilhouette(IItem *pItem,float r,float g,float b,float a
 		return;
 
 	SetSilhouette(pItem->GetEntity(),r,g,b,a,fDuration);
-	
+
 	if(bHighlightAccessories)
 	{
 		const CItem::TAccessoryMap *pAccessoryMap = static_cast<CItem *>(pItem)->GetAttachedAccessories();

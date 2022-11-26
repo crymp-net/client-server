@@ -102,8 +102,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryAnimation/IJoystick.h
   Code/CryCommon/CryCore/ConfigurableVariant.h
   Code/CryCommon/CryCore/CryArray.h
-  Code/CryCommon/CryCore/CryAssert.h
-  Code/CryCommon/CryCore/CryAssert_impl.h
   Code/CryCommon/CryCore/CryFixedString.h
   Code/CryCommon/CryCore/CryModuleDefs.h
   Code/CryCommon/CryCore/CryName.h

@@ -202,22 +202,7 @@ inline void *ModuleAlloc(void *ptr, size_t size)
 #define DEPRICATED
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// compile time error stuff
-//////////////////////////////////////////////////////////////////////////
-template<bool> struct CompileTimeError;
-template<> struct CompileTimeError<true> {};
-#define STATIC_CHECK(expr, msg) \
-	{ CompileTimeError<((expr) != 0)> ERROR_##msg; (void)ERROR_##msg; }
-
-// Assert dialog box macros
-#include "CryAssert.h"
-
-// Replace standard assert calls by our custom one
-// Works only ifdef USE_CRY_ASSERT && _DEBUG && WIN32
-#ifndef assert
-#define assert CRY_ASSERT
-#endif
+#include <cassert>
 
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.

@@ -502,7 +502,7 @@ void CPlayer::Draw(bool draw)
 
 
 //FIXME: this function will need some cleanup
-//MR: thats true, check especially client/server 
+//MR: thats true, check especially client/server
 void CPlayer::UpdateFirstPersonEffects(float frameTime)
 {
 
@@ -944,7 +944,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	}
 
 	// need to create this even when player is dead, otherwise spectators don't see tank turrets rotate etc until they spawn in.
-	
+
 	if (IsClient()) //CryMP - this should be called on client only
 		GetGameObject()->AttachDistanceChecker();
 
@@ -1219,7 +1219,7 @@ void CPlayer::ProcessCharacterOffset(float frameTime)
 				m_modelOffset.z = -1;
 			/**/
 
-						//FIXME:this is unavoidable, the character offset must be adjusted for every stance/situation. 
+						//FIXME:this is unavoidable, the character offset must be adjusted for every stance/situation.
 						//more elegant ways to do this (like check if the hip bone position is inside the view) apparently dont work, its easier to just tweak the offset manually.
 			if (m_stats.inFreefall)
 			{
@@ -1355,7 +1355,7 @@ void CPlayer::PrePhysicsUpdate()
 		}
 	}
 
-	bool client(IsClient()); 
+	bool client(IsClient());
 	float frameTime = gEnv->pTimer->GetFrameTime();
 
 	//FIXME:
@@ -1589,7 +1589,7 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 						lookIKBlends[1] = 0.00f;		// spine 2
 						lookIKBlends[2] = 0.00f;		// spine 3
 						lookIKBlends[3] = 0.00f;		// neck
-						lookIKBlends[4] = 0.7f;		// head 
+						lookIKBlends[4] = 0.7f;		// head
 
 						SMovementState info;
 						pMC->GetMovementState(info);
@@ -1651,7 +1651,7 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	}
 }
 
-//CryMP: Weapon direction in 3rd person matching 1st person 
+//CryMP: Weapon direction in 3rd person matching 1st person
 bool CPlayer::GetAimTargetAdjusted(Vec3 & aimTarget)
 {
 	if (!g_pGameCVars->mp_usePostProcessAimDir)
@@ -1806,7 +1806,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 		}
 
 		viewParams.frameTime = frameTime;
-		
+
 		return true;
 	}
 
@@ -2096,7 +2096,7 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
 	if (pOffHand)
 	{
-		pOffHand->UpdateFPView(0); //hopefully this will fix floating hands ... 
+		pOffHand->UpdateFPView(0); //hopefully this will fix floating hands ...
 	}
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
@@ -2107,9 +2107,9 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 		auto* pZoomMode = pWeapon->GetActiveZoomMode();
 		if (!pZoomMode)
 			return;
-		
+
 		//CryLogAlways("%s $9FirstPerson Spectator on %s (%s)", activate ? "Enabling" : "Disabling", GetEntity()->GetName(), pWeapon->GetEntity()->GetName());
-		
+
 		if (activate)
 		{
 			const float zoomFov = GetActorParams()->zoomFoV;
@@ -2360,7 +2360,7 @@ void CPlayer::UpdateScriptStats(SmartScriptTable& rTable)
 	m_stats.isFrozen.SetDirtyValue(stats, "isFrozen");
 	//stats.SetValue("isWalkingOnWater",m_stats.isWalkingOnWater);
 
-	//stats.SetValue("shakeAmount",m_stats.shakeAmount);	
+	//stats.SetValue("shakeAmount",m_stats.shakeAmount);
 	m_stats.followCharacterHead.SetDirtyValue(stats, "followCharacterHead");
 	m_stats.firstPersonBody.SetDirtyValue(stats, "firstPersonBody");
 	m_stats.isOnLadder.SetDirtyValue(stats, "isOnLadder");
@@ -2373,7 +2373,7 @@ void CPlayer::UpdateScriptStats(SmartScriptTable& rTable)
 	//stats.SetValue("nanoSuitHeal", (m_pNanoSuit)?m_pNanoSuit->GetHealthRegenRate():0);
 	stats.SetValue("nanoSuitArmor", (m_pNanoSuit) ? m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR) : 0);
 	stats.SetValue("nanoSuitStrength", (m_pNanoSuit) ? m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH) : 0);
-	//stats.SetValue("cloakState",(m_pNanoSuit)?m_pNanoSuit->GetCloak()->GetState():0);	
+	//stats.SetValue("cloakState",(m_pNanoSuit)?m_pNanoSuit->GetCloak()->GetState():0);
 	//stats.SetValue("visualDamp",(m_pNanoSuit)?m_pNanoSuit->GetCloak()->GetVisualDamp():0);
 	stats.SetValue("soundDamp", (m_pNanoSuit) ? m_pNanoSuit->GetCloak()->GetSoundDamp() : 0);
 	//stats.SetValue("heatDamp",(m_pNanoSuit)?m_pNanoSuit->GetCloak()->GetHeatDamp():0);
@@ -3149,7 +3149,7 @@ void CPlayer::UpdateStats(float frameTime)
 	m_stats.velocity = livStat.vel - livStat.velGround;//dynStat.v;
 	m_stats.velocityUnconstrained = livStat.velUnconstrained;
 
-	// On dedicated server the player can still be flying this frame as well, 
+	// On dedicated server the player can still be flying this frame as well,
 	// since synced pos from client is interpolated/smoothed and will not land immediately,
 	// even though the velocity is set to zero.
 	// Thus we need to use the velocity change instead of landing to identify impact.
@@ -3159,13 +3159,13 @@ void CPlayer::UpdateStats(float frameTime)
 	if (GetLinkedVehicle() != NULL)
 		m_stats.downwardsImpactVelocity = 0.0f;
 
-	// If you land in deep enough water, don't apply damage. 
+	// If you land in deep enough water, don't apply damage.
 	// (In MP the remote ShouldSwim() might lag behind though, so you will get damage unless you have a parachute).
 	if (ShouldSwim())
 		m_stats.downwardsImpactVelocity = 0.0f;
 
 	// Zero downwards impact velocity used for fall damage calculations if player was in water within the last 0.5 seconds.
-	// Strength jumping straight up and down should theoretically land with a safe velocity, 
+	// Strength jumping straight up and down should theoretically land with a safe velocity,
 	// but together with the water surface stickyness the velocity can sometimes go above the safe impact velocity threshold.
 	if (m_stats.inWaterTimer > -0.5f)
 		m_stats.downwardsImpactVelocity = 0.0f;
@@ -3661,7 +3661,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 void CPlayer::Kill()
 {
-	//CryMP 
+	//CryMP
 	NotifyObjectGrabbed(false, 0, false);
 
 	if (CNanoSuit* pSuit = GetNanoSuit())
@@ -3756,9 +3756,9 @@ void CPlayer::RagDollize(bool fallAndPlay)
 		if (!bUnrestrictedRagdolls)
 		{
 			//CryMP: Default code
-			sp.mass = m_stats.mass * 2.0f;	
-		} 
-		
+			sp.mass = m_stats.mass * 2.0f;
+		}
+
 		if (sp.mass <= 0.0f)
 		{
 			GameWarning("Tried ragdollizing player with 0 mass.");
@@ -3859,7 +3859,7 @@ void CPlayer::PostPhysicalize()
 		}
 	}
 
-	//Ghost Sector 
+	//Ghost Sector
 	if (!IsClient())
 	{
 		if (IEntityRenderProxy* pProxy = (IEntityRenderProxy*)GetEntity()->GetProxy(ENTITY_PROXY_RENDER))
@@ -3872,7 +3872,7 @@ void CPlayer::PostPhysicalize()
 					const auto CryMPflags = pRenderNode->GetRndFlags() | ERF_RENDER_ALWAYS;
 					pRenderNode->SetRndFlags(CryMPflags, true);
 				}
-				pRenderNode->SetViewDistUnlimited(); 
+				pRenderNode->SetViewDistUnlimited();
 			}
 			if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
 			{
@@ -4411,7 +4411,7 @@ void CPlayer::SelectNextItem(int direction, bool keepHistory, const char* catego
 	CActor::SelectNextItem(direction, keepHistory, category);
 
 	if (GetCurrentItemId() && oldItemId != GetCurrentItemId())
-		m_bSprinting = false; // force the weapon disabling code to be 
+		m_bSprinting = false; // force the weapon disabling code to be
 
 	GetGameObject()->ChangedNetworkState(ASPECT_CURRENT_ITEM);
 }
@@ -4531,7 +4531,7 @@ void CPlayer::FullSerialize(TSerialize ser)
 		ResetScreenFX();
 
 	ser.BeginGroup("BasicProperties");
-	//ser.EnumValue("stance", this, &CPlayer::GetStance, &CPlayer::SetStance, STANCE_NULL, STANCE_LAST);		
+	//ser.EnumValue("stance", this, &CPlayer::GetStance, &CPlayer::SetStance, STANCE_NULL, STANCE_LAST);
 	// skip matrices... not supported
 	ser.Value("velocity", m_velocity);
 	// skip animation to play for now
@@ -5019,7 +5019,7 @@ void CPlayer::ChangeParachuteState(int8 newState)
 				ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
 				//if (pCharacter)
 				//{
-				//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);					
+				//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
 				//}
 				int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
 				pEnt->SetSlotFlags(m_nParachuteSlot, flags);
@@ -5067,7 +5067,7 @@ void CPlayer::UpdateFreefallAnimationInputs(bool force/* =false */)
 
 	if (m_stats.inFreefall.Value() == 1)
 		SetAnimationInput("Action", "freefall");
-	else if ((m_stats.inFreefall.Value() == 3) || (m_stats.inFreefall.Value() == 2)) //3 means opening, 2 already opened 
+	else if ((m_stats.inFreefall.Value() == 3) || (m_stats.inFreefall.Value() == 2)) //3 means opening, 2 already opened
 		SetAnimationInput("Action", "parachute");
 	else if (m_stats.inFreefall.Value() == 0)
 		SetAnimationInput("Action", "idle");
@@ -5482,7 +5482,7 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 
 		if (mode)
 		{
-			//CryMP Reset Screen FX, when changing spectator modes 
+			//CryMP Reset Screen FX, when changing spectator modes
 
 			ResetScreenFX();
 		}
@@ -5594,7 +5594,7 @@ bool CPlayer::DropItem(EntityId itemId, float impulseScale, bool selectNext, boo
 
 void CPlayer::UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMovement, float mult)
 {
-	// unfreeze with mouse shaking and movement keys  
+	// unfreeze with mouse shaking and movement keys
 	float deltaRot = (abs(deltaRotation.x) + abs(deltaRotation.z)) * mult;
 	float deltaMov = abs(deltaMovement.x) + abs(deltaMovement.y);
 
@@ -5805,12 +5805,12 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 
 
 			IEntity* pEntity = GetEntity();
-			CRY_ASSERT(pEntity);
+			assert(pEntity);
 
 			if (pEntity)
 			{
 				IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*)pEntity->CreateProxy(ENTITY_PROXY_SOUND);
-				CRY_ASSERT(pSoundProxy);
+				assert(pSoundProxy);
 
 				if (param)
 					pSound->SetParam(paramName, paramValue);
@@ -5884,7 +5884,7 @@ bool CPlayer::IsLadderUsable()
 		if (!staticLadder)
 			return false;
 
-		//Check OffHand 
+		//Check OffHand
 		if (COffHand* pOffHand = static_cast<COffHand*>(GetItemByClass(CItem::sOffHandClass)))
 			if (pOffHand->GetOffHandState() != eOHS_INIT_STATE)
 				return false;
@@ -5892,7 +5892,7 @@ bool CPlayer::IsLadderUsable()
 		Vec3 ladderOrientation = worldTM.GetColumn1().normalize();
 		Vec3 ladderUp = worldTM.GetColumn2().normalize();
 
-		//Is ladder vertical? 
+		//Is ladder vertical?
 		if (ladderUp.z < 0.85f)
 		{
 			return false;
@@ -5906,7 +5906,7 @@ bool CPlayer::IsLadderUsable()
 		m_stats.ladderOrientation = ladderOrientation;
 		m_stats.ladderUpDir = ladderUp;
 
-		//Test angle between player and ladder	
+		//Test angle between player and ladder
 		IMovementController* pMC = GetMovementController();
 		if (pMC)
 		{
@@ -6293,7 +6293,7 @@ void CPlayer::DebugGraph_AddValue(const char* id, float value) const
 	if (id == NULL)
 		return;
 
-	// NOTE: It's alright to violate the const here. The player is a good common owner for debug graphs, 
+	// NOTE: It's alright to violate the const here. The player is a good common owner for debug graphs,
 	// but it's also not non-const in all places, even though graphs might want to be added from those places.
 	IDebugHistory* pDH = const_cast<IDebugHistoryManager*>(m_pDebugHistoryManager)->GetHistory(id);
 	if (pDH != NULL)
@@ -6308,7 +6308,7 @@ bool CPlayer::NeedToCrouch(const Vec3& pos)
 		SMovementState state;
 		pMC->GetMovementState(state);
 
-		// determine height delta (0 is at player feet ... greater zero is higher and means shorter crouch time) 
+		// determine height delta (0 is at player feet ... greater zero is higher and means shorter crouch time)
 		float delta = pos.z - GetEntity()->GetWorldPos().z;
 		Limit(delta, 0.0f, 0.8f);
 		delta /= 0.8f;
@@ -6607,7 +6607,7 @@ void CPlayer::UpdateFirstPersonSwimmingEffects(bool exitWater, float velSqr)
 	//	CPostProcessEffect *blend = new CPostProcessEffect(GetEntityId(), "WaterDroplets_Amount", 0.0f);
 	//	CWaveBlend *wave = new CWaveBlend();
 	//	pSE->StartBlend(blend,wave,4.0f,14);
-	//	SAFE_HUD_FUNC(PlaySound(ESound_WaterDroplets));	
+	//	SAFE_HUD_FUNC(PlaySound(ESound_WaterDroplets));
 	//}
 
 	//if(velSqr>40.0f && pSE)

@@ -11,7 +11,7 @@
 CHUDTextArea::CHUDTextArea() : m_pos(0, 0), m_fadetime (4.0f)
 {
 	m_pDefaultFont = GetISystem()->GetICryFont()->GetFont("default");
-	CRY_ASSERT(m_pDefaultFont);
+	assert(m_pDefaultFont);
 
 	m_pTimer = gEnv->pTimer;
 }
@@ -50,7 +50,7 @@ void CHUDTextArea::Update(float deltaTime)
 				i = next;
 			}
 		}
-	}	
+	}
 }
 
 void CHUDTextArea::AddMessage(const char* msg)

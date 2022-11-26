@@ -456,7 +456,7 @@ bool CHUD::Init(IActor* pActor)
 	m_pRenderer = gEnv->pRenderer;
 	m_pUIDraw = gEnv->pGame->GetIGameFramework()->GetIUIDraw();
 	m_pDefaultFont = gEnv->pCryFont->GetFont("default");
-	CRY_ASSERT(m_pDefaultFont);
+	assert(m_pDefaultFont);
 
 	bool loadEverything = gEnv->pCryPak->GetLvlResStatus();
 
@@ -2161,7 +2161,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 				QuickMenuSnapToMode(m_pClientActor->GetNanoSuit()->GetMode());
 				m_pClientActor->GetPlayerInput()->DisableXI(true);
-				
+
 				PlaySound(ESound_SuitMenuAppear);
 				m_pClientActor->GetPlayerInput()->DisableXI(true);
 				g_pGameActions->FilterSuitMenu()->Enable(true);
@@ -2251,7 +2251,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				m_bScoreboardCursor = true;
 				CursorIncrementCounter();
 				g_pGameActions->FilterNoMove()->Enable(true);
-			
+
 				m_pClientActor->GetPlayerInput()->DisableXI(true);
 			}
 			else if (activationMode == eIS_Released)
@@ -2261,7 +2261,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 					m_bScoreboardCursor = false;
 					CursorDecrementCounter();
 					g_pGameActions->FilterNoMove()->Enable(false);
-	
+
 					m_pClientActor->GetPlayerInput()->DisableXI(false);
 				}
 			}
@@ -3192,7 +3192,7 @@ void CHUD::OnPostUpdate(float frameTime)
 					pushArray.push_back(players[i].c_str());
 				}
 				m_animSpawnCycle.GetFlashPlayer()->SetVariableArray(FVAT_ConstStrPtr, "m_players", 0, &pushArray[0], size);
-				
+
 
 				float remaining = m_pGameRules->GetRemainingReviveCycleTime();
 				// Because of net lag, it can happens that the time value is reset from 0 g_revivetime
@@ -3296,7 +3296,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			if (!m_animSpectate.IsLoaded())
 			{
 				m_animSpectate.Load("Libs/UI/HUD_Spectate.gfx", eFD_Center, eFAF_Visible | eFAF_ManualRender);
-				
+
 				FadeCinematicBars(3);
 
 				// SNH: moved text setting to further down (with player name display)
@@ -3458,7 +3458,7 @@ void CHUD::OnPostUpdate(float frameTime)
 					m_pHUDScopes->DisplayScope(m_pClientActor);
 					m_pHUDScopes->Update(frameTime);
 				}
-				//CryMP: also render chat in scoreboard 
+				//CryMP: also render chat in scoreboard
 				if (m_animChat.GetVisible())
 				{
 					m_animChat.GetFlashPlayer()->Advance(frameTime);
@@ -3515,7 +3515,7 @@ void CHUD::OnPostUpdate(float frameTime)
 	// update cinematic bars
 	UpdateCinematicAnim(frameTime);
 
-	// update subtitles 
+	// update subtitles
 	UpdateSubtitlesAnim(frameTime);
 
 	if (m_bFirstFrame)
@@ -4117,7 +4117,7 @@ void CHUD::ActorDeath(IActor* pActor)
 
 	// for MP and for SP local player
 	// remove any progress bar and close suit menu if it was open
-	
+
 	if (m_pClientActor->IsFpSpectatorTarget())
 	{
 		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec

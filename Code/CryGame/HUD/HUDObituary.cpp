@@ -11,7 +11,7 @@ CHUDObituary::CHUDObituary()
 :	m_deathHead(0), m_empty(true)
 {
 	m_pDefaultFont = GetISystem()->GetICryFont()->GetFont("default");
-	CRY_ASSERT(m_pDefaultFont);
+	assert(m_pDefaultFont);
 }
 
 CHUDObituary::~CHUDObituary()
@@ -51,7 +51,7 @@ void CHUDObituary::AddMessage(const wchar_t *msg)
 	m_deaths[m_deathHead] = msg;
 	m_deathTimes[m_deathHead] = gEnv->pTimer->GetCurrTime();
 	m_deathHead++;
-	
+
 	if(m_deathHead > OBITUARY_SIZE-1)
 		m_deathHead = 0;
 
