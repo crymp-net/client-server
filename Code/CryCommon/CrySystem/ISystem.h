@@ -563,13 +563,6 @@ struct ISystem
 	virtual bool IsEditorMode() {return false;}
 
 	// return the related subsystem interface
-#ifdef SP_DEMO
-	virtual IGame *GetIGame() = 0;
-	virtual INetwork *GetINetwork() = 0;
-	virtual IRenderer *GetIRenderer() = 0;
-	virtual IInput *GetIInput() = 0;
-	virtual ITimer *GetITimer() = 0;
-#endif
 	virtual IConsole *GetIConsole() = 0;
 	virtual IScriptSystem *GetIScriptSystem() = 0;
 	virtual I3DEngine *GetI3DEngine() = 0;
@@ -597,13 +590,11 @@ struct ISystem
 	virtual ISystemEventDispatcher *GetISystemEventDispatcher() = 0;
 	virtual IGlobalTaskScheduler *GetIGlobalTaskScheduler() = 0;
 	virtual IThreadTaskManager *GetIThreadTaskManager() = 0;
-#ifndef SP_DEMO
 	virtual IGame *GetIGame() = 0;
 	virtual INetwork *GetINetwork() = 0;
 	virtual IRenderer *GetIRenderer() = 0;
 	virtual IInput *GetIInput() = 0;
 	virtual ITimer *GetITimer() = 0;
-#endif
 
 	virtual IGPUPhysicsManager *GetIGPUPhysicsManager() = 0;
 

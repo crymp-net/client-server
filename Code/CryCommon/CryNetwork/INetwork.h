@@ -624,23 +624,15 @@ struct INetContext
 	virtual void BindObject( EntityId id, uint8 aspectBits, bool bStatic ) = 0;
 	virtual void SafelyUnbind( EntityId id ) = 0;
 	// Description:
-	//    Remove the binding of an object to the network
-#ifdef SP_DEMO
-	virtual bool UnbindObject( EntityId id ) = 0;
-#else
+	//    Determine if an object is bound or not
 	virtual bool IsBound( EntityId id ) = 0;
-#endif
 	// Description:
 	//    Must be called ONCE in response to a message sent from a SendSpawnObject call on the server
 	//    (from the client)
 	virtual void SpawnedObject( EntityId id ) = 0;
 	// Description:
-	//    Determine if an object is bound or not
-#ifdef SP_DEMO
-	virtual bool IsBound( EntityId id ) = 0;
-#else
+	//    Remove the binding of an object to the network
 	virtual bool UnbindObject( EntityId id ) = 0;
-#endif
 	// Description:
 	//    Enable/disable the synchronization of some aspects over the network
 	// Arguments:

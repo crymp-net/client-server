@@ -332,15 +332,6 @@ struct ICryPak
 	// Use ICryArchive interface for writing into the pak files.
   virtual size_t FWrite(const void *data, size_t length, size_t elems, FILE *handle)=0;
 
-#ifdef SP_DEMO
-  virtual size_t FSeek(FILE *handle, long seek, int mode)=0;
-  virtual long FTell(FILE *handle)=0;
-  virtual int FClose(FILE *handle)=0;
-  virtual int FEof(FILE *handle)=0;
-	virtual int FError(FILE *handle)=0;
-	virtual int FGetErrno()=0;
-  virtual int FFlush(FILE *handle)=0;
-#endif
   //virtual int FScanf(FILE *, const char *, ...) SCANF_PARAMS(2, 3) =0;
   virtual int FPrintf(FILE *handle, const char *format, ...) PRINTF_PARAMS(3, 4)=0;
   virtual char *FGets(char *, int, FILE *)=0;
@@ -351,7 +342,6 @@ struct ICryPak
 	virtual bool RemoveFile(const char* pName) = 0; // remove file from FS (if supported)
 	virtual bool RemoveDir(const char* pName, bool bRecurse) = 0;  // remove directory from FS (if supported)
 	virtual bool IsAbsPath(const char* pPath) = 0; // determines if pPath is an absolute or relative path
-#ifndef SP_DEMO
 	virtual size_t FSeek(FILE *handle, long seek, int mode)=0;
 	virtual long FTell(FILE *handle)=0;
 	virtual int FClose(FILE *handle)=0;
@@ -359,7 +349,6 @@ struct ICryPak
 	virtual int FError(FILE *handle)=0;
 	virtual int FGetErrno()=0;
 	virtual int FFlush(FILE *handle)=0;
-#endif
 
 	//! Return pointer to pool if available
 	virtual void * PoolMalloc(size_t size) = 0;
