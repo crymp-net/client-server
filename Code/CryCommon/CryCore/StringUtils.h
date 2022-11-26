@@ -17,7 +17,6 @@
 #define _CRY_ENGINE_STRING_UTILS_HDR_
 
 #include "CryString.h"
-#include <algorithm>				// std::replace
 #include <time.h>
 
 #if defined(LINUX)
@@ -82,12 +81,7 @@ StringCls GetParentDirectory (const StringCls& strFilePath, int nGeneration = 1)
 inline string toLower (const string& str)
 {
 	string temp = str;
-
-#ifndef NOT_USE_CRY_STRING
 	temp.MakeLower();
-#else
-	std::transform(temp.begin(),temp.end(),temp.begin(),tolower);			// STL MakeLower
-#endif
 
 	return temp;
 }
@@ -130,13 +124,8 @@ inline const char* stristr(const char* szString, const char* szSubstring)
 // replaces slashes
 inline void UnifyFilePath (string& strPath)
 {
-#ifndef NOT_USE_CRY_STRING
 	strPath.replace('/','\\' );
 	strPath.MakeLower();
-#else
-	std::replace(strPath.begin(),strPath.end(), '/','\\' );									// STL replace
-	std::transform(strPath.begin(),strPath.end(),strPath.begin(),tolower);			// STL MakeLower
-#endif
 }
 
 // converts the number to a string
@@ -415,11 +404,7 @@ inline bool MatchWildcard (const char* szString, const char* szWildcard)
 // converts all chars to lower case - avoids memory allocation
 inline void toLowerInplace(string& str)
 {
-#ifndef NOT_USE_CRY_STRING
 	str.MakeLower();
-#else
-	std::transform(str.begin(),str.end(),str.begin(),tolower);			// STL MakeLower
-#endif
 }
 
 inline void toLowerInplace(char* str)

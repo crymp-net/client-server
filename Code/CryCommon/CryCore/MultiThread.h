@@ -12,25 +12,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef __MultiThread_h__
-#define __MultiThread_h__
 #pragma once
+
+#include <intrin.h>
 
 #define WRITE_LOCK_VAL (1<<16)
 
-#if !defined(__SPU__)
-	#if !defined(PS3)
-		long   CryInterlockedIncrement( int volatile *lpAddend );
-		long   CryInterlockedDecrement( int volatile *lpAddend );
-		long   CryInterlockedExchangeAdd(long volatile * lpAddend, long Value);
-		long	 CryInterlockedCompareExchange(long volatile * dst, long exchange, long comperand);
-		void*	 CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand);
-	#endif
+inline long CryInterlockedIncrement(int volatile *lpAddend)
+{
+	return _InterlockedIncrement((volatile long*)lpAddend);
+}
 
+inline long CryInterlockedDecrement(int volatile *lpAddend)
+{
+	return _InterlockedDecrement((volatile long*)lpAddend);
+}
+
+inline long CryInterlockedExchangeAdd(long volatile *lpAddend, long Value)
+{
+	return _InterlockedExchangeAdd(lpAddend, Value);
+}
+
+inline long CryInterlockedCompareExchange(long volatile* dst, long exchange, long comperand)
+{
+	return _InterlockedCompareExchange(dst, exchange, comperand);
+}
+
+inline void* CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
+{
+	return _InterlockedCompareExchangePointer(dst, exchange, comperand);
+}
 
 ILINE void CrySpinLock(volatile int *pLock,int checkVal,int setVal)
 {
-#ifdef _CPU_X86
+#if !defined(_WIN64)
 # ifdef __GNUC__
 	register int val;
 	__asm__(
@@ -50,39 +65,23 @@ ILINE void CrySpinLock(volatile int *pLock,int checkVal,int setVal)
 		mov ecx, pLock
 Spin:
 		// Trick from Intel Optimizations guide
-#ifdef _CPU_SSE
 		pause
-#endif
+
 		mov eax, checkVal
 		lock cmpxchg [ecx], edx
 		jnz Spin
 	}
 # endif
 #else
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// NOTE: The code below will fail on 64bit architectures!
 	while(_InterlockedCompareExchange((volatile long*)pLock,setVal,checkVal)!=checkVal);
-
 #endif
 }
 
 //////////////////////////////////////////////////////////////////////////
 ILINE void CryInterlockedAdd(volatile int *pVal, int iAdd)
 {
-#ifdef _CPU_X86
+#if !defined(_WIN64)
 # ifdef __GNUC__
 	__asm__(
 		"lock add %[iAdd], (%[pVal])\n"
@@ -98,82 +97,16 @@ ILINE void CryInterlockedAdd(volatile int *pVal, int iAdd)
 	}
 # endif
 #else
-
-
-
-
-
-
-
-
-
-
-
-
 	// NOTE: The code below will fail on 64bit architectures!
 	_InterlockedExchangeAdd((volatile long*)pVal,iAdd);
-
 #endif
 }
-
-//////////////////////////////////////////////////////////////////////////
-struct ReadLock
-{
-	ILINE ReadLock(volatile int &rw)
-	{
-		CryInterlockedAdd(prw=&rw,1);
-		volatile char *pw=(volatile char*)&rw+2; for(;*pw;);
-	}
-	~ReadLock()
-	{
-		CryInterlockedAdd(prw,-1);
-	}
-private:
-	volatile int *prw;
-};
-
-struct ReadLockCond
-{
-	ILINE ReadLockCond(volatile int &rw,int bActive)
-	{
-		if (bActive)
-		{
-			CryInterlockedAdd(&rw,1);
-			bActivated = 1;
-			volatile char *pw=(volatile char*)&rw+2; for(;*pw;);
-		}
-		else
-		{
-			bActivated = 0;
-		}
-		prw = &rw;
-	}
-	void SetActive(int bActive=1) { bActivated = bActive; }
-	void Release() { CryInterlockedAdd(prw,-bActivated); }
-	~ReadLockCond()
-	{
-		CryInterlockedAdd(prw,-bActivated);
-	}
-
-private:
-	volatile int *prw;
-	int bActivated;
-};
 
 //////////////////////////////////////////////////////////////////////////
 struct WriteLock
 {
 	ILINE WriteLock(volatile int &rw) { CrySpinLock(&rw,0,WRITE_LOCK_VAL); prw=&rw; }
 	~WriteLock() { CryInterlockedAdd(prw,-WRITE_LOCK_VAL); }
-private:
-	volatile int *prw;
-};
-
-//////////////////////////////////////////////////////////////////////////
-struct WriteAfterReadLock
-{
-	ILINE WriteAfterReadLock(volatile int &rw) { CrySpinLock(&rw,1,WRITE_LOCK_VAL+1); prw=&rw; }
-	~WriteAfterReadLock() { CryInterlockedAdd(prw,-WRITE_LOCK_VAL); }
 private:
 	volatile int *prw;
 };
@@ -196,11 +129,3 @@ private:
 	volatile int *prw;
 	int iActive;
 };
-
-#endif //__SPU__
-
-
-//for PS3 we need additional global locking primitives to lock between all PPU threads and all SPUs
-
-
-#endif // __MultiThread_h__

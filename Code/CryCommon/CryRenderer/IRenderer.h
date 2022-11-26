@@ -1017,7 +1017,6 @@ const f32 DRAW_NEAREST_MAX = 40.0f;
 //===================================================================
 
 //////////////////////////////////////////////////////////////////////////
-#ifndef EXCLUDE_SCALEFORM_SDK
 struct SSF_GlobalDrawParams
 {
 	enum EFillType
@@ -1135,7 +1134,6 @@ struct SSF_GlobalDrawParams
 		blendOp = Add;
 	}
 };
-#endif // #ifndef EXCLUDE_SCALEFORM_SDK
 
 //////////////////////////////////////////////////////////////////////
 struct IRendererEventListener
@@ -1389,10 +1387,8 @@ struct IRenderer//: public IRendererCallbackServer
 
 	virtual CRenderObject* EF_AddParticlesToScene(const SShaderItem& si, CRenderObject* pRO, IParticleVertexCreator* pPVC, SParticleRenderInfo const& RenInfo, int nAW, bool& canUseGS) = 0;
 
-#ifndef EXCLUDE_GPU_PARTICLE_PHYSICS
 	//  member functions to add support for GPU particle systems to renderer.  Function body in CREParticleGPU.cpp
 	virtual void  EF_AddGPUParticlesToScene( int32 nGPUParticleIdx, AABB const& bb, const SShaderItem& shaderItem, CRenderObject* pRO, bool nAW, bool canUseGS ) = 0;
-#endif 
 
   // Add 2D polygon to the list
   virtual void EF_AddPolyToScene2D(int Ef, int numPts, const struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F *verts)=0;
@@ -1591,7 +1587,6 @@ struct IRenderer//: public IRendererCallbackServer
 	//    Created IShaderPublicParams interface.
 	virtual IShaderPublicParams* CreateShaderPublicParams() = 0;
 
-#ifndef EXCLUDE_SCALEFORM_SDK
 	enum ESFMaskOp
 	{
 		BeginSubmitMask_Clear,
@@ -1621,7 +1616,6 @@ struct IRenderer//: public IRendererCallbackServer
 	};
 	virtual bool SF_UpdateTexture(int texId, int mipLevel, int numRects, const SUpdateRect* pRects, unsigned char* pData, size_t pitch, ETEX_Format eTF) = 0;
 	virtual void SF_GetMeshMaxSize(int& numVertices, int& numIndices) const = 0;
-#endif // #ifndef EXCLUDE_SCALEFORM_SDK
 
 	//////////////////////////////////////////////////////////////////////////
 	// Creates an instance of the IVideoPlayer interface.

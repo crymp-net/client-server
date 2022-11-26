@@ -129,13 +129,11 @@ public:
 	}
 #endif
 
- #ifndef NOT_USE_CRY_STRING
 	bool Add (const string& strText)
 	{
 		AddString(strText);
 		return true;
 	}
- #endif
 
 	template <class Container>
 	bool AddContainer (const Container& rContainer)

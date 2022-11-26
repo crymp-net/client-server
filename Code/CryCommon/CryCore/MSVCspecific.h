@@ -19,13 +19,14 @@
 // MSVC compiler is very confusing in that some 4xxx warnings are shown even with warning level 3,
 // and some 4xxx warnings are NOT shown even with warning level 4.
 
-#pragma warning(disable: 4018)	// signed/unsigned mismatch
-#pragma warning(disable: 4127)	// conditional expression is constant
-#pragma warning(disable: 4201)	// nonstandard extension used : nameless struct/union
-#pragma warning(disable: 4244)	// conversion from 'int' to 'float', possible loss of data
-#pragma warning(disable: 4512)	// assignment operator could not be generated (in STLPort with const constructs)
+#pragma warning(disable: 4018)  // signed/unsigned mismatch
+#pragma warning(disable: 4127)  // conditional expression is constant
+#pragma warning(disable: 4201)  // nonstandard extension used : nameless struct/union
+#pragma warning(disable: 4244)  // conversion from 'int' to 'float', possible loss of data
+#pragma warning(disable: 4267)  // 'initializing' : conversion from 'size_t' to 'unsigned int', possible loss of data
+#pragma warning(disable: 4512)  // assignment operator could not be generated (in STLPort with const constructs)
 #pragma warning(disable: 4530)  // C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
-#pragma warning(disable: 4996)	// '_stricmp' was declared deprecated
+#pragma warning(disable: 4996)  // '_stricmp' was declared deprecated
 #pragma warning(disable: 4503)  // decorated name length exceeded, name was truncated
 
 #pragma warning(disable: 4302)
@@ -34,5 +35,5 @@
 #pragma warning(disable: 4312)
 
 // Turn on the following very useful warnings.
-#pragma warning(3: 4264)				// no override available for virtual member function from base 'class'; function is hidden
-#pragma warning(3: 4266)				// no override available for virtual member function from base 'type'; function is hidden
+#pragma warning(3: 4264)  // no override available for virtual member function from base 'class'; function is hidden
+#pragma warning(3: 4266)  // no override available for virtual member function from base 'type'; function is hidden

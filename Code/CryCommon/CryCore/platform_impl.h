@@ -16,7 +16,7 @@
 #pragma once
 
 #include "platform.h"
-#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryCore/MTPseudoRandom.h"
 
 //////////////////////////////////////////////////////////////////////////
 CMTRand_int32 g_random_generator;
@@ -33,46 +33,3 @@ float cry_frand()
 	return g_random_generator.GenerateFloat();
 }
 //////////////////////////////////////////////////////////////////////////
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-//////////////////////////////////////////////////////////////////////////
-void CryDebugBreak()
-{
-	DebugBreak();
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CryGetCurrentDirectory( unsigned int nBufferLength,char *lpBuffer )
-{
-	return GetCurrentDirectory(nBufferLength,lpBuffer);
-}
-
-//////////////////////////////////////////////////////////////////////////
-long  CryInterlockedIncrement( int volatile *lpAddend )
-{
-	return InterlockedIncrement((long*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-long  CryInterlockedDecrement( int volatile *lpAddend )
-{
-	return InterlockedDecrement((long*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-long	CryInterlockedExchangeAdd(long volatile * lpAddend, long Value)
-{
-	return InterlockedExchangeAdd(lpAddend, Value);
-}
-
-long	CryInterlockedCompareExchange(long volatile * dst, long exchange, long comperand)
-{
-	return InterlockedCompareExchange(dst, exchange, comperand);
-}
-
-void*	CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand)
-{
-	return InterlockedCompareExchangePointer(dst, exchange, comperand);
-}

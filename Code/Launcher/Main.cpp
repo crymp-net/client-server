@@ -6,17 +6,15 @@
 
 #include "Launcher.h"
 
-// request discrete graphics card
-extern "C"
-{
-	// nVidia
-	__declspec(dllexport) unsigned long NvOptimusEnablement = 1;
+////////////////////////////////////////////////////////////////////////////////
 
-	// AMD
-	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
+// request fast graphics card
+extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
+extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+////////////////////////////////////////////////////////////////////////////////
+
+int __stdcall WinMain(void*, void*, char*, int)
 {
 	Launcher launcher;
 	gLauncher = &launcher;

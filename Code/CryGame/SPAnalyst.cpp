@@ -409,10 +409,7 @@ void CSPAnalyst::WriteXML()
 	{
 		const string xmlHeader("<?xml version=\"1.0\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n");
 
-		char path[256];
-		CryGetCurrentDirectory(256, path);
-		string filename(path);
-		filename.append("\\");
+		string filename;
 		filename.append(m_recordingFileName);
 		filename.append(".xml");
 

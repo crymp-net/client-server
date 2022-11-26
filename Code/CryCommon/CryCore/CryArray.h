@@ -6,68 +6,26 @@
 #define _CRY_ARRAY_H_
 #pragma once
 
-#include <algorithm>
 #include "CryPodArray.h"
-
-//---------------------------------------------------------------------------
-// Very simple array class, suitable as universal class for array access, 
-// that any array class to quickly convert to, regardless of storage scheme.
-// Simply contains a pointer and count, does not manage storage.
-
-template<class T>
-struct Array
-{
-	// Construction.
-
-	inline Array()
-		: m_nCount(0), m_aElems()
-	{}
-	inline Array(size_t count, T* elems)
-		: m_nCount(count), m_aElems(elems)
-	{}
-
-	// Base storage.
-	typedef T						value_type;
-	typedef T*					iterator;
-	typedef const T*		const_iterator;
-
-	// Accessors.
-	inline size_t size() const			{ return m_nCount; }
-	inline bool empty() const				{ return m_nCount == 0; }
-	inline size_t capacity() const	{ return m_nCount; }
-
-	inline T* begin()								{ return m_aElems; }
-	inline const T* begin() const		{ return m_aElems; }
-
-	inline T* end()									{ return begin()+size(); }
-	inline const T* end() const			{ return begin()+size(); }
-
-	inline T const& operator [] (int i) const
-	{
-		assert(i >= 0 && i < (int)size());
-		return begin()[i];
-	}
-	inline T& operator [] (int i)
-	{
-		assert(i >= 0 && i < (int)size());
-		return begin()[i];
-	}
-
-protected:
-	size_t		m_nCount;
-	T*				m_aElems;
-};
 
 //---------------------------------------------------------------------------
 // Allocation functors.
 struct FModuleAlloc
 {
-	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize )	{ return ModuleAlloc( oldptr, newsize ); }
-};
+	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize )
+	{
+		if (newsize)
+		{
+			return (oldptr) ? realloc(oldptr, newsize) : malloc(newsize);
+		}
 
-struct FSafeModuleAlloc
-{
-	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize ) { return ModuleAlloc( oldptr, newsize ); }
+		if (oldptr)
+		{
+			free(oldptr);
+		}
+
+		return 0;
+	}
 };
 
 //---------------------------------------------------------------------------
@@ -120,9 +78,6 @@ struct DynArray
 	{
 		clear();
 	}
-
-	// Conversion.
-	operator Array<T>()											{ return Array<T>( size(), begin() ); }
 
 	// Accessors.
 	inline bool empty() const								{ return size() == 0; }
@@ -424,20 +379,19 @@ struct FModuleAlloc16
     }
     if (newsize)
     {
-      unsigned char *pData = (unsigned char *)ModuleAlloc( NULL, newsize+16+sizeof(char *)+sizeof(DynArray<char>::Header) );
+      unsigned char *pData = (unsigned char *)malloc(newsize+16+sizeof(char *)+sizeof(DynArray<char>::Header));
       unsigned char *bPtrRes = (unsigned char *)((ptrdiff_t)(pData+16+sizeof(char *)) & ~0xf);
       ((unsigned char**)bPtrRes)[-1] = pData;
       if (oldptr)
       {
         memcpy(&bPtrRes[sizeof(DynArray<char>::Header)], oldptr, oldsize);
-        ModuleAlloc( bActualPtr, 0 );
+        free(bActualPtr);
       }
       return &bPtrRes[sizeof(DynArray<char>::Header)];
     }
-    else
-    if (oldptr)
+    else if (oldptr)
     {
-      return ModuleAlloc( bActualPtr, newsize );
+      free(bActualPtr);
     }
     return NULL;
   }
@@ -448,13 +402,5 @@ template<class T>
 struct DynArray16 : public DynArray<T, FModuleAlloc16>
 {
 };
-
-// Convenient iteration macros
-#define for_array(i, arr)									for (uint i = 0; i < arr.size(); i++)
-#define for_array_ptr(TYPE, p, arr)				for (TYPE* p = (arr).begin(); p != (arr).end(); ++p)
-#define for_all(cont)											for_array (_i, cont) cont[_i]
-#define if_pointer(pointer)								if (pointer) (pointer)
-#define for_all_pointer(array, pointer)		for_array (_i, array) if_pointer (array[_i].pointer)
-
 
 #endif

@@ -67,9 +67,7 @@ struct IAVI_Reader;
 class Crc32Gen;
 class CPNoise3;
 
-#ifndef EXCLUDE_GPU_PARTICLE_PHYSICS
 struct IGPUPhysicsManager;
-#endif
 
 class ICmdLine;
 class CFrameProfilerSection;
@@ -607,9 +605,7 @@ struct ISystem
 	virtual ITimer *GetITimer() = 0;
 #endif
 
-#ifndef EXCLUDE_GPU_PARTICLE_PHYSICS
 	virtual IGPUPhysicsManager *GetIGPUPhysicsManager() = 0;
-#endif
 
 	virtual void SetLoadingProgressListener(ILoadingProgressListener *pListener) = 0;
 	virtual ILoadingProgressListener *GetLoadingProgressListener() const = 0;

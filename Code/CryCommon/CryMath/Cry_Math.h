@@ -19,8 +19,8 @@
 
 //========================================================================================
 
-#include "CryCommon/CryCore/platform.h"  // MATH_H
-#include MATH_H
+#include "CryCommon/CryCore/platform.h"
+#include <math.h>
 #include "Cry_ValidNumber.h"
 
 #ifdef LINUX
@@ -183,7 +183,7 @@ ILINE float CorrectInvSqrt(float fNum, float fInvSqrtEst)
 //-------------------------------------------
 //-- the portability functions for AMD64
 //-------------------------------------------
-#if defined(WIN64) &&  defined(_CPU_AMD64) && !defined(LINUX)
+#if defined(WIN64) && !defined(LINUX)
 /*
 extern "C" void fastsincosf(f32 x, f32 * sincosfx);
 extern "C" f32 fastsinf(f32 x);
@@ -225,7 +225,7 @@ ILINE f64 cry_cosh(f64 z) {return (exp (z) + exp (-z)) * 0.5;}
 //-------------------------------------------
 //-- the portability functions for CPU_X86
 //-------------------------------------------
-#if defined(_CPU_X86) && defined(_MSC_VER) && !defined(_DEBUG) && !defined(LINUX)
+#if defined(_MSC_VER) && !defined(_WIN64) && !defined(_DEBUG) && !defined(LINUX)
 
 
 // calculates the cosine and sine of the given angle in radians 
@@ -279,7 +279,7 @@ ILINE f32 cry_isqrtf_fast(f32 x)
 	return r;
 }
 
-#else // #if defined(_CPU_X86) && defined(_MSC_VER) && !defined(LINUX)
+#else // #if defined(_MSC_VER) && !defined(_WIN64) && !defined(_DEBUG) && !defined(LINUX)
 
 //-------------------------------------------
 //-- Portable version.
@@ -370,7 +370,7 @@ ILINE f32 tan_tpl(f32 op) {return cry_tanf(op);}
 ILINE f64 tan_tpl(f64 op) {return tan(op);}
 
 // Fast float-int rounding functions.
-#if defined(WIN32) && defined(_CPU_X86)
+#if defined(WIN32) && !defined(_WIN64)
   ILINE int32 int_round(f32 f)
   {
     int32 i;

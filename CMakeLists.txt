@@ -116,7 +116,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/MultiThread.h
   Code/CryCommon/CryCore/PoolAllocator.h
   Code/CryCommon/CryCore/PoolAllocatorSynchronization.h
-  Code/CryCommon/CryCore/ProjectDefines.h
   Code/CryCommon/CryCore/StlUtils.h
   Code/CryCommon/CryCore/StringUtils.h
   Code/CryCommon/CryCore/TArray.h
@@ -125,8 +124,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/TypelistUtils.h
   Code/CryCommon/CryCore/VectorMap.h
   Code/CryCommon/CryCore/VectorSet.h
-  Code/CryCommon/CryCore/Win32specific.h
-  Code/CryCommon/CryCore/Win64specific.h
   Code/CryCommon/CryCore/crc32.h
   Code/CryCommon/CryCore/functor.h
   Code/CryCommon/CryCore/platform.h

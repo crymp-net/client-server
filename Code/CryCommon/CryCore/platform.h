@@ -14,8 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef _PLATFORM_H_
-#define _PLATFORM_H_
 #pragma once
 
 // Temporary here
@@ -34,12 +32,12 @@
 
 //////////////////////////////////////////////////////////////////////////
 // Available predefined compiler macros for Visual C++.
-//		_MSC_VER										// Indicates MS Visual C compiler version
-//		_WIN32, _WIN64, _XBOX_VER		// Indicates target OS
-//		_M_IX86, _M_PPC							// Indicates target processor
-//		_DEBUG											// Building in Debug mode
-//		_DLL												// Linking with DLL runtime libs
-//		_MT													// Linking with multi-threaded runtime libs
+// _MSC_VER                   // Indicates MS Visual C compiler version
+// _WIN32, _WIN64, _XBOX_VER  // Indicates target OS
+// _M_IX86, _M_PPC            // Indicates target processor
+// _DEBUG                     // Building in Debug mode
+// _DLL                       // Linking with DLL runtime libs
+// _MT                        // Linking with multi-threaded runtime libs
 //////////////////////////////////////////////////////////////////////////
 
 //
@@ -51,19 +49,6 @@
 #if !defined(_DEBUG) && !defined(ADEBUG) && !defined(NDEBUG)
 	#define NDEBUG
 #endif
-
-
-
-
-	#define MATH_H <math.h>
-
-
-// Xenon target. (We generally use _XBOX but should really use XENON).
-
-
-
-
-
 
 // We use WIN macros without _.
 #if defined(_WIN32) && !defined(XENON) && !defined(LINUX32) && !defined(LINUX64) && !defined(WIN32)
@@ -81,10 +66,6 @@
 #else
 	//#define _LIB
 #endif
-
-#include "ProjectDefines.h"							// to get some defines available in every CryEngine project
-
-#include <stdlib.h>
 
 // Function attribute for printf/scanf-style parameters.
 // This enables extended argument checking by GCC.
@@ -108,33 +89,13 @@
   #define SCANF_PARAMS(...) __attribute__ ((format (scanf, __VA_ARGS__)))
 #else
   #define PRINTF_PARAMS(...)
-	#define SCANF_PARAMS(...)
-#endif
-
-// Storage class modifier for thread local storage.
-#if defined(__GNUC__)
-	#define THREADLOCAL __thread
-#else
-	#define THREADLOCAL __declspec(thread)
+  #define SCANF_PARAMS(...)
 #endif
 
 // DLL import / export
-
-
-
-
-
-
 #if defined(__GNUC__)
-
-
-
-
-
-
-		#define DLL_EXPORT __attribute__ ((visibility("default")))
-		#define DLL_IMPORT __attribute__ ((visibility("default")))
-
+	#define DLL_EXPORT __attribute__ ((visibility("default")))
+	#define DLL_IMPORT __attribute__ ((visibility("default")))
 #else
 	#define DLL_EXPORT __declspec(dllexport)
 	#define DLL_IMPORT __declspec(dllimport)
@@ -145,100 +106,80 @@
 #define BIT(x) (1<<(x))
 //////////////////////////////////////////////////////////////////////////
 
-//will be defined for SPUs and PS3 therefore only
-#define SPU_DEBUG_BREAK
-
 //////////////////////////////////////////////////////////////////////////
 // Globally Used Defines.
 //////////////////////////////////////////////////////////////////////////
-// CPU Types: _CPU_X86,_CPU_AMD64,_CPU_G5
 // Platform: WIN23,WIN64,LINUX32,LINUX64,_XBOX
-// CPU supported functionality: _CPU_SSE
 //////////////////////////////////////////////////////////////////////////
 #if defined(_MSC_VER)
 #include "MSVCspecific.h"
 #endif
 
-#if defined(WIN32) && !defined(WIN64)
-#include "Win32specific.h"
+#define ILINE __forceinline
+
+#define DEPRICATED __declspec(deprecated)
+
+#ifndef _WIN32_WINNT
+# define _WIN32_WINNT 0x501
 #endif
 
-#if defined(WIN64)
-#include "Win64specific.h"
+//////////////////////////////////////////////////////////////////////////
+// Define platform independent types.
+//////////////////////////////////////////////////////////////////////////
+typedef signed char         int8;
+typedef signed short        int16;
+typedef signed int          int32;
+typedef signed __int64      int64;
+typedef unsigned char       uint8;
+typedef unsigned short      uint16;
+typedef unsigned int        uint32;
+typedef unsigned __int64    uint64;
+typedef float               f32;
+typedef double              f64;
+typedef double              real;  //biggest float-type on this machine
+typedef unsigned long       DWORD;
+
+#ifdef WIN64
+typedef __int64 INT_PTR, *PINT_PTR;
+typedef unsigned __int64 UINT_PTR, *PUINT_PTR;
+
+typedef __int64 LONG_PTR, *PLONG_PTR;
+typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
+#else
+typedef __w64 int INT_PTR, *PINT_PTR;
+typedef __w64 unsigned int UINT_PTR, *PUINT_PTR;
+
+typedef __w64 long LONG_PTR, *PLONG_PTR;
+typedef __w64 unsigned long ULONG_PTR, *PULONG_PTR;
 #endif
 
+typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
 
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(p) { if(p) { delete (p); (p)=NULL; } }
+#endif
 
+#ifndef SAFE_DELETE_ARRAY
+#define SAFE_DELETE_ARRAY(p) { if(p) { delete [] (p); (p)=NULL; } }
+#endif
 
-
-
-
-
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#endif
 
 #include <stdio.h>
-
-inline void *ModuleAlloc(void *ptr, size_t size)
-{
-	if (size)
-	{
-		return (ptr) ? realloc(ptr, size) : malloc(size);
-	}
-
-	if (ptr)
-	{
-		free(ptr);
-	}
-
-	return 0;
-}
-
-
-
-
-
+#include <stdlib.h>
 
 //////////////////////////////////////////////////////////////////////////
-#ifndef DEPRICATED
-#define DEPRICATED
-#endif
 
 #include <cassert>
-
-//////////////////////////////////////////////////////////////////////////
-// Platform dependent functions that emulate Win32 API.
-// Mostly used only for debugging!
-//////////////////////////////////////////////////////////////////////////
-void   CryDebugBreak();
-int    CryGetCurrentDirectory( unsigned int nBufferLength,char *lpBuffer );
+#include <algorithm>
 
 #define CrySwprintf _snwprintf
 
-_inline void CryHeapCheck()
-{
-#if !defined(LINUX) && !defined (PS3)
-  int Result = _heapchk();
-  assert(Result!=_HEAPBADBEGIN);
-  assert(Result!=_HEAPBADNODE);
-  assert(Result!=_HEAPBADPTR);
-  assert(Result!=_HEAPEMPTY);
-  assert(Result==_HEAPOK);
-#endif
-}
-
-// Useful function to clean the structure.
-template <class T>
-inline void ZeroStruct( T &t ) { memset( &t,0,sizeof(t) ); }
-
-#ifndef NOT_USE_CRY_STRING
-	#include "CryString.h"
-	typedef CryStringT<char> string;
-	typedef CryStringT<wchar_t> wstring;
-
-#else // NOT_USE_CRY_STRING
-	#include <string>				// STL string
-	typedef std::string string;
-	typedef std::wstring wstring;
-#endif // NOT_USE_CRY_STRING
+#include "CryString.h"
+typedef CryStringT<char> string;
+typedef CryStringT<wchar_t> wstring;
 
 // Include MultiThreading support.
 #include "MultiThread.h"
@@ -252,14 +193,9 @@ inline void ZeroStruct( T &t ) { memset( &t,0,sizeof(t) ); }
 // Include array.
 #include "CryArray.h"
 
-
-
-
-#ifndef NOT_USE_CRY_STRING
-	// Fixed-Sized (stack based string)
-	// put after the platform wrappers because of missing _wcsicmp/_wcsnicmp functions
-	#include "CryFixedString.h"
-#endif
+// Fixed-Sized (stack based string)
+// put after the platform wrappers because of missing _wcsicmp/_wcsnicmp functions
+#include "CryFixedString.h"
 
 // need this in a common header file and any other file would be too misleading
 enum ETriState
@@ -268,35 +204,3 @@ enum ETriState
 	eTS_true,
 	eTS_maybe
 };
-
-#define SAFE_DELETE_VOID_ARRAY(p) { if(p) { delete[] (unsigned char*)(p);   (p)=NULL; } }
-
-#ifndef SPU_ENTRY
-	#if defined __CRYCG__
-		#define SPU_ENTRY(job_name) __attribute__ ((crycg_attr (entry, "job = " #job_name )))
-	#else
-		#define SPU_ENTRY(job_name)
-	#endif
-#endif
-
-//only for PS3 this will take effect, win32 does not support alignment
-#if !defined(_ALIGN)
-
-
-
-		#define _ALIGN(num)
-
-#endif
-
-#if !defined(PS3)
-	//dummy definitions to avoid ifdef's
-	ILINE void SPUAddCacheWriteRangeAsync(const unsigned int, const unsigned int){}
-	#define __cache_range_write_async(a,b)
-	#define __flush_cache_range(a,b)
-	#define __flush_cache()
-	#define DECLARE_SPU_JOB(func_name, typedef_name)
-	#define DECLARE_SPU_CLASS_JOB(func_name, typedef_name, class_name)
-#endif//__SPU__
-
-
-#endif // _PLATFORM_H_

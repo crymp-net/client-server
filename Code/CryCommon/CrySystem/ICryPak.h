@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+#include <io.h>  // _finddata_t
+
 #include "CryCommon/CryCore/smartptr.h"
 #include <vector>					// STL vector<>
 
