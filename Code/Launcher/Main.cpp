@@ -1,9 +1,6 @@
 #include "Library/Error.h"
 #include "Library/WinAPI.h"
 
-// TODO: get rid of this garbage
-#include "CryCommon/CryCore/platform_impl.h"
-
 #include "Launcher.h"
 
 ////////////////////////////////////////////////////////////////////////////////

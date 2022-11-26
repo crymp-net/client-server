@@ -641,8 +641,6 @@ inline f32 FSWAP32(f32 f) {
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Random number generator.
-#include "CryCommon/CryCore/MTPseudoRandom.h"
 // Random function to be used instead of rand()
 extern unsigned int cry_rand();
 // Generates random integer in full 32-bit range.

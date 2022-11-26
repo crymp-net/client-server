@@ -110,8 +110,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/CryString.h
   Code/CryCommon/CryCore/Endian.h
   Code/CryCommon/CryCore/MSVCspecific.h
-  Code/CryCommon/CryCore/MTPseudoRandom.cpp
-  Code/CryCommon/CryCore/MTPseudoRandom.h
   Code/CryCommon/CryCore/MiniQueue.h
   Code/CryCommon/CryCore/MultiThread.h
   Code/CryCommon/CryCore/PoolAllocator.h
@@ -127,7 +125,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CryCore/crc32.h
   Code/CryCommon/CryCore/functor.h
   Code/CryCommon/CryCore/platform.h
-  Code/CryCommon/CryCore/platform_impl.h
   Code/CryCommon/CryCore/smartptr.h
   Code/CryCommon/CryEntitySystem/IEntity.h
   Code/CryCommon/CryEntitySystem/IEntityClass.h
