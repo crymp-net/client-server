@@ -755,7 +755,13 @@ if(BUILD_64BIT)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
-target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
+target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR} Code/Include)
+
+if(BUILD_64BIT)
+    target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Code/ThirdParty/jemalloc/lib/x64/jemalloc_s.lib)
+else()
+    target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Code/ThirdParty/jemalloc/lib/x86/jemalloc_s.lib)
+endif()
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ws2_32 winhttp)
 

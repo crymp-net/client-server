@@ -4,6 +4,7 @@
 
 #include "Library/DLL.h"
 #include "Library/WinAPI.h"
+#include "ThirdParty/jemalloc/jemalloc.h"
 
 #include "CryMemoryManager.h"
 
@@ -15,9 +16,9 @@ namespace
 
 		if (size)
 		{
-			result = calloc(1, size);
+			result = je_calloc(1, size);
 
-			allocatedSize = _msize(result);
+			allocatedSize = je_malloc_usable_size(result);
 		}
 		else
 		{
@@ -33,9 +34,9 @@ namespace
 
 		if (size)
 		{
-			result = realloc(mem, size);
+			result = je_realloc(mem, size);
 
-			allocatedSize = _msize(result);
+			allocatedSize = je_malloc_usable_size(result);
 		}
 		else
 		{
@@ -56,9 +57,9 @@ namespace
 
 		if (mem)
 		{
-			size = _msize(mem);
+			size = je_malloc_usable_size(mem);
 
-			free(mem);
+			je_free(mem);
 		}
 
 		return size;
@@ -70,7 +71,7 @@ namespace
 
 		if (size)
 		{
-			result = calloc(1, size);
+			result = je_calloc(1, size);
 		}
 
 		return result;
@@ -80,7 +81,7 @@ namespace
 	{
 		if (mem)
 		{
-			free(mem);
+			je_free(mem);
 		}
 	}
 
