@@ -12,77 +12,50 @@ namespace
 {
 	void *CryMalloc_hook(size_t size, size_t & allocatedSize)
 	{
-		void *result = nullptr;
-
-		if (size)
-		{
-			result = je_calloc(1, size);
-
-			allocatedSize = je_malloc_usable_size(result);
-		}
-		else
-		{
-			allocatedSize = 0;
-		}
-
+		void *result = je_malloc(size);
+		allocatedSize = je_malloc_usable_size(result);
 		return result;
 	}
 
 	void *CryRealloc_hook(void *mem, size_t size, size_t & allocatedSize)
 	{
-		void *result = nullptr;
-
-		if (size)
-		{
-			result = je_realloc(mem, size);
-
-			allocatedSize = je_malloc_usable_size(result);
-		}
-		else
-		{
-			if (mem)
-			{
-				free(mem);
-			}
-
-			allocatedSize = 0;
-		}
-
+		void *result = je_realloc(mem, size);
+		allocatedSize = je_malloc_usable_size(result);
 		return result;
 	}
 
 	size_t CryFree_hook(void *mem)
 	{
-		size_t size = 0;
-
-		if (mem)
-		{
-			size = je_malloc_usable_size(mem);
-
-			je_free(mem);
-		}
-
+		size_t size = je_malloc_usable_size(mem);
+		je_free(mem);
 		return size;
 	}
 
-	void *CrySystemCrtMalloc_hook(size_t size)
+	size_t CryGetMemSize_hook(void* memblock, size_t sourceSize)
 	{
-		void *result = nullptr;
+		return je_malloc_usable_size(memblock);
+	}
 
-		if (size)
-		{
-			result = je_calloc(1, size);
-		}
+	// CRT------------------------------------
 
-		return result;
+	void* CrySystemCrtMalloc_hook(size_t size)
+	{
+		return je_malloc(size);
+	}
+
+	void* CrySystemCrtRealloc_hook(void* mem, size_t size)
+	{
+		return je_realloc(mem, size);
 	}
 
 	void CrySystemCrtFree_hook(void *mem)
 	{
-		if (mem)
-		{
-			je_free(mem);
-		}
+		je_free(mem);
+	}
+
+	size_t CrySystemCrtSize_hook(void* mem)
+	{
+		return je_malloc_usable_size(mem);
 	}
 
 	void Hook(void *pFunc, void *pNewFunc)
@@ -117,6 +90,16 @@ void CryMemoryManager::Init(const DLL & CrySystem)
 	Hook(CrySystem.GetSymbolAddress("CryMalloc"), CryMalloc_hook);
 	Hook(CrySystem.GetSymbolAddress("CryRealloc"), CryRealloc_hook);
 	Hook(CrySystem.GetSymbolAddress("CryFree"), CryFree_hook);
+	Hook(CrySystem.GetSymbolAddress("CryGetMemSize"), CryGetMemSize_hook);
+
 	Hook(CrySystem.GetSymbolAddress("CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
+	Hook(CrySystem.GetSymbolAddress("CrySystemCrtRealloc"), CrySystemCrtRealloc_hook);
 	Hook(CrySystem.GetSymbolAddress("CrySystemCrtFree"), CrySystemCrtFree_hook);
+	Hook(CrySystem.GetSymbolAddress("CrySystemCrtSize"), CrySystemCrtSize_hook);
+
+	Hook(malloc, je_malloc);
+	Hook(realloc, je_realloc);
+	Hook(free, je_free);
+	Hook(_msize, je_malloc_usable_size);
+	Hook(calloc, je_calloc);
 }
