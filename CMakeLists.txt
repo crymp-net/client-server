@@ -754,6 +754,8 @@ if(BUILD_64BIT)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
+target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
+
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ws2_32 winhttp)
