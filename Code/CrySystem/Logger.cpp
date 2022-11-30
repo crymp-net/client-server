@@ -1,481 +1,16 @@
-#include <regex>
 #include <algorithm>
-#include <filesystem>
+#include <cerrno>
 
-#include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryColorCode.h"
 #include "CryCommon/CrySystem/IConsole.h"
-#include "Library/CmdLine.h"
-#include "Library/Error.h"
-#include "Library/StringBuffer.h"
+#include "CryCommon/CrySystem/ISystem.h"
+
+#include "Library/Format.h"
 #include "Library/WinAPI.h"
 
 #include "Logger.h"
 
 Logger Logger::s_globalInstance;
-
-namespace
-{
-	std::filesystem::path GetLogDirectoryPath()
-	{
-		std::filesystem::path dir;
-
-		const std::string rootArg = CmdLine::GetArgValue("-root");
-		if (!rootArg.empty())
-		{
-			// the root directory
-			dir = rootArg;
-		}
-		else
-		{
-			// "Documents/My Games/Crysis/"
-			dir = gEnv->pCryPak->GetAlias("%USER%");
-		}
-
-		// sanitize the path
-		return std::filesystem::canonical(dir);
-	}
-
-	void CreateLogFileBackup(void *file, const std::filesystem::path & filePath)
-	{
-		// read the beginning of the existing log file
-		std::string header = WinAPI::FileRead(file, 127);
-
-		if (header.empty())
-		{
-			// the existing log file is empty, so no backup is needed
-			return;
-		}
-
-		std::string backupFileName = filePath.stem().string();  // filename without extension
-
-		// get the backup filename attachment from the beginning of the existing log file
-		std::smatch headerMatch;
-		if (std::regex_search(header, headerMatch, std::regex("BackupNameAttachment=\"([a-zA-Z0-9()-_ ]*)\"")))
-		{
-			backupFileName += headerMatch[1].str();
-		}
-
-		backupFileName += ".log";
-
-		const std::filesystem::path backupDirPath = filePath.parent_path() / "LogBackups";
-
-		// make sure the "LogBackups" directory exists
-		std::filesystem::create_directories(backupDirPath);
-
-		const std::filesystem::path backupFilePath = backupDirPath / backupFileName;
-
-		std::filesystem::copy_file(filePath, backupFilePath);
-	}
-
-	std::string FormatLogPrefix(const std::string_view & format)
-	{
-		const WinAPI::DateTime dateTime = WinAPI::GetCurrentDateTimeLocal();
-
-		StringBuffer<128> buffer;
-
-		// true if the previous character was '%'
-		bool isFormatSpecifier = false;
-
-		for (char ch : format)
-		{
-			if (isFormatSpecifier)
-			{
-				switch (ch)
-				{
-					case '%':
-					{
-						buffer += '%';
-						break;
-					}
-					case 't':
-					{
-						buffer.addUInt(WinAPI::GetCurrentThreadID(), 4, '0', 16, true);
-						break;
-					}
-					case 'd':
-					{
-						buffer.addUInt(dateTime.day, 2);
-						break;
-					}
-					case 'm':
-					{
-						buffer.addUInt(dateTime.month, 2);
-						break;
-					}
-					case 'Y':
-					{
-						buffer.addUInt(dateTime.year, 4);
-						break;
-					}
-					case 'F':
-					{
-						buffer.addUInt(dateTime.year, 4);
-						buffer += '-';
-						buffer.addUInt(dateTime.month, 2);
-						buffer += '-';
-						buffer.addUInt(dateTime.day, 2);
-						break;
-					}
-					case 'H':
-					{
-						buffer.addUInt(dateTime.hour, 2);
-						break;
-					}
-					case 'M':
-					{
-						buffer.addUInt(dateTime.minute, 2);
-						break;
-					}
-					case 'S':
-					{
-						buffer.addUInt(dateTime.second, 2);
-						break;
-					}
-					case 'T':
-					{
-						buffer.addUInt(dateTime.hour, 2);
-						buffer += ':';
-						buffer.addUInt(dateTime.minute, 2);
-						buffer += ':';
-						buffer.addUInt(dateTime.second, 2);
-						break;
-					}
-					case 'N':
-					{
-						buffer.addUInt(dateTime.millisecond, 3);
-						break;
-					}
-					case 'z':
-					{
-						buffer += WinAPI::GetTimeZoneOffsetString();
-						break;
-					}
-				}
-
-				isFormatSpecifier = false;
-			}
-			else
-			{
-				switch (ch)
-				{
-					case '%':
-					{
-						isFormatSpecifier = true;
-						break;
-					}
-					default:
-					{
-						buffer += ch;
-						break;
-					}
-				}
-			}
-		}
-
-		if (!buffer.empty())
-		{
-			// space after the prefix
-			buffer += ' ';
-		}
-
-		return buffer.toString();
-	}
-}
-
-void LogMessageQueue::Push(LogMessage && message)
-{
-	std::lock_guard<std::mutex> lock(m_mutex);
-
-	m_queue.emplace_back(std::move(message));
-}
-
-bool LogMessageQueue::Pop(LogMessage & message)
-{
-	std::lock_guard<std::mutex> lock(m_mutex);
-
-	if (!m_queue.empty())
-	{
-		message = std::move(m_queue.front());
-		m_queue.pop_front();
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void Logger::OpenFile()
-{
-	CloseFile();
-
-	if (m_fileName.empty())
-	{
-		// no file to open
-		return;
-	}
-
-	const std::filesystem::path filePath = GetLogDirectoryPath() / m_fileName;
-
-	bool created = false;
-
-	m_file = WinAPI::FileOpen(filePath, WinAPI::FileAccess::READ_WRITE_CREATE, &created);
-	if (!m_file)
-	{
-		throw SystemError(filePath.string());
-	}
-
-	if (!created)
-	{
-		CreateLogFileBackup(m_file, filePath);
-
-		// clear the existing file
-		WinAPI::FileResize(m_file, 0);
-	}
-}
-
-void Logger::CloseFile()
-{
-	if (m_file)
-	{
-		WinAPI::FileClose(m_file);
-		m_file = nullptr;
-	}
-}
-
-void Logger::Write(const LogMessage & message)
-{
-	if (message.isFile)
-		WriteToFile(message);
-
-	if (message.isConsole)
-		WriteToConsole(message);
-}
-
-void Logger::WriteToFile(const LogMessage & message)
-{
-	if (!m_file)
-		return;
-
-	StringBuffer<256> buffer;
-
-	if (message.isAppend)
-	{
-		buffer.reserve(message.content.length() + WinAPI::NEWLINE.length());
-	}
-	else
-	{
-		buffer.reserve(message.prefix.length() + message.content.length() + WinAPI::NEWLINE.length());
-
-		// the prefix is used only in non-append mode
-		buffer += message.prefix;
-	}
-
-	// true if the previous character was '$'
-	bool isColorCode = false;
-
-	for (char ch : message.content)
-	{
-		if (static_cast<unsigned char>(ch) < 32 || ch == 127)
-		{
-			// drop control characters
-		}
-		else if (isColorCode)
-		{
-			// drop color codes
-
-			if (ch == '$')
-			{
-				// convert "$$" to "$"
-				buffer += '$';
-			}
-
-			isColorCode = false;
-		}
-		else if (ch == '$')
-		{
-			isColorCode = true;
-		}
-		else
-		{
-			buffer += ch;
-		}
-	}
-
-	buffer += WinAPI::NEWLINE;
-
-	// workaround for CPU detection messages
-	if (message.content.length() >= 2)
-	{
-		auto it = message.content.rbegin();
-
-		// the message ends with 2 or more newline characters
-		if (*it == '\n' && *++it == '\n')
-		{
-			// add empty line after the message
-			buffer += WinAPI::NEWLINE;
-		}
-	}
-
-	if (message.isAppend)
-	{
-		// move the file pointer before the last newline character
-		const int64_t offset = -static_cast<int64_t>(WinAPI::NEWLINE.length());
-
-		WinAPI::FileSeek(m_file, WinAPI::FileSeekBase::END, offset);
-	}
-
-	WinAPI::FileWrite(m_file, buffer);
-
-	for (ILogCallback *pCallback : m_callbacks)
-	{
-		pCallback->OnWriteToFile(message.content.c_str(), !message.isAppend);
-	}
-}
-
-void Logger::WriteToConsole(const LogMessage & message)
-{
-	if (!gEnv)
-		return;
-
-	IConsole *pConsole = gEnv->pConsole;
-
-	if (!pConsole)
-		return;
-
-	if (message.isAppend)
-		pConsole->PrintLinePlus(message.content.c_str());
-	else
-		pConsole->PrintLine(message.content.c_str());
-
-	for (ILogCallback *pCallback : m_callbacks)
-	{
-		pCallback->OnWriteToConsole(message.content.c_str(), !message.isAppend);
-	}
-}
-
-void Logger::Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend)
-{
-	if (!format)
-	{
-		// drop messages with null format
-		return;
-	}
-
-	int requiredVerbosity = 0;
-
-	switch (type)
-	{
-		case ILog::eAlways:
-		case ILog::eWarningAlways:
-		case ILog::eErrorAlways:
-		case ILog::eInput:
-		case ILog::eInputResponse:
-		{
-			requiredVerbosity = 0;
-			break;
-		}
-		case ILog::eError:
-		{
-			requiredVerbosity = 1;
-			break;
-		}
-		case ILog::eWarning:
-		{
-			requiredVerbosity = 2;
-			break;
-		}
-		case ILog::eMessage:
-		{
-			requiredVerbosity = 3;
-			break;
-		}
-		case ILog::eComment:
-		{
-			requiredVerbosity = 4;
-			break;
-		}
-	}
-
-	const int verbosity = GetVerbosityLevel();
-
-	if (verbosity < requiredVerbosity)
-	{
-		// drop the message
-		return;
-	}
-
-	const int fileVerbosity = (m_pFileVerbosityCVar) ? m_pFileVerbosityCVar->GetIVal() : verbosity;
-
-	if (verbosity > fileVerbosity && fileVerbosity < requiredVerbosity)
-	{
-		isFile = false;
-	}
-
-	// message content
-	StringBuffer<256> buffer;
-
-	switch (type)
-	{
-		case ILog::eWarning:
-		case ILog::eWarningAlways:
-		{
-			buffer += "$6[Warning] ";  // yellow
-			break;
-		}
-		case ILog::eError:
-		case ILog::eErrorAlways:
-		{
-			buffer += "$4[Error] ";  // red
-			break;
-		}
-		case ILog::eComment:
-		{
-			buffer += "$9";  // gray
-			break;
-		}
-		case ILog::eMessage:
-		case ILog::eAlways:
-		case ILog::eInput:
-		case ILog::eInputResponse:
-		{
-			break;
-		}
-	}
-
-	buffer.addFormatV(format, args);
-
-	LogMessage message;
-	message.type = type;
-	message.isFile = isFile;
-	message.isConsole = isConsole;
-	message.isAppend = isAppend;
-	message.content = buffer.toString();
-
-	if (m_pPrefixCVar)
-	{
-		const std::string_view prefix = m_pPrefixCVar->GetString();
-
-		if (!prefix.empty() && prefix != "0")  // the prefix can be disabled by setting the cvar to zero
-		{
-			message.prefix = FormatLogPrefix(prefix);
-		}
-	}
-
-	if (std::this_thread::get_id() == m_mainThreadID)
-	{
-		// messages from the main thread are processed immediately
-		Write(message);
-	}
-	else
-	{
-		// messages from other threads are stored in the message queue
-		// and then processed in OnUpdate called from the main thread
-		m_messageQueue.Push(std::move(message));
-	}
-}
 
 Logger::Logger()
 {
@@ -487,56 +22,259 @@ Logger::~Logger()
 	CloseFile();
 }
 
-void Logger::Init(const char *defaultFileName)
-{
-	const int defaultVerbosity = 0;
-
-	m_fileName = CmdLine::GetArgValue("-logfile", defaultFileName);
-	m_verbosity = CmdLine::GetArgValueInt("-verbosity", defaultVerbosity);
-
-	try
-	{
-		OpenFile();
-	}
-	catch (const std::exception & ex)
-	{
-		//throw Error(std::string("Failed to open the log file!\n\n") + ex.what());
-	}
-
-	CryLogAlways(FormatLogPrefix("BackupNameAttachment=\" Date(%Y %m %d) Time(%H %M %S)\"").c_str());
-	CryLogAlways("");
-}
-
 void Logger::OnUpdate()
 {
-	LogMessage message;
+	std::lock_guard lock(m_mutex);
 
-	while (m_messageQueue.Pop(message))
+	for (const Message& message : m_messages)
 	{
-		Write(message);
+		WriteMessage(message);
+	}
+
+	m_messages.clear();
+}
+
+static std::string_view ExtractBackupNameAttachment(std::string_view header)
+{
+	constexpr std::string_view prefix = "BackupNameAttachment=";
+
+	if (header.length() >= prefix.length() && header.substr(0, prefix.length()) == prefix)
+	{
+		header.remove_prefix(prefix.length());
+
+		if (auto pos = header.find('"'); pos != std::string_view::npos)
+		{
+			header.remove_prefix(pos + 1);
+		}
+
+		if (auto pos = header.find_first_of("\"\r\n"); pos != std::string_view::npos)
+		{
+			header.remove_suffix(header.length() - pos);
+		}
+
+		return header;
+	}
+	else
+	{
+		return "";
 	}
 }
 
-void Logger::LogV(ILog::ELogType type, const char *format, va_list args)
+static void BackupLogFile(std::FILE* file, const std::filesystem::path& filePath)
 {
-	Push(type, format, args, true, true, false);
+	char buffer[256];
+	const std::string_view header(buffer, std::fread(buffer, 1, sizeof buffer, file));
+
+	if (header.empty() && std::feof(file))
+	{
+		// the existing log file is empty, so no backup is needed
+		return;
+	}
+
+	const std::filesystem::path backupDirPath = filePath.parent_path() / "LogBackups";
+
+	std::filesystem::create_directory(backupDirPath);
+
+	std::filesystem::path backupFilePath = backupDirPath;
+	backupFilePath /= filePath.stem();
+	backupFilePath += ExtractBackupNameAttachment(header);
+	backupFilePath += filePath.extension();
+
+	std::filesystem::copy_file(filePath, backupFilePath, std::filesystem::copy_options::overwrite_existing);
 }
 
-void Logger::Release()
+struct FileCloseGuard
 {
+	std::FILE* file = nullptr;
+
+	explicit FileCloseGuard(std::FILE* file) : file(file)
+	{
+	}
+
+	~FileCloseGuard()
+	{
+		std::fclose(this->file);
+	}
+};
+
+void Logger::OpenFile(const std::filesystem::path& filePath)
+{
+	const std::string filePathString = filePath.string();
+
+	if (std::FILE* existingFile = std::fopen(filePathString.c_str(), "r"); existingFile != nullptr)
+	{
+		FileCloseGuard guard(existingFile);
+
+		BackupLogFile(existingFile, filePath);
+	}
+
+	std::FILE* file = std::fopen(filePathString.c_str(), "w");
+
+	if (file == nullptr)
+	{
+		throw std::system_error(errno, std::generic_category(), "Failed to open log file: " + filePathString);
+	}
+
+	CloseFile();
+
+	m_file = file;
+	m_filePath = filePath;
+	m_fileName = filePath.filename().string();
+
+	LogAlways("BackupNameAttachment=\"%s\"", FormatPrefix(" Date(%Y %m %d) Time(%H %M %S)").c_str());
+	LogAlways("");
 }
 
-bool Logger::SetFileName(const char *fileName)
+void Logger::CloseFile()
 {
-	return false;
+	if (m_file)
+	{
+		std::fclose(m_file);
+		m_file = nullptr;
+	}
+
+	m_filePath.clear();
+	m_fileName.clear();
 }
 
-const char *Logger::GetFileName()
+void Logger::SetPrefix(const std::string_view& prefix)
 {
-	return m_fileName.c_str();
+	m_prefix = prefix;
+
+	if (m_cvars.prefix)
+	{
+		m_cvars.prefix->Set(m_prefix.c_str());
+	}
 }
 
-void Logger::Log(const char *format, ...)
+static void AddTimeZoneOffset(std::string& result)
+{
+	long bias = WinAPI::GetTimeZoneBias();
+
+	if (bias == 0)
+	{
+		result += 'Z';  // UTC
+	}
+	else
+	{
+		char sign = '-';
+
+		if (bias < 0)
+		{
+			bias = -bias;
+			sign = '+';
+		}
+
+		result += Format("%c%02u%02u", sign, bias / 60, bias % 60);
+	}
+}
+
+static void ExpandPrefixFormatSpecifier(std::string& result, char specifier, const WinAPI::DateTime& time)
+{
+	switch (specifier)
+	{
+		case '%':
+		{
+			result += '%';
+			break;
+		}
+		case 't':
+		{
+			result += Format("%04x", WinAPI::GetCurrentThreadID());
+			break;
+		}
+		case 'd':
+		{
+			result += Format("%02u", time.day);
+			break;
+		}
+		case 'm':
+		{
+			result += Format("%02u", time.month);
+			break;
+		}
+		case 'Y':
+		{
+			result += Format("%04u", time.year);
+			break;
+		}
+		case 'F':
+		{
+			result += Format("%04u-%02u-%02u", time.year, time.month, time.day);
+			break;
+		}
+		case 'H':
+		{
+			result += Format("%02u", time.hour);
+			break;
+		}
+		case 'M':
+		{
+			result += Format("%02u", time.minute);
+			break;
+		}
+		case 'S':
+		{
+			result += Format("%02u", time.second);
+			break;
+		}
+		case 'T':
+		{
+			result += Format("%02u:%02u:%02u", time.hour, time.minute, time.second);
+			break;
+		}
+		case 'N':
+		{
+			result += Format("%03u", time.millisecond);
+			break;
+		}
+		case 'z':
+		{
+			AddTimeZoneOffset(result);
+			break;
+		}
+	}
+}
+
+std::string Logger::FormatPrefix(const std::string_view& prefix)
+{
+	const WinAPI::DateTime currentTime = WinAPI::GetCurrentDateTimeLocal();
+
+	std::string result;
+	result.reserve(prefix.length());
+
+	for (std::size_t i = 0; i < prefix.length(); i++)
+	{
+		if (prefix[i] == '%')
+		{
+			if ((i + 1) < prefix.length())
+			{
+				ExpandPrefixFormatSpecifier(result, prefix[++i], currentTime);
+			}
+		}
+		else
+		{
+			result += prefix[i];
+		}
+	}
+
+	return result;
+}
+
+void Logger::LogAlways(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	LogV(ILog::eAlways, format, args);
+	va_end(args);
+}
+
+void Logger::LogV(ILog::ELogType type, const char* format, va_list args)
+{
+	PushMessageV(type, Message::FLAG_FILE | Message::FLAG_CONSOLE, format, args);
+}
+
+void Logger::Log(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -544,7 +282,7 @@ void Logger::Log(const char *format, ...)
 	va_end(args);
 }
 
-void Logger::LogWarning(const char *format, ...)
+void Logger::LogWarning(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -552,7 +290,7 @@ void Logger::LogWarning(const char *format, ...)
 	va_end(args);
 }
 
-void Logger::LogError(const char *format, ...)
+void Logger::LogError(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -560,161 +298,420 @@ void Logger::LogError(const char *format, ...)
 	va_end(args);
 }
 
-void Logger::LogPlus(const char *format, ...)
+void Logger::Release()
+{
+	// don't let the engine to delete us
+}
+
+bool Logger::SetFileName(const char* fileName)
+{
+	// don't let the engine to mess with the log file name
+	return true;
+}
+
+const char* Logger::GetFileName()
+{
+	return m_fileName.c_str();
+}
+
+void Logger::LogPlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	Push(ILog::eMessage, format, args, true, true, true);
+	PushMessageV(ILog::eMessage, Message::FLAG_FILE | Message::FLAG_CONSOLE | Message::FLAG_APPEND, format, args);
 	va_end(args);
 }
 
-void Logger::LogToFile(const char *format, ...)
+void Logger::LogToFile(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	Push(ILog::eMessage, format, args, true, false, false);
+	PushMessageV(ILog::eMessage, Message::FLAG_FILE, format, args);
 	va_end(args);
 }
 
-void Logger::LogToFilePlus(const char *format, ...)
+void Logger::LogToFilePlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	Push(ILog::eMessage, format, args, true, false, true);
+	PushMessageV(ILog::eMessage, Message::FLAG_FILE | Message::FLAG_APPEND, format, args);
 	va_end(args);
 }
 
-void Logger::LogToConsole(const char *format, ...)
+void Logger::LogToConsole(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	Push(ILog::eMessage, format, args, false, true, false);
+	PushMessageV(ILog::eMessage, Message::FLAG_CONSOLE, format, args);
 	va_end(args);
 }
 
-void Logger::LogToConsolePlus(const char *format, ...)
+void Logger::LogToConsolePlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	Push(ILog::eMessage, format, args, false, true, true);
+	PushMessageV(ILog::eMessage, Message::FLAG_CONSOLE | Message::FLAG_APPEND, format, args);
 	va_end(args);
 }
 
-void Logger::UpdateLoadingScreen(const char *format, ...)
+void Logger::UpdateLoadingScreen(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
 	LogV(ILog::eMessage, format, args);
 	va_end(args);
 
-	if (!gEnv)
-		return;
-
-	ISystem *pSystem = gEnv->pSystem;
-
-	if (!pSystem->IsEditor())
+	if (std::this_thread::get_id() != m_mainThreadID || !gEnv || gEnv->bEditor)
 	{
-		ISystem::ILoadingProgressListener *pLoadingProgressListener = pSystem->GetLoadingProgressListener();
-		if (pLoadingProgressListener)
-		{
-			pLoadingProgressListener->OnLoadingProgress(0);
-		}
+		return;
+	}
+
+	ISystem* pSystem = gEnv->pSystem;
+
+	ISystem::ILoadingProgressListener* pLoadingProgressListener = pSystem->GetLoadingProgressListener();
+	if (pLoadingProgressListener)
+	{
+		pLoadingProgressListener->OnLoadingProgress(0);
 	}
 }
 
 void Logger::RegisterConsoleVariables()
 {
 	if (!gEnv)
+	{
 		return;
+	}
 
-	IConsole *pConsole = gEnv->pConsole;
+	IConsole* pConsole = gEnv->pConsole;
 
 	if (!pConsole)
+	{
 		return;
+	}
 
-	////////////////////
-	// Existing CVars //
-	////////////////////
-
-	m_pVerbosityCVar = pConsole->RegisterInt("log_Verbosity", m_verbosity, VF_DUMPTODISK,
-	  "Defines the verbosity level for console log messages (use log_FileVerbosity for file logging).\n"
-	  "Usage: log_Verbosity [-1/0/1/2/3/4]\n"
-	  " -1 = Suppress all logs (including eAlways).\n"
-	  "  0 = Suppress all logs (except eAlways).\n"
-	  "  1 = Additional errors.\n"
-	  "  2 = Additional warnings.\n"
-	  "  3 = Additional messages.\n"
-	  "  4 = Additional comments."
+	m_cvars.verbosity = pConsole->RegisterInt("log_Verbosity", m_verbosity, VF_DUMPTODISK,
+		"Defines the verbosity level for console log messages (use log_FileVerbosity for file logging).\n"
+		"Usage: log_Verbosity [-1/0/1/2/3/4]\n"
+		" -1 = Suppress all logs (including eAlways).\n"
+		"  0 = Suppress all logs (except eAlways).\n"
+		"  1 = Additional errors.\n"
+		"  2 = Additional warnings.\n"
+		"  3 = Additional messages.\n"
+		"  4 = Additional comments."
 	);
 
-	m_pFileVerbosityCVar = pConsole->RegisterInt("log_FileVerbosity", m_verbosity, VF_DUMPTODISK,
-	  "Defines the verbosity level for file log messages (if log_Verbosity is higher, this one is used).\n"
-	  "Usage: log_FileVerbosity [-1/0/1/2/3/4]\n"
-	  " -1 = Suppress all logs (including eAlways).\n"
-	  "  0 = Suppress all logs (except eAlways).\n"
-	  "  1 = Additional errors.\n"
-	  "  2 = Additional warnings.\n"
-	  "  3 = Additional messages.\n"
-	  "  4 = Additional comments."
+	m_cvars.fileVerbosity = pConsole->RegisterInt("log_FileVerbosity", m_verbosity, VF_DUMPTODISK,
+		"Defines the verbosity level for file log messages (if log_Verbosity is higher, this one is used).\n"
+		"Usage: log_FileVerbosity [-1/0/1/2/3/4]\n"
+		" -1 = Suppress all logs (including eAlways).\n"
+		"  0 = Suppress all logs (except eAlways).\n"
+		"  1 = Additional errors.\n"
+		"  2 = Additional warnings.\n"
+		"  3 = Additional messages.\n"
+		"  4 = Additional comments."
 	);
 
-	///////////////
-	// New CVars //
-	///////////////
-
-	const std::string defaultPrefix = CmdLine::GetArgValue("-logprefix");
-
-	m_pPrefixCVar = pConsole->RegisterString("log_Prefix", defaultPrefix.c_str(), VF_NOT_NET_SYNCED,
-	  "Defines prefix of each message written to the log file.\n"
-	  "Usage: log_Prefix FORMAT\n"
-	  "The format string consists of normal characters and the following conversion specifiers:\n"
-	  "  %% = %\n"
-	  "  %d = Day of the month (01..31)\n"
-	  "  %m = Month (01..12)\n"
-	  "  %Y = Year (e.g. 2007)\n"
-	  "  %H = Hour (00..23)\n"
-	  "  %M = Minute (00..59)\n"
-	  "  %S = Second (00..60)\n"
-	  "  %N = Millisecond (000..999)\n"
-	  "  %z = Offset from UTC (time zone) in the ISO 8601 format (e.g. +0100)\n"
-	  "  %F = Equivalent to \"%Y-%m-%d\" (the ISO 8601 date format)\n"
-	  "  %T = Equivalent to \"%H:%M:%S\" (the ISO 8601 time format)\n"
-	  "  %t = Thread ID where the message was logged"
+	m_cvars.prefix = pConsole->RegisterString("log_Prefix", m_prefix.c_str(), VF_NOT_NET_SYNCED,
+		"Defines prefix of each message written to the log file.\n"
+		"Usage: log_Prefix FORMAT\n"
+		"The format string consists of normal characters and the following conversion specifiers:\n"
+		"  %% = %\n"
+		"  %d = Day of the month (01..31)\n"
+		"  %m = Month (01..12)\n"
+		"  %Y = Year (e.g. 2007)\n"
+		"  %H = Hour (00..23)\n"
+		"  %M = Minute (00..59)\n"
+		"  %S = Second (00..60)\n"
+		"  %N = Millisecond (000..999)\n"
+		"  %z = Offset from UTC (time zone) in the ISO 8601 format (e.g. +0100)\n"
+		"  %F = Equivalent to \"%Y-%m-%d\" (the ISO 8601 date format)\n"
+		"  %T = Equivalent to \"%H:%M:%S\" (the ISO 8601 time format)\n"
+		"  %t = Thread ID where the message was logged"
 	);
 }
 
 void Logger::UnregisterConsoleVariables()
 {
+	// keep all cvars registered and reuse them
 }
 
 void Logger::SetVerbosity(int verbosity)
 {
-	if (m_pVerbosityCVar)
-		m_pVerbosityCVar->Set(verbosity);
-	else
-		m_verbosity = verbosity;
+	m_verbosity = verbosity;
+
+	if (m_cvars.verbosity)
+	{
+		m_cvars.verbosity->Set(verbosity);
+	}
+
+	if (m_cvars.fileVerbosity)
+	{
+		m_cvars.fileVerbosity->Set(verbosity);
+	}
 }
 
 int Logger::GetVerbosityLevel()
 {
-	if (m_pVerbosityCVar)
-		return m_pVerbosityCVar->GetIVal();
-	else
-		return m_verbosity;
+	return (m_cvars.verbosity) ? m_cvars.verbosity->GetIVal() : m_verbosity;
 }
 
-void Logger::AddCallback(ILogCallback *pCallback)
+void Logger::AddCallback(ILogCallback* callback)
 {
-	if (pCallback && std::count(m_callbacks.begin(), m_callbacks.end(), pCallback) == 0)
+	if (std::this_thread::get_id() != m_mainThreadID)
 	{
-		m_callbacks.push_back(pCallback);
+		return;
+	}
+
+	if (callback && std::count(m_callbacks.begin(), m_callbacks.end(), callback) == 0)
+	{
+		m_callbacks.emplace_back(callback);
 	}
 }
 
-void Logger::RemoveCallback(ILogCallback *pCallback)
+void Logger::RemoveCallback(ILogCallback* callback)
 {
-	if (pCallback)
+	if (std::this_thread::get_id() != m_mainThreadID)
 	{
-		m_callbacks.erase(std::remove(m_callbacks.begin(), m_callbacks.end(), pCallback), m_callbacks.end());
+		return;
+	}
+
+	m_callbacks.erase(std::remove(m_callbacks.begin(), m_callbacks.end(), callback), m_callbacks.end());
+}
+
+void Logger::PushMessage(ILog::ELogType type, unsigned int flags, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	PushMessageV(type, flags, format, args);
+	va_end(args);
+}
+
+void Logger::PushMessageV(ILog::ELogType type, unsigned int flags, const char* format, va_list args)
+{
+	if (!format)
+	{
+		// drop messages with null format
+		return;
+	}
+
+	const int currentVerbosity = GetVerbosityLevel();
+	const int requiredVerbosity = GetRequiredVerbosity(type);
+
+	if (currentVerbosity < requiredVerbosity)
+	{
+		// drop messages above the current verbosity level
+		return;
+	}
+
+	const int currentFileVerbosity = (m_cvars.fileVerbosity) ? m_cvars.fileVerbosity->GetIVal() : currentVerbosity;
+
+	if (currentFileVerbosity < requiredVerbosity)
+	{
+		flags &= ~Message::FLAG_FILE;
+	}
+
+	Message message;
+	message.type = type;
+	message.flags = flags;
+
+	BuildMessagePrefix(message);
+	BuildMessageContent(message, format, args);
+
+	if (std::this_thread::get_id() == m_mainThreadID)
+	{
+		WriteMessage(message);
+	}
+	else
+	{
+		std::lock_guard lock(m_mutex);
+
+		m_messages.emplace_back(std::move(message));
+	}
+}
+
+int Logger::GetRequiredVerbosity(ILog::ELogType type)
+{
+	switch (type)
+	{
+		case ILog::eAlways:
+		case ILog::eWarningAlways:
+		case ILog::eErrorAlways:
+		case ILog::eInput:
+		case ILog::eInputResponse:
+		{
+			return 0;
+		}
+		case ILog::eError:
+		{
+			return 1;
+		}
+		case ILog::eWarning:
+		{
+			return 2;
+		}
+		case ILog::eMessage:
+		{
+			return 3;
+		}
+		case ILog::eComment:
+		{
+			return 4;
+		}
+	}
+
+	return 0;
+}
+
+void Logger::BuildMessagePrefix(Message& message)
+{
+	if (!m_cvars.prefix)
+	{
+		// no log prefix until cvars are registered in the engine
+		return;
+	}
+
+	const std::string_view prefix = m_cvars.prefix->GetString();
+
+	if (prefix.empty() || prefix == "0")
+	{
+		// empty string or "0" means log prefix is disabled
+		return;
+	}
+
+	message.prefix = FormatPrefix(prefix);
+
+	if (!message.prefix.empty())
+	{
+		message.prefix += ' ';
+	}
+}
+
+void Logger::BuildMessageContent(Message& message, const char* format, va_list args)
+{
+	switch (message.type)
+	{
+		case ILog::eWarning:
+		case ILog::eWarningAlways:
+		{
+			message.content += CRY_COLOR_CODE_YELLOW_STRING "[Warning] ";
+			break;
+		}
+		case ILog::eError:
+		case ILog::eErrorAlways:
+		{
+			message.content += CRY_COLOR_CODE_RED_STRING "[Error] ";
+			break;
+		}
+		case ILog::eComment:
+		{
+			message.content += CRY_COLOR_CODE_GRAY_STRING;
+			break;
+		}
+		case ILog::eMessage:
+		case ILog::eAlways:
+		case ILog::eInput:
+		case ILog::eInputResponse:
+		{
+			break;
+		}
+	}
+
+	message.content += FormatV(format, args);
+}
+
+void Logger::WriteMessage(const Message& message)
+{
+	if (message.flags & Message::FLAG_FILE)
+	{
+		WriteMessageToFile(message);
+	}
+
+	if (message.flags & Message::FLAG_CONSOLE)
+	{
+		WriteMessageToConsole(message);
+	}
+}
+
+void Logger::WriteMessageToFile(const Message& message)
+{
+	if (!m_file)
+	{
+		return;
+	}
+
+	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
+
+	std::string buffer;
+	buffer.reserve(message.prefix.length() + message.content.length() + 1);
+
+	if (!isAppend)
+	{
+		buffer += message.prefix;
+	}
+
+	for (std::size_t i = 0; i < message.content.length(); i++)
+	{
+		if (message.content[i] == '$')
+		{
+			// drop color codes
+			// and convert "$$" to "$"
+			if ((i + 1) < message.content.length() && message.content[++i] == '$')
+			{
+				buffer += '$';
+			}
+		}
+		else
+		{
+			buffer += message.content[i];
+		}
+	}
+
+	if (buffer.empty() || buffer.back() != '\n')
+	{
+		buffer += '\n';
+	}
+
+	if (isAppend)
+	{
+		std::fseek(m_file, -static_cast<int>(WinAPI::NEWLINE.length()), SEEK_CUR);
+	}
+
+	std::fwrite(buffer.c_str(), 1, buffer.length(), m_file);
+	std::fflush(m_file);
+
+	for (ILogCallback* callback : m_callbacks)
+	{
+		callback->OnWriteToFile(message.content.c_str(), !isAppend);
+	}
+}
+
+void Logger::WriteMessageToConsole(const Message& message)
+{
+	if (!gEnv)
+	{
+		return;
+	}
+
+	IConsole* pConsole = gEnv->pConsole;
+
+	if (!pConsole)
+	{
+		return;
+	}
+
+	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
+
+	if (isAppend)
+	{
+		pConsole->PrintLinePlus(message.content.c_str());
+	}
+	else
+	{
+		pConsole->PrintLine(message.content.c_str());
+	}
+
+	for (ILogCallback* callback : m_callbacks)
+	{
+		callback->OnWriteToConsole(message.content.c_str(), !isAppend);
 	}
 }

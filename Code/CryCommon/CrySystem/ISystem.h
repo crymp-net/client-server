@@ -787,7 +787,7 @@ struct ISystem
 //////////////////////////////////////////////////////////////////////////
 // Global environment variable.
 //////////////////////////////////////////////////////////////////////////
-extern SSystemGlobalEnvironment* gEnv;
+inline SSystemGlobalEnvironment* gEnv;
 
 //////////////////////////////////////////////////////////////////////////
 // Get the system interface
@@ -816,10 +816,6 @@ struct IMemoryManager
 	};
 	virtual bool GetProcessMemInfo( SProcessMemInfo &minfo ) = 0;
 };
-
-
-// This function must be called once by each module at the begining, to setup global pointers.
-extern void ModuleInitISystem( ISystem *pSystem );
 
 
 void CryLog(const char* format, ...);

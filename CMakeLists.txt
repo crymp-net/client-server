@@ -182,6 +182,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CrySoundSystem/IReverbManager.h
   Code/CryCommon/CrySoundSystem/ISound.h
   Code/CryCommon/CrySoundSystem/ISoundMoodManager.h
+  Code/CryCommon/CrySystem/CryColorCode.h
   Code/CryCommon/CrySystem/CryFile.h
   Code/CryCommon/CrySystem/CryPath.h
   Code/CryCommon/CrySystem/CryVersion.h
@@ -195,12 +196,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryCommon/CrySystem/IFlashPlayer.h
   Code/CryCommon/CrySystem/IGlobalTaskScheduler.h
   Code/CryCommon/CrySystem/ILog.h
-  Code/CryCommon/CrySystem/IMiniLog.h
   Code/CryCommon/CrySystem/IProcess.h
   Code/CryCommon/CrySystem/IReadWriteXMLSink.h
   Code/CryCommon/CrySystem/IResourceCollector.h
   Code/CryCommon/CrySystem/IStreamEngine.h
-  Code/CryCommon/CrySystem/ISystem.cpp
   Code/CryCommon/CrySystem/ISystem.h
   Code/CryCommon/CrySystem/ITestSystem.h
   Code/CryCommon/CrySystem/ITextModeConsole.h
@@ -620,6 +619,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CryScriptSystem/ScriptTimerManager.h
   Code/CryScriptSystem/ScriptUtil.cpp
   Code/CryScriptSystem/ScriptUtil.h
+  Code/CrySystem/CryLog.cpp
+  Code/CrySystem/CryLog.h
   Code/CrySystem/CryMemoryManager.cpp
   Code/CrySystem/CryMemoryManager.h
   Code/CrySystem/GameWindow.cpp
@@ -642,8 +643,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Launcher/Resources.h
   Code/Library/CPUID.cpp
   Code/Library/CPUID.h
-  Code/Library/CmdLine.cpp
-  Code/Library/CmdLine.h
   Code/Library/DLL.cpp
   Code/Library/DLL.h
   Code/Library/Error.cpp

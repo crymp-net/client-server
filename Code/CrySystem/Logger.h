@@ -1,65 +1,55 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <thread>
-#include <deque>
+#include <cstdio>
+#include <filesystem>
 #include <mutex>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <thread>
+#include <vector>
 
 #include "CryCommon/CrySystem/ILog.h"
 
 struct ICVar;
 
-struct LogMessage
+class Logger final : public ILog
 {
-	ILog::ELogType type = ILog::eMessage;
+	struct Message
+	{
+		enum Flags
+		{
+			FLAG_FILE    = (1 << 0),
+			FLAG_CONSOLE = (1 << 1),
+			FLAG_APPEND  = (1 << 2),
+		};
 
-	bool isFile = false;
-	bool isConsole = false;
-	bool isAppend = false;
+		ILog::ELogType type = ILog::eMessage;
+		unsigned int flags = 0;
+		std::string prefix;
+		std::string content;
+	};
 
-	std::string prefix;
-	std::string content;
-};
+	int m_verbosity = 0;
+	std::FILE* m_file = nullptr;
+	std::filesystem::path m_filePath;
+	std::string m_fileName;
+	std::string m_prefix;
 
-class LogMessageQueue
-{
-	std::deque<LogMessage> m_queue;
+	struct CVars
+	{
+		ICVar* verbosity = nullptr;
+		ICVar* fileVerbosity = nullptr;
+		ICVar* prefix = nullptr;
+	};
+
+	CVars m_cvars;
 	std::mutex m_mutex;
-
-public:
-	LogMessageQueue() = default;
-
-	// thread-safe
-	void Push(LogMessage && message);
-	bool Pop(LogMessage & message);
-};
-
-class Logger : public ILog
-{
 	std::thread::id m_mainThreadID;
-	LogMessageQueue m_messageQueue;
-
-	ICVar *m_pVerbosityCVar = nullptr;
-	ICVar *m_pFileVerbosityCVar = nullptr;
-	ICVar *m_pPrefixCVar = nullptr;
-
+	std::vector<Message> m_messages;
 	std::vector<ILogCallback*> m_callbacks;
 
-	std::string m_fileName;
-	void *m_file = nullptr;
-	int m_verbosity = 0;
-
 	static Logger s_globalInstance;
-
-	void OpenFile();
-	void CloseFile();
-
-	void Write(const LogMessage & message);
-	void WriteToFile(const LogMessage & message);
-	void WriteToConsole(const LogMessage & message);
-
-	void Push(ILog::ELogType type, const char *format, va_list args, bool isFile, bool isConsole, bool isAppend);
 
 public:
 	Logger();
@@ -71,36 +61,49 @@ public:
 		return s_globalInstance;
 	}
 
-	void Init(const char *defaultFileName);
 	void OnUpdate();
 
-	void *GetFile()
+	void OpenFile(const std::filesystem::path& filePath);
+	void CloseFile();
+
+	std::FILE* GetFileHandle()
 	{
 		return m_file;
 	}
 
-	//////////
-	// ILog //
-	//////////
+	const std::filesystem::path& GetFilePath() const
+	{
+		return m_filePath;
+	}
 
-	void LogV(ILog::ELogType type, const char *format, va_list args) override;
+	void SetPrefix(const std::string_view& prefix);
+
+	static std::string FormatPrefix(const std::string_view& prefix);
+
+	void LogAlways(const char* format, ...);
+
+	////////////////////////////////////////////////////////////////////////////////
+	// ILog
+	////////////////////////////////////////////////////////////////////////////////
+
+	void LogV(ILog::ELogType type, const char* format, va_list args) override;
+
+	void Log(const char* format, ...) override;
+	void LogWarning(const char* format, ...) override;
+	void LogError(const char* format, ...) override;
 
 	void Release() override;
 
-	bool SetFileName(const char *fileName) override;
-	const char *GetFileName() override;
+	bool SetFileName(const char* fileName) override;
+	const char* GetFileName() override;
 
-	void Log(const char *format, ...) override;
-	void LogWarning(const char *format, ...) override;
-	void LogError(const char *format, ...) override;
+	void LogPlus(const char* format, ...) override;
+	void LogToFile(const char* format, ...) override;
+	void LogToFilePlus(const char* format, ...) override;
+	void LogToConsole(const char* format, ...) override;
+	void LogToConsolePlus(const char* format, ...) override;
 
-	void LogPlus(const char *format, ...) override;
-	void LogToFile(const char *format, ...) override;
-	void LogToFilePlus(const char *format, ...) override;
-	void LogToConsole(const char *format, ...) override;
-	void LogToConsolePlus(const char *format, ...) override;
-
-	void UpdateLoadingScreen(const char *format, ...) override;
+	void UpdateLoadingScreen(const char* format, ...) override;
 
 	void RegisterConsoleVariables() override;
 	void UnregisterConsoleVariables() override;
@@ -108,6 +111,22 @@ public:
 	void SetVerbosity(int verbosity) override;
 	int GetVerbosityLevel() override;
 
-	void AddCallback(ILogCallback *pCallback) override;
-	void RemoveCallback(ILogCallback *pCallback) override;
+	void AddCallback(ILogCallback* callback) override;
+	void RemoveCallback(ILogCallback* callback) override;
+
+	////////////////////////////////////////////////////////////////////////////////
+
+private:
+	void PushMessage(ILog::ELogType type, unsigned int flags, const char* format, ...);
+	void PushMessageV(ILog::ELogType type, unsigned int flags, const char* format, va_list args);
+
+	int GetRequiredVerbosity(ILog::ELogType type);
+
+	void BuildMessagePrefix(Message& message);
+	void BuildMessageContent(Message& message, const char* format, va_list args);
+
+	void WriteMessage(const Message& message);
+
+	void WriteMessageToFile(const Message& message);
+	void WriteMessageToConsole(const Message& message);
 };

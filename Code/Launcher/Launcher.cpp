@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <cstring>
 
 #include "CryCommon/CryAction/IGameFramework.h"
@@ -11,7 +12,6 @@
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
-#include "Library/CmdLine.h"
 #include "Library/Error.h"
 #include "Library/Format.h"
 #include "Library/WinAPI.h"
@@ -132,7 +132,7 @@ namespace
 
 void Launcher::SetCmdLine()
 {
-	const std::string_view cmdLine = WinAPI::GetCmdLine();
+	const std::string_view cmdLine = WinAPI::CmdLine::GetFull();
 
 	if (cmdLine.length() >= sizeof m_params.cmdLine)
 	{
@@ -148,10 +148,9 @@ void Launcher::InitWorkingDirectory()
 {
 	std::filesystem::path dir;
 
-	const std::string dirArg = CmdLine::GetArgValue("-dir");
-	if (!dirArg.empty())
+	if (const std::string_view dirArgValue = WinAPI::CmdLine::GetArgValue("-dir"); !dirArgValue.empty())
 	{
-		dir = dirArg;
+		dir = dirArgValue;
 	}
 	else
 	{
@@ -259,7 +258,7 @@ void Launcher::LoadEngine()
 		throw SystemError("Failed to load the CryNetwork DLL!");
 	}
 
-	const bool isDX10 = !CmdLine::HasArg("-dx9") && (CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
+	const bool isDX10 = !WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
 
 	if (isDX10)
 	{
@@ -296,7 +295,7 @@ void Launcher::PatchEngine()
 		Patch::DisableIOErrorLog(m_CrySystem);
 		Patch::HookCPUDetect(m_CrySystem, &CPUInfo::Detect);
 
-		if (!CmdLine::HasArg("-oldss"))
+		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{
 			ReplaceScriptSystem(m_CrySystem);
 		}
@@ -402,43 +401,44 @@ void Launcher::OnInit(ISystem *pSystem)
 {
 	gEnv = pSystem->GetGlobalEnvironment();
 
-	// open the log file
-	Logger::GetInstance().Init(m_params.logFileName);
+	const std::filesystem::path mainDirPath = std::filesystem::current_path();
+	const std::filesystem::path userDirPath = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%"));
+	const std::filesystem::path rootDirPath = std::filesystem::canonical(gEnv->pSystem->GetRootFolder());
 
-	// crash logger requires the log file
+	const char* defaultVerbosity = "0";
+	const char* defaultLogFileName = "CryMP-Client.log";
+	const char* defaultLogPrefix = "";
+
+	const int verbosity = std::atoi(WinAPI::CmdLine::GetArgValue("-verbosity", defaultVerbosity));
+	const char* logFileName = WinAPI::CmdLine::GetArgValue("-logfile", defaultLogFileName);
+	const char* logPrefix = WinAPI::CmdLine::GetArgValue("-logprefix", defaultLogPrefix);
+
+	Logger& logger = Logger::GetInstance();
+
+	logger.SetVerbosity(verbosity);
+	logger.OpenFile((rootDirPath.empty() ? userDirPath : rootDirPath) / logFileName);
+
+	// crash logger requires the log file to be open
 	CrashLogger::Init();
 
-	const WinAPI::DateTime dateTime = WinAPI::GetCurrentDateTimeLocal();
-	const std::string timeZone = WinAPI::GetTimeZoneOffsetString();
+	logger.LogAlways("Log begins at %s", Logger::FormatPrefix("%F %T%z").c_str());
 
-	CryLogAlways("Log begins at %4hu-%02hu-%02hu %02hu:%02hu:%02hu%s",
-		dateTime.year,
-		dateTime.month,
-		dateTime.day,
-		dateTime.hour,
-		dateTime.minute,
-		dateTime.second,
-		timeZone.c_str()
-	);
+	logger.LogAlways("Executable: %s", WinAPI::GetApplicationPath().string().c_str());
+	logger.LogAlways("Main directory: %s", mainDirPath.string().c_str());
+	logger.LogAlways("User directory: %s", userDirPath.string().c_str());
+	logger.LogAlways("Root directory: %s", rootDirPath.string().c_str());
+	logger.LogAlways("");
 
-	const std::string mainDir = std::filesystem::current_path().string();
-	const std::string userDir = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%")).string();
-	const std::string rootDir = std::filesystem::canonical(gEnv->pSystem->GetRootFolder()).string();
+	const SFileVersion& version = gEnv->pSystem->GetProductVersion();
 
-	CryLogAlways("Executable: %s", WinAPI::GetApplicationPath().string().c_str());
-	CryLogAlways("Main directory: %s", mainDir.c_str());
-	CryLogAlways("User directory: %s", userDir.c_str());
-	CryLogAlways("Root directory: %s", rootDir.c_str());
-	CryLogAlways("");
+	logger.LogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
+	logger.LogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
+	logger.LogAlways("Compiled by " CRYMP_CLIENT_COMPILER " at " BUILD_DATE_TIME " [" CRYMP_CLIENT_BUILD_TYPE "]");
+	logger.LogAlways("Copyright (C) 2001-2008 Crytek GmbH");
+	logger.LogAlways("Copyright (C) 2014-2022 CryMP Network");
+	logger.LogAlways("");
 
-	const SFileVersion & version = gEnv->pSystem->GetProductVersion();
-
-	CryLogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
-	CryLogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
-	CryLogAlways("Compiled by " CRYMP_CLIENT_COMPILER " at " BUILD_DATE_TIME " [" CRYMP_CLIENT_BUILD_TYPE "]");
-	CryLogAlways("Copyright (C) 2001-2008 Crytek GmbH");
-	CryLogAlways("Copyright (C) 2014-2022 CryMP Network");
-	CryLogAlways("");
+	logger.SetPrefix(logPrefix);
 }
 
 void Launcher::OnShutdown()
@@ -456,8 +456,6 @@ void Launcher::GetMemoryUsage(ICrySizer *pSizer)
 
 void Launcher::Run()
 {
-	m_params.logFileName = "CryMP-Client.log";
-
 	m_params.hInstance = WinAPI::DLL_Get(nullptr);  // EXE handle
 	m_params.pUserCallback = this;
 	m_params.pLog = &Logger::GetInstance();
@@ -469,12 +467,12 @@ void Launcher::Run()
 		throw Error("Invalid name of the executable!");
 	}
 
-	if (CmdLine::HasArg("-mod"))
+	if (WinAPI::CmdLine::HasArg("-mod"))
 	{
 		throw Error("Mods are not supported!");
 	}
 
-	if (CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
+	if (WinAPI::CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
 	{
 		throw Error("Running as a dedicated server is not supported!");
 	}

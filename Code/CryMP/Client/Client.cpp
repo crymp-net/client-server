@@ -8,7 +8,6 @@
 #include "CryMP/Common/GSMasterHook.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
-#include "Library/CmdLine.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -228,7 +227,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->AddCommand("bind", OnKeyBindCmd, VF_NOT_NET_SYNCED, "Usage: bind key command");
 	pConsole->AddCommand("dumpbinds", OnDumpKeyBindsCmd, VF_RESTRICTEDMODE, "Usage: dumpbinds");
 
-	if (!CmdLine::HasArg("-keepcdkey"))
+	if (!WinAPI::CmdLine::HasArg("-keepcdkey"))
 	{
 		// workaround for legacy servers with CD-Key check
 		SetRandomCDKey();

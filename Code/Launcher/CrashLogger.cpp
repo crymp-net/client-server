@@ -401,17 +401,12 @@ static const char *ExceptionCodeToString(unsigned int code)
 
 static void Log(const std::string_view & message)
 {
-	void *file = Logger::GetInstance().GetFile();
+	std::FILE* file = Logger::GetInstance().GetFileHandle();
 
 	if (file)
 	{
-		std::string line;
-		line.reserve(message.length() + WinAPI::NEWLINE.length());
-
-		line += message;
-		line += WinAPI::NEWLINE;
-
-		WinAPI::FileWrite(file, line);
+		std::fprintf(file, "%.*s\n", static_cast<int>(message.length()), message.data());
+		std::fflush(file);
 	}
 }
 
@@ -498,7 +493,7 @@ static void OnCrash(_EXCEPTION_POINTERS *pExceptionInfo)
 	}
 
 	Log("Command line:");
-	Log(WinAPI::GetCmdLine());
+	Log(WinAPI::CmdLine::GetFull());
 
 	Log("================================================================================");
 }
