@@ -1,10 +1,10 @@
 #include <cstring>
 
-#include "CryCommon/CrySystem/ISystem.h"
 #include "Library/CPUID.h"
 #include "Library/WinAPI.h"
 
 #include "CPUInfo.h"
+#include "CryLog.h"
 
 static unsigned int GetCoreCount()
 {
@@ -58,15 +58,12 @@ void CPUInfo::Detect(CPUInfo* self)
 	self->coreCountPhysical = coreCount;
 	self->cores[0].flags = features;
 
-	if (gEnv)
-	{
-		CryLogAlways("%s [Count: %u] [Features:%s%s%s%s]",
-			g_cpuid.brand_string.data(),
-			coreCount,
-			(features & FLAG_MMX)   ? " MMX"    : "",
-			(features & FLAG_3DNOW) ? " 3DNow!" : "",
-			(features & FLAG_SSE)   ? " SSE"    : "",
-			(features & FLAG_SSE2)  ? " SSE2"   : ""
-		);
-	}
+	CryLogAlways("%s [Count: %u] [Features:%s%s%s%s]",
+		g_cpuid.brand_string.data(),
+		coreCount,
+		(features & FLAG_MMX)   ? " MMX"    : "",
+		(features & FLAG_3DNOW) ? " 3DNow!" : "",
+		(features & FLAG_SSE)   ? " SSE"    : "",
+		(features & FLAG_SSE2)  ? " SSE2"   : ""
+	);
 }

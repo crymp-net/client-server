@@ -7,6 +7,7 @@
 #include "CryGame/Game.h"
 #include "CryMP/Client/Client.h"
 #include "CryScriptSystem/ScriptSystem.h"
+#include "CrySystem/CPUInfo.h"
 #include "CrySystem/CryMemoryManager.h"
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/LocalizationManager.h"
@@ -18,7 +19,6 @@
 
 #include "Launcher.h"
 #include "Patch.h"
-#include "CPUInfo.h"
 #include "CrashLogger.h"
 
 #include "config.h"

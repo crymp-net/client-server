@@ -6,7 +6,7 @@
  * Do not change the content.
  * Total size is 8720 bytes in both 32-bit and 64-bit code.
  *
- * The purpose of this is to replace the problematic CPU detection mechanism in CrySystem.
+ * The purpose of this is to replace the problematic CPU detection mechanism in the original CrySystem.
  */
 struct CPUInfo
 {
