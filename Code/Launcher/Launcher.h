@@ -10,6 +10,7 @@ class Launcher : public ISystemUserCallback
 	DLL m_CryAction;
 	DLL m_CryNetwork;
 	DLL m_CrySystem;
+	DLL m_CryRenderD3D9;
 	DLL m_CryRenderD3D10;
 	SSystemInitParams m_params;
 	CGame *m_pGame = nullptr;

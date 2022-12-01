@@ -291,6 +291,111 @@ void Patch::DisableIOErrorLog(const DLL & CrySystem)
 #endif
 }
 
+///////////////////
+// CryRenderD3D9 //
+///////////////////
+
+static void WindowNameSetter(char* buffer, const char* name)
+{
+	constexpr std::size_t BUFFER_SIZE = 80;
+
+	std::size_t length = std::strlen(name);
+	if (length >= BUFFER_SIZE)
+	{
+		length = BUFFER_SIZE - 1;
+	}
+
+	std::memcpy(buffer, name, length + 1);
+}
+
+void Patch::HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name)
+{
+	const void* pSetFunc = &WindowNameSetter;
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rdx, 0x0
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0                                                   // call rax
+	};
+
+	std::memcpy(&code[2], &name, 8);
+	std::memcpy(&code[12], &pSetFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0x50,                                // push eax
+		0x8D, 0x86, 0x84, 0x2C, 0x02, 0x00,  // lea eax, dword ptr ds:[esi+0x22C84]
+		0x50,                                // push eax
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0xFF, 0xD0,                          // call eax
+		0x33, 0xC0,                          // xor eax, eax
+		0x50,                                // push eax
+		0x50,                                // push eax
+		0x90,                                // nop
+		0x90,                                // nop
+		0x90                                 // nop
+	};
+
+	std::memcpy(&code[1], &name, 4);
+	std::memcpy(&code[14], &pSetFunc, 4);
+#endif
+
+	void* pCryRenderD3D9 = CryRenderD3D9.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillMem(RVA(pCryRenderD3D9, 0xD0FF0), code, sizeof code);
+#else
+	FillMem(RVA(pCryRenderD3D9, 0x9A8AA), code, sizeof code);
+#endif
+}
+
+////////////////////
+// CryRenderD3D10 //
+////////////////////
+
+void Patch::HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name)
+{
+	const void* pSetFunc = &WindowNameSetter;
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rdx, 0x0
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0                                                   // call rax
+	};
+
+	std::memcpy(&code[2], &name, 8);
+	std::memcpy(&code[12], &pSetFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0x50,                                // push eax
+		0x8D, 0x86, 0x84, 0x2C, 0x02, 0x00,  // lea eax, dword ptr ds:[esi+0x22C84]
+		0x50,                                // push eax
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0xFF, 0xD0,                          // call eax
+		0x33, 0xC0,                          // xor eax, eax
+		0x50,                                // push eax
+		0x50,                                // push eax
+		0x90,                                // nop
+		0x90,                                // nop
+		0x90                                 // nop
+	};
+
+	std::memcpy(&code[1], &name, 4);
+	std::memcpy(&code[14], &pSetFunc, 4);
+#endif
+
+	void* pCryRenderD3D10 = CryRenderD3D10.GetHandle();
+
+#ifdef BUILD_64BIT
+	FillMem(RVA(pCryRenderD3D10, 0xC95DD), code, sizeof code);
+#else
+	FillMem(RVA(pCryRenderD3D10, 0x99C57), code, sizeof code);
+#endif
+}
+
 void Patch::FixLowRefreshRateBug(const DLL & CryRenderD3D10)
 {
 	void *pCryRenderD3D10 = CryRenderD3D10.GetHandle();

@@ -24,6 +24,10 @@ namespace Patch
 	void HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info));
 	void DisableIOErrorLog(const DLL & CrySystem);
 
+	// CryRenderD3D9
+	void HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name);
+
 	// CryRenderD3D10
+	void HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name);
 	void FixLowRefreshRateBug(const DLL & CryRenderD3D10);
 }

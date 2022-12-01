@@ -267,6 +267,13 @@ void Launcher::LoadEngine()
 			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
 		}
 	}
+	else
+	{
+		if (!m_CryRenderD3D9.Load("CryRenderD3D9.dll", DLL::NO_RELEASE))
+		{
+			throw SystemError("Failed to load the CryRenderD3D9 DLL!");
+		}
+	}
 }
 
 void Launcher::PatchEngine()
@@ -303,8 +310,16 @@ void Launcher::PatchEngine()
 		ReplaceLocalizationManager(m_CrySystem);
 	}
 
+	constexpr char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
+
+	if (m_CryRenderD3D9)
+	{
+		Patch::HookWindowNameD3D9(m_CryRenderD3D9, GAME_WINDOW_NAME);
+	}
+
 	if (m_CryRenderD3D10)
 	{
+		Patch::HookWindowNameD3D10(m_CryRenderD3D10, GAME_WINDOW_NAME);
 		Patch::FixLowRefreshRateBug(m_CryRenderD3D10);
 	}
 }
