@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 ################################################################################
 
-project(CryMP-Client VERSION 17 LANGUAGES C CXX RC)
+project(CryMP-Client VERSION 18 LANGUAGES C CXX RC)
 
 ################################################################################
 
