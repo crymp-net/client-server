@@ -22,7 +22,6 @@ class Logger final : public ILog
 		{
 			FLAG_FILE    = (1 << 0),
 			FLAG_CONSOLE = (1 << 1),
-			FLAG_APPEND  = (1 << 2),
 		};
 
 		ILog::ELogType type = ILog::eMessage;

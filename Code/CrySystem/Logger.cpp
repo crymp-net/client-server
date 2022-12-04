@@ -306,7 +306,7 @@ void Logger::LogPlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	PushMessageV(ILog::eMessage, Message::FLAG_FILE | Message::FLAG_CONSOLE | Message::FLAG_APPEND, format, args);
+	PushMessageV(ILog::eMessage, Message::FLAG_FILE | Message::FLAG_CONSOLE, format, args);
 	va_end(args);
 }
 
@@ -322,7 +322,7 @@ void Logger::LogToFilePlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	PushMessageV(ILog::eMessage, Message::FLAG_FILE | Message::FLAG_APPEND, format, args);
+	PushMessageV(ILog::eMessage, Message::FLAG_FILE, format, args);
 	va_end(args);
 }
 
@@ -338,7 +338,7 @@ void Logger::LogToConsolePlus(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	PushMessageV(ILog::eMessage, Message::FLAG_CONSOLE | Message::FLAG_APPEND, format, args);
+	PushMessageV(ILog::eMessage, Message::FLAG_CONSOLE, format, args);
 	va_end(args);
 }
 
@@ -652,23 +652,13 @@ void Logger::WriteMessageToFile(const Message& message)
 		buffer += '\n';
 	}
 
-	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
-
-	if (isAppend)
-	{
-		std::fseek(m_file.get(), -static_cast<int>(WinAPI::NEWLINE.length()), SEEK_CUR);
-	}
-	else
-	{
-		std::fwrite(message.prefix.c_str(), 1, message.prefix.length(), m_file.get());
-	}
-
+	std::fwrite(message.prefix.c_str(), 1, message.prefix.length(), m_file.get());
 	std::fwrite(buffer.c_str(), 1, buffer.length(), m_file.get());
 	std::fflush(m_file.get());
 
 	for (ILogCallback* callback : m_callbacks)
 	{
-		callback->OnWriteToFile(message.content.c_str(), !isAppend);
+		callback->OnWriteToFile(message.content.c_str(), true);
 	}
 }
 
@@ -686,19 +676,10 @@ void Logger::WriteMessageToConsole(const Message& message)
 		return;
 	}
 
-	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
-
-	if (isAppend)
-	{
-		pConsole->PrintLinePlus(message.content.c_str());
-	}
-	else
-	{
-		pConsole->PrintLine(message.content.c_str());
-	}
+	pConsole->PrintLine(message.content.c_str());
 
 	for (ILogCallback* callback : m_callbacks)
 	{
-		callback->OnWriteToConsole(message.content.c_str(), !isAppend);
+		callback->OnWriteToConsole(message.content.c_str(), true);
 	}
 }
