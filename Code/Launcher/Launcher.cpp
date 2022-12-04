@@ -355,8 +355,8 @@ void Launcher::StartEngine()
 
 	// initialize the game
 	// mods are not supported
-	m_pGame = new CGame();
-	if (!m_pGame->Init(pGameFramework))
+	g_pGame = new CGame();
+	if (!g_pGame->Init(pGameFramework))
 	{
 		throw Error("Game initialization failed!");
 	}
@@ -380,7 +380,7 @@ void Launcher::UpdateLoop()
 			break;
 		}
 
-		if (!m_pGame->Update(true, 0))
+		if (!g_pGame->Update(true, 0))
 		{
 			GameWindow::GetInstance().OnQuit();
 			break;

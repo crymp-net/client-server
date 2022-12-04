@@ -20,7 +20,6 @@ public:
 private:
 	DLLs m_dlls;
 	SSystemInitParams m_params;
-	CGame *m_pGame = nullptr;
 
 	void SetCmdLine();
 	void InitWorkingDirectory();
@@ -51,11 +50,6 @@ public:
 	const SSystemInitParams & GetParams() const
 	{
 		return m_params;
-	}
-
-	CGame *GetGame()
-	{
-		return m_pGame;
 	}
 
 	void Run();
