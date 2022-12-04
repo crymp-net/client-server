@@ -37,13 +37,12 @@ namespace
 		return pScriptSystem;
 	}
 
-	void ReplaceScriptSystem(const DLL & CrySystem)
+	void ReplaceScriptSystem(void* pCrySystem)
 	{
 		using WinAPI::RVA;
 		using WinAPI::FillNOP;
 		using WinAPI::FillMem;
 
-		void *pCrySystem = CrySystem.GetHandle();
 		void *pNewFunc = CreateNewScriptSystem;
 
 #ifdef BUILD_64BIT
@@ -71,7 +70,7 @@ namespace
 		FillNOP(RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
 	}
 
-	void ReplaceLocalizationManager(const DLL & CrySystem)
+	void ReplaceLocalizationManager(void* pCrySystem)
 	{
 		struct DummyCSystem
 		{
@@ -92,7 +91,6 @@ namespace
 		using WinAPI::FillNOP;
 		using WinAPI::FillMem;
 
-		void* pCrySystem = CrySystem.GetHandle();
 		void* pNewFunc = &DummyCSystem::InitLocalizationManager;
 
 #ifdef BUILD_64BIT
@@ -182,7 +180,8 @@ void Launcher::InitWorkingDirectory()
 
 void Launcher::LoadEngine()
 {
-	if (!m_CrySystem.Load("CrySystem.dll", DLL::NO_RELEASE))  // unloading Crysis DLLs is not safe
+	m_dlls.pCrySystem = WinAPI::DLL_Load("CrySystem.dll");
+	if (!m_dlls.pCrySystem)
 	{
 		if (SystemError::GetCurrentCode() == 193)  // ERROR_BAD_EXE_FORMAT
 		{
@@ -200,13 +199,13 @@ void Launcher::LoadEngine()
 		}
 	}
 
-	const int gameVersion = WinAPI::GetCrysisGameBuild(m_CrySystem.GetHandle());
+	const int gameVersion = WinAPI::GetCrysisGameBuild(m_dlls.pCrySystem);
 	if (gameVersion < 0)
 	{
 		throw SystemError("Failed to get the game version!");
 	}
 
-	CryMemoryManager::Init(m_CrySystem);
+	CryMemoryManager::Init(m_dlls.pCrySystem);
 
 	switch (gameVersion)
 	{
@@ -248,12 +247,14 @@ void Launcher::LoadEngine()
 		}
 	}
 
-	if (!m_CryAction.Load("CryAction.dll", DLL::NO_RELEASE))
+	m_dlls.pCryAction = WinAPI::DLL_Load("CryAction.dll");
+	if (!m_dlls.pCryAction)
 	{
 		throw SystemError("Failed to load the CryAction DLL!");
 	}
 
-	if (!m_CryNetwork.Load("CryNetwork.dll", DLL::NO_RELEASE))
+	m_dlls.pCryNetwork = WinAPI::DLL_Load("CryNetwork.dll");
+	if (!m_dlls.pCryNetwork)
 	{
 		throw SystemError("Failed to load the CryNetwork DLL!");
 	}
@@ -262,14 +263,16 @@ void Launcher::LoadEngine()
 
 	if (isDX10)
 	{
-		if (!m_CryRenderD3D10.Load("CryRenderD3D10.dll", DLL::NO_RELEASE))
+		m_dlls.pCryRenderD3D10 = WinAPI::DLL_Load("CryRenderD3D10.dll");
+		if (!m_dlls.pCryRenderD3D10)
 		{
 			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
 		}
 	}
 	else
 	{
-		if (!m_CryRenderD3D9.Load("CryRenderD3D9.dll", DLL::NO_RELEASE))
+		m_dlls.pCryRenderD3D9 = WinAPI::DLL_Load("CryRenderD3D9.dll");
+		if (!m_dlls.pCryRenderD3D9)
 		{
 			throw SystemError("Failed to load the CryRenderD3D9 DLL!");
 		}
@@ -278,55 +281,55 @@ void Launcher::LoadEngine()
 
 void Launcher::PatchEngine()
 {
-	if (m_CryAction)
+	if (m_dlls.pCryAction)
 	{
-		Patch::AllowDX9ImmersiveMultiplayer(m_CryAction);
-		Patch::DisableBreakLog(m_CryAction);
+		Patch::AllowDX9ImmersiveMultiplayer(m_dlls.pCryAction);
+		Patch::DisableBreakLog(m_dlls.pCryAction);
 	}
 
-	if (m_CryNetwork)
+	if (m_dlls.pCryNetwork)
 	{
-		Patch::FixFileCheckCrash(m_CryNetwork);
-		Patch::FixInternetConnect(m_CryNetwork);
-		Patch::EnablePreordered(m_CryNetwork);
-		Patch::AllowSameCDKeys(m_CryNetwork);
+		Patch::FixFileCheckCrash(m_dlls.pCryNetwork);
+		Patch::FixInternetConnect(m_dlls.pCryNetwork);
+		Patch::EnablePreordered(m_dlls.pCryNetwork);
+		Patch::AllowSameCDKeys(m_dlls.pCryNetwork);
 	}
 
-	if (m_CrySystem)
+	if (m_dlls.pCrySystem)
 	{
-		Patch::RemoveSecuROM(m_CrySystem);
-		//Patch::MakeDX9Default(m_CrySystem);
-		Patch::AllowDX9VeryHighSpec(m_CrySystem);
-		Patch::AllowMultipleInstances(m_CrySystem);
-		Patch::UnhandledExceptions(m_CrySystem);
-		Patch::DisableIOErrorLog(m_CrySystem);
-		Patch::HookCPUDetect(m_CrySystem, &CPUInfo::Detect);
+		Patch::RemoveSecuROM(m_dlls.pCrySystem);
+		//Patch::MakeDX9Default(m_dlls.pCrySystem);
+		Patch::AllowDX9VeryHighSpec(m_dlls.pCrySystem);
+		Patch::AllowMultipleInstances(m_dlls.pCrySystem);
+		Patch::UnhandledExceptions(m_dlls.pCrySystem);
+		Patch::DisableIOErrorLog(m_dlls.pCrySystem);
+		Patch::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
 
 		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{
-			ReplaceScriptSystem(m_CrySystem);
+			ReplaceScriptSystem(m_dlls.pCrySystem);
 		}
 
-		ReplaceLocalizationManager(m_CrySystem);
+		ReplaceLocalizationManager(m_dlls.pCrySystem);
 	}
 
 	constexpr char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
 
-	if (m_CryRenderD3D9)
+	if (m_dlls.pCryRenderD3D9)
 	{
-		Patch::HookWindowNameD3D9(m_CryRenderD3D9, GAME_WINDOW_NAME);
+		Patch::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
 	}
 
-	if (m_CryRenderD3D10)
+	if (m_dlls.pCryRenderD3D10)
 	{
-		Patch::HookWindowNameD3D10(m_CryRenderD3D10, GAME_WINDOW_NAME);
-		Patch::FixLowRefreshRateBug(m_CryRenderD3D10);
+		Patch::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
+		Patch::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
 	}
 }
 
 void Launcher::StartEngine()
 {
-	IGameFramework::TEntryFunction entry = m_CryAction.GetSymbol<IGameFramework::TEntryFunction>("CreateGameFramework");
+	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL_GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
 	if (!entry)
 	{
 		throw Error("The CryAction DLL is not valid!");

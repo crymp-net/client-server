@@ -19,7 +19,7 @@ struct FlashRefCount
 
 	FlashRefCount()
 	{
-		void *pCrySystem = gLauncher->GetCrySystem().GetHandle();
+		void *pCrySystem = gLauncher->GetDLLs().pCrySystem;
 
 #ifdef BUILD_64BIT
 		const std::size_t offset = 0x2AE068;
@@ -179,7 +179,7 @@ FlashFile* FlashFileHooks::OpenerHook::Open(const char* path)
 
 void FlashFileHooks::HackOpener()
 {
-	void *pCrySystem = gLauncher->GetCrySystem().GetHandle();
+	void *pCrySystem = gLauncher->GetDLLs().pCrySystem;
 
 #ifdef BUILD_64BIT
 	const std::size_t vtableOffset = 0x279210;

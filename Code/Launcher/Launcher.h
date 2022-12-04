@@ -1,17 +1,24 @@
 #pragma once
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "Library/DLL.h"
 
 class CGame;
 
 class Launcher : public ISystemUserCallback
 {
-	DLL m_CryAction;
-	DLL m_CryNetwork;
-	DLL m_CrySystem;
-	DLL m_CryRenderD3D9;
-	DLL m_CryRenderD3D10;
+public:
+	struct DLLs
+	{
+		// do not try to unload these DLLs as it might crash
+		void* pCryAction = nullptr;
+		void* pCryNetwork = nullptr;
+		void* pCrySystem = nullptr;
+		void* pCryRenderD3D9 = nullptr;
+		void* pCryRenderD3D10 = nullptr;
+	};
+
+private:
+	DLLs m_dlls;
 	SSystemInitParams m_params;
 	CGame *m_pGame = nullptr;
 
@@ -36,19 +43,9 @@ public:
 	void OnUpdate() override;
 	void GetMemoryUsage(ICrySizer *pSizer) override;
 
-	const DLL & GetCryAction() const
+	DLLs& GetDLLs()
 	{
-		return m_CryAction;
-	}
-
-	const DLL & GetCryNetwork() const
-	{
-		return m_CryNetwork;
-	}
-
-	const DLL & GetCrySystem() const
-	{
-		return m_CrySystem;
+		return m_dlls;
 	}
 
 	const SSystemInitParams & GetParams() const

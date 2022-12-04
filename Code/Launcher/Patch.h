@@ -1,33 +1,32 @@
 #pragma once
 
 struct CPUInfo;
-struct DLL;
 
 namespace Patch
 {
 	// CryAction
-	void AllowDX9ImmersiveMultiplayer(const DLL & CryAction);
-	void DisableBreakLog(const DLL & CryAction);
+	void AllowDX9ImmersiveMultiplayer(void* pCryAction);
+	void DisableBreakLog(void* pCryAction);
 
 	// CryNetwork
-	void FixFileCheckCrash(const DLL & CryNetwork);
-	void FixInternetConnect(const DLL & CryNetwork);
-	void EnablePreordered(const DLL & CryNetwork);
-	void AllowSameCDKeys(const DLL & CryNetwork);
+	void FixFileCheckCrash(void* pCryNetwork);
+	void FixInternetConnect(void* pCryNetwork);
+	void EnablePreordered(void* pCryNetwork);
+	void AllowSameCDKeys(void* pCryNetwork);
 
 	// CrySystem
-	void RemoveSecuROM(const DLL & CrySystem);
-	void MakeDX9Default(const DLL & CrySystem);
-	void AllowDX9VeryHighSpec(const DLL & CrySystem);
-	void AllowMultipleInstances(const DLL & CrySystem);
-	void UnhandledExceptions(const DLL & CrySystem);
-	void HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info));
-	void DisableIOErrorLog(const DLL & CrySystem);
+	void RemoveSecuROM(void* pCrySystem);
+	void MakeDX9Default(void* pCrySystem);
+	void AllowDX9VeryHighSpec(void* pCrySystem);
+	void AllowMultipleInstances(void* pCrySystem);
+	void UnhandledExceptions(void* pCrySystem);
+	void HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info));
+	void DisableIOErrorLog(void* pCrySystem);
 
 	// CryRenderD3D9
-	void HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name);
+	void HookWindowNameD3D9(void* pCryRenderD3D9, const char* name);
 
 	// CryRenderD3D10
-	void HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name);
-	void FixLowRefreshRateBug(const DLL & CryRenderD3D10);
+	void HookWindowNameD3D10(void* pCryRenderD3D10, const char* name);
+	void FixLowRefreshRateBug(void* pCryRenderD3D10);
 }

@@ -1,6 +1,5 @@
 #include <cstring>
 
-#include "Library/DLL.h"
 #include "Library/WinAPI.h"
 
 #include "Patch.h"
@@ -16,10 +15,8 @@ using WinAPI::FillMem;
 /**
  * @brief Allows connecting to DX10 servers with game running in DX9 mode.
  */
-void Patch::AllowDX9ImmersiveMultiplayer(const DLL & CryAction)
+void Patch::AllowDX9ImmersiveMultiplayer(void* pCryAction)
 {
-	void *pCryAction = CryAction.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryAction, 0x2B394D), 0x1E);
 	FillNOP(RVA(pCryAction, 0x2B6860), 0x1A);
@@ -32,10 +29,8 @@ void Patch::AllowDX9ImmersiveMultiplayer(const DLL & CryAction)
 /**
  * @brief Disables useless "times out" log messages from the Break Replicator.
  */
-void Patch::DisableBreakLog(const DLL & CryAction)
+void Patch::DisableBreakLog(void* pCryAction)
 {
-	void *pCryAction = CryAction.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryAction, 0x2D183F), 0x5);
 #else
@@ -50,10 +45,8 @@ void Patch::DisableBreakLog(const DLL & CryAction)
 /**
  * @brief Fixes the sporadic crash when file check AKA sv_cheatProtection is enabled.
  */
-void Patch::FixFileCheckCrash(const DLL & CryNetwork)
+void Patch::FixFileCheckCrash(void* pCryNetwork)
 {
-	void *pCryNetwork = CryNetwork.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryNetwork, 0x14F5B1), 0x4);
 	FillNOP(RVA(pCryNetwork, 0x14F5C9), 0x4);
@@ -95,10 +88,8 @@ void Patch::FixFileCheckCrash(const DLL & CryNetwork)
 /**
  * @brief Allows connecting to Internet servers without GameSpy account.
  */
-void Patch::FixInternetConnect(const DLL & CryNetwork)
+void Patch::FixInternetConnect(void* pCryNetwork)
 {
-	void *pCryNetwork = CryNetwork.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryNetwork, 0x189896), 0x18);
 #else
@@ -110,7 +101,7 @@ void Patch::FixInternetConnect(const DLL & CryNetwork)
  * @brief Unlocks advantages of pre-ordered version for everyone.
  * This is both server-side and client-side patch.
  */
-void Patch::EnablePreordered(const DLL & CryNetwork)
+void Patch::EnablePreordered(void* pCryNetwork)
 {
 	const uint8_t code[] = {
 #ifdef BUILD_64BIT
@@ -119,8 +110,6 @@ void Patch::EnablePreordered(const DLL & CryNetwork)
 		0xC6, 0x83, 0xC8, 0xF3, 0x00, 0x00, 0x01  // mov byte ptr ds:[ebx+0xF3C8], 0x1
 #endif
 	};
-
-	void *pCryNetwork = CryNetwork.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCryNetwork, 0x17C377), code, sizeof code);
@@ -133,10 +122,8 @@ void Patch::EnablePreordered(const DLL & CryNetwork)
  * @brief Prevents server from kicking players with the same CD key.
  * This is server-side patch.
  */
-void Patch::AllowSameCDKeys(const DLL & CryNetwork)
+void Patch::AllowSameCDKeys(void* pCryNetwork)
 {
-	void *pCryNetwork = CryNetwork.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryNetwork, 0xE0328), 0x47);
 #else
@@ -152,10 +139,8 @@ void Patch::AllowSameCDKeys(const DLL & CryNetwork)
  * @brief Disables the SecuROM crap in 64-bit CrySystem.
  * It does nothing in 32-bit build.
  */
-void Patch::RemoveSecuROM(const DLL & CrySystem)
+void Patch::RemoveSecuROM(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x470B9), 0x16);
 #endif
@@ -165,10 +150,8 @@ void Patch::RemoveSecuROM(const DLL & CrySystem)
  * @brief Makes DX9 mode the default.
  * It's still possible to use the "-dx10" command line parameter to run the game in DX10 mode.
  */
-void Patch::MakeDX9Default(const DLL & CrySystem)
+void Patch::MakeDX9Default(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x46719), 0x1F);
 #else
@@ -179,10 +162,8 @@ void Patch::MakeDX9Default(const DLL & CrySystem)
 /**
  * @brief Allows Very High settings in DX9 mode.
  */
-void Patch::AllowDX9VeryHighSpec(const DLL & CrySystem)
+void Patch::AllowDX9VeryHighSpec(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x4674C), 0x54);
 #else
@@ -194,10 +175,8 @@ void Patch::AllowDX9VeryHighSpec(const DLL & CrySystem)
  * @brief Allows running multiple instances of Crysis at once.
  * Note that the first check if any instance is already running is normally done in launcher.
  */
-void Patch::AllowMultipleInstances(const DLL & CrySystem)
+void Patch::AllowMultipleInstances(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x42BFF), 0x68);
 #else
@@ -208,10 +187,8 @@ void Patch::AllowMultipleInstances(const DLL & CrySystem)
 /**
  * @brief Prevents the engine from installing its own broken unhandled exceptions handler.
  */
-void Patch::UnhandledExceptions(const DLL & CrySystem)
+void Patch::UnhandledExceptions(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x22946), 0x6);
 	FillNOP(RVA(pCrySystem, 0x22952), 0x7);
@@ -226,7 +203,7 @@ void Patch::UnhandledExceptions(const DLL & CrySystem)
 /**
  * Hooks CryEngine CPU detection.
  */
-void Patch::HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info))
+void Patch::HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info))
 {
 #ifdef BUILD_64BIT
 	unsigned char code[] = {
@@ -247,8 +224,6 @@ void Patch::HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info))
 	std::memcpy(&code[2], &handler, 4);
 #endif
 
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCrySystem, 0xA7E0), &code, sizeof code);
 #else
@@ -259,10 +234,8 @@ void Patch::HookCPUDetect(const DLL & CrySystem, void (*handler)(CPUInfo* info))
 /**
  * @brief Disables useless "IO Error=" log messages from the Stream Engine.
  */
-void Patch::DisableIOErrorLog(const DLL & CrySystem)
+void Patch::DisableIOErrorLog(void* pCrySystem)
 {
-	void *pCrySystem = CrySystem.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCrySystem, 0x7B23C), 0x5);
 	FillNOP(RVA(pCrySystem, 0x7B5E4), 0x5);
@@ -308,7 +281,7 @@ static void WindowNameSetter(char* buffer, const char* name)
 	std::memcpy(buffer, name, length + 1);
 }
 
-void Patch::HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name)
+void Patch::HookWindowNameD3D9(void* pCryRenderD3D9, const char* name)
 {
 	const void* pSetFunc = &WindowNameSetter;
 
@@ -340,8 +313,6 @@ void Patch::HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name)
 	std::memcpy(&code[1], &name, 4);
 	std::memcpy(&code[14], &pSetFunc, 4);
 #endif
-
-	void* pCryRenderD3D9 = CryRenderD3D9.GetHandle();
 
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCryRenderD3D9, 0xD0FF0), code, sizeof code);
@@ -354,7 +325,7 @@ void Patch::HookWindowNameD3D9(const DLL & CryRenderD3D9, const char* name)
 // CryRenderD3D10 //
 ////////////////////
 
-void Patch::HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name)
+void Patch::HookWindowNameD3D10(void* pCryRenderD3D10, const char* name)
 {
 	const void* pSetFunc = &WindowNameSetter;
 
@@ -387,8 +358,6 @@ void Patch::HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name)
 	std::memcpy(&code[14], &pSetFunc, 4);
 #endif
 
-	void* pCryRenderD3D10 = CryRenderD3D10.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillMem(RVA(pCryRenderD3D10, 0xC95DD), code, sizeof code);
 #else
@@ -396,10 +365,8 @@ void Patch::HookWindowNameD3D10(const DLL & CryRenderD3D10, const char* name)
 #endif
 }
 
-void Patch::FixLowRefreshRateBug(const DLL & CryRenderD3D10)
+void Patch::FixLowRefreshRateBug(void* pCryRenderD3D10)
 {
-	void *pCryRenderD3D10 = CryRenderD3D10.GetHandle();
-
 #ifdef BUILD_64BIT
 	FillNOP(RVA(pCryRenderD3D10, 0x1C8F45), 0x4);
 #else

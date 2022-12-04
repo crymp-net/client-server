@@ -62,7 +62,7 @@ GSMasterHook::GSMasterHook()
 	g_pHostnameCVar = gEnv->pConsole->RegisterString("cl_master", "m.crymp.net", VF_NOT_NET_SYNCED,
 	                                                 "GameSpy master server hostname.");
 
-	void *pCryNetwork = gLauncher->GetCryNetwork().GetHandle();
+	void *pCryNetwork = gLauncher->GetDLLs().pCryNetwork;
 
 	WinAPI::HookIATByAddress(pCryNetwork, gethostbyname, gethostbyname_hook);
 }

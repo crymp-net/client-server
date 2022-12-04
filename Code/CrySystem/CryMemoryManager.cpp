@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Library/DLL.h"
 #include "Library/WinAPI.h"
 
 #include "CryMemoryManager.h"
@@ -111,11 +110,11 @@ namespace
 	}
 }
 
-void CryMemoryManager::Init(const DLL & CrySystem)
+void CryMemoryManager::Init(void* pCrySystem)
 {
-	Hook(CrySystem.GetSymbolAddress("CryMalloc"), CryMalloc_hook);
-	Hook(CrySystem.GetSymbolAddress("CryRealloc"), CryRealloc_hook);
-	Hook(CrySystem.GetSymbolAddress("CryFree"), CryFree_hook);
-	Hook(CrySystem.GetSymbolAddress("CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
-	Hook(CrySystem.GetSymbolAddress("CrySystemCrtFree"), CrySystemCrtFree_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
 }

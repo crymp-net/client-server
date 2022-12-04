@@ -10,7 +10,6 @@
 
 #include "Library/Format.h"
 #include "Library/WinAPI.h"
-#include "Library/DLL.h"
 
 #include "CrashLogger.h"
 #include "Launcher.h"
@@ -168,7 +167,7 @@ class DebugHelper
 	                                      PGET_MODULE_BASE_ROUTINE pGetModuleBaseRoutine,
 	                                      PTRANSLATE_ADDRESS_ROUTINE pTranslateAddressRoutine);
 
-	DLL m_dll;
+	HMODULE m_dll = nullptr;
 
 	HANDLE m_process = nullptr;
 	HANDLE m_thread = nullptr;
@@ -195,6 +194,7 @@ public:
 		if (m_isInitialized)
 		{
 			m_pSymCleanup(m_process);
+			FreeLibrary(m_dll);
 		}
 	}
 
@@ -205,7 +205,8 @@ public:
 			return true;
 		}
 
-		if (!m_dll.Load("dbghelp.dll"))
+		m_dll = LoadLibraryA("dbghelp.dll");
+		if (!m_dll)
 		{
 			return false;
 		}
@@ -213,25 +214,25 @@ public:
 		m_process = GetCurrentProcess();
 		m_thread  = GetCurrentThread();
 
-		m_pSymInitialize = m_dll.GetSymbol<TSymInitialize>("SymInitialize");
-		m_pSymSetOptions = m_dll.GetSymbol<TSymSetOptions>("SymSetOptions");
-		m_pSymCleanup    = m_dll.GetSymbol<TSymCleanup>("SymCleanup");
-		m_pSymFromAddr   = m_dll.GetSymbol<TSymFromAddr>("SymFromAddr");
+		m_pSymInitialize = reinterpret_cast<TSymInitialize>(GetProcAddress(m_dll, "SymInitialize"));
+		m_pSymSetOptions = reinterpret_cast<TSymSetOptions>(GetProcAddress(m_dll, "SymSetOptions"));
+		m_pSymCleanup    = reinterpret_cast<TSymCleanup>(GetProcAddress(m_dll, "SymCleanup"));
+		m_pSymFromAddr   = reinterpret_cast<TSymFromAddr>(GetProcAddress(m_dll, "SymFromAddr"));
 
 	#ifdef BUILD_64BIT
-		m_pSymGetLineFromAddr     = m_dll.GetSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr64");
-		m_pSymGetModuleInfo       = m_dll.GetSymbol<TSymGetModuleInfo>("SymGetModuleInfo64");
-		m_pEnumerateLoadedModules = m_dll.GetSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules64");
-		m_pStackWalk              = m_dll.GetSymbol<TStackWalk>("StackWalk64");
-		m_pSymFunctionTableAccess = m_dll.GetSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess64");
-		m_pSymGetModuleBase       = m_dll.GetSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase64");
+		m_pSymGetLineFromAddr     = reinterpret_cast<TSymGetLineFromAddr>(GetProcAddress(m_dll, "SymGetLineFromAddr64"));
+		m_pSymGetModuleInfo       = reinterpret_cast<TSymGetModuleInfo>(GetProcAddress(m_dll, "SymGetModuleInfo64"));
+		m_pEnumerateLoadedModules = reinterpret_cast<TEnumerateLoadedModules>(GetProcAddress(m_dll, "EnumerateLoadedModules64"));
+		m_pStackWalk              = reinterpret_cast<TStackWalk>(GetProcAddress(m_dll, "StackWalk64"));
+		m_pSymFunctionTableAccess = reinterpret_cast<PFUNCTION_TABLE_ACCESS_ROUTINE>(GetProcAddress(m_dll, "SymFunctionTableAccess64"));
+		m_pSymGetModuleBase       = reinterpret_cast<PGET_MODULE_BASE_ROUTINE>(GetProcAddress(m_dll, "SymGetModuleBase64"));
 	#else
-		m_pSymGetLineFromAddr     = m_dll.GetSymbol<TSymGetLineFromAddr>("SymGetLineFromAddr");
-		m_pSymGetModuleInfo       = m_dll.GetSymbol<TSymGetModuleInfo>("SymGetModuleInfo");
-		m_pEnumerateLoadedModules = m_dll.GetSymbol<TEnumerateLoadedModules>("EnumerateLoadedModules");
-		m_pStackWalk              = m_dll.GetSymbol<TStackWalk>("StackWalk");
-		m_pSymFunctionTableAccess = m_dll.GetSymbol<PFUNCTION_TABLE_ACCESS_ROUTINE>("SymFunctionTableAccess");
-		m_pSymGetModuleBase       = m_dll.GetSymbol<PGET_MODULE_BASE_ROUTINE>("SymGetModuleBase");
+		m_pSymGetLineFromAddr     = reinterpret_cast<TSymGetLineFromAddr>(GetProcAddress(m_dll, "SymGetLineFromAddr"));
+		m_pSymGetModuleInfo       = reinterpret_cast<TSymGetModuleInfo>(GetProcAddress(m_dll, "SymGetModuleInfo"));
+		m_pEnumerateLoadedModules = reinterpret_cast<TEnumerateLoadedModules>(GetProcAddress(m_dll, "EnumerateLoadedModules"));
+		m_pStackWalk              = reinterpret_cast<TStackWalk>(GetProcAddress(m_dll, "StackWalk"));
+		m_pSymFunctionTableAccess = reinterpret_cast<PFUNCTION_TABLE_ACCESS_ROUTINE>(GetProcAddress(m_dll, "SymFunctionTableAccess"));
+		m_pSymGetModuleBase       = reinterpret_cast<PGET_MODULE_BASE_ROUTINE>(GetProcAddress(m_dll, "SymGetModuleBase"));
 	#endif
 
 		if (!m_pSymInitialize

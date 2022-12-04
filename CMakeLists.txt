@@ -643,8 +643,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Launcher/Resources.h
   Code/Library/CPUID.cpp
   Code/Library/CPUID.h
-  Code/Library/DLL.cpp
-  Code/Library/DLL.h
   Code/Library/Error.cpp
   Code/Library/Error.h
   Code/Library/Format.cpp
