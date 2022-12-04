@@ -49,6 +49,11 @@ namespace
 		return result;
 	}
 
+	size_t CryGetMemSize_hook(void *mem, size_t)
+	{
+		return _msize(mem);
+	}
+
 	size_t CryFree_hook(void *mem)
 	{
 		size_t size = 0;
@@ -114,6 +119,7 @@ void CryMemoryManager::Init(void* pCrySystem)
 {
 	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
 	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
+	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
 	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
 	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
 	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
