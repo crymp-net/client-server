@@ -367,15 +367,6 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 	return true;
 }
 
-/////////////
-// Threads //
-/////////////
-
-unsigned long WinAPI::GetCurrentThreadID()
-{
-	return GetCurrentThreadId();
-}
-
 ///////////
 // Files //
 ///////////

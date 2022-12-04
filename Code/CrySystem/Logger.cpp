@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cerrno>
+#include <cstring>
 
 #include "CryCommon/CrySystem/CryColorCode.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -19,7 +20,6 @@ Logger::Logger()
 
 Logger::~Logger()
 {
-	CloseFile();
 }
 
 void Logger::OnUpdate()
@@ -83,41 +83,22 @@ static void BackupLogFile(std::FILE* file, const std::filesystem::path& filePath
 	std::filesystem::copy_file(filePath, backupFilePath, std::filesystem::copy_options::overwrite_existing);
 }
 
-struct FileCloseGuard
-{
-	std::FILE* file = nullptr;
-
-	explicit FileCloseGuard(std::FILE* file) : file(file)
-	{
-	}
-
-	~FileCloseGuard()
-	{
-		std::fclose(this->file);
-	}
-};
-
 void Logger::OpenFile(const std::filesystem::path& filePath)
 {
 	const std::string filePathString = filePath.string();
 
-	if (std::FILE* existingFile = std::fopen(filePathString.c_str(), "r"); existingFile != nullptr)
+	if (FileHandle existingFile(std::fopen(filePathString.c_str(), "r")); existingFile)
 	{
-		FileCloseGuard guard(existingFile);
-
-		BackupLogFile(existingFile, filePath);
+		BackupLogFile(existingFile.get(), filePath);
 	}
 
-	std::FILE* file = std::fopen(filePathString.c_str(), "w");
-
-	if (file == nullptr)
+	FileHandle file(std::fopen(filePathString.c_str(), "w"));
+	if (!file)
 	{
 		throw std::system_error(errno, std::generic_category(), "Failed to open log file: " + filePathString);
 	}
 
-	CloseFile();
-
-	m_file = file;
+	m_file = std::move(file);
 	m_filePath = filePath;
 	m_fileName = filePath.filename().string();
 
@@ -127,12 +108,7 @@ void Logger::OpenFile(const std::filesystem::path& filePath)
 
 void Logger::CloseFile()
 {
-	if (m_file)
-	{
-		std::fclose(m_file);
-		m_file = nullptr;
-	}
-
+	m_file.reset();
 	m_filePath.clear();
 	m_fileName.clear();
 }
@@ -145,6 +121,18 @@ void Logger::SetPrefix(const std::string_view& prefix)
 	{
 		m_cvars.prefix->Set(m_prefix.c_str());
 	}
+}
+
+static void AddCurrentThreadID(std::string& result)
+{
+	const auto id = std::this_thread::get_id();
+
+	unsigned long raw_id = 0;
+	static_assert(sizeof(id) == sizeof(raw_id));
+
+	std::memcpy(&raw_id, &id, sizeof(raw_id));
+
+	result += Format("%04lx", raw_id);
 }
 
 static void AddTimeZoneOffset(std::string& result)
@@ -180,7 +168,7 @@ static void ExpandPrefixFormatSpecifier(std::string& result, char specifier, con
 		}
 		case 't':
 		{
-			result += Format("%04x", WinAPI::GetCurrentThreadID());
+			AddCurrentThreadID(result);
 			break;
 		}
 		case 'd':
@@ -247,7 +235,7 @@ std::string Logger::FormatPrefix(const std::string_view& prefix)
 	{
 		if (prefix[i] == '%')
 		{
-			if ((i + 1) < prefix.length())
+			if ((i+1) < prefix.length())
 			{
 				ExpandPrefixFormatSpecifier(result, prefix[++i], currentTime);
 			}
@@ -639,15 +627,8 @@ void Logger::WriteMessageToFile(const Message& message)
 		return;
 	}
 
-	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
-
 	std::string buffer;
-	buffer.reserve(message.prefix.length() + message.content.length() + 1);
-
-	if (!isAppend)
-	{
-		buffer += message.prefix;
-	}
+	buffer.reserve(message.content.length() + 1);
 
 	for (std::size_t i = 0; i < message.content.length(); i++)
 	{
@@ -655,7 +636,7 @@ void Logger::WriteMessageToFile(const Message& message)
 		{
 			// drop color codes
 			// and convert "$$" to "$"
-			if ((i + 1) < message.content.length() && message.content[++i] == '$')
+			if ((i+1) < message.content.length() && message.content[++i] == '$')
 			{
 				buffer += '$';
 			}
@@ -671,13 +652,19 @@ void Logger::WriteMessageToFile(const Message& message)
 		buffer += '\n';
 	}
 
+	const bool isAppend = (message.flags & Message::FLAG_APPEND) != 0;
+
 	if (isAppend)
 	{
-		std::fseek(m_file, -static_cast<int>(WinAPI::NEWLINE.length()), SEEK_CUR);
+		std::fseek(m_file.get(), -static_cast<int>(WinAPI::NEWLINE.length()), SEEK_CUR);
+	}
+	else
+	{
+		std::fwrite(message.prefix.c_str(), 1, message.prefix.length(), m_file.get());
 	}
 
-	std::fwrite(buffer.c_str(), 1, buffer.length(), m_file);
-	std::fflush(m_file);
+	std::fwrite(buffer.c_str(), 1, buffer.length(), m_file.get());
+	std::fflush(m_file.get());
 
 	for (ILogCallback* callback : m_callbacks)
 	{

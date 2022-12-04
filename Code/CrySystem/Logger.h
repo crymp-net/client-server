@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <filesystem>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -17,7 +18,7 @@ class Logger final : public ILog
 {
 	struct Message
 	{
-		enum Flags
+		enum
 		{
 			FLAG_FILE    = (1 << 0),
 			FLAG_CONSOLE = (1 << 1),
@@ -30,8 +31,18 @@ class Logger final : public ILog
 		std::string content;
 	};
 
+	struct FileHandleDeleter
+	{
+		void operator()(std::FILE* file) const
+		{
+			std::fclose(file);
+		}
+	};
+
+	using FileHandle = std::unique_ptr<std::FILE, FileHandleDeleter>;
+
 	int m_verbosity = 0;
-	std::FILE* m_file = nullptr;
+	FileHandle m_file;
 	std::filesystem::path m_filePath;
 	std::string m_fileName;
 	std::string m_prefix;
@@ -68,7 +79,7 @@ public:
 
 	std::FILE* GetFileHandle()
 	{
-		return m_file;
+		return m_file.get();
 	}
 
 	const std::filesystem::path& GetFilePath() const

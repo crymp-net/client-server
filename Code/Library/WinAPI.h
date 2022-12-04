@@ -94,12 +94,6 @@ namespace WinAPI
 
 	bool HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc);
 
-	/////////////
-	// Threads //
-	/////////////
-
-	unsigned long GetCurrentThreadID();
-
 	///////////
 	// Files //
 	///////////
