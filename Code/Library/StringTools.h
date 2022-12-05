@@ -1,15 +1,27 @@
 #pragma once
 
+#include <cstdarg>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <type_traits>
 
-namespace WinAPI
-{
-	std::size_t RawUTF8ToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize);
-	std::size_t RawWideToUTF8(const wchar_t* string, std::size_t stringSize, char* buffer, std::size_t bufferSize);
-}
+extern "C" __declspec(dllimport) int __stdcall MultiByteToWideChar(
+	unsigned int codepage,
+	unsigned long flags,
+	const char* string, int stringByteCount,
+	wchar_t* buffer, int bufferCharCount
+);
+
+extern "C" __declspec(dllimport) int __stdcall WideCharToMultiByte(
+	unsigned int codepage,
+	unsigned long flags,
+	const wchar_t* string, int stringCharCount,
+	char* buffer, int bufferByteCount,
+	const char* defaultChar, int* defaultCharUsed
+);
 
 namespace StringTools
 {
@@ -84,6 +96,34 @@ namespace StringTools
 		return result;
 	}
 
+	namespace Detail
+	{
+		inline std::size_t RawUTF8ToWide(
+			const char* string, std::size_t stringByteCount,
+			wchar_t* buffer, std::size_t bufferCharCount
+		){
+			return MultiByteToWideChar(
+				65001,  // CP_UTF8
+				0,
+				string, static_cast<int>(stringByteCount),
+				buffer, static_cast<int>(bufferCharCount)
+			);
+		}
+
+		inline std::size_t RawWideToUTF8(
+			const wchar_t* string, std::size_t stringCharCount,
+			char* buffer, std::size_t bufferByteCount
+		){
+			return WideCharToMultiByte(
+				65001,  // CP_UTF8
+				0,
+				string, static_cast<int>(stringCharCount),
+				buffer, static_cast<int>(bufferByteCount),
+				nullptr, nullptr
+			);
+		}
+	}
+
 	template<typename T, typename U>
 	void AppendTo(T& result, const U& string)
 	{
@@ -115,11 +155,11 @@ namespace StringTools
 
 				if constexpr (UTF8_TO_WIDE)
 				{
-					return WinAPI::RawUTF8ToWide(CStr(string), stringLength, buffer, bufferSize);
+					return Detail::RawUTF8ToWide(CStr(string), stringLength, buffer, bufferSize);
 				}
 				else
 				{
-					return WinAPI::RawWideToUTF8(CStr(string), stringLength, buffer, bufferSize);
+					return Detail::RawWideToUTF8(CStr(string), stringLength, buffer, bufferSize);
 				}
 			};
 
@@ -150,4 +190,19 @@ namespace StringTools
 		result.clear();
 		AppendTo(result, string);
 	}
+
+	std::string Format(const char* format, ...);
+	std::string FormatV(const char* format, va_list args);
+
+	std::size_t FormatTo(std::string& result, const char* format, ...);
+	std::size_t FormatToV(std::string& result, const char* format, va_list args);
+
+	std::size_t FormatTo(char* buffer, std::size_t bufferSize, const char* format, ...);
+	std::size_t FormatToV(char* buffer, std::size_t bufferSize, const char* format, va_list args);
+
+	std::runtime_error Error(const char* format, ...);
+	std::runtime_error ErrorV(const char* format, va_list args);
+
+	std::system_error OSError(const char* format, ...);
+	std::system_error OSErrorV(const char* format, va_list args);
 }
