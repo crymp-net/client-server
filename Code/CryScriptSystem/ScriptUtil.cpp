@@ -1,4 +1,4 @@
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 
 extern "C"
 {
@@ -15,7 +15,13 @@ std::vector<std::string> ScriptUtil::GetCallStack(lua_State *L, int level)
 
 	while (lua_getstack(L, level++, &ar) && lua_getinfo(L, "Sln", &ar))
 	{
-		result.emplace_back(Format("%s:%d %s %s %s", ar.short_src, ar.currentline, ar.what, ar.namewhat, ar.name));
+		result.emplace_back(StringTools::Format("%s:%d %s %s %s",
+			ar.short_src,
+			ar.currentline,
+			ar.what,
+			ar.namewhat,
+			ar.name
+		));
 	}
 
 	return result;

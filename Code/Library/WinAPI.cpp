@@ -5,7 +5,6 @@
 #include <winhttp.h>
 
 #include "WinAPI.h"
-#include "Format.h"
 #include "StringTools.h"
 
 //////////////////
@@ -632,28 +631,6 @@ long WinAPI::GetTimeZoneBias()
 	return 0;
 }
 
-std::string WinAPI::GetTimeZoneOffsetString()
-{
-	long bias = GetTimeZoneBias();
-
-	if (bias == 0)
-	{
-		return "Z";  // UTC
-	}
-	else
-	{
-		char sign = '-';
-
-		if (bias < 0)
-		{
-			bias = -bias;
-			sign = '+';
-		}
-
-		return Format("%c%02d%02d", sign, bias / 60, bias % 60);
-	}
-}
-
 /////////////
 // Strings //
 /////////////
@@ -694,25 +671,6 @@ std::size_t WinAPI::RawANSIToWide(const char* string, std::size_t stringSize, wc
 		CP_ACP, 0,
 		string, static_cast<int>(stringSize),
 		buffer, static_cast<int>(bufferSize)
-	);
-}
-
-std::size_t WinAPI::RawUTF8ToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize)
-{
-	return MultiByteToWideChar(
-		CP_UTF8, 0,
-		string, static_cast<int>(stringSize),
-		buffer, static_cast<int>(bufferSize)
-	);
-}
-
-std::size_t WinAPI::RawWideToUTF8(const wchar_t* string, std::size_t stringSize, char* buffer, std::size_t bufferSize)
-{
-	return WideCharToMultiByte(
-		CP_UTF8, 0,
-		string, static_cast<int>(stringSize),
-		buffer, static_cast<int>(bufferSize),
-		nullptr, nullptr
 	);
 }
 

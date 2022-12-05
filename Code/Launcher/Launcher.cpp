@@ -12,7 +12,6 @@
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
-#include "Library/Format.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 

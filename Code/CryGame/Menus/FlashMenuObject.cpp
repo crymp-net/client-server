@@ -46,7 +46,7 @@ History:
 #include "config.h"
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ServerConnector.h"
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"
 
@@ -220,7 +220,7 @@ CFlashMenuObject::CFlashMenuObject()
 	if (gEnv->bEditor)
 		LoadDifficultyConfig(2);	//set normal diff in editor
 
-	// create the avi reader; 
+	// create the avi reader;
 	//m_pAVIReader = g_pISystem->CreateAVIReader();
 	//m_pAVIReader->OpenFile("Crysis_main_menu_background.avi");
 
@@ -463,7 +463,7 @@ SFlashKeyEvent CFlashMenuObject::MapToFlashKeyEvent(const SInputEvent& inputEven
 	SFlashKeyEvent::EKeyCode keyCode(SFlashKeyEvent::VoidSymbol);
 	unsigned char asciiCode(0);
 
-	// !!! mapping of keycodes in the following switch statement and 
+	// !!! mapping of keycodes in the following switch statement and
 	//     retrieval of the ascii and unicode character needs overhaul !!!
 
 	if (inputEvent.state != eIS_UI)
@@ -3331,7 +3331,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 				const EntityId id = gClient->GetLastSpawnId();
 				IEntity* pLastSpawn = gEnv->pEntitySystem->GetEntity(id);
 				skipDots = true;
-				status = Format("Spawning Entities: %-22s", pLastSpawn ? pLastSpawn->GetClass()->GetName() : "");
+				status = StringTools::Format("Spawning Entities: %-22s", pLastSpawn ? pLastSpawn->GetClass()->GetName() : "");
 				break;
 			}
 			case eCVS_PostSpawnEntities:
@@ -3388,8 +3388,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 			if (pLS->IsLoaded())
 			{
-				std::string loadingMsg = Format("%s%s", status.c_str(), points.c_str());
-				loadingMsg = ToUpper(loadingMsg);
+				std::string loadingMsg = StringTools::Format("%s%s", status.c_str(), points.c_str());
+				StringTools::ToUpperInPlace(loadingMsg);
 				pLS->Invoke("setLoadingText", loadingMsg.c_str());
 
 				if (gEnv->bMultiplayer)
@@ -3644,7 +3644,7 @@ IFlashLoadMovieImage* CFlashMenuObject::LoadMovie(const char* pFilePath)
 
 //-----------------------------------------------------------------------------------------------------
 
-static const int  THUMBNAIL_DEFAULT_WIDTH = 256;   // 16:9 
+static const int  THUMBNAIL_DEFAULT_WIDTH = 256;   // 16:9
 static const int  THUMBNAIL_DEFAULT_HEIGHT = 144;   //
 static const int  THUMBNAIL_DEFAULT_DEPTH = 4;   // write out with alpha
 static const bool THUMBNAIL_KEEP_ASPECT_RATIO = true; // keep renderer's aspect ratio and surround with black borders
@@ -3709,7 +3709,7 @@ void CFlashMenuObject::OnSaveGame(ISaveGame* pSaveGame)
 			captureDestHeight = imageHeight;
 			captureDestWidth = captureDestHeight * w / h;
 
-			// adjust for SCOPE formats, like 2.35:1 
+			// adjust for SCOPE formats, like 2.35:1
 			if (captureDestWidth > THUMBNAIL_DEFAULT_WIDTH)
 			{
 				captureDestHeight = captureDestHeight * THUMBNAIL_DEFAULT_WIDTH / captureDestWidth;
@@ -3719,7 +3719,7 @@ void CFlashMenuObject::OnSaveGame(ISaveGame* pSaveGame)
 			captureDestOffX = (imageWidth - captureDestWidth) >> 1;
 			captureDestOffY = (imageHeight - captureDestHeight) >> 1;
 
-			// CryLogAlways("CXMLRichSaveGame: TEST_THUMBNAIL_AUTOCAPTURE: capWidth=%d capHeight=%d (off=%d,%d) thmbw=%d thmbh=%d rw=%d rh=%d", 
+			// CryLogAlways("CXMLRichSaveGame: TEST_THUMBNAIL_AUTOCAPTURE: capWidth=%d capHeight=%d (off=%d,%d) thmbw=%d thmbh=%d rw=%d rh=%d",
 			//	captureDestWidth, captureDestHeight, captureDestOffX, captureDestOffY, m_thumbnailWidth, m_thumbnailHeight, w,h);
 
 			if (captureDestWidth > imageWidth || captureDestHeight > imageHeight)

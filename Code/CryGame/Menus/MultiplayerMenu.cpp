@@ -22,7 +22,7 @@ History:
 #include "CreateGame.h"
 #include "CryGame/Game.h"
 #include "GameNetworkProfile.h"
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ServerBrowser.h"
 
@@ -514,7 +514,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
 	{
 		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(
-			Format("connect %d.%d.%d.%d %d",
+			StringTools::Format("connect %d.%d.%d.%d %d",
 				(ip)       & 0xFF,
 				(ip >> 8)  & 0xFF,
 				(ip >> 16) & 0xFF,
@@ -964,7 +964,7 @@ CMultiPlayerMenu::CMultiPlayerMenu(bool lan, IFlashPlayer* plr, CMPHub* hub) :
 
 	m_serverlist->SetMenu(this);
 
-	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default); 
+	m_ui->SetJoinButtonMode(m_hub->IsIngame() ? eJBM_disconnect : eJBM_default);
 	//read servers back
 
 	//test

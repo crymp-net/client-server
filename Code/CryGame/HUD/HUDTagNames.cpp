@@ -25,7 +25,6 @@ History:
 #include "HUDTagNames.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 
-#include "Library/Format.h"
 #include "Library/StringTools.h"
 
 //-----------------------------------------------------------------------------------------------------
@@ -63,7 +62,7 @@ CHUDTagNames::CHUDTagNames(CHUD *pHUD)
 
 	for (int i = 1; i <= RANK_COUNT; i++)
 	{
-		if (pLocalizationManager->LocalizeLabel(Format("@ui_short_rank_%d", i).c_str(), rankName))
+		if (pLocalizationManager->LocalizeLabel(StringTools::Format("@ui_short_rank_%d", i).c_str(), rankName))
 		{
 			m_rankNames.emplace_back(rankName.c_str(), rankName.length());
 		}

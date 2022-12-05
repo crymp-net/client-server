@@ -8,7 +8,7 @@
 
 #include "CrySystem/Logger.h"
 
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 #include "CrashLogger.h"
@@ -32,9 +32,9 @@ struct CallStackEntry
 		std::string result;
 
 	#ifdef BUILD_64BIT
-		result += Format("%016zX: ", address);
+		StringTools::FormatTo(result, "%016zX: ", address);
 	#else
-		result += Format("%08X: ", address);
+		StringTools::FormatTo(result, "%08X: ", address);
 	#endif
 
 		if (name.empty())
@@ -47,7 +47,7 @@ struct CallStackEntry
 
 			if (baseOffset)
 			{
-				result += Format(" + 0x%X", baseOffset);
+				StringTools::FormatTo(result, " + 0x%X", baseOffset);
 			}
 		}
 
@@ -59,7 +59,7 @@ struct CallStackEntry
 
 			if (sourceLine)
 			{
-				result += Format(":%u", sourceLine);
+				StringTools::FormatTo(result, ":%u", sourceLine);
 			}
 		}
 
@@ -86,9 +86,9 @@ struct Module
 	std::string ToString() const
 	{
 	#ifdef BUILD_64BIT
-		return Format("%016zX - %016zX %s", address, address + size, name.c_str());
+		return StringTools::Format("%016zX - %016zX %s", address, address + size, name.c_str());
 	#else
-		return Format("%08zX - %08zX %s", address, address + size, name.c_str());
+		return StringTools::Format("%08zX - %08zX %s", address, address + size, name.c_str());
 	#endif
 	}
 };
@@ -400,22 +400,27 @@ static const char *ExceptionCodeToString(unsigned int code)
 	return "Unknown";
 }
 
-static void Log(const std::string_view & message)
+static void Log(const char* format, ...)
 {
 	std::FILE* file = Logger::GetInstance().GetFileHandle();
 
+	va_list args;
+	va_start(args, format);
+
 	if (file)
 	{
-		std::fprintf(file, "%.*s\n", static_cast<int>(message.length()), message.data());
+		std::vfprintf(file, format, args);
 		std::fflush(file);
 	}
+
+	va_end(args);
 }
 
 static void DumpExceptionInfo(const EXCEPTION_RECORD *exception)
 {
 	const unsigned int code = exception->ExceptionCode;
 
-	Log(Format("%s exception (0x%08X) at 0x%p", ExceptionCodeToString(code), code, exception->ExceptionAddress));
+	Log("%s exception (0x%08X) at 0x%p", ExceptionCodeToString(code), code, exception->ExceptionAddress);
 
 	if (code == EXCEPTION_ACCESS_VIOLATION || code == EXCEPTION_IN_PAGE_ERROR)
 	{
@@ -425,17 +430,17 @@ static void DumpExceptionInfo(const EXCEPTION_RECORD *exception)
 		{
 			case 0:
 			{
-				Log(Format("Read from 0x%p failed", address));
+				Log("Read from 0x%p failed", address);
 				break;
 			}
 			case 1:
 			{
-				Log(Format("Write to 0x%p failed", address));
+				Log("Write to 0x%p failed", address);
 				break;
 			}
 			case 8:
 			{
-				Log(Format("Execute at 0x%p failed", address));
+				Log("Execute at 0x%p failed", address);
 				break;
 			}
 		}
@@ -447,15 +452,15 @@ static void DumpRegisters(const CONTEXT *ctx)
 	Log("Register dump:");
 
 #ifdef BUILD_64BIT
-	Log(Format("RIP: %016llX RSP: %016llX RBP: %016llX EFLAGS: %08X", ctx->Rip, ctx->Rsp, ctx->Rbp, ctx->EFlags));
-	Log(Format("RAX: %016llX RBX: %016llX RCX: %016llX RDX: %016llX", ctx->Rax, ctx->Rbx, ctx->Rcx, ctx->Rdx));
-	Log(Format("RSI: %016llX RDI: %016llX R8:  %016llX R9:  %016llX", ctx->Rsi, ctx->Rdi, ctx->R8, ctx->R9));
-	Log(Format("R10: %016llX R11: %016llX R12: %016llX R13: %016llX", ctx->R10, ctx->R11, ctx->R12, ctx->R13));
-	Log(Format("R14: %016llX R15: %016llX", ctx->R14, ctx->R15));
+	Log("RIP: %016llX RSP: %016llX RBP: %016llX EFLAGS: %08X", ctx->Rip, ctx->Rsp, ctx->Rbp, ctx->EFlags);
+	Log("RAX: %016llX RBX: %016llX RCX: %016llX RDX: %016llX", ctx->Rax, ctx->Rbx, ctx->Rcx, ctx->Rdx);
+	Log("RSI: %016llX RDI: %016llX R8:  %016llX R9:  %016llX", ctx->Rsi, ctx->Rdi, ctx->R8, ctx->R9);
+	Log("R10: %016llX R11: %016llX R12: %016llX R13: %016llX", ctx->R10, ctx->R11, ctx->R12, ctx->R13);
+	Log("R14: %016llX R15: %016llX", ctx->R14, ctx->R15);
 #else
-	Log(Format("EIP: %08X ESP: %08X EBP: %08X EFLAGS: %08X", ctx->Eip, ctx->Esp, ctx->Ebp, ctx->EFlags));
-	Log(Format("EAX: %08X EBX: %08X ECX: %08X EDX: %08X", ctx->Eax, ctx->Ebx, ctx->Ecx, ctx->Edx));
-	Log(Format("ESI: %08X EDI: %08X", ctx->Esi, ctx->Edi));
+	Log("EIP: %08X ESP: %08X EBP: %08X EFLAGS: %08X", ctx->Eip, ctx->Esp, ctx->Ebp, ctx->EFlags);
+	Log("EAX: %08X EBX: %08X ECX: %08X EDX: %08X", ctx->Eax, ctx->Ebx, ctx->Ecx, ctx->Edx);
+	Log("ESI: %08X EDI: %08X", ctx->Esi, ctx->Edi);
 #endif
 }
 
@@ -477,24 +482,24 @@ static void OnCrash(_EXCEPTION_POINTERS *pExceptionInfo)
 		Log("Callstack:");
 		for (size_t i = 0; i < callstack.size(); i++)
 		{
-			Log(callstack[i].ToString());
+			Log("%s", callstack[i].ToString().c_str());
 		}
 
 		std::vector<Module> modules = dbghelp.GetLoadedModules();
 
-		Log(Format("Modules (%u):", modules.size()));
+		Log("Modules (%u):", modules.size());
 		for (size_t i = 0; i < modules.size(); i++)
 		{
-			Log(modules[i].ToString());
+			Log("%s", modules[i].ToString().c_str());
 		}
 	}
 	else
 	{
-		Log(Format("CrashLogger: DebugHelper initialization failed with error code %lu", GetLastError()));
+		Log("CrashLogger: DebugHelper initialization failed with error code %lu", GetLastError());
 	}
 
 	Log("Command line:");
-	Log(WinAPI::CmdLine::GetFull());
+	Log("%s", WinAPI::CmdLine::GetFull());
 
 	Log("================================================================================");
 }

@@ -6,7 +6,7 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
 
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 #include "Logger.h"
@@ -132,7 +132,7 @@ static void AddCurrentThreadID(std::string& result)
 
 	std::memcpy(&raw_id, &id, sizeof(raw_id));
 
-	result += Format("%04lx", raw_id);
+	StringTools::FormatTo(result, "%04lx", raw_id);
 }
 
 static void AddTimeZoneOffset(std::string& result)
@@ -153,7 +153,7 @@ static void AddTimeZoneOffset(std::string& result)
 			sign = '+';
 		}
 
-		result += Format("%c%02u%02u", sign, bias / 60, bias % 60);
+		StringTools::FormatTo(result, "%c%02u%02u", sign, bias / 60, bias % 60);
 	}
 }
 
@@ -173,47 +173,47 @@ static void ExpandPrefixFormatSpecifier(std::string& result, char specifier, con
 		}
 		case 'd':
 		{
-			result += Format("%02u", time.day);
+			StringTools::FormatTo(result, "%02u", time.day);
 			break;
 		}
 		case 'm':
 		{
-			result += Format("%02u", time.month);
+			StringTools::FormatTo(result, "%02u", time.month);
 			break;
 		}
 		case 'Y':
 		{
-			result += Format("%04u", time.year);
+			StringTools::FormatTo(result, "%04u", time.year);
 			break;
 		}
 		case 'F':
 		{
-			result += Format("%04u-%02u-%02u", time.year, time.month, time.day);
+			StringTools::FormatTo(result, "%04u-%02u-%02u", time.year, time.month, time.day);
 			break;
 		}
 		case 'H':
 		{
-			result += Format("%02u", time.hour);
+			StringTools::FormatTo(result, "%02u", time.hour);
 			break;
 		}
 		case 'M':
 		{
-			result += Format("%02u", time.minute);
+			StringTools::FormatTo(result, "%02u", time.minute);
 			break;
 		}
 		case 'S':
 		{
-			result += Format("%02u", time.second);
+			StringTools::FormatTo(result, "%02u", time.second);
 			break;
 		}
 		case 'T':
 		{
-			result += Format("%02u:%02u:%02u", time.hour, time.minute, time.second);
+			StringTools::FormatTo(result, "%02u:%02u:%02u", time.hour, time.minute, time.second);
 			break;
 		}
 		case 'N':
 		{
-			result += Format("%03u", time.millisecond);
+			StringTools::FormatTo(result, "%03u", time.millisecond);
 			break;
 		}
 		case 'z':
@@ -604,7 +604,7 @@ void Logger::BuildMessageContent(Message& message, const char* format, va_list a
 		}
 	}
 
-	message.content += FormatV(format, args);
+	StringTools::FormatToV(message.content, format, args);
 }
 
 void Logger::WriteMessage(const Message& message)

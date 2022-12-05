@@ -3,7 +3,7 @@
 #include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "ThirdParty/nlohmann/json.hpp"
 
@@ -65,7 +65,7 @@ namespace
 		const uint8_t byte2 = ip >> 16;
 		const uint8_t byte3 = ip >> 24;
 
-		return Format("%hhu.%hhu.%hhu.%hhu", byte0, byte1, byte2, byte3);
+		return StringTools::Format("%hhu.%hhu.%hhu.%hhu", byte0, byte1, byte2, byte3);
 	}
 
 	uint32_t IPFromString(const char *ip)

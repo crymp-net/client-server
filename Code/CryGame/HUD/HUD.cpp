@@ -70,7 +70,7 @@ History:
 
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ServerConnector.h"
-#include "Library/Format.h"
+#include "Library/StringTools.h"
 
 static const float NIGHT_VISION_ENERGY = 30.0f;
 
@@ -3609,7 +3609,7 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			//CryMP begin
 			const auto& s = gClient->GetServerConnector()->GetLastServer();
 
-			std::string text = Format("%s (%s:%d)", s.name.c_str(), s.host.c_str(), s.port);
+			const std::string text = StringTools::Format("%s (%s:%d)", s.name.c_str(), s.host.c_str(), s.port);
 
 			SFlashVarValue sArgs[1] = { text.c_str() };
 			m_animSpectate.Invoke("setServerInfo", sArgs, 1);
@@ -3638,7 +3638,7 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			if (changedTarget)
 			{
 				const int channelId = pSpectatorTarget->GetChannelId();
-				std::string channelInfo = Format("CHANNEL: %d", channelId);
+				const std::string channelInfo = StringTools::Format("CHANNEL: %d", channelId);
 				SFlashVarValue sArgs2[1] = { channelInfo.c_str() };
 				m_animSpectate.Invoke("setChannel", sArgs2, 1);
 

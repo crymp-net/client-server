@@ -6,8 +6,8 @@
 #include "ThirdParty/picosha2.h"
 
 #include "Util.h"
-#include "Format.h"
 #include "StringBuffer.h"
+#include "StringTools.h"
 
 bool Util::LessNoCase(const std::string_view & stringA, const std::string_view & stringB)
 {
@@ -202,7 +202,7 @@ std::string Util::MakeHumanReadableBytes(uint64_t bytes)
 		}
 	}
 
-	return Format("%.1f %cB", value, prefix);
+	return StringTools::Format("%.1f %cB", value, prefix);
 }
 
 std::string Util::SecondsToString(uint64_t seconds)

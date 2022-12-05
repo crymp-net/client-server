@@ -2,7 +2,6 @@
 #include <chrono>
 
 #include "CryMP/Common/Executor.h"
-#include "Library/Format.h"
 #include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
@@ -136,11 +135,11 @@ std::string FileDownloaderProgress::ToString() const
 		const double secondsRemaining = (contentLength - downloadedBytes) / speed;
 		const std::string timeRemaining = Util::SecondsToString(secondsRemaining);
 
-		return Format("%.0f%% (%s/s, %s)", percentage, speedString.c_str(), timeRemaining.c_str());
+		return StringTools::Format("%.0f%% (%s/s, %s)", percentage, speedString.c_str(), timeRemaining.c_str());
 	}
 	else
 	{
-		return Format("?? (%s/s, ??)", speedString.c_str());
+		return StringTools::Format("?? (%s/s, ??)", speedString.c_str());
 	}
 }
 
