@@ -412,10 +412,15 @@ void Launcher::OnInit(ISystem *pSystem)
 
 	logger.LogAlways("Log begins at %s", Logger::FormatPrefix("%F %T%z").c_str());
 
-	logger.LogAlways("Executable: %s", WinAPI::GetApplicationPath().string().c_str());
-	logger.LogAlways("Main directory: %s", mainDirPath.string().c_str());
-	logger.LogAlways("User directory: %s", userDirPath.string().c_str());
-	logger.LogAlways("Root directory: %s", rootDirPath.string().c_str());
+	const std::string exe = WinAPI::GetApplicationPath().string();
+	const std::string mainDir = mainDirPath.string();
+	const std::string rootDir = rootDirPath.string();
+	const std::string userDir = userDirPath.string();
+
+	logger.LogAlways("Executable: %s", exe.c_str());
+	logger.LogAlways("Main directory: %s", mainDir.c_str());
+	logger.LogAlways("Root directory: %s", rootDir.empty() ? mainDir.c_str() : rootDir.c_str());
+	logger.LogAlways("User directory: %s", userDir.c_str());
 	logger.LogAlways("");
 
 	const SFileVersion& version = gEnv->pSystem->GetProductVersion();
