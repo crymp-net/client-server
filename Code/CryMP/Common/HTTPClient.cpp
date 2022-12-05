@@ -41,9 +41,9 @@ struct HTTPClientTask : public IExecutorTask
 				}
 			);
 		}
-		catch (const Error & error)
+		catch (const std::exception& ex)
 		{
-			result.error = error;
+			result.error = ex.what();
 		}
 	}
 

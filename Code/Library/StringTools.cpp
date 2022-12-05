@@ -109,34 +109,34 @@ std::size_t StringTools::FormatToV(char* buffer, std::size_t bufferSize, const c
 	return length;
 }
 
-std::runtime_error StringTools::Error(const char* format, ...)
+std::runtime_error StringTools::ErrorFormat(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	std::runtime_error error = ErrorV(format, args);
+	std::runtime_error error = ErrorFormatV(format, args);
 	va_end(args);
 
 	return error;
 }
 
-std::runtime_error StringTools::ErrorV(const char* format, va_list args)
+std::runtime_error StringTools::ErrorFormatV(const char* format, va_list args)
 {
 	const std::string message = FormatV(format, args);
 
 	return std::runtime_error(message);
 }
 
-std::system_error StringTools::OSError(const char* format, ...)
+std::system_error StringTools::SysErrorFormat(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	std::system_error error = OSErrorV(format, args);
+	std::system_error error = SysErrorFormatV(format, args);
 	va_end(args);
 
 	return error;
 }
 
-std::system_error StringTools::OSErrorV(const char* format, va_list args)
+std::system_error StringTools::SysErrorFormatV(const char* format, va_list args)
 {
 	const int code = static_cast<int>(GetLastError());
 

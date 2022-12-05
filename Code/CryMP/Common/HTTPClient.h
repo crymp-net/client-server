@@ -5,15 +5,13 @@
 #include <string_view>
 #include <functional>
 
-#include "Library/Error.h"
-
 #include "HTTP.h"
 
 class Executor;
 
 struct HTTPClientResult
 {
-	Error error;           // client error
+	std::string error;     // client error
 	std::string response;  // server response
 	int code = 0;          // HTTP status code
 };

@@ -6,6 +6,7 @@
 
 #include "WinAPI.h"
 #include "Format.h"
+#include "StringTools.h"
 
 //////////////////
 // Command line //
@@ -94,19 +95,9 @@ const char* WinAPI::CmdLine::GetArgValue(const char* arg, const char* defaultVal
 // Errors //
 ////////////
 
-int WinAPI::GetCurrentErrorCode()
+unsigned long WinAPI::GetCurrentErrorCode()
 {
 	return GetLastError();
-}
-
-std::string WinAPI::GetErrorCodeDescription(int code)
-{
-	const DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-
-	char buffer[256];
-	DWORD length = FormatMessageA(flags, nullptr, code, 0, buffer, sizeof buffer, nullptr);
-
-	return std::string(buffer, length);
 }
 
 ///////////
@@ -121,11 +112,11 @@ std::filesystem::path WinAPI::GetApplicationPath()
 	DWORD length = GetModuleFileNameW(nullptr, buffer, BUFFER_SIZE);
 	if (length == 0)
 	{
-		throw SystemError("GetModuleFileNameW");
+		throw StringTools::SysErrorFormat("GetModuleFileNameW");
 	}
 	else if (length >= BUFFER_SIZE)
 	{
-		throw Error("Application path is too long!");
+		throw StringTools::ErrorFormat("Application path is too long!");
 	}
 
 	return std::filesystem::path(buffer);
@@ -135,7 +126,7 @@ void WinAPI::SetWorkingDirectory(const std::filesystem::path & path)
 {
 	if (!SetCurrentDirectoryW(path.c_str()))
 	{
-		throw SystemError("SetCurrentDirectoryW");
+		throw StringTools::SysErrorFormat("SetCurrentDirectoryW");
 	}
 }
 
@@ -147,7 +138,7 @@ void WinAPI::DLL_AddSearchDirectory(const std::filesystem::path & path)
 {
 	if (!SetDllDirectoryW(path.c_str()))
 	{
-		throw SystemError("SetDllDirectoryW");
+		throw StringTools::SysErrorFormat("SetDllDirectoryW");
 	}
 }
 
@@ -178,18 +169,6 @@ void WinAPI::DLL_Unload(void *pDLL)
 void WinAPI::ErrorBox(const char *message)
 {
 	MessageBoxA(nullptr, message, "Error", MB_OK | MB_ICONERROR);
-}
-
-void WinAPI::ErrorBox(const Error & error)
-{
-	const int code = error.GetCode();
-	const char *message = error.GetMessage().c_str();
-	const char *description = error.GetDescription().c_str();
-
-	if (code > 0 || *description)
-		ErrorBox(Format("%s\nError %d: %s", message, code, description).c_str());
-	else
-		ErrorBox(message);
 }
 
 ///////////////
@@ -294,7 +273,7 @@ void WinAPI::FillNOP(void *address, size_t length)
 
 	if (!VirtualProtect(address, length, PAGE_EXECUTE_READWRITE, &oldProtection))
 	{
-		throw SystemError("VirtualProtect");
+		throw StringTools::SysErrorFormat("VirtualProtect");
 	}
 
 	// 0x90 is opcode of NOP instruction on both x86 and x86-64
@@ -302,7 +281,7 @@ void WinAPI::FillNOP(void *address, size_t length)
 
 	if (!VirtualProtect(address, length, oldProtection, &oldProtection))
 	{
-		throw SystemError("VirtualProtect");
+		throw StringTools::SysErrorFormat("VirtualProtect");
 	}
 }
 
@@ -319,14 +298,14 @@ void WinAPI::FillMem(void *address, const void *data, size_t length)
 
 	if (!VirtualProtect(address, length, PAGE_EXECUTE_READWRITE, &oldProtection))
 	{
-		throw SystemError("VirtualProtect");
+		throw StringTools::SysErrorFormat("VirtualProtect");
 	}
 
 	memcpy(address, data, length);
 
 	if (!VirtualProtect(address, length, oldProtection, &oldProtection))
 	{
-		throw SystemError("VirtualProtect");
+		throw StringTools::SysErrorFormat("VirtualProtect");
 	}
 }
 
@@ -467,7 +446,7 @@ std::string WinAPI::FileRead(void *handle, size_t maxLength)
 
 			if (distance >= 0x80000000)  // 2 GiB
 			{
-				throw Error("File is too big!");
+				throw StringTools::ErrorFormat("File is too big!");
 			}
 
 			maxLength = distance;
@@ -484,7 +463,7 @@ std::string WinAPI::FileRead(void *handle, size_t maxLength)
 
 	if (!ReadFile(static_cast<HANDLE>(handle), buffer, bufferSize, &bytesRead, nullptr))
 	{
-		throw SystemError("ReadFile");
+		throw StringTools::SysErrorFormat("ReadFile");
 	}
 
 	if (bytesRead != result.length())
@@ -500,7 +479,7 @@ void WinAPI::FileWrite(void *handle, const std::string_view & text)
 #ifdef BUILD_64BIT
 	if (text.length() >= 0xFFFFFFFF)
 	{
-		throw Error("Data is too big!");
+		throw StringTools::ErrorFormat("Data is too big!");
 	}
 #endif
 
@@ -516,7 +495,7 @@ void WinAPI::FileWrite(void *handle, const std::string_view & text)
 
 		if (!WriteFile(static_cast<HANDLE>(handle), buffer, bufferSize, &bytesWritten, nullptr))
 		{
-			throw SystemError("WriteFile");
+			throw StringTools::SysErrorFormat("WriteFile");
 		}
 
 		totalBytesWritten += bytesWritten;
@@ -531,7 +510,7 @@ uint64_t WinAPI::FileSeek(void *handle, FileSeekBase base, int64_t offset)
 
 	if (!SetFilePointerEx(static_cast<HANDLE>(handle), offsetValue, &offsetValue, ToNativeFileSeek(base)))
 	{
-		throw SystemError("SetFilePointerEx");
+		throw StringTools::SysErrorFormat("SetFilePointerEx");
 	}
 
 	return offsetValue.QuadPart;
@@ -543,7 +522,7 @@ void WinAPI::FileResize(void *handle, uint64_t size)
 
 	if (!SetEndOfFile(static_cast<HANDLE>(handle)))
 	{
-		throw SystemError("SetEndOfFile");
+		throw StringTools::SysErrorFormat("SetEndOfFile");
 	}
 }
 
@@ -646,7 +625,7 @@ long WinAPI::GetTimeZoneBias()
 		}
 		case TIME_ZONE_ID_INVALID:
 		{
-			throw SystemError("GetTimeZoneInformation");
+			throw StringTools::SysErrorFormat("GetTimeZoneInformation");
 		}
 	}
 
@@ -877,7 +856,7 @@ int WinAPI::HTTPRequest(
 
 	if (!WinHttpCrackUrl(urlW.c_str(), urlW.length(), 0, &urlComponents))
 	{
-		throw SystemError("WinHttpCrackUrl");
+		throw StringTools::SysErrorFormat("WinHttpCrackUrl");
 	}
 
 	HTTPHandleGuard hSession = WinHttpOpen(L"CryMP-Client",
@@ -886,12 +865,12 @@ int WinAPI::HTTPRequest(
 	                                       WINHTTP_NO_PROXY_BYPASS, 0);
 	if (!hSession)
 	{
-		throw SystemError("WinHttpOpen");
+		throw StringTools::SysErrorFormat("WinHttpOpen");
 	}
 
 	if (!WinHttpSetTimeouts(hSession, timeout, timeout, timeout, timeout))
 	{
-		throw SystemError("WinHttpSetTimeouts");
+		throw StringTools::SysErrorFormat("WinHttpSetTimeouts");
 	}
 
 	const std::wstring serverNameW(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
@@ -899,7 +878,7 @@ int WinAPI::HTTPRequest(
 	HTTPHandleGuard hConnect = WinHttpConnect(hSession, serverNameW.c_str(), urlComponents.nPort, 0);
 	if (!hConnect)
 	{
-		throw SystemError("WinHttpConnect");
+		throw StringTools::SysErrorFormat("WinHttpConnect");
 	}
 
 	DWORD requestFlags = WINHTTP_FLAG_REFRESH;
@@ -917,7 +896,7 @@ int WinAPI::HTTPRequest(
 	                                              WINHTTP_DEFAULT_ACCEPT_TYPES, requestFlags);
 	if (!hRequest)
 	{
-		throw SystemError("WinHttpOpenRequest");
+		throw StringTools::SysErrorFormat("WinHttpOpenRequest");
 	}
 
 	std::wstring headersW;
@@ -933,12 +912,12 @@ int WinAPI::HTTPRequest(
 	if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
 	                        const_cast<char*>(data.data()), data.length(), data.length(), 0))
 	{
-		throw SystemError("WinHttpSendRequest");
+		throw StringTools::SysErrorFormat("WinHttpSendRequest");
 	}
 
 	if (!WinHttpReceiveResponse(hRequest, nullptr))
 	{
-		throw SystemError("WinHttpReceiveResponse");
+		throw StringTools::SysErrorFormat("WinHttpReceiveResponse");
 	}
 
 	DWORD statusCode = 0;
@@ -946,7 +925,7 @@ int WinAPI::HTTPRequest(
 	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
 	                         WINHTTP_HEADER_NAME_BY_INDEX, &statusCode, &statusCodeSize, WINHTTP_NO_HEADER_INDEX))
 	{
-		throw SystemError("WinHttpQueryHeaders(WINHTTP_QUERY_STATUS_CODE)");
+		throw StringTools::SysErrorFormat("WinHttpQueryHeaders(WINHTTP_QUERY_STATUS_CODE)");
 	}
 
 	if (callback)
@@ -962,7 +941,7 @@ int WinAPI::HTTPRequest(
 		{
 			if (GetLastError() != ERROR_WINHTTP_HEADER_NOT_FOUND)
 			{
-				throw SystemError("WinHttpQueryHeaders(\"Content-Length\")");
+				throw StringTools::SysErrorFormat("WinHttpQueryHeaders(\"Content-Length\")");
 			}
 		}
 		else
@@ -975,7 +954,7 @@ int WinAPI::HTTPRequest(
 			DWORD dataLength = 0;
 			if (!WinHttpReadData(hRequest, buffer, bufferSize, &dataLength))
 			{
-				throw SystemError("WinHttpReadData");
+				throw StringTools::SysErrorFormat("WinHttpReadData");
 			}
 
 			return dataLength;

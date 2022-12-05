@@ -323,13 +323,13 @@ void ServerBrowser::Update()
 
 			if (m_pListener)
 			{
-				if (result.error)
+				if (result.error.empty())
 				{
-					CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.what());
+					OnServerList(result, master);
 				}
 				else
 				{
-					OnServerList(result, master);
+					CryLogAlways("$4[CryMP] Server list update failed: %s", result.error.c_str());
 				}
 
 				if (m_pendingQueryCount == 0)
@@ -358,11 +358,7 @@ void ServerBrowser::UpdateServerInfo(int id)
 	{
 		if (m_pListener)
 		{
-			if (result.error)
-			{
-				CryLogAlways("$4[CryMP] Server update failed: %s", result.error.what());
-			}
-			else
+			if (result.error.empty())
 			{
 				if (OnServerInfo(result, id))
 				{
@@ -372,6 +368,10 @@ void ServerBrowser::UpdateServerInfo(int id)
 				{
 					m_pListener->ServerUpdateFailed(id);
 				}
+			}
+			else
+			{
+				CryLogAlways("$4[CryMP] Server update failed: %s", result.error.c_str());
 			}
 		}
 	});

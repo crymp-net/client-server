@@ -6,7 +6,6 @@
 #include <functional>
 
 #include "CryMP/Common/HTTP.h"
-#include "Library/Error.h"
 
 struct FileDownloaderProgress
 {
@@ -19,7 +18,7 @@ struct FileDownloaderProgress
 
 struct FileDownloaderResult
 {
-	Error error;                     // download error
+	std::string error;               // download error
 	bool canceled = false;           // progress callback returned false
 	int statusCode = 0;              // HTTP status code
 	uint64_t contentLength = 0;      // HTTP content length, zero if not provided by the server

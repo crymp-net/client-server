@@ -234,10 +234,14 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 	{
 		if (pSS->BeginCall(callback))
 		{
-			if (result.error)
-				pSS->PushFuncParam(result.error.what());
-			else
+			if (result.error.empty())
+			{
 				pSS->PushFuncParam(false);
+			}
+			else
+			{
+				pSS->PushFuncParam(result.error.c_str());
+			}
 
 			pSS->PushFuncParam(result.response.c_str());
 			pSS->PushFuncParam(result.code);

@@ -12,8 +12,8 @@
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
-#include "Library/Error.h"
 #include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 #include "Launcher.h"
@@ -133,7 +133,7 @@ void Launcher::SetCmdLine()
 
 	if (cmdLine.length() >= sizeof m_params.cmdLine)
 	{
-		throw Error("Command line is too long!");
+		throw StringTools::ErrorFormat("Command line is too long!");
 	}
 
 	memcpy(m_params.cmdLine, cmdLine.data(), cmdLine.length());
@@ -182,9 +182,9 @@ void Launcher::LoadEngine()
 	m_dlls.pCrySystem = WinAPI::DLL_Load("CrySystem.dll");
 	if (!m_dlls.pCrySystem)
 	{
-		if (SystemError::GetCurrentCode() == 193)  // ERROR_BAD_EXE_FORMAT
+		if (WinAPI::GetCurrentErrorCode() == 193)  // ERROR_BAD_EXE_FORMAT
 		{
-			throw Error("Failed to load the CrySystem DLL!\n\n"
+			throw StringTools::ErrorFormat("Failed to load the CrySystem DLL!\n\n"
 #ifdef BUILD_64BIT
 				"It seems you have 32-bit DLLs in your Bin64 directory! Please fix it."
 #else
@@ -194,14 +194,14 @@ void Launcher::LoadEngine()
 		}
 		else
 		{
-			throw SystemError("Failed to load the CrySystem DLL!");
+			throw StringTools::SysErrorFormat("Failed to load the CrySystem DLL!");
 		}
 	}
 
 	const int gameVersion = WinAPI::GetCrysisGameBuild(m_dlls.pCrySystem);
 	if (gameVersion < 0)
 	{
-		throw SystemError("Failed to get the game version!");
+		throw StringTools::SysErrorFormat("Failed to get the game version!");
 	}
 
 	CryMemoryManager::Init(m_dlls.pCrySystem);
@@ -210,15 +210,24 @@ void Launcher::LoadEngine()
 	{
 		case 5767:
 		{
-			throw Error("Crysis 1.0 is not supported!\n\nInstall 1.2 and 1.2.1 official patch.");
+			throw StringTools::ErrorFormat(
+				"Crysis 1.0 is not supported!\n\n"
+				"Install 1.2 and 1.2.1 official patch."
+			);
 		}
 		case 5879:
 		{
-			throw Error("Crysis 1.1 is not supported!\n\nInstall 1.2 and 1.2.1 official patch.");
+			throw StringTools::ErrorFormat(
+				"Crysis 1.1 is not supported!\n\n"
+				"Install 1.2 and 1.2.1 official patch."
+			);
 		}
 		case 6115:
 		{
-			throw Error("Crysis 1.2 is not supported!\n\nInstall 1.2.1 official patch.");
+			throw StringTools::ErrorFormat(
+				"Crysis 1.2 is not supported!\n\n"
+				"Install 1.2.1 official patch."
+			);
 		}
 		case 6156:
 		{
@@ -232,30 +241,30 @@ void Launcher::LoadEngine()
 		case 6670:
 		case 6729:
 		{
-			throw Error("Crysis Wars is not supported!");
+			throw StringTools::ErrorFormat("Crysis Wars is not supported!");
 		}
 		case 687:
 		case 710:
 		case 711:
 		{
-			throw Error("Crysis Warhead is not supported!");
+			throw StringTools::ErrorFormat("Crysis Warhead is not supported!");
 		}
 		default:
 		{
-			throw Error(Format("Unknown game version %d!", gameVersion));
+			throw StringTools::ErrorFormat("Unknown game version %d!", gameVersion);
 		}
 	}
 
 	m_dlls.pCryAction = WinAPI::DLL_Load("CryAction.dll");
 	if (!m_dlls.pCryAction)
 	{
-		throw SystemError("Failed to load the CryAction DLL!");
+		throw StringTools::SysErrorFormat("Failed to load the CryAction DLL!");
 	}
 
 	m_dlls.pCryNetwork = WinAPI::DLL_Load("CryNetwork.dll");
 	if (!m_dlls.pCryNetwork)
 	{
-		throw SystemError("Failed to load the CryNetwork DLL!");
+		throw StringTools::SysErrorFormat("Failed to load the CryNetwork DLL!");
 	}
 
 	const bool isDX10 = !WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
@@ -265,7 +274,7 @@ void Launcher::LoadEngine()
 		m_dlls.pCryRenderD3D10 = WinAPI::DLL_Load("CryRenderD3D10.dll");
 		if (!m_dlls.pCryRenderD3D10)
 		{
-			throw SystemError("Failed to load the CryRenderD3D10 DLL!");
+			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D10 DLL!");
 		}
 	}
 	else
@@ -273,7 +282,7 @@ void Launcher::LoadEngine()
 		m_dlls.pCryRenderD3D9 = WinAPI::DLL_Load("CryRenderD3D9.dll");
 		if (!m_dlls.pCryRenderD3D9)
 		{
-			throw SystemError("Failed to load the CryRenderD3D9 DLL!");
+			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
 		}
 	}
 }
@@ -331,13 +340,13 @@ void Launcher::StartEngine()
 	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL_GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
 	if (!entry)
 	{
-		throw Error("The CryAction DLL is not valid!");
+		throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
 	}
 
 	IGameFramework *pGameFramework = entry();
 	if (!pGameFramework)
 	{
-		throw Error("Failed to create the GameFramework Interface!");
+		throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
 	}
 
 	GameWindow::GetInstance().Init();
@@ -346,14 +355,14 @@ void Launcher::StartEngine()
 	// Launcher::OnInit is called here
 	if (!pGameFramework->Init(m_params))
 	{
-		throw Error("CryENGINE initialization failed!");
+		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
 	}
 
 	gClient->Init(pGameFramework);
 
 	if (!pGameFramework->CompleteInit())
 	{
-		throw Error("CryENGINE post-initialization failed!");
+		throw StringTools::ErrorFormat("CryENGINE post-initialization failed!");
 	}
 
 	gEnv->pSystem->ExecuteCommandLine();
@@ -458,17 +467,17 @@ void Launcher::Run()
 
 	if (WinAPI::GetApplicationPath().filename().string().find(CRYMP_CLIENT_EXE_NAME) != 0)
 	{
-		throw Error("Invalid name of the executable!");
+		throw StringTools::ErrorFormat("Invalid name of the executable!");
 	}
 
 	if (WinAPI::CmdLine::HasArg("-mod"))
 	{
-		throw Error("Mods are not supported!");
+		throw StringTools::ErrorFormat("Mods are not supported!");
 	}
 
 	if (WinAPI::CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
 	{
-		throw Error("Running as a dedicated server is not supported!");
+		throw StringTools::ErrorFormat("Running as a dedicated server is not supported!");
 	}
 
 	// the first step

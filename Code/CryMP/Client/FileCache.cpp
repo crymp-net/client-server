@@ -2,6 +2,7 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -18,7 +19,7 @@ json FileCache::LoadIndex()
 		WinAPI::File indexFile(m_cacheDir / "index", WinAPI::FileAccess::READ_ONLY);
 		if (!indexFile)
 		{
-			throw SystemError("Failed to open the index file for reading");
+			throw StringTools::SysErrorFormat("Failed to open the index file for reading");
 		}
 
 		const std::string content = indexFile.Read();
@@ -49,7 +50,7 @@ void FileCache::SaveIndex(const json & index)
 		WinAPI::File indexFile(m_cacheDir / "index", WinAPI::FileAccess::WRITE_ONLY);
 		if (!indexFile)
 		{
-			throw SystemError("Failed to open the index file for writing");
+			throw StringTools::SysErrorFormat("Failed to open the index file for writing");
 		}
 
 		indexFile.Write(index.dump());
@@ -80,9 +81,9 @@ void FileCache::DownloadFile(FileCacheRequest && request, const std::filesystem:
 	{
 		bool success = false;
 
-		if (result.error)
+		if (!result.error.empty())
 		{
-			CryLogAlways("$4[CryMP] [FileCache] Download error: %s", result.error.what());
+			CryLogAlways("$4[CryMP] [FileCache] Download error: %s", result.error.c_str());
 		}
 		else if (result.canceled)
 		{

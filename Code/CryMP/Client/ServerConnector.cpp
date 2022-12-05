@@ -33,9 +33,9 @@ namespace
 
 bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
 {
-	if (result.error)
+	if (!result.error.empty())
 	{
-		CryLogAlways("$4[CryMP] Server check failed: %s", result.error.what());
+		CryLogAlways("$4[CryMP] Server check failed: %s", result.error.c_str());
 		return false;
 	}
 

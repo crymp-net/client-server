@@ -10,8 +10,6 @@
 #include <functional>
 #include <map>
 
-#include "Error.h"
-
 namespace WinAPI
 {
 	inline constexpr std::string_view NEWLINE = "\r\n";
@@ -48,8 +46,7 @@ namespace WinAPI
 	// Errors //
 	////////////
 
-	int GetCurrentErrorCode();
-	std::string GetErrorCodeDescription(int code);
+	unsigned long GetCurrentErrorCode();
 
 	///////////
 	// Paths //
@@ -75,7 +72,6 @@ namespace WinAPI
 	/////////////////
 
 	void ErrorBox(const char *message);
-	void ErrorBox(const Error & error);
 
 	///////////////
 	// Resources //

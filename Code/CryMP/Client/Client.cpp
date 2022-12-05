@@ -43,9 +43,9 @@ void Client::InitMasters()
 		{
 			content = file.Read();
 		}
-		catch (const Error & error)
+		catch (const std::exception& ex)
 		{
-			CryLogAlways("$4[CryMP] Failed to read the masters.txt file: %s", error.what());
+			CryLogAlways("$4[CryMP] Failed to read the masters.txt file: %s", ex.what());
 		}
 	}
 	else

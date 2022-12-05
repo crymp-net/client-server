@@ -35,9 +35,9 @@ void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 	{
 		bool success = false;
 
-		if (result.error)
+		if (!result.error.empty())
 		{
-			CryLogAlways("$4[CryMP] [MapDownloader] Download error: %s", result.error.what());
+			CryLogAlways("$4[CryMP] [MapDownloader] Download error: %s", result.error.c_str());
 		}
 		else if (result.canceled)
 		{

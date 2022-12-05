@@ -11,7 +11,7 @@ class MapExtractor
 	std::filesystem::path m_dirPath;
 	std::filesystem::path m_mapPath;
 
-	std::string GetErrorString();
+	const char* GetErrorString();
 	std::string GetFileName(unsigned int index);
 	void ExtractFile(unsigned int index);
 

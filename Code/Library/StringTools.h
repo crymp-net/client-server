@@ -200,9 +200,9 @@ namespace StringTools
 	std::size_t FormatTo(char* buffer, std::size_t bufferSize, const char* format, ...);
 	std::size_t FormatToV(char* buffer, std::size_t bufferSize, const char* format, va_list args);
 
-	std::runtime_error Error(const char* format, ...);
-	std::runtime_error ErrorV(const char* format, va_list args);
+	std::runtime_error ErrorFormat(const char* format, ...);
+	std::runtime_error ErrorFormatV(const char* format, va_list args);
 
-	std::system_error OSError(const char* format, ...);
-	std::system_error OSErrorV(const char* format, va_list args);
+	std::system_error SysErrorFormat(const char* format, ...);
+	std::system_error SysErrorFormatV(const char* format, va_list args);
 }

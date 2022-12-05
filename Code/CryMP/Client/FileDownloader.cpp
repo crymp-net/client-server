@@ -3,6 +3,7 @@
 
 #include "CryMP/Common/Executor.h"
 #include "Library/Format.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -21,7 +22,7 @@ public:
 
 		if (!m_file.Open(path, WinAPI::FileAccess::WRITE_ONLY_CREATE, &created))
 		{
-			throw SystemError("Failed to open the output file");
+			throw StringTools::SysErrorFormat("Failed to open the output file");
 		}
 
 		if (!created)
@@ -106,9 +107,9 @@ struct FileDownloaderTask : public IExecutorTask
 				}
 			);
 		}
-		catch (const Error & error)
+		catch (const std::exception& ex)
 		{
-			result.error = error;
+			result.error = ex.what();
 		}
 	}
 

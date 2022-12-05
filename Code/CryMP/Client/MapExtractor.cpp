@@ -1,10 +1,10 @@
 #include "CryCommon/CrySystem/ISystem.h"
-#include "Library/Error.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 
 #include "MapExtractor.h"
 
-std::string MapExtractor::GetErrorString()
+const char* MapExtractor::GetErrorString()
 {
 	return mz_zip_get_error_string(mz_zip_peek_last_error(&m_zip));
 }
@@ -14,7 +14,7 @@ std::string MapExtractor::GetFileName(unsigned int index)
 	char buffer[512];
 	if (!mz_zip_reader_get_filename(&m_zip, index, buffer, sizeof buffer))
 	{
-		throw Error("ZIP get filename: " + GetErrorString());
+		throw StringTools::ErrorFormat("ZIP get filename: %s", GetErrorString());
 	}
 
 	return buffer;
@@ -37,7 +37,7 @@ void MapExtractor::ExtractFile(unsigned int index)
 
 	if (!mz_zip_reader_extract_to_file(&m_zip, index, filePath.string().c_str(), 0))
 	{
-		throw Error("ZIP extract: " + GetErrorString());
+		throw StringTools::ErrorFormat("ZIP extract: %s", GetErrorString());
 	}
 }
 
@@ -47,7 +47,7 @@ MapExtractor::MapExtractor(const std::filesystem::path & zipPath, const std::fil
 
 	if (!mz_zip_reader_init_file(&m_zip, zipPath.string().c_str(), 0))
 	{
-		throw Error("ZIP open: " + GetErrorString());
+		throw StringTools::ErrorFormat("ZIP open: %s", GetErrorString());
 	}
 
 	m_dirPath = zipPath.parent_path();

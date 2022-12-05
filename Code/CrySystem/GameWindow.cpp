@@ -10,7 +10,7 @@
 #include "CryGame/Game.h"
 #include "CryGame/Menus/OptionsManager.h"
 #include "Launcher/Resources.h"
-#include "Library/Error.h"
+#include "Library/StringTools.h"
 
 #include "GameWindow.h"
 
@@ -246,7 +246,7 @@ void GameWindow::Init()
 	m_classID = RegisterClassA(&windowClass);
 	if (!m_classID)
 	{
-		throw SystemError("Failed to register CryENGINE window class");
+		throw StringTools::SysErrorFormat("Failed to register CryENGINE window class");
 	}
 }
 
