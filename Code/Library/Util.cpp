@@ -6,7 +6,6 @@
 #include "ThirdParty/picosha2.h"
 
 #include "Util.h"
-#include "StringBuffer.h"
 #include "StringTools.h"
 
 bool Util::LessNoCase(const std::string_view & stringA, const std::string_view & stringB)
@@ -186,7 +185,7 @@ std::string Util::MakeHumanReadableBytes(uint64_t bytes)
 		return std::to_string(bytes) + " B";
 	}
 
-	double value = bytes;
+	double value = static_cast<double>(bytes);
 
 	// last prefix
 	char prefix = PREFIXES.back();
@@ -209,31 +208,26 @@ std::string Util::SecondsToString(uint64_t seconds)
 {
 	constexpr unsigned int SECONDS_PER_DAY = 60 * 60 * 24;
 
-	StringBuffer<64> buffer;
+	std::string result;
 
 	if (seconds >= SECONDS_PER_DAY)
 	{
 		const uint64_t days = seconds / SECONDS_PER_DAY;
 
-		buffer.addUInt(days);
-		buffer.add((days == 1) ? " day " : " days ");
+		StringTools::FormatTo(result, "%u %s ", days, (days == 1) ? "day" : "days");
 
 		seconds %= SECONDS_PER_DAY;
 	}
 
-	const unsigned int hours = seconds / 3600;
+	const unsigned int hours = static_cast<unsigned int>(seconds / 3600);
 	seconds %= 3600;
 
-	const unsigned int minutes = seconds / 60;
+	const unsigned int minutes = static_cast<unsigned int>(seconds / 60);
 	seconds %= 60;
 
-	buffer.addUInt(hours, 2);
-	buffer.add(':');
-	buffer.addUInt(minutes, 2);
-	buffer.add(':');
-	buffer.addUInt(seconds, 2);
+	StringTools::FormatTo(result, "%02u:%02u:%02u", hours, minutes, static_cast<unsigned int>(seconds));
 
-	return buffer.toString();
+	return result;
 }
 
 std::string Util::sha256(const std::string_view & text)

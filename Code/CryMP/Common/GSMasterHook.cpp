@@ -2,12 +2,12 @@
 
 #include <array>
 #include <algorithm>
+#include <string>
 #include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "Launcher/Launcher.h"
-#include "Library/StringBuffer.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -41,13 +41,13 @@ namespace
 
 			if (!prefix.empty())
 			{
-				StringBuffer<64> buffer;
-				buffer += prefix;
-				buffer += g_pHostnameCVar->GetString();
+				std::string redirected;
+				redirected += prefix;
+				redirected += g_pHostnameCVar->GetString();
 
-				CryLog("[CryMP] [GSMasterHook] Redirecting '%s' to '%s'", name, buffer.c_str());
+				CryLog("[CryMP] [GSMasterHook] Redirecting '%s' to '%s'", name, redirected.c_str());
 
-				return gethostbyname(buffer.c_str());
+				return gethostbyname(redirected.c_str());
 			}
 
 			CryLog("[CryMP] [GSMasterHook] Ignoring '%s'", name);
