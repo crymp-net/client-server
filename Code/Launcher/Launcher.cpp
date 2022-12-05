@@ -4,7 +4,6 @@
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
-#include "CryGame/Game.h"
 #include "CryMP/Client/Client.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CPUInfo.h"
@@ -350,16 +349,7 @@ void Launcher::StartEngine()
 		throw Error("CryENGINE initialization failed!");
 	}
 
-	// initialize the multiplayer client
 	gClient->Init(pGameFramework);
-
-	// initialize the game
-	// mods are not supported
-	g_pGame = new CGame();
-	if (!g_pGame->Init(pGameFramework))
-	{
-		throw Error("Game initialization failed!");
-	}
 
 	if (!pGameFramework->CompleteInit())
 	{
@@ -367,25 +357,6 @@ void Launcher::StartEngine()
 	}
 
 	gEnv->pSystem->ExecuteCommandLine();
-}
-
-void Launcher::UpdateLoop()
-{
-	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
-
-	while (true)
-	{
-		if (!GameWindow::GetInstance().OnUpdate())
-		{
-			break;
-		}
-
-		if (!g_pGame->Update(true, 0))
-		{
-			GameWindow::GetInstance().OnQuit();
-			break;
-		}
-	}
 }
 
 Launcher::Launcher()
@@ -510,5 +481,5 @@ void Launcher::Run()
 
 	StartEngine();
 
-	UpdateLoop();
+	gClient->UpdateLoop();
 }

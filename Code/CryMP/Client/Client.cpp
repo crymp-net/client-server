@@ -4,8 +4,10 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryGame/Game.h"
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
+#include "CrySystem/GameWindow.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/Util.h"
@@ -242,6 +244,33 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
 
 	InitMasters();
+
+	// initialize the game
+	// mods are not supported
+	g_pGame = new CGame();
+	g_pGame->Init(pGameFramework);
+}
+
+void Client::UpdateLoop()
+{
+	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+
+	while (true)
+	{
+		if (!GameWindow::GetInstance().OnUpdate())
+		{
+			break;
+		}
+
+		const bool haveFocus = true;
+		const unsigned int updateFlags = 0;
+
+		if (!g_pGame->Update(haveFocus, updateFlags))
+		{
+			GameWindow::GetInstance().OnQuit();
+			break;
+		}
+	}
 }
 
 void Client::HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback)

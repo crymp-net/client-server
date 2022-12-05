@@ -10,15 +10,17 @@ class HTTPClient;
 class Server : public IGameFrameworkListener
 {
 public:
-	IGameFramework* gameFramework = nullptr;
+	IGameFramework* pGameFramework = nullptr;
 
-	std::unique_ptr<Executor> executor;
-	std::unique_ptr<HTTPClient> httpClient;
+	std::unique_ptr<Executor> pExecutor;
+	std::unique_ptr<HTTPClient> pHttpClient;
 
 	Server();
 	~Server();
 
-	void Init(IGameFramework* gameFramework);
+	void Init(IGameFramework* pGameFramework);
+
+	void UpdateLoop();
 
 private:
 	// IGameFrameworkListener

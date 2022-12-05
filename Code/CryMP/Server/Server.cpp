@@ -1,5 +1,8 @@
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/HTTPClient.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryGame/Game.h"
 
 #include "Server.h"
 
@@ -11,19 +14,40 @@ Server::~Server()
 {
 }
 
-void Server::Init(IGameFramework* gameFramework)
+void Server::Init(IGameFramework* pGameFramework)
 {
-	this->gameFramework = gameFramework;
+	this->pGameFramework = pGameFramework;
 
-	this->executor = std::make_unique<Executor>();
-	this->httpClient = std::make_unique<HTTPClient>(*this->executor);
+	this->pExecutor = std::make_unique<Executor>();
+	this->pHttpClient = std::make_unique<HTTPClient>(*this->pExecutor);
 
-	this->gameFramework->RegisterListener(this, "crymp-server", FRAMEWORKLISTENERPRIORITY_DEFAULT);
+	pGameFramework->RegisterListener(this, "crymp-server", FRAMEWORKLISTENERPRIORITY_DEFAULT);
+
+	// initialize the game
+	// mods are not supported
+	g_pGame = new CGame();
+	g_pGame->Init(pGameFramework);
+}
+
+void Server::UpdateLoop()
+{
+	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+
+	while (true)
+	{
+		const bool haveFocus = true;
+		const unsigned int updateFlags = 0;
+
+		if (!g_pGame->Update(haveFocus, updateFlags))
+		{
+			break;
+		}
+	}
 }
 
 void Server::OnPostUpdate(float deltaTime)
 {
-	this->executor->OnUpdate();
+	this->pExecutor->OnUpdate();
 }
 
 void Server::OnSaveGame(ISaveGame* saveGame)

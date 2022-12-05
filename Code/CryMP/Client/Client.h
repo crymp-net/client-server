@@ -88,6 +88,8 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
+	void UpdateLoop();
+
 	void HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback);
 	void HttpRequest(HTTPClientRequest&& request);
 

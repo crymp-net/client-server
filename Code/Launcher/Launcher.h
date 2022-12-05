@@ -26,7 +26,6 @@ private:
 	void LoadEngine();
 	void PatchEngine();
 	void StartEngine();
-	void UpdateLoop();
 
 public:
 	Launcher();
