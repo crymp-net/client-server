@@ -17,7 +17,7 @@
 #include "Library/WinAPI.h"
 
 #include "Launcher.h"
-#include "Patch.h"
+#include "MemoryPatch.h"
 #include "CrashLogger.h"
 
 #include "config.h"
@@ -282,27 +282,27 @@ void Launcher::PatchEngine()
 {
 	if (m_dlls.pCryAction)
 	{
-		Patch::AllowDX9ImmersiveMultiplayer(m_dlls.pCryAction);
-		Patch::DisableBreakLog(m_dlls.pCryAction);
+		MemoryPatch::CryAction::AllowDX9ImmersiveMultiplayer(m_dlls.pCryAction);
+		MemoryPatch::CryAction::DisableBreakLog(m_dlls.pCryAction);
 	}
 
 	if (m_dlls.pCryNetwork)
 	{
-		Patch::FixFileCheckCrash(m_dlls.pCryNetwork);
-		Patch::FixInternetConnect(m_dlls.pCryNetwork);
-		Patch::EnablePreordered(m_dlls.pCryNetwork);
-		Patch::AllowSameCDKeys(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::AllowSameCDKeys(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::EnablePreordered(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
 	}
 
 	if (m_dlls.pCrySystem)
 	{
-		Patch::RemoveSecuROM(m_dlls.pCrySystem);
-		//Patch::MakeDX9Default(m_dlls.pCrySystem);
-		Patch::AllowDX9VeryHighSpec(m_dlls.pCrySystem);
-		Patch::AllowMultipleInstances(m_dlls.pCrySystem);
-		Patch::UnhandledExceptions(m_dlls.pCrySystem);
-		Patch::DisableIOErrorLog(m_dlls.pCrySystem);
-		Patch::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
+		MemoryPatch::CrySystem::AllowDX9VeryHighSpec(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::AllowMultipleInstances(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::DisableIOErrorLog(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
+		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::RemoveSecuROM(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::UnhandledExceptions(m_dlls.pCrySystem);
 
 		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{
@@ -316,13 +316,13 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCryRenderD3D9)
 	{
-		Patch::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
+		MemoryPatch::CryRenderD3D9::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
 	}
 
 	if (m_dlls.pCryRenderD3D10)
 	{
-		Patch::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
-		Patch::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
+		MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
+		MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
 	}
 }
 
