@@ -52,6 +52,13 @@ MapExtractor::MapExtractor(const std::filesystem::path & zipPath, const std::fil
 
 	m_dirPath = zipPath.parent_path();
 	m_mapPath = "Levels" / mapName;
+
+	const std::filesystem::path mapDirPath = m_dirPath / m_mapPath;
+
+	if (std::filesystem::exists(mapDirPath))
+	{
+		std::filesystem::remove_all(mapDirPath);
+	}
 }
 
 MapExtractor::~MapExtractor()

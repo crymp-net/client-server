@@ -140,9 +140,21 @@ void ServerConnector::Step1_RequestServerInfo()
 
 void ServerConnector::Step2_DownloadMap()
 {
+	std::string_view map = m_server.map;
+	std::string_view mapVersion;
+
+	if (const auto pos = map.find('|'); pos != std::string_view::npos)
+	{
+		mapVersion = map;
+		mapVersion.remove_prefix(pos + 1);
+
+		map.remove_suffix(map.length() - pos);
+	}
+
 	MapDownloaderRequest request;
-	request.map = m_server.map;
+	request.map = map;
 	request.mapURL = m_server.mapURL;
+	request.mapVersion = mapVersion;
 
 	request.onProgress = [contractID = m_contractID, this](const std::string & message) -> bool
 	{

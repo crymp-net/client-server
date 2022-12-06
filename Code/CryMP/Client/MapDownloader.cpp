@@ -3,6 +3,7 @@
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "Library/Util.h"
+#include "Library/WinAPI.h"
 
 #include "MapDownloader.h"
 #include "MapExtractor.h"
@@ -20,15 +21,25 @@ void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 	download.filePath = m_downloadDir / zipFileName;
 
 	CryLogAlways("$3[CryMP] [MapDownloader] Downloading map $6%s$3", request.map.c_str());
+
+	if (!request.mapVersion.empty())
+	{
+		CryLogAlways("$3[CryMP] [MapDownloader] Version $6%s$3", request.mapVersion.c_str());
+	}
+
 	CryLogAlways("$3[CryMP] [MapDownloader] From $6%s$3", download.url.c_str());
 	CryLogAlways("$3[CryMP] [MapDownloader] To $6%s$3", download.filePath.string().c_str());
 
 	download.onProgress = [callback = request.onProgress](FileDownloaderProgress & progress) -> bool
 	{
 		if (callback)
+		{
 			return callback("Downloading map " + progress.ToString());
+		}
 		else
+		{
 			return true;
+		}
 	};
 
 	download.onComplete = [request = std::move(request), this](FileDownloaderResult & result)
@@ -62,15 +73,24 @@ void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 		{
 			CryLogAlways("$3[CryMP] [MapDownloader] Download finished, extracting...");
 			if (request.onProgress)
+			{
 				request.onProgress("Extracting map...");
+			}
 
 			success = UnpackMap(result.filePath, request.map);
 
 			if (success)
 			{
+				if (!request.mapVersion.empty())
+				{
+					StoreMapVersion(request.map, request.mapVersion);
+				}
+
 				CryLogAlways("$3[CryMP] [MapDownloader] Map extracted, checking map folder...");
 				if (request.onProgress)
+				{
 					request.onProgress("Checking map folder...");
+				}
 
 				RescanMaps();
 
@@ -129,6 +149,50 @@ bool MapDownloader::CheckMapExists(const std::string_view & mapName)
 	}
 
 	return false;
+}
+
+bool MapDownloader::CheckMapVersion(const std::string_view & mapName, const std::string_view & mapVersion)
+{
+	if (mapVersion.empty())
+	{
+		return true;
+	}
+
+	const std::filesystem::path versionFilePath = GetVersionFilePath(mapName);
+
+	try
+	{
+		WinAPI::File file(versionFilePath, WinAPI::FileAccess::READ_ONLY);
+
+		return file.IsOpen() && file.Read() == mapVersion;
+	}
+	catch (const std::runtime_error& error)
+	{
+		CryLogAlways("$4[CryMP] [MapDownloader] Failed to read map version: %s", error.what());
+		return false;
+	}
+}
+
+void MapDownloader::StoreMapVersion(const std::string_view & mapName, const std::string_view & mapVersion)
+{
+	const std::filesystem::path versionFilePath = GetVersionFilePath(mapName);
+
+	try
+	{
+		WinAPI::File file(versionFilePath, WinAPI::FileAccess::WRITE_ONLY_CREATE);
+
+		file.Resize(0);
+		file.Write(mapVersion);
+	}
+	catch (const std::runtime_error& error)
+	{
+		CryLogAlways("$4[CryMP] [MapDownloader] Failed to store map version: %s", error.what());
+	}
+}
+
+std::filesystem::path MapDownloader::GetVersionFilePath(const std::string_view & mapName)
+{
+	return m_downloadDir / "Levels" / mapName / "crymp_version";
 }
 
 void MapDownloader::RescanMaps()
@@ -191,7 +255,7 @@ void MapDownloader::Request(MapDownloaderRequest && request)
 	{
 		CryLogAlways("$4[CryMP] [MapDownloader] Unknown map!");
 	}
-	else if (CheckMapExists(request.map))
+	else if (CheckMapExists(request.map) && CheckMapVersion(request.map, request.mapVersion))
 	{
 		CryLogAlways("$3[CryMP] [MapDownloader] Map $6%s$3 found, download skipped", request.map.c_str());
 
