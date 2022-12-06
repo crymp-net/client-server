@@ -12,12 +12,12 @@
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
+#include "Library/CrashLogger.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 #include "Launcher.h"
 #include "MemoryPatch.h"
-#include "CrashLogger.h"
 
 #include "config.h"
 
@@ -308,6 +308,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CrySystem::AllowMultipleInstances(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::DisableIOErrorLog(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
+		MemoryPatch::CrySystem::HookError(m_dlls.pCrySystem, &CrashLogger::OnEngineError);
 		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::RemoveSecuROM(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::UnhandledExceptions(m_dlls.pCrySystem);
@@ -415,8 +416,7 @@ void Launcher::OnInit(ISystem *pSystem)
 	logger.SetVerbosity(verbosity);
 	logger.OpenFile((rootDirPath.empty() ? userDirPath : rootDirPath) / logFileName);
 
-	// crash logger requires the log file to be open
-	CrashLogger::Init();
+	CrashLogger::Enable([]() -> std::FILE* { return Logger::GetInstance().GetFileHandle(); });
 
 	logger.LogAlways("Log begins at %s", Logger::FormatPrefix("%F %T%z").c_str());
 

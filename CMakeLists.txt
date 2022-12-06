@@ -633,8 +633,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/CrySystem/Logger.h
   Code/CrySystem/RandomGenerator.cpp
   Code/CrySystem/RandomGenerator.h
-  Code/Launcher/CrashLogger.cpp
-  Code/Launcher/CrashLogger.h
   Code/Launcher/Launcher.cpp
   Code/Launcher/Launcher.h
   Code/Launcher/Main.cpp
@@ -643,6 +641,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
   Code/Launcher/Resources.h
   Code/Library/CPUID.cpp
   Code/Library/CPUID.h
+  Code/Library/CrashLogger.cpp
+  Code/Library/CrashLogger.h
   Code/Library/StringTools.cpp
   Code/Library/StringTools.h
   Code/Library/Util.cpp
@@ -750,7 +750,7 @@ target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE ws2_32 winhttp)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 
 # prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
 target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)

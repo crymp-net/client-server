@@ -355,6 +355,50 @@ void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPU
 }
 
 /**
+ * Hooks CryEngine fatal error handler.
+ */
+void MemoryPatch::CrySystem::HookError(void* pCrySystem, void (*handler)(const char* format, ...))
+{
+	// convert thiscall into a normal function call
+	// and call our handler
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0x89, 0x54, 0x24, 0x10,                                // mov qword ptr ss:[rsp+0x10], rdx
+		0x4C, 0x89, 0x44, 0x24, 0x18,                                // mov qword ptr ss:[rsp+0x18], r8
+		0x4C, 0x89, 0x4C, 0x24, 0x20,                                // mov qword ptr ss:[rsp+0x20], r9
+		0x48, 0x83, 0xEC, 0x28,                                      // sub rsp, 0x28
+		0x48, 0x8B, 0xCA,                                            // mov rcx, rdx
+		0x48, 0x8D, 0x54, 0x24, 0x40,                                // lea rdx, qword ptr ss:[rsp+0x40]
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x48, 0x83, 0xC4, 0x28,                                      // add rsp, 0x28
+		0xC3                                                         // ret
+	};
+
+	std::memcpy(&code[29], &handler, 8);
+#else
+	unsigned char code[] = {
+		0x8B, 0x4C, 0x24, 0x08,        // mov ecx, dword ptr ss:[esp+0x8]
+		0x8D, 0x44, 0x24, 0x0C,        // lea eax, dword ptr ss:[esp+0xC]
+		0x50,                          // push eax
+		0x51,                          // push ecx
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x08,              // add esp, 0x8
+		0xC3                           // ret
+	};
+
+	std::memcpy(&code[11], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCrySystem, 0x52D00, &code, sizeof code);
+#else
+	FillMem(pCrySystem, 0x63290, &code, sizeof code);
+#endif
+}
+
+/**
  * Makes DX9 mode the default.
  *
  * It is still possible to use the "-dx10" command line parameter to run the game in DX10 mode.
