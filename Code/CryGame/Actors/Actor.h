@@ -32,8 +32,6 @@
 #include "GrabHandler.h"
 #include "Player/WeaponAttachmentManager.h"
 
-#include "Library/Util.h"
-
 enum class ActorType
 {
 	CActor,
@@ -1269,13 +1267,13 @@ public:
 
 	int m_hitReactionID;
 
-	uint8 GetPhysicsProfile() const 
+	uint8 GetPhysicsProfile() const
 	{
 		return m_currentPhysProfile;
-	} 
+	}
 
 //////////////////////////////////////////////////////////////////////////////////
-//CryMP 
+//CryMP
 //////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -1286,10 +1284,7 @@ public:
 	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
 	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
 
-	void SaveNick(const std::string& name)
-	{
-		m_playerNameClean = Util::RemoveColorCodes(name);
-	}
+	void SaveNick(const std::string_view& name);
 
 	std::string GetCleanNick()
 	{

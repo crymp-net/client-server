@@ -37,6 +37,7 @@
 #include "Player/IPlayerInput.h"
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
+#include "Library/Util.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
 
@@ -4106,5 +4107,8 @@ void CActor::NotifyInventoryAmmoChange(IEntityClass* pAmmoClass, int amount)
 		g_pGame->GetHUD()->DisplayAmmoPickup(pAmmoClass->GetName(), amount);
 }
 
-
+void CActor::SaveNick(const std::string_view& name)
+{
+	m_playerNameClean = Util::RemoveColorCodes(name);
+}
 

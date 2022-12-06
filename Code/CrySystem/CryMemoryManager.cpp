@@ -117,10 +117,10 @@ namespace
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
-	Hook(WinAPI::DLL_GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
+	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
 }

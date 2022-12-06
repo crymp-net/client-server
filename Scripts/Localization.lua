@@ -241,8 +241,12 @@ CPPAPI.AddLocalizedLabel("mp_american/us_commander_endgame_countdown_01", {
 	},
 })
 
+--------------------------------------------------------------------------------
+-- Fix various missing stuff
+--------------------------------------------------------------------------------
+
 CPPAPI.AddLocalizedLabel("Detonator", {
-	english_text = "Detonator",
+	english_text = "DETONATOR",
 	languages = {
 		czech = {
 			translated_text = "DETONÁTOR",

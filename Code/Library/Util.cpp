@@ -2,6 +2,7 @@
 #include <wctype.h>
 #include <string.h>
 #include <array>
+#include <algorithm>
 
 #include "ThirdParty/picosha2.h"
 
@@ -148,7 +149,7 @@ const char *Util::CopyToBuffer(char *buffer, size_t bufferSize, const std::strin
 	return buffer;
 }
 
-std::string Util::RemoveColorCodes(const std::string& text)
+std::string Util::RemoveColorCodes(const std::string_view& text)
 {
 	std::string result;
 	result.reserve(text.length());

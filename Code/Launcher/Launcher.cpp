@@ -25,11 +25,11 @@
 
 namespace
 {
-	IScriptSystem *CreateNewScriptSystem(ISystem *pSystem, bool bStdLibs)
+	IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
 	{
-		CryLogAlways("$3[CryMP] Using the new Script System");
+		CryLogAlways("$3[CryMP] Initializing Script System");
 
-		ScriptSystem *pScriptSystem = new ScriptSystem();
+		ScriptSystem* pScriptSystem = new ScriptSystem();
 		pScriptSystem->Init();
 
 		return pScriptSystem;
@@ -37,11 +37,7 @@ namespace
 
 	void ReplaceScriptSystem(void* pCrySystem)
 	{
-		using WinAPI::RVA;
-		using WinAPI::FillNOP;
-		using WinAPI::FillMem;
-
-		void *pNewFunc = CreateNewScriptSystem;
+		void* pNewFunc = CreateNewScriptSystem;
 
 #ifdef BUILD_64BIT
 		const size_t codeOffset = 0x445A2;
@@ -64,8 +60,8 @@ namespace
 		std::memcpy(&code[1], &pNewFunc, 4);
 #endif
 
-		FillMem(RVA(pCrySystem, codeOffset), code, sizeof code);
-		FillNOP(RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+		WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof code);
+		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
 	}
 
 	void ReplaceLocalizationManager(void* pCrySystem)
@@ -79,15 +75,11 @@ namespace
 
 			static void InitLocalizationManager()
 			{
-				CryLogAlways("$3[CryMP] Using the new Localization Manager");
+				CryLogAlways("$3[CryMP] Initializing Localization Manager");
 			}
 		};
 
 		using TGetLocalizationManager = decltype(&DummyCSystem::GetLocalizationManager);
-
-		using WinAPI::RVA;
-		using WinAPI::FillNOP;
-		using WinAPI::FillMem;
 
 		void* pNewFunc = &DummyCSystem::InitLocalizationManager;
 
@@ -101,9 +93,9 @@ namespace
 
 		std::memcpy(&code[2], &pNewFunc, 8);
 
-		FillNOP(RVA(pCrySystem, 0x453A7), 0x62);
-		FillMem(RVA(pCrySystem, 0x453A7), code, sizeof code);
-		FillNOP(RVA(pCrySystem, 0x50A5C), 0x28);
+		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x62);
+		WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof code);
+		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x50A5C), 0x28);
 #else
 		const std::size_t vtableOffset = 0x1BC5F8;
 
@@ -114,15 +106,15 @@ namespace
 
 		std::memcpy(&code[1], &pNewFunc, 4);
 
-		FillNOP(RVA(pCrySystem, 0x56B1D), 0x29);
-		FillMem(RVA(pCrySystem, 0x56B1D), code, sizeof code);
-		FillNOP(RVA(pCrySystem, 0x624E1), 0x23);
+		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0x29);
+		WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof code);
+		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x624E1), 0x23);
 #endif
-		void** vtable = static_cast<void**>(RVA(pCrySystem, vtableOffset));
+		void** vtable = static_cast<void**>(WinAPI::RVA(pCrySystem, vtableOffset));
 
 		// vtable hook
 		TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
-		FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
+		WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
 	}
 }
 
@@ -135,7 +127,7 @@ void Launcher::SetCmdLine()
 		throw StringTools::ErrorFormat("Command line is too long!");
 	}
 
-	memcpy(m_params.cmdLine, cmdLine.data(), cmdLine.length());
+	std::memcpy(m_params.cmdLine, cmdLine.data(), cmdLine.length());
 
 	m_params.cmdLine[cmdLine.length()] = '\0';
 }
@@ -165,7 +157,7 @@ void Launcher::InitWorkingDirectory()
 	if (dir.filename() != BIN_DIR && std::filesystem::is_directory(dir / "Game"))
 	{
 		// we are in Crysis directory, so add Bin32 or Bin64 to the DLL search path
-		WinAPI::DLL_AddSearchDirectory(dir / BIN_DIR);
+		WinAPI::DLL::AddSearchDirectory(dir / BIN_DIR);
 	}
 	else
 	{
@@ -178,7 +170,7 @@ void Launcher::InitWorkingDirectory()
 
 void Launcher::LoadEngine()
 {
-	m_dlls.pCrySystem = WinAPI::DLL_Load("CrySystem.dll");
+	m_dlls.pCrySystem = WinAPI::DLL::Load("CrySystem.dll");
 	if (!m_dlls.pCrySystem)
 	{
 		if (WinAPI::GetCurrentErrorCode() == 193)  // ERROR_BAD_EXE_FORMAT
@@ -254,13 +246,13 @@ void Launcher::LoadEngine()
 		}
 	}
 
-	m_dlls.pCryAction = WinAPI::DLL_Load("CryAction.dll");
+	m_dlls.pCryAction = WinAPI::DLL::Load("CryAction.dll");
 	if (!m_dlls.pCryAction)
 	{
 		throw StringTools::SysErrorFormat("Failed to load the CryAction DLL!");
 	}
 
-	m_dlls.pCryNetwork = WinAPI::DLL_Load("CryNetwork.dll");
+	m_dlls.pCryNetwork = WinAPI::DLL::Load("CryNetwork.dll");
 	if (!m_dlls.pCryNetwork)
 	{
 		throw StringTools::SysErrorFormat("Failed to load the CryNetwork DLL!");
@@ -270,7 +262,7 @@ void Launcher::LoadEngine()
 
 	if (isDX10)
 	{
-		m_dlls.pCryRenderD3D10 = WinAPI::DLL_Load("CryRenderD3D10.dll");
+		m_dlls.pCryRenderD3D10 = WinAPI::DLL::Load("CryRenderD3D10.dll");
 		if (!m_dlls.pCryRenderD3D10)
 		{
 			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D10 DLL!");
@@ -278,7 +270,7 @@ void Launcher::LoadEngine()
 	}
 	else
 	{
-		m_dlls.pCryRenderD3D9 = WinAPI::DLL_Load("CryRenderD3D9.dll");
+		m_dlls.pCryRenderD3D9 = WinAPI::DLL::Load("CryRenderD3D9.dll");
 		if (!m_dlls.pCryRenderD3D9)
 		{
 			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
@@ -337,13 +329,13 @@ void Launcher::PatchEngine()
 
 void Launcher::StartEngine()
 {
-	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL_GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
+	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
 	if (!entry)
 	{
 		throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
 	}
 
-	IGameFramework *pGameFramework = entry();
+	IGameFramework* pGameFramework = entry();
 	if (!pGameFramework)
 	{
 		throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
@@ -370,16 +362,15 @@ void Launcher::StartEngine()
 
 Launcher::Launcher()
 {
-	memset(&m_params, 0, sizeof m_params);
+	std::memset(&m_params, 0, sizeof m_params);
 }
 
 Launcher::~Launcher()
 {
 }
 
-bool Launcher::OnError(const char *error)
+bool Launcher::OnError(const char* error)
 {
-	// quit
 	return true;
 }
 
@@ -391,11 +382,11 @@ void Launcher::OnProcessSwitch()
 {
 }
 
-void Launcher::OnInitProgress(const char *message)
+void Launcher::OnInitProgress(const char* message)
 {
 }
 
-void Launcher::OnInit(ISystem *pSystem)
+void Launcher::OnInit(ISystem* pSystem)
 {
 	gEnv = pSystem->GetGlobalEnvironment();
 
@@ -452,17 +443,17 @@ void Launcher::OnUpdate()
 	Logger::GetInstance().OnUpdate();
 }
 
-void Launcher::GetMemoryUsage(ICrySizer *pSizer)
+void Launcher::GetMemoryUsage(ICrySizer* pSizer)
 {
 }
 
 void Launcher::Run()
 {
-	m_params.hInstance = WinAPI::DLL_Get(nullptr);  // EXE handle
+	m_params.hInstance = WinAPI::DLL::Get(nullptr);  // EXE handle
 	m_params.pUserCallback = this;
 	m_params.pLog = &Logger::GetInstance();
 
-	SetCmdLine();
+	this->SetCmdLine();
 
 	if (WinAPI::GetApplicationPath().filename().string().find(CRYMP_CLIENT_EXE_NAME) != 0)
 	{
@@ -479,20 +470,17 @@ void Launcher::Run()
 		throw StringTools::ErrorFormat("Running as a dedicated server is not supported!");
 	}
 
-	// the first step
-	InitWorkingDirectory();
+	this->InitWorkingDirectory();
 
-	// load and patch Crysis DLLs
-	LoadEngine();
-	PatchEngine();
+	this->LoadEngine();
+	this->PatchEngine();
 
 	RandomGenerator::Init();
 
-	// the multiplayer client
 	Client client;
 	gClient = &client;
 
-	StartEngine();
+	this->StartEngine();
 
 	gClient->UpdateLoop();
 }

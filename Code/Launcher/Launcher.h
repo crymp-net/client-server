@@ -4,7 +4,7 @@
 
 class CGame;
 
-class Launcher : public ISystemUserCallback
+class Launcher final : public ISystemUserCallback
 {
 public:
 	struct DLLs
@@ -31,22 +31,28 @@ public:
 	Launcher();
 	~Launcher();
 
+	////////////////////////////////////////////////////////////////////////////////
 	// ISystemUserCallback
-	bool OnError(const char *error) override;
+	////////////////////////////////////////////////////////////////////////////////
+
+	bool OnError(const char* error) override;
 	void OnSaveDocument() override;
 	void OnProcessSwitch() override;
-	void OnInitProgress(const char *message) override;
-	void OnInit(ISystem *pSystem) override;
+	void OnInitProgress(const char* message) override;
+	void OnInit(ISystem* pSystem) override;
 	void OnShutdown() override;
 	void OnUpdate() override;
-	void GetMemoryUsage(ICrySizer *pSizer) override;
 
-	DLLs& GetDLLs()
+	void GetMemoryUsage(ICrySizer* pSizer) override;
+
+	////////////////////////////////////////////////////////////////////////////////
+
+	const DLLs& GetDLLs()
 	{
 		return m_dlls;
 	}
 
-	const SSystemInitParams & GetParams() const
+	const SSystemInitParams& GetParams() const
 	{
 		return m_params;
 	}
@@ -55,5 +61,5 @@ public:
 };
 
 ///////////////////////////
-inline Launcher *gLauncher;
+inline Launcher* gLauncher;
 ///////////////////////////

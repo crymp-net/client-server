@@ -54,18 +54,21 @@ namespace WinAPI
 
 	std::filesystem::path GetApplicationPath();
 
-	void SetWorkingDirectory(const std::filesystem::path & path);
+	void SetWorkingDirectory(const std::filesystem::path& path);
 
 	/////////////
 	// Modules //
 	/////////////
 
-	void DLL_AddSearchDirectory(const std::filesystem::path & path);
+	namespace DLL
+	{
+		void AddSearchDirectory(const std::filesystem::path& path);
 
-	void *DLL_Get(const char *name);
-	void *DLL_Load(const char *name);
-	void *DLL_GetSymbol(void *pDLL, const char *name);
-	void DLL_Unload(void *pDLL);
+		void* Get(const char* name);
+		void* Load(const char* name);
+		void* GetSymbol(void* pDLL, const char* name);
+		void Unload(void* pDLL);
+	}
 
 	/////////////////
 	// Message box //
@@ -259,7 +262,7 @@ namespace WinAPI
 	using HTTPRequestReader = std::function<size_t(void*,size_t)>;  // buffer, buffer size, returns data length
 	using HTTPRequestCallback = std::function<void(uint64_t,const HTTPRequestReader&)>;  // content length, reader
 
-	// blocking, returns HTTP status code, throws SystemError
+	// blocking, returns HTTP status code, throws std::system_error
 	int HTTPRequest(
 		const std::string_view & method,
 		const std::string_view & url,

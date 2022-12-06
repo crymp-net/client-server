@@ -121,7 +121,7 @@ std::filesystem::path WinAPI::GetApplicationPath()
 	return std::filesystem::path(buffer);
 }
 
-void WinAPI::SetWorkingDirectory(const std::filesystem::path & path)
+void WinAPI::SetWorkingDirectory(const std::filesystem::path& path)
 {
 	if (!SetCurrentDirectoryW(path.c_str()))
 	{
@@ -133,7 +133,7 @@ void WinAPI::SetWorkingDirectory(const std::filesystem::path & path)
 // Modules //
 /////////////
 
-void WinAPI::DLL_AddSearchDirectory(const std::filesystem::path & path)
+void WinAPI::DLL::AddSearchDirectory(const std::filesystem::path& path)
 {
 	if (!SetDllDirectoryW(path.c_str()))
 	{
@@ -141,22 +141,22 @@ void WinAPI::DLL_AddSearchDirectory(const std::filesystem::path & path)
 	}
 }
 
-void *WinAPI::DLL_Get(const char *name)
+void *WinAPI::DLL::Get(const char* name)
 {
 	return GetModuleHandleA(name);
 }
 
-void *WinAPI::DLL_Load(const char *name)
+void *WinAPI::DLL::Load(const char* name)
 {
 	return LoadLibraryA(name);
 }
 
-void *WinAPI::DLL_GetSymbol(void *pDLL, const char *name)
+void *WinAPI::DLL::GetSymbol(void* pDLL, const char* name)
 {
 	return reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(pDLL), name));
 }
 
-void WinAPI::DLL_Unload(void *pDLL)
+void WinAPI::DLL::Unload(void* pDLL)
 {
 	FreeLibrary(static_cast<HMODULE>(pDLL));
 }
