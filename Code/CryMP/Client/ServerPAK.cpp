@@ -27,17 +27,12 @@ bool ServerPAK::IsZipFile(const std::string & path)
 	{
 		WinAPI::File file(path, WinAPI::FileAccess::READ_ONLY);
 
-		if (file && file.Read(2) == "PK")
-		{
-			// file magic number verified
-			return true;
-		}
+		return file.IsOpen() && file.Read(2) == "PK";
 	}
-	catch (const std::exception & ex)
+	catch (...)
 	{
+		return false;
 	}
-
-	return false;
 }
 
 bool ServerPAK::Load(const std::string & path)
@@ -50,7 +45,7 @@ bool ServerPAK::Load(const std::string & path)
 		CryLogAlways("$4[CryMP] [ServerPAK] Invalid file $8%s", path.c_str());
 		return false;
 	}
-	
+
 	const bool opened = gEnv->pCryPak->OpenPack("game\\", path.c_str());
 	if (opened)
 	{
@@ -64,7 +59,7 @@ bool ServerPAK::Load(const std::string & path)
 	{
 		CryLogAlways("$4[CryMP] [ServerPAK] Failed to load $8%s", path.c_str());
 	}
-	
+
 	return opened;
 }
 
@@ -160,7 +155,7 @@ void ServerPAK::ResetSubSystems()
 			//GUI corrupts Lua environment :S Hope there aren't any others..
 			if (pEntityClass == pGUI)
 				continue;
-			
+
 			SmartScriptTable entityTable;
 			if (!gEnv->pScriptSystem->GetGlobalValue(pEntityClass->GetName(), entityTable))
 				continue;

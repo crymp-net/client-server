@@ -448,7 +448,7 @@ std::string WinAPI::FileRead(void *handle, size_t maxLength)
 				throw StringTools::ErrorFormat("File is too big!");
 			}
 
-			maxLength = distance;
+			maxLength = static_cast<size_t>(distance);
 		}
 	}
 
@@ -488,7 +488,7 @@ void WinAPI::FileWrite(void *handle, const std::string_view & text)
 	do
 	{
 		const void *buffer = text.data() + totalBytesWritten;
-		const DWORD bufferSize = text.length() - totalBytesWritten;
+		const DWORD bufferSize = static_cast<DWORD>(text.length() - totalBytesWritten);
 
 		DWORD bytesWritten = 0;
 
@@ -635,36 +635,6 @@ long WinAPI::GetTimeZoneBias()
 // Strings //
 /////////////
 
-std::wstring WinAPI::ConvertUTF8To16(const std::string_view & text)
-{
-	std::wstring result;
-
-	int count = MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), nullptr, 0);
-	if (count > 0)
-	{
-		result.resize(count);
-
-		MultiByteToWideChar(CP_UTF8, 0, text.data(), text.length(), result.data(), count);
-	}
-
-	return result;
-}
-
-std::string WinAPI::ConvertUTF16To8(const std::wstring_view & text)
-{
-	std::string result;
-
-	int count = WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), nullptr, 0, nullptr, nullptr);
-	if (count > 0)
-	{
-		result.resize(count);
-
-		WideCharToMultiByte(CP_UTF8, 0, text.data(), text.length(), result.data(), count, nullptr, nullptr);
-	}
-
-	return result;
-}
-
 std::size_t WinAPI::RawANSIToWide(const char* string, std::size_t stringSize, wchar_t* buffer, std::size_t bufferSize)
 {
 	return MultiByteToWideChar(
@@ -739,7 +709,10 @@ std::string WinAPI::GetLocale()
 	wchar_t buffer[LOCALE_NAME_MAX_LENGTH] = {};
 	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, buffer, LOCALE_NAME_MAX_LENGTH);
 
-	return ConvertUTF16To8(buffer);
+	std::string result;
+	StringTools::AppendTo(result, std::wstring_view(buffer));
+
+	return result;
 }
 
 bool WinAPI::IsVistaOrLater()
@@ -803,7 +776,8 @@ int WinAPI::HTTPRequest(
 	int timeout,
 	HTTPRequestCallback callback
 ){
-	const std::wstring urlW = ConvertUTF8To16(url);
+	std::wstring urlW;
+	StringTools::AppendTo(urlW, url);
 
 	URL_COMPONENTS urlComponents = {};
 	urlComponents.dwStructSize = sizeof urlComponents;
@@ -812,7 +786,7 @@ int WinAPI::HTTPRequest(
 	urlComponents.dwUrlPathLength = -1;
 	urlComponents.dwExtraInfoLength = -1;
 
-	if (!WinHttpCrackUrl(urlW.c_str(), urlW.length(), 0, &urlComponents))
+	if (!WinHttpCrackUrl(urlW.c_str(), static_cast<DWORD>(urlW.length()), 0, &urlComponents))
 	{
 		throw StringTools::SysErrorFormat("WinHttpCrackUrl");
 	}
@@ -846,9 +820,12 @@ int WinAPI::HTTPRequest(
 		requestFlags |= WINHTTP_FLAG_SECURE;
 	}
 
+	std::wstring methodW;
+	StringTools::AppendTo(methodW, method);
+
 	// URL components are not null-terminated, but whole URL is, so URL path contains both path and parameters
 	HTTPHandleGuard hRequest = WinHttpOpenRequest(hConnect,
-	                                              WinAPI::ConvertUTF8To16(method).c_str(),
+	                                              methodW.c_str(),
 	                                              urlComponents.lpszUrlPath, nullptr,
 	                                              WINHTTP_NO_REFERER,
 	                                              WINHTTP_DEFAULT_ACCEPT_TYPES, requestFlags);
@@ -861,14 +838,16 @@ int WinAPI::HTTPRequest(
 
 	for (const auto & [key, value] : headers)
 	{
-		headersW += WinAPI::ConvertUTF8To16(key);
+		StringTools::AppendTo(headersW, key);
 		headersW += L": ";
-		headersW += WinAPI::ConvertUTF8To16(value);
+		StringTools::AppendTo(headersW, value);
 		headersW += L"\r\n";
 	}
 
-	if (!WinHttpSendRequest(hRequest, headersW.c_str(), headersW.length(),
-	                        const_cast<char*>(data.data()), data.length(), data.length(), 0))
+	if (!WinHttpSendRequest(hRequest, headersW.c_str(), static_cast<DWORD>(headersW.length()),
+	                        const_cast<char*>(data.data()),
+				static_cast<DWORD>(data.length()),
+				static_cast<DWORD>(data.length()), 0))
 	{
 		throw StringTools::SysErrorFormat("WinHttpSendRequest");
 	}
@@ -910,7 +889,7 @@ int WinAPI::HTTPRequest(
 		const HTTPRequestReader dataReader = [&hRequest](void *buffer, size_t bufferSize) -> size_t
 		{
 			DWORD dataLength = 0;
-			if (!WinHttpReadData(hRequest, buffer, bufferSize, &dataLength))
+			if (!WinHttpReadData(hRequest, buffer, static_cast<DWORD>(bufferSize), &dataLength))
 			{
 				throw StringTools::SysErrorFormat("WinHttpReadData");
 			}

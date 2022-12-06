@@ -141,7 +141,7 @@ struct HookedFlashFile : public FlashFile
 
 		if (offset < 0 && (-offset) > pos)
 		{
-			offset = -pos;
+			offset = -static_cast<std::int64_t>(pos);
 		}
 		else if ((pos + offset) > hook.content.size())
 		{
