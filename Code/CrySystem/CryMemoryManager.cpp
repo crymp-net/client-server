@@ -45,6 +45,7 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 			result = CryMalloc_hook(size, allocatedSize);
 
 			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
+			std::free(mem);
 		}
 		else
 		{
