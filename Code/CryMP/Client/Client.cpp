@@ -360,6 +360,8 @@ void Client::ClearKeyBinds()
 
 void Client::OnPostUpdate(float deltaTime)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	m_pExecutor->OnUpdate();
 	m_pScriptCallbacks->OnUpdate(deltaTime);
 }
@@ -378,6 +380,8 @@ void Client::OnLevelEnd(const char *nextLevel)
 
 void Client::OnActionEvent(const SActionEvent & event)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	switch (event.m_event)
 	{
 		case eAE_disconnected:
@@ -448,6 +452,8 @@ void Client::OnLoadingProgress(ILevelInfo *pLevel, int progressAmount)
 
 bool Client::OnBeforeSpawn(SEntitySpawnParams& params)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	//CryMP: Archetype Loader
 	if (params.sName && params.sName[0] == '*')
 	{
@@ -482,6 +488,8 @@ bool Client::OnBeforeSpawn(SEntitySpawnParams& params)
 
 void Client::OnSpawn(IEntity *pEntity, SEntitySpawnParams & params)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	m_pScriptCallbacks->OnSpawn(pEntity);
 
 	m_lastSpawnId = pEntity->GetId();

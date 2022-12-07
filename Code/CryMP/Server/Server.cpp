@@ -47,6 +47,8 @@ void Server::UpdateLoop()
 
 void Server::OnPostUpdate(float deltaTime)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	this->pExecutor->OnUpdate();
 }
 
@@ -64,6 +66,8 @@ void Server::OnLevelEnd(const char* nextLevel)
 
 void Server::OnActionEvent(const SActionEvent& event)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+
 	switch (event.m_event)
 	{
 		case eAE_channelCreated:
