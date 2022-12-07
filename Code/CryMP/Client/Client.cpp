@@ -10,6 +10,7 @@
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
+#include "Library/StringTools.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -245,10 +246,30 @@ void Client::Init(IGameFramework *pGameFramework)
 
 	InitMasters();
 
+	if (!WinAPI::CmdLine::HasArg("-oldgame"))
+	{
+		m_pGame = new CGame();
+	}
+	else
+	{
+		void* pCryGame = WinAPI::DLL::Load("CryGame.dll");
+		if (!pCryGame)
+		{
+			throw StringTools::SysErrorFormat("Failed to load the CryGame DLL!");
+		}
+
+		auto entry = static_cast<IGame::TEntryFunction>(WinAPI::DLL::GetSymbol(pCryGame, "CreateGame"));
+		if (!entry)
+		{
+			throw StringTools::ErrorFormat("The CryGame DLL is not valid!");
+		}
+
+		m_pGame = entry(pGameFramework);
+	}
+
 	// initialize the game
 	// mods are not supported
-	g_pGame = new CGame();
-	g_pGame->Init(pGameFramework);
+	m_pGame->Init(pGameFramework);
 }
 
 void Client::UpdateLoop()
@@ -265,7 +286,7 @@ void Client::UpdateLoop()
 		const bool haveFocus = true;
 		const unsigned int updateFlags = 0;
 
-		if (!g_pGame->Update(haveFocus, updateFlags))
+		if (!m_pGame->Update(haveFocus, updateFlags))
 		{
 			GameWindow::GetInstance().OnQuit();
 			break;

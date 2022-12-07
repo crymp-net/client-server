@@ -31,6 +31,7 @@ class FlashFileHooks;
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
 	IGameFramework *m_pGameFramework = nullptr;
+	IGame *m_pGame = nullptr;
 
 	std::string_view m_scriptMain;
 	std::string_view m_scriptJSON;
