@@ -1246,6 +1246,18 @@ bool CPlayerInput::OnActionCrouch(EntityId entityId, const ActionId& actionId, i
 			}
 		}
 	}
+	//CryMP slower speed if holding Crouch in free spectator mode
+	else
+	{
+		if (value > 0.0f)
+		{
+			m_pPlayer->SetSlowCamera(true);
+		}
+		else
+		{
+			m_pPlayer->SetSlowCamera(false);
+		}
+	}
 
 	return false;
 }

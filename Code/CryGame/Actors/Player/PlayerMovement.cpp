@@ -178,8 +178,29 @@ void CPlayerMovement::ProcessFlyMode()
 	move *= m_params.speedMultiplier * m_player.GetZoomSpeedMultiplier();  // respect speed multiplier as well
 	move *= 30.0f;
 
+	float goal = 1.0f;
+
 	if (m_actions & ACTION_SPRINT)
-		move *= 10.0f;
+	{
+		goal = 10.0f;
+	}
+
+	//CryMP Custom spectator speed if holding crouch (default slow)
+	if (m_stats.spectatorMode && m_player.IsSlowCamera())
+	{
+		goal = g_pGameCVars->mp_spectatorSlowMult;
+	}
+
+	//if (m_stats.spectatorMode)
+	//{
+		//Some smoothness between speed transitions
+		Interpolate(m_player.m_fCameraMoveSpeedMult, goal, 3.0f, gEnv->pTimer->GetRealFrameTime(), 30.0f);
+		move *= m_player.m_fCameraMoveSpeedMult;
+	//}
+	//else
+	//{
+	//	move *= goal;
+	//}
 
 	m_request.type = eCMT_Fly;
 	m_request.velocity = move;

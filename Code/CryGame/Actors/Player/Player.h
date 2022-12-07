@@ -884,6 +884,7 @@ protected:
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
 	int m_currentSeatId = -1;
+	bool m_bSlowCamera = false;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
@@ -897,6 +898,9 @@ public:
 	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
 	void SetFpSpectatorTarget(bool activate);
 	IActor* GetSpectatorTargetPlayer();
+	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
+	bool IsSlowCamera() const { return m_bSlowCamera; }
+	float m_fCameraMoveSpeedMult = 1.0f;
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }
