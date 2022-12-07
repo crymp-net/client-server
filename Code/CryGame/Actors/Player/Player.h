@@ -554,7 +554,6 @@ public:
 	virtual EntityId GetDeathCamTarget() const { return m_stats.deathCamTarget; };
 	virtual void SetSpectatorHealth(int health) { m_stats.spectatorHealth = health; };
 	virtual int GetSpectatorHealth() const { return m_stats.spectatorHealth; };
-	virtual void ChangeSpectatorZoom(int zoomChange) { m_stats.spectatorZoom = CLAMP(m_stats.spectatorZoom + zoomChange, 2, 6); }
 	virtual void ChangeSpectatorZoom(int zoomChange) { m_stats.spectatorZoom = CLAMP(m_stats.spectatorZoom + zoomChange, 2, 8); }
 	virtual int GetSpectatorZoom() const { return m_stats.spectatorZoom; }
 	void MoveToSpectatorTargetPosition();
