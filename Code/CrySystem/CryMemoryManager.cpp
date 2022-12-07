@@ -1,118 +1,162 @@
+#include <cstdlib>
+#include <cstring>
 #include <malloc.h>  // _msize
-#include <stdlib.h>
-#include <string.h>
 
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Library/WinAPI.h"
 
 #include "CryMemoryManager.h"
 
-namespace
+static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
-	void *CryMalloc_hook(size_t size, size_t & allocatedSize)
+	void* result = nullptr;
+
+	const auto doCryMalloc = [&]()
 	{
-		void *result = nullptr;
+		result = std::calloc(1, size);
 
-		if (size)
+		allocatedSize = _msize(result);
+	};
+
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+
+		doCryMalloc();
+	}
+	else
+	{
+		doCryMalloc();
+	}
+
+	return result;
+}
+
+static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocatedSize)
+{
+	void* result = nullptr;
+
+	const auto doCryRealloc = [&]()
+	{
+		if (mem)
 		{
-			result = calloc(1, size);
+			const std::size_t oldSize = _msize(mem);
 
-			allocatedSize = _msize(result);
+			result = CryMalloc_hook(size, allocatedSize);
+
+			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
 		}
 		else
 		{
-			allocatedSize = 0;
+			result = CryMalloc_hook(size, allocatedSize);
 		}
+	};
 
-		return result;
-	}
-
-	void *CryRealloc_hook(void *mem, size_t size, size_t & allocatedSize)
+	if (gEnv)
 	{
-		void *result = nullptr;
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
 
-		if (size)
-		{
-			result = realloc(mem, size);
-
-			allocatedSize = _msize(result);
-		}
-		else
-		{
-			if (mem)
-			{
-				free(mem);
-			}
-
-			allocatedSize = 0;
-		}
-
-		return result;
+		doCryRealloc();
+	}
+	else
+	{
+		doCryRealloc();
 	}
 
-	size_t CryGetMemSize_hook(void *mem, size_t)
+	return result;
+}
+
+static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
+{
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+
+		return _msize(mem);
+	}
+	else
 	{
 		return _msize(mem);
 	}
+}
 
-	size_t CryFree_hook(void *mem)
+static std::size_t CryFree_hook(void* mem)
+{
+	std::size_t result = 0;
+
+	const auto doCryFree = [&]()
 	{
-		size_t size = 0;
+		result = _msize(mem);
 
-		if (mem)
-		{
-			size = _msize(mem);
+		std::free(mem);
+	};
 
-			free(mem);
-		}
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
 
-		return size;
+		doCryFree();
+	}
+	else
+	{
+		doCryFree();
 	}
 
-	void *CrySystemCrtMalloc_hook(size_t size)
+	return result;
+}
+
+static void* CrySystemCrtMalloc_hook(std::size_t size)
+{
+	if (gEnv)
 	{
-		void *result = nullptr;
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
 
-		if (size)
-		{
-			result = calloc(1, size);
-		}
+		return std::calloc(1, size);
+	}
+	else
+	{
+		return std::calloc(1, size);
+	}
+}
 
-		return result;
+static void CrySystemCrtFree_hook(void* mem)
+{
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+
+		std::free(mem);
+	}
+	else
+	{
+		std::free(mem);
+	}
+}
+
+static void Hook(void* pFunc, void* pNewFunc)
+{
+	if (!pFunc)
+	{
+		return;
 	}
 
-	void CrySystemCrtFree_hook(void *mem)
-	{
-		if (mem)
-		{
-			free(mem);
-		}
-	}
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xE0                                                   // jmp rax
+	};
 
-	void Hook(void *pFunc, void *pNewFunc)
-	{
-		if (!pFunc)
-		{
-			return;
-		}
+	std::memcpy(&code[2], &pNewFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xE0                     // jmp eax
+	};
 
-	#ifdef BUILD_64BIT
-		unsigned char code[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0xFF, 0xE0                                                   // jmp rax
-		};
+	std::memcpy(&code[1], &pNewFunc, 4);
+#endif
 
-		memcpy(&code[2], &pNewFunc, 8);
-	#else
-		unsigned char code[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-			0xFF, 0xE0                     // jmp eax
-		};
-
-		memcpy(&code[1], &pNewFunc, 4);
-	#endif
-
-		WinAPI::FillMem(pFunc, code, sizeof code);
-	}
+	WinAPI::FillMem(pFunc, code, sizeof code);
 }
 
 void CryMemoryManager::Init(void* pCrySystem)
