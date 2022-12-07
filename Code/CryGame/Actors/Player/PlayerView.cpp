@@ -1195,6 +1195,12 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 		distance = 2.0f * vehicleBox.GetRadius();
 	}
 
+	//Zooming ability
+	if (CPlayer* pPlayer = CPlayer::FromIActor(gEnv->pGame->GetIGameFramework()->GetClientActor()))
+	{
+		distance += (pPlayer->GetSpectatorZoom() - 2);
+	}
+
 	Vec3 goal;
 	float zoom = 1.0f;
 	goal.x = distance * zoom * cosf(rot + gf_PI * 1.5f) + worldPos.x;
