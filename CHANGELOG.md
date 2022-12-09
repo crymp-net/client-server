@@ -6,17 +6,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 ### Added
-- Hit indicator (mp_hitIndicator 1/0 [on/off])
-- New Lua API function for creating a material from any texture in the game, example usage:
+- Hit indicator, enabled by default, use `mp_hitIndicator 0` to disable it
+- High resolution chat HUD, disabled by default, use `mp_chatHighResolution 1` to enable it
+- New spectator HUD
+- New radio HUD allowing servers to enable additional commands
+- New localization manager
+- New CPU detection
+- New Lua function for creating a material from any texture in the game, for example:
 ```lua
 CPPAPI.CreateMaterialFromTexture("MyNewMaterial", "Libs/UI/HUD_PDA_Map_FLAG_NK.dds")
 ```
-- New Lua API function for changing entity opacity, example usage:
+- New Lua function for changing entity opacity, for example:
 ```lua
-CPPAPI.SetOpacity(entity.id, 0.2) [min 0 : max 1]
+CPPAPI.SetOpacity(entity.id, 0.2)
 ```
+- New Lua function for obtaining the current language, for example:
+```lua
+local language = CPPAPI.GetLanguage()
+```
+- New Lua function for text localization, for example:
+```lua
+local message = CPPAPI.LocalizeText("Kyong says: @mine/kyong_mine_ab3_A584F343")
+```
+- New Lua function for adding localized labels, see [Scripts/Localization.lua](Scripts/Localization.lua)
+- New Lua global variable `CRYMP_CLIENT_BITS`
+- Archetypes synchronized over network, see `Client::OnBeforeSpawn`
+- New application icon
+- Spectator zooming
+- Slow spectator movement when holding Ctrl, speed can be configured by changing `mp_spectatorSlowMult`
+
 ### Changed
+- Improved map loading screen
+- Pressing F5 in multiplayer lobby refreshes the server list
+- Two `!validate` commands are now sent after connect to improve backward compatibility with the old client
+- Internal chat commands `!validate` and `!rpc` are hidden in chat to improve UX on legacy servers
+- Buymenu state is restored when reopened
+- Battlelog messsages can now be longer
+- Improved logger
+- Improved crash logger
+- Better game window name
+- [Map downloader now supports map versioning](../../issues/53)
+
 ### Fixed
+- DX10 fullscreen low refresh rate fix now works correctly
+- Missing US commander mission end warning in PowerStruggle
+- Missing `@detonator` localized label
+- Team selection HUD still visible after joining a team
+- Sensitibity bug after dying with picked up object
+- No more vehicle pickup while in air
+- Some crashes caused by uninitialized memory accesses in the engine
+- Dead projectiles
+- No more crosshair for ragdolls in FP spec
+- Case-sensitive command line options
 
 ## [v17] - 2022-08-28
 ### Fixed
