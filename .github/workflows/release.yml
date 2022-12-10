@@ -19,6 +19,18 @@ jobs:
     - name: Build
       run: cmake --build ${{ github.workspace }}/Build32 --config Release
 
+    - name: Sign
+      env:
+        CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
+        CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
+      run: |
+        Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+        certutil -decode bundle.txt bundle.pfx
+        signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+          /tr "http://timestamp.digicert.com" /td SHA256 `
+          "${{ github.workspace }}/Build32/Release/CryMP-Client32.exe"
+        Remove-Item bundle.*
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -37,6 +49,18 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ github.workspace }}/Build64 --config Release
+
+    - name: Sign
+      env:
+        CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
+        CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
+      run: |
+        Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+        certutil -decode bundle.txt bundle.pfx
+        signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+          /tr "http://timestamp.digicert.com" /td SHA256 `
+          "${{ github.workspace }}/Build64/Release/CryMP-Client64.exe"
+        Remove-Item bundle.*
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
