@@ -55,6 +55,8 @@ void ScriptSystem::Init()
 
 void *ScriptSystem::Allocate(size_t size)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
+
 	// TODO: optimized memory allocator
 	void *block = malloc(size);
 
@@ -70,6 +72,8 @@ void *ScriptSystem::Allocate(size_t size)
 
 void ScriptSystem::Deallocate(void *block)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
+
 	free(block);
 }
 
@@ -490,6 +494,8 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 
 bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const char *bufferDescription)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
+
 	// compile
 	if (luaL_loadbuffer(m_L, buffer, bufferSize, bufferDescription) != 0)
 	{
@@ -851,7 +857,7 @@ void ScriptSystem::LuaClose()
 
 void ScriptSystem::LuaGarbageCollectStep()
 {
-	FRAME_PROFILER("Lua GC", gEnv->pSystem, PROFILE_SCRIPT);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	const int stepSize = 2;
 
@@ -860,13 +866,15 @@ void ScriptSystem::LuaGarbageCollectStep()
 
 void ScriptSystem::LuaGarbageCollectFull()
 {
-	FRAME_PROFILER("Lua GC", gEnv->pSystem, PROFILE_SCRIPT);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	lua_gc(m_L, LUA_GCCOLLECT, 0);
 }
 
 bool ScriptSystem::LuaCall(int paramCount, int resultCount)
 {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
+
 	const int errorHandlerIndex = lua_gettop(m_L) - paramCount;
 	lua_getref(m_L, m_errorHandlerRef);
 	lua_insert(m_L, errorHandlerIndex);
