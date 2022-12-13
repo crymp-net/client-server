@@ -116,6 +116,35 @@ namespace
 		TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
 		WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
 	}
+
+	void EnableHiddenProfilerSubsystems(ISystem* pSystem)
+	{
+		struct Subsystem
+		{
+			const char* name;
+			float reserved;
+		};
+
+#ifdef BUILD_64BIT
+		static_assert(sizeof(Subsystem) == 16);
+#else
+		static_assert(sizeof(Subsystem) == 8);
+#endif
+
+		IFrameProfileSystem* pProfiler = pSystem->GetIProfileSystem();
+
+#ifdef BUILD_64BIT
+		void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0xAC8;
+#else
+		void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0x634;
+#endif
+		Subsystem* subsystems = static_cast<Subsystem*>(subsystemsBegin);
+
+		subsystems[PROFILE_ANY].name = "Unknown";
+		subsystems[PROFILE_MOVIE].name = "Movie";
+		subsystems[PROFILE_FONT].name = "Font";
+		subsystems[PROFILE_SCRIPT].name = "Script";
+	}
 }
 
 void Launcher::SetCmdLine()
@@ -432,6 +461,8 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.LogAlways("");
 
 	logger.SetPrefix(logPrefix);
+
+	EnableHiddenProfilerSubsystems(pSystem);
 }
 
 void Launcher::OnShutdown()
