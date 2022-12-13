@@ -33,15 +33,11 @@ void Server::UpdateLoop()
 {
 	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
 
-	while (true)
-	{
-		const bool haveFocus = true;
-		const unsigned int updateFlags = 0;
+	const bool haveFocus = true;
+	const unsigned int updateFlags = 0;
 
-		if (!g_pGame->Update(haveFocus, updateFlags))
-		{
-			break;
-		}
+	while (g_pGame->Update(haveFocus, updateFlags))
+	{
 	}
 }
 

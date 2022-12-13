@@ -7,7 +7,6 @@
 #include "CryGame/Game.h"
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
-#include "CrySystem/GameWindow.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/StringTools.h"
@@ -276,21 +275,11 @@ void Client::UpdateLoop()
 {
 	gEnv->pConsole->ExecuteString("exec autoexec.cfg");
 
-	while (true)
+	const bool haveFocus = true;
+	const unsigned int updateFlags = 0;
+
+	while (m_pGame->Update(haveFocus, updateFlags))
 	{
-		if (!GameWindow::GetInstance().OnUpdate())
-		{
-			break;
-		}
-
-		const bool haveFocus = true;
-		const unsigned int updateFlags = 0;
-
-		if (!m_pGame->Update(haveFocus, updateFlags))
-		{
-			GameWindow::GetInstance().OnQuit();
-			break;
-		}
 	}
 }
 
