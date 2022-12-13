@@ -20,7 +20,7 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		doCryMalloc();
 	}
@@ -55,7 +55,7 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		doCryRealloc();
 	}
@@ -71,7 +71,7 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 {
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		return _msize(mem);
 	}
@@ -94,7 +94,7 @@ static std::size_t CryFree_hook(void* mem)
 
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		doCryFree();
 	}
@@ -110,7 +110,7 @@ static void* CrySystemCrtMalloc_hook(std::size_t size)
 {
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		return std::calloc(1, size);
 	}
@@ -124,7 +124,7 @@ static void CrySystemCrtFree_hook(void* mem)
 {
 	if (gEnv)
 	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_EDITOR);
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
 		std::free(mem);
 	}
