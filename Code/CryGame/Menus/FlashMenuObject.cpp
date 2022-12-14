@@ -47,6 +47,7 @@ History:
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ServerConnector.h"
 #include "Library/StringTools.h"
+#include "CrySystem/LocalizationManager.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"
 
@@ -3308,37 +3309,38 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 		switch (pNC->GetChannelConnectionState())
 		{
 		case eCCS_StartingConnection:
-			status = "Waiting for server";
+			status = "@ui_loading_waiting";
 			break;
 		case eCCS_InContextInitiation:
 		{
 			switch (pNC->GetContextViewState())
 			{
 			case eCVS_Initial:
-				status = "Requesting Game Environment";
+				status = "@ui_loading_init";
 				break;
 			case eCVS_Begin:
-				status = "Receiving Game Environment";
+				status = "@ui_loading_begin";
 				break;
 			case eCVS_EstablishContext:
-				status = "Loading Game Assets";
+				status = "@ui_loading_establish";
 				break;
 			case eCVS_ConfigureContext:
-				status = "Configuring Game Settings";
+				status = "@ui_loading_configure";
 				break;
 			case eCVS_SpawnEntities:
 			{
 				const EntityId id = gClient->GetLastSpawnId();
 				IEntity* pLastSpawn = gEnv->pEntitySystem->GetEntity(id);
+				const std::string spawn_entities = LocalizationManager::GetInstance().Localize("@ui_loading_entities");
 				skipDots = true;
-				status = StringTools::Format("Spawning Entities: %-22s", pLastSpawn ? pLastSpawn->GetClass()->GetName() : "");
+				status = StringTools::Format("%s: %-22s", spawn_entities.c_str(), pLastSpawn ? pLastSpawn->GetClass()->GetName() : "");
 				break;
 			}
 			case eCVS_PostSpawnEntities:
-				status = "Initializing Entities";
+				status = "@ui_loading_post_spawn";
 				break;
 			case eCVS_InGame:
-				status = "In Game";
+				status = "@ui_loading_ingame";
 				break;
 			}
 		}
@@ -3346,10 +3348,10 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 		case eCCS_InGame:
 			show = m_bInLoading;
 			skipDots = true;
-			status = "Getting Ready";
+			status = "@ui_loading_getready";
 			break;
 		case eCCS_Disconnecting:
-			status = "Disconnecting";
+			status = "@ui_loading_disconnect";
 			break;
 		default:
 			status = "Unknown State";
@@ -3388,8 +3390,9 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 			if (pLS->IsLoaded())
 			{
-				std::string loadingMsg = StringTools::Format("%s%s", status.c_str(), points.c_str());
-				StringTools::ToUpperInPlace(loadingMsg);
+				const std::string translated = LocalizationManager::GetInstance().Localize(status.c_str());
+				std::string loadingMsg = StringTools::Format("%s%s", translated.c_str(), points.c_str());
+				loadingMsg = StringTools::ToUpper(loadingMsg);
 				pLS->Invoke("setLoadingText", loadingMsg.c_str());
 
 				if (gEnv->bMultiplayer)
@@ -3401,20 +3404,26 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 					ICVar* pCVar2 = gEnv->pConsole->GetCVar("mp_pickupObjects");
 					if (pCVar2 && pCVar2->GetIVal())
 					{
-						SFlashVarValue args[2] = { "PICKUP/THROW OBJECTS:", "ON" };
+						SFlashVarValue args[2] = { "@ui_pickup_objects", "@ui_menu_ON" };
 						pLS->Invoke("setServerInfo2", args, 2);
 					}
 					ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
 					if (pCVar3 && pCVar3->GetIVal())
 					{
-						SFlashVarValue args[2] = { "CIRCLEJUMP:", "ON" };
+						SFlashVarValue args[2] = { "@ui_circlejump", "@ui_menu_ON" };
 						pLS->Invoke("setServerInfo3", args, 2);
 					}
 					ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
 					if (pCVar4 && pCVar4->GetIVal())
 					{
-						SFlashVarValue args[2] = { "ENHANCED:", "ON" };
+						SFlashVarValue args[2] = { "@ui_crymp", "@ui_menu_ON" };
 						pLS->Invoke("setServerInfo4", args, 2);
+
+						if (pCVar4->GetIVal() > 1)
+						{
+							SFlashVarValue args2[2] = { "@ui_crymp_2", "@ui_menu_ON" };
+							pLS->Invoke("setServerInfo5", args2, 2);
+						}
 					}
 				}
 			}
@@ -3422,7 +3431,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 			{
 				//if(m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME] && m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 				//m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Invoke("addLoadedModText", status.c_str());
-				gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s%s", status.c_str(), points.c_str());
+				const std::string translated = LocalizationManager::GetInstance().Localize(status.c_str());
+				gEnv->pRenderer->Draw2dLabel(sx, sy, size, color, false, "%s%s", translated.c_str(), points.c_str());
 			}
 		}
 	}
