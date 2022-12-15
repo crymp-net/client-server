@@ -5072,7 +5072,7 @@ bool CHUD::ShowWeaponAccessories(bool enable)
 						pPlayerInput->DisableXI(true);
 
 					m_acceptNextWeaponCommand = false;
-					pWeapon->OnAction(m_pClientActor->GetEntityId(), "modify", 0, 1);
+					pWeapon->OnAction(m_pClientActor->GetEntityId(), ActionId("modify"), 0, 1);
 				}
 			}
 		}
@@ -5088,7 +5088,7 @@ bool CHUD::ShowWeaponAccessories(bool enable)
 					pPlayerInput->DisableXI(false);
 				m_acceptNextWeaponCommand = false;
 				if (!gEnv->pSystem->IsSerializingFile())
-					pWeapon->OnAction(m_pClientActor->GetEntityId(), "modify", 0, 1);
+					pWeapon->OnAction(m_pClientActor->GetEntityId(), ActionId("modify"), 0, 1);
 				else
 					WeaponAccessoriesInterface(false, true);
 			}

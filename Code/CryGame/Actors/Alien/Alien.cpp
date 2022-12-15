@@ -2329,12 +2329,12 @@ void CAlien::SetFiring(bool fire)
 	if (fire)
 	{
 		if (!m_stats.isFiring)
-			OnAction("attack1", eAAM_OnPress, 1.0f);
+			OnAction(ActionId("attack1"), eAAM_OnPress, 1.0f);
 	}
 	else
 	{
 		if (m_stats.isFiring)
-			OnAction("attack1", eAAM_OnRelease, 1.0f);
+			OnAction(ActionId("attack1"), eAAM_OnRelease, 1.0f);
 	}
 
 	m_stats.isFiring = fire;

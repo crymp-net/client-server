@@ -596,7 +596,7 @@ int CScriptBind_Actor::SimulateOnAction(IFunctionHandler* pH, const char* action
 		return pH->EndFunction();
 
 	if (pActor)
-		pActor->OnAction(action, mode, value);
+		pActor->OnAction(ActionId(action), mode, value);
 
 	return pH->EndFunction();
 }

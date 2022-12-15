@@ -99,7 +99,7 @@ void CWeapon::ForcePendingActions()
 			if(IsTargetOn() || (m_fm && !m_fm->AllowZoom()))
 				return;
 			
-			OnAction(GetOwnerId(),"attack1",eAAM_OnPress,0.0f);
+			OnAction(GetOwnerId(),ActionId("attack1"),eAAM_OnPress,0.0f);
 		}
 		else if(IsDualWield() && IsDualWieldMaster())
 		{
@@ -107,7 +107,7 @@ void CWeapon::ForcePendingActions()
 			if(!IsWeaponRaised())
 			{
 				m_requestedFire = false;
-				OnAction(GetOwnerId(),"attack1",eAAM_OnPress,0.0f);
+				OnAction(GetOwnerId(),ActionId("attack1"),eAAM_OnPress,0.0f);
 			}
 			else if(slave && slave->GetIWeapon())
 			{
@@ -115,7 +115,7 @@ void CWeapon::ForcePendingActions()
 				if(!dualwield->IsWeaponRaised())
 				{
 					m_requestedFire = false;
-					OnAction(GetOwnerId(),"attack1",eAAM_OnPress,0.0f);
+					OnAction(GetOwnerId(),ActionId("attack1"),eAAM_OnPress,0.0f);
 				}
 			}
 		}

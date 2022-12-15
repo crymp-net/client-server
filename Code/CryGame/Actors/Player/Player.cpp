@@ -627,8 +627,8 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 				if (pOffHand && pOffHand->IsHoldingEntity())
 				{
 					//Force drop
-					pOffHand->OnAction(GetEntityId(), "use", eAAM_OnPress, 0);
-					pOffHand->OnAction(GetEntityId(), "use", eAAM_OnRelease, 0);
+					pOffHand->OnAction(GetEntityId(), ActionId("use"), eAAM_OnPress, 0);
+					pOffHand->OnAction(GetEntityId(), ActionId("use"), eAAM_OnRelease, 0);
 				}
 			}
 			else
@@ -6425,8 +6425,8 @@ void CPlayer::EnterFirstPersonSwimming()
 				pOffHand->GetScheduler()->Reset();
 				pOffHand->SetOffHandState(eOHS_HOLDING_OBJECT);
 			}
-			pOffHand->OnAction(GetEntityId(), "use", eAAM_OnPress, 0);
-			pOffHand->OnAction(GetEntityId(), "use", eAAM_OnRelease, 0);
+			pOffHand->OnAction(GetEntityId(), ActionId("use"), eAAM_OnPress, 0);
+			pOffHand->OnAction(GetEntityId(), ActionId("use"), eAAM_OnRelease, 0);
 		}
 		else if (pOffHand->GetOffHandState() == eOHS_HOLDING_GRENADE)
 			pOffHand->FinishAction(eOHA_RESET);

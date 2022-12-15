@@ -946,12 +946,12 @@ void COffHand::UpdateHeldObject()
 					if (m_currentState == eOHS_MELEE)
 						GetScheduler()->Reset();
 					m_currentState = eOHS_HOLDING_OBJECT;
-					OnAction(GetOwnerId(), "use", eAAM_OnPress, 0.0f);
-					OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+					OnAction(GetOwnerId(), ActionId("use"), eAAM_OnPress, 0.0f);
+					OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 				}
 				else
 				{
-					OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+					OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 				}
 				m_constraintId = 0;
 				return;
@@ -1054,12 +1054,12 @@ void COffHand::UpdateGrabbedNPCState()
 			{
 				//Drop NPC
 				m_currentState = eOHS_HOLDING_NPC;
-				OnAction(GetOwnerId(), "use", eAAM_OnPress, 0.0f);
-				OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+				OnAction(GetOwnerId(), ActionId("use"), eAAM_OnPress, 0.0f);
+				OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 			}
 			else if (m_currentState & eOHS_THROWING_NPC)
 			{
-				OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+				OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 			}
 
 			if (!pStats->isRagDoll)
@@ -3428,12 +3428,12 @@ void COffHand::OnBeginCutScene()
 	{
 		if (m_currentState & (eOHS_THROWING_NPC | eOHS_THROWING_OBJECT))
 		{
-			OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+			OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 		}
 		else
 		{
-			OnAction(GetOwnerId(), "use", eAAM_OnPress, 0.0f);
-			OnAction(GetOwnerId(), "use", eAAM_OnRelease, 0.0f);
+			OnAction(GetOwnerId(), ActionId("use"), eAAM_OnPress, 0.0f);
+			OnAction(GetOwnerId(), ActionId("use"), eAAM_OnRelease, 0.0f);
 		}
 	}
 
