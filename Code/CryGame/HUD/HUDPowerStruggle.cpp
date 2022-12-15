@@ -1150,9 +1150,15 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 	//CryMP: Restore buypage state
 	if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS && m_restoreBuyMenuPage != BUY_PAGE_NONE)
 	{
-		m_eCurBuyMenuPage = m_restoreBuyMenuPage;
-		//But do not next time
-		m_restoreBuyMenuPage = BUY_PAGE_NONE;
+		const int time = g_pGameCVars->mp_buyPageKeepTime;
+		if (time > 0 && gEnv->pTimer->GetCurrTime() - m_restoreBuyMenuPageTime < time)
+		{
+			m_eCurBuyMenuPage = m_restoreBuyMenuPage;
+		}
+		else
+		{
+			m_restoreBuyMenuPage = BUY_PAGE_NONE;
+		}
 	}
 
 	if (sendToFlash)
@@ -1847,6 +1853,10 @@ void CHUDPowerStruggle::HideSOM(bool hide)
 		if (m_animSwingOMeter.IsLoaded())
 			if (!m_animSwingOMeter.GetFlashPlayer()->GetVisible())
 				m_animSwingOMeter.GetFlashPlayer()->SetVisible(true);
+
+		//CryMP
+		//Closing buymenu
+		m_restoreBuyMenuPageTime = gEnv->pTimer->GetCurrTime();
 	}
 }
 

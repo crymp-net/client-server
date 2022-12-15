@@ -177,6 +177,7 @@ private:
 	//current buy menu page
 	BuyMenuPage m_eCurBuyMenuPage = BUY_PAGE_LOADOUT;
 	BuyMenuPage m_restoreBuyMenuPage = BUY_PAGE_NONE;
+	int m_restoreBuyMenuPageTime = 0;
 
 	//buy menu flash movie - managed by HUD
 	CGameFlashAnimation *g_pBuyMenu;
