@@ -3243,7 +3243,7 @@ void CPlayer::UpdateStats(float frameTime)
 			{
 				const char* side = gEnv->bServer ? "Server" : "Client";
 
-				char* color = "";
+				const char* color = "";
 				if (velFraction < 0.33f)
 					color = "$6"; // Yellow
 				else if (velFraction < 0.66f)

@@ -207,14 +207,7 @@ private:
 	// we prohibit an implicit conversion from CryStackString to make user aware of allocation!
 	// -> use string(stackedString) instead
 	// as the private statement seems to be ignored (VS C++), we add a compile time error, see below
-	template<size_t AnySize> _Self& operator=(const CryStackStringT<T, AnySize> & str)
-	{
-		// we add a compile-time error as the Visual C++ compiler seems to ignore the private statement?
-		STATIC_CHECK(0, Use_Explicit_String_Assignment_When_Assigning_From_StackString);
-		// not reached, as above will generate a compile time error
-		_Assign(str.c_str(), str.length());
-		return *this;
-	}
+	template<size_t AnySize> _Self& operator=(const CryStackStringT<T, AnySize> & str) = delete;
 
 public:
 	// string concatenation

@@ -342,7 +342,7 @@ void Launcher::PatchEngine()
 		ReplaceLocalizationManager(m_dlls.pCrySystem);
 	}
 
-	constexpr char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
+	const char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
 
 	if (m_dlls.pCryRenderD3D9)
 	{

@@ -2019,7 +2019,7 @@ void CAlien::OnAction(const ActionId& actionId, int activationMode, float value)
 
 			if (scriptOnAction)
 			{
-				char* activation = 0;
+				const char* activation = 0;
 
 				switch (activationMode)
 				{

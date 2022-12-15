@@ -740,7 +740,7 @@ set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${C
 
 ################################################################################
 
-set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD 20)
 set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if(BUILD_64BIT)

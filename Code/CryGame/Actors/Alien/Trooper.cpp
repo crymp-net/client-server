@@ -897,7 +897,7 @@ void CTrooper::ProcessMovement(float frameTime)
 					bool bUseSpecialFlyAnim = (m_bOverrideFlyActionAnim || m_jumpParams.bUseSpecialAnim && m_jumpParams.specialAnimType == JUMP_ANIM_FLY);
 					if ( pAGState && !bUseSpecialFlyAnim)
 					{
-						pAGState->SetInput( m_idActionInput, m_bOverrideFlyActionAnim ? m_overrideFlyAction : "flyNoStart" );
+						pAGState->SetInput( m_idActionInput, m_bOverrideFlyActionAnim ? m_overrideFlyAction.c_str() : "flyNoStart" );
 					}
 					m_jumpParams.state = JS_Flying;
 					if(!bUseSpecialFlyAnim)

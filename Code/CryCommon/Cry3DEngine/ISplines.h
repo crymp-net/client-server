@@ -838,7 +838,7 @@ namespace spline
 			{
 				// If active spline range less than 1, reduce table entries.
 				int table_size = min<int>(nENTRIES_PER_KEY * (this->m_keys.size()-1), nMAX_ENTRIES);
-				SetRange( this->m_keys[0].time, this->m_keys.end()[-1].time * 0.999f );
+				this->SetRange( this->m_keys[0].time, this->m_keys.end()[-1].time * 0.999f );
 				float active_range = this->m_keys.end()[-1].time - this->m_keys[0].time;
 				m_indexScale = (table_size-1) / active_range;
 				m_table.resize(table_size);
@@ -1008,7 +1008,7 @@ namespace spline
 		{
 			value_type value;
 			FromValueType( val, value );
-			return insert_key( t, value );
+			return this->insert_key( t, value );
 		}
 		virtual void RemoveKey( int key )
 		{
@@ -1098,7 +1098,7 @@ namespace spline
 		virtual void Interpolate( float time,ValueType &value )
 		{
 			value_type v;
-			interpolate( time,v );
+			this->interpolate( time,v );
 			ToValueType(v,value);
 		}
 
