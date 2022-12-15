@@ -1376,7 +1376,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 			PlaySound(ESound_WeaponModification);
 			if (!strcmp(attachment.c_str(), "NoAttachment"))
 			{
-				const char* curAttach = pCurrentWeapon->CurrentAttachment(helper.c_str());
+				const char* curAttach = pCurrentWeapon->CurrentAttachment(ItemString(helper));
 				szArgs = curAttach ? curAttach : "";
 			}
 			else
@@ -1384,8 +1384,9 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 				szArgs = attachment.c_str();
 			}
 
-			const bool bAddAccessory = pCurrentWeapon->GetAccessory(szArgs) == 0;
-			pCurrentWeapon->SwitchAccessory(szArgs);
+			const ItemString accessory(szArgs);
+			const bool bAddAccessory = pCurrentWeapon->GetAccessory(accessory) == 0;
+			pCurrentWeapon->SwitchAccessory(accessory);
 			HUD_CALL_LISTENERS(WeaponAccessoryChanged(pCurrentWeapon, szArgs, bAddAccessory));
 
 			// player's squadmates mimicking weapon switch accessory
@@ -2931,17 +2932,17 @@ bool CHUD::WeaponHasAttachments()
 			if (helper.slot != CItem::eIGS_FirstPerson)
 				continue;
 
-			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name))
+			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
 			{
 				std::vector<string> attachments;
-				pCurrentWeapon->GetAttachmentsAtHelper(helper.name, attachments);
+				pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str(), attachments);
 				int iCount = 0;
 				if (attachments.size() > 0)
 				{
-					if (strcmp(helper.name, "magazine") &&
-						strcmp(helper.name, "attachment_front") &&
-						strcmp(helper.name, "energy_source_helper") &&
-						strcmp(helper.name, "shell_grenade"))
+					if (helper.name != "magazine" &&
+					    helper.name != "attachment_front" &&
+					    helper.name != "energy_source_helper" &&
+					    helper.name != "shell_grenade")
 					{
 						++iCount;
 					}

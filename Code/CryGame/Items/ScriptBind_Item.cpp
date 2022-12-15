@@ -304,7 +304,7 @@ int CScriptBind_Item::PlayAction(IFunctionHandler* pH, const char* actionName)
 	if (!pItem)
 		return pH->EndFunction();
 
-	pItem->PlayAction(actionName);
+	pItem->PlayAction(ItemString(actionName));
 
 	return pH->EndFunction();
 }

@@ -287,10 +287,8 @@ bool CShotgun::Shoot(bool resetAnimation, bool autoreload/* =true */, bool noSou
 	// Aim assistance
 	m_pWeapon->AssistAiming();
 
-	const char *action = m_actions.fire_cock.c_str();
-	bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
-	if (ammoCount == 1 || zoomedCock)
-		action = m_actions.fire.c_str();
+	const bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
+	const ItemString& action = (ammoCount == 1 || zoomedCock) ? m_actions.fire : m_actions.fire_cock;
 
 	m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default|CItem::eIPAF_RestartAnimation|CItem::eIPAF_CleanBlending);
 	if(zoomedCock)
@@ -384,8 +382,7 @@ bool CShotgun::Shoot(bool resetAnimation, bool autoreload/* =true */, bool noSou
 
 	if ((ammoCount<1) && !m_fireparams.slider_layer.empty())
 	{
-		const char *slider_back_layer = m_fireparams.slider_layer.c_str();
-		m_pWeapon->PlayLayer(slider_back_layer, CItem::eIPAF_Default|CItem::eIPAF_NoBlend);
+		m_pWeapon->PlayLayer(m_fireparams.slider_layer, CItem::eIPAF_Default|CItem::eIPAF_NoBlend);
 	}
 
 	if (OutOfAmmo())
@@ -408,7 +405,6 @@ void CShotgun::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, con
 	assert(0 == ph);
 
 	IEntityClass* ammo = m_fireparams.ammo_type_class;
-	const char *action = m_actions.fire_cock.c_str();
 
 	CActor *pActor = m_pWeapon->GetOwnerActor();
 	bool playerIsShooter = pActor?pActor->IsPlayer():false;
@@ -417,16 +413,11 @@ void CShotgun::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, con
 	if (m_fireparams.clip_size==0)
 		ammoCount = m_pWeapon->GetInventoryAmmoCount(ammo);
 
-	if (ammoCount == 1)
-		action = m_actions.fire.c_str();
-
 	//CryMP: FP spec
 	if (m_pWeapon->GetStats().fp)
 	{
-		const char* action = m_actions.fire_cock.c_str();
-		bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
-		if (ammoCount == 1 || zoomedCock)
-			action = m_actions.fire.c_str();
+		const bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
+		const ItemString& action = (ammoCount == 1 || zoomedCock) ? m_actions.fire : m_actions.fire_cock;
 
 		m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default | CItem::eIPAF_RestartAnimation | CItem::eIPAF_CleanBlending);
 		if (zoomedCock)
@@ -434,6 +425,8 @@ void CShotgun::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, con
 	}
 	else
 	{
+		const ItemString& action = (ammoCount == 1) ? m_actions.fire : m_actions.fire_cock;
+
 		m_pWeapon->ResetAnimation();
 		m_pWeapon->PlayAction(action, 0, false, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
 	}
@@ -493,8 +486,7 @@ void CShotgun::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, con
 
 	if ((ammoCount<1) && !m_fireparams.slider_layer.empty())
 	{
-		const char *slider_back_layer = m_fireparams.slider_layer.c_str();
-		m_pWeapon->PlayLayer(slider_back_layer, CItem::eIPAF_Default|CItem::eIPAF_NoBlend);
+		m_pWeapon->PlayLayer(m_fireparams.slider_layer, CItem::eIPAF_Default|CItem::eIPAF_NoBlend);
 	}
 
 	m_pWeapon->RequireUpdate(eIUS_FireMode);

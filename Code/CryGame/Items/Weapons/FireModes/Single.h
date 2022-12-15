@@ -112,7 +112,7 @@ public:
 		void PreLoadAssets()
 		{
 			for (int i = 0; i < 2; i++)
-				gEnv->p3DEngine->FindParticleEffect(effect[i]);
+				gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
 		}
 		void GetMemoryStatistics(ICrySizer * s)
 		{
@@ -302,8 +302,8 @@ protected:
 
 		void PreLoadAssets()
 		{
-			gEnv->p3DEngine->FindParticleEffect(effect);
-			gEnv->p3DEngine->FindParticleEffect(effectFP);
+			gEnv->p3DEngine->FindParticleEffect(effect.c_str());
+			gEnv->p3DEngine->FindParticleEffect(effectFP.c_str());
 		}
 		void GetMemoryStatistics(ICrySizer * s)
 		{
@@ -342,7 +342,7 @@ protected:
 		void PreLoadAssets()
 		{
 			for (int i = 0; i < 2; i++)
-				gEnv->p3DEngine->FindParticleEffect(effect[i]);
+				gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
 		}
 		void GetMemoryStatistics(ICrySizer * s)
 		{

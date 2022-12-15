@@ -2878,7 +2878,7 @@ void COffHand::ThrowObject(int activationMode, bool isLivingEnt /*= false*/)
 	{
 		m_lastFireModeId = GetCurrentFireMode();
 		if (m_heldEntityId)
-			SetCurrentFireMode(GetFireModeIdx(m_grabTypes[m_grabType].throwFM));
+			SetCurrentFireMode(GetFireModeIdx(m_grabTypes[m_grabType].throwFM.c_str()));
 	}
 
 	PerformThrow(activationMode, m_heldEntityId, m_lastFireModeId, isLivingEnt);
@@ -3452,13 +3452,13 @@ void COffHand::AttachGrenadeToHand(int grenade, bool fp /*=true*/, bool attach /
 	if (fp)
 	{
 		if (grenade == 0)
-			DoSwitchAccessory("OffhandGrenade");
+			DoSwitchAccessory(ItemString("OffhandGrenade"));
 		else if (grenade == 1)
-			DoSwitchAccessory("OffhandSmoke");
+			DoSwitchAccessory(ItemString("OffhandSmoke"));
 		else if (grenade == 2)
-			DoSwitchAccessory("OffhandFlashbang");
+			DoSwitchAccessory(ItemString("OffhandFlashbang"));
 		else if (grenade == 3)
-			DoSwitchAccessory("OffhandNanoDisruptor");
+			DoSwitchAccessory(ItemString("OffhandNanoDisruptor"));
 	}
 	else
 	{

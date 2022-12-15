@@ -456,10 +456,11 @@ void CHUDPowerStruggle::BuyPackage(SEquipmentPack equipmentPackage)
 						IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItemByClass(pClass));
 						if (pItem && pItem != g_pHUD->GetCurrentWeapon())
 						{
-							const bool bAddAccessory = g_pHUD->GetCurrentWeapon()->GetAccessory(item.strClass.c_str()) == 0;
+							const ItemString accessory(item.strClass);
+							const bool bAddAccessory = g_pHUD->GetCurrentWeapon()->GetAccessory(accessory) == 0;
 							if (bAddAccessory)
 							{
-								g_pHUD->GetCurrentWeapon()->SwitchAccessory(item.strClass.c_str());
+								g_pHUD->GetCurrentWeapon()->SwitchAccessory(accessory);
 								HUD_CALL_LISTENERS_PS(WeaponAccessoryChanged(g_pHUD->GetCurrentWeapon(), item.strClass.c_str(), bAddAccessory));
 							}
 						}

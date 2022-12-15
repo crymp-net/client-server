@@ -678,9 +678,11 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 			}
 		}
 
+		const ItemString actionName(buff);
+
 		//play animation
-		pFists->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, buff);
-		pFists->PlayAction(buff);
+		pFists->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, actionName);
+		pFists->PlayAction(actionName);
 	}
 	else if (freefallChanged && !m_stats.inFreefall && pFists)
 	{

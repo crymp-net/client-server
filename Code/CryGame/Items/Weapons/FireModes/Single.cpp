@@ -1032,7 +1032,6 @@ void CSingle::StartReload(int zoomed)
 		m_pWeapon->ExitZoom();
 	m_pWeapon->SetBusy(true);
 
-	const char* action = m_actions.reload.c_str();
 	IEntityClass* ammo = m_fireparams.ammo_type_class;
 
 	m_pWeapon->OnStartReload(m_pWeapon->GetOwnerId(), ammo);
@@ -1045,12 +1044,14 @@ void CSingle::StartReload(int zoomed)
 	{
 		int ammoCount = m_pWeapon->GetAmmoCount(ammo);
 		if ((ammoCount > 0) && (ammoCount < (m_fireparams.clip_size + 1)))
-			action = m_actions.reload_chamber_full.c_str();
+			m_pWeapon->PlayAction(m_actions.reload_chamber_full);
 		else
-			action = m_actions.reload_chamber_empty.c_str();
+			m_pWeapon->PlayAction(m_actions.reload_chamber_empty);
 	}
-
-	m_pWeapon->PlayAction(action);
+	else
+	{
+		m_pWeapon->PlayAction(m_actions.reload);
+	}
 
 	int time = 0;
 
@@ -1429,10 +1430,8 @@ bool CSingle::Shoot(bool resetAnimation, bool autoreload, bool noSound)
 	if (!gEnv->bMultiplayer && clientIsShooter && m_fireparams.crosshair_assist_range > 0.0f && !m_pWeapon->IsZoomed())
 		CrosshairAssistAiming(pos, dir, &rayhit);
 
-	const char* action = m_actions.fire_cock.c_str();
 	bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
-	if (ammoCount == 1 || zoomedCock)
-		action = m_actions.fire.c_str();
+	const ItemString& action = (ammoCount == 1 || zoomedCock) ? m_actions.fire : m_actions.fire_cock;
 
 	int flags = CItem::eIPAF_Default | CItem::eIPAF_RestartAnimation | CItem::eIPAF_CleanBlending;
 	if (m_firstShot)
@@ -1591,8 +1590,7 @@ bool CSingle::Shoot(bool resetAnimation, bool autoreload, bool noSound)
 
 	if (!m_fireparams.slider_layer.empty() && (ammoCount < 1))
 	{
-		const char* slider_back_layer = m_fireparams.slider_layer.c_str();
-		m_pWeapon->PlayLayer(slider_back_layer, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
+		m_pWeapon->PlayLayer(m_fireparams.slider_layer, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
 	}
 
 	if (OutOfAmmo())
@@ -2817,10 +2815,8 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 	if (pActor && pActor->IsFpSpectatorTarget())
 	{
 		//CryMP: Fp Spec shoot animations
-		const char* action = m_actions.fire_cock.c_str();
-		bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
-		if (ammoCount == 1 || zoomedCock)
-			action = m_actions.fire.c_str();
+		const bool zoomedCock = m_fireparams.unzoomed_cock && m_pWeapon->IsZoomed() && (ammoCount != 1);
+		const ItemString& action = (ammoCount == 1 || zoomedCock) ? m_actions.fire : m_actions.fire_cock;
 
 		int flags = CItem::eIPAF_Default | CItem::eIPAF_RestartAnimation | CItem::eIPAF_CleanBlending;
 		if (m_firstShot)
@@ -2847,9 +2843,7 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 	}
 	else
 	{
-		const char* action = m_actions.fire_cock.c_str();
-		if (ammoCount == 1)
-			action = m_actions.fire.c_str();
+		const ItemString& action = (ammoCount == 1) ? m_actions.fire : m_actions.fire_cock;
 
 		m_pWeapon->ResetAnimation();
 
@@ -2928,8 +2922,7 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 
 	if ((ammoCount < 1) && !m_fireparams.slider_layer.empty())
 	{
-		const char* slider_back_layer = m_fireparams.slider_layer.c_str();
-		m_pWeapon->PlayLayer(slider_back_layer, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
+		m_pWeapon->PlayLayer(m_fireparams.slider_layer, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
 	}
 
 	if (OutOfAmmo())

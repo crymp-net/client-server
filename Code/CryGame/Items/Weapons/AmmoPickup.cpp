@@ -52,7 +52,7 @@ void CAmmoPickup::PostInit(IGameObject* pGameObject)
 	}
 
 	if (!m_modelName.empty())
-		SetGeometry(eIGS_ThirdPerson, m_modelName.c_str());
+		SetGeometry(eIGS_ThirdPerson, m_modelName);
 
 	CWeapon::PostInit(pGameObject);
 }
@@ -207,7 +207,7 @@ void CAmmoPickup::PickUp(EntityId pickerId, bool sound, bool select, bool keepHi
 			if (pSoundProxy)
 			{
 				//Execute sound at picker position
-				pSoundProxy->PlaySound(m_pickup_sound, pPicker->GetWorldPos(), FORWARD_DIRECTION, FLAG_SOUND_DEFAULT_3D, eSoundSemantic_Weapon);
+				pSoundProxy->PlaySound(m_pickup_sound.c_str(), pPicker->GetWorldPos(), FORWARD_DIRECTION, FLAG_SOUND_DEFAULT_3D, eSoundSemantic_Weapon);
 			}
 		}
 	}

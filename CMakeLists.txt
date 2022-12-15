@@ -351,6 +351,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Items/ItemScheduler.h
 	Code/CryGame/Items/ItemSharedParams.cpp
 	Code/CryGame/Items/ItemSharedParams.h
+	Code/CryGame/Items/ItemString.cpp
 	Code/CryGame/Items/ItemString.h
 	Code/CryGame/Items/ItemView.cpp
 	Code/CryGame/Items/Lam.cpp

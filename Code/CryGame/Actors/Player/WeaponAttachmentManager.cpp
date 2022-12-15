@@ -133,7 +133,7 @@ void CWeaponAttachmentManager::CreatePlayerBoneAttachments()
 				pAttachment = pAttachmentManager->CreateAttachment(gAttachmentTable[i],CA_BONE,gBoneTable[i]);
 				if(pAttachment)
 				{
-					m_boneAttachmentMap.insert(TBoneAttachmentMap::value_type(gAttachmentTable[i],0));
+					m_boneAttachmentMap.insert(TBoneAttachmentMap::value_type(ItemString(gAttachmentTable[i]),0));
 					if(pAttachment && !gOffsetTable[i].IsZero())
 					{
 						pAttachment->SetAttAbsoluteDefault( QuatT(gRotationTable[i],gOffsetTable[i]) );
@@ -211,7 +211,7 @@ void CWeaponAttachmentManager::DoBackToHandSwitch()
 //=======================================================================
 void CWeaponAttachmentManager::SetWeaponAttachment(bool attach, const char* attachmentName, EntityId weaponId)
 {
-	TBoneAttachmentMap::iterator it = m_boneAttachmentMap.find(CONST_TEMPITEM_STRING(attachmentName));
+	TBoneAttachmentMap::iterator it = m_boneAttachmentMap.find(ItemString(attachmentName));
 	if(it!=m_boneAttachmentMap.end())
 	{
 		if(attach)
@@ -230,7 +230,7 @@ void CWeaponAttachmentManager::SetWeaponAttachment(bool attach, const char* atta
 //=========================================================================
 bool CWeaponAttachmentManager::IsAttachmentFree(const char* attachmentName)
 {
-	TBoneAttachmentMap::iterator it = m_boneAttachmentMap.find(CONST_TEMPITEM_STRING(attachmentName));
+	TBoneAttachmentMap::iterator it = m_boneAttachmentMap.find(ItemString(attachmentName));
 	if(it!=m_boneAttachmentMap.end())
 	{
 		if(it->second==0)

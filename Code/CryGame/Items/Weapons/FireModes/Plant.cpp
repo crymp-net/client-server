@@ -299,7 +299,7 @@ struct CPlant::StartPlantAction
 		}
 		else
 		{
-			pPlant->m_pWeapon->PlayAction(g_pItemStrings->select.c_str(),0,false,CItem::eIPAF_Default|CItem::eIPAF_NoBlend|CItem::eIPAF_CleanBlending);
+			pPlant->m_pWeapon->PlayAction(g_pItemStrings->select,0,false,CItem::eIPAF_Default|CItem::eIPAF_NoBlend|CItem::eIPAF_CleanBlending);
 			pPlant->m_pWeapon->HideItem(false);
 		}
 	}
@@ -320,7 +320,7 @@ void CPlant::StartFire()
 
 	m_planting = true;
 	m_pWeapon->SetBusy(true);
-	m_pWeapon->PlayAction(m_plantactions.plant.c_str());
+	m_pWeapon->PlayAction(ItemString(m_plantactions.plant));
 
 	m_plantTimer = m_plantparams.delay;
 

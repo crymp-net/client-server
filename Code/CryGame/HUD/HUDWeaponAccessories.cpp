@@ -79,7 +79,7 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 			if (helper.slot != CItem::eIGS_FirstPerson)
 				continue;
 
-			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name))
+			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
 			{
 				// marcok: make sure the vars are correctly mapped
 				SFlashVarValue args[3] = { helper.name.c_str(), "", "" };
@@ -98,14 +98,17 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 					curAttach = (szCurAttach ? szCurAttach : "");
 				}
 				std::vector<string> attachments;
-				pCurrentWeapon->GetAttachmentsAtHelper(helper.name, attachments);
+				pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str(), attachments);
 				int iSelectedIndex = 0;
 				int iCount = 0;
 				if (attachments.size() > 0)
 				{
-					if (strcmp(helper.name, "magazine") && strcmp(helper.name, "attachment_front") && strcmp(helper.name, "energy_source_helper") && strcmp(helper.name, "shell_grenade"))
+					if (helper.name != "magazine" &&
+					    helper.name != "attachment_front" &&
+					    helper.name != "energy_source_helper" &&
+					    helper.name != "shell_grenade")
 					{
-						if (!strcmp(helper.name, "attachment_top"))
+						if (helper.name == "attachment_top")
 						{
 							SFlashVarValue args[3] = { helper.name.c_str(), "@IronSight", "NoAttachment" };
 							m_animWeaponAccessories.Invoke("addSlotButton", args, 3);
@@ -227,7 +230,7 @@ void CHUD::UpdateWeaponModify()
 			if (helper.slot != mode)
 				continue;
 
-			Vec3 vWorldPos = pCurrentWeapon->GetSlotHelperPos(mode, helper.bone, true);
+			Vec3 vWorldPos = pCurrentWeapon->GetSlotHelperPos(mode, helper.bone.c_str(), true);
 			
 			Vec3 vScreenSpace = Vec3(ZERO);
 			m_pRenderer->ProjectToScreen(vWorldPos.x, vWorldPos.y, vWorldPos.z, &vScreenSpace.x, &vScreenSpace.y, &vScreenSpace.z);
@@ -235,7 +238,7 @@ void CHUD::UpdateWeaponModify()
 			vScreenSpace.x = vScreenSpace.x * fScaleX + fHalfUselessSize;
 			vScreenSpace.y = vScreenSpace.y * fScaleY;
 
-			AdjustWeaponAccessory(pCurrentWeapon->GetEntity()->GetClass()->GetName(), helper.name, &vScreenSpace);
+			AdjustWeaponAccessory(pCurrentWeapon->GetEntity()->GetClass()->GetName(), helper.name.c_str(), &vScreenSpace);
 	
 			_snprintf(tempBuf, sizeof(tempBuf), "hud.WS%sX", helper.name.c_str());
 			tempBuf[sizeof(tempBuf) - 1] = '\0';

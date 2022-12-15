@@ -352,13 +352,15 @@ void CWeapon::InitZoomModes(const IItemParamsNode* zoommodes)
 
 					if (modeValue)
 					{
-						if (!strcmp(modeValue, "normal"))
+						const ItemString modeValueString(modeValue);
+
+						if (modeValueString == "normal")
 						{
 							m_currentViewMode = m_viewModeList.size(); // set default view mode
 							m_defaultViewMode = m_currentViewMode;
 						}
 
-						m_viewModeList.push_back(modeValue);
+						m_viewModeList.push_back(modeValueString);
 						m_useViewMode = true;
 					}
 				}
@@ -1694,7 +1696,7 @@ void CWeapon::RestartZoom(bool force)
 				const ItemString& curMode = m_viewModeList[m_zoomViewMode];
 				if (!curMode.empty())
 				{
-					gEnv->p3DEngine->SetPostEffectParam(curMode, 1.0f);
+					gEnv->p3DEngine->SetPostEffectParam(curMode.c_str(), 1.0f);
 					m_currentViewMode = m_zoomViewMode;
 					m_zoomViewMode = 0;
 				}
@@ -2447,9 +2449,9 @@ void CWeapon::FixAccessories(SAccessoryParams* params, bool attach)
 		{
 			for (int i = 0; i < params->firemodes.size(); i++)
 			{
-				if (params->exclusive && GetFireModeIdx(params->firemodes[i]) != -1)
+				if (params->exclusive && GetFireModeIdx(params->firemodes[i].c_str()) != -1)
 				{
-					EnableFireMode(GetFireModeIdx(params->firemodes[i]), false);
+					EnableFireMode(GetFireModeIdx(params->firemodes[i].c_str()), false);
 				}
 			}
 			if (IFireMode* pFM = GetFireMode(GetCurrentFireMode()))
@@ -2458,9 +2460,11 @@ void CWeapon::FixAccessories(SAccessoryParams* params, bool attach)
 					ChangeFireMode();
 			}
 
-			if (GetZoomModeIdx(params->zoommode) != -1)
+			const int zoomModeIndex = GetZoomModeIdx(params->zoommode.c_str());
+
+			if (zoomModeIndex != -1)
 			{
-				EnableZoomMode(GetZoomModeIdx(params->zoommode), false);
+				EnableZoomMode(zoomModeIndex, false);
 				ChangeZoomMode();
 			}
 		}
@@ -2472,15 +2476,18 @@ void CWeapon::FixAccessories(SAccessoryParams* params, bool attach)
 
 		for (int i = 0; i < params->firemodes.size(); i++)
 		{
-			if (GetFireModeIdx(params->firemodes[i]) != -1)
+			if (GetFireModeIdx(params->firemodes[i].c_str()) != -1)
 			{
 				GetFireMode(params->firemodes[i].c_str())->Enable(true);
 			}
 		}
-		if (GetZoomModeIdx(params->zoommode) != -1)
+
+		const int zoomModeIndex = GetZoomModeIdx(params->zoommode.c_str());
+
+		if (zoomModeIndex != -1)
 		{
-			EnableZoomMode(GetZoomModeIdx(params->zoommode), true);
-			SetCurrentZoomMode(GetZoomModeIdx(params->zoommode));
+			EnableZoomMode(zoomModeIndex, true);
+			SetCurrentZoomMode(zoomModeIndex);
 		}
 	}
 }
@@ -2622,7 +2629,7 @@ bool CWeapon::HasAttachmentAtHelper(const char* helper)
 		{
 			for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
 			{
-				SAccessoryParams* params = GetAccessoryParams(it->first.c_str());
+				SAccessoryParams* params = GetAccessoryParams(it->first);
 				if (params && !strcmp(params->attach_helper.c_str(), helper))
 				{
 					// found a child item that can be used
@@ -2636,7 +2643,7 @@ bool CWeapon::HasAttachmentAtHelper(const char* helper)
 
 				if (cur)
 				{
-					SAccessoryParams* invAccessory = GetAccessoryParams(cur->GetEntity()->GetClass()->GetName());
+					SAccessoryParams* invAccessory = GetAccessoryParams(ItemString(cur->GetEntity()->GetClass()->GetName()));
 					if (invAccessory && !strcmp(invAccessory->attach_helper.c_str(), helper))
 					{
 						// found an accessory in the inventory that can be used
@@ -2667,7 +2674,7 @@ void CWeapon::GetAttachmentsAtHelper(const char* helper, std::vector<string>& rA
 
 				if (cur)
 				{
-					SAccessoryParams* invAccessory = GetAccessoryParams(cur->GetEntity()->GetClass()->GetName());
+					SAccessoryParams* invAccessory = GetAccessoryParams(ItemString(cur->GetEntity()->GetClass()->GetName()));
 					if (invAccessory && !strcmp(invAccessory->attach_helper.c_str(), helper))
 					{
 						rAttachments.push_back(cur->GetEntity()->GetClass()->GetName());
@@ -3642,7 +3649,7 @@ void CWeapon::OnZoomIn()
 				pItem->DrawSlot(eIGS_FirstPerson, false);
 				ResetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str());
 				pItem->DrawSlot(eIGS_Aux1, false);
-				SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper, pItem->GetEntity(), eIGS_Aux1, 0);
+				SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str(), pItem->GetEntity(), eIGS_Aux1, 0);
 				hasSniperScope = true;
 			}
 		}
@@ -3666,7 +3673,7 @@ void CWeapon::OnZoomOut()
 				pItem->DrawSlot(eIGS_Aux1, false);
 				ResetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str());
 				pItem->DrawSlot(eIGS_FirstPerson, false);
-				SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper, pItem->GetEntity(), eIGS_FirstPerson, 0);
+				SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str(), pItem->GetEntity(), eIGS_FirstPerson, 0);
 				hasSniperScope = true;
 			}
 

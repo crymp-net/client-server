@@ -162,8 +162,8 @@ void CItem::PostFilterView(struct SViewParams& viewParams)
 
 	if (m_camerastats.animating && m_stats.mounted && !m_camerastats.helper.empty() && IsOwnerFP())
 	{
-		viewParams.position = GetSlotHelperPos(eIGS_FirstPerson, m_camerastats.helper, true);
-		viewParams.rotation = Quat(GetSlotHelperRotation(eIGS_FirstPerson, m_camerastats.helper, true));
+		viewParams.position = GetSlotHelperPos(eIGS_FirstPerson, m_camerastats.helper.c_str(), true);
+		viewParams.rotation = Quat(GetSlotHelperRotation(eIGS_FirstPerson, m_camerastats.helper.c_str(), true));
 		viewParams.blend = true;
 		viewParams.viewID = 5;
 
@@ -469,7 +469,7 @@ void CItem::SetViewMode(int mode)
 	}
 	else
 	{
-		SetGeometry(eIGS_FirstPerson, 0);
+		SetGeometry(eIGS_FirstPerson, ItemString());
 	}
 
 	if (mode & eIVM_ThirdPerson)

@@ -70,8 +70,8 @@ void CBeam::Update(float frameTime, uint frameId)
 
 			m_spinUpTimer = 0.0f;
 
-			m_pWeapon->PlayAction(m_beamactions.blast.c_str());
-			m_fireLoopId = m_pWeapon->PlayAction(m_actions.fire.c_str(), 0, true);
+			m_pWeapon->PlayAction(ItemString(m_beamactions.blast));
+			m_fireLoopId = m_pWeapon->PlayAction(m_actions.fire, 0, true);
 
 			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_fireLoopId);
 			if (pSound)
@@ -197,7 +197,7 @@ void CBeam::Update(float frameTime, uint frameId)
 		{
 			if (!m_lastHitValid)
 			{
-				m_hitSoundId = m_pWeapon->PlayAction(m_beamactions.hit.c_str(), 0, true, CItem::eIPAF_Default | CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_SoundLooped | CItem::eIPAF_SoundStartPaused);
+				m_hitSoundId = m_pWeapon->PlayAction(ItemString(m_beamactions.hit), 0, true, CItem::eIPAF_Default | CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_SoundLooped | CItem::eIPAF_SoundStartPaused);
 				ISound* pSound = m_pWeapon->GetISound(m_hitSoundId);
 				if (pSound)
 				{
@@ -398,7 +398,7 @@ void CBeam::StartFire()
 	m_fired = true;			//For recoil
 
 	SpinUpEffect(true);
-	m_pWeapon->PlayAction(m_actions.spin_up.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+	m_pWeapon->PlayAction(m_actions.spin_up, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
 	m_pWeapon->RequireUpdate(eIUS_FireMode);
 
 	m_pWeapon->RequestStartFire();
@@ -430,7 +430,7 @@ void CBeam::StopFire()
 		m_fireLoopId = INVALID_SOUNDID;
 	}
 
-	m_pWeapon->PlayAction(m_actions.spin_down.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+	m_pWeapon->PlayAction(m_actions.spin_down, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
 	m_pWeapon->EnableUpdate(false, eIUS_FireMode);
 
 	m_pWeapon->RequestStopFire();
@@ -449,7 +449,7 @@ void CBeam::NetStartFire()
 	m_fired = true;
 
 	SpinUpEffect(true);
-	m_pWeapon->PlayAction(m_actions.spin_up.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+	m_pWeapon->PlayAction(m_actions.spin_up, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
 	m_pWeapon->RequireUpdate(eIUS_FireMode);
 }
 
@@ -478,7 +478,7 @@ void CBeam::NetStopFire()
 		m_fireLoopId = INVALID_SOUNDID;
 	}
 
-	m_pWeapon->PlayAction(m_actions.spin_down.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+	m_pWeapon->PlayAction(m_actions.spin_down, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
 	m_pWeapon->EnableUpdate(false, eIUS_FireMode);
 }
 

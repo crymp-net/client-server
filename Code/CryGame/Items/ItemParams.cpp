@@ -473,7 +473,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 						return false;
 					}
 
-					pLayer->bones.push_back(name);
+					pLayer->bones.push_back(ItemString(name));
 				}
 			}
 		}
@@ -524,7 +524,7 @@ bool CItem::ReadAccessories(const IItemParamsNode *accessories)
 						continue;
 					}
 
-					m_initialSetup.push_back(name);
+					m_initialSetup.push_back(ItemString(name));
 				}
 				else
 				{
@@ -570,11 +570,7 @@ bool CItem::ReadAccessoryParams(const IItemParamsNode *accessory, SAccessoryPara
 	{
 		curToken = nextToken;
 		curToken.Trim();
-#ifdef ITEM_USE_SHAREDSTRING
-		params->firemodes.push_back(curToken.c_str());
-#else
-		params->firemodes.push_back(curToken);
-#endif
+		params->firemodes.push_back(ItemString(curToken));
 		nextToken = firemodes.Tokenize(",", curPos);
 	}
 
@@ -667,7 +663,7 @@ bool CItem::SetGeometryFromParams(int slot, const IItemParamsNode *geometry)
 		//	SetGeometry(slot, name, position, DEG2RAD(angles), scale, false);
 	}
 	else
-		SetGeometry(slot, name, position, DEG2RAD(angles), scale, false);
+		SetGeometry(slot, ItemString(name), position, DEG2RAD(angles), scale, false);
 
 	return true;
 }

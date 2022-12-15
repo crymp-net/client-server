@@ -104,7 +104,7 @@ void CDetonate::StartFire()
 	{
 		m_pWeapon->RequireUpdate(eIUS_FireMode);
 		m_detonationTimer = 0.1f;
-		m_pWeapon->PlayAction(m_actions.fire.c_str());
+		m_pWeapon->PlayAction(m_actions.fire);
 	}
 }
 

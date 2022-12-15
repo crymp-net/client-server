@@ -33,7 +33,7 @@ bool CItem::SupportsDualWield(const char* itemName) const
 	if (m_params.two_hand)
 		return false;
 
-	TDualWieldSupportMap::const_iterator it = m_sharedparams->dualWieldSupport.find(CONST_TEMPITEM_STRING(itemName));
+	TDualWieldSupportMap::const_iterator it = m_sharedparams->dualWieldSupport.find(ItemString(itemName));
 	if (it != m_sharedparams->dualWieldSupport.end())
 		return true;
 	return false;
@@ -140,7 +140,7 @@ void CItem::SetDualSlaveAccessory(bool noNetwork)
 		for (TAccessoryMap::const_iterator it = temp.begin(); it != temp.end(); ++it)
 		{
 			if (m_accessories.find(it->first) == m_accessories.end())
-				pSlave->SwitchAccessory(it->first.c_str()); //Only remove if not in the master
+				pSlave->SwitchAccessory(it->first); //Only remove if not in the master
 		}
 
 		//Attach on the slave same accessories as "parent"
@@ -149,9 +149,9 @@ void CItem::SetDualSlaveAccessory(bool noNetwork)
 			if (pSlave->m_accessories.find(it->first) == pSlave->m_accessories.end())
 			{
 				if (noNetwork)
-					pSlave->AttachAccessory(it->first.c_str(), true, true, true);
+					pSlave->AttachAccessory(it->first, true, true, true);
 				else
-					pSlave->SwitchAccessory(it->first.c_str()); //Only add if not already attached
+					pSlave->SwitchAccessory(it->first); //Only add if not already attached
 			}
 		}
 	}

@@ -232,7 +232,7 @@ void CMelee::StartFire()
 		pPlayer->PlaySound(CPlayer::ESound_Melee);
 	}
 
-	m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
+	m_pWeapon->PlayAction(m_meleeactions.attack, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
 	m_pWeapon->SetBusy(true);
 
 	m_beginPos = m_pWeapon->GetSlotHelperPos(CItem::eIGS_FirstPerson, m_meleeparams.helper.c_str(), true);
@@ -286,13 +286,13 @@ void CMelee::NetStartFire()
 		if (pPlayer)
 			pPlayer->PlaySound(CPlayer::ESound_Melee);
 
-		m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
+		m_pWeapon->PlayAction(m_meleeactions.attack, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending, speedOverride);
 		m_durationTimer = m_meleeparams.duration;
 	}
 	else
 	{
 		//default TP mode
-		m_pWeapon->PlayAction(m_meleeactions.attack.c_str(), 0, false, CItem::eIPAF_Default, speedOverride);
+		m_pWeapon->PlayAction(m_meleeactions.attack, 0, false, CItem::eIPAF_Default, speedOverride);
 	}
 
 	m_pWeapon->OnMelee(m_pWeapon->GetOwnerId());
@@ -529,7 +529,7 @@ void CMelee::Hit(const Vec3& pt, const Vec3& dir, const Vec3& normal, IPhysicalE
 
 	ApplyCameraShake(true);
 
-	m_pWeapon->PlayAction(m_meleeactions.hit.c_str());
+	m_pWeapon->PlayAction(m_meleeactions.hit);
 }
 
 //------------------------------------------------------------------------

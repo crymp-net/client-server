@@ -166,7 +166,7 @@ void CItem::OnHit(float damage, const char* damageType)
 					{
 						int slot = (m_stats.viewmode & eIVM_FirstPerson) ? eIGS_FirstPerson : eIGS_ThirdPerson;
 
-						SpawnEffect(slot, level.effect, level.helper, Vec3Constants<float>::fVec3_Zero,
+						SpawnEffect(slot, level.effect.c_str(), level.helper.c_str(), Vec3Constants<float>::fVec3_Zero,
 							Vec3Constants<float>::fVec3_OneZ, level.scale);
 					}
 				}

@@ -19,6 +19,7 @@
 #include <string.h> // workaround for Amd64 compiler
 #endif
 
+#include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CrySystem/IResourceCollector.h"
 
 // flags applicable to the ICrySizer (retrieved via getFlags() method)

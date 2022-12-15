@@ -943,7 +943,7 @@ void CGame::RegisterConsoleVars()
 //------------------------------------------------------------------------
 void CmdDumpItemNameTable(IConsoleCmdArgs* pArgs)
 {
-	SharedString::CSharedString::DumpNameTable();
+	ItemString::DumpNameTableToLog();
 }
 
 //------------------------------------------------------------------------

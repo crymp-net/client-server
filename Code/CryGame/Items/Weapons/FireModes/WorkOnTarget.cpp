@@ -72,7 +72,7 @@ void CWorkOnTarget::Update(float frameTime, uint frameId)
 
 			if (m_pWeapon->IsClient())
 			{
-				m_pWeapon->PlayAction(m_workactions.prefire.c_str());
+				m_pWeapon->PlayAction(ItemString(m_workactions.prefire));
 
 				if (m_soundId!=INVALID_SOUNDID)
 				{
@@ -181,8 +181,10 @@ void CWorkOnTarget::StartFire()
 	m_firing=true;
 	m_pWeapon->SetBusy(true);
 
-	m_soundId=m_pWeapon->PlayAction(m_workactions.work.c_str(), 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
-	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, m_workactions.work.c_str());
+	const ItemString workAction(m_workactions.work);
+
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
 
 	m_pWeapon->EnableUpdate(true, eIUS_FireMode);	
 	m_delayTimer=m_workparams.delay;
@@ -227,8 +229,10 @@ void CWorkOnTarget::NetStartFire()
 {
 	m_pWeapon->EnableUpdate(true, eIUS_FireMode);
 
-	m_soundId=m_pWeapon->PlayAction(m_workactions.work.c_str(), 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
-	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, m_workactions.work.c_str());
+	const ItemString workAction(m_workactions.work);
+
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
 
 	m_delayTimer=m_workparams.delay;
 	m_firing=true;
@@ -363,9 +367,12 @@ void CWorkOnTarget::StartWork(IEntity *pEntity)
 void CWorkOnTarget::StopWork()
 {
 	if (m_working)
-		m_pWeapon->PlayAction(m_workactions.postfire.c_str());
-	m_pWeapon->PlayAction(m_workactions.idle.c_str(), 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
-	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, m_workactions.idle.c_str());
+		m_pWeapon->PlayAction(ItemString(m_workactions.postfire));
+
+	const ItemString idleAction(m_workactions.idle);
+
+	m_pWeapon->PlayAction(idleAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
+	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idleAction);
 
 	if (m_effectId)
 	{

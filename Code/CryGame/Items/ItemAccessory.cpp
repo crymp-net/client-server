@@ -33,7 +33,7 @@ CItem* CItem::AddAccessory(const ItemString& name)
 	namebuf[sizeof(namebuf) - 1] = '\0';
 
 	SEntitySpawnParams params;
-	params.pClass = m_pEntitySystem->GetClassRegistry()->FindClass(name);
+	params.pClass = m_pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 	params.sName = namebuf;
 	params.nFlags = ENTITY_FLAG_NO_PROXIMITY | ENTITY_FLAG_CASTSHADOW;
 
@@ -59,7 +59,7 @@ CItem* CItem::AddAccessory(const ItemString& name)
 //------------------------------------------------------------------------
 void CItem::RemoveAccessory(const ItemString& name)
 {
-	TAccessoryMap::iterator it = m_accessories.find(CONST_TEMPITEM_STRING(name));
+	TAccessoryMap::iterator it = m_accessories.find(name);
 	if (it != m_accessories.end())
 	{
 		m_pEntitySystem->RemoveEntity(it->second);
@@ -149,7 +149,7 @@ void CItem::AttachAccessory(const ItemString& name, bool attach, bool noanim, bo
 			if (!initialSetup)
 				pAccessory->m_bonusAccessoryAmmo.clear();
 
-			SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper, pAccessory->GetEntity(), eIGS_FirstPerson, 0);
+			SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str(), pAccessory->GetEntity(), eIGS_FirstPerson, 0);
 			SetBusy(true);
 
 			AttachAction action(pAccessory, params);
@@ -223,12 +223,12 @@ void CItem::AttachAccessoryPlaceHolder(const ItemString& name, bool attach)
 
 	if (attach)
 	{
-		SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper, pPlaceHolder->GetEntity(), eIGS_FirstPerson, 0);
+		SetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str(), pPlaceHolder->GetEntity(), eIGS_FirstPerson, 0);
 		PlayLayer(params->attach_layer, eIPAF_FirstPerson, false);
 	}
 	else
 	{
-		ResetCharacterAttachment(eIGS_FirstPerson, params->attach_helper);
+		ResetCharacterAttachment(eIGS_FirstPerson, params->attach_helper.c_str());
 		StopLayer(params->attach_layer, eIPAF_FirstPerson, false);
 	}
 }
@@ -240,7 +240,7 @@ CItem* CItem::GetAccessoryPlaceHolder(const ItemString& name)
 	if (!pInventory)
 		return 0;
 
-	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 	int slotId = pInventory->FindNext(pClass, 0, -1, false);
 	if (slotId >= 0)
 		return static_cast<CItem*>(m_pItemSystem->GetItem(pInventory->GetItem(slotId)));
@@ -251,7 +251,7 @@ CItem* CItem::GetAccessoryPlaceHolder(const ItemString& name)
 //------------------------------------------------------------------------
 CItem* CItem::GetAccessory(const ItemString& name)
 {
-	TAccessoryMap::iterator it = m_accessories.find(CONST_TEMPITEM_STRING(name));
+	TAccessoryMap::iterator it = m_accessories.find(name);
 	if (it != m_accessories.end())
 		return static_cast<CItem*>(m_pItemSystem->GetItem(it->second));
 
@@ -261,7 +261,7 @@ CItem* CItem::GetAccessory(const ItemString& name)
 //------------------------------------------------------------------------
 CItem::SAccessoryParams* CItem::GetAccessoryParams(const ItemString& name)
 {
-	TAccessoryParamsMap::iterator it = m_sharedparams->accessoryparams.find(CONST_TEMPITEM_STRING(name));
+	TAccessoryParamsMap::iterator it = m_sharedparams->accessoryparams.find(name);
 	if (it != m_sharedparams->accessoryparams.end())
 		return &it->second;
 
@@ -334,7 +334,7 @@ void CItem::ReAttachAccessory(EntityId id)
 	IEntity* pEntity = GetISystem()->GetIEntitySystem()->GetEntity(id);
 	if (pEntity)
 	{
-		ItemString className = pEntity->GetClass()->GetName();
+		const ItemString className(pEntity->GetClass()->GetName());
 		m_accessories[className] = id;
 		ReAttachAccessory(className);
 	}
@@ -348,7 +348,7 @@ void CItem::AccessoriesChanged()
 //------------------------------------------------------------------------
 void CItem::SwitchAccessory(const ItemString& accessory)
 {
-	GetGameObject()->InvokeRMI(SvRequestAttachAccessory(), RequestAttachAccessoryParams(accessory), eRMI_ToServer);
+	GetGameObject()->InvokeRMI(SvRequestAttachAccessory(), RequestAttachAccessoryParams(accessory.c_str()), eRMI_ToServer);
 }
 
 //------------------------------------------------------------------------
@@ -388,20 +388,18 @@ void CItem::DoSwitchAccessory(const ItemString& inAccessory)
 //------------------------------------------------------------------------
 class ScheduleAttachClassItem
 {
+	ItemString m_name;
+	bool m_attach = false;
+
 public:
-	ScheduleAttachClassItem(const char* _name, bool _attach)
+	ScheduleAttachClassItem(const ItemString& name, bool attach) : m_name(name), m_attach(attach)
 	{
-		name = _name;
-		attach = _attach;
 	}
+
 	virtual void execute(CItem* item)
 	{
-		item->AttachAccessory(name, attach, true);
-	};
-
-private:
-	const char* name;
-	bool attach;
+		item->AttachAccessory(m_name, m_attach, true);
+	}
 };
 
 void CItem::ScheduleAttachAccessory(const ItemString& accessoryName, bool attach)
@@ -467,7 +465,7 @@ void CItem::PatchInitialSetup()
 		{
 			//Add to initial setup
 			const char* name = m_properties.initialSetup.substr(lastPos, pos - lastPos).c_str();
-			m_initialSetup.push_back(name);
+			m_initialSetup.push_back(ItemString(name));
 
 			lastPos = m_properties.initialSetup.find_first_not_of(",", pos);
 			pos = m_properties.initialSetup.find_first_of(",", lastPos);

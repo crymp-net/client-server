@@ -73,7 +73,6 @@ public:
 		}
 	}
 
-#ifdef ITEM_USE_SHAREDSTRING
 	void Read(const char *name, ItemString &value)
 	{
 		const IItemParamsNode *node = FindNode(name);
@@ -84,7 +83,6 @@ public:
 				value=v;
 		}
 	}
-#endif
 
 	void Read(const char *name, const char *&value)
 	{

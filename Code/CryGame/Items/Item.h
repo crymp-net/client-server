@@ -995,7 +995,7 @@ public:
 	// resource
 	virtual bool SetGeometry(int slot, const ItemString& name, const Vec3& poffset=Vec3(0,0,0), const Ang3& aoffset=Ang3(0,0,0), float scale=1.0f, bool forceReload=false);
 	void SetDefaultIdleAnimation(int slot, const ItemString& actionName);
-	const char *GetDefaultIdleAnimation(int slot) { return m_idleAnimation[slot]; };
+	const char *GetDefaultIdleAnimation(int slot) { return m_idleAnimation[slot].c_str(); };
 	void ForceSkinning(bool always);
 	void EnableHiddenSkinning(bool force);
 

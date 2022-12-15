@@ -1,180 +1,134 @@
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2006.
-// -------------------------------------------------------------------------
-//  File name:   ItemString.h
-//  Version:     v1.00
-//  Created:     20/02/2007 by AlexL
-//  Compilers:   Visual Studio.NET
-//  Description: Special version of CCryName
-// -------------------------------------------------------------------------
-//  History:
-//
-////////////////////////////////////////////////////////////////////////////
-#ifndef __ITEMSTRING_H__
-#define __ITEMSTRING_H__
+#pragma once
 
-#if _MSC_VER > 1000
-# pragma once
-#endif
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CrySystem/CryLog.h"
 
+//#include <concepts>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 
-namespace SharedString
+class ItemString
 {
-	class CNameTable
+	class NameTable
 	{
+/*
+		template<typename T>
+		concept String = std::same_as<T, std::string> || std::same_as<T, std::string_view>;
+
+		struct Hash
+		{
+			using is_transparent = void;
+
+			template<String T>
+			std::size_t operator()(const T& name) const
+			{
+				return std::hash<T>{}(name);
+			}
+		};
+
+		struct KeyEqual
+		{
+			using is_transparent = void;
+
+			bool operator()(const String auto& a, const String auto& b) const
+			{
+				return a == b;
+			}
+		};
+
+		std::unordered_set<std::string, Hash, KeyEqual> m_table;
+*/
 		std::unordered_set<std::string> m_table;
 
 	public:
-		CNameTable() = default;
+		NameTable() = default;
 
-		// Finds an existing name table entry, or creates a new one if not found.
-		const char *GetEntry(const char *str, size_t & length)
-		{
-			auto [it, isNew] = m_table.emplace(str);
+		std::string_view GetEntry(const std::string_view& name);
 
-			length = it->length();
-			return it->c_str();
-		}
-
-		void Dump()
-		{
-			CryLogAlways("NameTable: %zu entries", m_table.size());
-
-			for (const std::string & entry : m_table)
-			{
-				CryLogAlways("'%s'", entry.c_str());
-			}
-		}
+		void DumpToLog();
 	};
 
-	///////////////////////////////////////////////////////////////////////////////
-	// Class CSharedString.
-	//////////////////////////////////////////////////////////////////////////
-	class CSharedString
+	static NameTable& GetNameTable()
 	{
-		const char *m_str = nullptr;
-		size_t m_length = 0;
+		static NameTable table;
+		return table;
+	}
 
-		static CNameTable & GetNameTable()
-		{
-			static CNameTable table;
-			return table;
-		}
+	std::string_view m_name;
 
-	public:
-		CSharedString() = default;
+public:
+	ItemString()
+	{
+		clear();
+	}
 
-		CSharedString(const char *str)
-		{
-			if (str && *str)
-			{
-				m_str = GetNameTable().GetEntry(str, m_length);
-			}
-		}
+	explicit ItemString(const char* name)
+	{
+		m_name = GetNameTable().GetEntry(name ? name : "");
+	}
 
-		CSharedString(const CSharedString & other)
-		{
-			m_str = other.m_str;
-			m_length = other.m_length;
-		}
+	ItemString& operator=(const char* name)
+	{
+		m_name = GetNameTable().GetEntry(name ? name : "");
 
-		CSharedString & operator=(const CSharedString & other)
-		{
-			if (m_str != other.m_str)
-			{
-				m_str = other.m_str;
-				m_length = other.m_length;
-			}
+		return *this;
+	}
 
-			return *this;
-		}
+	bool operator==(const ItemString& other) const
+	{
+		return m_name.data() == other.m_name.data();
+	}
 
-		CSharedString & operator=(const char *str)
-		{
-			if (str && *str)
-			{
-				m_str = GetNameTable().GetEntry(str, m_length);
-			}
-			else
-			{
-				reset();
-			}
+	bool operator!=(const ItemString& other) const
+	{
+		return !(*this == other);
+	}
 
-			return *this;
-		}
+	bool operator==(const char* name) const
+	{
+		return name && std::string_view(name) == m_name;
+	}
 
-		//! cast to C string operator.
-		operator const char*() const
-		{
-			return c_str();
-		}
+	bool operator!=(const char* name) const
+	{
+		return !(*this == name);
+	}
 
-		explicit operator bool() const
-		{
-			return !empty();
-		}
+	bool operator<(const ItemString& other) const
+	{
+		// NOTE: this is broken on purpose for maximum performance
+		return m_name.data() < other.m_name.data();
+	}
 
+	bool empty() const
+	{
+		return m_name.empty();
+	}
 
-		bool operator==(const CSharedString & other) const
-		{
-			return m_str == other.m_str;
-		}
+	void clear()
+	{
+		m_name = GetNameTable().GetEntry("");
+	}
 
-		bool operator!=(const CSharedString & other) const
-		{
-			return m_str != other.m_str;
-		}
+	const char* c_str() const
+	{
+		return m_name.data();
+	}
 
-		bool operator==(const char *str) const
-		{
-			return m_str && strcmp(m_str, str) == 0;
-		}
+	std::size_t length() const
+	{
+		return m_name.length();
+	}
 
-		bool operator!=(const char *str) const
-		{
-			return !m_str || strcmp(m_str, str) != 0;
-		}
+	static void DumpNameTableToLog()
+	{
+		GetNameTable().DumpToLog();
+	}
+};
 
-		bool empty() const
-		{
-			return length() == 0;
-		}
-
-		void reset()
-		{
-			m_str = nullptr;
-			m_length = 0;
-		}
-
-		void clear()
-		{
-			reset();
-		}
-
-		const char *c_str() const
-		{
-			return (m_str) ? m_str : "";
-		}
-
-		int length() const
-		{
-			return m_length;
-		}
-
-		static void DumpNameTable()
-		{
-			GetNameTable().Dump();
-		}
-	};
+template<>
+inline bool ICrySizer::Add<ItemString>(const ItemString& object)
+{
+	return AddObject(object.c_str(), object.length());
 }
-
-#define ITEM_USE_SHAREDSTRING
-
-typedef SharedString::CSharedString ItemString;
-#define CONST_TEMPITEM_STRING(a) a
-
-#endif

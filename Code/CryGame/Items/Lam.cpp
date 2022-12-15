@@ -149,7 +149,7 @@ void CLam::ActivateLaser(bool activate, bool aiRequest /* = false */)
 		bool tp = pOwnerActor->IsThirdPerson();
 		if (m_laserHelperFP.empty())
 		{
-			SAccessoryParams* params = pParent->GetAccessoryParams(GetEntity()->GetClass()->GetName());
+			SAccessoryParams* params = pParent->GetAccessoryParams(ItemString(GetEntity()->GetClass()->GetName()));
 			if (!params)
 				return;
 			m_laserHelperFP.clear();
@@ -351,7 +351,7 @@ void CLam::AttachLAMLight(bool attach, CItem* pLightAttach, eGeometrySlot slot)
 
 		if (this != pLightAttach)
 		{
-			SAccessoryParams* params = pLightAttach->GetAccessoryParams(GetEntity()->GetClass()->GetName());
+			SAccessoryParams* params = pLightAttach->GetAccessoryParams(ItemString(GetEntity()->GetClass()->GetName()));
 			if (!params)
 				return;
 
@@ -392,7 +392,7 @@ void CLam::AttachLAMLight(bool attach, CItem* pLightAttach, eGeometrySlot slot)
 			}
 		}
 
-		m_lightID[id] = pLightAttach->AttachLightEx(slot, 0, true, fakeLight, castShadows, pCasterException, m_lamparams.light_range[id], color, specular, m_lamparams.light_texture[id], m_lamparams.light_fov[id], helper.c_str(), localOffset, dir, m_lamparams.light_material[id].c_str(), m_lamparams.light_hdr_dyn[id]);
+		m_lightID[id] = pLightAttach->AttachLightEx(slot, 0, true, fakeLight, castShadows, pCasterException, m_lamparams.light_range[id], color, specular, m_lamparams.light_texture[id].c_str(), m_lamparams.light_fov[id], helper.c_str(), localOffset, dir, m_lamparams.light_material[id].c_str(), m_lamparams.light_hdr_dyn[id]);
 
 		if (m_lightID[id])
 			++s_lightCount;
@@ -562,7 +562,7 @@ void CLam::ActivateTPLaser(bool activate)
 		if (m_laserEffectSlot > 0)
 			DrawSlot(m_laserEffectSlot, true);
 		else
-			m_laserEffectSlot = GetEntity()->LoadGeometry(eIGS_ThirdPersonAux, m_lamparams.laser_geometry_tp);
+			m_laserEffectSlot = GetEntity()->LoadGeometry(eIGS_ThirdPersonAux, m_lamparams.laser_geometry_tp.c_str());
 	}
 	else
 	{

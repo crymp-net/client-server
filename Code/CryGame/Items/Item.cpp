@@ -138,7 +138,7 @@ CItem::~CItem()
 			{
 				if (GetEntityId() == it->second)
 				{
-					pParent->AttachAccessory(it->first.c_str(), false, true);
+					pParent->AttachAccessory(it->first, false, true);
 					break;
 				}
 			}
@@ -729,11 +729,7 @@ void CItem::FullSerialize(TSerialize ser)
 			ser.BeginGroup("Accessory");
 			ser.Value("Name", name);
 			ser.Value("Id", id);
-#ifndef ITEM_USE_SHAREDSTRING
-			m_accessories[name] = id;
-#else
 			m_accessories[ItemString(name)] = id;
-#endif
 			ser.EndGroup();
 		}
 	}
@@ -966,7 +962,7 @@ void CItem::SerializeLTL(TSerialize ser)
 			ser.EndGroup();
 
 			if (pActor)
-				AddAccessory(name.c_str());
+				AddAccessory(ItemString(name));
 		}
 		if (attachmentAmount)
 		{
@@ -1150,14 +1146,9 @@ void CItem::Select(bool select)
 				speedOverride = 1.75f;
 		}
 
-		const char* select_animation;
-
-		//Only the LAW has 2 different select animations
-		if (m_params.has_first_select && m_stats.first_selection)
-			select_animation = g_pItemStrings->first_select;
-		else
-			select_animation = g_pItemStrings->select;
-
+		// only LAW has 2 different select animations
+		const ItemString& select_animation = (m_params.has_first_select && m_stats.first_selection)
+			? g_pItemStrings->first_select : g_pItemStrings->select;
 
 		if (speedOverride > 0.0f)
 			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend, speedOverride);
@@ -1208,7 +1199,7 @@ void CItem::Select(bool select)
 		// set no-weapon pose on actor (except for the Offhand)
 
 		if (pOwner && (GetEntity()->GetClass() != CItem::sOffHandClass) && g_pItemStrings)
-			pOwner->PlayAction(g_pItemStrings->idle, ITEM_DESELECT_POSE);
+			pOwner->PlayAction(g_pItemStrings->idle.c_str(), ITEM_DESELECT_POSE);
 
 		EnableUpdate(false);
 
@@ -1746,7 +1737,7 @@ void CItem::AttachArms(bool attach, bool shadow)
 		return;
 
 	if (attach)
-		SetGeometry(eIGS_Arms, 0);
+		SetGeometry(eIGS_Arms, ItemString());
 	else
 		ResetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME);
 
@@ -2837,7 +2828,7 @@ void CItem::TakeAccessories(EntityId receiver)
 		for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
 		{
 			const EntityId id = it->second;
-			const char* name = it->first;
+			const char* name = it->first.c_str();
 			if (!pInventory->GetCountOfClass(name))
 				m_pItemSystem->GiveItem(pActor, name, false, false, false);
 		}

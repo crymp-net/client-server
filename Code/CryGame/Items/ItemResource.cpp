@@ -371,24 +371,20 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 	{
 	case eIGS_Arms:
 	{
-		if (!name || forceReload)
+		if (name.empty() || forceReload)
 		{
 			GetEntity()->FreeSlot(slot);
-#ifndef ITEM_USE_SHAREDSTRING
-			m_geometry[slot].resize(0);
-#else
-			m_geometry[slot].reset();
-#endif
+			m_geometry[slot].clear();
 		}
 
 		ResetCharacterAttachment(eIGS_FirstPerson, ITEM_ARMS_ATTACHMENT_NAME);
 
 		ICharacterInstance* pCharacter = 0;
 
-		if (name && name[0])
+		if (!name.empty())
 		{
 			if (name != m_geometry[slot])
-				GetEntity()->LoadCharacter(slot, name);
+				GetEntity()->LoadCharacter(slot, name.c_str());
 			DrawSlot(eIGS_Arms, false);
 
 			pCharacter = GetEntity()->GetCharacter(eIGS_Arms);
@@ -414,27 +410,23 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 	case eIGS_ThirdPerson:
 	default:
 	{
-		if (!name || forceReload)
+		if (name.empty() || forceReload)
 		{
 			GetEntity()->FreeSlot(slot);
-#ifndef ITEM_USE_SHAREDSTRING
-			m_geometry[slot].resize(0);
-#else
-			m_geometry[slot].reset();
-#endif
+			m_geometry[slot].clear();
 		}
 
 		DestroyAttachmentHelpers(slot);
 
-		if (name && name[0])
+		if (!name.empty())
 		{
 			if (m_geometry[slot] != name)
 			{
 				const char* ext = PathUtil::GetExt(name.c_str());
 				if ((_stricmp(ext, "chr") == 0) || (_stricmp(ext, "cdf") == 0) || (_stricmp(ext, "cga") == 0))
-					GetEntity()->LoadCharacter(slot, name, 0);
+					GetEntity()->LoadCharacter(slot, name.c_str(), 0);
 				else
-					GetEntity()->LoadGeometry(slot, name, 0, 0);
+					GetEntity()->LoadGeometry(slot, name.c_str(), 0, 0);
 
 				changedfp = slot == eIGS_FirstPerson;
 			}
@@ -481,7 +473,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 		GetEntity()->InvalidateTM();
 	}
 
-	m_geometry[slot] = name ? name : "";
+	m_geometry[slot] = name;
 
 	ReAttachAccessories();
 
@@ -491,7 +483,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 //------------------------------------------------------------------------
 void CItem::SetDefaultIdleAnimation(int slot, const ItemString& actionName)
 {
-	TActionMap::iterator it = m_sharedparams->actions.find(CONST_TEMPITEM_STRING(actionName));
+	TActionMap::iterator it = m_sharedparams->actions.find(actionName);
 	if (it == m_sharedparams->actions.end())
 	{
 		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
@@ -643,7 +635,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 	if (!m_enableAnimations)
 		return -1;
 
-	TActionMap::iterator it = m_sharedparams->actions.find(CONST_TEMPITEM_STRING(actionName));
+	TActionMap::iterator it = m_sharedparams->actions.find(actionName);
 	if (it == m_sharedparams->actions.end())
 	{
 		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
@@ -732,7 +724,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 
 				if (action.sound[sid].isstatic)
 				{
-					TInstanceActionMap::iterator iit = m_instanceActions.find(CONST_TEMPITEM_STRING(actionName));
+					TInstanceActionMap::iterator iit = m_instanceActions.find(actionName);
 					if (iit == m_instanceActions.end())
 					{
 						std::pair<TInstanceActionMap::iterator, bool> insertion = m_instanceActions.insert(TInstanceActionMap::value_type(actionName, SInstanceAction()));
@@ -742,7 +734,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 						pInstanceAudio = &iit->second.sound[sid];
 				}
 
-				if (pInstanceAudio && (pInstanceAudio->id != INVALID_SOUNDID) && (name != pInstanceAudio->static_name))
+				if (pInstanceAudio && (pInstanceAudio->id != INVALID_SOUNDID) && pInstanceAudio->static_name != name)
 					ReleaseStaticSound(pInstanceAudio);
 
 				if (!pInstanceAudio || pInstanceAudio->id == INVALID_SOUNDID)
@@ -974,7 +966,7 @@ void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool
 //------------------------------------------------------------------------
 void CItem::PlayLayer(const ItemString& layerName, int flags, bool record)
 {
-	TLayerMap::iterator it = m_sharedparams->layers.find(CONST_TEMPITEM_STRING(layerName));
+	TLayerMap::iterator it = m_sharedparams->layers.find(layerName);
 	if (it == m_sharedparams->layers.end())
 		return;
 
@@ -1022,7 +1014,7 @@ void CItem::PlayLayer(const ItemString& layerName, int flags, bool record)
 
 	if (record)
 	{
-		TActiveLayerMap::iterator ait = m_activelayers.find(CONST_TEMPITEM_STRING(layerName));
+		TActiveLayerMap::iterator ait = m_activelayers.find(layerName);
 		if (ait == m_activelayers.end())
 			m_activelayers.insert(TActiveLayerMap::value_type(layerName, flags));
 	}
@@ -1031,7 +1023,7 @@ void CItem::PlayLayer(const ItemString& layerName, int flags, bool record)
 //------------------------------------------------------------------------
 void CItem::StopLayer(const ItemString& layerName, int flags, bool record)
 {
-	TLayerMap::iterator it = m_sharedparams->layers.find(CONST_TEMPITEM_STRING(layerName));
+	TLayerMap::iterator it = m_sharedparams->layers.find(layerName);
 	if (it == m_sharedparams->layers.end())
 		return;
 
@@ -1047,7 +1039,7 @@ void CItem::StopLayer(const ItemString& layerName, int flags, bool record)
 
 	if (record)
 	{
-		TActiveLayerMap::iterator ait = m_activelayers.find(CONST_TEMPITEM_STRING(layerName));
+		TActiveLayerMap::iterator ait = m_activelayers.find(layerName);
 		if (ait != m_activelayers.end())
 			m_activelayers.erase(ait);
 	}
@@ -1287,11 +1279,7 @@ void CItem::ReleaseStaticSound(SInstanceAudio* sound)
 			else
 				pSoundProxy->StopSound(sound->id);
 			sound->id = INVALID_SOUNDID;
-#ifndef ITEM_USE_SHAREDSTRING
-			sound->static_name.resize(0);
-#else
-			sound->static_name.reset();
-#endif
+			sound->static_name.clear();
 		}
 	}
 }

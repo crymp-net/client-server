@@ -258,7 +258,7 @@ void CGunTurret::OnReset()
 
 	if (m_turretparams.light_fov > 0.f)
 	{
-		m_lightId = AttachLight(eIGS_ThirdPerson, 0, true, m_turretparams.mg_range, m_searchparams.light_color * m_searchparams.light_diffuse_mul, 1.f / m_searchparams.light_diffuse_mul, m_searchparams.light_texture, m_turretparams.light_fov, m_searchparams.light_helper, Vec3(0, 0, 0), Vec3(-1, 0, 0), m_searchparams.light_material, m_searchparams.light_hdr_dyn);
+		m_lightId = AttachLight(eIGS_ThirdPerson, 0, true, m_turretparams.mg_range, m_searchparams.light_color * m_searchparams.light_diffuse_mul, 1.f / m_searchparams.light_diffuse_mul, m_searchparams.light_texture.c_str(), m_turretparams.light_fov, m_searchparams.light_helper.c_str(), Vec3(0, 0, 0), Vec3(-1, 0, 0), m_searchparams.light_material.c_str(), m_searchparams.light_hdr_dyn);
 		m_lightSound = PlayAction(g_pItemStrings->use_light);
 	}
 
@@ -324,21 +324,21 @@ void CGunTurret::ReadProperties(IScriptTable* pProperties)
 		const char* model = 0;
 		if (GetEntityProperty("objBase", model) && model && *model)
 		{
-			SetGeometry(eIGS_Aux0, model);
+			SetGeometry(eIGS_Aux0, ItemString(model));
 		}
 
 		if (GetEntityProperty("objModel", model) && model && *model)
 		{
-			SetGeometry(eIGS_ThirdPerson, model);
+			SetGeometry(eIGS_ThirdPerson, ItemString(model));
 		}
 
 		if (GetEntityProperty("objBarrel", model) && model && *model)
 		{
-			SetGeometry(eIGS_Aux1, model);
+			SetGeometry(eIGS_Aux1, ItemString(model));
 		}
 
 		if (GetEntityProperty("objDestroyed", model) && model && *model)
-			SetGeometry(eIGS_Destroyed, model);
+			SetGeometry(eIGS_Destroyed, ItemString(model));
 	}
 }
 

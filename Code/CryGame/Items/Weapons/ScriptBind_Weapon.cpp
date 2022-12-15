@@ -293,22 +293,20 @@ int CScriptBind_Weapon::ModifyCommit(IFunctionHandler* pH)
 
 class ScheduleAttachClass
 {
+	CWeapon* m_weapon = nullptr;
+	ItemString m_className;
+	bool m_attach = false;
+
 public:
-	ScheduleAttachClass(CWeapon* wep, const char* cname, bool attch)
+	ScheduleAttachClass(CWeapon* weapon, const char* className, bool attach)
+	: m_weapon(weapon), m_className(className), m_attach(attach)
 	{
-		m_pWeapon = wep;
-		m_className = cname;
-		m_attach = attch;
 	}
-	void execute(CItem* item) {
-		//CryLogAlways("attaching %s", _className);
-		m_pWeapon->AttachAccessory(m_className, m_attach, false);
-		//delete this;
+
+	void execute(CItem* item)
+	{
+		m_weapon->AttachAccessory(m_className, m_attach, false);
 	}
-private:
-	CWeapon* m_pWeapon;
-	const char* m_className;
-	bool m_attach;
 };
 
 int CScriptBind_Weapon::ScheduleAttach(IFunctionHandler* pH, const char* className, bool attach)
@@ -328,7 +326,7 @@ int CScriptBind_Weapon::SupportsAccessory(IFunctionHandler* pH, const char* acce
 	if (!pWeapon)
 		return pH->EndFunction();
 
-	CItem::SAccessoryParams* params = pWeapon->GetAccessoryParams(accessoryName);
+	CItem::SAccessoryParams* params = pWeapon->GetAccessoryParams(ItemString(accessoryName));
 	return pH->EndFunction(params != 0);
 }
 
@@ -338,7 +336,7 @@ int CScriptBind_Weapon::GetAccessory(IFunctionHandler* pH, const char* accessory
 	if (!pWeapon)
 		return pH->EndFunction();
 
-	CItem* pItem = pWeapon->GetAccessory(accessoryName);
+	CItem* pItem = pWeapon->GetAccessory(ItemString(accessoryName));
 
 	if (!pItem)
 		return 0;
@@ -360,7 +358,7 @@ int CScriptBind_Weapon::AttachAccessory(IFunctionHandler* pH, const char* classN
 		return pH->EndFunction();
 
 	if (className)
-		pWeapon->AttachAccessory(className, attach, true, force);
+		pWeapon->AttachAccessory(ItemString(className), attach, true, force);
 
 	return pH->EndFunction();
 }
@@ -372,7 +370,7 @@ int CScriptBind_Weapon::SwitchAccessory(IFunctionHandler* pH, const char* classN
 		return pH->EndFunction();
 
 	if (className)
-		pWeapon->SwitchAccessory(className);
+		pWeapon->SwitchAccessory(ItemString(className));
 
 	return pH->EndFunction();
 }
@@ -414,11 +412,13 @@ int CScriptBind_Weapon::AttachAccessoryPlaceHolder(IFunctionHandler* pH, SmartSc
 
 	if (accessoryName)
 	{
+		const ItemString accessoryNameString(accessoryName);
+
 		//CryLogAlways("got name: %s", accessoryName);
-		if (pWeapon->GetAccessoryPlaceHolder(accessoryName))
+		if (pWeapon->GetAccessoryPlaceHolder(accessoryNameString))
 		{
 			//CryLogAlways("found accessory place holder");
-			pWeapon->AttachAccessoryPlaceHolder(accessoryName, attach);
+			pWeapon->AttachAccessoryPlaceHolder(accessoryNameString, attach);
 		}
 		else
 		{
@@ -455,7 +455,7 @@ int CScriptBind_Weapon::AttachAccessoryPlaceHolder(IFunctionHandler* pH, SmartSc
 					//	CryLogAlways("none of these should be %s", attachment->GetName());
 					//	CryLogAlways(" %s", cur->GetName());
 					//}
-					pWeapon->AttachAccessoryPlaceHolder(accessoryName, attach);
+					pWeapon->AttachAccessoryPlaceHolder(accessoryNameString, attach);
 					pInventory->RemoveItem(attachment->GetId());
 
 				}

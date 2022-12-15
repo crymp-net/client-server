@@ -134,7 +134,7 @@ void CCharge::StopFire()
 		{
 			ChargedShoot();
 		}
-		m_pWeapon->PlayAction(m_chargeactions.uncharge.c_str());
+		m_pWeapon->PlayAction(m_chargeactions.uncharge);
 		m_charged = 0;
 		m_charging = false;
 		m_chargeTimer = 0.0f;
@@ -152,7 +152,7 @@ bool CCharge::Shoot(bool resetAnimation, bool autoreload /* =true */, bool noSou
 	{
 		m_charging = true;
 		m_chargeTimer = m_chargeparams.time;
-		m_pWeapon->PlayAction(m_chargeactions.charge.c_str(), 0, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
+		m_pWeapon->PlayAction(m_chargeactions.charge, 0, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
 
 		ChargeEffect(true);
 	}

@@ -500,7 +500,7 @@ void CIronSight::LeaveZoom(float time, bool smooth)
 //------------------------------------------------------------------------
 void CIronSight::ResetTurnOff()
 {
-	static ItemString idle = "idle";
+	static ItemString idle("idle");
 	m_savedFoVScale = 0.0f;
 	m_pWeapon->StopLayer(m_zoomparams.layer, CItem::eIPAF_Default | CItem::eIPAF_NoBlend);
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idle);
