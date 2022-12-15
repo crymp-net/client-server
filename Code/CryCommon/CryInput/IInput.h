@@ -89,10 +89,6 @@ struct TKeyName
 	bool operator!=( const char *str ) const { return _stricmp(key,str) != 0; }
 	const char *c_str() const { return key; }
 };
-inline bool operator==( const char *str,TKeyName &n ) { return n == str; }
-inline bool operator!=( const char *str,TKeyName &n ) { return n != str; }
-inline bool operator<( const char *str,TKeyName &n ) { return n < str; }
-inline bool operator>( const char *str,TKeyName &n ) { return n > str; }
 
 #define KI_KEYBOARD_BASE	0
 #define KI_MOUSE_BASE			256
