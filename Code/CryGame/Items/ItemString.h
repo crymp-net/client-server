@@ -3,7 +3,6 @@
 #include "CryCommon/CryCore/CrySizer.h"
 #include "CrySystem/CryLog.h"
 
-//#include <concepts>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -12,15 +11,11 @@ class ItemString
 {
 	class NameTable
 	{
-/*
-		template<typename T>
-		concept String = std::same_as<T, std::string> || std::same_as<T, std::string_view>;
-
 		struct Hash
 		{
 			using is_transparent = void;
 
-			template<String T>
+			template<typename T>
 			std::size_t operator()(const T& name) const
 			{
 				return std::hash<T>{}(name);
@@ -31,15 +26,13 @@ class ItemString
 		{
 			using is_transparent = void;
 
-			bool operator()(const String auto& a, const String auto& b) const
+			bool operator()(const auto& a, const auto& b) const
 			{
 				return a == b;
 			}
 		};
 
 		std::unordered_set<std::string, Hash, KeyEqual> m_table;
-*/
-		std::unordered_set<std::string> m_table;
 
 	public:
 		NameTable() = default;
