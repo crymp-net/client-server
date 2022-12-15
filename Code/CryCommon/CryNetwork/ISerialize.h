@@ -137,14 +137,10 @@ struct SSerializeString
 {
 	AUTO_STRUCT_INFO
 
-	SSerializeString() {};
+	SSerializeString() = default;
 	SSerializeString( const SSerializeString &src ) { m_str.assign(src.c_str()); };
+	explicit SSerializeString( const char *s ) : m_str(s) { };
 	explicit SSerializeString( const char *sbegin,const char *send ) : m_str(sbegin,send) {};
-	~SSerializeString() {}
-
-	// Casting to const char*
-	SSerializeString( const char *s ) : m_str(s) { };
-	//operator const char* () const { return m_str; }
 
 	SSerializeString& operator =( const SSerializeString &src ) { m_str.assign(src.c_str()); return *this; }
 	SSerializeString& operator =( const char *src ) { m_str.assign(src); return *this; }
@@ -160,8 +156,6 @@ struct SSerializeString
 	{
 		m_str.assign( s.begin(),s.size() );
 	}
-
-	operator const string () const { return m_str; }
 
 private:
 	string m_str;
