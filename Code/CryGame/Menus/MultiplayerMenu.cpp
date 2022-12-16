@@ -529,10 +529,9 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 		std::map<string, wstring>::const_iterator it = m_gameTypes.find(gt);
 		if (it == m_gameTypes.end())
 		{
-			CryFixedStringT<128>  cType;
-			cType = "@ui_rules_";
+			CryFixedStringT<128> cType("@ui_rules_");
 			cType += gt;
-			if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(cType, m_tempWString) == false)
+			if (gEnv->pSystem->GetLocalizationManager()->LocalizeLabel(cType.c_str(), m_tempWString) == false)
 			{
 				SUIWideString mode(gt);
 				m_tempWString = mode.c_str();

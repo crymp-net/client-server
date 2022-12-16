@@ -268,7 +268,7 @@ public:
 	CryStackStringT( const _Self& str );
 	CryStackStringT( const _Self& str,size_type nOff,size_type nCount );
 	explicit CryStackStringT( value_type ch, size_type nRepeat = 1 );
-	CryStackStringT( const_str str );
+	explicit CryStackStringT( const_str str );
 	CryStackStringT( const_str str, size_type nLength );
 	CryStackStringT( const_iterator _First,const_iterator _Last );
 	~CryStackStringT();
@@ -313,9 +313,6 @@ public:
 
 	iterator begin() { return m_str; };
 	iterator end() { return m_str+length(); };
-
-	//! cast to C string operator.
-	operator const_str() const { return m_str; }
 
 	//! cast to C string.
 	const value_type *c_str() const { return m_str; }
@@ -1865,7 +1862,7 @@ public:
 	CryFixedStringT( const _Self& str ) : _parentType(str) {}
 	CryFixedStringT( const _Self& str,size_type nOff,size_type nCount ) : _parentType(str, nOff, nCount) {}
 	explicit CryFixedStringT( value_type ch, size_type nRepeat = 1 ) : _parentType(ch, nRepeat) {}
-	CryFixedStringT( const_str str ) : _parentType (str) {}
+	explicit CryFixedStringT( const_str str ) : _parentType (str) {}
 	CryFixedStringT( const_str str, size_type nLength ) : _parentType(str, nLength) {}
 	CryFixedStringT( const_iterator _First,const_iterator _Last ) : _parentType(_First, _Last) {}
 
@@ -1903,7 +1900,7 @@ public:
 	CryFixedWStringT( const _Self& str ) : _parentType(str) {}
 	CryFixedWStringT( const _Self& str,size_type nOff,size_type nCount ) : _parentType(str, nOff, nCount) {}
 	explicit CryFixedWStringT( value_type ch, size_type nRepeat = 1 ) : _parentType(ch, nRepeat) {}
-	CryFixedWStringT( const_str str ) : _parentType (str) {}
+	explicit CryFixedWStringT( const_str str ) : _parentType (str) {}
 	CryFixedWStringT( const_str str, size_type nLength ) : _parentType(str, nLength) {}
 	CryFixedWStringT( const_iterator _First,const_iterator _Last ) : _parentType(_First, _Last) {}
 

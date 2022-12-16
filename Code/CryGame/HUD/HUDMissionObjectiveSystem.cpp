@@ -70,9 +70,9 @@ void CHUDMissionObjectiveSystem::LoadLevelObjectives(bool forceReloading)
 		m_currentMissionObjectives.clear();
 		CryFixedStringT<32> filename;
 
-		filename = "Libs/UI/Objectives_new.xml";
+		filename.assign("Libs/UI/Objectives_new.xml");
 		if(gEnv->bMultiplayer)
-			filename = "Libs/UI/MP_Objectives.xml";
+			filename.assign("Libs/UI/MP_Objectives.xml");
 		LoadLevelObjectives(filename.c_str());
 
 		//additional objectives
@@ -81,14 +81,14 @@ void CHUDMissionObjectiveSystem::LoadLevelObjectives(bool forceReloading)
 			char *levelName;
 			char *levelPath;
 			g_pGame->GetIGameFramework()->GetEditorLevel(&levelName, &levelPath);
-			filename = levelPath;
+			filename.assign(levelPath);
 		}
 		else
 		{
 			ILevel *pLevel = g_pGame->GetIGameFramework()->GetILevelSystem()->GetCurrentLevel();
 			if(!pLevel)
 				return;
-			filename = pLevel->GetLevelInfo()->GetPath();
+			filename.assign(pLevel->GetLevelInfo()->GetPath());
 		}
 		filename.append("/objectives.xml");
 		LoadLevelObjectives(filename.c_str());

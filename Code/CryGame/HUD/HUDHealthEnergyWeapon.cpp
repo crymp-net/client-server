@@ -283,7 +283,7 @@ void CHUD::UpdatePlayerAmmo()
 				{
 					if (pFm->GetAmmoType())
 					{
-						grenadeType = pFm->GetAmmoType()->GetName();
+						grenadeType.assign(pFm->GetAmmoType()->GetName());
 						if (pPlayer)
 							grenades = pPlayer->GetInventory()->GetAmmoCount(pFm->GetAmmoType());
 					}

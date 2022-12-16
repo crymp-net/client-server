@@ -1470,7 +1470,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 
 			CryFixedStringT<64> cmd("team ");
 			cmd.append(m_pGameRules->GetTeamName(lt));
-			gEnv->pConsole->ExecuteString(cmd);
+			gEnv->pConsole->ExecuteString(cmd.c_str());
 
 			if (GetModalHUD() == &m_animTeamSelection)
 			{

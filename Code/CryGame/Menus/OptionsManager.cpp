@@ -717,14 +717,14 @@ void COptionsManager::SetVideoMode(const char* params)
 	int pos = resolution.find('x');
 	if (pos != CryFixedStringT<64>::npos)
 	{
-		CryFixedStringT<64> width = "r_width ";
+		CryFixedStringT<64> width("r_width ");
 		width.append(resolution.substr(0, pos));
-		CryFixedStringT<64> height = "r_height ";
+		CryFixedStringT<64> height("r_height ");
 		height.append(resolution.substr(pos + 1, resolution.size()));
 
 		g_pGame->GetMenu()->StartResolutionCountDown();
-		gEnv->pConsole->ExecuteString(width);
-		gEnv->pConsole->ExecuteString(height);
+		gEnv->pConsole->ExecuteString(width.c_str());
+		gEnv->pConsole->ExecuteString(height.c_str());
 	}
 }
 
@@ -746,12 +746,12 @@ void COptionsManager::SetAntiAliasingMode(const char* params)
 			else
 			{
 				gEnv->pConsole->ExecuteString("r_fsaa 1");
-				CryFixedStringT<32> command = "r_fsaa_samples ";
+				CryFixedStringT<32> command("r_fsaa_samples ");
 				char buffer[16];
 				_itoa(mode.samples, buffer, 10);
 				command.append(buffer);
 				gEnv->pConsole->ExecuteString(command.c_str());
-				command = "r_fsaa_quality ";
+				command.assign("r_fsaa_quality ");
 				_itoa(mode.quality, buffer, 10);
 				command.append(buffer);
 				gEnv->pConsole->ExecuteString(command.c_str());
@@ -833,10 +833,10 @@ void COptionsManager::SystemConfigChanged(bool silent)
 		if (CFlashMenuScreen* pCurrentMenu = GetCurrentMenu())
 		{
 			pCurrentMenu->Invoke("showErrorMessage", "Box1");
-			CryFixedStringT<128> text = "@system_spec_";
+			CryFixedStringT<128> text("@system_spec_");
 			text.append(gEnv->pConsole->GetCVar("sys_spec")->GetString());
 			pCurrentMenu->Invoke("setErrorText", text.c_str());
-			text = "sys_spec_Full \0";
+			text.assign("sys_spec_Full ");
 			text.append(gEnv->pConsole->GetCVar("sys_spec")->GetString());
 			gEnv->pConsole->ExecuteString(text.c_str());
 		}

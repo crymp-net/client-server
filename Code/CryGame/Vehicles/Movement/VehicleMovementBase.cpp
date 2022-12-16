@@ -1536,7 +1536,7 @@ SMFXResourceListPtr CVehicleMovementBase::GetEffectNode(int matId)
 	IMaterialEffects* mfx = g_pGame->GetIGameFramework()->GetIMaterialEffects();
 
 	// maybe cache this
-	CryFixedStringT<256> effCol = "vfx_";
+	CryFixedStringT<256> effCol("vfx_");
 	effCol += m_pEntity->GetClass()->GetName();
 	TMFXEffectId effectId = mfx->GetEffectId(effCol.MakeLower().c_str(), matId);
 

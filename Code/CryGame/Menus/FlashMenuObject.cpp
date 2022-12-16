@@ -3680,7 +3680,7 @@ void CFlashMenuObject::OnSaveGame(ISaveGame* pSaveGame)
 				path += '/';
 				//path+=("LevelStart.bmp"); //because of the french law we can't do this ...
 				path += "Crysis.bmp";
-				if (pSaveGame->SetThumbnailFromBMP(path) == true)
+				if (pSaveGame->SetThumbnailFromBMP(path.c_str()) == true)
 					bUseScreenShot = false;
 			}
 		}

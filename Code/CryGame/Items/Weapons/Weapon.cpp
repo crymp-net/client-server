@@ -1886,7 +1886,7 @@ void CWeapon::SetInventoryAmmoCount(IEntityClass* pAmmoType, int count)
 	{
 		if (pOwner->IsClient())
 		{
-			CryFixedStringT<64> ammoName = "@";
+			CryFixedStringT<64> ammoName("@");
 			if (!strcmp(GetEntity()->GetClass()->GetName(), "CustomAmmoPickup"))
 			{
 				SmartScriptTable props;

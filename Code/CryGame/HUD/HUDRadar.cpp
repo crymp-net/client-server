@@ -1684,7 +1684,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 				{
 					mapNode->getAttributeByIndex(i, &key, &value);
 					CryFixedStringT<64> keyString(key);
-					int pos = keyString.find(CryFixedStringT<16>("Filename"));
+					int pos = keyString.find("Filename");
 					if (pos != string::npos)
 					{
 						pos += 8; //add size of "FileName"

@@ -746,7 +746,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 				}
 				else if (pItem)
 				{
-					CryFixedStringT<128> itemName = "@";
+					CryFixedStringT<128> itemName("@");
 					itemName.append(pItem->GetEntity()->GetClass()->GetName());
 					if (!strcmp(pItem->GetEntity()->GetClass()->GetName(), "CustomAmmoPickup"))
 					{
@@ -755,7 +755,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 						{
 							const char* name = NULL;
 							props->GetValue("AmmoName", name);
-							itemName = "@";
+							itemName.assign("@");
 							itemName.append(name);
 						}
 					}
@@ -849,7 +849,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 
 				if (CItem* pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_crosshairId)))
 				{
-					CryFixedStringT<128> itemName = pItem->GetEntity()->GetClass()->GetName();
+					CryFixedStringT<128> itemName(pItem->GetEntity()->GetClass()->GetName());
 					if (!strcmp(itemName.c_str(), "CustomAmmoPickup"))
 					{
 						SmartScriptTable props;
@@ -857,7 +857,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 						{
 							const char* name = NULL;
 							props->GetValue("AmmoName", name);
-							itemName = name;
+							itemName.assign(name);
 						}
 					}
 
@@ -2615,7 +2615,7 @@ void COffHand::StartPickUpItem()
 	{
 		if (!pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
 		{
-			CryFixedStringT<128> itemName = pItem->GetEntity()->GetClass()->GetName();
+			CryFixedStringT<128> itemName(pItem->GetEntity()->GetClass()->GetName());
 			if (!_stricmp(itemName.c_str(), "CustomAmmoPickup"))
 			{
 				SmartScriptTable props;
@@ -2623,12 +2623,12 @@ void COffHand::StartPickUpItem()
 				{
 					const char* name = NULL;
 					if (props->GetValue("AmmoName", name))
-						itemName = name;
+						itemName.assign(name);
 				}
 			}
 			if (g_pGame->GetHUD())
 			{
-				CryFixedStringT<128> temp = "@";
+				CryFixedStringT<128> temp("@");
 				temp.append(itemName.c_str());
 				g_pGame->GetHUD()->DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, temp.c_str());
 			}

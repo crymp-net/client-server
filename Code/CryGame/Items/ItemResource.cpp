@@ -712,7 +712,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 
 			if (!g_pGameCVars->i_staticfiresounds)
 			{
-				result = pSoundProxy->PlaySoundEx(name, vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
+				result = pSoundProxy->PlaySoundEx(name.c_str(), vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
 				ISound* pSound = pSoundProxy->GetSound(result);
 
 				if (pSound && action.sound[sid].sphere > 0.0f)
@@ -734,12 +734,12 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 						pInstanceAudio = &iit->second.sound[sid];
 				}
 
-				if (pInstanceAudio && (pInstanceAudio->id != INVALID_SOUNDID) && pInstanceAudio->static_name != name)
+				if (pInstanceAudio && (pInstanceAudio->id != INVALID_SOUNDID) && pInstanceAudio->static_name != name.c_str())
 					ReleaseStaticSound(pInstanceAudio);
 
 				if (!pInstanceAudio || pInstanceAudio->id == INVALID_SOUNDID)
 				{
-					result = pSoundProxy->PlaySoundEx(name, vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
+					result = pSoundProxy->PlaySoundEx(name.c_str(), vOffset, FORWARD_DIRECTION, nSoundFlags, 1.0f, 0, 0, eSoundSemantic_Weapon, pSkipEnts, nSkipEnts);
 					ISound* pSound = pSoundProxy->GetSound(result);
 
 					if (pSound && action.sound[sid].sphere > 0.0f)
@@ -753,7 +753,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 						if (pSoundProxy->SetStaticSound(result, true))
 						{
 							pInstanceAudio->id = result;
-							pInstanceAudio->static_name = name;
+							pInstanceAudio->static_name = name.c_str();
 							pInstanceAudio->synch = action.sound[sid].issynched;
 						}
 					}
@@ -814,9 +814,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 					if (pOwner)
 					{
 						if (IsDualWield() && !m_params.dual_wield_pose.empty())
-							pOwner->PlayAction(name, m_params.dual_wield_pose.c_str(), looping);
+							pOwner->PlayAction(name.c_str(), m_params.dual_wield_pose.c_str(), looping);
 						else
-							pOwner->PlayAction(name, m_params.pose.c_str(), looping);
+							pOwner->PlayAction(name.c_str(), m_params.pose.c_str(), looping);
 					}
 				}
 				continue;
@@ -849,9 +849,9 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 				if (flags & eIPAF_NoBlend)
 					blend = 0.0f;
 				if (speedOverride > 0.0f)
-					PlayAnimationEx(name, i, layer, loop, blend, speedOverride, flags);
+					PlayAnimationEx(name.c_str(), i, layer, loop, blend, speedOverride, flags);
 				else
-					PlayAnimationEx(name, i, layer, loop, blend, animation.speed, flags);
+					PlayAnimationEx(name.c_str(), i, layer, loop, blend, animation.speed, flags);
 			}
 
 			if ((m_stats.fp || m_stats.viewmode & eIVM_FirstPerson) && i == eIGS_FirstPerson && !animation.camera_helper.empty())
@@ -996,7 +996,7 @@ void CItem::PlayLayer(const ItemString& layerName, int flags, bool record)
 
 				ISkeletonAnim* pSkeletonAnim = pCharacter->GetISkeletonAnim();
 				//	pSkeleton->SetRedirectToLayer0(1);
-				pSkeletonAnim->StartAnimation(tempResourceName, 0, 0, 0, params);
+				pSkeletonAnim->StartAnimation(tempResourceName.c_str(), 0, 0, 0, params);
 
 				if (layer.bones.empty())
 				{
