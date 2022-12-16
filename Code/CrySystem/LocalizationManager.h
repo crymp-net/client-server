@@ -63,6 +63,7 @@ public:
 	bool Add(Label&& label, bool keepExisting = false);
 
 	std::string Localize(const std::string_view& text) const;
+	std::string LocalizeEnglish(const std::string_view& text) const;
 
 	const Language& GetCurrentLanguage() const;
 

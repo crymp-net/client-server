@@ -388,6 +388,16 @@ std::string LocalizationManager::Localize(const std::string_view& text) const
 	return result;
 }
 
+std::string LocalizationManager::LocalizeEnglish(const std::string_view& text) const
+{
+	const bool english = true;
+
+	std::string result;
+	LocalizeStringImpl(text, result, english);
+
+	return result;
+}
+
 const LocalizationManager::Language& LocalizationManager::GetCurrentLanguage() const
 {
 	return *m_currentLanguage;
