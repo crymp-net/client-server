@@ -20,7 +20,7 @@ CPPAPI.CreateMaterialFromTexture("MyNewMaterial", "Libs/UI/HUD_PDA_Map_FLAG_NK.d
 ```lua
 CPPAPI.SetOpacity(entity.id, 0.2)
 ```
-- New Lua function for obtaining the current language, for example:
+- New Lua function for obtaining current language, for example:
 ```lua
 local language = CPPAPI.GetLanguage()
 ```
@@ -40,12 +40,13 @@ local message = CPPAPI.LocalizeText("Kyong says: @mine/kyong_mine_ab3_A584F343")
 - Pressing F5 in multiplayer lobby refreshes the server list
 - Two `!validate` commands are now sent after connect to improve backward compatibility with the old client
 - Internal chat commands `!validate` and `!rpc` are hidden in chat to improve UX on legacy servers
-- Buymenu state is restored when reopened
+- Buymenu remembers your last opened page for some time, see `mp_buyPageKeepTime`
 - Battlelog messsages can now be longer
 - Improved logger
 - Improved crash logger
 - Better game window name
 - [Map downloader now supports map versioning](../../issues/53)
+- Released executables are now digitally signed
 
 ### Fixed
 - DX10 fullscreen low refresh rate fix now works correctly
