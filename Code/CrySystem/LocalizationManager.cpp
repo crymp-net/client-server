@@ -844,6 +844,19 @@ bool LocalizationManager::LocalizeLabelImpl(NameStringView name, ResultString& r
 		return false;
 	}
 
+	if (name.length() > 1 && name[1] == '{')
+	{
+		if (name.back() == '}')
+		{
+			name.remove_prefix(2);
+			name.remove_suffix(1);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	const Label* label = FindLabel(name);
 
 	if (label)
@@ -878,34 +891,47 @@ bool LocalizationManager::LocalizeStringImpl(TextStringView text, ResultString& 
 
 	while (!text.empty())
 	{
-		bool specifier = false;
-		auto length = text.find('@');
-		if (length != TextStringView::npos)
+		bool specifier = true;
+		auto pos = text.find('@');
+		if (pos == TextStringView::npos)
 		{
-			specifier = true;
-		}
-		else
-		{
-			length = text.length();
+			pos = text.length();
+			specifier = false;
 		}
 
-		StringTools::AppendTo(result, TextStringView(text.data(), length));
-		text.remove_prefix(length);
+		StringTools::AppendTo(result, TextStringView(text.data(), pos));
+		text.remove_prefix(pos);
 
 		if (specifier)
 		{
-			length = text.find(' ');
-			if (length > text.length())
+			if (text.length() > 1 && text[1] == '{')
 			{
-				length = text.length();
+				pos = text.find('}');
+
+				if (pos != TextStringView::npos)
+				{
+					pos++;
+				}
+			}
+			else
+			{
+				pos = text.find(' ');
 			}
 
-			if (!LocalizeLabelImpl(TextStringView(text.data(), length), result, english))
+			if (pos == TextStringView::npos)
 			{
+				pos = text.length();
+			}
+
+			const TextStringView label(text.data(), pos);
+
+			if (!LocalizeLabelImpl(label, result, english))
+			{
+				StringTools::AppendTo(result, label);
 				success = false;
 			}
 
-			text.remove_prefix(length);
+			text.remove_prefix(pos);
 		}
 	}
 
@@ -921,27 +947,24 @@ void LocalizationManager::FormatStringMessageImpl(ResultString& result,
 
 	while (!format.empty())
 	{
-		bool specifier = false;
-		auto length = format.find('%');
-		if (length != std::basic_string_view<T>::npos)
+		bool specifier = true;
+		auto pos = format.find('%');
+		if (pos == std::basic_string_view<T>::npos)
 		{
-			specifier = true;
-		}
-		else
-		{
-			length = format.length();
+			pos = format.length();
+			specifier = false;
 		}
 
 		if (localize)
 		{
-			LocalizeStringImpl(std::basic_string_view<T>(format.data(), length), result);
+			LocalizeStringImpl(std::basic_string_view<T>(format.data(), pos), result);
 		}
 		else
 		{
-			StringTools::AppendTo(result, std::basic_string_view<T>(format.data(), length));
+			StringTools::AppendTo(result, std::basic_string_view<T>(format.data(), pos));
 		}
 
-		format.remove_prefix(length);
+		format.remove_prefix(pos);
 
 		if (specifier)
 		{
