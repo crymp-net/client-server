@@ -105,7 +105,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN23", {
 			localized_text = "8 - BIEN HECHO",
 		},
 		turkish = {
-			localized_text = "8 - BRAVO",
+			localized_text = "8 - GÜZEL",
 		},
 	},
 })
@@ -141,7 +141,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN24", {
 			localized_text = "9 - APURARSE",
 		},
 		turkish = {
-			localized_text = "9 - ACELE ETMEK",
+			localized_text = "9 - ACELE EDİN",
 		},
 	},
 })
@@ -177,7 +177,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN25", {
 			localized_text = "6 - TOMA BUNKER",
 		},
 		turkish = {
-			localized_text = "6 - BUNKER'I ALIN",
+			localized_text = "6 - SIĞINAĞI ELE GEÇİRİN",
 		},
 	},
 })
@@ -213,7 +213,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN26", {
 			localized_text = "7 - TOMAR ASTILLERO",
 		},
 		turkish = {
-			localized_text = "7 - TERSANEYE KATILIN",
+			localized_text = "7 - TERSANEYİ ELE GEÇİRİN",
 		},
 	},
 })
@@ -249,7 +249,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN27", {
 			localized_text = "6 - SNIPER MANCHADO",
 		},
 		turkish = {
-			localized_text = "6 - SNIPER BENEKLI",
+			localized_text = "6 - KESKİN NİŞANCI GÖRÜLDÜ",
 		},
 	},
 })
@@ -285,7 +285,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN28", {
 			localized_text = "6 - SOLICITAR RECOGIDA",
 		},
 		turkish = {
-			localized_text = "6 - ALIM İSTEYİN",
+			localized_text = "6 - PICKUP GEREKLİ",
 		},
 	},
 })
@@ -394,7 +394,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_WellDone", {
 			localized_text = "Bien hecho",
 		},
 		turkish = {
-			localized_text = "Bravo",
+			localized_text = "Mükemmel",
 		},
 	},
 })
@@ -430,7 +430,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_HurryUp", {
 			localized_text = "Apúrate",
 		},
 		turkish = {
-			localized_text = "Çabuk",
+			localized_text = "Acele edin",
 		},
 	},
 })
@@ -466,7 +466,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_TakeBunker", {
 			localized_text = "Toma bunkers",
 		},
 		turkish = {
-			localized_text = "Sığınakları alın",
+			localized_text = "Sığınağı ele geçirin",
 		},
 	},
 })
@@ -538,7 +538,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_SniperSpotted", {
 			localized_text = "Francotirador localizado",
 		},
 		turkish = {
-			localized_text = "Keskin nişancı bulundu",
+			localized_text = "Keskin nişancı görüldü",
 		},
 	},
 })
@@ -574,7 +574,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_RequestPickup", {
 			localized_text = "Solicitar recogida",
 		},
 		turkish = {
-			localized_text = "Teslim alma isteğinde bulunun",
+			localized_text = "Pickup gerekli",
 		},
 	},
 })
@@ -591,6 +591,11 @@ CPPAPI.AddLocalizedLabel("ui_spectate_functionality_fp", {
 CPPAPI.AddLocalizedLabel("ui_mp_channel", {
 	english_text = "CHANNEL",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "KANAL",
+		},
+	},
 })
 
 --------------------------------------------------------------------------------
@@ -600,64 +605,129 @@ CPPAPI.AddLocalizedLabel("ui_mp_channel", {
 CPPAPI.AddLocalizedLabel("ui_loading_init", {
 	english_text = "REQUESTING GAME ENVIRONMENT",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OYUN ÇEVRESİ İSTENİYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_begin", {
 	english_text = "RECEIVING GAME ENVIRONMENT",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OYUN ÇEVRESİ ALINIYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_establish", {
 	english_text = "LOADING GAME ASSETS",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OYUN VERİLERİ YÜKLENİYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_configure", {
 	english_text = "CONFIGURING GAME SETTINGS",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OYUN AYARLARI YAPILANDIRILIYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_entities", {
 	english_text = "SPAWNING ENTITIES",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "KAYNAKLAR ÇIKARTILIYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_post_spawn", {
 	english_text = "INITIALIZING ENTITIES",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "KAYNAKLAR BAŞLATILIYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_ingame", {
 	english_text = "IN GAME",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OYUNDA",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_getready", {
 	english_text = "GETTING READY",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "HAZIR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_disconnect", {
 	english_text = "DISCONNECTING",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "BAĞLANTI KESİLİYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_loading_waiting", {
 	english_text = "WAITING FOR SERVER",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "SUNUCU İÇİN BEKLENİYOR",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_pickup_objects", {
 	english_text = "PICKUP OBJECTS",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "OBJELERİ AL",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_circle_jump", {
 	english_text = "CIRCLE JUMP",
+	languages = {
+		turkish = {
+			localized_text = "ÇEMBER SIÇRAMASI",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_crymp_enhanced", {
 	english_text = "CryMP ENHANCED",
+	languages = {
+		turkish = {
+			localized_text = "CryMP GELİŞMİŞ",
+		},
+	},
 })
 
 --------------------------------------------------------------------------------
@@ -938,7 +1008,7 @@ CPPAPI.AddLocalizedLabel("Detonator", {
 			localized_text = "DETONADOR",
 		},
 		turkish = {
-			localized_text = "DETONATÖR",
+			localized_text = "FÜNYE",
 		},
 	},
 })
