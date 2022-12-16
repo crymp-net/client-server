@@ -1,4 +1,666 @@
 --------------------------------------------------------------------------------
+-- CryMP extended radio
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN21", {
+	english_text = "6 - SORRY",
+	languages = {
+		czech = {
+			localized_text = "6 - PROMIŇTE",
+		},
+		french = {
+			localized_text = "6 - PARDON",
+		},
+		german = {
+			localized_text = "6 - TUT MIR LEID",
+		},
+		hungarian = {
+			localized_text = "6 - BOCSÁNAT",
+		},
+		italian = {
+			localized_text = "6 - SCUSA",
+		},
+		japanese = {
+			localized_text = "6 - ごめんなさい",
+		},
+		polish = {
+			localized_text = "6 - PRZEPRASZAM",
+		},
+		russian = {
+			localized_text = "6 - ИЗВИНИТЕ",
+		},
+		spanish = {
+			localized_text = "6 - ARREPENTIDO",
+		},
+		turkish = {
+			localized_text = "6 - PARDON",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN22", {
+	english_text = "7 - WATCH OUT",
+	languages = {
+		czech = {
+			localized_text = "7 - DÁVEJTE SI POZOR",
+		},
+		french = {
+			localized_text = "7 - FAIS GAFFE",
+		},
+		german = {
+			localized_text = "7 - VORSICHT",
+		},
+		hungarian = {
+			localized_text = "7 - VIGYÁZZON",
+		},
+		italian = {
+			localized_text = "7 - ATTENTO",
+		},
+		japanese = {
+			localized_text = "7 - 注意して下さい",
+		},
+		polish = {
+			localized_text = "7 - UWAŻAJ",
+		},
+		russian = {
+			localized_text = "7 - ОСТОРОЖНО",
+		},
+		spanish = {
+			localized_text = "7 - CUIDADO",
+		},
+		turkish = {
+			localized_text = "7 - DİKKAT EDİN",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN23", {
+	english_text = "8 - WELL DONE",
+	languages = {
+		czech = {
+			localized_text = "8 - SKVĚLÁ PRÁCE",
+		},
+		french = {
+			localized_text = "8 - BIEN JOUÉ",
+		},
+		german = {
+			localized_text = "8 - GUT GEMACHT",
+		},
+		hungarian = {
+			localized_text = "8 - SZÉP MUNKA",
+		},
+		italian = {
+			localized_text = "8 - BEN FATTO",
+		},
+		japanese = {
+			localized_text = "8 - よくやりましたね",
+		},
+		polish = {
+			localized_text = "8 - DOBRA ROBOTA",
+		},
+		russian = {
+			localized_text = "8 - ПРЕКРАСНО",
+		},
+		spanish = {
+			localized_text = "8 - BIEN HECHO",
+		},
+		turkish = {
+			localized_text = "8 - BRAVO",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN24", {
+	english_text = "9 - HURRY UP",
+	languages = {
+		czech = {
+			localized_text = "9 - POSPĚŠTE SI",
+		},
+		french = {
+			localized_text = "9 - SE DÉPÊCHER",
+		},
+		german = {
+			localized_text = "9 - BEEILEN",
+		},
+		hungarian = {
+			localized_text = "9 - SIET",
+		},
+		italian = {
+			localized_text = "9 - AFFRETTARSI",
+		},
+		japanese = {
+			localized_text = "9 - 急ぐ",
+		},
+		polish = {
+			localized_text = "9 - POŚPIECH",
+		},
+		russian = {
+			localized_text = "9 - СПЕШИТЬ",
+		},
+		spanish = {
+			localized_text = "9 - APURARSE",
+		},
+		turkish = {
+			localized_text = "9 - ACELE ETMEK",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN25", {
+	english_text = "6 - TAKE BUNKER",
+	languages = {
+		czech = {
+			localized_text = "6 - OBSAĎTE BUNKR",
+		},
+		french = {
+			localized_text = "6 - PRENDRE LE BUNKER",
+		},
+		german = {
+			localized_text = "6 - BUNKER NEHMEN",
+		},
+		hungarian = {
+			localized_text = "6 - VEGYÜK A BUNKERT",
+		},
+		italian = {
+			localized_text = "6 - CONQUISTA BUNKER",
+		},
+		japanese = {
+			localized_text = "6 - バンカーを取る",
+		},
+		polish = {
+			localized_text = "6 - WEŹ BUNKIER",
+		},
+		russian = {
+			localized_text = "6 - ЗАХВАТИТЬ БУНКЕР",
+		},
+		spanish = {
+			localized_text = "6 - TOMA BUNKER",
+		},
+		turkish = {
+			localized_text = "6 - BUNKER'I ALIN",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN26", {
+	english_text = "7 - TAKE NAVAL",
+	languages = {
+		czech = {
+			localized_text = "7 - OBSAĎTE LODĚNICI",
+		},
+		french = {
+			localized_text = "7 - PRENEZ LE CHANTIER NAVAL",
+		},
+		german = {
+			localized_text = "7 - WERFT NEHMEN",
+		},
+		hungarian = {
+			localized_text = "7 - VEGYÜK HAJÓGYÁRAT",
+		},
+		italian = {
+			localized_text = "7 - CONQUISTA NAVALE",
+		},
+		japanese = {
+			localized_text = "7 - テイク造船所",
+		},
+		polish = {
+			localized_text = "7 - WEŹ STOCZNIĘ",
+		},
+		russian = {
+			localized_text = "7 - ЗАХВАТИТЬ ВЕРФЬ",
+		},
+		spanish = {
+			localized_text = "7 - TOMAR ASTILLERO",
+		},
+		turkish = {
+			localized_text = "7 - TERSANEYE KATILIN",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN27", {
+	english_text = "6 - SNIPER SPOTTED",
+	languages = {
+		czech = {
+			localized_text = "6 - SPATŘEN ODSTŘELOVAČ",
+		},
+		french = {
+			localized_text = "6 - TIREUR SITUÉ",
+		},
+		german = {
+			localized_text = "6 - SCHARFSCHÜTZE GEORTET",
+		},
+		hungarian = {
+			localized_text = "6 - MESTERLÖVÉSZ ÉSZREVETTE",
+		},
+		italian = {
+			localized_text = "6 - SNIPER LOCALIZZATO",
+		},
+		japanese = {
+			localized_text = "6 - シナイパー位置",
+		},
+		polish = {
+			localized_text = "6 - STĘPIANY PLAMISTY",
+		},
+		russian = {
+			localized_text = "6 - СНАЙПЕР ЗАМЕЧЕН",
+		},
+		spanish = {
+			localized_text = "6 - SNIPER MANCHADO",
+		},
+		turkish = {
+			localized_text = "6 - SNIPER BENEKLI",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_radio_BTN28", {
+	english_text = "6 - REQUEST PICKUP",
+	languages = {
+		czech = {
+			localized_text = "6 - ŽÁDOST O VYZVEDNUTÍ",
+		},
+		french = {
+			localized_text = "6 - DEMANDER UN RAMASSAGE",
+		},
+		german = {
+			localized_text = "6 - ABHOLUNG ANFORDERN",
+		},
+		hungarian = {
+			localized_text = "6 - CSOMAGFELVÉTEL KÉRÉSE",
+		},
+		italian = {
+			localized_text = "6 - RICHIEDI RITIRO",
+		},
+		japanese = {
+			localized_text = "6 - 集荷の要求",
+		},
+		polish = {
+			localized_text = "6 - POPROŚ O ODBIÓR",
+		},
+		russian = {
+			localized_text = "6 - ЗАКАЗАТЬ САМОВЫВОЗ",
+		},
+		spanish = {
+			localized_text = "6 - SOLICITAR RECOGIDA",
+		},
+		turkish = {
+			localized_text = "6 - ALIM İSTEYİN",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_Sorry", {
+	english_text = "Sorry",
+	sound_volume = 2.0,
+	languages = {
+		czech = {
+			localized_text = "Promiňte",
+		},
+		french = {
+			localized_text = "Pardon",
+		},
+		german = {
+			localized_text = "Tut mir Leid",
+		},
+		hungarian = {
+			localized_text = "Bocsánat",
+		},
+		italian = {
+			localized_text = "Scusa",
+		},
+		japanese = {
+			localized_text = "ごめんなさい",
+		},
+		polish = {
+			localized_text = "Przepraszam",
+		},
+		russian = {
+			localized_text = "Извините",
+		},
+		spanish = {
+			localized_text = "Arrepentido",
+		},
+		turkish = {
+			localized_text = "Pardon",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_WatchOut", {
+	english_text = "Watch out",
+	languages = {
+		czech = {
+			localized_text = "Dávejte si pozor",
+		},
+		french = {
+			localized_text = "Fais Gaffe",
+		},
+		german = {
+			localized_text = "Vorsicht",
+		},
+		hungarian = {
+			localized_text = "Vigyázzon",
+		},
+		italian = {
+			localized_text = "Attento",
+		},
+		japanese = {
+			localized_text = "注意して下さい",
+		},
+		polish = {
+			localized_text = "Uważaj",
+		},
+		russian = {
+			localized_text = "Осторожно",
+		},
+		spanish = {
+			localized_text = "Cuidado",
+		},
+		turkish = {
+			localized_text = "Dikkat Edin",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_WellDone", {
+	english_text = "Well Done",
+	languages = {
+		czech = {
+			localized_text = "Skvělá práce",
+		},
+		french = {
+			localized_text = "Bien joué",
+		},
+		german = {
+			localized_text = "Gut gemacht",
+		},
+		hungarian = {
+			localized_text = "Szép munka",
+		},
+		italian = {
+			localized_text = "Ben fatto",
+		},
+		japanese = {
+			localized_text = "よくやりましたね",
+		},
+		polish = {
+			localized_text = "Dobra robota",
+		},
+		russian = {
+			localized_text = "Прекрасно",
+		},
+		spanish = {
+			localized_text = "Bien hecho",
+		},
+		turkish = {
+			localized_text = "Bravo",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_HurryUp", {
+	english_text = "Hurry Up",
+	languages = {
+		czech = {
+			localized_text = "Pospěšte si",
+		},
+		french = {
+			localized_text = "Dépêchez-vous",
+		},
+		german = {
+			localized_text = "Beeil dich",
+		},
+		hungarian = {
+			localized_text = "Siess",
+		},
+		italian = {
+			localized_text = "Sbrigati",
+		},
+		japanese = {
+			localized_text = "急いでください",
+		},
+		polish = {
+			localized_text = "Pospiesz się",
+		},
+		russian = {
+			localized_text = "Поторопись",
+		},
+		spanish = {
+			localized_text = "Apúrate",
+		},
+		turkish = {
+			localized_text = "Çabuk",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_TakeBunker", {
+	english_text = "Take Bunker",
+	languages = {
+		czech = {
+			localized_text = "Obsaďte bunkr",
+		},
+		french = {
+			localized_text = "Prendre des bunkers",
+		},
+		german = {
+			localized_text = "Bunker einnehmen",
+		},
+		hungarian = {
+			localized_text = "Vegyünk bunkereket",
+		},
+		italian = {
+			localized_text = "Prendi i bunker",
+		},
+		japanese = {
+			localized_text = "バンカーを取る",
+		},
+		polish = {
+			localized_text = "Weź bunkry",
+		},
+		russian = {
+			localized_text = "Возьмите бункеры",
+		},
+		spanish = {
+			localized_text = "Toma bunkers",
+		},
+		turkish = {
+			localized_text = "Sığınakları alın",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_TakeNaval", {
+	english_text = "",
+	languages = {
+		czech = {
+			localized_text = "Obsaďte loděnici",
+		},
+		french = {
+			localized_text = "Chantier naval de capture",
+		},
+		german = {
+			localized_text = "Werft einnehmen",
+		},
+		hungarian = {
+			localized_text = "Fogja el a hajógyárat",
+		},
+		italian = {
+			localized_text = "Prendi cantiere navale",
+		},
+		japanese = {
+			localized_text = "造船所を占領する",
+		},
+		polish = {
+			localized_text = "Przejęcie stoczni",
+		},
+		russian = {
+			localized_text = "Захват верфи",
+		},
+		spanish = {
+			localized_text = "Astillero de captura",
+		},
+		turkish = {
+			localized_text = "Tersaneyi ele geçirin",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_SniperSpotted", {
+	english_text = "Sniper Spotted",
+	languages = {
+		czech = {
+			localized_text = "Zachytili jsme odstřelovače",
+		},
+		french = {
+			localized_text = "Tireur d’élite localisé",
+		},
+		german = {
+			localized_text = "Scharftschütze geortet",
+		},
+		hungarian = {
+			localized_text = "Mesterlövész található",
+		},
+		italian = {
+			localized_text = "Cecchino localizzato",
+		},
+		japanese = {
+			localized_text = "狙撃兵の位置",
+		},
+		polish = {
+			localized_text = "Snajper zlokalizowany",
+		},
+		russian = {
+			localized_text = "Снайпер найден",
+		},
+		spanish = {
+			localized_text = "Francotirador localizado",
+		},
+		turkish = {
+			localized_text = "Keskin nişancı bulundu",
+		},
+	},
+})
+
+CPPAPI.AddLocalizedLabel("mp_radio_RequestPickup", {
+	english_text = "Requesting Pickup",
+	languages = {
+		czech = {
+			localized_text = "Požadujeme vyzvednutí",
+		},
+		french = {
+			localized_text = "Demande de ramassage",
+		},
+		german = {
+			localized_text = "Abholung anfordern",
+		},
+		hungarian = {
+			localized_text = "Csomagfelvétel kérése",
+		},
+		italian = {
+			localized_text = "Richiedi ritiro",
+		},
+		japanese = {
+			localized_text = "集荷の依頼",
+		},
+		polish = {
+			localized_text = "Zamów odbiór",
+		},
+		russian = {
+			localized_text = "Заказать самовывоз",
+		},
+		spanish = {
+			localized_text = "Solicitar recogida",
+		},
+		turkish = {
+			localized_text = "Teslim alma isteğinde bulunun",
+		},
+	},
+})
+
+--------------------------------------------------------------------------------
+-- CryMP spectator HUD
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("ui_spectate_functionality_fp", {
+	english_text = "Press %[default:cycle_spectator_mode] to toggle mode and F1 to toggle 1st person view",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_mp_channel", {
+	english_text = "CHANNEL",
+	-- TODO: add translations
+})
+
+--------------------------------------------------------------------------------
+-- CryMP map loading screen
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("ui_loading_init", {
+	english_text = "REQUESTING GAME ENVIRONMENT",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_begin", {
+	english_text = "RECEIVING GAME ENVIRONMENT",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_establish", {
+	english_text = "LOADING GAME ASSETS",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_configure", {
+	english_text = "CONFIGURING GAME SETTINGS",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_entities", {
+	english_text = "SPAWNING ENTITIES",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_post_spawn", {
+	english_text = "INITIALIZING ENTITIES",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_ingame", {
+	english_text = "IN GAME",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_getready", {
+	english_text = "GETTING READY",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_disconnect", {
+	english_text = "DISCONNECTING",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_loading_waiting", {
+	english_text = "WAITING FOR SERVER",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_pickup_objects", {
+	english_text = "PICKUP OBJECTS",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_circle_jump", {
+	english_text = "CIRCLE JUMP",
+})
+
+CPPAPI.AddLocalizedLabel("ui_crymp_enhanced", {
+	english_text = "CryMP ENHANCED",
+})
+
+--------------------------------------------------------------------------------
 -- Fix missing US commander mission end warning in PowerStruggle
 --------------------------------------------------------------------------------
 
@@ -241,1157 +903,42 @@ CPPAPI.AddLocalizedLabel("mp_american/us_commander_endgame_countdown_01", {
 	},
 })
 
-CPPAPI.AddLocalizedLabel("ui_mp_CHANNEL", {
-	english_text = "CHANNEL",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = ",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
+--------------------------------------------------------------------------------
+-- Fix various missing stuff
+--------------------------------------------------------------------------------
 
---[[
-CPPAPI.AddLocalizedLabel("", {
-	english_text = "",
+CPPAPI.AddLocalizedLabel("Detonator", {
+	english_text = "DETONATOR",
 	languages = {
 		czech = {
-			localized_text = "",
+			localized_text = "DETONÁTOR",
 		},
 		french = {
-			localized_text = "",
+			localized_text = "DÉTONATEUR",
 		},
 		german = {
-			localized_text = "",
+			localized_text = "AUSLÖSER",
 		},
 		hungarian = {
-			localized_text = "",
+			localized_text = "DETONÁTOR",
 		},
 		italian = {
-			localized_text = "",
+			localized_text = "DETONATORE",
 		},
 		japanese = {
-			localized_text = "",
+			localized_text = "雷管",
 		},
 		polish = {
-			localized_text = "",
+			localized_text = "DETONATOR",
 		},
 		russian = {
-			localized_text = "",
+			localized_text = "ДЕТОНАТОР",
 		},
 		spanish = {
-			localized_text = "",
+			localized_text = "DETONADOR",
 		},
 		turkish = {
-			localized_text = "",
+			localized_text = "DETONATÖR",
 		},
 	},
-})
-]]
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN21", {
-	english_text = "6 - SORRY",
-	languages = {
-		czech = {
-			localized_text = "6 - PROMIŇ",
-		},
-		french = {
-			localized_text = "6 - PARDON",
-		},
-		german = {
-			localized_text = "6 - TUT MIR LEID",
-		},
-		hungarian = {
-			localized_text = "6 - BOCSÁNAT",
-		},
-		italian = {
-			localized_text = "6 - SCUSA",
-		},
-		japanese = {
-			localized_text = "6 - ごめんなさい",
-		},
-		polish = {
-			localized_text = "6 - PRZEPRASZAM",
-		},
-		russian = {
-			localized_text = "6 - ИЗВИНИТЕ",
-		},
-		spanish = {
-			localized_text = "6 - ARREPENTIDO",
-		},
-		turkish = {
-			localized_text = "6 - PARDON",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_Sorry", {
-	english_text = "Sorry",
-	sound_volume = 2.0,
-	languages = {
-		czech = {
-			localized_text = "Promiň",
-		},
-		french = {
-			localized_text = "Pardon",
-		},
-		german = {
-			localized_text = "Tut mir Leid",
-		},
-		hungarian = {
-			localized_text = "Bocsánat",
-		},
-		italian = {
-			localized_text = "Scusa",
-		},
-		japanese = {
-			localized_text = "ごめんなさい",
-		},
-		polish = {
-			localized_text = "Przepraszam",
-		},
-		russian = {
-			localized_text = "Извините",
-		},
-		spanish = {
-			localized_text = "Arrepentido",
-		},
-		turkish = {
-			localized_text = "Pardon",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN22", {
-	english_text = "7 - WATCH OUT",
-	languages = {
-		czech = {
-			localized_text = "7 - DÁVAT SI POZOR",
-		},
-		french = {
-			localized_text = "7 - FAIS GAFFE",
-		},
-		german = {
-			localized_text = "7 - VORSICHT",
-		},
-		hungarian = {
-			localized_text = "7 - VIGYÁZZON",
-		},
-		italian = {
-			localized_text = "7 - ATTENTO",
-		},
-		japanese = {
-			localized_text = "7 - 注意して下さい",
-		},
-		polish = {
-			localized_text = "7 - UWAŻAJ",
-		},
-		russian = {
-			localized_text = "7 - ОСТОРОЖНО",
-		},
-		spanish = {
-			localized_text = "7 - CUIDADO",
-		},
-		turkish = {
-			localized_text = "7 - DİKKAT EDİN",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_WatchOut", {
-	english_text = "Watch out",
-	languages = {
-		czech = {
-			localized_text = "Dávat si pozor",
-		},
-		french = {
-			localized_text = "Fais Gaffe",
-		},
-		german = {
-			localized_text = "Vorsicht",
-		},
-		hungarian = {
-			localized_text = "Vigyázzon",
-		},
-		italian = {
-			localized_text = "Attento",
-		},
-		japanese = {
-			localized_text = "注意して下さい",
-		},
-		polish = {
-			localized_text = "Uważaj",
-		},
-		russian = {
-			localized_text = "Осторожно",
-		},
-		spanish = {
-			localized_text = "Cuidado",
-		},
-		turkish = {
-			localized_text = "Dikkat Edin",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN23", {
-	english_text = "8 - WELL DONE",
-	languages = {
-		czech = {
-			localized_text = "8 - SKVĚLÁ PRÁCE",
-		},
-		french = {
-			localized_text = "8 - BIEN JOUÉ",
-		},
-		german = {
-			localized_text = "8 - GUT GEMACHT",
-		},
-		hungarian = {
-			localized_text = "8 - SZÉP MUNKA",
-		},
-		italian = {
-			localized_text = "8 - BEN FATTO",
-		},
-		japanese = {
-			localized_text = "8 - よくやりましたね",
-		},
-		polish = {
-			localized_text = "8 - DOBRA ROBOTA",
-		},
-		russian = {
-			localized_text = "8 - ПРЕКРАСНО",
-		},
-		spanish = {
-			localized_text = "8 - BIEN HECHO",
-		},
-		turkish = {
-			localized_text = "8 - BRAVO",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_WellDone", {
-	english_text = "Well Done",
-	languages = {
-		czech = {
-			localized_text = "Skvělá práce",
-		},
-		french = {
-			localized_text = "Bien joué",
-		},
-		german = {
-			localized_text = "Gut gemacht",
-		},
-		hungarian = {
-			localized_text = "Szép munka",
-		},
-		italian = {
-			localized_text = "Ben fatto",
-		},
-		japanese = {
-			localized_text = "よくやりましたね",
-		},
-		polish = {
-			localized_text = "Dobra robota",
-		},
-		russian = {
-			localized_text = "Прекрасно",
-		},
-		spanish = {
-			localized_text = "Bien hecho",
-		},
-		turkish = {
-			localized_text = "Bravo",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN24", {
-	english_text = "9 - HURRY UP",
-	languages = {
-		czech = {
-			localized_text = "9 - SPĚCH",
-		},
-		french = {
-			localized_text = "9 - SE DÉPÊCHER",
-		},
-		german = {
-			localized_text = "9 - BEEILEN",
-		},
-		hungarian = {
-			localized_text = "9 - SIET",
-		},
-		italian = {
-			localized_text = "9 - AFFRETTARSI",
-		},
-		japanese = {
-			localized_text = "9 - 急ぐ",
-		},
-		polish = {
-			localized_text = "9 - POŚPIECH",
-		},
-		russian = {
-			localized_text = "9 - СПЕШИТЬ",
-		},
-		spanish = {
-			localized_text = "9 - APURARSE",
-		},
-		turkish = {
-			localized_text = "9 - ACELE ETMEK",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_HurryUp", {
-	english_text = "Hurry Up",
-	languages = {
-		czech = {
-			localized_text = "Pospěš si",
-		},
-		french = {
-			localized_text = "Dépêchez-vous",
-		},
-		german = {
-			localized_text = "Beeil dich",
-		},
-		hungarian = {
-			localized_text = "Siess",
-		},
-		italian = {
-			localized_text = "Sbrigati",
-		},
-		japanese = {
-			localized_text = "急いでください",
-		},
-		polish = {
-			localized_text = "Pospiesz się",
-		},
-		russian = {
-			localized_text = "Поторопись",
-		},
-		spanish = {
-			localized_text = "Apúrate",
-		},
-		turkish = {
-			localized_text = "Çabuk",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN25", {
-	english_text = "6 - TAKE BUNKER",
-	languages = {
-		czech = {
-			localized_text = "7 - OBSAĎTE BUNKR",
-		},
-		french = {
-			localized_text = "7 - PRENDRE LE BUNKER",
-		},
-		german = {
-			localized_text = "7 - BUNKER NEHMEN",
-		},
-		hungarian = {
-			localized_text = "7 - VEGYÜK A BUNKERT",
-		},
-		italian = {
-			localized_text = "7 - CONQUISTA BUNKER",
-		},
-		japanese = {
-			localized_text = "7 - バンカーを取る",
-		},
-		polish = {
-			localized_text = "7 - WEŹ BUNKIER",
-		},
-		russian = {
-			localized_text = "7 - ЗАХВАТИТЬ БУНКЕР",
-		},
-		spanish = {
-			localized_text = "7 - TOMA BUNKER",
-		},
-		turkish = {
-			localized_text = "7 - BUNKER'I ALIN",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_TakeBunker", {
-	english_text = "Take Bunker",
-	languages = {
-		czech = {
-			localized_text = "Vezměte bunkry",
-		},
-		french = {
-			localized_text = "Prendre des bunkers",
-		},
-		german = {
-			localized_text = "Bunker einnehmen",
-		},
-		hungarian = {
-			localized_text = "Vegyünk bunkereket",
-		},
-		italian = {
-			localized_text = "Prendi i bunker",
-		},
-		japanese = {
-			localized_text = "バンカーを取る",
-		},
-		polish = {
-			localized_text = "Weź bunkry",
-		},
-		russian = {
-			localized_text = "Возьмите бункеры",
-		},
-		spanish = {
-			localized_text = "Toma bunkers",
-		},
-		turkish = {
-			localized_text = "Sığınakları alın",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN26", {
-	english_text = "7 - TAKE NAVAL",
-	languages = {
-		czech = {
-			localized_text = "7 - OBSAĎTE LODĚNICI",
-		},
-		french = {
-			localized_text = "7 - PRENEZ LE CHANTIER NAVAL",
-		},
-		german = {
-			localized_text = "7 - WERFT NEHMEN",
-		},
-		hungarian = {
-			localized_text = "7 - VEGYÜK HAJÓGYÁRAT",
-		},
-		italian = {
-			localized_text = "7 - CONQUISTA NAVALE",
-		},
-		japanese = {
-			localized_text = "7 - テイク造船所",
-		},
-		polish = {
-			localized_text = "7 - WEŹ STOCZNIĘ",
-		},
-		russian = {
-			localized_text = "7 - ЗАХВАТИТЬ ВЕРФЬ",
-		},
-		spanish = {
-			localized_text = "7 - TOMAR ASTILLERO",
-		},
-		turkish = {
-			localized_text = "7 - TERSANEYE KATILIN",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_TakeNaval", {
-	english_text = "",
-	languages = {
-		czech = {
-			localized_text = "Obsazení loděnice",
-		},
-		french = {
-			localized_text = "Chantier naval de capture",
-		},
-		german = {
-			localized_text = "Werft einnehmen",
-		},
-		hungarian = {
-			localized_text = "Fogja el a hajógyárat",
-		},
-		italian = {
-			localized_text = "Prendi cantiere navale",
-		},
-		japanese = {
-			localized_text = "造船所を占領する",
-		},
-		polish = {
-			localized_text = "Przejęcie stoczni",
-		},
-		russian = {
-			localized_text = "Захват верфи",
-		},
-		spanish = {
-			localized_text = "Astillero de captura",
-		},
-		turkish = {
-			localized_text = "Tersaneyi ele geçirin",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN27", {
-	english_text = "6 - SNIPER SPOTTED",
-	languages = {
-		czech = {
-			localized_text = "6 - SNIPER UMÍSTĚN",
-		},
-		french = {
-			localized_text = "6 - TIREUR SITUÉ",
-		},
-		german = {
-			localized_text = "6 - SCHARFSCHÜTZE GEORTET",
-		},
-		hungarian = {
-			localized_text = "6 - MESTERLÖVÉSZ ÉSZREVETTE",
-		},
-		italian = {
-			localized_text = "6 - SNIPER LOCALIZZATO",
-		},
-		japanese = {
-			localized_text = "6 - シナイパー位置",
-		},
-		polish = {
-			localized_text = "6 - STĘPIANY PLAMISTY",
-		},
-		russian = {
-			localized_text = "6 - СНАЙПЕР ЗАМЕЧЕН",
-		},
-		spanish = {
-			localized_text = "6 - SNIPER MANCHADO",
-		},
-		turkish = {
-			localized_text = "6 - SNIPER BENEKLI",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_SniperSpotted", {
-	english_text = "Sniper Spotted",
-	languages = {
-		czech = {
-			localized_text = "Odstřelovač se nachází",
-		},
-		french = {
-			localized_text = "Tireur d’élite localisé",
-		},
-		german = {
-			localized_text = "Scharftschütze geortet",
-		},
-		hungarian = {
-			localized_text = "Mesterlövész található",
-		},
-		italian = {
-			localized_text = "Cecchino localizzato",
-		},
-		japanese = {
-			localized_text = "狙撃兵の位置",
-		},
-		polish = {
-			localized_text = "Snajper zlokalizowany",
-		},
-		russian = {
-			localized_text = "Снайпер найден",
-		},
-		spanish = {
-			localized_text = "Francotirador localizado",
-		},
-		turkish = {
-			localized_text = "Keskin nişancı bulundu",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_radio_BTN28", {
-	english_text = "6 - REQUEST PICKUP",
-	languages = {
-		czech = {
-			localized_text = "6 - POŽÁDAT O VYZVEDNUTÍ",
-		},
-		french = {
-			localized_text = "6 - DEMANDER UN RAMASSAGE",
-		},
-		german = {
-			localized_text = "6 - ABHOLUNG ANFORDERN",
-		},
-		hungarian = {
-			localized_text = "6 - CSOMAGFELVÉTEL KÉRÉSE",
-		},
-		italian = {
-			localized_text = "6 - RICHIEDI RITIRO",
-		},
-		japanese = {
-			localized_text = "6 - 集荷の要求",
-		},
-		polish = {
-			localized_text = "6 - POPROŚ O ODBIÓR",
-		},
-		russian = {
-			localized_text = "6 - ЗАКАЗАТЬ САМОВЫВОЗ",
-		},
-		spanish = {
-			localized_text = "6 - SOLICITAR RECOGIDA",
-		},
-		turkish = {
-			localized_text = "6 - ALIM İSTEYİN",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("mp_radio_RequestPickup", {
-	english_text = "Requesting Pickup",
-	languages = {
-		czech = {
-			localized_text = "Žádost o vyzvednutí",
-		},
-		french = {
-			localized_text = "Demande de ramassage",
-		},
-		german = {
-			localized_text = "Abholung anfordern",
-		},
-		hungarian = {
-			localized_text = "Csomagfelvétel kérése",
-		},
-		italian = {
-			localized_text = "Richiedi ritiro",
-		},
-		japanese = {
-			localized_text = "集荷の依頼",
-		},
-		polish = {
-			localized_text = "Zamów odbiór",
-		},
-		russian = {
-			localized_text = "Заказать самовывоз",
-		},
-		spanish = {
-			localized_text = "Solicitar recogida",
-		},
-		turkish = {
-			localized_text = "Teslim alma isteğinde bulunun",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_spectate_functionality_fp", {
-	english_text = "Press %[default:cycle_spectator_mode] to toggle mode and F1 to toggle 1st person view",
-	languages = {
-		czech = {
-			localized_text = "6 - ",
-		},
-		french = {
-			localized_text = "6 - ",
-		},
-		german = {
-			localized_text = "6 - ",
-		},
-		hungarian = {
-			localized_text = "6 - ",
-		},
-		italian = {
-			localized_text = "6 - ",
-		},
-		japanese = {
-			localized_text = "6 - ",
-		},
-		polish = {
-			localized_text = "6 - ",
-		},
-		russian = {
-			localized_text = "6 - ",
-		},
-		spanish = {
-			localized_text = "6 - ",
-		},
-		turkish = {
-			localized_text = "6 - ",
-		},
-	},
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_init", {
-	english_text = "REQUESTING GAME ENVIRONMENT",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_begin", {
-	english_text = "RECEIVING GAME ENVIRONMENT",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_establish", {
-	english_text = "LOADING GAME ASSETS",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_configure", {
-	english_text = "CONFIGURING GAME SETTINGS",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_entities", {
-	english_text = "SPAWNING ENTITIES",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_post_spawn", {
-	english_text = "INITIALIZING ENTITIES",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_ingame", {
-	english_text = "IN GAME",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_getready", {
-	english_text = "GETTING READY",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_disconnect", {
-	english_text = "DISCONNECTING",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_loading_waiting", {
-	english_text = "WAITING FOR SERVER",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_pickup_objects", {
-	english_text = "PICKUP OBJECTS",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_circlejump", {
-	english_text = "CIRCLEJUMP",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
-})
-
-CPPAPI.AddLocalizedLabel("ui_crymp", {
-	english_text = "IMPROVED SPECTATOR",
-	--[[languages = {
-		czech = {
-			localized_text = "",
-		},
-		french = {
-			localized_text = "",
-		},
-		german = {
-			localized_text = "",
-		},
-		hungarian = {
-			localized_text = "",
-		},
-		italian = {
-			localized_text = "",
-		},
-		japanese = {
-			localized_text = "",
-		},
-		polish = {
-			localized_text = "",
-		},
-		russian = {
-			localized_text = "",
-		},
-		spanish = {
-			localized_text = "",
-		},
-		turkish = {
-			localized_text = "",
-		},
-	},]]
 })

@@ -376,7 +376,7 @@ private:
 	IAVI_Reader* m_pAVIReader;
 	ESaveCompare m_eSaveGameCompareMode;
 	bool				 m_bSaveGameSortUp;
-	
+
 	string m_currentSubtitleLabel;
 	//last known savegame
 	string	m_sLastSaveGame;
@@ -401,7 +401,7 @@ private:
 
 
 private:
-	int m_iDotCounter = 0;
+	unsigned int m_dotCounter = 0;
 
 
 };
