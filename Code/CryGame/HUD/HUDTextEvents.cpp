@@ -186,7 +186,7 @@ namespace NSKeyTranslation
 						bFound = pLocMgr->LocalizeLabel(fullKeyName.c_str(), realKeyName);
 						if (bFound)
 						{
-							InsertString(inString, pos, realKeyName);
+							InsertString(inString, pos, realKeyName.c_str());
 						}
 						else
 						{
@@ -752,7 +752,7 @@ void CHUD::InternalShowSubtitle(const char* subtitleLabel, ISound* pSound, bool 
 
 				// replace actions
 				NSKeyTranslation::TFixedWString finalDisplayString;
-				finalDisplayString.assign(localizedString, localizedString.length());
+				finalDisplayString.assign(localizedString.c_str(), localizedString.length());
 				NSKeyTranslation::ReplaceActions(pLocMgr, finalDisplayString);
 
 				if (pSound)
@@ -1206,7 +1206,7 @@ void CHUD::UpdateSubtitlesManualRender(float frameTime)
 						bFirst = false;
 					SSubtitleEntry& entry = *iter;
 					if (entry.nChunks == 0)
-						subtitleString+=entry.localized;
+						subtitleString+=entry.localized.c_str();
 					else
 					{
 						assert (entry.nCurChunk >= 0 && entry.nCurChunk < entry.nChunks);

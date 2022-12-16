@@ -85,7 +85,7 @@ bool GetLuaVarRecursive(const char *sKey, ScriptAnyValue &result) {
 	// Deal with first token specially
 	token = tokenStream.Tokenize(".", curPos);
 	if (token.empty()) return false; // Catching, say, an empty string
-	if (! gEnv->pScriptSystem->GetGlobalAny(token,value) ) return false;
+	if (! gEnv->pScriptSystem->GetGlobalAny(token.c_str(),value) ) return false;
 
 	// Tokenize remainder
 	token = tokenStream.Tokenize(".", curPos);
@@ -95,7 +95,7 @@ bool GetLuaVarRecursive(const char *sKey, ScriptAnyValue &result) {
 
 		// Must use temporary 
 		ScriptAnyValue getter;
-		value.table->GetValueAny(token, getter);
+		value.table->GetValueAny(token.c_str(), getter);
 		value = getter;	
 		token = tokenStream.Tokenize(".", curPos);
 	}
@@ -125,7 +125,7 @@ bool SetLuaVarRecursive(const char *sKey, const ScriptAnyValue &newValue) {
 
 	// Deal with first token specially
 	token = tokenStream.Tokenize(".", curPos);
-	gEnv->pScriptSystem->GetGlobalAny(token,value);
+	gEnv->pScriptSystem->GetGlobalAny(token.c_str(),value);
 
 	token = tokenStream.Tokenize(".", curPos);
 	if (token.empty()) return false; // Must be malformed path, ending with "."
@@ -138,7 +138,7 @@ bool SetLuaVarRecursive(const char *sKey, const ScriptAnyValue &newValue) {
 
 		// Must use temporary
 		ScriptAnyValue getter;
-		value.table->GetValueAny(token, getter);
+		value.table->GetValueAny(token.c_str(), getter);
 		value = getter;	
 
 		// Advance to the token ahead
@@ -147,7 +147,7 @@ bool SetLuaVarRecursive(const char *sKey, const ScriptAnyValue &newValue) {
 	}
 
 	// We should be left on the final token
-	value.table->SetValueAny(token, newValue);
+	value.table->SetValueAny(token.c_str(), newValue);
 
 	// Delete copy and return
 	return true;

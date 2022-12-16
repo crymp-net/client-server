@@ -315,7 +315,7 @@ public:
 			CWeapon* pWeapon = static_cast<CWeapon*> (GetWeapon(pActor));
 			if (pWeapon != 0)
 			{
-				CItem* pAcc = pWeapon->GetAccessory(ItemString(GetPortString(pActInfo, 1)));
+				CItem* pAcc = pWeapon->GetAccessory(ItemString(GetPortString(pActInfo, 1).c_str()));
 				if (pAcc != 0)
 					ActivateOutput(pActInfo, 1, true); // [True]
 				else
@@ -444,7 +444,7 @@ public:
 			CWeapon* pWeapon = static_cast<CWeapon*> ( className.empty() ? GetWeapon(pActor) : GetWeapon(pActor, className.c_str()) );
 			if (pWeapon != 0)
 			{
-				ItemString acc(GetPortString(pActInfo, EIP_ACCESSORY));
+				ItemString acc(GetPortString(pActInfo, EIP_ACCESSORY).c_str());
 				if (bAttach && pWeapon->GetAccessory(acc) == 0)
 				{
 					pWeapon->SwitchAccessory(acc);

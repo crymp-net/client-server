@@ -196,7 +196,7 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 				if (!strcmp(attribCVar, "pb_client"))
 				{
 					GetProfileValue(attrib.name, value);
-					if (atoi(value) == 0)
+					if (atoi(value.c_str()) == 0)
 					{
 						m_pbEnabled = false;
 						gEnv->pConsole->ExecuteString("net_pb_cl_enable false");
@@ -216,7 +216,7 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 				else if (!strcmp(attribCVar, "g_difficultyLevel"))
 				{
 					GetProfileValue(attrib.name, value);
-					SetDifficulty(value);
+					SetDifficulty(value.c_str());
 				}
 
 				ICVar* pCVar = gEnv->pConsole->GetCVar(attribCVar);
@@ -364,7 +364,7 @@ void COptionsManager::UpdateFlashOptions()
 		}
 		else
 		{
-			ICVar* pCVar = gEnv->pConsole->GetCVar(it->first);
+			ICVar* pCVar = gEnv->pConsole->GetCVar(it->first.c_str());
 			if (pCVar)
 			{
 				const char* name = pCVar->GetName();
@@ -418,7 +418,7 @@ void COptionsManager::UpdateToProfile()
 		}
 		else
 		{
-			ICVar* pCVAR = gEnv->pConsole->GetCVar(it->first);
+			ICVar* pCVAR = gEnv->pConsole->GetCVar(it->first.c_str());
 			if (pCVAR)
 			{
 				string value(pCVAR->GetString());

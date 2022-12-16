@@ -413,7 +413,7 @@ void CSPAnalyst::WriteXML()
 		filename.append(m_recordingFileName);
 		filename.append(".xml");
 
-		FILE *pFile = gEnv->pCryPak->FOpen(filename,"wb");
+		FILE *pFile = gEnv->pCryPak->FOpen(filename.c_str(),"wb");
 		if (pFile)
 		{
 			_smart_ptr<IXmlStringData> pXmlStrData = m_recordingData->getXMLData( 6000000 );
@@ -432,7 +432,7 @@ void CSPAnalyst::WriteToSection(const char* name, int value)
 	{
 		char buffer[32];
 		_itoa(value, buffer, 10);
-		m_currentRecordingSection->setAttr(name, string(buffer));
+		m_currentRecordingSection->setAttr(name, buffer);
 	}
 }
 
@@ -444,7 +444,7 @@ void CSPAnalyst::WriteToSection(const char* name, const char* value)
 void CSPAnalyst::WriteToSection(const char* name, string value)
 {
 	if(m_currentRecordingSection)
-		m_currentRecordingSection->setAttr(name, value);
+		m_currentRecordingSection->setAttr(name, value.c_str());
 }
 
 void CSPAnalyst::WriteToSection(const char* name, float value)
@@ -460,6 +460,6 @@ void CSPAnalyst::WriteToSection(const char* name, float value)
 		string floatAsString(highbuffer);
 		floatAsString.append(".");
 		floatAsString.append(lowbuffer);
-		m_currentRecordingSection->setAttr(name, floatAsString);
+		m_currentRecordingSection->setAttr(name, floatAsString.c_str());
 	}
 }

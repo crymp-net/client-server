@@ -729,7 +729,7 @@ public:
     EntityId      entityId;
     string        description;
     VotingStatusParams(){}
-    VotingStatusParams(EVotingState s, int t, EntityId e, const char* d):state(s),timeout(t),entityId(e),description(d){}
+    VotingStatusParams(EVotingState s, int t, EntityId e, const string& d):state(s),timeout(t),entityId(e),description(d){}
     void SerializeWith(TSerialize ser)
     {
       ser.EnumValue("state", state, eVS_none, eVS_last);

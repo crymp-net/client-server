@@ -832,7 +832,7 @@ void CTrooper::ProcessMovement(float frameTime)
 				pAGState->SetInput( m_idAngleZInput, anglez);
 		
 				if(m_jumpParams.bUseSpecialAnim && m_jumpParams.specialAnimType == JUMP_ANIM_FLY)
-					pAGState->SetInput( m_idActionInput, m_jumpParams.specialAnimAGInputValue );
+					pAGState->SetInput( m_idActionInput, m_jumpParams.specialAnimAGInputValue.c_str() );
 				else
 					pAGState->SetInput( m_idActionInput, "fly" );
 			}
@@ -979,11 +979,11 @@ void CTrooper::ProcessMovement(float frameTime)
 						 		if(m_jumpParams.bUseSpecialAnim && m_jumpParams.specialAnimType == JUMP_ANIM_LAND)
 								{
 									if(m_jumpParams.specialAnimAGInput == AIANIM_ACTION)
-										pAGState->SetInput( m_idActionInput, m_jumpParams.specialAnimAGInputValue );
+										pAGState->SetInput( m_idActionInput, m_jumpParams.specialAnimAGInputValue.c_str() );
 									else
 									{
 										pAGState->SetInput( m_idActionInput, "idle" );
-										pAGState->SetInput( m_idSignalInput, m_jumpParams.specialAnimAGInputValue );
+										pAGState->SetInput( m_idSignalInput, m_jumpParams.specialAnimAGInputValue.c_str() );
 									}
 									m_jumpParams.bPlayingSpecialAnim = true;
 								}
@@ -1120,7 +1120,7 @@ void CTrooper::ProcessAnimation(ICharacterInstance *pCharacter,float frameTime)
 			{
 				if(!m_bOverrideFlyActionAnim && m_overrideFlyAction != "idle")
 				{
-					pAGState->SetInput( m_idActionInput, m_overrideFlyAction);
+					pAGState->SetInput( m_idActionInput, m_overrideFlyAction.c_str());
 					m_bOverrideFlyActionAnim = true;
 				}
 				else if(m_bOverrideFlyActionAnim && m_overrideFlyAction == "idle")

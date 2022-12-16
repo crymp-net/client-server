@@ -1105,7 +1105,7 @@ void CHUD::ResetPostSerElements()
 		duration = 0.0f;
 		m_fBigOverlayTextLineTimeout = 0.0f;
 	}
-	DisplayBigOverlayFlashMessage(m_bigOverlayText, duration, m_bigOverlayTextX, m_bigOverlayTextY, m_bigOverlayTextColor);
+	DisplayBigOverlayFlashMessage(m_bigOverlayText.c_str(), duration, m_bigOverlayTextX, m_bigOverlayTextY, m_bigOverlayTextColor);
 	m_cineHideHUD = false;
 	m_cineState = eHCS_None;
 
@@ -1265,7 +1265,7 @@ void CHUD::ShowInventoryOverview(const char* curCategory, const char* curItem, b
 			int count = sizeof(grenades);
 			for (; it != end; ++it)
 			{
-				SFlashVarValue args[2] = { (*it).c_str(), !strcmp(*it, curItem) };
+				SFlashVarValue args[2] = { it->c_str(), (*it) == curItem };
 				m_animWeaponSelection.Invoke("addLog", args, 2);
 			}
 		}
@@ -1376,7 +1376,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 			PlaySound(ESound_WeaponModification);
 			if (!strcmp(attachment.c_str(), "NoAttachment"))
 			{
-				const char* curAttach = pCurrentWeapon->CurrentAttachment(ItemString(helper));
+				const char* curAttach = pCurrentWeapon->CurrentAttachment(ItemString(helper.c_str()));
 				szArgs = curAttach ? curAttach : "";
 			}
 			else
@@ -1680,7 +1680,7 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 				string name;
 				if (m_pHUDPowerStruggle)
 					m_pHUDPowerStruggle->RequestNewLoadoutName(name, "");
-				m_animBuyMenu.SetVariable("_root.POPUP.POPUP_NewPackage.m_modifyPackageName", SFlashVarValue(name));
+				m_animBuyMenu.SetVariable("_root.POPUP.POPUP_NewPackage.m_modifyPackageName", SFlashVarValue(name.c_str()));
 			}
 		}
 	}
@@ -4312,7 +4312,7 @@ void CHUD::UpdateObjective(CHUDMissionObjective* pObjective)
 		{
 			if (!pObjective->IsSilent() /*&& pObjective->GetStatus() != CHUDMissionObjective::DEACTIVATED*/)
 			{
-				const wchar_t* localizedText = LocalizeWithParams(description);
+				const wchar_t* localizedText = LocalizeWithParams(description.c_str());
 				wstring text = localizedText;
 				localizedText = LocalizeWithParams(status);
 				text.append(L" ");

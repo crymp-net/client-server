@@ -82,7 +82,7 @@ public:
 				
 				if (pItem)
 				{
-					pItem->GetScheduler()->ScheduleAction(CSchedulerAction<FlowPlayItemAnimationAction>::Create(FlowPlayItemAnimationAction(GetPortString(pActInfo, 3), GetPortBool(pActInfo, 2))));
+					pItem->GetScheduler()->ScheduleAction(CSchedulerAction<FlowPlayItemAnimationAction>::Create(FlowPlayItemAnimationAction(GetPortString(pActInfo, 3).c_str(), GetPortBool(pActInfo, 2))));
 				}
 			}
 			break;
@@ -231,7 +231,7 @@ public:
 				if (!pItem)
 					return;
 
-				pItem->GetScheduler()->ScheduleAction(CSchedulerAction<FlowPlayOffhandAnimationAction>::Create(FlowPlayOffhandAnimationAction(GetPortString(pActInfo, 3), GetPortBool(pActInfo, 2))));
+				pItem->GetScheduler()->ScheduleAction(CSchedulerAction<FlowPlayOffhandAnimationAction>::Create(FlowPlayOffhandAnimationAction(GetPortString(pActInfo, 3).c_str(), GetPortBool(pActInfo, 2))));
 			}
 			break;
 		}

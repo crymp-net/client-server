@@ -578,7 +578,7 @@ void CWeapon::FullSerialize(TSerialize ser)
 
 		if (ser.IsReading())
 		{
-			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 			assert(pClass);
 			m_ammo[pClass] = amount;
 		}
@@ -603,7 +603,7 @@ void CWeapon::FullSerialize(TSerialize ser)
 
 		if (ser.IsReading())
 		{
-			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 			assert(pClass);
 			m_bonusammo[pClass] = amount;
 		}
@@ -628,7 +628,7 @@ void CWeapon::FullSerialize(TSerialize ser)
 
 		if (ser.IsReading())
 		{
-			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 			assert(pClass);
 			m_minDroppedAmmo[pClass] = amount;
 		}
@@ -761,7 +761,7 @@ void CWeapon::SerializeLTL(TSerialize ser)
 
 		if (ser.IsReading())
 		{
-			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+			IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 			assert(pClass);
 			m_ammo[pClass] = amount;
 		}

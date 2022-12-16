@@ -139,7 +139,7 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 						}
 					}
 				}
-				if (curAttach)
+				if (!curAttach.empty())
 				{
 					SFlashVarValue args[2] = { helper.name.c_str(), iSelectedIndex };
 					m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);

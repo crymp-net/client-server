@@ -50,7 +50,7 @@ void CSoundMoods::AddSoundMood(const char *szSoundMood,uint32 uiFadeIn,float fDu
 	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
 	{
 		SSoundMood *pIterSoundMood = &(*iter);
-		if(!strcmp(pIterSoundMood->strSoundMood,szSoundMood))
+		if(pIterSoundMood->strSoundMood == szSoundMood)
 		{
 			pSoundMood = pIterSoundMood;
 			break;
@@ -146,7 +146,7 @@ void CSoundMoods::RemoveSoundMood(const char *szSoundMood,float fFade,uint32 uiF
 	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
 	{
 		SSoundMood *pSoundMood = &(*iter);
-		if(pSoundMood->bValid && !strcmp(pSoundMood->strSoundMood,szSoundMood))
+		if(pSoundMood->bValid && pSoundMood->strSoundMood == szSoundMood)
 		{
 			m_pSoundMoodManager->UpdateSoundMood(szSoundMood,fFade,uiFadeOut);
 			pSoundMood->bValid = false;
@@ -191,7 +191,7 @@ void CSoundMoods::Update()
 		if(pSoundMood->bValid && fTime >= pSoundMood->uiFadeOutTime && !pSoundMood->bUnlimited)
 		{
 			// Sound mood will be automatically unregistered after fade out
-			m_pSoundMoodManager->UpdateSoundMood(pSoundMood->strSoundMood,0.0f,pSoundMood->uiFadeOut);
+			m_pSoundMoodManager->UpdateSoundMood(pSoundMood->strSoundMood.c_str(),0.0f,pSoundMood->uiFadeOut);
 			pSoundMood->bValid = false;
 		}
 	}

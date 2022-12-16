@@ -78,7 +78,7 @@ void CAmmoPickup::SerializeSpawnInfo(TSerialize ser)
 	ser.Value("modelName", modelName);
 	ser.Value("classId", ammoClassId, /* 'ui16' */ 0x75693136);
 	ser.Value("count", count, 'ammo');
-	m_modelName = modelName;
+	m_modelName = modelName.c_str();
 
 	static char ammoClassName[129] = { 0 };
 	g_pGame->GetIGameFramework()->GetNetworkSafeClassName(ammoClassName, 128, ammoClassId);

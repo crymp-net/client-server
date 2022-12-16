@@ -563,7 +563,7 @@ bool CGameRules::OnClientConnect(int channelId, bool isReset)
 		{
 			playerName = pNetChannel->GetNickname();
 			if (!playerName.empty())
-				playerName = VerifyName(playerName);
+				playerName = VerifyName(playerName.c_str());
 		}
 
 		if (!playerName.empty())
@@ -1023,7 +1023,7 @@ void CGameRules::RenamePlayer(CActor* pActor, const char* name)
 		if (INetChannel* pNetChannel = pActor->GetGameObject()->GetNetChannel())
 			pNetChannel->SetNickname(fixed.c_str());
 
-		m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Renamed, fixed));
+		m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Renamed, fixed.c_str()));
 	}
 	else if (pActor->IsClient())
 		GetGameObject()->InvokeRMIWithDependentObject(SvRequestRename(), params, eRMI_ToServer, params.entityId);
@@ -1057,7 +1057,7 @@ string CGameRules::VerifyName(const char* name, IEntity* pEntity)
 		do
 		{
 			appendix.Format("(%d)", n++);
-		} while (IsNameTaken(nameFormatter + appendix));
+		} while (IsNameTaken((nameFormatter + appendix).c_str()));
 
 		nameFormatter.append(appendix);
 	}
@@ -1382,7 +1382,7 @@ void CGameRules::EndVoting(bool success)
 		switch (m_pVotingSystem->GetType())
 		{
 		case eVS_consoleCmd:
-			gEnv->pConsole->ExecuteString(m_pVotingSystem->GetSubject());
+			gEnv->pConsole->ExecuteString(m_pVotingSystem->GetSubject().c_str());
 			break;
 		case eVS_kick:
 		{
@@ -1395,7 +1395,7 @@ void CGameRules::EndVoting(bool success)
 			NextLevel();
 			break;
 		case eVS_changeMap:
-			m_pGameFramework->ExecuteCommandNextFrame(string("map ") + m_pVotingSystem->GetSubject());
+			m_pGameFramework->ExecuteCommandNextFrame((string("map ") + m_pVotingSystem->GetSubject()).c_str());
 			break;
 		case eVS_none:
 			break;
@@ -1446,7 +1446,7 @@ const char* CGameRules::GetTeamName(int teamId) const
 	for (TTeamIdMap::const_iterator it = m_teams.begin(); it != m_teams.end(); ++it)
 	{
 		if (teamId == it->second)
-			return it->first;
+			return it->first.c_str();
 	}
 
 	return 0;

@@ -638,7 +638,7 @@ void CGameRules::ProcessClientExplosionScreenFX(const ExplosionInfo& explosionIn
 
 		//Flashbang effect 
 		if (dist < explosionInfo.radius && inFOV &&
-			(!strcmp(explosionInfo.effect_class, "flashbang") || !strcmp(explosionInfo.effect_class, "FlashbangAI")))
+			(explosionInfo.effect_class == "flashbang" || explosionInfo.effect_class == "FlashbangAI"))
 		{
 			ray_hit hit;
 			int col = gEnv->pPhysicalWorld->RayWorldIntersection(explosionInfo.pos, -eyeToExplosion * dist, ent_static | ent_terrain, rwi_stop_at_pierceable | rwi_colltype_any, &hit, 1);
@@ -1196,13 +1196,13 @@ IMPLEMENT_RMI(CGameRules, SvStartVoting)
 {
 	CActor* pActor = GetActorByChannelId(m_pGameFramework->GetGameChannelId(pNetChannel));
 	if (pActor)
-		StartVoting(pActor, params.vote_type, params.entityId, params.param);
+		StartVoting(pActor, params.vote_type, params.entityId, params.param.c_str());
 	return true;
 }
 
 IMPLEMENT_RMI(CGameRules, ClVotingStatus)
 {
-	SAFE_HUD_FUNC(SetVotingState(params.state, params.timeout, params.entityId, params.description));
+	SAFE_HUD_FUNC(SetVotingState(params.state, params.timeout, params.entityId, params.description.c_str()));
 	return true;
 }
 

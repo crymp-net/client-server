@@ -79,7 +79,7 @@ void CFlashMenuObject::SetCVar(const char* command, const string& value)
 	gEnv->pConsole->ExecuteString(sCommand.c_str());
 
 	//save it to profile
-	g_pGame->GetOptions()->SaveCVarToProfile(sCommand, value);
+	g_pGame->GetOptions()->SaveCVarToProfile(command, value);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -133,15 +133,13 @@ void CFlashMenuObject::UpdateKeyMenu()
 
 void CFlashMenuObject::UpdateCVar(const char* command)
 {
-	string sCommand = command;
-
 	//execute the console variable
-	ICVar* state = gEnv->pConsole->GetCVar(sCommand);
+	ICVar* state = gEnv->pConsole->GetCVar(command);
 	string sValue = state->GetString();
 
 	if (m_pCurrentFlashMenuScreen)
 	{
-		SFlashVarValue args[2] = { (const char*)sCommand, (const char*)sValue };
+		SFlashVarValue args[2] = { command, sValue.c_str() };
 		m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Options.updateCVar", args, 2);
 	}
 }

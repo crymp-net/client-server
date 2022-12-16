@@ -1092,7 +1092,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 
 	SFlashVarValue arg[2] = { header,description };
 	m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setText", arg, 2);
-	m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setMapBackground", SFlashVarValue(sImg));
+	m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->Invoke("setMapBackground", SFlashVarValue(sImg.c_str()));
 	m_pCurrentFlashMenuScreen = m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING];
 
 	m_bUpdate = true;
@@ -1941,7 +1941,7 @@ void CFlashMenuObject::PushButton(ButtonPosMap::iterator button, bool press, boo
 	{
 		string method = button->first;
 		method.append(".pressButton");
-		m_pCurrentFlashMenuScreen->GetFlashPlayer()->Invoke0(method);
+		m_pCurrentFlashMenuScreen->GetFlashPlayer()->Invoke0(method.c_str());
 	}
 }
 
@@ -2136,13 +2136,12 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 		string command("g_loadMod ");
 		if (szArgs)
 			command.append(szArgs);
-		gEnv->pConsole->ExecuteString(command);
+		gEnv->pConsole->ExecuteString(command.c_str());
 		CryLogAlways("Load mod '%s' and restart game...", szArgs);
 	}
 	else if (!strcmp(szCommand, "UnloadMOD"))
 	{
-		string command("g_loadMod ");
-		gEnv->pConsole->ExecuteString(command);
+		gEnv->pConsole->ExecuteString("g_loadMod");
 		CryLogAlways("Unload mod '%s' and restart game...", szArgs);
 	}
 	else if (!strcmp(szCommand, "UpdateDefaultLevels"))
@@ -2202,7 +2201,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 		iSep = sTemp.find("|");
 		string sX = sTemp.substr(0, iSep);
 		string sY = sTemp.substr(iSep + 1, sTemp.length());
-		m_currentButtons.insert(ButtonPosMap::iterator::value_type(sName, Vec2(atoi(sX), atoi(sY))));
+		m_currentButtons.insert(ButtonPosMap::iterator::value_type(sName, Vec2(atoi(sX.c_str()), atoi(sY.c_str()))));
 
 
 
@@ -2428,7 +2427,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 		int iSep = sTemp.find("//");
 		string s1 = sTemp.substr(0, iSep);
 		string s2 = sTemp.substr(iSep + 2, sTemp.length());
-		SetCVar(s1, s2);
+		SetCVar(s1.c_str(), s2);
 	}
 	else if (!strcmp(szCommand, "TabStopPutMouse"))
 	{
@@ -2458,7 +2457,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 		iSep = sTmp.find("//");
 		string s2 = sTmp.substr(0, iSep);
 		string s3 = sTmp.substr(iSep + 2, sTmp.length());
-		SaveActionToMap(s1, s2, s3);
+		SaveActionToMap(s1.c_str(), s2.c_str(), s3.c_str());
 	}
 	else if (!strcmp(szCommand, "RestoreDefaults"))
 	{
@@ -3160,8 +3159,8 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 					*dst++ = c;
 				}
 
-				pLocMgr->FormatStringMessage(finalString, localizedString, outString, 0, 0, 0);
-				m_pCurrentFlashMenuScreen->Invoke("setErrorTextNonLocalized", SFlashVarValue(finalString));
+				pLocMgr->FormatStringMessage(finalString, localizedString, outString.c_str());
+				m_pCurrentFlashMenuScreen->Invoke("setErrorTextNonLocalized", SFlashVarValue(finalString.c_str()));
 			}
 		}
 	}
@@ -3640,7 +3639,7 @@ IFlashLoadMovieImage* CFlashMenuObject::LoadMovie(const char* pFilePath)
 		ISaveGameEnumeratorPtr pSGE = pProfile->CreateSaveGameEnumerator();
 		if (pSGE == 0)
 			return 0;
-		ISaveGameThumbailPtr pThumbnail = pSGE->GetThumbnail(saveGameName);
+		ISaveGameThumbailPtr pThumbnail = pSGE->GetThumbnail(saveGameName.c_str());
 		if (pThumbnail == 0)
 			return 0;
 		return new CFlashLoadMovieImage(pThumbnail);

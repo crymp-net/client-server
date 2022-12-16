@@ -540,9 +540,9 @@ float CShark::GetDistHeadTarget(const Vec3& targetPos, const Vec3& targetDirN,fl
 	{
 		Vec3 headBonePos(ZERO);
 
-		int16 jointid = pSkeletonPose->GetJointIDByName(m_params.headBoneName);
-		int16 jointid1 = pSkeletonPose->GetJointIDByName(m_params.spineBoneName1);
-		int16 jointid2 = pSkeletonPose->GetJointIDByName(m_params.spineBoneName2);
+		int16 jointid = pSkeletonPose->GetJointIDByName(m_params.headBoneName.c_str());
+		int16 jointid1 = pSkeletonPose->GetJointIDByName(m_params.spineBoneName1.c_str());
+		int16 jointid2 = pSkeletonPose->GetJointIDByName(m_params.spineBoneName2.c_str());
 		if(jointid>=0  && jointid1>=0 && jointid2>=0)
 		{
 			// can't rely on bones orientation, simulate the head orientation by predicting 

@@ -287,10 +287,10 @@ public:
 			if (pos == 2)
 			{
 				const float time = GetPortFloat(pActInfo, EIP_Time);
-				SAFE_HUD_FUNC(DisplayTempFlashText(msg, time <= 0.0f ? -1.0f : time, ColorF(colorVec, 1.0f)));
+				SAFE_HUD_FUNC(DisplayTempFlashText(msg.c_str(), time <= 0.0f ? -1.0f : time, ColorF(colorVec, 1.0f)));
 			}
 			else
-				SAFE_HUD_FUNC(DisplayFlashMessage(msg, pos, ColorF(colorVec, 1.0f)));
+				SAFE_HUD_FUNC(DisplayFlashMessage(msg.c_str(), pos, ColorF(colorVec, 1.0f)));
 		}
 	}
 
@@ -681,7 +681,7 @@ public:
 				{
 					const string& label = GetPortString(pActInfo, EIP_Label);
 					FlashRadarType radarType = static_cast<FlashRadarType> (GetPortInt(pActInfo, EIP_Type));
-					pRadar->AddStoryEntity(entityId, radarType, label);
+					pRadar->AddStoryEntity(entityId, radarType, label.c_str());
 					ActivateOutput(pActInfo, EOP_Added, true);
 				}
 			}

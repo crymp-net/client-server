@@ -428,7 +428,7 @@ string CGame::InitMapReloading()
 {
 	string levelFileName = GetIGameFramework()->GetLevelName();
 	levelFileName = PathUtil::GetFileName(levelFileName);
-	if (const char* visibleName = GetMappedLevelName(levelFileName))
+	if (const char* visibleName = GetMappedLevelName(levelFileName.c_str()))
 		levelFileName = visibleName;
 	//levelFileName.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
 	levelFileName.append("_crysis.crysisjmsf");
@@ -770,7 +770,7 @@ void CGame::CheckReloadLevel()
 	pLevelSystem->OnLoadingStart(pLevelInfo);
 	PlayerIdSet(playerID);
 	string levelstart(GetIGameFramework()->GetLevelName());
-	if (const char* visibleName = GetMappedLevelName(levelstart))
+	if (const char* visibleName = GetMappedLevelName(levelstart.c_str()))
 		levelstart = visibleName;
 	//levelstart.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
 	levelstart.append("_crysis.crysisjmsf");

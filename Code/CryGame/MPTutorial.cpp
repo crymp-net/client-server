@@ -383,7 +383,7 @@ void CMPTutorial::Update()
 					pos = 1;
 				}
 
-				SAFE_HUD_FUNC(ShowTutorialText(m_currentEvent.m_chunks[i].m_text, pos));
+				SAFE_HUD_FUNC(ShowTutorialText(m_currentEvent.m_chunks[i].m_text.c_str(), pos));
 				break;
 			}
 		}
@@ -554,7 +554,7 @@ void CMPTutorial::ShowMessage(STutorialEvent& event)
 		return;
 
 	// fill out keynames if necessary
-	if(!strcmp(event.m_name, "BoardVehicle"))
+	if(event.m_name == "BoardVehicle")
 	{
 		// special case for this event - has 5 actions associated...
 		string action1 = "@cc_";

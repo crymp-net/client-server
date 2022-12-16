@@ -86,7 +86,7 @@ IMPLEMENT_RMI(CItem, SvRequestAttachAccessory)
 	{
 		if (pInventory->GetCountOfClass(params.accessory.c_str()) > 0)
 		{
-			DoSwitchAccessory(ItemString(params.accessory));
+			DoSwitchAccessory(ItemString(params.accessory.c_str()));
 			GetGameObject()->InvokeRMI(ClAttachAccessory(), params, eRMI_ToAllClients | eRMI_NoLocalCalls);
 
 			return true;
@@ -99,7 +99,7 @@ IMPLEMENT_RMI(CItem, SvRequestAttachAccessory)
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CItem, ClAttachAccessory)
 {
-	DoSwitchAccessory(ItemString(params.accessory));
+	DoSwitchAccessory(ItemString(params.accessory.c_str()));
 
 	return true;
 }

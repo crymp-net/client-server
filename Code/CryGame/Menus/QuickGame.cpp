@@ -79,7 +79,7 @@ public:
 	}
 	void OnFinished()
 	{
-		m_hub->ShowError(string("@ui_quickgame_error"));
+		m_hub->ShowError("@ui_quickgame_error");
 		Close();
 	}
 
@@ -332,7 +332,7 @@ struct CQuickGame::SQGServerList : public IServerListener
 		}
 		else
 		{
-			m_qg->m_ui->OnUIEvent(SUIEvent(eUIE_quickGame, 1, m_servers[0].name));
+			m_qg->m_ui->OnUIEvent(SUIEvent(eUIE_quickGame, 1, m_servers[0].name.c_str()));
 			m_qg->m_browser->CheckDirectConnect(m_servers[0].id, m_servers[0].port);
 		}
 		m_qg->m_searching = false;
@@ -410,7 +410,7 @@ void CQuickGame::StartSearch(CMPHub* hub)
 	m_list->m_mapName = g_pGameCVars->g_quickGame_map->GetString();
 	if (!m_list->m_mapName.empty())
 	{
-		if (ILevelInfo* lvl = g_pGame->GetIGameFramework()->GetILevelSystem()->GetLevelInfo(m_list->m_mapName))
+		if (ILevelInfo* lvl = g_pGame->GetIGameFramework()->GetILevelSystem()->GetLevelInfo(m_list->m_mapName.c_str()))
 		{
 			string name = lvl->GetDisplayName();
 			if (!name.empty())

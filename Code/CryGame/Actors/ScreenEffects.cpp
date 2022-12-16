@@ -50,8 +50,8 @@ void CScreenEffects::PostUpdate(float frameTime)
 	{
 		Vec3 screenspace;
 		gEnv->pRenderer->ProjectToScreen(m_coords3d.x, m_coords3d.y, m_coords3d.z, &screenspace.x, &screenspace.y, &screenspace.z);
-		gEnv->p3DEngine->SetPostEffectParam(m_coordsXname, screenspace.x/100.0f);
-		gEnv->p3DEngine->SetPostEffectParam(m_coordsYname, screenspace.y/100.0f);
+		gEnv->p3DEngine->SetPostEffectParam(m_coordsXname.c_str(), screenspace.x/100.0f);
+		gEnv->p3DEngine->SetPostEffectParam(m_coordsYname.c_str(), screenspace.y/100.0f);
 	}
 }
 
@@ -256,7 +256,7 @@ void CPostProcessEffect::Init()
 	IActor *client = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_ownerID);
 	if (client && client->IsClient())
 	{
-		gEnv->p3DEngine->GetPostEffectParam(m_paramName, m_currentVal);
+		gEnv->p3DEngine->GetPostEffectParam(m_paramName.c_str(), m_currentVal);
 		m_startVal = m_currentVal;
 	}
 }
@@ -268,6 +268,6 @@ void CPostProcessEffect::Update(float point)
 	if (client && client->IsClient())
 	{
 		m_currentVal = (point * (m_goalVal - m_startVal)) + m_startVal;
-		gEnv->p3DEngine->SetPostEffectParam(m_paramName, m_currentVal);
+		gEnv->p3DEngine->SetPostEffectParam(m_paramName.c_str(), m_currentVal);
 	}
 }

@@ -118,8 +118,7 @@ public:
 	iterator begin() { return m_str; };
 	iterator end() { return m_str+length(); };
 
-	//! cast to C string operator.
-	operator const_str() const { return m_str; }
+	const value_type& operator[](size_type index) const { return m_str[index]; }
 
 	//! cast to C string.
 	const value_type *c_str() const { return m_str; }

@@ -196,7 +196,7 @@ void SNanoCloak::Update(CNanoSuit* pNano)
 			string msg = "@" + m_HUDMessage;
 			msg.append("_disabled");
 
-			pHUD->TextMessage(msg);
+			pHUD->TextMessage(msg.c_str());
 
 			//FIXME:special message for the temperature cloak
 			if (disableHeat)
@@ -1221,7 +1221,7 @@ void CNanoSuit::PlaySound(ENanoSound sound, float param, bool stopSound)
 		}
 		if (!pSound && !stopSound)
 		{
-			pSound = gEnv->pSoundSystem->CreateSound(soundName, soundFlag);
+			pSound = gEnv->pSoundSystem->CreateSound(soundName.c_str(), soundFlag);
 
 			if (pSound)
 			{

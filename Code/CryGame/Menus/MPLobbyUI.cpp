@@ -147,13 +147,13 @@ struct CMPLobbyUI::SServerFilter
 		m_parent->m_cmd = MPPath;
 		m_parent->m_cmd += "GameLobby_M.GameLobby.LeftLobby.setUseFilters";
 		SFlashVarValue arg[1] = { m_on };
-		m_parent->m_player->Invoke(m_parent->m_cmd, arg, 1);
+		m_parent->m_player->Invoke(m_parent->m_cmd.c_str(), arg, 1);
 
 		//setFilters = function(gameMode, mapName, ping, notFull, notEmpty, noPassword, autoTeam, antiCheat, friendlyFire, GamepadsOnly, noVoiceComm, dediServer, directX)
 		SFlashVarValue args[] =
 		{
 			SFlashVarValue(m_gamemode.empty() ? "all" : m_gamemode.c_str()),
-			SFlashVarValue(m_mapname),
+			SFlashVarValue(m_mapname.c_str()),
 			SFlashVarValue(m_minping),
 			SFlashVarValue(m_notfull),
 			SFlashVarValue(m_notempty),
@@ -168,7 +168,7 @@ struct CMPLobbyUI::SServerFilter
 		};
 		m_parent->m_cmd = MPPath;
 		m_parent->m_cmd += "GameLobby_M.GameLobby.LeftLobby.setFilters";
-		m_parent->m_player->Invoke(m_parent->m_cmd, args, sizeof(args) / sizeof(args[0]));
+		m_parent->m_player->Invoke(m_parent->m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	}
 
 	void EnableFilters(bool enable)
@@ -179,7 +179,7 @@ struct CMPLobbyUI::SServerFilter
 			m_parent->m_cmd = MPPath;
 			m_parent->m_cmd += "GameLobby_M.GameLobby.LeftLobby.setUseFilters";
 			SFlashVarValue arg[1] = { enable };
-			m_parent->m_player->Invoke(m_parent->m_cmd, arg, 1);
+			m_parent->m_player->Invoke(m_parent->m_cmd.c_str(), arg, 1);
 		}
 	}
 
@@ -1148,7 +1148,7 @@ bool CMPLobbyUI::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 	{
 		int id = atoi(pArgs);
 		const SUserListItem& u = m_userlist->GetListItem(id);
-		ShowRequestDialog(u.name);
+		ShowRequestDialog(u.name.c_str());
 	}
 	break;
 	case eGUC_addBuddyFromFind:
@@ -1161,19 +1161,19 @@ bool CMPLobbyUI::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 	break;
 	case eGUC_addBuddyFromInfo:
 	{
-		ShowRequestDialog(m_infoNick);
+		ShowRequestDialog(m_infoNick.c_str());
 	}
 	break;
 	case eGUC_addIgnoreFromInfo:
 	{
-		OnAddIgnore(m_infoNick);
+		OnAddIgnore(m_infoNick.c_str());
 	}
 	break;
 	case eGUC_addIgnore:
 	{
 		int id = atoi(pArgs);
 		const SUserListItem& u = m_userlist->GetListItem(id);
-		OnAddIgnore(u.name);
+		OnAddIgnore(u.name.c_str());
 	}
 	break;
 	case eGUC_stopIgnore:
@@ -1182,13 +1182,13 @@ bool CMPLobbyUI::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 		if (id != -1)
 		{
 			const SUserListItem& u = m_userlist->GetListItem(id);
-			OnStopIgnore(u.name);
+			OnStopIgnore(u.name.c_str());
 		}
 	}
 	break;
 	case eGUC_inviteBuddy:
 	{
-		OnAddBuddy(m_inviteNick, pArgs);
+		OnAddBuddy(m_inviteNick.c_str(), pArgs);
 	}
 	break;
 	case eGUC_removeBuddy:
@@ -1196,7 +1196,7 @@ bool CMPLobbyUI::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 		int id = atoi(pArgs);
 		if (id != -1)
 		{
-			OnRemoveBuddy(m_userlist->GetListItem(id).name);
+			OnRemoveBuddy(m_userlist->GetListItem(id).name.c_str());
 		}
 	}
 	break;
@@ -1243,11 +1243,11 @@ bool CMPLobbyUI::HandleFSCommand(EGsUiCommand cmd, const char* pArgs)
 			switch (t)
 			{
 			case eVUT_global:
-				OnShowUserInfo(0, m_userlist->GetListItem(id).name);
+				OnShowUserInfo(0, m_userlist->GetListItem(id).name.c_str());
 				break;
 			case eVUT_buddy:
 			case eVUT_ignore:
-				OnShowUserInfo(m_userlist->GetListItem(id).id, m_userlist->GetListItem(id).name);
+				OnShowUserInfo(m_userlist->GetListItem(id).id, m_userlist->GetListItem(id).name.c_str());
 				break;
 			}
 		}
@@ -1291,7 +1291,7 @@ void  CMPLobbyUI::ClearServerList()
 {
 	m_cmd = MPPath;
 	m_cmd += "ClearServerList\0";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 	m_serverlist->Clear();
 	ClearSelection();
 }
@@ -1317,7 +1317,7 @@ void  CMPLobbyUI::RemoveServer(int id)
 	{
 		m_cmd = MPPath;
 		m_cmd += "ClearSelectedServer\0";
-		m_player->Invoke0(m_cmd);
+		m_player->Invoke0(m_cmd.c_str());
 	}
 	m_serverlist->RemoveServer(id);
 }
@@ -1327,7 +1327,7 @@ void  CMPLobbyUI::ClearSelection()
 	m_serverlist->ClearSelection();
 	m_cmd = MPPath;
 	m_cmd += "ClearSelectedServer\0";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 }
 
@@ -1351,7 +1351,7 @@ void  CMPLobbyUI::FinishUpdate()
 {
 	m_cmd = MPPath;
 	m_cmd += "GameLobby_M.GameLobby.LeftLobby.switchUpdateButton\0";
-	m_player->Invoke1(m_cmd, 0);
+	m_player->Invoke1(m_cmd.c_str(), 0);
 	DisplayServerList();
 }
 
@@ -1359,7 +1359,7 @@ void  CMPLobbyUI::StartUpdate()
 {
 	m_cmd = MPPath;
 	m_cmd += "GameLobby_M.GameLobby.LeftLobby.switchUpdateButton\0";
-	m_player->Invoke1(m_cmd, 1);
+	m_player->Invoke1(m_cmd.c_str(), 1);
 	DisplayServerList();
 }
 
@@ -1577,7 +1577,7 @@ void  CMPLobbyUI::SelectUser(int id)
 			SetChatMode(item.name.c_str());
 			break;
 		case eVUT_global:
-			SetChatButtonsMode(true, CanAdd(eCC_global, item.id, item.name) ? 2 : 0);
+			SetChatButtonsMode(true, CanAdd(eCC_global, item.id, item.name.c_str()) ? 2 : 0);
 			OnChatModeChange(true, 0);
 			OnUserSelected(eCC_global, item.id);
 			SetChatMode(0);
@@ -1610,22 +1610,22 @@ void  CMPLobbyUI::SetChatButtonsMode(bool info, int action)
 	m_cmd = MPPath;
 	m_cmd += "setBuddyListMenuEnabled";
 	SFlashVarValue args[] = { true,info,action };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void  CMPLobbyUI::BreakChatText(const char* text)
 {
 	m_cmd = MPPath;
 	m_cmd += "TestChat";
-	m_player->Invoke1(m_cmd, text);
+	m_player->Invoke1(m_cmd.c_str(), text);
 	m_cmd = MPPath;
 	m_cmd += "back_TextSize";
 	SFlashVarValue v(int(1));
-	m_player->GetVariable(m_cmd, &v);
+	m_player->GetVariable(m_cmd.c_str(), &v);
 	m_cmd = MPPath;
 	m_cmd += "back_Text";
 	SFlashVarValue sv("");
-	m_player->GetVariable(m_cmd, &sv);
+	m_player->GetVariable(m_cmd.c_str(), &sv);
 	const char* str = sv.GetConstStrPtr();
 	if (v.GetDouble() > 1)
 	{
@@ -1633,7 +1633,7 @@ void  CMPLobbyUI::BreakChatText(const char* text)
 		while (next)
 		{
 			string a(str, next);
-			m_chatlist->AddText(a);
+			m_chatlist->AddText(a.c_str());
 			str = next + 1;
 			next = strchr(str, '\n');
 		}
@@ -1649,15 +1649,15 @@ void  CMPLobbyUI::ResetServerDetails()
 {
 	m_cmd = MPPath;
 	m_cmd += "GameLobby_M.GameLobby.resetServerInfo";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 	m_cmd = MPPath;
 	m_cmd += "ClearPlayerList";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 	m_cmd = MPPath;
 	m_cmd += "SetPlayerListInfo";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 }
 
 void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
@@ -1667,7 +1667,7 @@ void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
 	if (sd.m_noResponce)
 	{
 		SFlashVarValue args[] = { "@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A","@ui_menu_N_A" };
-		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	}
 	else
 	{
@@ -1688,12 +1688,12 @@ void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
 													sd.m_modname.c_str(),
 													sd.m_modversion.c_str() };
 
-		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	}
 
 	m_cmd = MPPath;
 	m_cmd += "SetPlayerGameMode";
-	m_player->Invoke1(m_cmd, sd.m_gamemode.c_str());
+	m_player->Invoke1(m_cmd.c_str(), sd.m_gamemode.c_str());
 
 	if (!sd.m_players.empty())
 	{
@@ -1706,15 +1706,15 @@ void  CMPLobbyUI::SetServerDetails(const SServerDetails& sd)
 					  SFlashVarValue(i),
 					  SFlashVarValue(sd.m_players[i].m_team),
 					  SFlashVarValue(sd.m_players[i].m_name.c_str()),
-					  SFlashVarValue(sd.m_players[i].m_rank),
+					  SFlashVarValue(sd.m_players[i].m_rank.c_str()),
 					  SFlashVarValue(sd.m_players[i].m_kills),
 					  SFlashVarValue(sd.m_players[i].m_deaths)
 			};
-			m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+			m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 		}
 		m_cmd = MPPath;
 		m_cmd += "SetPlayerListInfo";
-		m_player->Invoke0(m_cmd);
+		m_player->Invoke0(m_cmd.c_str());
 	}
 	DisplayServerList();
 }
@@ -1725,18 +1725,18 @@ void  CMPLobbyUI::SetSortParams(ESortColumn sc, ESortType st)
 	m_serverlist->m_sorttype = st;
 	m_cmd = MPPath;
 	m_cmd += "SortOrder";
-	m_player->SetVariable(m_cmd, st == eST_ascending ? "ASC" : "DSC");
+	m_player->SetVariable(m_cmd.c_str(), st == eST_ascending ? "ASC" : "DSC");
 	m_cmd = MPPath;
 	m_cmd += "SortColumn";
 	const char* col = VALUE_BY_KEY(sc, gSortColumnNames);
-	m_player->SetVariable(m_cmd, col);
+	m_player->SetVariable(m_cmd.c_str(), col);
 }
 
 void  CMPLobbyUI::ClearUserList()
 {
 	m_cmd = MPPath;
 	m_cmd += "ClearBuddyList";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 }
 
 void  CMPLobbyUI::AddChatUser(EChatCategory cat, int id, const char* name, bool foreign)
@@ -1761,17 +1761,17 @@ void  CMPLobbyUI::AddFindPerson(int id, const char* name)
 {
 	m_cmd = "addFoundPerson";
 	SFlashVarValue args[] = { name };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void  CMPLobbyUI::UpdateUsers()
 {
 	m_cmd = MPPath;
 	m_cmd += "SelectedBuddy";
-	m_player->SetVariable(m_cmd, m_userlist->m_selected);
+	m_player->SetVariable(m_cmd.c_str(), m_userlist->m_selected);
 	m_cmd = MPPath;
 	m_cmd += "SetBuddyListInfo";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 }
 
 void  CMPLobbyUI::AddChatText(const char* text)
@@ -1786,19 +1786,19 @@ void  CMPLobbyUI::DisplayChatText()
 {
 	m_cmd = MPPath;
 	m_cmd += "ClearChatList";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 	m_cmd = MPPath;
 	m_cmd += "NumChats";
-	m_player->SetVariable(m_cmd, int(m_chatlist->m_text.size()));
+	m_player->SetVariable(m_cmd.c_str(), int(m_chatlist->m_text.size()));
 
 	m_cmd = MPPath;
 	m_cmd += "DisplayChatIndex";
-	m_player->SetVariable(m_cmd, m_chatlist->m_firstVisible);
+	m_player->SetVariable(m_cmd.c_str(), m_chatlist->m_firstVisible);
 
 	m_cmd = MPPath;
 	m_cmd += "ManageChatScrollbar";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 	m_cmd = MPPath;
 	m_cmd += "AddChatText";
@@ -1809,7 +1809,7 @@ void  CMPLobbyUI::DisplayChatText()
 		if (idx >= m_chatlist->m_text.size())
 			break;
 		SFlashVarValue args[] = { 0,m_chatlist->m_text[idx].c_str() };
-		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	}
 }
 
@@ -1824,7 +1824,7 @@ void  CMPLobbyUI::EnableTabs(bool fav, bool recent, bool chat)
 	m_cmd = MPPath;
 	m_cmd += "setMPTabs";
 	SFlashVarValue args[] = { 1,fav ? 1 : 0,recent ? 1 : 0,chat ? 1 : 0 };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void  CMPLobbyUI::SetChatHeader(const char* text, const char* name)
@@ -1841,12 +1841,12 @@ void  CMPLobbyUI::SetChatHeader(const char* text, const char* name)
 
 		gEnv->pSystem->GetLocalizationManager()->FormatStringMessage(header, tmp, tmp2.c_str());
 		m_cmd = "setChatHeaderText";
-		m_player->Invoke1(m_cmd, header.c_str());
+		m_player->Invoke1(m_cmd.c_str(), header.c_str());
 	}
 	else
 	{
 		m_cmd = "setChatHeaderText";
-		m_player->Invoke1(m_cmd, text);
+		m_player->Invoke1(m_cmd.c_str(), text);
 	}
 }
 
@@ -1854,19 +1854,19 @@ void  CMPLobbyUI::AddSearchResult(int id, const char* nick)
 {
 	m_cmd = "addFoundPerson";
 	SFlashVarValue args[] = { nick,id };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void CMPLobbyUI::ClearSearchResults()
 {
 	m_cmd = "clearFindPerson";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 }
 
 void CMPLobbyUI::EnableSearchButton(bool f)
 {
 	m_cmd = "setFindPersonDisabled";
-	m_player->Invoke1(m_cmd, !f);
+	m_player->Invoke1(m_cmd.c_str(), !f);
 }
 
 void  CMPLobbyUI::SetInfoScreenId(int id)
@@ -1885,7 +1885,7 @@ void CMPLobbyUI::SetUserDetails(const char* nick, const char* country)
 	m_cmd = "setPlayerInfo";
 	// (Nick, Country, HoursPlayed, BattleWon, BattleLost, Kills, Death, FavMap, FavWeapon, TotalScorefor)
 	SFlashVarValue args[] = { nick,country };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void CMPLobbyUI::ShowInvitation(int id, const char* nick, const char* message)
@@ -1893,7 +1893,7 @@ void CMPLobbyUI::ShowInvitation(int id, const char* nick, const char* message)
 	m_cmd = "showInvitationReceived";
 	//showInvitationReceived(Playername, Text)
 	SFlashVarValue args[] = { id, nick, message };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 
@@ -1916,7 +1916,7 @@ void  CMPLobbyUI::SetBlinkChat(bool blink)
 	if (m_currentTab == 3 && blink)
 		return;
 	m_cmd = "setBlinkChat";
-	m_player->Invoke1(m_cmd, blink ? 1 : 0);
+	m_player->Invoke1(m_cmd.c_str(), blink ? 1 : 0);
 }
 
 void  CMPLobbyUI::DisplayUserList()
@@ -1926,15 +1926,15 @@ void  CMPLobbyUI::DisplayUserList()
 
 	m_cmd = MPPath;
 	m_cmd += "NumBuddies";
-	m_player->SetVariable(m_cmd, int(m_userlist->m_visibleList.size()));
+	m_player->SetVariable(m_cmd.c_str(), int(m_userlist->m_visibleList.size()));
 
 	m_cmd = MPPath;
 	m_cmd += "DisplayBuddyIndex";
-	m_player->SetVariable(m_cmd, int(m_userlist->m_firstVisible));
+	m_player->SetVariable(m_cmd.c_str(), int(m_userlist->m_firstVisible));
 
 	m_cmd = MPPath;
 	m_cmd += "ManageBuddyScrollbar";
-	m_player->Invoke0(m_cmd);
+	m_player->Invoke0(m_cmd.c_str());
 
 	m_cmd = MPPath;
 	m_cmd += "AddBuddy";
@@ -1942,7 +1942,7 @@ void  CMPLobbyUI::DisplayUserList()
 	{
 		const SUserListItem& item = m_userlist->GetListItem(i + m_userlist->m_firstVisible);
 		SFlashVarValue args[] = { i + m_userlist->m_firstVisible,item.name.c_str(),item.arrow,item.bubble,item.playing,item.playing,item.offline,!item.foreign };
-		m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+		m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	}
 	UpdateUsers();
 }
@@ -1964,7 +1964,7 @@ void  CMPLobbyUI::SetStatusString(const char* fmt, const char* param)
 
 	gEnv->pSystem->GetLocalizationManager()->FormatStringMessage(text, tmp, tmp2.c_str());
 	m_cmd = "setToolTipText";
-	m_player->Invoke1(m_cmd, text.c_str());
+	m_player->Invoke1(m_cmd.c_str(), text.c_str());
 }
 
 void  CMPLobbyUI::SetProfileInfo(const SUserInfo& ui)
@@ -2011,7 +2011,7 @@ void  CMPLobbyUI::SetProfileInfo(const SUserInfo& ui)
 												   deaths.c_str(),
 												   ui.m_stats.m_map.c_str(),
 												   ui.m_stats.m_weapon.c_str() };
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 }
 
 void  CMPLobbyUI::SetProfileInfoNick(const char* nick)
@@ -2020,7 +2020,7 @@ void  CMPLobbyUI::SetProfileInfoNick(const char* nick)
 
 	SFlashVarValue args[] = { nick, "", "", "", "", "", "", "", "" };
 
-	m_player->Invoke(m_cmd, args, sizeof(args) / sizeof(args[0]));
+	m_player->Invoke(m_cmd.c_str(), args, sizeof(args) / sizeof(args[0]));
 	m_infoNick = nick;
 }
 

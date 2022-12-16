@@ -28,7 +28,7 @@ CGameFlashLogic::CGameFlashLogic(CGameFlashAnimation *pGameFlashAnimation)
 
 CGameFlashLogic::~CGameFlashLogic()
 {
-	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->UnregisterListener(m_token, this);
+	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->UnregisterListener(m_token.c_str(), this);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -40,14 +40,14 @@ void CGameFlashLogic::Init(const char *strASControl,const char *strVariable,cons
 	m_fScale = fScale;
 	m_fOffset = fOffset;
 
-	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->RegisterListener(m_token,this,true,true);
+	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->RegisterListener(m_token.c_str(),this,true,true);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CGameFlashLogic::ReInit()
 {
-	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->RegisterListener(m_token,this,true,true);
+	gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem()->RegisterListener(m_token.c_str(),this,true,true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void CGameFlashLogic::OnGameTokenEvent( EGameTokenEvent event,IGameToken *pGameT
 		{
 			static char strValue[32];
 			sprintf(strValue,"%f",fValue*m_fScale+m_fOffset);
-			m_pGameFlashAnimation->SetVariable(m_invoke, strValue);
+			m_pGameFlashAnimation->SetVariable(m_invoke.c_str(), strValue);
 		}
 	}
 }

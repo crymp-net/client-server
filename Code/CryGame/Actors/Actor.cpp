@@ -2538,7 +2538,7 @@ bool CActor::CheckVirtualInventoryRestrictions(const std::vector<string>& invent
 
 		for (std::vector<string>::const_iterator it = inventory.begin(); it != inventory.end(); ++it)
 		{
-			const char* category = m_pItemSystem->GetItemCategory(*it);
+			const char* category = m_pItemSystem->GetItemCategory(it->c_str());
 
 			if (!_stricmp(category, "medium"))
 				++mediumCount;
@@ -3984,7 +3984,7 @@ IMPLEMENT_RMI(CActor, ClClearInventory)
 //-----------------------------------------------------------------------
 IMPLEMENT_RMI(CActor, ClSelectItemByName)
 {
-	SelectItemByName(params.itemName, true);
+	SelectItemByName(params.itemName.c_str(), true);
 
 	return true;
 }

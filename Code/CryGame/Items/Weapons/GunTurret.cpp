@@ -374,7 +374,7 @@ bool CGunTurret::ReadItemParams(const IItemParamsNode* root)
 		m_radarHelperPos = GetSlotHelperPos(eIGS_Aux0, m_radarHelper.c_str(), false);
 		m_barrelHelperPos = GetSlotHelperPos(eIGS_ThirdPerson, m_barrelHelper.c_str(), false);
 		m_fireHelperPos = GetSlotHelperPos(eIGS_ThirdPerson, m_fireHelper.c_str(), false);
-		m_rocketHelperPos = GetSlotHelperPos(eIGS_ThirdPerson, m_rocketHelper, false);
+		m_rocketHelperPos = GetSlotHelperPos(eIGS_ThirdPerson, m_rocketHelper.c_str(), false);
 
 	}
 
@@ -1827,10 +1827,10 @@ void    CGunTurret::DrawDebug()
 
 	Vec3 gun(ZERO), rocket(ZERO), radar(ZERO), barrel(ZERO);
 
-	gun = GetSlotHelperPos(eIGS_ThirdPerson, m_fireHelper, true);
-	rocket = GetSlotHelperPos(eIGS_ThirdPerson, m_rocketHelper, true);
-	barrel = GetSlotHelperPos(eIGS_ThirdPerson, m_barrelHelper, true);
-	radar = GetSlotHelperPos(eIGS_Aux0, m_radarHelper, true);
+	gun = GetSlotHelperPos(eIGS_ThirdPerson, m_fireHelper.c_str(), true);
+	rocket = GetSlotHelperPos(eIGS_ThirdPerson, m_rocketHelper.c_str(), true);
+	barrel = GetSlotHelperPos(eIGS_ThirdPerson, m_barrelHelper.c_str(), true);
+	radar = GetSlotHelperPos(eIGS_Aux0, m_radarHelper.c_str(), true);
 
 	pDebug->AddSphere(gun, 0.2f, ColorF(1, 0, 0, 1), 1.f);
 	pDebug->AddSphere(rocket, 0.2f, ColorF(0, 1, 0, 1), 1.f);

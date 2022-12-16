@@ -180,7 +180,7 @@ HSCRIPTFUNCTION CTweakMetadataLUA::FetchFunctionValue(IScriptTable *pTable, cons
 void CTweakMetadataLUA::StoreChanges( IScriptTable *pTable )  {
 	ScriptAnyValue value = GetLuaValue();
 	if (! IsEqual(m_originalValue, value) ) {
-		pTable->SetValue( m_sVariable, value);
+		pTable->SetValue( m_sVariable.c_str(), value);
 	}
 }
 

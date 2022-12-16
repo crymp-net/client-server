@@ -188,7 +188,7 @@ public:
 		{
 			if (cur_field == field_idx)
 			{
-				svalue = val;
+				svalue = val.c_str();
 				type = eFT_string;
 			}
 			cur_field++;
@@ -629,7 +629,7 @@ struct CGameNetworkProfile::SUserInfoReader : public CStoredBase
 		{
 			m_table.Format("PlayerStats_v%d", g_pGame->GetIGameFramework()->GetIGameStatsConfig()->GetStatsVersion());
 		}
-		m_profile->m_profile->ReadStats(profileId, new SReader(this, m_profile, m_table, profileId));
+		m_profile->m_profile->ReadStats(profileId, new SReader(this, m_profile, m_table.c_str(), profileId));
 	}
 
 	void OnValue(int id, SStoredUserInfo& info)
@@ -875,7 +875,7 @@ struct CGameNetworkProfile::SBuddies : public INetworkProfileListener
 						break;
 					}
 				}
-				pChat->AddChatMessage(string().Format("From [%s] :", name), message, 0, false);
+				pChat->AddChatMessage(string().Format("From [%s] :", name).c_str(), message, 0, false);
 			}
 		}
 	}
@@ -1064,13 +1064,13 @@ struct CGameNetworkProfile::SBuddies : public INetworkProfileListener
 		switch (o.m_type)
 		{
 		case eQR_addBuddy:
-			m_parent->m_profile->AddFriend(o.m_id, o.m_param);
+			m_parent->m_profile->AddFriend(o.m_id, o.m_param.c_str());
 			break;
 		case eQR_showInfo:
 			m_parent->m_profile->GetProfileInfo(o.m_id);
 			break;
 		case eQR_addIgnore:
-			AddIgnore(o.m_id, o.m_nick);
+			AddIgnore(o.m_id, o.m_nick.c_str());
 			break;
 		case eQR_stopIgnore:
 			RemoveIgnore(o.m_id);
@@ -1102,7 +1102,7 @@ struct CGameNetworkProfile::SBuddies : public INetworkProfileListener
 			}
 			m_requests.insert(std::make_pair(o.m_id, SBuddyRequest(o.m_nick, o.m_param)));
 			if (m_ui)
-				m_ui->OnAuthRequest(o.m_id, o.m_nick, o.m_param);
+				m_ui->OnAuthRequest(o.m_id, o.m_nick.c_str(), o.m_param.c_str());
 		}
 		break;
 		}
@@ -1152,7 +1152,7 @@ struct CGameNetworkProfile::SBuddies : public INetworkProfileListener
 		TUserInfoMap::iterator it = m_infoCache.find(id);
 		if (it != m_infoCache.end())
 		{
-			OnUserNick(id, it->second.m_nick, it->second.m_foreignName);
+			OnUserNick(id, it->second.m_nick.c_str(), it->second.m_foreignName);
 			return true;
 		}
 		return false;
@@ -1677,7 +1677,7 @@ void CGameNetworkProfile::SetPlayingStatus(uint ip, ushort port, ushort publicpo
 	loc.Format("%d.%d.%d.%d:%d/?type=game&queryport=%d&game=%s", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF, port, publicport, game_type);
 
 	if (m_profile)
-		m_profile->SetStatus(eUS_playing, loc);
+		m_profile->SetStatus(eUS_playing, loc.c_str());
 }
 
 void CGameNetworkProfile::SetChattingStatus()
@@ -1719,7 +1719,7 @@ void CGameNetworkProfile::OnEndQuery()
 	if (m_queries.empty() && m_loggingIn)
 	{
 		m_loggingIn = false;
-		m_hub->OnLoginSuccess(m_login);
+		m_hub->OnLoginSuccess(m_login.c_str());
 	}
 }
 

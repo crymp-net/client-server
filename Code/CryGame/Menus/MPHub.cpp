@@ -216,7 +216,13 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 			m_loggingIn = true;
 			m_enteringLobby = true;
 			ShowLoadingDlg("@ui_menu_register");
-			m_profile->Register(m_reginfo.nick, m_reginfo.email, pass, m_reginfo.country, SRegisterDayOfBirth(m_reginfo.day, m_reginfo.month, m_reginfo.year));
+			m_profile->Register(
+				m_reginfo.nick.c_str(),
+				m_reginfo.email.c_str(),
+				pass.c_str(),
+				m_reginfo.country.c_str(),
+				SRegisterDayOfBirth(m_reginfo.day, m_reginfo.month, m_reginfo.year)
+			);
 		}
 	}
 	break;
@@ -245,14 +251,12 @@ bool CMPHub::HandleFSCommand(const char* pCmd, const char* pArgs)
 		}
 		SFlashVarValue val("");
 		m_currentScreen->GetVariable("_root.MPAccount_Password", &val);
-		string pass = val.GetConstStrPtr();
-		string login(pArgs);
 		if (m_options.remeber || m_options.autologin)
 		{
-			m_options.login = login;
-			m_options.password = pass;
+			m_options.login = pArgs;
+			m_options.password = val.GetConstStrPtr();
 		}
-		DoLogin(login, pass);
+		DoLogin(pArgs, val.GetConstStrPtr());
 	}
 	break;
 	case eGUC_accountInfo:
@@ -539,7 +543,7 @@ void CMPHub::TryLogin(bool lobby)
 		}
 		else
 		{
-			DoLogin(m_options.login, m_options.password);
+			DoLogin(m_options.login.c_str(), m_options.password.c_str());
 		}
 	}
 	else
@@ -692,8 +696,8 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 				ExpandToWChar(serverMsg + 21, tmp);
 				pLoc->LocalizeLabel(msg, localised);
 				wstring newstring = L"%1\n@{ui_reason}: %2";
-				pLoc->FormatStringMessage(final, newstring, localised, tmp);
-				ShowErrorText(final);
+				pLoc->FormatStringMessage(final, newstring, localised.c_str(), tmp.c_str());
+				ShowErrorText(final.c_str());
 				break;
 			}
 		}
@@ -722,7 +726,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 				wstring localised, tmp;
 				ExpandToWChar(serverMsg + 21, tmp);
 				pLoc->LocalizeLabel(msg, localised);
-				pLoc->FormatStringMessage(final, localised, tmp);
+				pLoc->FormatStringMessage(final, localised, tmp.c_str());
 			}
 			else
 			{
@@ -730,7 +734,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 				pLoc->LocalizeLabel("@ui_menu_disconnect_Mod2", final);
 			}
 
-			ShowErrorText(final);
+			ShowErrorText(final.c_str());
 		}
 		break;
 	}
@@ -746,9 +750,9 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 				wstring localised, tmp;
 				ExpandToWChar(serverMsg, tmp);
 				pLoc->LocalizeLabel(msg, localised);
-				pLoc->FormatStringMessage(final, localised, tmp);
+				pLoc->FormatStringMessage(final, localised, tmp.c_str());
 
-				ShowErrorText(final);
+				ShowErrorText(final.c_str());
 			}
 		}
 		else
@@ -772,7 +776,7 @@ void CMPHub::ShowError(const char* msg, bool translate, int code)
 		tmp2.Format(L" (%d)", code);
 		tmp += tmp2;
 
-		ShowErrorText(tmp);
+		ShowErrorText(tmp.c_str());
 		return;
 	}
 
@@ -941,7 +945,7 @@ void CMPHub::SaveOptions()
 	g_pGame->GetOptions()->SaveValueToProfile("Multiplayer.Login.AutoLogin", m_options.autologin);
 	g_pGame->GetOptions()->SaveValueToProfile("Multiplayer.Login.RememberPassword", m_options.remeber);
 	g_pGame->GetOptions()->SaveValueToProfile("Multiplayer.Login.Login", m_options.login);
-	string pwd = EncodeStr(m_options.password, m_options.password.size());
+	string pwd = EncodeStr(m_options.password.c_str(), m_options.password.size());
 	g_pGame->GetOptions()->SaveValueToProfile("Multiplayer.Login.Password", pwd);
 	g_pGame->GetOptions()->SaveProfile();
 }
@@ -957,10 +961,10 @@ void CMPHub::OnMenuOpened()
 
 	m_menuOpened = true;
 	if (!m_login.empty())
-		SetLoginInfo(m_login);
+		SetLoginInfo(m_login.c_str());
 	if (!m_errrorText.empty())
 	{
-		ShowErrorText(m_errrorText);
+		ShowErrorText(m_errrorText.c_str());
 	}
 }
 

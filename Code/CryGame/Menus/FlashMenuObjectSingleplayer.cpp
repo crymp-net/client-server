@@ -79,7 +79,7 @@ void CFlashMenuObject::UpdateSingleplayerDifficulties()
 		sPath.append(".done");
 
 		TFlowInputData data;
-		pProfile->GetAttribute(sPath, data, false);
+		pProfile->GetAttribute(sPath.c_str(), data, false);
 		bool bDone = false;
 		data.GetValueWithConversion(bDone);
 		if (bDone)
@@ -349,7 +349,7 @@ bool CFlashMenuObject::SaveGame(const char* fileName)
 		}
 
 		sSaveFileName.append(".CRYSISJMSF");
-		const bool bSuccess = gEnv->pGame->GetIGameFramework()->SaveGame(sSaveFileName, true, true, eSGR_QuickSave, true);
+		const bool bSuccess = gEnv->pGame->GetIGameFramework()->SaveGame(sSaveFileName.c_str(), true, true, eSGR_QuickSave, true);
 		if (!bSuccess)
 			return false;
 
@@ -370,8 +370,8 @@ const char* CFlashMenuObject::ValidateName(const char* fileName)
 	if (index >= 0)
 	{
 		string check(sFileName.substr(index + 1, sFileName.length() - (index + 1)));
-		//if(!_stricmp(check, "levelstart")) //because of the french law we can't do this ...
-		if (!_stricmp(check, "crysis"))
+		//if(!_stricmp(check.c_str(), "levelstart")) //because of the french law we can't do this ...
+		if (!_stricmp(check.c_str(), "crysis"))
 			return "@ui_error_levelstart";
 	}
 	return NULL;

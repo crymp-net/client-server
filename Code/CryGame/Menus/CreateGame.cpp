@@ -168,10 +168,10 @@ void CMultiPlayerMenu::SCreateGame::StartServer()
 	IConsole* pConsole = gEnv->pConsole;
 
 	if (ICVar* var = pConsole->GetCVar("sv_servername"))
-		var->Set(m_name);
+		var->Set(m_name.c_str());
 
 	if (ICVar* var = pConsole->GetCVar("sv_password"))
-		var->Set(m_password);
+		var->Set(m_password.c_str());
 
 	if (ICVar* var = pConsole->GetCVar("sv_maxplayers"))
 		var->Set(m_maxplayers);
@@ -253,7 +253,7 @@ void CMultiPlayerMenu::SCreateGame::StartServer()
 		//command = "g_nextlevel +" + command;
 		if (m_anticheat)
 			command = "net_pb_sv_enable true +" + command;
-		StartDedicated(command);
+		StartDedicated(command.c_str());
 	}
 	else
 	{
@@ -356,14 +356,14 @@ void CMultiPlayerMenu::SCreateGame::GetLevelRotation()
 				break;
 			}
 		}
-		rotation->AddSetting(levelidx, string().Format("g_timelimit %d", timelimit ? time : 0));
-		rotation->AddSetting(levelidx, string().Format("g_fraglimit %d", fraglimit ? kills : 0));
-		rotation->AddSetting(levelidx, string().Format("g_pp_scale_income %.2f", fasteconomy ? 1.4f : 1.0f));
-		rotation->AddSetting(levelidx, string().Format("g_revivetime %d", respawn));
-		rotation->AddSetting(levelidx, string().Format("g_roundtime %d", roundtime));
-		rotation->AddSetting(levelidx, string().Format("g_roundlimit %d", roundlimit));
-		rotation->AddSetting(levelidx, string().Format("g_preroundtime %d", preroundtime));
-		rotation->AddSetting(levelidx, string().Format("g_suddendeath_time %d", suddendeath_time));
+		rotation->AddSetting(levelidx, string().Format("g_timelimit %d", timelimit ? time : 0).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_fraglimit %d", fraglimit ? kills : 0).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_pp_scale_income %.2f", fasteconomy ? 1.4f : 1.0f).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_revivetime %d", respawn).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_roundtime %d", roundtime).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_roundlimit %d", roundlimit).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_preroundtime %d", preroundtime).c_str());
+		rotation->AddSetting(levelidx, string().Format("g_suddendeath_time %d", suddendeath_time).c_str());
 	}
 }
 
@@ -501,7 +501,7 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 		valueArray.push_back(m_friendlyFire ? "1" : "0");
 		cache.push_back(string().Format("%d", m_friendlyDamageRatio).c_str());
 		keyArray.push_back(VALUE_BY_KEY(eCGO_friendlyDamageRatio, gCreateGameOptions));
-		valueArray.push_back(cache.back());
+		valueArray.push_back(cache.back().c_str());
 	}
 
 	if (ICVar* v = gEnv->pConsole->GetCVar("g_tk_punish"))
@@ -563,7 +563,7 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 		m_TODSpeed = min(TOD_SPEED_MAX, max(v->GetFVal(), TOD_SPEED_MIN));
 		cache.push_back(string().Format("%.0f", 100.0f * (m_TODSpeed - TOD_SPEED_MIN) / (TOD_SPEED_MAX - TOD_SPEED_MIN)).c_str());
 		keyArray.push_back(VALUE_BY_KEY(eCGO_TODSpeed, gCreateGameOptions));
-		valueArray.push_back(cache.back());
+		valueArray.push_back(cache.back().c_str());
 	}
 
 	if (ICVar* v = gEnv->pConsole->GetCVar("sv_timeofdaystart"))
@@ -571,7 +571,7 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 		m_TODStart = v->GetFVal();
 		cache.push_back(string().Format("%.5f", m_TODStart).c_str());
 		keyArray.push_back(VALUE_BY_KEY(eCGO_TODStart, gCreateGameOptions));
-		valueArray.push_back(cache.back());
+		valueArray.push_back(cache.back().c_str());
 	}
 
 	m_player->SetVariableArray(FVAT_ConstStrPtr, "m_backKeys", 0, &keyArray[0], keyArray.size());
@@ -599,8 +599,8 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 				string rules = rot->GetNextGameRules();
 				string desc = level;
 
-				ILevelInfo* pLevelInfo = pLevelSystem->GetLevelInfo(level);
-				if (pLevelInfo && pLevelInfo->SupportsGameType(rules))
+				ILevelInfo* pLevelInfo = pLevelSystem->GetLevelInfo(level.c_str());
+				if (pLevelInfo && pLevelInfo->SupportsGameType(rules.c_str()))
 				{
 					desc = pLevelInfo->GetDisplayName();
 				}
@@ -616,41 +616,41 @@ void CMultiPlayerMenu::SCreateGame::SetGlobalSettings()
 
 					if (!var.compareNoCase("g_timelimit"))
 					{
-						int t = atoi(val);
+						int t = atoi(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_timelimit, gMapOptions));
 						valueArray.push_back(t == 0 ? "0" : "1");
 
 						cache.push_back(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_timelimitMinutes, gMapOptions));
-						valueArray.push_back(cache.back());
+						valueArray.push_back(cache.back().c_str());
 					}
 					if (!var.compareNoCase("g_fraglimit"))
 					{
-						int f = atoi(val);
+						int f = atoi(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_killlimit, gMapOptions));
 						valueArray.push_back(f == 0 ? "0" : "1");
 
 						cache.push_back(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_killlimitKills, gMapOptions));
-						valueArray.push_back(cache.back());
+						valueArray.push_back(cache.back().c_str());
 					}
 					if (!var.compareNoCase("g_revivetime"))
 					{
-						int t = atoi(val);
+						int t = atoi(val.c_str());
 						cache.push_back(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_respawnTime, gMapOptions));
-						valueArray.push_back(cache.back());
+						valueArray.push_back(cache.back().c_str());
 					}
 					if (!var.compareNoCase("g_pp_scale_income"))
 					{
-						float f = atof(val);
+						float f = atof(val.c_str());
 						keyArray.push_back(VALUE_BY_KEY(eMO_fastEconomy, gMapOptions));
 						valueArray.push_back(f == 1.0f ? "0" : "1");
 					}
 				}
-				m_player->SetVariable("m_backServerName", SFlashVarValue(level));
-				m_player->SetVariable("m_backServerGameMode", SFlashVarValue(rules));
-				m_player->SetVariable("m_backServerDescription", SFlashVarValue(desc));
+				m_player->SetVariable("m_backServerName", SFlashVarValue(level.c_str()));
+				m_player->SetVariable("m_backServerGameMode", SFlashVarValue(rules.c_str()));
+				m_player->SetVariable("m_backServerDescription", SFlashVarValue(desc.c_str()));
 
 				m_player->SetVariableArray(FVAT_ConstStrPtr, "m_backKeys", 0, &keyArray[0], keyArray.size());
 				m_player->SetVariableArray(FVAT_ConstStrPtr, "m_backValues", 0, &valueArray[0], keyArray.size());
@@ -705,7 +705,7 @@ void CMultiPlayerMenu::SCreateGame::StartDedicated(const char* params)
 		}
 		cmd.append(" +exec %USER%/config/server.cfg +");
 		cmd.append(params);
-		if (gEnv->pGame->GetIGameFramework()->StartProcess(cmd))
+		if (gEnv->pGame->GetIGameFramework()->StartProcess(cmd.c_str()))
 		{
 			gEnv->pSystem->Quit();
 			return;

@@ -289,7 +289,7 @@ void CHUD::UpdatePlayerAmmo()
 					}
 					else //can happen during object pickup/throw
 					{
-						grenadeType.assign(m_sGrenadeType, m_sGrenadeType.length());
+						grenadeType.assign(m_sGrenadeType.c_str(), m_sGrenadeType.length());
 						grenades = m_iGrenadeAmmo;
 					}
 				}
@@ -303,7 +303,7 @@ void CHUD::UpdatePlayerAmmo()
 		}
 
 		if (m_playerAmmo != ammo || m_playerClipSize != clipSize || m_playerRestAmmo != restAmmo ||
-			m_iGrenadeAmmo != grenades || grenadeType.compare(m_sGrenadeType) != 0)
+			m_iGrenadeAmmo != grenades || grenadeType.compare(m_sGrenadeType.c_str()) != 0)
 		{
 			SFlashVarValue args[7] = { 0, ammo, clipSize, restAmmo, grenades, grenadeType.c_str(), true };
 			m_animPlayerStats.Invoke("setAmmo", args, 7);

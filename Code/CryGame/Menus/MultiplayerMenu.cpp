@@ -572,14 +572,14 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 	virtual void AddBuddy(SChatUser usr)
 	{
 		m_nicks[usr.m_id] = usr.m_nick;
-		m_menu->m_ui->AddChatUser(eCC_buddy, usr.m_id, usr.m_nick, usr.m_foreign);
-		m_menu->m_ui->ChatUserStatus(eCC_buddy, usr.m_id, usr.m_status, usr.m_location);
+		m_menu->m_ui->AddChatUser(eCC_buddy, usr.m_id, usr.m_nick.c_str(), usr.m_foreign);
+		m_menu->m_ui->ChatUserStatus(eCC_buddy, usr.m_id, usr.m_status, usr.m_location.c_str());
 	}
 
 	virtual void UpdateBuddy(SChatUser usr)
 	{
 		//    m_menu->m_ui->ClearUserList();
-		m_menu->m_ui->ChatUserStatus(eCC_buddy, usr.m_id, usr.m_status, usr.m_location);
+		m_menu->m_ui->ChatUserStatus(eCC_buddy, usr.m_id, usr.m_status, usr.m_location.c_str());
 	}
 
 	virtual void RemoveBuddy(int id)
@@ -589,7 +589,7 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 
 	virtual void AddIgnore(SChatUser s)
 	{
-		m_menu->m_ui->AddChatUser(eCC_ignored, s.m_id, s.m_nick, s.m_foreign);
+		m_menu->m_ui->AddChatUser(eCC_ignored, s.m_id, s.m_nick.c_str(), s.m_foreign);
 		m_menu->m_ui->UpdateUsers();
 	}
 
@@ -606,7 +606,7 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 		if (it != m_nicks.end())
 			msg = string("From [") + it->second + "] : " + msg;
 
-		m_menu->m_ui->AddChatText(msg);
+		m_menu->m_ui->AddChatText(msg.c_str());
 	}
 
 	virtual void OnAuthRequest(int id, const char* nick, const char* reason)
@@ -670,7 +670,7 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 		if (it != m_nicks.end())
 		{
 			msg = string("To [") + it->second + "] : " + message;
-			m_menu->m_ui->AddChatText(msg);
+			m_menu->m_ui->AddChatText(msg.c_str());
 		}
 		m_menu->m_profile->SendBuddyMessage(m_selectedBuddy, message);
 	}
@@ -779,7 +779,7 @@ struct CMultiPlayerMenu::SChat : public IChatListener
 			string msg;
 			msg.Format("[%s] : %s", from, message);
 			if (!m_parent->m_profile->IsIgnored(from))
-				m_parent->m_ui->AddChatText(msg);
+				m_parent->m_ui->AddChatText(msg.c_str());
 		}
 		break;
 		case eNCMT_server:
@@ -884,7 +884,7 @@ struct CMultiPlayerMenu::SChat : public IChatListener
 		if (profile)
 		{
 			m_parent->m_profile->OnUserNick(profile, user);
-			m_parent->m_profile->OnUserStats(profile, stats, eUIS_chat, country);
+			m_parent->m_profile->OnUserStats(profile, stats, eUIS_chat, country.c_str());
 		}
 		else
 			m_parent->m_profile->QueryUserInfo(user);
@@ -1077,7 +1077,7 @@ void CMultiPlayerMenu::JoinServer()
 	if (m_ui->GetSelectedServer(serv))
 	{
 		if (m_profile)
-			m_profile->SetPlayingStatus(serv.m_publicIP, serv.m_hostPort, serv.m_publicPort, serv.m_gameType);
+			m_profile->SetPlayingStatus(serv.m_publicIP, serv.m_hostPort, serv.m_publicPort, serv.m_gameType.c_str());
 		if (m_lan)
 		{
 			uint ip = serv.m_publicIP;

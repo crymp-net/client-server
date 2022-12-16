@@ -168,7 +168,7 @@ void CNetPlayerInput::DoSetState(const SSerializedPlayerInput& input)
 	if (g_pGameCVars->g_debugNetPlayerInput & 1)
 	{
 		IPersistantDebug* pPD = gEnv->pGame->GetIGameFramework()->GetIPersistantDebug();
-		pPD->Begin(string("net_player_input_") + m_pPlayer->GetEntity()->GetName(), true);
+		pPD->Begin((string("net_player_input_") + m_pPlayer->GetEntity()->GetName()).c_str(), true);
 		pPD->AddSphere(moveRequest.GetLookTarget(), 0.5f, ColorF(1, 0, 1, 1), 1.0f);
 		//			pPD->AddSphere( moveRequest.GetMoveTarget(), 0.5f, ColorF(1,1,0,1), 1.0f );
 

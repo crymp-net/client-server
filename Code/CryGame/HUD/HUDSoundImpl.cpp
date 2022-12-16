@@ -218,7 +218,7 @@ void CHUD::PlayStatusSound(const char* name, bool forceSuitSound)
 	else
 		strSound.append(name);
 
-	_smart_ptr<ISound> pSound = gEnv->pSoundSystem->CreateSound(strSound,FLAG_SOUND_3D|FLAG_SOUND_VOICE);
+	_smart_ptr<ISound> pSound = gEnv->pSoundSystem->CreateSound(strSound.c_str(),FLAG_SOUND_3D|FLAG_SOUND_VOICE);
 	if ( pSound )
 	{
 		pSound->SetSemantic(eSoundSemantic_NanoSuit);

@@ -417,7 +417,7 @@ public:
 			if (m_direction < 0)
 				m_ticket = pFader->FadeIn(col, fDuration, bUseCurColor);
 			else
-				m_ticket =pFader->FadeOut(col, fDuration, GetPortString(pActInfo, EIP_TextureName), bUseCurColor);
+				m_ticket =pFader->FadeOut(col, fDuration, GetPortString(pActInfo, EIP_TextureName).c_str(), bUseCurColor);
 			m_bNeedFaderStop = true;
 		}
 	}

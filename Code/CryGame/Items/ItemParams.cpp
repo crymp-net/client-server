@@ -570,7 +570,7 @@ bool CItem::ReadAccessoryParams(const IItemParamsNode *accessory, SAccessoryPara
 	{
 		curToken = nextToken;
 		curToken.Trim();
-		params->firemodes.push_back(ItemString(curToken));
+		params->firemodes.push_back(ItemString(curToken.c_str()));
 		nextToken = firemodes.Tokenize(",", curPos);
 	}
 

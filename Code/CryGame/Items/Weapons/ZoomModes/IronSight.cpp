@@ -657,7 +657,7 @@ void CIronSight::OnEnterZoom()
 			if (m_zoomparams.dof)
 			{
 				gEnv->p3DEngine->SetPostEffectParam("Dof_UseMask", 1);
-				gEnv->p3DEngine->SetPostEffectParamString("Dof_MaskTexName", UseAlternativeIronSight() ? m_zoomparams.alternate_dof_mask : m_zoomparams.dof_mask);
+				gEnv->p3DEngine->SetPostEffectParamString("Dof_MaskTexName", UseAlternativeIronSight() ? m_zoomparams.alternate_dof_mask.c_str() : m_zoomparams.dof_mask.c_str());
 			}
 			else
 			{
@@ -670,7 +670,7 @@ void CIronSight::OnEnterZoom()
 		if (m_zoomparams.blur_amount > 0.0f)
 		{
 			gEnv->p3DEngine->SetPostEffectParam("FilterMaskedBlurring_Amount", m_zoomparams.blur_amount);
-			gEnv->p3DEngine->SetPostEffectParamString("FilterMaskedBlurring_MaskTexName", m_zoomparams.blur_mask);
+			gEnv->p3DEngine->SetPostEffectParamString("FilterMaskedBlurring_MaskTexName", m_zoomparams.blur_mask.c_str());
 		}
 
 		CPlayer* pPlayer = CPlayer::FromActor(pActor);

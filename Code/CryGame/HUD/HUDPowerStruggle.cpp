@@ -442,11 +442,11 @@ void CHUDPowerStruggle::BuyPackage(SEquipmentPack equipmentPackage)
 		{
 			SItem item = (*it);
 			if (item.bAmmoType)
-				Buy(item.strName, false);
+				Buy(item.strName.c_str(), false);
 			else
 			{
 				if (item.iInventoryID == 0 || item.isUnique == 0)
-					Buy(item.strName, false);
+					Buy(item.strName.c_str(), false);
 
 				if (equipAttachments)
 				{
@@ -456,7 +456,7 @@ void CHUDPowerStruggle::BuyPackage(SEquipmentPack equipmentPackage)
 						IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(pPlayer->GetInventory()->GetItemByClass(pClass));
 						if (pItem && pItem != g_pHUD->GetCurrentWeapon())
 						{
-							const ItemString accessory(item.strClass);
+							const ItemString accessory(item.strClass.c_str());
 							const bool bAddAccessory = g_pHUD->GetCurrentWeapon()->GetAccessory(accessory) == 0;
 							if (bAddAccessory)
 							{
@@ -525,7 +525,7 @@ CHUDPowerStruggle::SEquipmentPack CHUDPowerStruggle::LoadEquipmentPack(int index
 			if (g_pGame->GetOptions()->GetProfileValue(strPath, entry))
 			{
 				SItem item;
-				if (GetItemFromName(entry, item))
+				if (GetItemFromName(entry.c_str(), item))
 				{
 					newPack.itemArray.push_back(item);
 					if (item.iInventoryID <= 0)
@@ -553,11 +553,11 @@ void CHUDPowerStruggle::RequestNewLoadoutName(string& name, const char* bluePrin
 			string checkTwo(bluePrint);
 			checkOne.MakeLower();
 			checkTwo.MakeLower();
-			int index = checkOne.find(checkTwo);
+			int index = checkOne.find(checkTwo.c_str());
 			if (index == 0)
 			{
-				strPackName = strPackName.substr(strlen(bluePrint), strlen(strPackName));
-				int number = atoi(strPackName);
+				strPackName = strPackName.substr(checkTwo.length(), strPackName.length());
+				int number = atoi(strPackName.c_str());
 				if (number == zahl)
 				{
 					found = true;
@@ -674,9 +674,8 @@ void CHUDPowerStruggle::SaveEquipmentPacks()
 void CHUDPowerStruggle::InitEquipmentPacks()
 {
 	m_EquipmentPacks.resize(0);
-	string strPathNums = "Multiplayer.EquipmentPacks.NumPacks";
 	int numEntries = 0;
-	if (g_pGame->GetOptions()->GetProfileValue(strPathNums, numEntries))
+	if (g_pGame->GetOptions()->GetProfileValue("Multiplayer.EquipmentPacks.NumPacks", numEntries))
 	{
 		for (int i(0); i < numEntries; ++i)
 		{
@@ -704,7 +703,7 @@ bool CHUDPowerStruggle::GetItemFromName(const char* name, SItem& item)
 	std::vector<string>::const_iterator it = tableList.begin();
 	for (; it != tableList.end(); ++it)
 	{
-		if (pGameRulesScriptTable->GetValue(*it, pItemListScriptTable))
+		if (pGameRulesScriptTable->GetValue(it->c_str(), pItemListScriptTable))
 		{
 			IScriptTable::Iterator iter = pItemListScriptTable->BeginIteration();
 			while (pItemListScriptTable->MoveNext(iter))
@@ -1399,7 +1398,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 	wstring localized;
 	localized = g_pHUD->LocalizeWithParams("@ui_buy_REPEATLASTBUY", true, buffer);
-	g_pBuyMenu->Invoke("setLastPurchase", SFlashVarValue(localized));
+	g_pBuyMenu->Invoke("setLastPurchase", SFlashVarValue(localized.c_str()));
 
 	int size = itemArray.size();
 	if (size)

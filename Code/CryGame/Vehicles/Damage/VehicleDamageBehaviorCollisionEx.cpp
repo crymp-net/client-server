@@ -55,7 +55,7 @@ void CVehicleDamageBehaviorCollisionEx::OnVehicleEvent(EVehicleEvent event, cons
 	{
 		Vec3 localPos = m_pVehicle->GetEntity()->GetWorldTM().GetInverted() * params.vParam;
 
-		IVehicleComponent* pComponent = m_pVehicle->GetComponent(m_componentName);
+		IVehicleComponent* pComponent = m_pVehicle->GetComponent(m_componentName.c_str());
 
 		if (pComponent->GetBounds().IsContainPoint(localPos))
 		{

@@ -282,7 +282,7 @@ void CVehicleMovementTweaks::Serialize(TSerialize ser, unsigned aspects)
 		{
 			SGroup& groupInfo = *groupIte;
 
-			ser.BeginGroup(groupInfo.name);
+			ser.BeginGroup(groupInfo.name.c_str());
 			ser.Value("isEnabled", groupInfo.isEnabled);
 			ser.EndGroup();
 		}

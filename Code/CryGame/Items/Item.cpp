@@ -729,7 +729,7 @@ void CItem::FullSerialize(TSerialize ser)
 			ser.BeginGroup("Accessory");
 			ser.Value("Name", name);
 			ser.Value("Id", id);
-			m_accessories[ItemString(name)] = id;
+			m_accessories[ItemString(name.c_str())] = id;
 			ser.EndGroup();
 		}
 	}
@@ -768,7 +768,7 @@ void CItem::FullSerialize(TSerialize ser)
 			ser.EndGroup();
 			if (ser.IsReading())
 			{
-				IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+				IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 				assert(pClass);
 				if (pClass)
 					m_bonusAccessoryAmmo[pClass] = amount;
@@ -962,7 +962,7 @@ void CItem::SerializeLTL(TSerialize ser)
 			ser.EndGroup();
 
 			if (pActor)
-				AddAccessory(ItemString(name));
+				AddAccessory(ItemString(name.c_str()));
 		}
 		if (attachmentAmount)
 		{

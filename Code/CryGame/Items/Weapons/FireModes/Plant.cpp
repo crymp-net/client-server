@@ -320,7 +320,7 @@ void CPlant::StartFire()
 
 	m_planting = true;
 	m_pWeapon->SetBusy(true);
-	m_pWeapon->PlayAction(ItemString(m_plantactions.plant));
+	m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()));
 
 	m_plantTimer = m_plantparams.delay;
 
