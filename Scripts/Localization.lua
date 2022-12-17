@@ -1,4 +1,23 @@
 --------------------------------------------------------------------------------
+-- CryMP additional stuff
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("ui_reason", {
+	english_text = "Reason",
+	-- TODO: add translations
+})
+
+CPPAPI.AddLocalizedLabel("ui_mp_channel", {
+	english_text = "CHANNEL",
+	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "KANAL",
+		},
+	},
+})
+
+--------------------------------------------------------------------------------
 -- CryMP extended radio
 --------------------------------------------------------------------------------
 
@@ -617,18 +636,8 @@ CPPAPI.AddLocalizedLabel("ui_spectate_functionality_crymp", {
 	},
 })
 
-CPPAPI.AddLocalizedLabel("ui_mp_channel", {
-	english_text = "CHANNEL",
-	-- TODO: add translations
-	languages = {
-		turkish = {
-			localized_text = "KANAL",
-		},
-	},
-})
-
 --------------------------------------------------------------------------------
--- CryMP map loading screen
+-- CryMP loading screen
 --------------------------------------------------------------------------------
 
 CPPAPI.AddLocalizedLabel("ui_loading_init", {
