@@ -372,7 +372,7 @@ static void WriteEngineErrorDump(std::FILE* file, CONTEXT* context, const char* 
 {
 	WriteDumpHeader(file);
 
-	std::fprintf(file, "Fatal error: ");
+	std::fprintf(file, "Engine error: ");
 	std::fflush(file);
 
 	std::vfprintf(file, format, args);
@@ -457,7 +457,7 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 	std::abort();
 }
 
-void CrashLogger::OnEngineError(const char* format, ...)
+void CrashLogger::OnEngineError(const char* format, va_list args)
 {
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
@@ -470,10 +470,7 @@ void CrashLogger::OnEngineError(const char* format, ...)
 
 		if (file)
 		{
-			va_list args;
-			va_start(args, format);
 			WriteEngineErrorDump(file, &context, format, args);
-			va_end(args);
 
 			std::fclose(file);
 		}

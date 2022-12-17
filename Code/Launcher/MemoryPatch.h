@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdarg>
+
 struct CPUInfo;
 
 namespace MemoryPatch
@@ -35,7 +37,7 @@ namespace MemoryPatch
 		void AllowMultipleInstances(void* pCrySystem);
 		void DisableIOErrorLog(void* pCrySystem);
 		void HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info));
-		void HookError(void* pCrySystem, void (*handler)(const char* format, ...));
+		void HookError(void* pCrySystem, void (*handler)(const char* format, va_list args));
 		void MakeDX9Default(void* pCrySystem);
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);

@@ -357,7 +357,7 @@ void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPU
 /**
  * Hooks CryEngine fatal error handler.
  */
-void MemoryPatch::CrySystem::HookError(void* pCrySystem, void (*handler)(const char* format, ...))
+void MemoryPatch::CrySystem::HookError(void* pCrySystem, void (*handler)(const char* format, va_list args))
 {
 	// convert thiscall into a normal function call
 	// and call our handler
