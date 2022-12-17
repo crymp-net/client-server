@@ -352,11 +352,11 @@ static void WriteCrashDump(std::FILE* file, EXCEPTION_POINTERS* exception)
 	WriteDumpFooter(file);
 }
 
-static void WriteInvalidParameterDump(std::FILE* file, CONTEXT* context)
+static void WriteGenericErrorDump(std::FILE* file, CONTEXT* context, const char* message)
 {
 	WriteDumpHeader(file);
 
-	std::fprintf(file, "Invalid parameter detected by CRT\n");
+	std::fprintf(file, "%s\n", message);
 	std::fflush(file);
 
 	DumpMemoryUsage(file);
@@ -413,6 +413,28 @@ static LONG __stdcall CrashHandler(EXCEPTION_POINTERS* exception)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static void PureCallHandler()
+{
+	CONTEXT context = {};
+	RtlCaptureContext(&context);
+
+	std::lock_guard lock(g_mutex);
+
+	if (g_handler)
+	{
+		std::FILE* file = g_handler();
+
+		if (file)
+		{
+			WriteGenericErrorDump(file, &context, "Pure function call");
+
+			std::fclose(file);
+		}
+	}
+
+	std::abort();
+}
+
 static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
 {
 	CONTEXT context = {};
@@ -426,7 +448,7 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 
 		if (file)
 		{
-			WriteInvalidParameterDump(file, &context);
+			WriteGenericErrorDump(file, &context, "Invalid parameter detected by CRT");
 
 			std::fclose(file);
 		}
@@ -465,5 +487,9 @@ void CrashLogger::Enable(CrashLogger::Handler handler)
 	g_handler = handler;
 
 	SetUnhandledExceptionFilter(&CrashHandler);
+
+	// set error handlers for our MSVC runtime
+	// note that engine uses VS2005 MSVC runtime, which has its own error handlers
+	_set_purecall_handler(&PureCallHandler);
 	_set_invalid_parameter_handler(&InvalidParameterHandler);
 }
