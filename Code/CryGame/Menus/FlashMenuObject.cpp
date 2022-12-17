@@ -3332,7 +3332,20 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 				IEntity* pLastEntity = gEnv->pEntitySystem->GetEntity(gClient->GetLastSpawnId());
 				skipDots = true;
 				status = "@{ui_loading_entities}: ";
-				status += (pLastEntity) ? pLastEntity->GetClass()->GetName() : "";
+
+				if (pLastEntity)
+				{
+					const std::string_view className(pLastEntity->GetClass()->GetName());
+
+					status += StringTools::ToUpper(className);
+
+					if (className == "Player")
+					{
+						status += " ";
+						status += pLastEntity->GetName();
+					}
+				}
+
 				break;
 			}
 			case eCVS_PostSpawnEntities:
