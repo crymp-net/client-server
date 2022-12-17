@@ -1016,6 +1016,20 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	}
 	else
 	{
+		//CryMP: 
+		if (!_stricmp(weaponClassName, "tacprojectile") || !_stricmp(weaponClassName, "TACCannon"))
+		{
+			SFlashVarValue args[6] = { shooter.c_str(), "Nuclear", target.c_str(), headshot, shooterFriendly, targetFriendly };
+			m_animKillLog.Invoke("addLog", args, 6);
+			return;
+		}
+		else if (!_stricmp(weaponClassName, "Default"))
+		{
+			SFlashVarValue args[6] = { shooter.c_str(), "New", target.c_str(), headshot, shooterFriendly, targetFriendly };
+			m_animKillLog.Invoke("addLog", args, 6);
+			return;
+		}
+
 		SFlashVarValue args[6] = {shooter.c_str(), entity.c_str(), target.c_str(), headshot, shooterFriendly, targetFriendly};
 		m_animKillLog.Invoke("addLog",args,6);
 	}
