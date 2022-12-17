@@ -583,9 +583,38 @@ CPPAPI.AddLocalizedLabel("mp_radio_RequestPickup", {
 -- CryMP spectator HUD
 --------------------------------------------------------------------------------
 
-CPPAPI.AddLocalizedLabel("ui_spectate_functionality_fp", {
-	english_text = "Press %[default:cycle_spectator_mode] to toggle mode and F1 to toggle 1st person view",
+CPPAPI.AddLocalizedLabel("ui_spectate_functionality_crymp", {
+	english_text = "Press %[default:cycle_spectator_mode] to toggle mode and %[debug:thirdperson] to toggle view",
 	-- TODO: add translations
+	languages = {
+		czech = {
+			localized_text = "Stisknutím %[default:cycle_spectator_mode] změníte režim a %[debug:thirdperson] pohled",
+		},
+		russian = {
+			localized_text = "Нажмите %[default:cycle_spectator_mode], чтобы переключить режим, и %[debug:thirdperson], чтобы переключить вид.",
+		},
+		french = {
+			localized_text = "Appuyez sur %[default:cycle_spectator_mode] pour changer de mode et %[debug:thirdperson] pour changer de vue",
+		},
+		german = {
+			localized_text = "Drücke %[default:cycle_spectator_mode], um den Modus zu wechseln, und wechsle mit %[debug:thirdperson] die Ansicht.",
+		},
+		hungarian = {
+			localized_text = "Nyomja meg a %[default:cycle_spectator_mode] gombot a mód váltásához és a %[debug:thirdperson] gombot a nézet váltásához",
+		},
+		italian = {
+			localized_text = "Premi %[default:cycle_spectator_mode] per attivare/disattivare la modalità e %[debug:thirdperson] per attivare/disattivare la visualizzazione",
+		},
+		polish = {
+			localized_text = "Naciśnij %[default:cycle_spectator_mode], aby przełączyć tryb i %[debug:thirdperson], aby przełączyć widok",
+		},
+		spanish = {
+			localized_text = "Presiona %[default:cycle_spectator_mode] para alternar el modo y %[debug:thirdperson] para alternar la vista",
+		},
+		turkish = {
+			localized_text = "Takım seçmek için %[default:cycle_spectator_mode] tuşuna ve 3. Şahıs görünümüne girmek için %[debug:thirdperson] tuşuna bas.",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_mp_channel", {

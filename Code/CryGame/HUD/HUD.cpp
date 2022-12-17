@@ -3563,7 +3563,7 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			// second line of text depends on current spectator mode
 			if (m_pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
 			{
-				functionalityText = LocalizeWithParams("@ui_spectate_functionality_tp");
+				functionalityText = LocalizeWithParams("@ui_spectate_functionality_crymp");
 			}
 			else
 			{
