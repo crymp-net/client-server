@@ -691,7 +691,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 				wstring localised, tmp;
 				ExpandToWChar(serverMsg + 21, tmp);
 				pLoc->LocalizeLabel(msg, localised);
-				wstring newstring = L"%1\nReason: %2";
+				wstring newstring = L"%1\n@{ui_reason}: %2";
 				pLoc->FormatStringMessage(final, newstring, localised, tmp);
 				ShowErrorText(final);
 				break;
