@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [v18] - 2022-12-18
 ### Added
 - Hit indicator, enabled by default, use `mp_hitIndicator 0` to disable it
 - High resolution chat HUD, disabled by default, use `mp_chatHighResolution 1` to enable it
