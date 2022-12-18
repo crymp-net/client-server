@@ -5,6 +5,11 @@
 CPPAPI.AddLocalizedLabel("ui_reason", {
 	english_text = "Reason",
 	-- TODO: add translations
+	languages = {
+		turkish = {
+			localized_text = "Sebep",
+		},
+	},
 })
 
 CPPAPI.AddLocalizedLabel("ui_mp_channel", {
@@ -304,7 +309,7 @@ CPPAPI.AddLocalizedLabel("ui_radio_BTN28", {
 			localized_text = "6 - SOLICITAR RECOGIDA",
 		},
 		turkish = {
-			localized_text = "6 - PICKUP GEREKLİ",
+			localized_text = "6 - TAŞIT LAZIM",
 		},
 	},
 })
@@ -455,7 +460,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_HurryUp", {
 })
 
 CPPAPI.AddLocalizedLabel("mp_radio_TakeBunker", {
-	english_text = "Take Bunker",
+	english_text = "Take that Bunker",
 	languages = {
 		czech = {
 			localized_text = "Obsaďte bunkr",
@@ -491,7 +496,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_TakeBunker", {
 })
 
 CPPAPI.AddLocalizedLabel("mp_radio_TakeNaval", {
-	english_text = "",
+	english_text = "Take the Naval Factory",
 	languages = {
 		czech = {
 			localized_text = "Obsaďte loděnici",
@@ -593,7 +598,7 @@ CPPAPI.AddLocalizedLabel("mp_radio_RequestPickup", {
 			localized_text = "Solicitar recogida",
 		},
 		turkish = {
-			localized_text = "Pickup gerekli",
+			localized_text = "Araca ihtiyaç var",
 		},
 	},
 })
@@ -631,7 +636,7 @@ CPPAPI.AddLocalizedLabel("ui_spectate_functionality_crymp", {
 			localized_text = "Presiona %[default:cycle_spectator_mode] para alternar el modo y %[debug:thirdperson] para alternar la vista",
 		},
 		turkish = {
-			localized_text = "Takım seçmek için %[default:cycle_spectator_mode] tuşuna ve 3. Şahıs görünümüne girmek için %[debug:thirdperson] tuşuna bas.",
+			localized_text = "Kamera modunu değiştirmek için %[default:cycle_spectator_mode] tuşuna ve birinci - üçüncü şahıs geçişi için %[debug:thirdperson] tuşuna basın",
 		},
 	},
 })
@@ -715,7 +720,7 @@ CPPAPI.AddLocalizedLabel("ui_loading_getready", {
 	-- TODO: add translations
 	languages = {
 		turkish = {
-			localized_text = "HAZIR",
+			localized_text = "HAZIRLANILIYOR",
 		},
 	},
 })
