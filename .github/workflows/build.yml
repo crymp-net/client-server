@@ -37,3 +37,12 @@ jobs:
       with:
         name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
         path: ${{ env.EXE_PATH }}
+
+  notify_master:
+    runs-on: windows-latest
+
+    needs: build_windows_msvc
+
+    steps:
+    - name: Notify CryMP master server
+      run: Invoke-RestMethod -Uri "https://crymp.nullptr.one/api/release?context=dev" -Method POST
