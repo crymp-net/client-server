@@ -202,11 +202,9 @@ void CMelee::StartFire()
 		return;
 
 	CPlayer* pPlayer = CPlayer::FromActor(pOwner);
-	if (pPlayer)
+	if (pPlayer && pPlayer->GetPlayerStats()->bLookingAtFriendlyAI)
 	{
-		const SPlayerStats stats = pPlayer->GetPlayerStats();
-		if (stats.bLookingAtFriendlyAI)
-			return;
+		return;
 	}
 
 	m_attacking = true;

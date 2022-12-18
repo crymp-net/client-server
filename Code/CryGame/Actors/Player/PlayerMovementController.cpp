@@ -1001,7 +1001,7 @@ bool CPlayerMovementController::UpdateNormal(float frameTime, SActorFrameMovemen
 
 	if (!m_pPlayer->IsClient() && hasControl)
 	{
-		if (m_pPlayer->GetPlayerStats().mountedWeaponID)
+		if (m_pPlayer->GetPlayerStats()->mountedWeaponID)
 		{
 
 			if (hasAimTarget)
@@ -1360,12 +1360,12 @@ void CPlayerMovementController::UpdateMovementState(SMovementState& state)
 		state.eyePosition = pEntity->GetWorldPos() + m_pPlayer->GetBaseQuat() * viewOfs;
 
 		// E3HAX E3HAX E3HAX
-		if (m_pPlayer->GetPlayerStats().mountedWeaponID)
+		if (m_pPlayer->GetPlayerStats()->mountedWeaponID)
 			state.eyePosition = GetISystem()->GetViewCamera().GetPosition();
 
 		if (!m_pPlayer->IsClient()) // marcio: fixes the eye direction for remote players
 			state.eyeDirection = (m_lookTarget - state.eyePosition).GetNormalizedSafe(state.eyeDirection);
-		else if (m_pPlayer->GetPlayerStats().FPWeaponSwayOn) // Beni - Fixes aim direction when zoom sway applies
+		else if (m_pPlayer->GetPlayerStats()->FPWeaponSwayOn) // Beni - Fixes aim direction when zoom sway applies
 			state.eyeDirection = GetISystem()->GetViewCamera().GetViewdir();
 		else
 			state.eyeDirection = m_pPlayer->GetViewQuatFinal().GetColumn1();
@@ -1448,7 +1448,7 @@ void CPlayerMovementController::UpdateMovementState(SMovementState& state)
 	else
 		state.bodyDirection = pEntity->GetWorldRotation().GetColumn1();
 
-	state.lean = m_pPlayer->GetPlayerStats().leanAmount;
+	state.lean = m_pPlayer->GetPlayerStats()->leanAmount;
 
 	state.atMoveTarget = m_atTarget;
 	state.desiredSpeed = m_desiredSpeed;

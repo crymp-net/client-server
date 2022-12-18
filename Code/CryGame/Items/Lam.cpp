@@ -800,8 +800,7 @@ void CLam::UpdateFPLaser(float frameTime, CItem* parent)
 		CPlayer* pPlayer = GetOwnerPlayer();
 		if (pPlayer)
 		{
-			const SPlayerStats pStats = pPlayer->GetPlayerStats();
-			if (pStats.bLookingAtFriendlyAI)
+			if (pPlayer->GetPlayerStats()->bLookingAtFriendlyAI)
 			{
 				hitPos = lamPos + (2.0f * dir);
 				laserLength = 2.0f;

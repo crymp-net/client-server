@@ -726,8 +726,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 		CPlayer* pPlayer = CPlayer::FromActor(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		SPlayerStats pStats = pPlayer->GetPlayerStats();
-		const bool onLadder = pStats.isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
 
 		const int canGrab = CanPerformPickUp(pActor, NULL);
 
@@ -828,8 +827,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 	{
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		SPlayerStats pStats = pPlayer->GetPlayerStats();
-		const bool onLadder = pStats.isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
 
 		IMovementController* pMC = pPlayer->GetMovementController();
 		if (!pMC)
@@ -1112,13 +1110,13 @@ void COffHand::UpdateGrabbedNPCWorldPos(IEntity* pEntity, struct SViewParams* vi
 			if (!pPlayer)
 				return;
 
-			SPlayerStats stats = pPlayer->GetPlayerStats();
-			Quat wQuat = (viewParams->rotation * Quat::CreateRotationXYZ(stats.FPWeaponAnglesOffset * gf_PI / 180.0f));
+			const SPlayerStats* stats = pPlayer->GetPlayerStats();
+			Quat wQuat = (viewParams->rotation * Quat::CreateRotationXYZ(stats->FPWeaponAnglesOffset * gf_PI / 180.0f));
 			wQuat *= Quat::CreateSlerp(viewParams->currentShakeQuat, IDENTITY, 0.5f);
 			wQuat.Normalize();
 
 			Vec3 itemAttachmentPos = GetSlotHelperPos(0, "item_attachment", false);
-			itemAttachmentPos = stats.FPWeaponPos + wQuat * itemAttachmentPos;
+			itemAttachmentPos = stats->FPWeaponPos + wQuat * itemAttachmentPos;
 
 			neckFinal.SetRotation33(Matrix33(viewParams->rotation * Quat::CreateRotationZ(gf_PI)));
 			neckFinal.SetTranslation(itemAttachmentPos);
@@ -1366,8 +1364,8 @@ bool COffHand::EvaluateStateTransition(int requestedAction, int activationMode, 
 			//Don't allow throwing grenades under water.
 			if (CPlayer* pPlayer = GetOwnerPlayer())
 			{
-				const SPlayerStats stats = pPlayer->GetPlayerStats();			
-				if ((stats.worldWaterLevel + 0.1f) > stats.FPWeaponPos.z)
+				const SPlayerStats* stats = pPlayer->GetPlayerStats();
+				if ((stats->worldWaterLevel + 0.1f) > stats->FPWeaponPos.z)
 					return false;
 			}
 
@@ -2041,7 +2039,7 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 						return OH_NO_GRAB;
 
 					CPlayer* pPlayerAI = CPlayer::FromActor(pActorAI);
-					if (pPlayerAI && pPlayerAI->GetPlayerStats().isStandingUp)
+					if (pPlayerAI && pPlayerAI->GetPlayerStats()->isStandingUp)
 						return OH_NO_GRAB;
 				}
 
@@ -3231,8 +3229,7 @@ void COffHand::MeleeAttack()
 	{
 		if (CPlayer* pOwner = GetOwnerPlayer())
 		{
-			const SPlayerStats stats = pOwner->GetPlayerStats();
-			if (stats.bLookingAtFriendlyAI)
+			if (pOwner->GetPlayerStats()->bLookingAtFriendlyAI)
 				return;
 		}
 

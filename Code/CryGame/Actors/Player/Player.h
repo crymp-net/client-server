@@ -589,7 +589,8 @@ public:
 	virtual void SetHealth(int health);
 	virtual SActorStats* GetActorStats() { return &m_stats; };
 	virtual const SActorStats* GetActorStats() const { return &m_stats; };
-	const SPlayerStats& GetPlayerStats() const { return m_stats; };
+	SPlayerStats* GetPlayerStats() { return &m_stats; }
+	const SPlayerStats* GetPlayerStats() const { return &m_stats; }
 	virtual SActorParams* GetActorParams() { return &m_params; };
 	virtual void PostPhysicalize();
 	virtual void CameraShake(float angle, float shift, float duration, float frequency, Vec3 pos, int ID, const char* source = "");

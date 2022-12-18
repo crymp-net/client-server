@@ -375,8 +375,7 @@ void CThrow::DoDrop()
 					CPlayer* pPlayer = m_pWeapon->GetOwnerPlayer();
 					if (pPlayer && info.aimDirection.z<-0.1f)
 					{
-						const SPlayerStats pStats = pPlayer->GetPlayerStats();
-						if (pStats.grabbedHeavyEntity)
+						if (pPlayer->GetPlayerStats()->grabbedHeavyEntity)
 						{
 							speed = 4.0f;
 						}

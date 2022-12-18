@@ -669,8 +669,7 @@ void CPlayerInput::PreUpdate()
 	// Designers requested we ignore single-handed objects (1 == m_iCarryingObject)
 
 	// CryMP: Stats get reset OnRevive, this should be better to use
-	const SPlayerStats stats = m_pPlayer->GetPlayerStats();
-	if (stats.grabbedHeavyEntity == 1)
+	if (m_pPlayer->GetPlayerStats()->grabbedHeavyEntity == 1)
 	{
 		if (NANOMODE_STRENGTH == m_pPlayer->GetNanoSuit()->GetMode())
 		{

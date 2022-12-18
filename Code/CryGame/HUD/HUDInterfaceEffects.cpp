@@ -1369,8 +1369,8 @@ bool CHUD::OnBeginCutScene(IAnimSequence* pSeq, bool bResetFX)
 
 	if(IAnimSequence::NO_PLAYER & flags)
 	{
-		SPlayerStats stats = m_pClientActor->GetPlayerStats();
-		stats.spectatorMode = CActor::eASM_Cutscene;	// moved up to avoid conflict with the MP spectator modes
+		// moved up to avoid conflict with the MP spectator modes
+		m_pClientActor->GetPlayerStats()->spectatorMode = CActor::eASM_Cutscene;
 		
 		m_pClientActor->Draw(false);
 		
@@ -1434,8 +1434,7 @@ bool CHUD::OnEndCutScene(IAnimSequence* pSeq)
 
 	if(IAnimSequence::NO_PLAYER & flags)
 	{
-		SPlayerStats stats = m_pClientActor->GetPlayerStats();
-		stats.spectatorMode = CActor::eASM_None;
+		m_pClientActor->GetPlayerStats()->spectatorMode = CActor::eASM_None;
 
 		m_pClientActor->Draw(true);
 

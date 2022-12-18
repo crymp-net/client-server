@@ -76,10 +76,8 @@ void CSingleTG::UpdateFPView(float frameTime)
 			if (!pPlayer)
 				return;
 
-			SPlayerStats stats = pPlayer->GetPlayerStats();
-
 			if (!gEnv->bMultiplayer)
-				stats.bLookingAtFriendlyAI = true;
+				pPlayer->GetPlayerStats()->bLookingAtFriendlyAI = true;
 
 			SAFE_HUD_FUNC(ShowProgress((int)0, true, 400, 300, "@no_lock_tac",true, true));
 		}

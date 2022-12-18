@@ -132,18 +132,19 @@ bool CWeapon::PreActionAttack(bool startFire)
 
 	//if(gEnv->bMultiplayer)
 	{
-		SPlayerStats stats = pPlayer->GetPlayerStats();
+		SPlayerStats* stats = pPlayer->GetPlayerStats();
+
 		if(startFire && pPlayer->IsSprinting())
 		{
 			//Stop sprinting, start firing
-			stats.bSprinting = false;
-			stats.bIgnoreSprinting = true;
+			stats->bSprinting = false;
+			stats->bIgnoreSprinting = true;
 		
 		}
 		else if(!startFire)
 		{
 			//Stop firing, continue sprinting
-			stats.bIgnoreSprinting = false;
+			stats->bIgnoreSprinting = false;
 
 		}
 	}

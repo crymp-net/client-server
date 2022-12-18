@@ -3518,9 +3518,8 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 	if (!pPlayer)
 		return;
 
-	SPlayerStats stats = pPlayer->GetPlayerStats();
-
-	stats.bLookingAtFriendlyAI = false;
+	SPlayerStats* stats = pPlayer->GetPlayerStats();
+	stats->bLookingAtFriendlyAI = false;
 
 	LowerWeapon(false);
 	if (pSlave)
@@ -3556,7 +3555,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 		}
 		Vec3 dis = pLookAtEntity->GetWorldPos() - pPlayer->GetEntity()->GetWorldPos();
 		if (dis.len2() < 5.0f)
-			stats.bLookingAtFriendlyAI = true;
+			stats->bLookingAtFriendlyAI = true;
 
 		return;
 	}
@@ -3591,7 +3590,7 @@ void CWeapon::UpdateWeaponLowering(float frameTime)
 		}
 		Vec3 dis = pLookAtEntity->GetWorldPos() - pPlayer->GetEntity()->GetWorldPos();
 		if (dis.len2() < 5.0f)
-			stats.bLookingAtFriendlyAI = true;
+			stats->bLookingAtFriendlyAI = true;
 	}
 
 }
@@ -3624,8 +3623,7 @@ void CWeapon::RestorePlayerSprintingStats()
 		CPlayer* pPlayer = GetOwnerPlayer();
 		if (pPlayer && pPlayer->IsClient())
 		{
-			SPlayerStats pStats = pPlayer->GetPlayerStats();
-			pStats.bIgnoreSprinting = false;
+			pPlayer->GetPlayerStats()->bIgnoreSprinting = false;
 		}
 	}
 }
