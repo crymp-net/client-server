@@ -194,6 +194,7 @@ private:
 	
 	//swing-o-meter setup
 	bool	m_nkLeft;
+	int m_lastTimer = -1;
 
 	//new powerstruggle rules 
 	std::vector<EntityId> m_powerpoints;

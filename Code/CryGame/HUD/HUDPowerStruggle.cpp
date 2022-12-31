@@ -243,17 +243,27 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 
 		if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ && m_pGameRules->IsTimeLimited())
 		{
-			int time = (int)(m_pGameRules->GetRemainingGameTime());
+			const int time = (int)(m_pGameRules->GetRemainingGameTime());
+			if (time != m_lastTimer)
+			{
+				int mins = time / 60;
+				int secs = time - (mins * 60);
+				CryFixedStringT<32> timeFormatter;
+				timeFormatter.Format("%02d:%02d", mins, secs);
+				SFlashVarValue timearg(timeFormatter.c_str());
+				m_animSwingOMeter.Invoke("setTimer", &timearg, 1);
 
-			int mins = time / 60;
-			int secs = time - (mins * 60);
-			CryFixedStringT<32> timeFormatter;
-			timeFormatter.Format("%02d:%02d", mins, secs);
-			SFlashVarValue timearg(timeFormatter.c_str());
-			m_animSwingOMeter.Invoke("setTimer", &timearg, 1);
+				m_lastTimer = time;
+			}
 		}
 		else
-			m_animSwingOMeter.Invoke("setTimer", "");
+		{
+			if (m_lastTimer != -2)
+			{
+				m_animSwingOMeter.Invoke("setTimer", "");
+				m_lastTimer = -2;
+			}
+		}
 
 		m_animSwingOMeter.GetFlashPlayer()->Advance(fDeltaTime);
 		m_animSwingOMeter.GetFlashPlayer()->Render();
