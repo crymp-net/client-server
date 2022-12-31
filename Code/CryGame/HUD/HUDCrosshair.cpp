@@ -199,7 +199,8 @@ void CHUDCrosshair::Update(float fDeltaTime)
 		m_spread = min(m_spread, 1.0f);
 	}
 
-	if (m_smoothSpread != m_spread)
+	//CryMP: Called only when value changes, tested and works
+	if ((int)(m_smoothSpread*100.f) != (int)(m_spread*100.f)) 
 	{
 		Interpolate(m_smoothSpread, m_spread, 20.0f, fDeltaTime);
 		m_animCrossHair.Invoke("setRecoil", m_smoothSpread);
