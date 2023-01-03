@@ -83,6 +83,17 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	static void OnKeyBindCmd(IConsoleCmdArgs* pArgs);
 	static void OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs);
 
+	// TODO: remove
+	struct Brush_Hook
+	{
+		void Dephysicalize(bool keepIfReferenced);
+	};
+
+	using TBrushDephysicalize = decltype(&Brush_Hook::Dephysicalize);
+	static inline TBrushDephysicalize s_originalBrushDephysicalize = nullptr;
+
+	void HackBrush();
+
 public:
 	Client();
 	~Client();
