@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "Cry3DEngine/TimeOfDay.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
@@ -115,6 +116,95 @@ namespace
 		// vtable hook
 		TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
 		WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
+	}
+
+	ITimeOfDay* CreateTimeOfDay()
+	{
+		CryLogAlways("$3[CryMP] Initializing Time Of Day");
+
+		return new TimeOfDay(gLauncher->GetDLLs().pCry3DEngine);
+	}
+
+	void DestroyTimeOfDay(void* pTimeOfDay)
+	{
+		delete static_cast<TimeOfDay*>(pTimeOfDay);
+	}
+
+	float GetTimeOfDayHDRMultiplier()
+	{
+		return static_cast<TimeOfDay*>(gEnv->p3DEngine->GetTimeOfDay())->GetHDRMultiplier();
+	}
+
+	void ReplaceTimeOfDay(void* pCry3DEngine)
+	{
+		void* ctorFunc = &CreateTimeOfDay;
+		void* dtorFunc = &DestroyTimeOfDay;
+		void* getHDRMultiplierFunc = &GetTimeOfDayHDRMultiplier;
+
+#ifdef BUILD_64BIT
+		unsigned char ctorCode[] = {
+			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+			0xFF, 0xD0,                                                  // call rax
+			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,              // nop...
+			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90
+		};
+
+		unsigned char dtorCode[] = {
+			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+			0xFF, 0xD0,                                                  // call rax
+			0x90, 0x90, 0x90, 0x90                                       // nop...
+		};
+
+		unsigned char getHDRMultiplierCode[] = {
+			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+			0xFF, 0xD0,                                                  // call rax
+			0x0F, 0x28, 0xD0,                                            // movaps xmm2, xmm0
+			0x48, 0x8D, 0x4C, 0x24, 0x20,                                // lea rcx, qword ptr ss:[rsp+0x20]
+			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90         // nop...
+		};
+
+		std::memcpy(&ctorCode[2], &ctorFunc, 8);
+		std::memcpy(&dtorCode[2], &dtorFunc, 8);
+		std::memcpy(&getHDRMultiplierCode[2], &getHDRMultiplierFunc, 8);
+
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof ctorCode);
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof dtorCode);
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+#else
+		unsigned char ctorCode[] = {
+			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+			0xFF, 0xD0,                    // call eax
+			0x90, 0x90, 0x90, 0x90,        // nop...
+			0x90, 0x90, 0x90, 0x90,
+			0x90, 0x90, 0x90, 0x90,
+			0x90, 0x90, 0x90, 0x90,
+			0x90, 0x90
+		};
+
+		unsigned char dtorCode[] = {
+			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+			0x57,                          // push edi
+			0xFF, 0xD0,                    // call eax
+			0x83, 0xC4, 0x04,              // add esp, 0x4
+			0x90, 0x90, 0x90, 0x90, 0x90   // nop...
+		};
+
+		unsigned char getHDRMultiplierCode[] = {
+			0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+			0xFF, 0xD0,                          // call eax
+			0xD9, 0x5C, 0x24, 0xFC,              // fstp dword ptr ss:[esp-0x4], st(0)
+			0xF3, 0x0F, 0x10, 0x44, 0x24, 0xFC,  // movss xmm0, dword ptr ss:[esp-0x4]
+			0x90, 0x90, 0x90, 0x90               // nop...
+		};
+
+		std::memcpy(&ctorCode[1], &ctorFunc, 4);
+		std::memcpy(&dtorCode[1], &dtorFunc, 4);
+		std::memcpy(&getHDRMultiplierCode[1], &getHDRMultiplierFunc, 4);
+
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof ctorCode);
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof dtorCode);
+		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+#endif
 	}
 
 	void EnableHiddenProfilerSubsystems(ISystem* pSystem)
@@ -287,6 +377,12 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the CryNetwork DLL!");
 	}
 
+	m_dlls.pCry3DEngine = WinAPI::DLL::Load("Cry3DEngine.dll");
+	if (!m_dlls.pCry3DEngine)
+	{
+		throw StringTools::SysErrorFormat("Failed to load the Cry3DEngine DLL!");
+	}
+
 	const bool isDX10 = !WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
 
 	if (isDX10)
@@ -340,6 +436,11 @@ void Launcher::PatchEngine()
 		}
 
 		ReplaceLocalizationManager(m_dlls.pCrySystem);
+	}
+
+	if (m_dlls.pCry3DEngine)
+	{
+		ReplaceTimeOfDay(m_dlls.pCry3DEngine);
 	}
 
 	const char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;

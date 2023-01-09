@@ -2157,6 +2157,42 @@ struct I3DEngine : public IProcess
 	// uses raytracing against the object's rendermesh to refine a physics hit 
 	// dir does not have to be normalized
 	virtual bool RefineRayHit(ray_hit *phit, const Vec3 &dir) = 0;
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Reverse engineered hidden stuff
+	////////////////////////////////////////////////////////////////////////////////
+	virtual void SetCamera(CCamera& camera) = 0;
+	virtual void SetSunDir(Vec3& dir) = 0;
+	virtual void SetSunSpecMultiplier(float multiplier) = 0;
+	virtual void SetSSAOAmount(float amount) = 0;
+	virtual float GetSunSpecMultiplier() = 0;
+	virtual void RenderScene(unsigned int renderFlags, unsigned int drawFlags) = 0;
+
+	////////////////////////////////////////////////////////////////////////////////
+	// The following functions work with the original Cry3DEngine only!
+	////////////////////////////////////////////////////////////////////////////////
+
+	float GetDawnStart()
+	{
+		return *(reinterpret_cast<float*>(this) + 91);
+	}
+
+	float GetDawnEnd()
+	{
+		return *(reinterpret_cast<float*>(this) + 92);
+	}
+
+	float GetDuskStart()
+	{
+		return *(reinterpret_cast<float*>(this) + 93);
+	}
+
+	float GetDuskEnd()
+	{
+		return *(reinterpret_cast<float*>(this) + 94);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
 };
 
 

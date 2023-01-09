@@ -36,6 +36,8 @@ endif()
 ################################################################################
 
 add_executable(${CRYMP_CLIENT_EXE} WIN32
+	Code/Cry3DEngine/TimeOfDay.cpp
+	Code/Cry3DEngine/TimeOfDay.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
 	Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
 	Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
