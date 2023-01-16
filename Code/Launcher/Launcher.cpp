@@ -24,217 +24,214 @@
 
 #define BUILD_DATE_TIME __DATE__ " " __TIME__
 
-namespace
+static IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
 {
-	IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
-	{
-		CryLogAlways("$3[CryMP] Initializing Script System");
+	CryLogAlways("$3[CryMP] Initializing Script System");
 
-		ScriptSystem* pScriptSystem = new ScriptSystem();
-		pScriptSystem->Init();
+	ScriptSystem* pScriptSystem = new ScriptSystem();
+	pScriptSystem->Init();
 
-		return pScriptSystem;
-	}
+	return pScriptSystem;
+}
 
-	void ReplaceScriptSystem(void* pCrySystem)
-	{
-		void* pNewFunc = CreateNewScriptSystem;
+static void ReplaceScriptSystem(void* pCrySystem)
+{
+	void* pNewFunc = CreateNewScriptSystem;
 
 #ifdef BUILD_64BIT
-		const size_t codeOffset = 0x445A2;
-		const size_t codeSize = 0x4E;
+	const size_t codeOffset = 0x445A2;
+	const size_t codeSize = 0x4E;
 
-		unsigned char code[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0x48, 0x8B, 0xCB                                             // mov rcx, rbx
-		};
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x48, 0x8B, 0xCB                                             // mov rcx, rbx
+	};
 
-		std::memcpy(&code[2], &pNewFunc, 8);
+	std::memcpy(&code[2], &pNewFunc, 8);
 #else
-		const size_t codeOffset = 0x56409;
-		const size_t codeSize = 0x3C;
+	const size_t codeOffset = 0x56409;
+	const size_t codeSize = 0x3C;
 
-		unsigned char code[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00  // mov eax, 0x0
-		};
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00  // mov eax, 0x0
+	};
 
-		std::memcpy(&code[1], &pNewFunc, 4);
+	std::memcpy(&code[1], &pNewFunc, 4);
 #endif
 
-		WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof code);
-		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
-	}
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof code);
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+}
 
-	void ReplaceLocalizationManager(void* pCrySystem)
+static void ReplaceLocalizationManager(void* pCrySystem)
+{
+	struct DummyCSystem
 	{
-		struct DummyCSystem
+		ILocalizationManager* GetLocalizationManager()
 		{
-			ILocalizationManager* GetLocalizationManager()
-			{
-				return &LocalizationManager::GetInstance();
-			}
+			return &LocalizationManager::GetInstance();
+		}
 
-			static void InitLocalizationManager()
-			{
-				CryLogAlways("$3[CryMP] Initializing Localization Manager");
-			}
-		};
-
-		using TGetLocalizationManager = decltype(&DummyCSystem::GetLocalizationManager);
-
-		void* pNewFunc = &DummyCSystem::InitLocalizationManager;
-
-#ifdef BUILD_64BIT
-		const std::size_t vtableOffset = 0x26ACF8;
-
-		unsigned char code[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0xFF, 0xD0                                                   // call rax
-		};
-
-		std::memcpy(&code[2], &pNewFunc, 8);
-
-		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x62);
-		WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof code);
-		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x50A5C), 0x28);
-#else
-		const std::size_t vtableOffset = 0x1BC5F8;
-
-		unsigned char code[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-			0xFF, 0xD0                     // call eax
-		};
-
-		std::memcpy(&code[1], &pNewFunc, 4);
-
-		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0x29);
-		WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof code);
-		WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x624E1), 0x23);
-#endif
-		void** vtable = static_cast<void**>(WinAPI::RVA(pCrySystem, vtableOffset));
-
-		// vtable hook
-		TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
-		WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
-	}
-
-	ITimeOfDay* CreateTimeOfDay()
-	{
-		CryLogAlways("$3[CryMP] Initializing Time Of Day");
-
-		return new TimeOfDay(gLauncher->GetDLLs().pCry3DEngine);
-	}
-
-	void DestroyTimeOfDay(void* pTimeOfDay)
-	{
-		delete static_cast<TimeOfDay*>(pTimeOfDay);
-	}
-
-	float GetTimeOfDayHDRMultiplier()
-	{
-		return static_cast<TimeOfDay*>(gEnv->p3DEngine->GetTimeOfDay())->GetHDRMultiplier();
-	}
-
-	void ReplaceTimeOfDay(void* pCry3DEngine)
-	{
-		void* ctorFunc = &CreateTimeOfDay;
-		void* dtorFunc = &DestroyTimeOfDay;
-		void* getHDRMultiplierFunc = &GetTimeOfDayHDRMultiplier;
-
-#ifdef BUILD_64BIT
-		unsigned char ctorCode[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0xFF, 0xD0,                                                  // call rax
-			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,              // nop...
-			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90
-		};
-
-		unsigned char dtorCode[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0xFF, 0xD0,                                                  // call rax
-			0x90, 0x90, 0x90, 0x90                                       // nop...
-		};
-
-		unsigned char getHDRMultiplierCode[] = {
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-			0xFF, 0xD0,                                                  // call rax
-			0x0F, 0x28, 0xD0,                                            // movaps xmm2, xmm0
-			0x48, 0x8D, 0x4C, 0x24, 0x20,                                // lea rcx, qword ptr ss:[rsp+0x20]
-			0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90         // nop...
-		};
-
-		std::memcpy(&ctorCode[2], &ctorFunc, 8);
-		std::memcpy(&dtorCode[2], &dtorFunc, 8);
-		std::memcpy(&getHDRMultiplierCode[2], &getHDRMultiplierFunc, 8);
-
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof ctorCode);
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof dtorCode);
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
-#else
-		unsigned char ctorCode[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-			0xFF, 0xD0,                    // call eax
-			0x90, 0x90, 0x90, 0x90,        // nop...
-			0x90, 0x90, 0x90, 0x90,
-			0x90, 0x90, 0x90, 0x90,
-			0x90, 0x90, 0x90, 0x90,
-			0x90, 0x90
-		};
-
-		unsigned char dtorCode[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-			0x57,                          // push edi
-			0xFF, 0xD0,                    // call eax
-			0x83, 0xC4, 0x04,              // add esp, 0x4
-			0x90, 0x90, 0x90, 0x90, 0x90   // nop...
-		};
-
-		unsigned char getHDRMultiplierCode[] = {
-			0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
-			0xFF, 0xD0,                          // call eax
-			0xD9, 0x5C, 0x24, 0xFC,              // fstp dword ptr ss:[esp-0x4], st(0)
-			0xF3, 0x0F, 0x10, 0x44, 0x24, 0xFC,  // movss xmm0, dword ptr ss:[esp-0x4]
-			0x90, 0x90, 0x90, 0x90               // nop...
-		};
-
-		std::memcpy(&ctorCode[1], &ctorFunc, 4);
-		std::memcpy(&dtorCode[1], &dtorFunc, 4);
-		std::memcpy(&getHDRMultiplierCode[1], &getHDRMultiplierFunc, 4);
-
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof ctorCode);
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof dtorCode);
-		WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
-#endif
-	}
-
-	void EnableHiddenProfilerSubsystems(ISystem* pSystem)
-	{
-		struct Subsystem
+		static void InitLocalizationManager()
 		{
-			const char* name;
-			float reserved;
-		};
+			CryLogAlways("$3[CryMP] Initializing Localization Manager");
+		}
+	};
+
+	using TGetLocalizationManager = decltype(&DummyCSystem::GetLocalizationManager);
+
+	void* pNewFunc = &DummyCSystem::InitLocalizationManager;
 
 #ifdef BUILD_64BIT
-		static_assert(sizeof(Subsystem) == 16);
-#else
-		static_assert(sizeof(Subsystem) == 8);
-#endif
+	const std::size_t vtableOffset = 0x26ACF8;
 
-		IFrameProfileSystem* pProfiler = pSystem->GetIProfileSystem();
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0                                                   // call rax
+	};
+
+	std::memcpy(&code[2], &pNewFunc, 8);
+
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x62);
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof code);
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x50A5C), 0x28);
+#else
+	const std::size_t vtableOffset = 0x1BC5F8;
+
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0                     // call eax
+	};
+
+	std::memcpy(&code[1], &pNewFunc, 4);
+
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0x29);
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof code);
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x624E1), 0x23);
+#endif
+	void** vtable = static_cast<void**>(WinAPI::RVA(pCrySystem, vtableOffset));
+
+	// vtable hook
+	TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
+	WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
+}
+
+static ITimeOfDay* CreateTimeOfDay()
+{
+	CryLogAlways("$3[CryMP] Initializing Time Of Day");
+
+	return new TimeOfDay(gLauncher->GetDLLs().pCry3DEngine);
+}
+
+static void DestroyTimeOfDay(void* pTimeOfDay)
+{
+	delete static_cast<TimeOfDay*>(pTimeOfDay);
+}
+
+static float GetTimeOfDayHDRMultiplier()
+{
+	return static_cast<TimeOfDay*>(gEnv->p3DEngine->GetTimeOfDay())->GetHDRMultiplier();
+}
+
+static void ReplaceTimeOfDay(void* pCry3DEngine)
+{
+	void* ctorFunc = &CreateTimeOfDay;
+	void* dtorFunc = &DestroyTimeOfDay;
+	void* getHDRMultiplierFunc = &GetTimeOfDayHDRMultiplier;
 
 #ifdef BUILD_64BIT
-		void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0xAC8;
-#else
-		void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0x634;
-#endif
-		Subsystem* subsystems = static_cast<Subsystem*>(subsystemsBegin);
+	unsigned char ctorCode[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,              // nop...
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90
+	};
 
-		subsystems[PROFILE_ANY].name = "Unknown";
-		subsystems[PROFILE_MOVIE].name = "Movie";
-		subsystems[PROFILE_FONT].name = "Font";
-		subsystems[PROFILE_SCRIPT].name = "Script";
-	}
+	unsigned char dtorCode[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x90, 0x90, 0x90, 0x90                                       // nop...
+	};
+
+	unsigned char getHDRMultiplierCode[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x0F, 0x28, 0xD0,                                            // movaps xmm2, xmm0
+		0x48, 0x8D, 0x4C, 0x24, 0x20,                                // lea rcx, qword ptr ss:[rsp+0x20]
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90         // nop...
+	};
+
+	std::memcpy(&ctorCode[2], &ctorFunc, 8);
+	std::memcpy(&dtorCode[2], &dtorFunc, 8);
+	std::memcpy(&getHDRMultiplierCode[2], &getHDRMultiplierFunc, 8);
+
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof ctorCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof dtorCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+#else
+	unsigned char ctorCode[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		0x90, 0x90, 0x90, 0x90,        // nop...
+		0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90
+	};
+
+	unsigned char dtorCode[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0x57,                          // push edi
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x04,              // add esp, 0x4
+		0x90, 0x90, 0x90, 0x90, 0x90   // nop...
+	};
+
+	unsigned char getHDRMultiplierCode[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0xFF, 0xD0,                          // call eax
+		0xD9, 0x5C, 0x24, 0xFC,              // fstp dword ptr ss:[esp-0x4], st(0)
+		0xF3, 0x0F, 0x10, 0x44, 0x24, 0xFC,  // movss xmm0, dword ptr ss:[esp-0x4]
+		0x90, 0x90, 0x90, 0x90               // nop...
+	};
+
+	std::memcpy(&ctorCode[1], &ctorFunc, 4);
+	std::memcpy(&dtorCode[1], &dtorFunc, 4);
+	std::memcpy(&getHDRMultiplierCode[1], &getHDRMultiplierFunc, 4);
+
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof ctorCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof dtorCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+#endif
+}
+
+static void EnableHiddenProfilerSubsystems(ISystem* pSystem)
+{
+	struct Subsystem
+	{
+		const char* name;
+		float reserved;
+	};
+
+#ifdef BUILD_64BIT
+	static_assert(sizeof(Subsystem) == 16);
+#else
+	static_assert(sizeof(Subsystem) == 8);
+#endif
+
+	IFrameProfileSystem* pProfiler = pSystem->GetIProfileSystem();
+
+#ifdef BUILD_64BIT
+	void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0xAC8;
+#else
+	void* subsystemsBegin = reinterpret_cast<unsigned char*>(pProfiler) + 0x634;
+#endif
+	Subsystem* subsystems = static_cast<Subsystem*>(subsystemsBegin);
+
+	subsystems[PROFILE_ANY].name = "Unknown";
+	subsystems[PROFILE_MOVIE].name = "Movie";
+	subsystems[PROFILE_FONT].name = "Font";
+	subsystems[PROFILE_SCRIPT].name = "Script";
 }
 
 void Launcher::SetCmdLine()
