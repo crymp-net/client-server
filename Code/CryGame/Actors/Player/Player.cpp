@@ -1323,6 +1323,12 @@ bool CPlayer::ProcessProceduralLean(float frameTime)
 
 void CPlayer::PrePhysicsUpdate()
 {
+	if (!IsClient())
+	{
+		if (GetPhysicsProfile() == eAP_Ragdoll || GetPhysicsProfile() == eAP_Spectator)
+			return;
+	}
+
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	// TODO: This whole function needs to be optimized.
