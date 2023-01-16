@@ -29,6 +29,7 @@ public:
 	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
 	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
 	int SetOpacity(IFunctionHandler* pH, ScriptHandle entity, float fAmount);
+	int GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization

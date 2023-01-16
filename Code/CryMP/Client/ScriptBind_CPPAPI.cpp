@@ -53,6 +53,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
 	SCRIPT_REG_TEMPLFUNC(SetOpacity, "entityId, fAmount");
+	SCRIPT_REG_TEMPLFUNC(GetLastSeenTime, "entityId");
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -405,6 +406,19 @@ int ScriptBind_CPPAPI::SetOpacity(IFunctionHandler* pH, ScriptHandle entity, flo
 	pRenderProxy->SetOpacity(fAmount);
 
 	return pH->EndFunction(true);
+}
+
+int ScriptBind_CPPAPI::GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entity.n);
+	if (!pEntity)
+		return pH->EndFunction(-1);
+
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pEntity->GetProxy(ENTITY_PROXY_RENDER));
+	if (!pRenderProxy)
+		return pH->EndFunction(-1);
+
+	return pH->EndFunction(pRenderProxy->GetLastSeenTime());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
