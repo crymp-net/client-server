@@ -240,7 +240,7 @@ CHUD::CHUD()
 
 	m_entityTargetAutoaimId = 0;
 
-	m_trackedProjectiles.resize(0);
+	m_trackedProjectiles.clear();
 
 	m_fAutosnapCursorRelativeX = 0.0f;
 	m_fAutosnapCursorRelativeY = 0.0f;
@@ -284,6 +284,23 @@ CHUD::CHUD()
 
 	//the hud exists as long as the game exists
 	gEnv->pGame->GetIGameFramework()->RegisterListener(this, "hud", FRAMEWORKLISTENERPRIORITY_HUD);
+
+	//CryMP: Record already placed explosives (fixes missing icons on explosives)
+	IEntitySystem* pES = gEnv->pEntitySystem;
+	IEntityItPtr pIt = pES->GetEntityIterator();
+	while (!pIt->IsEnd())
+	{
+		if (IEntity* pEnt = pIt->Next())
+		{
+			if (pEnt->GetClass() == CItem::sClaymoreExplosiveClass 
+				|| pEnt->GetClass() == CItem::sAVExplosiveClass
+				|| pEnt->GetClass() == CItem::sC4ExplosiveClass)
+			{
+				RecordExplosivePlaced(pEnt->GetId());
+			}
+		}
+	}
+
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -4906,16 +4923,14 @@ void CHUD::SetStealthExposure(float exposure)
 
 void CHUD::RecordExplosivePlaced(EntityId eid)
 {
-	m_explosiveList.push_back(eid);
+	stl::push_back_unique(m_explosiveList, eid);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CHUD::RecordExplosiveDestroyed(EntityId eid)
 {
-	std::list<EntityId>::iterator it = std::find(m_explosiveList.begin(), m_explosiveList.end(), eid);
-	if (it != m_explosiveList.end())
-		m_explosiveList.erase(it);
+	std::erase(m_explosiveList, eid);
 }
 
 //-----------------------------------------------------------------------------------------------------

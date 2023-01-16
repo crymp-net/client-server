@@ -1361,6 +1361,7 @@ public:
 	static IEntityClass*	sRefWeaponClass;
 	static IEntityClass*	sClaymoreExplosiveClass;
 	static IEntityClass*	sAVExplosiveClass;
+	static IEntityClass*	sC4ExplosiveClass;
 	static IEntityClass*	sDSG1Class;
 	static IEntityClass*	sTACGunClass;
 	static IEntityClass*	sTACGunFleetClass;

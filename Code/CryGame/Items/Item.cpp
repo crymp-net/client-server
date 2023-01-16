@@ -62,6 +62,7 @@ IEntityClass* CItem::sDebugGunClass = 0;
 IEntityClass* CItem::sRefWeaponClass = 0;
 IEntityClass* CItem::sClaymoreExplosiveClass = 0;
 IEntityClass* CItem::sAVExplosiveClass = 0;
+IEntityClass* CItem::sC4ExplosiveClass = 0;
 IEntityClass* CItem::sDSG1Class = 0;
 IEntityClass* CItem::sLAMFlashLight = 0;
 IEntityClass* CItem::sLAMRifleFlashLight = 0;
@@ -195,6 +196,7 @@ bool CItem::Init(IGameObject* pGameObject)
 		sRefWeaponClass = pRegistry->FindClass("RefWeapon");
 		sClaymoreExplosiveClass = pRegistry->FindClass("claymoreexplosive");
 		sAVExplosiveClass = pRegistry->FindClass("avexplosive");
+		sC4ExplosiveClass = pRegistry->FindClass("c4explosive");
 		sDSG1Class = pRegistry->FindClass("DSG1");
 		sLAMFlashLight = pRegistry->FindClass("LAMFlashLight");
 		sLAMRifleFlashLight = pRegistry->FindClass("LAMRifleFlashLight");

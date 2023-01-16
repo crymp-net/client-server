@@ -841,7 +841,7 @@ private:
 	string m_delayedMessage;
 
 	// list of claymore and mines (placed by all players)
-	std::list<EntityId> m_explosiveList;
+	std::vector<EntityId> m_explosiveList;
 	//list of firemodes
 	std::map<string, int> m_hudFireModes;
 	int m_curFireMode;
