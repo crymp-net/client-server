@@ -2908,7 +2908,14 @@ void CGameRules::SendChatMessage(EChatMessageType type, EntityId sourceId, Entit
 		}
 	}
 	else
-		GetGameObject()->InvokeRMI(SvRequestChatMessage(), params, eRMI_ToServer);
+	{
+		//Never send chat as someone else
+		params.sourceId == m_pGameFramework->GetClientActorId();
+		if (params.sourceId)
+		{
+			GetGameObject()->InvokeRMI(SvRequestChatMessage(), params, eRMI_ToServer);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -3902,7 +3909,14 @@ void CGameRules::SendRadioMessage(const EntityId sourceId, const int msg)
 			GetGameObject()->InvokeRMI(ClRadioMessage(), params, eRMI_ToAllClients);
 	}
 	else
-		GetGameObject()->InvokeRMI(SvRequestRadioMessage(), params, eRMI_ToServer);
+	{
+		//CryMP: Never send radio as someone else
+		params.sourceId = m_pGameFramework->GetClientActorId();
+		if (params.sourceId)
+		{
+			GetGameObject()->InvokeRMI(SvRequestRadioMessage(), params, eRMI_ToServer);
+		}
+	}
 }
 
 void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)

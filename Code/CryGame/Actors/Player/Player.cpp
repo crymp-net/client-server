@@ -5635,7 +5635,8 @@ void CPlayer::UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMo
 			}
 		}
 
-		GetGameObject()->InvokeRMI(SvRequestUnfreeze(), UnfreezeParams(freezeDelta), eRMI_ToServer);
+		if (IsClient())
+			GetGameObject()->InvokeRMI(SvRequestUnfreeze(), UnfreezeParams(freezeDelta), eRMI_ToServer);
 
 		float prevAmt = GetFrozenAmount(true);
 		m_frozenAmount -= freezeDelta;
@@ -5949,10 +5950,10 @@ void CPlayer::RequestGrabOnLadder(ELadderActionType reason)
 	else
 	{
 		//CryMP prevent any spoofs caused by bugs etc..
-		if (gEnv->bMultiplayer && !IsClient())
-			return;
-
-		GetGameObject()->InvokeRMI(SvRequestGrabOnLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
+		if (IsClient())
+		{
+			GetGameObject()->InvokeRMI(SvRequestGrabOnLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
+		}
 	}
 }
 
@@ -6028,10 +6029,10 @@ void CPlayer::RequestLeaveLadder(ELadderActionType reason)
 	else
 	{
 		//CryMP prevent any spoofs caused by bugs etc..
-		if (gEnv->bMultiplayer && !IsClient())
-			return;
-
-		GetGameObject()->InvokeRMI(SvRequestLeaveLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
+		if (IsClient())
+		{
+			GetGameObject()->InvokeRMI(SvRequestLeaveLadder(), LadderParams(m_stats.ladderTop, m_stats.ladderBottom, m_stats.ladderOrientation, reason), eRMI_ToServer);
+		}
 	}
 }
 

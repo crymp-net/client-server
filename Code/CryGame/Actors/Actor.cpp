@@ -2874,10 +2874,10 @@ bool CActor::UseItem(EntityId itemId)
 	else
 	{
 		//CryMP prevent any unexpected bugs etc..
-		if (gEnv->bMultiplayer && !IsClient())
-			return false;
-
-		GetGameObject()->InvokeRMI(SvRequestUseItem(), ItemIdParam(itemId), eRMI_ToServer);
+		if (IsClient())
+		{
+			GetGameObject()->InvokeRMI(SvRequestUseItem(), ItemIdParam(itemId), eRMI_ToServer);
+		}
 	}
 
 	return true;
@@ -2937,10 +2937,10 @@ bool CActor::PickUpItem(EntityId itemId, bool sound)
 	else
 	{
 		//CryMP prevent any unexpected bugs etc..
-		if (gEnv->bMultiplayer && !IsClient())
-			return false;
-
-		GetGameObject()->InvokeRMI(SvRequestPickUpItem(), ItemIdParam(itemId), eRMI_ToServer);
+		if (IsClient())
+		{
+			GetGameObject()->InvokeRMI(SvRequestPickUpItem(), ItemIdParam(itemId), eRMI_ToServer);
+		}
 	}
 
 	return true;
@@ -2985,10 +2985,10 @@ bool CActor::DropItem(EntityId itemId, float impulseScale, bool selectNext, bool
 		else
 		{
 			//CryMP prevent any unexpected bugs etc..
-			if (gEnv->bMultiplayer && !IsClient())
-				return false;
-
-			GetGameObject()->InvokeRMI(SvRequestDropItem(), DropItemParams(itemId, impulseScale, selectNext, bydeath), eRMI_ToServer);
+			if (IsClient())
+			{
+				GetGameObject()->InvokeRMI(SvRequestDropItem(), DropItemParams(itemId, impulseScale, selectNext, bydeath), eRMI_ToServer);
+			}
 		}
 
 		if (performCloakFade)

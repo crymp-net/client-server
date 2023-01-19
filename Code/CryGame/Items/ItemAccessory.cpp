@@ -348,7 +348,11 @@ void CItem::AccessoriesChanged()
 //------------------------------------------------------------------------
 void CItem::SwitchAccessory(const ItemString& accessory)
 {
-	GetGameObject()->InvokeRMI(SvRequestAttachAccessory(), RequestAttachAccessoryParams(accessory.c_str()), eRMI_ToServer);
+	//CryMP: Owner check
+	if (m_ownerId == m_pGameFramework->GetClientActorId())
+	{
+		GetGameObject()->InvokeRMI(SvRequestAttachAccessory(), RequestAttachAccessoryParams(accessory.c_str()), eRMI_ToServer);
+	}
 }
 
 //------------------------------------------------------------------------

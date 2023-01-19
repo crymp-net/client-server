@@ -52,10 +52,10 @@ void CGameRules::ClientSimpleHit(const SimpleHitInfo& simpleHitInfo)
 		if (!gEnv->bServer)
 		{
 			//CryMP prevent any spoofs caused by bugs etc..
-			if (gEnv->bMultiplayer && simpleHitInfo.shooterId != m_pGameFramework->GetClientActorId())
-				return;
-
-			GetGameObject()->InvokeRMI(SvRequestSimpleHit(), simpleHitInfo, eRMI_ToServer);
+			if (simpleHitInfo.shooterId == m_pGameFramework->GetClientActorId())
+			{
+				GetGameObject()->InvokeRMI(SvRequestSimpleHit(), simpleHitInfo, eRMI_ToServer);
+			}
 		}
 		else
 			ServerSimpleHit(simpleHitInfo);
@@ -110,10 +110,10 @@ void CGameRules::ClientHit(const HitInfo& hitInfo)
 		if (!gEnv->bServer)
 		{
 			//CryMP prevent any unexpected bugs etc..
-			if (gEnv->bMultiplayer && shooterId != pClientActorId)
-				return;
-
-			GetGameObject()->InvokeRMI(SvRequestHit(), hitInfo, eRMI_ToServer);
+			if (shooterId == pClientActorId)
+			{
+				GetGameObject()->InvokeRMI(SvRequestHit(), hitInfo, eRMI_ToServer);
+			}
 		}
 		else
 			ServerHit(hitInfo);

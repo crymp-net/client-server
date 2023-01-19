@@ -231,8 +231,11 @@ void CHomingMissile::UpdateControlledMissile(float frameTime)
 					else
 						params.pt = (eyePos + m_maxTargetDistance * eyeDir);	//Some point in the sky...
 
-					GetGameObject()->InvokeRMI(SvRequestDestination(), params, eRMI_ToServer);
-
+					if (m_ownerId == pClientActor->GetEntityId())
+					{
+						GetGameObject()->InvokeRMI(SvRequestDestination(), params, eRMI_ToServer);
+					}
+					
 					if (bDebug)
 					{
 						pRenderer->Draw2dLabel(5.0f, y += step, 1.5f, color, false, "PlayerView eye direction: %.3f %.3f %.3f", eyeDir.x, eyeDir.y, eyeDir.z);
