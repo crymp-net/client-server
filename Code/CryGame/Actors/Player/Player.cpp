@@ -6131,7 +6131,11 @@ IMPLEMENT_RMI(CPlayer, ClGrabOnLadder)
 		m_stats.ladderUpDir = Vec3(0, 0, 1);
 	}
 
-	if (!IsClient() || (IsLadderUsable() && m_stats.ladderTop.IsEquivalent(params.topPos) && m_stats.ladderBottom.IsEquivalent(params.bottomPos)))
+	//CryMP: Ladder Glitch fix? 
+	//Following check is skipped if IsClient(), so other clients might see you on the ladder
+	//while you aren't. Making it look like you're teleporting between original and ladder position.
+	//Doing the check on client before sending SvRequestGrabOnLadder should be enough
+	//if (!IsClient() || (IsLadderUsable() && m_stats.ladderTop.IsEquivalent(params.topPos) && m_stats.ladderBottom.IsEquivalent(params.bottomPos)))
 	{
 		GrabOnLadder(static_cast<ELadderActionType>(params.reason));
 	}
