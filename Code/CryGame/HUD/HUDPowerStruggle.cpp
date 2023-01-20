@@ -1205,7 +1205,7 @@ void CHUDPowerStruggle::UpdateBuyList(const char* page)
 			m_eCurBuyMenuPage = ConvertToBuyList(page);
 
 			//CryMP: Save buypage state
-			if (m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
+			if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS || m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
 			{
 				m_restoreBuyMenuPage = m_eCurBuyMenuPage;
 			}
