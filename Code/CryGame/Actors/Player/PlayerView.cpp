@@ -258,7 +258,12 @@ void CPlayerView::ViewProcess(SViewParams& viewParams)
 	else if (m_in.stats_onLadder)
 	{
 		ViewFirstThirdSharedPre(viewParams);
-		ViewFirstPersonOnLadder(viewParams);
+
+		if (m_in.bIsThirdPerson)
+			ViewThirdPersonOnLadder(viewParams);
+		else
+			ViewFirstPersonOnLadder(viewParams);
+		
 	}
 	else if (m_in.stats_spectatorMode == CActor::eASM_Follow)
 	{
@@ -1478,6 +1483,14 @@ void CPlayerView::ViewFirstPersonOnLadder(SViewParams& viewParams)
 		viewParams.rotation = m_in.lastQuat;
 	}
 
+}
+
+void CPlayerView::ViewThirdPersonOnLadder(SViewParams& viewParams)
+{
+	ViewThirdPerson(viewParams);
+
+	//lift the camera a little up
+	viewParams.position.z += 1.0f;
 }
 
 // Position the first person weapons

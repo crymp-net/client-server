@@ -154,6 +154,7 @@ protected:
 
 	void ViewFollowCharacterFirstPerson(SViewParams &viewParams);
 	void ViewFirstPersonOnLadder(SViewParams & viewParams);
+	void ViewThirdPersonOnLadder(SViewParams& viewParams);
 	void ViewSpectatorTarget(SViewParams &viewParams);
 	void ViewSpectatorTarget_CryMP(SViewParams& viewParams);
 	void ViewDeathCamTarget(SViewParams &viewParams);
