@@ -94,6 +94,17 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	void HackBrush();
 
+	// TODO: remove
+	struct Entity_Hook
+	{
+		int LoadParticleEmitter(int slot, IParticleEffect* pEffect, const SpawnParams* params, bool prime, bool serialize);
+	};
+
+	using TEntityLoadParticleEmitter = decltype(&Entity_Hook::LoadParticleEmitter);
+	static inline TEntityLoadParticleEmitter s_originalEntityLoadParticleEmitter = nullptr;
+
+	void HackEntity();
+
 public:
 	Client();
 	~Client();

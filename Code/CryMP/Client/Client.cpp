@@ -196,6 +196,36 @@ void Client::HackBrush()
 #endif
 }
 
+int Client::Entity_Hook::LoadParticleEmitter(int slot, IParticleEffect* pEffect, const SpawnParams* params, bool prime, bool serialize)
+{
+	CryLog("[Client::Entity_Hook::LoadParticleEmitter] %s", (pEffect) ? pEffect->GetName() : "?");
+
+	return (this->*(gClient->s_originalEntityLoadParticleEmitter))(slot, pEffect, params, prime, serialize);
+}
+
+void Client::HackEntity()
+{
+#ifdef BUILD_64BIT
+	void *pCryEntitySystem = WinAPI::DLL::Get("CryEntitySystem.dll");
+	if (!pCryEntitySystem)
+	{
+		CryLogErrorAlways("[Client::HackEntity] CryEntitySystem DLL is not loaded!");
+		return;
+	}
+
+	void **EntityVTable = reinterpret_cast<void**>(static_cast<unsigned char*>(pCryEntitySystem) + 0xB4C38);
+
+	constexpr int LOAD_PARTICLE_EMITTER_INDEX = 84;
+	s_originalEntityLoadParticleEmitter = reinterpret_cast<TEntityLoadParticleEmitter&>(EntityVTable[LOAD_PARTICLE_EMITTER_INDEX]);
+
+	// vtable hook
+	TEntityLoadParticleEmitter newLoadParticleEmitter = &Entity_Hook::LoadParticleEmitter;
+	WinAPI::FillMem(&EntityVTable[LOAD_PARTICLE_EMITTER_INDEX], &reinterpret_cast<void*&>(newLoadParticleEmitter), sizeof (void*));
+
+	CryLogAlways("[Client::HackEntity] Done");
+#endif
+}
+
 Client::Client()
 {
 	m_hwid = GetHWID("idsvc");
@@ -302,6 +332,11 @@ void Client::Init(IGameFramework *pGameFramework)
 	if (!s_originalBrushDephysicalize)
 	{
 		HackBrush();
+	}
+
+	if (!s_originalEntityLoadParticleEmitter)
+	{
+		HackEntity();
 	}
 
 	// initialize the game
