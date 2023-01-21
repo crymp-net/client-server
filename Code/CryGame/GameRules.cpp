@@ -2910,7 +2910,7 @@ void CGameRules::SendChatMessage(EChatMessageType type, EntityId sourceId, Entit
 	else
 	{
 		//Never send chat as someone else
-		params.sourceId == m_pGameFramework->GetClientActorId();
+		params.sourceId = m_pGameFramework->GetClientActorId();
 		if (params.sourceId)
 		{
 			GetGameObject()->InvokeRMI(SvRequestChatMessage(), params, eRMI_ToServer);
