@@ -58,6 +58,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::string m_hwid;
 	std::string m_locale;
 	std::string m_timezone;
+	bool m_bLevelLoad = false;
 
 	std::vector<std::string> m_masters;
 

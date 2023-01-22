@@ -168,7 +168,13 @@ void Client::Brush_Hook::Dephysicalize(bool keepIfReferenced)
 {
 	IRenderNode* node = reinterpret_cast<IRenderNode*>(this);
 
-	CryLogAlways("[Brush::Dephysicalize] %s", node->GetName());
+	if (!gClient->m_bLevelLoad)
+	{
+		CryLogAlways("Bug? [Brush::Dephysicalize] $8%s", node->GetName());
+		return;
+	}
+	else
+		CryLogAlways("[Brush::Dephysicalize] %s", node->GetName());
 
 	(this->*(gClient->s_originalBrushDephysicalize))(keepIfReferenced);
 }
@@ -513,6 +519,7 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
+	m_bLevelLoad = true;
 	gEnv->pScriptSystem->ForceGarbageCollection();
 
 	m_pServerPAK->OnLoadingStart(pLevel);
@@ -522,6 +529,7 @@ void Client::OnLoadingStart(ILevelInfo *pLevel)
 
 void Client::OnLoadingComplete(ILevel *pLevel)
 {
+	m_bLevelLoad = false;
 }
 
 void Client::OnLoadingError(ILevelInfo *pLevel, const char *error)
