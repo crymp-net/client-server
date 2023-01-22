@@ -1198,24 +1198,12 @@ void CHUDPowerStruggle::UpdateBuyList(const char* page)
 	{
 		g_pHUD->m_buyMenuKeyLog.m_state = CHUD::SBuyMenuKeyLog::eBMKL_Frame;
 	}
-	if (gEnv->bMultiplayer)
-	{
-		if (page)
-		{
-			m_eCurBuyMenuPage = ConvertToBuyList(page);
 
-			//CryMP: Save buypage state
-			if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS || m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
-			{
-				m_restoreBuyMenuPage = m_eCurBuyMenuPage;
-			}
-			if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
-			{
-				m_restoreBuyMenuPage = BUY_PAGE_NONE;
-			}
-		}
-		PopulateBuyList();
+	if (page)
+	{
+		m_eCurBuyMenuPage = ConvertToBuyList(page);
 	}
+	PopulateBuyList();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -1865,8 +1853,16 @@ void CHUDPowerStruggle::HideSOM(bool hide)
 				m_animSwingOMeter.GetFlashPlayer()->SetVisible(true);
 
 		//CryMP
-		//Closing buymenu
+		//Closing buymenu - save buypage state
 		m_restoreBuyMenuPageTime = gEnv->pTimer->GetCurrTime();
+		if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS || m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
+		{
+			m_restoreBuyMenuPage = m_eCurBuyMenuPage;
+		}
+		if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
+		{
+			m_restoreBuyMenuPage = BUY_PAGE_NONE;
+		}
 	}
 }
 
