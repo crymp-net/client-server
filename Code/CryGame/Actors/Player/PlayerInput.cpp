@@ -20,6 +20,8 @@
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryAction/IInteractor.h"
 
+#include <array>
+
 TActionHandler<CPlayerInput>	CPlayerInput::s_actionHandler;
 
 CPlayerInput::CPlayerInput(CPlayer* pPlayer) :
@@ -100,6 +102,9 @@ CPlayerInput::CPlayerInput(CPlayer* pPlayer) :
 
 #undef ADD_HANDLER
 	}
+
+	//CryMP
+	AddCustomBinds();
 }
 
 CPlayerInput::~CPlayerInput()
@@ -122,6 +127,44 @@ void CPlayerInput::Reset()
 	m_moveButtonState = 0;
 	m_lastSerializeFrameID = 0;
 	m_binocularsTime = 0.0f;
+}
+
+void CPlayerInput::AddCustomBinds()
+{
+	//CryMP: Enable [r] in landvehicles for "ReverseView"
+	const int MAX_KEYS = 3;
+	const CGameActions& actions = g_pGame->Actions();
+	IActionMapManager* pMapManager = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	if (IActionMap* playerMap = pMapManager->GetActionMap("player"))
+	{
+		SActionMapBindInfo s = {};
+		std::array<const char*, MAX_KEYS> keysBuffer = {};
+
+		if (s.keys == nullptr)
+		{
+			s.keys = keysBuffer.data();
+		}
+		if (playerMap->GetBindInfo(actions.reload, s, MAX_KEYS))
+		{
+			if (IActionMap* landVehicleMap = pMapManager->GetActionMap("landvehicle"))
+			{
+				/*<action name = "reload" onPress = "1">
+					<key name = "r" / >
+					<key name = "xi_x" / >
+					< / action>
+				*/
+				landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress, s.keys[1]);
+				if (s.keys[0] && s.keys[1])
+				{
+					landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress | eAAM_OnRelease, s.keys[0], s.keys[1]);
+				}
+				else if (s.keys[0])
+				{
+					landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress | eAAM_OnRelease, s.keys[0]);
+				}
+			}
+		}
+	}
 }
 
 void CPlayerInput::DisableXI(bool disabled)
@@ -276,6 +319,19 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 					// FIXME?: Does it produce some conflicts with others things?
 					m_pPlayer->CActor::OnAction(actionId, activationMode, value);
 				}*/
+
+				//CryMP: Reverse view
+				if (actions.reload == actionId)
+				{
+					if (activationMode == eAAM_OnPress)
+					{
+						m_vehicleReverseView = true;
+					}
+					else if (activationMode == eAAM_OnRelease)
+					{
+						m_vehicleReverseView = false;
+					}
+				}
 
 				if (m_pPlayer->m_pVehicleClient && !m_pPlayer->IsFrozen())
 					m_pPlayer->m_pVehicleClient->OnAction(pVehicle, m_pPlayer->GetEntityId(), actionId, activationMode, value);

@@ -45,6 +45,7 @@ History:
 #include "CryGame/HUD/HUD.h"
 
 #include "CryGame/Items/Weapons/OffHand.h"
+#include "CryGame/Actors/Player/PlayerInput.h"
 
 
 //CPlayerView::SViewStateIn CPlayerView::m_in;
@@ -135,6 +136,15 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 		}
 		m_in.isFirstPersonSpectating = rPlayer.IsFpSpectator();
 		m_in.isFirstPersonSpecTarget = rPlayer.IsFpSpectatorTarget();
+
+		if (rPlayer.IsClient())
+		{
+			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(rPlayer.GetPlayerInput());
+			if (pPlayerInput)
+			{
+				m_in.bIsVehicleReverseView = pPlayerInput->IsVehicleReverseView();
+			}
+		}
 
 		m_in.entityId = rPlayer.GetEntityId();
 
@@ -865,85 +875,7 @@ void CPlayerView::ViewVehicle(SViewParams& viewParams)
 	{
 		if (m_in.isFirstPersonSpecTarget)
 		{
-			//m_io.bUsePivot = true;
-			/*const auto* pIActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId);
-			if (!pIActor)
-				return;
-			auto* pTarget = (CPlayer*)pIActor;
-			if (!pTarget)
-				return;
-
-			bool followHead = true;
-			float fwdOffset = 0.0f;
-			float zOffset = 0.0f;
-			const auto &vClass = pVehicle->GetEntity()->GetClass();
-			const auto *pRegistry = gEnv->pEntitySystem->GetClassRegistry();
-			const bool isDriver(pIActor == pVehicle->GetDriver());
-
-			if (isDriver)
-			{
-				if (vClass == CItem::sAsian_apc)
-				{
-					fwdOffset = 4.0f;
-					zOffset = 3.0f;
-					followHead = false;
-				}
-				else if (vClass == CItem::sAsian_tank)
-				{
-					fwdOffset = 4.0f;
-					zOffset = 3.0f;
-					followHead = false;
-				}
-				else if (vClass == CItem::sAsian_aaa)
-				{
-					fwdOffset = 0.2f;
-					zOffset = 3.8f;
-					followHead = false;
-				}
-				else if (vClass == CItem::sUS_apc)
-				{
-					fwdOffset = 1.0f;
-					zOffset =	3.5f;
-					followHead = false;
-				}
-				else if (vClass == CItem::sUS_tank)
-				{
-					fwdOffset = 4.0f;
-					zOffset = 3.0f;
-					followHead = false;
-				}
-				else if (vClass == CItem::sUS_trolley)
-				{
-					fwdOffset = -1.0f;
-					followHead = true;
-				}
-			}
-
-			const auto smoothDir(pTarget->GetVehicleViewDirSmooth());
-			if (followHead)
-			{
-				ViewFollowCharacterFirstPerson(viewParams);
-			}
-			else
-			{
-				const auto& vPos = pVehicle->GetEntity()->GetWorldPos();
-				const auto* pItem = pTarget->GetCurrentItem(true);
-
-				viewParams.position = vPos;
-				viewParams.rotation = Quat(Matrix33::CreateRotationVDir(smoothDir));
-			}
-			if (fwdOffset > 0.0f)
-			{
-				viewParams.position = viewParams.position + smoothDir * fwdOffset;
-			}
-
-			if (zOffset > 0.0f)
-			{
-				viewParams.position.z = viewParams.position.z + zOffset;
-			}
-			*/
-
-			if (IVehicleSeat* pSeat = m_in.pVehicle->GetSeatForPassenger(m_in.entityId))
+			if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(m_in.entityId))
 			{
 				const int currSeatViewId = 1;
 				CPlayer* pPlayer = CPlayer::FromIActor(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
@@ -977,8 +909,31 @@ void CPlayerView::ViewVehicle(SViewParams& viewParams)
 		}
 		else
 		{
-			m_in.pVehicle->UpdateView(viewParams, m_in.entityId);
-			viewParams.viewID = 2;
+			// CryMP: Reverse View
+			if (m_in.bIsThirdPerson && m_in.bIsVehicleReverseView && !pVehicle->GetCurrentWeaponId(m_in.entityId))
+			{
+				AABB vehicleBox;
+				pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
+
+				const float distance = 3.0f + vehicleBox.GetRadius();
+				const Matrix34 worldTM = pVehicle->GetEntity()->GetWorldTM();
+				const Vec3 forwardDir = worldTM.GetColumn1().normalized();
+				const Vec3 revdir = forwardDir * -1;
+				const Matrix33 rotation = Matrix33::CreateRotationVDir(revdir);
+				
+				Vec3 worldPos = worldTM.GetTranslation();
+				worldPos.z += 2.5f;
+
+				const Vec3 newPos = worldPos + forwardDir * distance;
+
+				viewParams.position = newPos;
+				viewParams.rotation = GetQuatFromMat33(rotation);
+			}
+			else
+			{
+				m_in.pVehicle->UpdateView(viewParams, m_in.entityId);
+				viewParams.viewID = 2;
+			}
 		}
 	}
 }

@@ -68,8 +68,10 @@ public:
 
 	bool ShouldKeepFpSpectator() { return m_KeepFPSpectatorMode; }
 	bool ShouldKeepThirdPerson() { return m_KeepThirdPersonMode; }
+	bool IsVehicleReverseView() { return m_vehicleReverseView;  }
 
 private:
+	void AddCustomBinds();
 
 	EStance FigureOutStance();
 	void AdjustMoveButtonState( EMoveButtonMask buttonMask, int activationMode );
@@ -148,6 +150,7 @@ private:
 	int m_lastSerializeFrameID;
 	bool m_KeepFPSpectatorMode = false;
 	bool m_KeepThirdPersonMode = false;
+	bool m_vehicleReverseView = false;
 	bool m_doubleJumped;
 
 	static TActionHandler<CPlayerInput>	s_actionHandler;

@@ -46,8 +46,9 @@ protected:
 		ICharacterInstance *pCharacter;
 		IVehicle *pVehicle;
 		//CryMP
-		bool isFirstPersonSpectating; 
-		bool isFirstPersonSpecTarget; 
+		bool isFirstPersonSpectating = false; 
+		bool isFirstPersonSpecTarget = false;
+		bool bIsVehicleReverseView = false;
 
 		bool bIsGrabbing;
 		bool stats_isRagDoll;							// ViewFollowCharacterFirstPerson (Primarily: Dead or TrackView) uses to add a small z offset to the view
