@@ -1,8 +1,6 @@
+/[Bb]uild*
+
 .vs/
 out/
-[Bb]uild*/
-
-[Bb]uild.sh
-[Bb]uild.bat
 
 CMakeSettings.json
