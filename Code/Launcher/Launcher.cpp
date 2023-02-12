@@ -570,6 +570,7 @@ void Launcher::OnShutdown()
 void Launcher::OnUpdate()
 {
 	Logger::GetInstance().OnUpdate();
+	CrashLogger::WatchdogRestart();
 }
 
 void Launcher::GetMemoryUsage(ICrySizer* pSizer)
@@ -610,6 +611,8 @@ void Launcher::Run()
 	gClient = &client;
 
 	this->StartEngine();
+
+	CrashLogger::WatchdogEnable();
 
 	gClient->UpdateLoop();
 }

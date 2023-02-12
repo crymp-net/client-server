@@ -1,5 +1,8 @@
+#include <atomic>
+#include <chrono>
 #include <cstdlib>
 #include <mutex>
+#include <thread>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -141,12 +144,11 @@ static void DumpRegisters(std::FILE* file, const CONTEXT* context)
 	std::fflush(file);
 }
 
-static void DumpCallStack(std::FILE* file, const CONTEXT* context)
+static void DumpCallStack(std::FILE* file, const CONTEXT* context, HANDLE thread)
 {
 	std::fprintf(file, "Callstack:\n");
 
 	HANDLE process = GetCurrentProcess();
-	HANDLE thread = GetCurrentThread();
 
 #ifdef BUILD_64BIT
 	DWORD machine = IMAGE_FILE_MACHINE_AMD64;
@@ -345,7 +347,7 @@ static void WriteCrashDump(std::FILE* file, EXCEPTION_POINTERS* exception)
 	DumpExceptionInfo(file, exception->ExceptionRecord);
 	DumpMemoryUsage(file);
 	DumpRegisters(file, exception->ContextRecord);
-	DumpCallStack(file, exception->ContextRecord);
+	DumpCallStack(file, exception->ContextRecord, GetCurrentThread());
 	DumpLoadedModules(file);
 	DumpCommandLine(file);
 
@@ -361,7 +363,7 @@ static void WriteGenericErrorDump(std::FILE* file, CONTEXT* context, const char*
 
 	DumpMemoryUsage(file);
 	DumpRegisters(file, context);
-	DumpCallStack(file, context);
+	DumpCallStack(file, context, GetCurrentThread());
 	DumpLoadedModules(file);
 	DumpCommandLine(file);
 
@@ -381,7 +383,7 @@ static void WriteEngineErrorDump(std::FILE* file, CONTEXT* context, const char* 
 
 	DumpMemoryUsage(file);
 	DumpRegisters(file, context);
-	DumpCallStack(file, context);
+	DumpCallStack(file, context, GetCurrentThread());
 	DumpLoadedModules(file);
 	DumpCommandLine(file);
 
@@ -550,4 +552,82 @@ void CrashLogger::Enable(CrashLogger::Handler handler)
 				(vs2005_set_invalid_parameter_handler)(&InvalidParameterHandler);
 		}
 	}
+}
+
+std::atomic<bool> g_watchdogRestarted = false;
+HANDLE g_mainThread = nullptr;
+
+static void OnWatchdogTimeout()
+{
+	if (g_handler)
+	{
+		std::lock_guard lock(g_mutex);
+
+		std::FILE* file = g_handler();
+
+		if (file)
+		{
+			std::fprintf(file, "======== MAIN THREAD WATCHDOG TIMEOUT ========\n");
+			std::fflush(file);
+
+			if (SuspendThread(g_mainThread) == static_cast<DWORD>(-1))
+			{
+				std::fprintf(file, "SuspendThread failed with error code %lu\n", GetLastError());
+				std::fflush(file);
+			}
+
+			CONTEXT context = {};
+			context.ContextFlags = CONTEXT_FULL;
+			if (!GetThreadContext(g_mainThread, &context))
+			{
+				std::fprintf(file, "GetThreadContext failed with error code %lu\n", GetLastError());
+				std::fflush(file);
+			}
+
+			DumpRegisters(file, &context);
+			DumpCallStack(file, &context, g_mainThread);
+
+			if (ResumeThread(g_mainThread) == static_cast<DWORD>(-1))
+			{
+				std::fprintf(file, "ResumeThread failed with error code %lu\n", GetLastError());
+				std::fflush(file);
+			}
+
+			std::fprintf(file, "==============================================\n");
+			std::fflush(file);
+
+			// do not close the file as this might be called multiple times
+			//std::fclose(file);
+		}
+	}
+}
+
+static void WatchdogThreadLoop()
+{
+	constexpr auto interval = std::chrono::seconds(1);
+
+	while (true)
+	{
+		std::this_thread::sleep_for(interval);
+
+		if (!g_watchdogRestarted.exchange(false, std::memory_order_relaxed))
+		{
+			OnWatchdogTimeout();
+		}
+	}
+}
+
+void CrashLogger::WatchdogEnable()
+{
+	if (!g_mainThread)
+	{
+		g_mainThread = OpenThread(THREAD_ALL_ACCESS, FALSE, GetCurrentThreadId());
+
+		std::thread(&WatchdogThreadLoop).detach();
+	}
+}
+
+void CrashLogger::WatchdogRestart()
+{
+	g_watchdogRestarted.store(true, std::memory_order_relaxed);
 }

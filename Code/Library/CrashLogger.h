@@ -9,4 +9,7 @@ namespace CrashLogger
 	void OnEngineError(const char* format, va_list args);
 
 	void Enable(Handler handler);
+
+	void WatchdogEnable();
+	void WatchdogRestart();
 }
