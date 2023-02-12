@@ -52,11 +52,11 @@ namespace NSKeyTranslation
 
 	bool LookupBindInfo(const char* actionMap, const char* actionName, bool bPreferXI, SActionMapBindInfo& bindInfo)
 	{
-		if (bindInfo.keys == 0)
+		std::array<const char*, MAX_KEYS> keysBuffer = {};
+
+		if (bindInfo.keys == nullptr)
 		{
-			bindInfo.keys = new const char*[MAX_KEYS];
-			for (int i=0; i<MAX_KEYS; ++i)
-				bindInfo.keys[i] = 0;
+			bindInfo.keys = keysBuffer.data();
 		}
 
 		IActionMapManager* pAmMgr = g_pGame->GetIGameFramework()->GetIActionMapManager();
