@@ -16,6 +16,8 @@
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 
+#include <array>
+
 namespace NSKeyTranslation
 {
 	typedef CryFixedStringT<512> TFixedString;
