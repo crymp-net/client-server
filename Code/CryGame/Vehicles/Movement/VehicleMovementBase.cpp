@@ -1369,6 +1369,14 @@ void CVehicleMovementBase::UpdateExhaust(const float deltaTime)
 	if (!m_pPaParams)
 		return;
 
+	//CryMP: Fix for vtol lagging in 1st person
+	//We can only see exhaust effects in 3rd person anyway
+	IActor* pDriver = m_pVehicle->GetDriver();
+	if (pDriver && !pDriver->IsThirdPerson())
+	{
+		return;
+	}
+
 	SExhaustParams* exParams = m_pPaParams->GetExhaustParams();
 
 	if (exParams->hasExhaust && m_paStats.exhaustStats[0].runSlot > -1)
