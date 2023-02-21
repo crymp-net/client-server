@@ -83,12 +83,16 @@ IEntityClass* CItem::sHurricaneClass = 0;
 IEntityClass* CItem::sDoorClass = 0;
 IEntityClass* CItem::sElevatorSwitchClass = 0;
 IEntityClass* CItem::sFlagClass = 0;
+//vehicles
 IEntityClass* CItem::sAsian_apc = 0;
+IEntityClass* CItem::sAsian_helicopter = 0;
+IEntityClass* CItem::sAsian_truck = 0;
 IEntityClass* CItem::sAsian_tank = 0;
 IEntityClass* CItem::sAsian_aaa = 0;
 IEntityClass* CItem::sUS_apc = 0;
 IEntityClass* CItem::sUS_tank = 0;
 IEntityClass* CItem::sUS_trolley = 0;
+IEntityClass* CItem::sUS_vtol = 0;
 
 //------------------------------------------------------------------------
 CItem::CItem()
@@ -221,11 +225,14 @@ bool CItem::Init(IGameObject* pGameObject)
 		sHurricaneClass = pRegistry->FindClass("Hurricane");
 		sFlagClass = pRegistry->FindClass("Flag");
 		sAsian_apc = pRegistry->FindClass("Asian_apc");
+		sAsian_helicopter = pRegistry->FindClass("Asian_helicopter");
+		sAsian_truck = pRegistry->FindClass("Asian_truck");
 		sAsian_tank = pRegistry->FindClass("Asian_tank");
 		sAsian_aaa = pRegistry->FindClass("Asian_aaa");
 		sUS_apc = pRegistry->FindClass("US_apc");
 		sUS_tank = pRegistry->FindClass("US_tank");
 		sUS_trolley = pRegistry->FindClass("US_trolley");
+		sUS_vtol = pRegistry->FindClass("US_vtol");
 	}
 
 	if (!GetGameObject()->CaptureProfileManager(this))
@@ -1629,17 +1636,26 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 
 	if (itemToSelect)
 	{
-		SPlayerStats* pStats = NULL;
+		SPlayerStats* pStats = nullptr;
 		if (pActor->GetActorClassType() == CPlayer::GetActorClassType())
 			pStats = static_cast<SPlayerStats*>(pActor->GetActorStats());
-		if (select && !pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder))
-		{
-			if (CanSelect() && !slave)
-				m_pItemSystem->SetActorItem(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);
-			else
-				m_pItemSystem->SetActorAccessory(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);
 
-			pActor->GetGameObject()->ChangedNetworkState(CPlayer::ASPECT_CURRENT_ITEM);
+		if (select)
+		{
+			if (!pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder))
+			{
+				if (CanSelect() && !slave)
+					m_pItemSystem->SetActorItem(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);
+				else
+					m_pItemSystem->SetActorAccessory(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);
+
+				pActor->GetGameObject()->ChangedNetworkState(CPlayer::ASPECT_CURRENT_ITEM);
+			}
+		}
+		//CryMP: For auto-attach accessories
+		if (IsClient() && !CanSelect())
+		{
+			SAFE_HUD_FUNC(OnPickupAttachment(GetOwnerActor(), this));
 		}
 	}
 

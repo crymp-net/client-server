@@ -1167,25 +1167,21 @@ void CHUD::OnSetActorItem(IActor* pActor, IItem* pItem)
 			if (pItem->GetIWeapon())
 			{
 				m_uiWeapondID = pItem->GetEntity()->GetId();
-				pItem->GetIWeapon()->AddEventListener(this, __FUNCTION__);
+				GetCurrentWeapon()->AddEventListener(this, __FUNCTION__);
 
-				const char* curClass = NULL;
-				const char* curCategory = NULL;
+				const char* curClass = nullptr;
 
-				IEntity* pItemEntity = pItem->GetEntity();
-				if (pItemEntity)
+				IEntityClass* pItemClass = pItem->GetEntity()->GetClass();
+				if (pItemClass == CItem::sDetonatorClass)
 				{
-					IEntityClass* pItemClass = pItemEntity->GetClass();
-					if (pItemClass)
-					{
-						curClass = pItemClass->GetName();
-						if (!strcmp(curClass, "Detonator"))
-						{
-							curClass = "C4";
-						}
-						curCategory = m_pItemSystem->GetItemCategory(curClass);
-					}
+					curClass = "C4";
 				}
+				else
+				{
+					curClass = pItemClass->GetName();
+				}
+				const char* curCategory = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItemCategory(curClass);
+
 				if (curCategory && curClass)
 				{
 					ShowInventoryOverview(curCategory, curClass);
@@ -1197,6 +1193,49 @@ void CHUD::OnSetActorItem(IActor* pActor, IItem* pItem)
 	//notify the buymenu of the item change
 	if (m_pHUDPowerStruggle)
 		m_pHUDPowerStruggle->PopulateBuyList();
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::OnPickupAttachment(IActor* pActor, IItem* pItem)
+{
+	if (!g_pGameCVars->mp_attachBoughtEquipment)
+		return;
+
+	//CryMP: Auto-attach bought equipment as in Wars
+
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+	if (pItem && m_pHUDPowerStruggle && pGameRules)
+	{
+		bool bIsInList = false;
+		for (std::list<string>::iterator iter = m_listBoughtItems.begin(); iter != m_listBoughtItems.end(); ++iter)
+		{
+			if (*iter == pItem->GetEntity()->GetClass()->GetName())
+			{
+				bIsInList = true;
+				break;
+			}
+		}
+
+		CWeapon* pItemWeapon = static_cast<CWeapon*>(pItem->GetIWeapon());
+		if (pItemWeapon)
+		{
+			//we got a weapon
+		}
+		else if (m_uiWeapondID && (bIsInList || IsBuyMenuActive()))
+		{
+			//we got an accessory
+			IItem* pLastWeaponItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(m_uiWeapondID);
+			CWeapon* pLastWeapon = pLastWeaponItem ? static_cast<CWeapon*>(pLastWeaponItem) : nullptr;
+
+			const ItemString szName = (ItemString)pItem->GetEntity()->GetClass()->GetName();
+
+			if (pLastWeapon && pLastWeapon->GetAccessory(szName) == nullptr)
+			{
+				pLastWeapon->SwitchAccessory(szName);
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------

@@ -1387,11 +1387,14 @@ public:
 	static IEntityClass*	sElevatorSwitchClass;
 	static IEntityClass*	sFlagClass;
 	static IEntityClass*    sAsian_apc;
+	static IEntityClass*	sAsian_helicopter;
+	static IEntityClass*	sAsian_truck;
 	static IEntityClass*	sAsian_tank;
 	static IEntityClass*    sAsian_aaa;
 	static IEntityClass*    sUS_apc;
 	static IEntityClass*    sUS_tank;
 	static IEntityClass*    sUS_trolley;
+	static IEntityClass*	sUS_vtol;
 };
 
 

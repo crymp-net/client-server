@@ -121,6 +121,8 @@ public:
 			itemdef.iInventoryID = 0;
 			m_thisPurchase.itemArray.push_back(itemdef);
 			m_thisPurchase.iPrice += itemdef.iPrice;
+
+			g_pHUD->m_listBoughtItems.push_back(itemdef.strClass);
 		}
 	}
 private:

@@ -182,6 +182,7 @@ public:
 
 	// IItemSystemListener
 	virtual void OnSetActorItem(IActor *pActor, IItem *pItem );
+	void OnPickupAttachment(IActor* pActor, IItem* pItem);
 	virtual void OnDropActorItem(IActor *pActor, IItem *pItem );
 	virtual void OnSetActorAccessory(IActor *pActor, IItem *pItem );
 	virtual void OnDropActorAccessory(IActor *pActor, IItem *pItem );
@@ -866,6 +867,7 @@ protected:
 	float m_underAttackCheck = 0.0f;
 	bool m_bRadarScanningEffect = false;
 	float m_hitIndicatorTimer = 0.0f;
+	std::list<string> m_listBoughtItems;
 
 public:
 

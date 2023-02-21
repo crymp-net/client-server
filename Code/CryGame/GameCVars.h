@@ -456,6 +456,7 @@ struct SCVars
 	int			mp_chatHighResolution;
 	float		mp_spectatorSlowMult;
 	int			mp_buyPageKeepTime;
+	int			mp_attachBoughtEquipment;
 
 	SCVars()
 	{
