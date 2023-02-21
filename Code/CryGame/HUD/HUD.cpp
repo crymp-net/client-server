@@ -4215,6 +4215,8 @@ void CHUD::ActorDeath(IActor* pActor)
 
 		// remove forbidden area warning on death
 		ShowKillAreaWarning(false, 0);
+
+		m_listBoughtItems.clear();
 	}
 }
 
