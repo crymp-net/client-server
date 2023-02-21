@@ -136,10 +136,11 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 						}
 					}
 				}
-
-				SFlashVarValue args[2] = { helper.name.c_str(), iSelectedIndex };
-				m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);
-				
+				if (curAttach.c_str())
+				{
+					SFlashVarValue args[2] = { helper.name.c_str(), iSelectedIndex };
+					m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);
+				}
 			}
 			else; // no attachment found for this helper
 		}
