@@ -103,12 +103,9 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 				int iCount = 0;
 				if (attachments.size() > 0)
 				{
-					if (helper.name != "magazine" &&
-					    helper.name != "attachment_front" &&
-					    helper.name != "energy_source_helper" &&
-					    helper.name != "shell_grenade")
+					if (strcmp(helper.name.c_str(), "magazine") && strcmp(helper.name.c_str(), "attachment_front") && strcmp(helper.name.c_str(), "energy_source_helper") && strcmp(helper.name.c_str(), "shell_grenade"))
 					{
-						if (helper.name == "attachment_top")
+						if (!strcmp(helper.name.c_str(), "attachment_top"))
 						{
 							SFlashVarValue args[3] = { helper.name.c_str(), "@IronSight", "NoAttachment" };
 							m_animWeaponAccessories.Invoke("addSlotButton", args, 3);
@@ -139,11 +136,10 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 						}
 					}
 				}
-				if (!curAttach.empty())
-				{
-					SFlashVarValue args[2] = { helper.name.c_str(), iSelectedIndex };
-					m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);
-				}
+
+				SFlashVarValue args[2] = { helper.name.c_str(), iSelectedIndex };
+				m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);
+				
 			}
 			else; // no attachment found for this helper
 		}
