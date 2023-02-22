@@ -429,6 +429,11 @@ void Client::AddKeyBind(const std::string_view& key, const std::string_view& com
 	KeyBind& bind = m_keyBinds.emplace_back();
 	bind.key = key;
 	bind.command = command;
+
+	if (m_pGameFramework->GetClientActor())
+	{
+		bind.createdInGame = true;
+	}
 }
 
 void Client::OnKeyPress(const std::string_view& key)
@@ -444,7 +449,13 @@ void Client::OnKeyPress(const std::string_view& key)
 
 void Client::ClearKeyBinds()
 {
-	m_keyBinds.clear();
+	const auto createdInGame = [](KeyBind& bind) -> bool
+	{
+		return bind.createdInGame;
+	};
+
+	m_keyBinds.erase(std::remove_if(m_keyBinds.begin(), m_keyBinds.end(), createdInGame), m_keyBinds.end());
+
 }
 
 void Client::OnPostUpdate(float deltaTime)
