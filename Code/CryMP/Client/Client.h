@@ -66,6 +66,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	{
 		std::string key;
 		std::string command;
+		bool createdInGame = false;
 	};
 
 	std::vector<KeyBind> m_keyBinds;
