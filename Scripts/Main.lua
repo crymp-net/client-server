@@ -545,6 +545,39 @@ function InitializeClient()
 		end
 	end
 
+	local function ShowConsoleServerList(data)
+		-- taken from sfwcl
+		printf("$0 ")
+		printf("$0+$8%-3s$0+$8%-40s$0+$8%-8s$0+$8%-24s$0+$8%-14s$0+$8%-8s$0+$8%-5s$0+", "ID", "Name", "Players", "Map", "Game rules", "Version", "Flags")
+		printf("$0 ")
+		for i, v in pairs(data) do
+			local rules = v.map:find("/ia/", nil, true) and "InstantAction" or "PowerStruggle"
+			local flags = (tonumber(v.trusted) == 1 and "*" or " ") .. " " .. (tonumber(v.ranked) == 1 and "^" or " ")
+			if tonumber(v.ver) ~= 6156 then
+				printf("$0|$4%-3s$0|$9%-40s$0|$9%-8s$0|$9%-24s$0|$9%-14s$0|$9%-8s$0|$9%-5s$0|", i, v.name, v.numpl .. "/" .. v.maxpl, v.mapnm, rules, v.ver, flags)
+			elseif v.pass ~= "0" then
+				printf("$0|$1%-3s$0|$1%-40s$0|$1%-8s$0|$1%-24s$0|$1%-14s$0|$1%-8s$0|$1%-5s$0|", i, v.name, v.numpl .. "/" .. v.maxpl, v.mapnm, rules, v.ver, flags)
+			else
+				printf("$0|$3%-3s$0|$3%-40s$0|$3%-8s$0|$3%-24s$0|$3%-14s$0|$3%-8s$0|$3%-5s$0|", i, v.name, v.numpl .. "/" .. v.maxpl, v.mapnm, rules, v.ver, flags)
+			end
+		end
+		printf("$0 ")
+	end
+
+	local function RequestConsoleServerList()
+		GetMaster()
+		:Then(function(defaultMaster)
+			local endpoint = ToEndpoint(defaultMaster)
+			GET(endpoint .. "/servers?export=json")
+			:Then(function(response)
+				ShowConsoleServerList(json.decode(response))
+			end)
+			:Catch(function(error)
+				reject("Failed to obtain server list, error: " .. tostring(error))
+			end)
+		end)
+	end
+
 	local function OnUpdate(dt)
 		if g_gameRules ~= nil then
 			if g_gameRules.Client.ClStartWorking ~= HookedStartWorking then
@@ -675,6 +708,8 @@ function InitializeClient()
 			printf(RED .. "Chat is not available")
 		end
 	end)
+
+	CPPAPI.AddCCommand("0", RequestConsoleServerList)
 
 	ObtainStaticID()
 	RemoveFlaws()
