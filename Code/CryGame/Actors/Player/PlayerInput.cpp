@@ -139,11 +139,8 @@ void CPlayerInput::AddCustomBinds()
 	{
 		SActionMapBindInfo s = {};
 		std::array<const char*, MAX_KEYS> keysBuffer = {};
+		s.keys = keysBuffer.data();
 
-		if (s.keys == nullptr)
-		{
-			s.keys = keysBuffer.data();
-		}
 		if (playerMap->GetBindInfo(actions.reload, s, MAX_KEYS))
 		{
 			if (IActionMap* landVehicleMap = pMapManager->GetActionMap("landvehicle"))
@@ -153,7 +150,6 @@ void CPlayerInput::AddCustomBinds()
 					<key name = "xi_x" / >
 					< / action>
 				*/
-				landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress, s.keys[1]);
 				if (s.keys[0] && s.keys[1])
 				{
 					landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress | eAAM_OnRelease, s.keys[0], s.keys[1]);
@@ -162,6 +158,20 @@ void CPlayerInput::AddCustomBinds()
 				{
 					landVehicleMap->CreateAction(actions.reload.c_str(), eAAM_OnPress | eAAM_OnRelease, s.keys[0]);
 				}
+			}
+		}
+	}
+	if (IActionMap* defaultMap = pMapManager->GetActionMap("default"))
+	{
+		SActionMapBindInfo s = {};
+		std::array<const char*, MAX_KEYS> keysBuffer = {};
+		s.keys = keysBuffer.data();
+
+		if (defaultMap->GetBindInfo(actions.prev_spectator_target, s, MAX_KEYS))
+		{
+			if (s.nKeys == 2 && s.keys[0] && s.keys[1] && !strcmp(s.keys[1],"<unknown>"))
+			{
+				defaultMap->CreateAction(actions.prev_spectator_target.c_str(), eAAM_OnPress, s.keys[0], "mouse1");
 			}
 		}
 	}
@@ -582,7 +592,6 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 			}
 		}
 	}
-
 
 	bool hudFilterOut = true;
 
