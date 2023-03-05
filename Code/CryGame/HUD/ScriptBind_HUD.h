@@ -74,6 +74,9 @@ protected:
 	virtual int FadeOutBigOverlayFlashMessage(IFunctionHandler* pH);
 	virtual int GetLastInGameSave(IFunctionHandler* pH);
 
+	int SetSilhouette(IFunctionHandler* pH, ScriptHandle entityId, float r, float g, float b, float a, float fDuration);
+	int ResetSilhouette(IFunctionHandler* pH, ScriptHandle entityId);
+
 private:
 	void RegisterGlobals();
 	void RegisterMethods();

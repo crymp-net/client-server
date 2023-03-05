@@ -20,6 +20,7 @@
 #include "HUDRadar.h"
 #include "HUDPowerStruggle.h"
 #include "HUDCrosshair.h"
+#include "HUDSilhouettes.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 
 //------------------------------------------------------------------------
@@ -100,6 +101,9 @@ void CScriptBind_HUD::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(DisplayBigOverlayFlashMessage, "msg, duration, posX, posY, color");
 	SCRIPT_REG_TEMPLFUNC(FadeOutBigOverlayFlashMessage, "");
 	SCRIPT_REG_TEMPLFUNC(GetLastInGameSave, "");
+
+	SCRIPT_REG_TEMPLFUNC(SetSilhouette, "entityId, r, g, b, duration");
+	SCRIPT_REG_TEMPLFUNC(ResetSilhouette, "entityId");
 
 #undef SCRIPT_REG_CLASSNAME
 }
@@ -601,6 +605,32 @@ int CScriptBind_HUD::GetLastInGameSave(IFunctionHandler* pH)
 	if (lastSave)
 	{
 		return pH->EndFunction(lastSave->c_str());
+	}
+	return pH->EndFunction();
+}
+
+int CScriptBind_HUD::SetSilhouette(IFunctionHandler* pH, ScriptHandle entityId, float r, float g, float b, float a, float fDuration)
+{
+	if (CHUD* pHUD = g_pGame->GetHUD())
+	{
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+		if (pEntity && pHUD->GetSilhouettes())
+		{
+			pHUD->GetSilhouettes()->SetSilhouette(pEntity, r, g, b, a, fDuration);
+		}
+	}
+	return pH->EndFunction();
+}
+
+int CScriptBind_HUD::ResetSilhouette(IFunctionHandler* pH, ScriptHandle entityId)
+{
+	if (CHUD* pHUD = g_pGame->GetHUD())
+	{
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+		if (pEntity && pHUD->GetSilhouettes())
+		{
+			pHUD->GetSilhouettes()->ResetSilhouette(entityId.n);
+		}
 	}
 	return pH->EndFunction();
 }
