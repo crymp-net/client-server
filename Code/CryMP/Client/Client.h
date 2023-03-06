@@ -58,7 +58,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::string m_hwid;
 	std::string m_locale;
 	std::string m_timezone;
-	bool m_bLevelLoad = false;
 
 	std::vector<std::string> m_masters;
 
@@ -84,17 +83,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);
 	static void OnKeyBindCmd(IConsoleCmdArgs* pArgs);
 	static void OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs);
-
-	// TODO: remove
-	struct Brush_Hook
-	{
-		void Dephysicalize(bool keepIfReferenced);
-	};
-
-	using TBrushDephysicalize = decltype(&Brush_Hook::Dephysicalize);
-	static inline TBrushDephysicalize s_originalBrushDephysicalize = nullptr;
-
-	void HackBrush();
 
 	// TODO: remove
 	struct Entity_Hook

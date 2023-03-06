@@ -164,44 +164,6 @@ void Client::OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs)
 	}
 }
 
-void Client::Brush_Hook::Dephysicalize(bool keepIfReferenced)
-{
-	IRenderNode* node = reinterpret_cast<IRenderNode*>(this);
-
-	if (!gClient->m_bLevelLoad)
-	{
-		CryLogAlways("Bug? [Brush::Dephysicalize] $8%s", node->GetName());
-		return;
-	}
-	else
-		CryLogAlways("[Brush::Dephysicalize] %s", node->GetName());
-
-	(this->*(gClient->s_originalBrushDephysicalize))(keepIfReferenced);
-}
-
-void Client::HackBrush()
-{
-#ifdef BUILD_64BIT
-	void *pCry3DEngine = WinAPI::DLL::Get("Cry3DEngine.dll");
-	if (!pCry3DEngine)
-	{
-		CryLogErrorAlways("[Client::HackBrush] Cry3DEngine DLL is not loaded!");
-		return;
-	}
-
-	void **BrushVTable = reinterpret_cast<void**>(static_cast<unsigned char*>(pCry3DEngine) + 0x1D20D8);
-
-	constexpr int DEPHYSICALIZE_INDEX = 44;
-	s_originalBrushDephysicalize = reinterpret_cast<TBrushDephysicalize&>(BrushVTable[DEPHYSICALIZE_INDEX]);
-
-	// vtable hook
-	TBrushDephysicalize newDephysicalize = &Brush_Hook::Dephysicalize;
-	WinAPI::FillMem(&BrushVTable[DEPHYSICALIZE_INDEX], &reinterpret_cast<void*&>(newDephysicalize), sizeof (void*));
-
-	CryLogAlways("[Client::HackBrush] Done");
-#endif
-}
-
 int Client::Entity_Hook::LoadParticleEmitter(int slot, IParticleEffect* pEffect, const SpawnParams* params, bool prime, bool serialize)
 {
 	CryLog("[Client::Entity_Hook::LoadParticleEmitter] %s", (pEffect) ? pEffect->GetName() : "?");
@@ -333,11 +295,6 @@ void Client::Init(IGameFramework *pGameFramework)
 		}
 
 		m_pGame = entry(pGameFramework);
-	}
-
-	if (!s_originalBrushDephysicalize)
-	{
-		HackBrush();
 	}
 
 	if (!s_originalEntityLoadParticleEmitter)
@@ -530,7 +487,6 @@ void Client::OnLevelNotFound(const char *levelName)
 
 void Client::OnLoadingStart(ILevelInfo *pLevel)
 {
-	m_bLevelLoad = true;
 	gEnv->pScriptSystem->ForceGarbageCollection();
 
 	m_pServerPAK->OnLoadingStart(pLevel);
@@ -540,7 +496,6 @@ void Client::OnLoadingStart(ILevelInfo *pLevel)
 
 void Client::OnLoadingComplete(ILevel *pLevel)
 {
-	m_bLevelLoad = false;
 }
 
 void Client::OnLoadingError(ILevelInfo *pLevel, const char *error)
