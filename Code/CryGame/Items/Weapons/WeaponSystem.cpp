@@ -279,7 +279,7 @@ void CWeaponSystem::RegisterZoomMode(const char *name, IZoomMode *(*CreateProc)(
 }
 
 //------------------------------------------------------------------------
-CProjectile *CWeaponSystem::SpawnAmmo(IEntityClass* pAmmoType, bool isRemote)
+CProjectile *CWeaponSystem::SpawnAmmo(IEntityClass* pAmmoType, bool isRemote, EntityId hostId)
 {
 	TAmmoTypeParams::const_iterator it = m_ammoparams.find(pAmmoType);
 	if (it == m_ammoparams.end())
@@ -307,22 +307,28 @@ CProjectile *CWeaponSystem::SpawnAmmo(IEntityClass* pAmmoType, bool isRemote)
 			return 0;
 	}
 
+	m_lastHostId = hostId;
+
 	SEntitySpawnParams spawnParams;
 	spawnParams.pClass = pAmmoType;
 	spawnParams.sName = "ammo";
 	spawnParams.nFlags = pAmmoParams->flags | ENTITY_FLAG_NO_PROXIMITY; // No proximity for this entity.
-
+	
 	IEntity *pEntity = gEnv->pEntitySystem->SpawnEntity(spawnParams);
 	if (!pEntity)
 	{
 		GameWarning("Failed to spawn ammo '%s'! Entity creation failed...", pAmmoType->GetName());
 		return 0;
 	}
+	
+	m_lastHostId = 0;
 
 	CProjectile *pProjectile = GetProjectile(pEntity->GetId());
 
 	if (pProjectile && !isServer && !isRemote && pAmmoParams->predictSpawn)
+	{
 		pProjectile->GetGameObject()->RegisterAsPredicted();
+	}
 	
 	return pProjectile;
 }

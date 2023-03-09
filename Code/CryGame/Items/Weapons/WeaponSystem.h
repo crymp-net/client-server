@@ -91,7 +91,7 @@ public:
 	IZoomMode *CreateZoomMode(const char *name);
 	void RegisterZoomMode(const char *name, IZoomMode *(*)());
 
-	CProjectile *SpawnAmmo(IEntityClass* pAmmoType, bool isRemote=false);
+	CProjectile *SpawnAmmo(IEntityClass* pAmmoType, bool isRemote=false, EntityId hostId = 0);
 	bool IsServerSpawn(IEntityClass* pAmmoType) const;
 	void RegisterProjectile(const char *name, IGameObjectExtensionCreatorBase *pCreator);
 	const SAmmoParams* GetAmmoParams(IEntityClass* pAmmoType) const;
@@ -118,6 +118,16 @@ public:
 	void CheckEnvironmentChanges();
 
 	void Serialize(TSerialize ser);
+
+	//CryMP
+	EntityId GetLastHostId()
+	{
+		return m_lastHostId;
+	}
+	void SetLastHostId(EntityId id)
+	{
+		m_lastHostId = id;
+	}
 
 private: 
 
@@ -146,6 +156,8 @@ private:
 	bool								m_wetEnvironment;
 
 	bool                m_tokensUpdated;
+
+	EntityId m_lastHostId = 0;
 };
 
 

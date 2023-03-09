@@ -2161,7 +2161,11 @@ CProjectile* CWeapon::SpawnAmmo(IEntityClass* pAmmoType, bool remote)
 		}
 	}
 
-	return g_pGame->GetWeaponSystem()->SpawnAmmo(pAmmoType, remote);
+	//CryMP
+	const EntityId hostId = GetHostId() ? GetHostId() : GetOwnerId();
+	CProjectile* pProjectile = g_pGame->GetWeaponSystem()->SpawnAmmo(pAmmoType, remote, hostId);
+
+	return pProjectile;
 }
 
 //------------------------------------------------------------------------
