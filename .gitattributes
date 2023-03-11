@@ -1,4 +1,4 @@
 *.h    linguist-language=C++
 *.h.in linguist-language=C++
 
-Code/ThirdParty/** linguist-vendored=true
+ThirdParty/** linguist-vendored=true

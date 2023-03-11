@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <deque>
 
-#include "ThirdParty/nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

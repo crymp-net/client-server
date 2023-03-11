@@ -654,65 +654,65 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/Util.h
 	Code/Library/WinAPI.cpp
 	Code/Library/WinAPI.h
-	Code/ThirdParty/Lua/src/lapi.c
-	Code/ThirdParty/Lua/src/lapi.h
-	Code/ThirdParty/Lua/src/lauxlib.c
-	Code/ThirdParty/Lua/src/lauxlib.h
-	Code/ThirdParty/Lua/src/lbaselib.c
-	Code/ThirdParty/Lua/src/lcode.c
-	Code/ThirdParty/Lua/src/lcode.h
-	Code/ThirdParty/Lua/src/ldblib.c
-	Code/ThirdParty/Lua/src/ldebug.c
-	Code/ThirdParty/Lua/src/ldebug.h
-	Code/ThirdParty/Lua/src/ldo.c
-	Code/ThirdParty/Lua/src/ldo.h
-	Code/ThirdParty/Lua/src/ldump.c
-	Code/ThirdParty/Lua/src/lfunc.c
-	Code/ThirdParty/Lua/src/lfunc.h
-	Code/ThirdParty/Lua/src/lgc.c
-	Code/ThirdParty/Lua/src/lgc.h
-	Code/ThirdParty/Lua/src/linit.c
-	Code/ThirdParty/Lua/src/liolib.c
-	Code/ThirdParty/Lua/src/llex.c
-	Code/ThirdParty/Lua/src/llex.h
-	Code/ThirdParty/Lua/src/llimits.h
-	Code/ThirdParty/Lua/src/lmathlib.c
-	Code/ThirdParty/Lua/src/lmem.c
-	Code/ThirdParty/Lua/src/lmem.h
-	Code/ThirdParty/Lua/src/loadlib.c
-	Code/ThirdParty/Lua/src/lobject.c
-	Code/ThirdParty/Lua/src/lobject.h
-	Code/ThirdParty/Lua/src/lopcodes.c
-	Code/ThirdParty/Lua/src/lopcodes.h
-	Code/ThirdParty/Lua/src/loslib.c
-	Code/ThirdParty/Lua/src/lparser.c
-	Code/ThirdParty/Lua/src/lparser.h
-	Code/ThirdParty/Lua/src/lstate.c
-	Code/ThirdParty/Lua/src/lstate.h
-	Code/ThirdParty/Lua/src/lstring.c
-	Code/ThirdParty/Lua/src/lstring.h
-	Code/ThirdParty/Lua/src/lstrlib.c
-	Code/ThirdParty/Lua/src/ltable.c
-	Code/ThirdParty/Lua/src/ltable.h
-	Code/ThirdParty/Lua/src/ltablib.c
-	Code/ThirdParty/Lua/src/ltm.c
-	Code/ThirdParty/Lua/src/ltm.h
-	Code/ThirdParty/Lua/src/luaconf.h
-	Code/ThirdParty/Lua/src/lua.h
-	Code/ThirdParty/Lua/src/lualib.h
-	Code/ThirdParty/Lua/src/lundump.c
-	Code/ThirdParty/Lua/src/lundump.h
-	Code/ThirdParty/Lua/src/lvm.c
-	Code/ThirdParty/Lua/src/lvm.h
-	Code/ThirdParty/Lua/src/lzio.c
-	Code/ThirdParty/Lua/src/lzio.h
-	Code/ThirdParty/miniz/miniz.c
-	Code/ThirdParty/miniz/miniz.h
-	Code/ThirdParty/nlohmann/json.hpp
-	Code/ThirdParty/nlohmann/json_fwd.hpp
-	Code/ThirdParty/picosha2.h
 	Resources/Launcher.manifest
 	Resources/Launcher.rc
+	ThirdParty/Lua/src/lapi.c
+	ThirdParty/Lua/src/lapi.h
+	ThirdParty/Lua/src/lauxlib.c
+	ThirdParty/Lua/src/lauxlib.h
+	ThirdParty/Lua/src/lbaselib.c
+	ThirdParty/Lua/src/lcode.c
+	ThirdParty/Lua/src/lcode.h
+	ThirdParty/Lua/src/ldblib.c
+	ThirdParty/Lua/src/ldebug.c
+	ThirdParty/Lua/src/ldebug.h
+	ThirdParty/Lua/src/ldo.c
+	ThirdParty/Lua/src/ldo.h
+	ThirdParty/Lua/src/ldump.c
+	ThirdParty/Lua/src/lfunc.c
+	ThirdParty/Lua/src/lfunc.h
+	ThirdParty/Lua/src/lgc.c
+	ThirdParty/Lua/src/lgc.h
+	ThirdParty/Lua/src/linit.c
+	ThirdParty/Lua/src/liolib.c
+	ThirdParty/Lua/src/llex.c
+	ThirdParty/Lua/src/llex.h
+	ThirdParty/Lua/src/llimits.h
+	ThirdParty/Lua/src/lmathlib.c
+	ThirdParty/Lua/src/lmem.c
+	ThirdParty/Lua/src/lmem.h
+	ThirdParty/Lua/src/loadlib.c
+	ThirdParty/Lua/src/lobject.c
+	ThirdParty/Lua/src/lobject.h
+	ThirdParty/Lua/src/lopcodes.c
+	ThirdParty/Lua/src/lopcodes.h
+	ThirdParty/Lua/src/loslib.c
+	ThirdParty/Lua/src/lparser.c
+	ThirdParty/Lua/src/lparser.h
+	ThirdParty/Lua/src/lstate.c
+	ThirdParty/Lua/src/lstate.h
+	ThirdParty/Lua/src/lstring.c
+	ThirdParty/Lua/src/lstring.h
+	ThirdParty/Lua/src/lstrlib.c
+	ThirdParty/Lua/src/ltable.c
+	ThirdParty/Lua/src/ltable.h
+	ThirdParty/Lua/src/ltablib.c
+	ThirdParty/Lua/src/ltm.c
+	ThirdParty/Lua/src/ltm.h
+	ThirdParty/Lua/src/luaconf.h
+	ThirdParty/Lua/src/lua.h
+	ThirdParty/Lua/src/lualib.h
+	ThirdParty/Lua/src/lundump.c
+	ThirdParty/Lua/src/lundump.h
+	ThirdParty/Lua/src/lvm.c
+	ThirdParty/Lua/src/lvm.h
+	ThirdParty/Lua/src/lzio.c
+	ThirdParty/Lua/src/lzio.h
+	ThirdParty/miniz/miniz.c
+	ThirdParty/miniz/miniz.h
+	ThirdParty/nlohmann/json.hpp
+	ThirdParty/nlohmann/json_fwd.hpp
+	ThirdParty/picosha2.h
 	${PROJECT_BINARY_DIR}/config.h
 )
 
@@ -754,6 +754,7 @@ endif()
 target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
+target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 

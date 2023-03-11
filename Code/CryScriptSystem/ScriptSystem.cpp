@@ -2,18 +2,18 @@
 #include <string.h>
 #include <algorithm>
 
+extern "C"
+{
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+}
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CryAISystem/IAISystem.h"
-
-extern "C"
-{
-#include "ThirdParty/Lua/src/lua.h"
-#include "ThirdParty/Lua/src/lualib.h"
-#include "ThirdParty/Lua/src/lauxlib.h"
-}
 
 #include "ScriptSystem.h"
 #include "ScriptTable.h"

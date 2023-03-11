@@ -1,5 +1,7 @@
 #include <string_view>
 
+#include <nlohmann/json.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryAction/IGameFramework.h"
@@ -8,7 +10,6 @@
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 #include "CryGame/Menus/MPHub.h"
-#include "ThirdParty/nlohmann/json.hpp"
 
 #include "ServerConnector.h"
 #include "Client.h"

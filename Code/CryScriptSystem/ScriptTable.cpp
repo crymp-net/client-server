@@ -2,13 +2,13 @@
 #include <string.h>
 #include <new>
 
-#include "CryCommon/CrySystem/ISystem.h"
-
 extern "C"
 {
-#include "ThirdParty/Lua/src/lua.h"
-#include "ThirdParty/Lua/src/lauxlib.h"
+#include <lua.h>
+#include <lauxlib.h>
 }
+
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "ScriptTable.h"
 #include "ScriptSystem.h"

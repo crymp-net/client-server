@@ -1,11 +1,11 @@
 #include <algorithm>
 
-#include "CryCommon/CrySystem/ISystem.h"
-
 extern "C"
 {
-#include "ThirdParty/Lua/src/lua.h"
+#include <lua.h>
 }
+
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "FunctionHandler.h"
 #include "ScriptSystem.h"

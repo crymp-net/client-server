@@ -1,9 +1,9 @@
-#include "Library/StringTools.h"
-
 extern "C"
 {
-#include "ThirdParty/Lua/src/lua.h"
+#include <lua.h>
 }
+
+#include "Library/StringTools.h"
 
 #include "ScriptUtil.h"
 

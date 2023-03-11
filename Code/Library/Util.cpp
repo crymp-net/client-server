@@ -4,7 +4,7 @@
 #include <array>
 #include <algorithm>
 
-#include "ThirdParty/picosha2.h"
+#include <picosha2.h>
 
 #include "Util.h"
 #include "StringTools.h"

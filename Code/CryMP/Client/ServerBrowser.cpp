@@ -2,10 +2,11 @@
 #include <stdint.h>
 #include <string_view>
 
+#include <nlohmann/json.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/StringTools.h"
 #include "Library/Util.h"
-#include "ThirdParty/nlohmann/json.hpp"
 
 #include "ServerBrowser.h"
 #include "ServerConnector.h"
