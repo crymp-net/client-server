@@ -5,6 +5,7 @@
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
+#include "CryFont/CryFont.h"
 #include "CryMP/Client/Client.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CPUInfo.h"
@@ -114,6 +115,47 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 	// vtable hook
 	TGetLocalizationManager newFunc = &DummyCSystem::GetLocalizationManager;
 	WinAPI::FillMem(&vtable[105], &reinterpret_cast<void*&>(newFunc), sizeof(void*));
+}
+
+static ICryFont* CreateNewCryFont(ISystem* pSystem)
+{
+	CryLogAlways("$3[CryMP] Initializing Font System");
+
+	return new CryFont();
+}
+
+static void ReplaceCryFont(void* pCrySystem)
+{
+	void* func = &CreateNewCryFont;
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,  // nop...
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90
+	};
+
+	std::memcpy(&code[2], &func, 8);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x44D6A), code, sizeof code);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0x90, 0x90, 0x90, 0x90, 0x90,  // nop...
+		0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90, 0x90, 0x90, 0x90, 0x90,
+		0x90
+	};
+
+	std::memcpy(&code[2], &func, 8);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x57052), code, sizeof code);
+#endif
 }
 
 static ITimeOfDay* CreateTimeOfDay()
@@ -433,6 +475,7 @@ void Launcher::PatchEngine()
 		}
 
 		ReplaceLocalizationManager(m_dlls.pCrySystem);
+		ReplaceCryFont(m_dlls.pCrySystem);
 	}
 
 	if (m_dlls.pCry3DEngine)
