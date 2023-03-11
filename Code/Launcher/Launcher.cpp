@@ -437,7 +437,10 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCry3DEngine)
 	{
-		ReplaceTimeOfDay(m_dlls.pCry3DEngine);
+		if (WinAPI::CmdLine::HasArg("-newtod"))
+		{
+			ReplaceTimeOfDay(m_dlls.pCry3DEngine);
+		}
 	}
 
 	const char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
