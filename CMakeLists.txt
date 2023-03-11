@@ -648,6 +648,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/CPUID.h
 	Code/Library/CrashLogger.cpp
 	Code/Library/CrashLogger.h
+	Code/Library/FastString.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h
 	Code/Library/Util.cpp
@@ -656,6 +657,22 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/WinAPI.h
 	Resources/Launcher.manifest
 	Resources/Launcher.rc
+	ThirdParty/fmt/args.h
+	ThirdParty/fmt/chrono.h
+	ThirdParty/fmt/color.h
+	ThirdParty/fmt/compile.h
+	ThirdParty/fmt/core.h
+#	ThirdParty/fmt/fmt.cc
+	ThirdParty/fmt/format-inl.h
+	ThirdParty/fmt/format.cc
+	ThirdParty/fmt/format.h
+	ThirdParty/fmt/os.cc
+	ThirdParty/fmt/os.h
+	ThirdParty/fmt/ostream.h
+	ThirdParty/fmt/printf.h
+	ThirdParty/fmt/ranges.h
+	ThirdParty/fmt/std.h
+	ThirdParty/fmt/xchar.h
 	ThirdParty/Lua/src/lapi.c
 	ThirdParty/Lua/src/lapi.h
 	ThirdParty/Lua/src/lauxlib.c
