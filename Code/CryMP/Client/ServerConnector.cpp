@@ -1,4 +1,4 @@
-#include <stdlib.h>  // atoi
+#include <string_view>
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -8,7 +8,6 @@
 #include "CryGame/GameCVars.h"
 #include "CryGame/Menus/FlashMenuObject.h"
 #include "CryGame/Menus/MPHub.h"
-#include "Library/Util.h"
 #include "ThirdParty/nlohmann/json.hpp"
 
 #include "ServerConnector.h"
@@ -19,16 +18,13 @@
 
 using json = nlohmann::json;
 
-namespace
+static std::string_view GetString(const json & object, const std::string_view & name)
 {
-	std::string_view GetString(const json & object, const std::string_view & name)
-	{
-		auto it = object.find(name);
-		if (it != object.end() && it->is_string())
-			return it->get_ref<const std::string&>();
-		else
-			return std::string_view();
-	}
+	auto it = object.find(name);
+	if (it != object.end() && it->is_string())
+		return it->get_ref<const std::string&>();
+	else
+		return std::string_view();
 }
 
 bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
@@ -51,10 +47,10 @@ bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
 			return false;
 		}
 
-		m_server.name   = GetString(serverInfo, "name");
-		m_server.map    = GetString(serverInfo, "map");
-		m_server.mapURL = GetString(serverInfo, "mapdl");
-		m_server.pakURL = GetString(serverInfo, "pak");
+		m_server.name = GetString(serverInfo, "name");
+		m_server.map = GetString(serverInfo, "map");
+		m_server.map_url = GetString(serverInfo, "mapdl");
+		m_server.pak_url = GetString(serverInfo, "pak");
 	}
 	catch (const json::exception & ex)
 	{
@@ -62,11 +58,9 @@ bool ServerConnector::ParseServerInfo(HTTPClientResult & result)
 		return false;
 	}
 
-	if (!m_server.mapURL.empty() && !Util::StartsWith(m_server.mapURL, "http"))
-		m_server.mapURL = "http://" + m_server.mapURL;
-
-	if (!m_server.pakURL.empty() && !Util::StartsWith(m_server.pakURL, "http"))
-		m_server.pakURL = "http://" + m_server.pakURL;
+	m_server.SplitMapVersion();
+	m_server.FixMapUrl();
+	m_server.FixPakUrl();
 
 	return true;
 }
@@ -113,12 +107,12 @@ void ServerConnector::ResetCVars()
 
 void ServerConnector::Step1_RequestServerInfo()
 {
-	CryLogAlways("$3[CryMP] Checking server at $6%s:%u$3", m_server.host.c_str(), m_server.port);
+	CryLogAlways("$3[CryMP] Checking server at $6%s:%hu$3", m_server.public_host.c_str(), m_server.public_port);
 
-	const std::string & ip = m_server.host;
-	const std::string port = std::to_string(m_server.port);
-
-	const std::string url = gClient->GetMasterServerAPI(m_server.master) + "/server?ip=" + ip + "&port=" + port + "&json";
+	const std::string url = gClient->GetMasterServerAPI(m_server.master)
+		+ "/server?ip=" + m_server.public_host
+		+ "&port=" + std::to_string(m_server.public_port)
+		+ "&json";
 
 	gClient->HttpGet(url, [contractID = m_contractID, this](HTTPClientResult& result)
 	{
@@ -140,21 +134,10 @@ void ServerConnector::Step1_RequestServerInfo()
 
 void ServerConnector::Step2_DownloadMap()
 {
-	std::string_view map = m_server.map;
-	std::string_view mapVersion;
-
-	if (const auto pos = map.find('|'); pos != std::string_view::npos)
-	{
-		mapVersion = map;
-		mapVersion.remove_prefix(pos + 1);
-
-		map.remove_suffix(map.length() - pos);
-	}
-
 	MapDownloaderRequest request;
-	request.map = map;
-	request.mapURL = m_server.mapURL;
-	request.mapVersion = mapVersion;
+	request.map = m_server.map;
+	request.mapURL = m_server.map_url;
+	request.mapVersion = m_server.map_version;
 
 	request.onProgress = [contractID = m_contractID, this](const std::string & message) -> bool
 	{
@@ -193,7 +176,7 @@ void ServerConnector::Step2_DownloadMap()
 
 void ServerConnector::Step3_DownloadPAK()
 {
-	if (m_server.pakURL.empty())
+	if (m_server.pak_url.empty())
 	{
 		// next step
 		Step4_TryConnect();
@@ -203,7 +186,7 @@ void ServerConnector::Step3_DownloadPAK()
 		CryLogAlways("$3[CryMP] Obtaining server PAK...");
 
 		FileCacheRequest request;
-		request.fileURL = m_server.pakURL;
+		request.fileURL = m_server.pak_url;
 		request.fileType = "PAK";
 
 		request.onProgress = [contractID = m_contractID, this](const std::string & message) -> bool
@@ -251,7 +234,7 @@ void ServerConnector::Step3_DownloadPAK()
 
 void ServerConnector::Step4_TryConnect()
 {
-	const std::string endpoint = m_server.host + ':' + std::to_string(m_server.port);
+	const std::string endpoint = m_server.CreateEndpointString();
 
 	if (m_server.name.empty())
 	{
@@ -270,8 +253,8 @@ void ServerConnector::Step4_TryConnect()
 
 	SGameStartParams params;
 	params.flags = eGSF_Client | eGSF_NoDelayedStart | eGSF_NoQueries | eGSF_ImmersiveMultiplayer;
-	params.hostname = m_server.host.c_str();
-	params.port = m_server.port;
+	params.hostname = m_server.GetPreferredHost().c_str();
+	params.port = m_server.GetPreferredPort();
 
 	gClient->GetGameFramework()->StartGameContext(&params);
 }
@@ -284,35 +267,25 @@ ServerConnector::~ServerConnector()
 {
 }
 
-void ServerConnector::Connect(const std::string_view & master, const std::string_view & host, unsigned int port)
+void ServerConnector::Connect(const ServerInfo& server)
 {
 	Disconnect();
 
-	m_server.clear();
-	m_server.host = host;
-	m_server.port = port;
-	m_server.master = master;
+	m_server = server;
 
 	CMPHub* pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)
 	{
-		pMPHub->ShowLoadingDlg("@ui_connecting_to", m_server.host.c_str());
+		pMPHub->ShowLoadingDlg("@ui_connecting_to",
+			m_server.name.empty() ? m_server.CreateEndpointString().c_str() : m_server.name.c_str());
 	}
 
 	gClient->GetServerPAK()->OnConnect();
 
-	// IP:PORT host workaround
-	const size_t colonPos = host.find(':');
-	if (colonPos != std::string::npos)
-	{
-		m_server.port = atoi(&host[colonPos + 1]);
-		m_server.host.resize(colonPos);
-	}
-
 	IConsole *pConsole = gEnv->pConsole;
 
-	pConsole->GetCVar("cl_serveraddr")->Set(m_server.host.c_str());
-	pConsole->GetCVar("cl_serverport")->Set(static_cast<int>(m_server.port));
+	pConsole->GetCVar("cl_serveraddr")->Set(m_server.GetPreferredHost().c_str());
+	pConsole->GetCVar("cl_serverport")->Set(static_cast<int>(m_server.GetPreferredPort()));
 
 	Step1_RequestServerInfo();
 }

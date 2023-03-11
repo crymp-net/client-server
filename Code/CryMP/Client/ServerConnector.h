@@ -1,36 +1,13 @@
 #pragma once
 
 #include <string>
-#include <string_view>
+
+#include "ServerInfo.h"
 
 struct HTTPClientResult;
 
 class ServerConnector
 {
-	struct ServerInfo
-	{
-		std::string host;
-		std::string master;
-		unsigned int port = 0;
-
-		std::string name;
-		std::string map;
-		std::string mapURL;
-		std::string pakURL;
-
-		void clear()
-		{
-			host.clear();
-			master.clear();
-			port = 0;
-
-			name.clear();
-			map.clear();
-			mapURL.clear();
-			pakURL.clear();
-		}
-	};
-
 	ServerInfo m_server;
 	unsigned int m_contractID = 0;
 
@@ -49,10 +26,10 @@ public:
 	ServerConnector();
 	~ServerConnector();
 
-	void Connect(const std::string_view & master, const std::string_view & host, unsigned int port);
+	void Connect(const ServerInfo& server);
 	void Disconnect();
 
-	const ServerInfo &GetLastServer()
+	const ServerInfo& GetLastServer() const
 	{
 		return m_server;
 	}

@@ -103,6 +103,21 @@ namespace
 		return (minutes * 60) + seconds;
 	}
 
+	void ParseServerInfo(const json & serverInfo, ServerInfo & server)
+	{
+		server.local_host = GetString(serverInfo, "local_ip");
+		server.local_port = GetInt(serverInfo, "local_port");
+		server.public_host = GetString(serverInfo, "public_ip");
+		server.public_port = GetInt(serverInfo, "public_port");
+		server.name = GetString(serverInfo, "name");
+		server.map = GetString(serverInfo, "map");
+		server.SplitMapVersion();
+		server.map_url = GetString(serverInfo, "mapdl");
+		server.pak_url = GetString(serverInfo, "pak");
+		server.FixMapUrl();
+		server.FixPakUrl();
+	}
+
 	void SetBasicServerInfo(IServerListener *pListener, const json & serverInfo, int serverID, bool isUpdate)
 	{
 		SBasicServerInfo info = {};
@@ -151,6 +166,25 @@ namespace
 	}
 }
 
+bool ServerBrowser::OnPublicAddress(HTTPClientResult & result)
+{
+	CryLog("[CryMP] Public address (%d): %s", result.code, result.response.c_str());
+
+	try
+	{
+		const json publicAddress = json::parse(result.response);
+
+		m_clientPublicAddress = GetString(publicAddress, "ip");
+	}
+	catch(const json::exception & ex)
+	{
+		CryLogAlways("$4[CryMP] Public address parse error: %s", ex.what());
+		return false;
+	}
+
+	return true;
+}
+
 bool ServerBrowser::OnServerList(HTTPClientResult & result, const std::string & master)
 {
 	CryLog("[CryMP] Server list (%d): %s", result.code, result.response.c_str());
@@ -167,28 +201,12 @@ bool ServerBrowser::OnServerList(HTTPClientResult & result, const std::string & 
 
 		for (const json & serverInfo : serverList)
 		{
-			const int serverID = m_servers.size();
+			const int serverID = static_cast<int>(m_servers.size());
 
-			Server server;
+			ServerInfo& server = m_servers.emplace_back();
+			ParseServerInfo(serverInfo, server);
 			server.master = master;
-
-			if (GetInt(serverInfo, "own"))
-			{
-				std::string_view ipString = GetString(serverInfo, "local_ip");
-
-				if (ipString == "localhost")
-					ipString = "127.0.0.1";
-
-				server.ip = IPFromString(ipString.data());
-				server.port = static_cast<uint16_t>(GetInt(serverInfo, "local_port"));
-			}
-			else
-			{
-				server.ip = IPFromString(GetCString(serverInfo, "public_ip"));
-				server.port = static_cast<uint16_t>(GetInt(serverInfo, "public_port"));
-			}
-
-			m_servers.emplace_back(std::move(server));
+			server.is_local = server.public_host == m_clientPublicAddress;
 
 			SetBasicServerInfo(m_pListener, serverInfo, serverID, false);
 		}
@@ -215,6 +233,8 @@ bool ServerBrowser::OnServerInfo(HTTPClientResult & result, int serverID)
 			CryLogAlways("$4[CryMP] Server update error: %s", GetCString(serverInfo, "error"));
 			return false;
 		}
+
+		ParseServerInfo(serverInfo, m_servers[serverID]);
 
 		SetBasicServerInfo(m_pListener, serverInfo, serverID, true);
 
@@ -282,6 +302,16 @@ ServerBrowser::~ServerBrowser()
 {
 }
 
+void ServerBrowser::QueryClientPublicAddress()
+{
+	const std::string url = gClient->GetMasterServerAPI(gClient->GetMasters()[0]) + "/ip";
+
+	gClient->HttpGet(url, [this](HTTPClientResult& result)
+	{
+		this->OnPublicAddress(result);
+	});
+}
+
 bool ServerBrowser::IsAvailable() const
 {
 	return true;
@@ -304,7 +334,7 @@ void ServerBrowser::Stop()
 void ServerBrowser::Update()
 {
 	m_servers.clear();
-	m_pendingQueryCount = gClient->GetMasters().size();
+	m_pendingQueryCount = static_cast<unsigned int>(gClient->GetMasters().size());
 
 	int contractId = ++m_contract;
 
@@ -348,11 +378,10 @@ void ServerBrowser::UpdateServerInfo(int id)
 		return;
 	}
 
-	const std::string ip = IPToString(m_servers[id].ip);
-	const std::string port = std::to_string(m_servers[id].port);
-	const std::string & master = m_servers[id].master;
-
-	const std::string url = gClient->GetMasterServerAPI(master) + "/server?ip=" + ip + "&port=" + port + "&json";
+	const std::string url = gClient->GetMasterServerAPI(m_servers[id].master)
+		+ "/server?ip=" + m_servers[id].public_host
+		+ "&port=" + std::to_string(m_servers[id].public_port)
+		+ "&json";
 
 	gClient->HttpGet(url, [id, this](HTTPClientResult& result)
 	{
@@ -392,9 +421,11 @@ void ServerBrowser::SendNatCookie(unsigned int ip, unsigned short port, int cook
 void ServerBrowser::CheckDirectConnect(int id, unsigned short port)
 {
 	if (id < 0 || id >= m_servers.size())
+	{
 		return;
+	}
 
-	gClient->GetServerConnector()->Connect(m_servers[id].master, IPToString(m_servers[id].ip), m_servers[id].port);
+	gClient->GetServerConnector()->Connect(m_servers[id]);
 }
 
 int ServerBrowser::GetServerCount()

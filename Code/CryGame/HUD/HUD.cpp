@@ -292,7 +292,7 @@ CHUD::CHUD()
 	{
 		if (IEntity* pEnt = pIt->Next())
 		{
-			if (pEnt->GetClass() == CItem::sClaymoreExplosiveClass 
+			if (pEnt->GetClass() == CItem::sClaymoreExplosiveClass
 				|| pEnt->GetClass() == CItem::sAVExplosiveClass
 				|| pEnt->GetClass() == CItem::sC4ExplosiveClass)
 			{
@@ -3664,9 +3664,13 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			m_animSpectate.Invoke("clearPlayerInfo");
 
 			//CryMP begin
-			const auto& s = gClient->GetServerConnector()->GetLastServer();
+			const ServerInfo& server = gClient->GetServerConnector()->GetLastServer();
 
-			const std::string text = StringTools::Format("%s (%s:%d)", s.name.c_str(), s.host.c_str(), s.port);
+			const std::string text = StringTools::Format("%s (%s:%hu)",
+				server.name.c_str(),
+				server.public_host.c_str(),
+				server.public_port
+			);
 
 			SFlashVarValue sArgs[1] = { text.c_str() };
 			m_animSpectate.Invoke("setServerInfo", sArgs, 1);

@@ -1,34 +1,33 @@
 #pragma once
 
-#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "CryCommon/CryNetwork/INetworkService.h"
 
+#include "ServerInfo.h"
+
 struct HTTPClientResult;
 
 class ServerBrowser : public IServerBrowser
 {
-	struct Server
-	{
-		uint32_t ip = 0;
-		uint16_t port = 0;
-		std::string master;
-	};
+	std::string m_clientPublicAddress;
 
-	std::vector<Server> m_servers;
+	std::vector<ServerInfo> m_servers;
 	IServerListener *m_pListener = nullptr;
 
-	size_t m_pendingQueryCount = 0;
-	size_t m_contract = 0;
+	unsigned int m_pendingQueryCount = 0;
+	unsigned int m_contract = 0;
 
+	bool OnPublicAddress(HTTPClientResult & result);
 	bool OnServerList(HTTPClientResult & result, const std::string & master);
 	bool OnServerInfo(HTTPClientResult & result, int serverID);
 
 public:
 	ServerBrowser();
 	~ServerBrowser();
+
+	void QueryClientPublicAddress();
 
 	// INetworkInterface
 	bool IsAvailable() const override;

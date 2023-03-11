@@ -583,6 +583,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryMP/Client/ServerBrowser.h
 	Code/CryMP/Client/ServerConnector.cpp
 	Code/CryMP/Client/ServerConnector.h
+	Code/CryMP/Client/ServerInfo.cpp
+	Code/CryMP/Client/ServerInfo.h
 	Code/CryMP/Client/ServerPAK.cpp
 	Code/CryMP/Client/ServerPAK.h
 	Code/CryMP/Client/SpeedAggregator.cpp

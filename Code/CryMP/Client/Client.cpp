@@ -119,7 +119,13 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	else
 		port = pConsole->GetCVar("cl_serverport")->GetString();
 
-	gClient->GetServerConnector()->Connect(gClient->m_masters[0], host, atoi(port));
+	ServerInfo server;
+	server.master = gClient->m_masters[0];
+	server.public_host = host;
+	server.public_port = atoi(port);
+	server.SplitPublicPort();
+
+	gClient->GetServerConnector()->Connect(server);
 }
 
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
@@ -275,6 +281,8 @@ void Client::Init(IGameFramework *pGameFramework)
 	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
 
 	InitMasters();
+
+	m_pServerBrowser->QueryClientPublicAddress();
 
 	if (!WinAPI::CmdLine::HasArg("-oldgame"))
 	{

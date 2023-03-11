@@ -3399,9 +3399,9 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 
 				if (gEnv->bMultiplayer)
 				{
-					const auto& pInfo = gClient->GetServerConnector()->GetLastServer();
+					const ServerInfo& server = gClient->GetServerConnector()->GetLastServer();
 
-					pLS->Invoke("setServerInfo1", pInfo.name.c_str());
+					pLS->Invoke("setServerInfo1", server.name.c_str());
 
 					ICVar* pCVar2 = gEnv->pConsole->GetCVar("mp_pickupObjects");
 					if (pCVar2 && pCVar2->GetIVal())
