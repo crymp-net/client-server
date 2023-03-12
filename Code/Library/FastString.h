@@ -394,28 +394,6 @@ public:
 		return *this;
 	}
 
-	template<typename... Args>
-	BasicFastString& append_format(fmt::format_string<Args...> format, Args&&... args)
-	{
-		const std::size_t free_space = this->capacity() - m_length;
-		const std::size_t formatted_length =
-			fmt::format_to_n(this->end(), free_space, format, std::forward<Args>(args)...).size;
-
-		const std::size_t new_length = m_length + formatted_length;
-
-		if (formatted_length > free_space)
-		{
-			this->reserve(new_length);
-
-			fmt::format_to_n(this->end(), formatted_length, format, std::forward<Args>(args)...);
-		}
-
-		m_data[new_length] = 0;
-		m_length = new_length;
-
-		return *this;
-	}
-
 	void assign(std::basic_string_view<T> view)
 	{
 		if (view.length() > this->capacity())
@@ -438,6 +416,48 @@ public:
 		std::memmove(m_data, view.data(), view.length() * sizeof(T));
 		m_data[view.length()] = 0;
 		m_length = view.length();
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Formatting
+	////////////////////////////////////////////////////////////////////////////////
+
+	template<typename... Args>
+	BasicFastString& fappend(fmt::format_string<Args...> format, Args&&... args)
+	{
+		const std::size_t free_space = this->capacity() - m_length;
+
+		auto result = fmt::format_to_n(this->end(), free_space, format, std::forward<Args>(args)...);
+		if (result.size > free_space)
+		{
+			this->reallocate(m_length + result.size);
+
+			result.out = fmt::format_to(this->end(), format, std::forward<Args>(args)...);
+		}
+
+		*result.out = 0;
+		m_length = result.out - m_data;
+
+		return *this;
+	}
+
+	template<typename... Args>
+	BasicFastString& fassign(fmt::format_string<Args...> format, Args&&... args)
+	{
+		const std::size_t free_space = this->capacity();
+
+		auto result = fmt::format_to_n(m_data, free_space, format, std::forward<Args>(args)...);
+		if (result.size > free_space)
+		{
+			this->reallocate(result.size);
+
+			result.out = fmt::format_to(m_data, format, std::forward<Args>(args)...);
+		}
+
+		*result.out = 0;
+		m_length = result.out - m_data;
+
+		return *this;
 	}
 
 	// TODO: find
