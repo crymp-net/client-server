@@ -135,15 +135,24 @@ void CSingle::Update(float frameTime, uint frameId)
 
 	CActor* pActor = m_pWeapon->GetOwnerActor();
 
-	if (m_fireparams.autoaim && m_pWeapon->IsSelected() && pActor && pActor->IsClient())
+	if (pActor && pActor->IsClient())
 	{
-		//For the LAW only use "cruise-mode" while you are using the zoom... 
-		if (!m_fireparams.autoaim_zoom || (m_fireparams.autoaim_zoom && m_pWeapon->IsZoomed()))
-			UpdateAutoAim(frameTime);
-		else if (m_fireparams.autoaim_zoom && !m_pWeapon->IsZoomed() && (m_bLocked || m_bLocking))
-			Unlock();
+		bool bRPGMod = m_fireparams.autoaim;
+		if (gEnv->bMultiplayer && m_pWeapon->GetEntity()->GetClass() == CItem::sRocketLauncherClass)
+		{
+			bRPGMod = g_pGameCVars->mp_rpgMod;
+		}
 
-		keepUpdating = true;
+		if (bRPGMod && m_pWeapon->IsSelected())
+		{
+			//For the LAW only use "cruise-mode" while you are using the zoom... 
+			if (!m_fireparams.autoaim_zoom || (m_fireparams.autoaim_zoom && m_pWeapon->IsZoomed()))
+				UpdateAutoAim(frameTime);
+			else if (m_fireparams.autoaim_zoom && !m_pWeapon->IsZoomed() && (m_bLocked || m_bLocking))
+				Unlock();
+
+			keepUpdating = true;
+		}
 	}
 
 	if (m_zoomtimeout > 0.0f && m_fireparams.autozoom)

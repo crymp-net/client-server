@@ -104,6 +104,7 @@ void ServerConnector::ResetCVars()
 	pGameCVars->mp_flyMode = 0;
 	pGameCVars->mp_pickupObjects = 0;
 	pGameCVars->mp_thirdPerson = 1;
+	pGameCVars->mp_rpgMod = 0;
 }
 
 void ServerConnector::Step1_RequestServerInfo()

@@ -595,6 +595,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_animationGrenadeSwitch", &mp_animationGrenadeSwitch, 0, OPTIONAL_SYNC, "Enable FP animations for grenade switching");
 	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
+	pConsole->Register("mp_rpgMod", &mp_rpgMod, 0, OPTIONAL_SYNC);
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("mp_newSpectator", &mp_newSpectator, 1, VF_NOT_NET_SYNCED, "");
