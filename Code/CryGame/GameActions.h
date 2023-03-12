@@ -226,7 +226,7 @@ public:
 private:
 	void	CreateFilterNoMove();
 	void	CreateFilterNoMouse();
-	void  CreateFilterNoGrenades();
+	void	CreateFilterNoGrenades();
 	void	CreateFilterInVehicleSuitMenu();
 	void	CreateFilterSuitMenu();
 	void	CreateFilterFreezeTime();

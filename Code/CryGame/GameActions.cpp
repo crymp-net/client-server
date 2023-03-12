@@ -289,6 +289,8 @@ void CGameActions::CreateFilterNoMouse()
 	m_pFilterNoMouse->Filter(xi_handgrenade);
 	m_pFilterNoMouse->Filter(xi_zoom);
 	m_pFilterNoMouse->Filter(jump);
+	m_pFilterNoMouse->Filter(next_spectator_target); //CryMP fix
+	m_pFilterNoMouse->Filter(prev_spectator_target); //CryMP fix
 }
 
 void CGameActions::CreateFilterInVehicleSuitMenu()
