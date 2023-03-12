@@ -40,4 +40,6 @@ public:
 	int AddLocalizedLabel(IFunctionHandler* pH, const char* name, SmartScriptTable params);
 
 	////////////////////////////////////////////////////////////////////////////////
+
+	int VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool enable);
 };

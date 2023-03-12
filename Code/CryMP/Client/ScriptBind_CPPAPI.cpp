@@ -14,6 +14,7 @@
 #include "Client.h"
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
+#include "CryGame/GameActions.h"
 
 ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 {
@@ -59,6 +60,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
 	SCRIPT_REG_TEMPLFUNC(LocalizeText, "text");
 	SCRIPT_REG_TEMPLFUNC(AddLocalizedLabel, "name, params");
+
+	SCRIPT_REG_TEMPLFUNC(VehicleNoSeatChangeAndExit, "enable");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -507,3 +510,8 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+int ScriptBind_CPPAPI::VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool enable)
+{
+	g_pGameActions->FilterVehicleNoSeatChangeAndExit()->Enable(enable);
+}
