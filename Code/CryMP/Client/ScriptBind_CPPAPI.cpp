@@ -514,4 +514,6 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 int ScriptBind_CPPAPI::VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool enable)
 {
 	g_pGameActions->FilterVehicleNoSeatChangeAndExit()->Enable(enable);
+
+	return pH->EndFunction();
 }
