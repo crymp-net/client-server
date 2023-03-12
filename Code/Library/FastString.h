@@ -6,7 +6,7 @@
 #include <iterator>
 #include <string_view>
 
-// TODO: use C++20 modules
+// TODO: use C++20 modules once CMake supports them
 #include <fmt/core.h>
 
 #ifdef _MSC_VER
