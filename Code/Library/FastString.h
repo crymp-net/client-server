@@ -307,6 +307,25 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Comparison
+	////////////////////////////////////////////////////////////////////////////////
+
+	int compare(std::basic_string_view<T> view) const
+	{
+		return std::basic_string_view<T>(*this).compare(view);
+	}
+
+	bool operator==(std::basic_string_view<T> view) const
+	{
+		return std::basic_string_view<T>(*this) == view;
+	}
+
+	auto operator<=>(std::basic_string_view<T> view) const
+	{
+		return std::basic_string_view<T>(*this) <=> view;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
 	// Heap allocation
 	////////////////////////////////////////////////////////////////////////////////
 
@@ -461,7 +480,6 @@ public:
 	}
 
 	// TODO: find
-	// TODO: compare + operators
 	// TODO: to_lower
 	// TODO: to_upper
 	// TODO: trim
