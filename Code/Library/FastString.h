@@ -325,6 +325,102 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Search
+	////////////////////////////////////////////////////////////////////////////////
+
+	static constexpr size_type npos = view_type::npos;
+
+	size_type find(view_type view, size_type pos = 0) const
+	{
+		return view_type(*this).find(view, pos);
+	}
+
+	size_type find(value_type ch, size_type pos = 0) const
+	{
+		return view_type(*this).find(ch, pos);
+	}
+
+	size_type rfind(view_type view, size_type pos = npos) const
+	{
+		return view_type(*this).rfind(view, pos);
+	}
+
+	size_type rfind(value_type ch, size_type pos = npos) const
+	{
+		return view_type(*this).rfind(ch, pos);
+	}
+
+	size_type find_first_of(view_type view, size_type pos = 0) const
+	{
+		return view_type(*this).find_first_of(view, pos);
+	}
+
+	size_type find_first_of(value_type ch, size_type pos = 0) const
+	{
+		return view_type(*this).find_first_of(ch, pos);
+	}
+
+	size_type find_first_not_of(view_type view, size_type pos = 0) const
+	{
+		return view_type(*this).find_first_not_of(view, pos);
+	}
+
+	size_type find_first_not_of(value_type ch, size_type pos = 0) const
+	{
+		return view_type(*this).find_first_not_of(ch, pos);
+	}
+
+	size_type find_last_of(view_type view, size_type pos = npos) const
+	{
+		return view_type(*this).find_last_of(view, pos);
+	}
+
+	size_type find_last_of(value_type ch, size_type pos = npos) const
+	{
+		return view_type(*this).find_last_of(ch, pos);
+	}
+
+	size_type find_last_not_of(view_type view, size_type pos = npos) const
+	{
+		return view_type(*this).find_last_not_of(view, pos);
+	}
+
+	size_type find_last_not_of(value_type ch, size_type pos = npos) const
+	{
+		return view_type(*this).find_last_not_of(ch, pos);
+	}
+
+	bool starts_with(view_type view) const
+	{
+		return view_type(*this).starts_with(view);
+	}
+
+	bool starts_with(value_type ch) const
+	{
+		return view_type(*this).starts_with(ch);
+	}
+
+	bool ends_with(view_type view) const
+	{
+		return view_type(*this).ends_with(view);
+	}
+
+	bool ends_with(value_type ch) const
+	{
+		return view_type(*this).ends_with(ch);
+	}
+
+	bool contains(view_type view) const
+	{
+		return this->find(view) != npos;
+	}
+
+	bool contains(value_type ch) const
+	{
+		return this->find(ch) != npos;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
 	// Heap allocation
 	////////////////////////////////////////////////////////////////////////////////
 
@@ -478,7 +574,12 @@ public:
 		return *this;
 	}
 
-	// TODO: find
+	// TODO: constructor with pos and count
+	// TODO: operator+=
+	// TODO: insert
+	// TODO: erase
+	// TODO: replace
+	// TODO: resize + resize_no_init
 	// TODO: to_lower
 	// TODO: to_upper
 	// TODO: trim
