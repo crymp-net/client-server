@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <string_view>
@@ -21,7 +20,7 @@ class BasicFastString
 public:
 	using value_type = T;
 	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
+	using view_type = std::basic_string_view<T>;
 
 	using pointer = value_type*;
 	using reference = value_type&;
@@ -35,15 +34,15 @@ public:
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
-	static constexpr std::size_t LOCAL_CAPACITY = 95;
+	static constexpr size_type LOCAL_CAPACITY = 95;
 
-	T* m_data = nullptr;
-	std::size_t m_length = 0;
+	value_type* m_data = nullptr;
+	size_type m_length = 0;
 
 	union
 	{
-		T m_local_buffer[LOCAL_CAPACITY + 1];
-		std::size_t m_heap_capacity;
+		value_type m_local_buffer[LOCAL_CAPACITY + 1];
+		size_type m_heap_capacity;
 	};
 
 public:
@@ -51,7 +50,7 @@ public:
 	{
 	}
 
-	explicit BasicFastString(std::basic_string_view<T> view) : m_length(view.length())
+	explicit BasicFastString(view_type view) : m_length(view.length())
 	{
 		if (view.length() <= LOCAL_CAPACITY)
 		{
@@ -59,13 +58,13 @@ public:
 		}
 		else
 		{
-			const std::size_t new_capacity = this->round_up_capacity(view.length());
+			const size_type new_capacity = this->round_up_capacity(view.length());
 
 			m_data = this->allocate(new_capacity);
 			m_heap_capacity = new_capacity;
 		}
 
-		std::memcpy(m_data, view.data(), view.length() * sizeof(T));
+		std::memcpy(m_data, view.data(), view.length() * sizeof(value_type));
 		m_data[view.length()] = 0;
 	}
 
@@ -80,7 +79,7 @@ public:
 		{
 			m_data = this->allocate(other.m_heap_capacity);
 			m_heap_capacity = other.m_heap_capacity;
-			std::memcpy(m_data, other.m_data, (other.m_length + 1) * sizeof(T));
+			std::memcpy(m_data, other.m_data, (other.m_length + 1) * sizeof(value_type));
 		}
 	}
 
@@ -102,7 +101,7 @@ public:
 		other.m_heap_capacity = 0;
 	}
 
-	BasicFastString& operator=(std::basic_string_view<T> view)
+	BasicFastString& operator=(view_type view)
 	{
 		// supports self-assignment
 		this->assign(view);
@@ -160,17 +159,17 @@ public:
 	// Size
 	////////////////////////////////////////////////////////////////////////////////
 
-	std::size_t capacity() const
+	size_type capacity() const
 	{
 		return (m_data == m_local_buffer) ? LOCAL_CAPACITY : m_heap_capacity;
 	}
 
-	std::size_t length() const
+	size_type length() const
 	{
 		return m_length;
 	}
 
-	std::size_t size() const
+	size_type size() const
 	{
 		return m_length;
 	}
@@ -184,47 +183,47 @@ public:
 	// Access
 	////////////////////////////////////////////////////////////////////////////////
 
-	T* data()
+	value_type* data()
 	{
 		return m_data;
 	}
 
-	const T* data() const
+	const value_type* data() const
 	{
 		return m_data;
 	}
 
-	const T* c_str() const
+	const value_type* c_str() const
 	{
 		return m_data;
 	}
 
-	T& front()
+	value_type& front()
 	{
 		return m_data[0];
 	}
 
-	const T& front() const
+	const value_type& front() const
 	{
 		return m_data[0];
 	}
 
-	T& back()
+	value_type& back()
 	{
 		return m_data[m_length - 1];
 	}
 
-	const T& back() const
+	const value_type& back() const
 	{
 		return m_data[m_length - 1];
 	}
 
-	T& operator[](std::size_t index)
+	value_type& operator[](size_type index)
 	{
 		return m_data[index];
 	}
 
-	const T& operator[](std::size_t index) const
+	const value_type& operator[](size_type index) const
 	{
 		return m_data[index];
 	}
@@ -301,7 +300,7 @@ public:
 	// String view
 	////////////////////////////////////////////////////////////////////////////////
 
-	operator std::basic_string_view<T>() const
+	operator view_type() const
 	{
 		return { m_data, m_length };
 	}
@@ -310,19 +309,19 @@ public:
 	// Comparison
 	////////////////////////////////////////////////////////////////////////////////
 
-	int compare(std::basic_string_view<T> view) const
+	int compare(view_type view) const
 	{
-		return std::basic_string_view<T>(*this).compare(view);
+		return view_type(*this).compare(view);
 	}
 
-	bool operator==(std::basic_string_view<T> view) const
+	bool operator==(view_type view) const
 	{
-		return std::basic_string_view<T>(*this) == view;
+		return view_type(*this) == view;
 	}
 
-	auto operator<=>(std::basic_string_view<T> view) const
+	auto operator<=>(view_type view) const
 	{
-		return std::basic_string_view<T>(*this) <=> view;
+		return view_type(*this) <=> view;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -330,27 +329,27 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
-	[[nodiscard]] std::size_t round_up_capacity(std::size_t required_capacity)
+	[[nodiscard]] size_type round_up_capacity(size_type required_capacity)
 	{
 		return required_capacity | 0x1ff;
 	}
 
-	[[nodiscard]] T* allocate(std::size_t rounded_up_capacity)
+	[[nodiscard]] value_type* allocate(size_type rounded_up_capacity)
 	{
-		return new T[rounded_up_capacity + 1];
+		return new value_type[rounded_up_capacity + 1];
 	}
 
-	void deallocate(T* data)
+	void deallocate(value_type* data)
 	{
 		delete[] data;
 	}
 
-	FAST_STRING_NOINLINE void reallocate(std::size_t new_capacity)
+	FAST_STRING_NOINLINE void reallocate(size_type new_capacity)
 	{
 		new_capacity = this->round_up_capacity(new_capacity);
 
-		T* new_data = this->allocate(new_capacity);
-		std::memcpy(new_data, m_data, (m_length + 1) * sizeof(T));
+		value_type* new_data = this->allocate(new_capacity);
+		std::memcpy(new_data, m_data, (m_length + 1) * sizeof(value_type));
 
 		if (m_data != m_local_buffer)
 		{
@@ -372,7 +371,7 @@ public:
 		m_data[0] = 0;
 	}
 
-	void reserve(std::size_t new_capacity)
+	void reserve(size_type new_capacity)
 	{
 		if (new_capacity > this->capacity())
 		{
@@ -382,16 +381,16 @@ public:
 
 	void pop_back()
 	{
-		const std::size_t new_length = m_length - 1;
+		const size_type new_length = m_length - 1;
 
 		m_data[new_length] = 0;
 		m_length = new_length;
 	}
 
-	void push_back(T ch)
+	void push_back(value_type ch)
 	{
-		const std::size_t old_length = m_length;
-		const std::size_t new_length = m_length + 1;
+		const size_type old_length = m_length;
+		const size_type new_length = m_length + 1;
 
 		this->reserve(new_length);
 
@@ -400,27 +399,27 @@ public:
 		m_length = new_length;
 	}
 
-	BasicFastString& append(std::basic_string_view<T> view)
+	BasicFastString& append(view_type view)
 	{
-		const std::size_t new_length = m_length + view.length();
+		const size_type new_length = m_length + view.length();
 
 		this->reserve(new_length);
 
-		std::memcpy(m_data + m_length, view.data(), view.length() * sizeof(T));
+		std::memcpy(m_data + m_length, view.data(), view.length() * sizeof(value_type));
 		m_data[new_length] = 0;
 		m_length = new_length;
 
 		return *this;
 	}
 
-	void assign(std::basic_string_view<T> view)
+	void assign(view_type view)
 	{
 		if (view.length() > this->capacity())
 		{
-			const std::size_t new_capacity = this->round_up_capacity(view.length());
+			const size_type new_capacity = this->round_up_capacity(view.length());
 
 			// allocation before deallocation to provide strong exception safety
-			T* new_data = this->allocate(new_capacity);
+			value_type* new_data = this->allocate(new_capacity);
 
 			if (m_data != m_local_buffer)
 			{
@@ -432,7 +431,7 @@ public:
 		}
 
 		// memmove instead of memcpy to support self-assignment
-		std::memmove(m_data, view.data(), view.length() * sizeof(T));
+		std::memmove(m_data, view.data(), view.length() * sizeof(value_type));
 		m_data[view.length()] = 0;
 		m_length = view.length();
 	}
@@ -444,7 +443,7 @@ public:
 	template<typename... Args>
 	BasicFastString& fappend(fmt::format_string<Args...> format, Args&&... args)
 	{
-		const std::size_t free_space = this->capacity() - m_length;
+		const size_type free_space = this->capacity() - m_length;
 
 		auto result = fmt::format_to_n(this->end(), free_space, format, std::forward<Args>(args)...);
 		if (result.size > free_space)
@@ -463,7 +462,7 @@ public:
 	template<typename... Args>
 	BasicFastString& fassign(fmt::format_string<Args...> format, Args&&... args)
 	{
-		const std::size_t free_space = this->capacity();
+		const size_type free_space = this->capacity();
 
 		auto result = fmt::format_to_n(m_data, free_space, format, std::forward<Args>(args)...);
 		if (result.size > free_space)
