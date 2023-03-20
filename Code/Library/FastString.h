@@ -536,17 +536,34 @@ public:
 	// Formatting
 	////////////////////////////////////////////////////////////////////////////////
 
-	template<typename... Args>
-	BasicFastString& fappend(fmt::format_string<Args...> format, Args&&... args)
+	FAST_STRING_NOINLINE BasicFastString& vfappend(fmt::string_view format, fmt::format_args args)
 	{
 		const size_type free_space = this->capacity() - m_length;
 
-		auto result = fmt::format_to_n(this->end(), free_space, format, std::forward<Args>(args)...);
+		auto result = fmt::vformat_to_n(this->end(), free_space, format, args);
 		if (result.size > free_space)
 		{
 			this->reallocate(m_length + result.size);
 
-			result.out = fmt::format_to(this->end(), format, std::forward<Args>(args)...);
+			result.out = fmt::vformat_to(this->end(), format, args);
+		}
+
+		*result.out = 0;
+		m_length = result.out - m_data;
+
+		return *this;
+	}
+
+	FAST_STRING_NOINLINE BasicFastString& vfassign(fmt::string_view format, fmt::format_args args)
+	{
+		const size_type free_space = this->capacity();
+
+		auto result = fmt::vformat_to_n(m_data, free_space, format, args);
+		if (result.size > free_space)
+		{
+			this->reallocate(result.size);
+
+			result.out = fmt::vformat_to(m_data, format, args);
 		}
 
 		*result.out = 0;
@@ -556,22 +573,15 @@ public:
 	}
 
 	template<typename... Args>
+	BasicFastString& fappend(fmt::format_string<Args...> format, Args&&... args)
+	{
+		return this->vfappend(format, fmt::make_format_args(args...));
+	}
+
+	template<typename... Args>
 	BasicFastString& fassign(fmt::format_string<Args...> format, Args&&... args)
 	{
-		const size_type free_space = this->capacity();
-
-		auto result = fmt::format_to_n(m_data, free_space, format, std::forward<Args>(args)...);
-		if (result.size > free_space)
-		{
-			this->reallocate(result.size);
-
-			result.out = fmt::format_to(m_data, format, std::forward<Args>(args)...);
-		}
-
-		*result.out = 0;
-		m_length = result.out - m_data;
-
-		return *this;
+		return this->vfassign(format, fmt::make_format_args(args...));
 	}
 
 	// TODO: constructor with pos and count
