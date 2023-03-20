@@ -161,7 +161,14 @@ public:
 
 	size_type capacity() const
 	{
-		return (m_data == m_local_buffer) ? LOCAL_CAPACITY : m_heap_capacity;
+		if (m_data == m_local_buffer) [[likely]]
+		{
+			return LOCAL_CAPACITY;
+		}
+		else
+		{
+			return m_heap_capacity;
+		}
 	}
 
 	size_type length() const
@@ -584,14 +591,38 @@ public:
 		return this->vfassign(format, fmt::make_format_args(args...));
 	}
 
+	////////////////////////////////////////////////////////////////////////////////
+	// Case conversion
+	////////////////////////////////////////////////////////////////////////////////
+
+	// ASCII-only
+	BasicFastString& to_lower()
+	{
+		for (value_type& ch : *this)
+		{
+			ch |= (ch >= 'A' && ch <= 'Z') * ('a' - 'A');
+		}
+
+		return *this;
+	}
+
+	// ASCII-only
+	BasicFastString& to_upper()
+	{
+		for (value_type& ch : *this)
+		{
+			ch &= ~((ch >= 'a' && ch <= 'z') * ('a' - 'A'));
+		}
+
+		return *this;
+	}
+
 	// TODO: constructor with pos and count
 	// TODO: operator+=
 	// TODO: insert
 	// TODO: erase
 	// TODO: replace
 	// TODO: resize + resize_no_init
-	// TODO: to_lower
-	// TODO: to_upper
 	// TODO: trim
 };
 
