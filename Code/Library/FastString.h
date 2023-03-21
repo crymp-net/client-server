@@ -6,7 +6,7 @@
 #include <string_view>
 
 // TODO: use C++20 modules once CMake supports them
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #ifdef _MSC_VER
 #define FAST_STRING_NOINLINE __declspec(noinline)
@@ -14,13 +14,13 @@
 #define FAST_STRING_NOINLINE __attribute__((__noinline__))
 #endif
 
-template<std::integral T>
+template<std::integral Char>
 class BasicFastString
 {
 public:
-	using value_type = T;
+	using value_type = Char;
 	using size_type = std::size_t;
-	using view_type = std::basic_string_view<T>;
+	using view_type = std::basic_string_view<Char>;
 
 	using pointer = value_type*;
 	using reference = value_type&;
@@ -309,7 +309,12 @@ public:
 
 	operator view_type() const
 	{
-		return { m_data, m_length };
+		return view_type(m_data, m_length);
+	}
+
+	view_type view() const
+	{
+		return view_type(m_data, m_length);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -543,6 +548,8 @@ public:
 	// Formatting
 	////////////////////////////////////////////////////////////////////////////////
 
+	// TODO: formatting functions support only char/UTF-8
+
 	FAST_STRING_NOINLINE BasicFastString& vfappend(fmt::string_view format, fmt::format_args args)
 	{
 		const size_type free_space = this->capacity() - m_length;
@@ -624,6 +631,16 @@ public:
 	// TODO: replace
 	// TODO: resize + resize_no_init
 	// TODO: trim
+};
+
+template<typename Char>
+struct fmt::formatter<BasicFastString<Char>, Char> : fmt::formatter<std::basic_string_view<Char>, Char>
+{
+	template<typename FormatContext>
+	auto format(const BasicFastString<Char>& value, FormatContext& context) const
+	{
+		return fmt::formatter<std::basic_string_view<Char>, Char>::format(value.view(), context);
+	}
 };
 
 using FastString = BasicFastString<char>;
