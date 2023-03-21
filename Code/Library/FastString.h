@@ -68,6 +68,28 @@ public:
 		m_data[view.length()] = 0;
 	}
 
+	explicit BasicFastString(size_type count, value_type ch) : m_length(count)
+	{
+		if (count <= LOCAL_CAPACITY)
+		{
+			m_data = m_local_buffer;
+		}
+		else
+		{
+			const size_type new_capacity = this->round_up_capacity(count);
+
+			m_data = this->allocate(new_capacity);
+			m_heap_capacity = new_capacity;
+		}
+
+		for (size_type i = 0; i < count; i++)
+		{
+			m_data[i] = ch;
+		}
+
+		m_data[count] = 0;
+	}
+
 	BasicFastString(const BasicFastString& other) : m_length(other.m_length)
 	{
 		if (other.m_data == other.m_local_buffer)
@@ -487,6 +509,26 @@ public:
 		}
 	}
 
+	void resize_no_init(size_type new_length)
+	{
+		this->reserve(new_length);
+
+		m_data[new_length] = 0;
+		m_length = new_length;
+	}
+
+	void resize(size_type new_length, value_type ch = 0)
+	{
+		const size_type old_length = m_length;
+
+		this->resize_no_init(new_length);
+
+		for (size_type i = old_length; i < new_length; i++)
+		{
+			m_data[i] = ch;
+		}
+	}
+
 	void pop_back()
 	{
 		const size_type new_length = m_length - 1;
@@ -520,6 +562,35 @@ public:
 		return *this;
 	}
 
+	BasicFastString& append(size_type count, value_type ch)
+	{
+		const size_type new_length = m_length + count;
+
+		this->reserve(new_length);
+
+		for (size_type i = m_length; i < new_length; i++)
+		{
+			m_data[i] = ch;
+		}
+
+		m_data[new_length] = 0;
+		m_length = new_length;
+
+		return *this;
+	}
+
+	BasicFastString& operator+=(value_type ch)
+	{
+		this->push_back(ch);
+
+		return *this;
+	}
+
+	BasicFastString& operator+=(view_type view)
+	{
+		return this->append(view);
+	}
+
 	void assign(view_type view)
 	{
 		if (view.length() > this->capacity())
@@ -544,6 +615,33 @@ public:
 		m_length = view.length();
 	}
 
+	void assign(size_type count, value_type ch)
+	{
+		if (count > this->capacity())
+		{
+			const size_type new_capacity = this->round_up_capacity(count);
+
+			// allocation before deallocation to provide strong exception safety
+			value_type* new_data = this->allocate(new_capacity);
+
+			if (m_data != m_local_buffer)
+			{
+				this->deallocate(m_data);
+			}
+
+			m_data = new_data;
+			m_heap_capacity = new_capacity;
+		}
+
+		for (size_type i = 0; i < count; i++)
+		{
+			m_data[i] = ch;
+		}
+
+		m_data[count] = 0;
+		m_length = count;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////
 	// Formatting
 	////////////////////////////////////////////////////////////////////////////////
@@ -554,12 +652,12 @@ public:
 	{
 		const size_type free_space = this->capacity() - m_length;
 
-		auto result = fmt::vformat_to_n(this->end(), free_space, format, args);
+		auto result = fmt::vformat_to_n(m_data + m_length, free_space, format, args);
 		if (result.size > free_space)
 		{
 			this->reallocate(m_length + result.size);
 
-			result.out = fmt::vformat_to(this->end(), format, args);
+			result.out = fmt::vformat_to(m_data + m_length, format, args);
 		}
 
 		*result.out = 0;
@@ -624,12 +722,9 @@ public:
 		return *this;
 	}
 
-	// TODO: constructor with pos and count
-	// TODO: operator+=
 	// TODO: insert
 	// TODO: erase
 	// TODO: replace
-	// TODO: resize + resize_no_init
 	// TODO: trim
 };
 
