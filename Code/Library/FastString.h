@@ -183,14 +183,7 @@ public:
 
 	size_type capacity() const
 	{
-		if (m_data == m_local_buffer) [[likely]]
-		{
-			return LOCAL_CAPACITY;
-		}
-		else
-		{
-			return m_heap_capacity;
-		}
+		return (m_data == m_local_buffer) ? LOCAL_CAPACITY : m_heap_capacity;
 	}
 
 	size_type length() const
@@ -345,17 +338,17 @@ public:
 
 	int compare(view_type view) const
 	{
-		return view_type(*this).compare(view);
+		return this->view().compare(view);
 	}
 
 	bool operator==(view_type view) const
 	{
-		return view_type(*this) == view;
+		return this->view() == view;
 	}
 
 	auto operator<=>(view_type view) const
 	{
-		return view_type(*this) <=> view;
+		return this->view() <=> view;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -366,82 +359,82 @@ public:
 
 	size_type find(view_type view, size_type pos = 0) const
 	{
-		return view_type(*this).find(view, pos);
+		return this->view().find(view, pos);
 	}
 
 	size_type find(value_type ch, size_type pos = 0) const
 	{
-		return view_type(*this).find(ch, pos);
+		return this->view().find(ch, pos);
 	}
 
 	size_type rfind(view_type view, size_type pos = npos) const
 	{
-		return view_type(*this).rfind(view, pos);
+		return this->view().rfind(view, pos);
 	}
 
 	size_type rfind(value_type ch, size_type pos = npos) const
 	{
-		return view_type(*this).rfind(ch, pos);
+		return this->view().rfind(ch, pos);
 	}
 
 	size_type find_first_of(view_type view, size_type pos = 0) const
 	{
-		return view_type(*this).find_first_of(view, pos);
+		return this->view().find_first_of(view, pos);
 	}
 
 	size_type find_first_of(value_type ch, size_type pos = 0) const
 	{
-		return view_type(*this).find_first_of(ch, pos);
+		return this->view().find_first_of(ch, pos);
 	}
 
 	size_type find_first_not_of(view_type view, size_type pos = 0) const
 	{
-		return view_type(*this).find_first_not_of(view, pos);
+		return this->view().find_first_not_of(view, pos);
 	}
 
 	size_type find_first_not_of(value_type ch, size_type pos = 0) const
 	{
-		return view_type(*this).find_first_not_of(ch, pos);
+		return this->view().find_first_not_of(ch, pos);
 	}
 
 	size_type find_last_of(view_type view, size_type pos = npos) const
 	{
-		return view_type(*this).find_last_of(view, pos);
+		return this->view().find_last_of(view, pos);
 	}
 
 	size_type find_last_of(value_type ch, size_type pos = npos) const
 	{
-		return view_type(*this).find_last_of(ch, pos);
+		return this->view().find_last_of(ch, pos);
 	}
 
 	size_type find_last_not_of(view_type view, size_type pos = npos) const
 	{
-		return view_type(*this).find_last_not_of(view, pos);
+		return this->view().find_last_not_of(view, pos);
 	}
 
 	size_type find_last_not_of(value_type ch, size_type pos = npos) const
 	{
-		return view_type(*this).find_last_not_of(ch, pos);
+		return this->view().find_last_not_of(ch, pos);
 	}
 
 	bool starts_with(view_type view) const
 	{
-		return view_type(*this).starts_with(view);
+		return this->view().starts_with(view);
 	}
 
 	bool starts_with(value_type ch) const
 	{
-		return view_type(*this).starts_with(ch);
+		return this->view().starts_with(ch);
 	}
 
 	bool ends_with(view_type view) const
 	{
-		return view_type(*this).ends_with(view);
+		return this->view().ends_with(view);
 	}
 
 	bool ends_with(value_type ch) const
 	{
-		return view_type(*this).ends_with(ch);
+		return this->view().ends_with(ch);
 	}
 
 	bool contains(view_type view) const
@@ -474,12 +467,16 @@ private:
 		delete[] data;
 	}
 
-	FAST_STRING_NOINLINE void reallocate(size_type new_capacity)
+	FAST_STRING_NOINLINE void reallocate(size_type new_capacity, bool copy_data)
 	{
 		new_capacity = this->round_up_capacity(new_capacity);
 
 		value_type* new_data = this->allocate(new_capacity);
-		std::memcpy(new_data, m_data, (m_length + 1) * sizeof(value_type));
+
+		if (copy_data)
+		{
+			std::memcpy(new_data, m_data, (m_length + 1) * sizeof(value_type));
+		}
 
 		if (m_data != m_local_buffer)
 		{
@@ -505,7 +502,7 @@ public:
 	{
 		if (new_capacity > this->capacity())
 		{
-			this->reallocate(new_capacity);
+			this->reallocate(new_capacity, true);
 		}
 	}
 
@@ -595,18 +592,7 @@ public:
 	{
 		if (view.length() > this->capacity())
 		{
-			const size_type new_capacity = this->round_up_capacity(view.length());
-
-			// allocation before deallocation to provide strong exception safety
-			value_type* new_data = this->allocate(new_capacity);
-
-			if (m_data != m_local_buffer)
-			{
-				this->deallocate(m_data);
-			}
-
-			m_data = new_data;
-			m_heap_capacity = new_capacity;
+			this->reallocate(view.length(), false);
 		}
 
 		// memmove instead of memcpy to support self-assignment
@@ -619,18 +605,7 @@ public:
 	{
 		if (count > this->capacity())
 		{
-			const size_type new_capacity = this->round_up_capacity(count);
-
-			// allocation before deallocation to provide strong exception safety
-			value_type* new_data = this->allocate(new_capacity);
-
-			if (m_data != m_local_buffer)
-			{
-				this->deallocate(m_data);
-			}
-
-			m_data = new_data;
-			m_heap_capacity = new_capacity;
+			this->reallocate(count, false);
 		}
 
 		for (size_type i = 0; i < count; i++)
@@ -655,7 +630,7 @@ public:
 		auto result = fmt::vformat_to_n(m_data + m_length, free_space, format, args);
 		if (result.size > free_space)
 		{
-			this->reallocate(m_length + result.size);
+			this->reallocate(m_length + result.size, true);
 
 			result.out = fmt::vformat_to(m_data + m_length, format, args);
 		}
@@ -673,7 +648,7 @@ public:
 		auto result = fmt::vformat_to_n(m_data, free_space, format, args);
 		if (result.size > free_space)
 		{
-			this->reallocate(result.size);
+			this->reallocate(result.size, false);
 
 			result.out = fmt::vformat_to(m_data, format, args);
 		}
@@ -705,7 +680,7 @@ public:
 	{
 		for (value_type& ch : *this)
 		{
-			ch |= (ch >= 'A' && ch <= 'Z') * ('a' - 'A');
+			ch |= (ch >= 'A' && ch <= 'Z') << 5;
 		}
 
 		return *this;
@@ -716,12 +691,14 @@ public:
 	{
 		for (value_type& ch : *this)
 		{
-			ch &= ~((ch >= 'a' && ch <= 'z') * ('a' - 'A'));
+			ch &= ~((ch >= 'a' && ch <= 'z') << 5);
 		}
 
 		return *this;
 	}
 
+	// TODO: eliminate dead code in assign
+	// TODO: resize_no_init => resize_and_overwrite
 	// TODO: insert
 	// TODO: erase
 	// TODO: replace
