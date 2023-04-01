@@ -183,6 +183,8 @@ public:
 
 	size_type capacity() const
 	{
+		// TODO: compiler needs to assume that m_heap_capacity > LOCAL_CAPACITY to eliminate dead code
+
 		return (m_data == m_local_buffer) ? LOCAL_CAPACITY : m_heap_capacity;
 	}
 
@@ -506,35 +508,43 @@ public:
 		}
 	}
 
-	void resize_no_init(size_type new_length)
-	{
-		this->reserve(new_length);
-
-		m_data[new_length] = 0;
-		m_length = new_length;
-	}
-
 	void resize(size_type new_length, value_type ch = 0)
 	{
 		const size_type old_length = m_length;
 
-		this->resize_no_init(new_length);
+		this->reserve(new_length);
 
 		for (size_type i = old_length; i < new_length; i++)
 		{
 			m_data[i] = ch;
 		}
-	}
-
-	void pop_back()
-	{
-		const size_type new_length = m_length - 1;
 
 		m_data[new_length] = 0;
 		m_length = new_length;
 	}
 
-	void push_back(value_type ch)
+	template<typename Operation>
+	void resize_and_overwrite(size_type max_length, Operation op)
+	{
+		this->reserve(max_length);
+
+		const size_type new_length = std::move(op)(m_data, max_length);
+
+		m_data[new_length] = 0;
+		m_length = new_length;
+	}
+
+	BasicFastString& pop_back()
+	{
+		const size_type new_length = m_length - 1;
+
+		m_data[new_length] = 0;
+		m_length = new_length;
+
+		return *this;
+	}
+
+	BasicFastString& push_back(value_type ch)
 	{
 		const size_type old_length = m_length;
 		const size_type new_length = m_length + 1;
@@ -544,6 +554,8 @@ public:
 		m_data[old_length] = ch;
 		m_data[new_length] = 0;
 		m_length = new_length;
+
+		return *this;
 	}
 
 	BasicFastString& append(view_type view)
@@ -552,7 +564,7 @@ public:
 
 		this->reserve(new_length);
 
-		std::memcpy(m_data + m_length, view.data(), view.length() * sizeof(value_type));
+		std::memcpy(this->end(), view.data(), view.length() * sizeof(value_type));
 		m_data[new_length] = 0;
 		m_length = new_length;
 
@@ -578,9 +590,7 @@ public:
 
 	BasicFastString& operator+=(value_type ch)
 	{
-		this->push_back(ch);
-
-		return *this;
+		return this->push_back(ch);
 	}
 
 	BasicFastString& operator+=(view_type view)
@@ -596,7 +606,7 @@ public:
 		}
 
 		// memmove instead of memcpy to support self-assignment
-		std::memmove(m_data, view.data(), view.length() * sizeof(value_type));
+		std::memmove(this->begin(), view.data(), view.length() * sizeof(value_type));
 		m_data[view.length()] = 0;
 		m_length = view.length();
 	}
@@ -627,16 +637,16 @@ public:
 	{
 		const size_type free_space = this->capacity() - m_length;
 
-		auto result = fmt::vformat_to_n(m_data + m_length, free_space, format, args);
+		auto result = fmt::vformat_to_n(this->end(), free_space, format, args);
 		if (result.size > free_space)
 		{
 			this->reallocate(m_length + result.size, true);
 
-			result.out = fmt::vformat_to(m_data + m_length, format, args);
+			result.out = fmt::vformat_to(this->end(), format, args);
 		}
 
 		*result.out = 0;
-		m_length = result.out - m_data;
+		m_length = result.out - this->begin();
 
 		return *this;
 	}
@@ -645,16 +655,16 @@ public:
 	{
 		const size_type free_space = this->capacity();
 
-		auto result = fmt::vformat_to_n(m_data, free_space, format, args);
+		auto result = fmt::vformat_to_n(this->begin(), free_space, format, args);
 		if (result.size > free_space)
 		{
 			this->reallocate(result.size, false);
 
-			result.out = fmt::vformat_to(m_data, format, args);
+			result.out = fmt::vformat_to(this->begin(), format, args);
 		}
 
 		*result.out = 0;
-		m_length = result.out - m_data;
+		m_length = result.out - this->begin();
 
 		return *this;
 	}
@@ -669,6 +679,14 @@ public:
 	BasicFastString& fassign(fmt::format_string<Args...> format, Args&&... args)
 	{
 		return this->vfassign(format, fmt::make_format_args(args...));
+	}
+
+	template<typename... Args>
+	static BasicFastString format(fmt::format_string<Args...> format, Args&&... args)
+	{
+		BasicFastString result;
+		result.vfassign(format, fmt::make_format_args(args...));
+		return result;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -697,8 +715,6 @@ public:
 		return *this;
 	}
 
-	// TODO: eliminate dead code in assign
-	// TODO: resize_no_init => resize_and_overwrite
 	// TODO: insert
 	// TODO: erase
 	// TODO: replace
