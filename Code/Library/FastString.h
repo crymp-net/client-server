@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
+#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <string_view>
@@ -20,6 +22,8 @@ class BasicFastString
 public:
 	using value_type = Char;
 	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+
 	using view_type = std::basic_string_view<Char>;
 
 	using pointer = value_type*;
@@ -82,11 +86,7 @@ public:
 			m_heap_capacity = new_capacity;
 		}
 
-		for (size_type i = 0; i < count; i++)
-		{
-			m_data[i] = ch;
-		}
-
+		std::fill_n(m_data, count, ch);
 		m_data[count] = 0;
 	}
 
@@ -125,18 +125,12 @@ public:
 
 	BasicFastString& operator=(view_type view)
 	{
-		// supports self-assignment
-		this->assign(view);
-
-		return *this;
+		return this->assign(view);
 	}
 
 	BasicFastString& operator=(const BasicFastString& other)
 	{
-		// supports self-assignment
-		this->assign(other);
-
-		return *this;
+		return this->assign(other);
 	}
 
 	BasicFastString& operator=(BasicFastString&& other) noexcept
@@ -153,7 +147,6 @@ public:
 
 		if (other.m_data == other.m_local_buffer)
 		{
-			// memmove instead of memcpy to support self-assignment
 			std::memmove(m_local_buffer, other.m_local_buffer, sizeof(m_local_buffer));
 		}
 		else
@@ -489,15 +482,20 @@ private:
 		m_heap_capacity = new_capacity;
 	}
 
-public:
 	////////////////////////////////////////////////////////////////////////////////
 	// Modification
 	////////////////////////////////////////////////////////////////////////////////
 
+	void set_length(size_type new_length)
+	{
+		m_data[new_length] = 0;
+		m_length = new_length;
+	}
+
+public:
 	void clear()
 	{
-		m_length = 0;
-		m_data[0] = 0;
+		this->set_length(0);
 	}
 
 	void reserve(size_type new_capacity)
@@ -510,17 +508,14 @@ public:
 
 	void resize(size_type new_length, value_type ch = 0)
 	{
-		const size_type old_length = m_length;
-
 		this->reserve(new_length);
 
-		for (size_type i = old_length; i < new_length; i++)
+		if (new_length > m_length)
 		{
-			m_data[i] = ch;
+			std::fill_n(m_data + m_length, new_length - m_length, ch);
 		}
 
-		m_data[new_length] = 0;
-		m_length = new_length;
+		this->set_length(new_length);
 	}
 
 	template<typename Operation>
@@ -529,61 +524,68 @@ public:
 		this->reserve(max_length);
 
 		const size_type new_length = std::move(op)(m_data, max_length);
-
-		m_data[new_length] = 0;
-		m_length = new_length;
+		this->set_length(new_length);
 	}
 
-	BasicFastString& pop_back()
+	BasicFastString& assign(view_type view)
 	{
-		const size_type new_length = m_length - 1;
+		if (view.length() > this->capacity())
+		{
+			this->reallocate(view.length(), false);
+		}
 
-		m_data[new_length] = 0;
-		m_length = new_length;
+		std::memmove(m_data, view.data(), view.length() * sizeof(value_type));
+		this->set_length(view.length());
 
 		return *this;
 	}
 
-	BasicFastString& push_back(value_type ch)
+	BasicFastString& assign(size_type count, value_type ch)
 	{
-		const size_type old_length = m_length;
-		const size_type new_length = m_length + 1;
+		if (count > this->capacity())
+		{
+			this->reallocate(count, false);
+		}
 
-		this->reserve(new_length);
-
-		m_data[old_length] = ch;
-		m_data[new_length] = 0;
-		m_length = new_length;
+		std::fill_n(m_data, count, ch);
+		this->set_length(count);
 
 		return *this;
 	}
 
 	BasicFastString& append(view_type view)
 	{
-		const size_type new_length = m_length + view.length();
+		this->reserve(m_length + view.length());
 
-		this->reserve(new_length);
-
-		std::memcpy(this->end(), view.data(), view.length() * sizeof(value_type));
-		m_data[new_length] = 0;
-		m_length = new_length;
+		std::memcpy(m_data + m_length, view.data(), view.length() * sizeof(value_type));
+		this->set_length(m_length + view.length());
 
 		return *this;
 	}
 
 	BasicFastString& append(size_type count, value_type ch)
 	{
-		const size_type new_length = m_length + count;
+		this->reserve(m_length + count);
 
-		this->reserve(new_length);
+		std::fill_n(m_data + m_length, count, ch);
+		this->set_length(m_length + count);
 
-		for (size_type i = m_length; i < new_length; i++)
-		{
-			m_data[i] = ch;
-		}
+		return *this;
+	}
 
-		m_data[new_length] = 0;
-		m_length = new_length;
+	BasicFastString& pop_back()
+	{
+		this->set_length(m_length - 1);
+
+		return *this;
+	}
+
+	BasicFastString& push_back(value_type ch)
+	{
+		this->reserve(m_length + 1);
+
+		m_data[m_length] = ch;
+		this->set_length(m_length + 1);
 
 		return *this;
 	}
@@ -598,34 +600,46 @@ public:
 		return this->append(view);
 	}
 
-	void assign(view_type view)
+private:
+	value_type* prepare_insert(size_type index, size_type count)
 	{
-		if (view.length() > this->capacity())
+		if (index > m_length)
 		{
-			this->reallocate(view.length(), false);
+			index = m_length;
 		}
 
-		// memmove instead of memcpy to support self-assignment
-		std::memmove(this->begin(), view.data(), view.length() * sizeof(value_type));
-		m_data[view.length()] = 0;
-		m_length = view.length();
+		this->reserve(m_length + count);
+
+		value_type* const destination = m_data + index;
+		const size_type move_length = m_length - index;
+
+		std::memmove(destination + count, destination, move_length * sizeof(value_type));
+		this->set_length(m_length + count);
+
+		return destination;
 	}
 
-	void assign(size_type count, value_type ch)
+public:
+	BasicFastString& insert(size_type index, view_type view)
 	{
-		if (count > this->capacity())
-		{
-			this->reallocate(count, false);
-		}
+		value_type* const destination = this->prepare_insert(index, view.length());
 
-		for (size_type i = 0; i < count; i++)
-		{
-			m_data[i] = ch;
-		}
+		std::memmove(destination, view.data(), view.length() * sizeof(value_type));
 
-		m_data[count] = 0;
-		m_length = count;
+		return *this;
 	}
+
+	BasicFastString& insert(size_type index, size_type count, value_type ch)
+	{
+		value_type* const destination = this->prepare_insert(index, count);
+
+		std::fill_n(destination, count, ch);
+
+		return *this;
+	}
+
+	// TODO: erase
+	// TODO: replace
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Formatting
@@ -645,8 +659,7 @@ public:
 			result.out = fmt::vformat_to(this->end(), format, args);
 		}
 
-		*result.out = 0;
-		m_length = result.out - this->begin();
+		this->set_length(result.out - this->begin());
 
 		return *this;
 	}
@@ -663,8 +676,7 @@ public:
 			result.out = fmt::vformat_to(this->begin(), format, args);
 		}
 
-		*result.out = 0;
-		m_length = result.out - this->begin();
+		this->set_length(result.out - this->begin());
 
 		return *this;
 	}
@@ -715,11 +727,16 @@ public:
 		return *this;
 	}
 
-	// TODO: insert
-	// TODO: erase
-	// TODO: replace
-	// TODO: trim
+	////////////////////////////////////////////////////////////////////////////////
+	// Trimming
+	////////////////////////////////////////////////////////////////////////////////
+
+	// TODO: trimming
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Make it formattable
+////////////////////////////////////////////////////////////////////////////////
 
 template<typename Char>
 struct fmt::formatter<BasicFastString<Char>, Char> : fmt::formatter<std::basic_string_view<Char>, Char>
@@ -730,5 +747,9 @@ struct fmt::formatter<BasicFastString<Char>, Char> : fmt::formatter<std::basic_s
 		return fmt::formatter<std::basic_string_view<Char>, Char>::format(value.view(), context);
 	}
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Shorter aliases
+////////////////////////////////////////////////////////////////////////////////
 
 using FastString = BasicFastString<char>;
