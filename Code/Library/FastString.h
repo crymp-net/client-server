@@ -638,7 +638,46 @@ public:
 		return *this;
 	}
 
-	// TODO: erase
+private:
+	value_type* do_erase(size_type index, size_type count)
+	{
+		value_type* const destination = m_data + index;
+		const size_type move_length = m_length - index - count;
+
+		std::memmove(destination, destination + count, move_length * sizeof(value_type));
+		this->set_length(m_length - count);
+
+		return destination;
+	}
+
+public:
+	BasicFastString& erase(size_type index, size_type count)
+	{
+		if (index > m_length)
+		{
+			index = m_length;
+		}
+
+		if ((index + count) > m_length)
+		{
+			count = m_length - index;
+		}
+
+		this->do_erase(index, count);
+
+		return *this;
+	}
+
+	iterator erase(const_iterator pos)
+	{
+		return this->do_erase(pos - this->begin(), 1);
+	}
+
+	iterator erase(const_iterator first, const_iterator last)
+	{
+		return this->do_erase(first - this->begin(), last - first);
+	}
+
 	// TODO: replace
 
 	////////////////////////////////////////////////////////////////////////////////
