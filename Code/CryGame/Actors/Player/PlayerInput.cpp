@@ -161,20 +161,6 @@ void CPlayerInput::AddCustomBinds()
 			}
 		}
 	}
-	if (IActionMap* defaultMap = pMapManager->GetActionMap("default"))
-	{
-		SActionMapBindInfo s = {};
-		std::array<const char*, MAX_KEYS> keysBuffer = {};
-		s.keys = keysBuffer.data();
-
-		if (defaultMap->GetBindInfo(actions.prev_spectator_target, s, MAX_KEYS))
-		{
-			if (s.nKeys == 2 && s.keys[0] && s.keys[1] && !strcmp(s.keys[1],"<unknown>"))
-			{
-				defaultMap->CreateAction(actions.prev_spectator_target.c_str(), eAAM_OnPress, s.keys[0], "mouse1");
-			}
-		}
-	}
 }
 
 void CPlayerInput::DisableXI(bool disabled)
