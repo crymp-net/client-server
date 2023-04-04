@@ -131,8 +131,6 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 
 	pConsole->Register("cl_leanAmount", &cl_leanAmount, 0.25f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set amount of lean");
-
-	pConsole->Register("cl_netAimLerpFactor", &cl_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients");
 	/*
 	pConsole->Register("goc_enable", &goc_enable, 0, VF_CHEAT, "gears of crysis");
 	pConsole->AddCommand("GOCMode", CmdGOCMode, VF_CHEAT, "Enable GOC mode");
@@ -611,6 +609,8 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_spectatorSlowMult", &mp_spectatorSlowMult, 0.15f, VF_NOT_NET_SYNCED, "Speed mult for spectating while holding Ctrl");
 	pConsole->Register("mp_buyPageKeepTime", &mp_buyPageKeepTime, 30, VF_NOT_NET_SYNCED, "The time in sec it will remember your last buy page");
 	pConsole->Register("mp_attachBoughtEquipment", &mp_attachBoughtEquipment, 0, VF_NOT_NET_SYNCED, "Automatically attach bought weapon attachments");
+	pConsole->Register("mp_netAimLerpFactor", &mp_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients (1-50, 0:off)");
+	pConsole->Register("mp_netAimLerpFactorCrymp", &mp_netAimLerpFactorCrymp, 42.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients when mp_crymp 1 (1-50, 0:off)");
 }
 
 //------------------------------------------------------------------------

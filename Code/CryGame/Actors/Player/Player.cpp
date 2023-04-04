@@ -1719,28 +1719,32 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 
 	const auto frameTime = viewParams.frameTime;
 
-	auto* pTarget = static_cast<CPlayer*>(GetSpectatorTargetPlayer());
+	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetPlayer());
 	if (pTarget && pTarget->IsFpSpectatorTarget())
 	{
 		CItem* pItem = static_cast<CItem*>(pTarget->GetCurrentItem(true));
 		CWeapon* pWeapon = pItem ? static_cast<CWeapon*>(pItem->GetIWeapon()) : nullptr;
 
-		auto* pVehicle = pTarget->GetLinkedVehicle();
+		const IVehicle* pVehicle = pTarget->GetLinkedVehicle();
 		if (pVehicle)
 		{
-			CHECKQNAN_VEC(pTarget->m_vehicleViewDirSmooth);
 			Interpolate(pTarget->m_vehicleViewDirSmooth, pTarget->m_vehicleViewDir, 5.0f, frameTime);
-			CHECKQNAN_VEC(pTarget->m_vehicleViewDirSmooth);
 		}
 		else
 		{
-			auto netAimFactor(g_pGameCVars->cl_netAimLerpFactor);
-			if (netAimFactor < 50.f)
+			float netAimFactor = g_pGameCVars->mp_netAimLerpFactor;
+			if (netAimFactor > 1.0f && netAimFactor < 50.f)
 			{
-				const bool CryMP_Enhanced(g_pGameCVars->mp_crymp);
+				bool skipSmooth = false;
+				const bool CryMP_Enhanced = g_pGameCVars->mp_crymp;
 				if (CryMP_Enhanced)
 				{
-					//only little smoothing needed, but we'll keep it for now
+					netAimFactor = g_pGameCVars->mp_netAimLerpFactorCrymp;
+
+					if (pWeapon && (pWeapon->IsFiring() || pWeapon->IsZoomed()))
+					{
+						skipSmooth = true; //use raw data
+					}
 				}
 				else if (pWeapon)
 				{
@@ -1751,11 +1755,15 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 						netAimFactor *= 1.5f; //increase responsivness a bit
 				}
 
-				const auto speed = CLAMP(netAimFactor, 1.0f, 50.f);
-
-				CHECKQNAN_VEC(pTarget->m_netAimDirSmooth);
-				Interpolate(pTarget->m_netAimDirSmooth, pTarget->m_netAimDir, speed, frameTime);
-				CHECKQNAN_VEC(pTarget->m_netAimDirSmooth);
+				if (skipSmooth)
+				{
+					pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
+				}
+				else
+				{
+					const auto speed = CLAMP(netAimFactor, 1.0f, 50.f);
+					Interpolate(pTarget->m_netAimDirSmooth, pTarget->m_netAimDir, speed, frameTime);
+				}
 			}
 			else
 			{

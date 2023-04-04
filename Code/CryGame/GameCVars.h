@@ -56,7 +56,6 @@ struct SCVars
 	float goc_targetz;
 
 	float cl_leanAmount;
-	float cl_netAimLerpFactor;
 
 	// bullet time CVars
 	int		bt_ironsight;
@@ -458,6 +457,8 @@ struct SCVars
 	float		mp_spectatorSlowMult;
 	int			mp_buyPageKeepTime;
 	int			mp_attachBoughtEquipment;
+	float		mp_netAimLerpFactor;
+	float		mp_netAimLerpFactorCrymp;
 
 	SCVars()
 	{
