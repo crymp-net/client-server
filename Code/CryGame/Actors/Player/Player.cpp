@@ -2090,7 +2090,9 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 
 	CPlayer* pPlayer = (CPlayer*)gEnv->pGame->GetIGameFramework()->GetClientActor();
 	if (pPlayer)
+	{
 		pPlayer->SetFpSpectator(activate);
+	}
 
 	m_stats.fpSpectatorTarget = activate;
 
@@ -2109,6 +2111,8 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 		SAFE_HUD_FUNC(UpdateCrosshair());
 	}
 
+	CheckCurrentWeapon(m_stats.isThirdPerson);
+
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
 	if (pOffHand)
 	{
@@ -2120,7 +2124,7 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 	CWeapon* pWeapon = (CWeapon*)(pItem ? pItem->GetIWeapon() : 0);
 	if (pWeapon)
 	{
-		auto* pZoomMode = pWeapon->GetActiveZoomMode();
+		IZoomMode* pZoomMode = pWeapon->GetActiveZoomMode();
 		if (!pZoomMode)
 			return;
 
@@ -3416,13 +3420,29 @@ void CPlayer::EnableThirdPerson(bool enable)
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
-	//CryMP: Reset Hurricane model
-	if (!enable)
+	CheckCurrentWeapon(enable);
+}
+
+void CPlayer::CheckCurrentWeapon(bool thirdperson)
+{
+	CWeapon* pWeapon = GetCurrentWeapon(false);
+	if (pWeapon)
 	{
-		CWeapon* pWeapon = GetCurrentWeapon(false);
-		if (pWeapon && pWeapon->GetEntity()->GetClass() == CItem::sHurricaneClass)
+		//CryMP: Reset Hurricane model
+		if (!thirdperson && pWeapon->GetEntity()->GetClass() == CItem::sHurricaneClass)
 		{
+			pWeapon->Select(false);
 			pWeapon->Select(true);
+		}
+
+		//Update player model for Shitens etc
+		if (pWeapon->IsUsed())
+		{
+			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+			if (pCharacter)
+			{
+				pCharacter->HideMaster(thirdperson ? 0 : 1);
+			}
 		}
 	}
 }
@@ -3526,7 +3546,9 @@ void CPlayer::Revive(ReasonForRevive reason)
 	m_stats.fpSpectator = fpSpectator;
 
 	if (fpSpectatorTarget)
+	{
 		SetFpSpectatorTarget(true);
+	}
 
 	if (IsClient())
 	{
