@@ -2121,7 +2121,7 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
-	CWeapon* pWeapon = (CWeapon*)(pItem ? pItem->GetIWeapon() : 0);
+	CWeapon* pWeapon = static_cast<CWeapon*>(pItem ? pItem->GetIWeapon() : 0);
 	if (pWeapon)
 	{
 		IZoomMode* pZoomMode = pWeapon->GetActiveZoomMode();
@@ -2157,17 +2157,21 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 		{
 			pWeapon->ExitZoom();
 		}
+
+		//Update Binoculars
+		if (pWeapon->GetEntity()->GetClass() == CItem::sBinocularsClass)
+		{
+			CBinocular* pBinocular = static_cast<CBinocular*>(pWeapon);
+			if (pBinocular && pBinocular->IsSelected())
+			{
+				pBinocular->ActivateBinocularView(activate);
+			}
+		}
 	}
 
 	if (!activate)
 	{
 		ResetFPView();
-		CHUD* pHUD = g_pGame->GetHUD();
-		if (pHUD)
-		{
-			if (pHUD->GetScopes()->IsBinocularsShown())
-				pHUD->GetScopes()->ShowBinoculars(0);
-		}
 	}
 }
 

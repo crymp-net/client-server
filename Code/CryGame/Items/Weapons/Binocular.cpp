@@ -63,26 +63,38 @@ void CBinocular::Select(bool select)
 {
 	CWeapon::Select(select);
 
-	auto* pOwner = GetOwnerActor();
+	CActor* pOwner = GetOwnerActor();
 	if (!pOwner || (!pOwner->IsClient() && !pOwner->IsFpSpectatorTarget())) //CryMP: Fp spec support
 		return;
 
+	ActivateBinocularView(select);
+}
+
+//------------------------------------------------------------------------
+void CBinocular::ActivateBinocularView(bool activate)
+{
+	CActor* pOwner = GetOwnerActor();
+	if (!pOwner)
+		return;
+
 	if (gEnv->pSoundSystem)		//turn sound-zooming on / off
-		gEnv->pSoundSystem->CalcDirectionalAttenuation(GetOwnerActor()->GetEntity()->GetWorldPos(), GetOwnerActor()->GetViewRotation().GetColumn1(), select ? 0.15f : 0.0f);
+	{
+		gEnv->pSoundSystem->CalcDirectionalAttenuation(pOwner->GetEntity()->GetWorldPos(), pOwner->GetViewRotation().GetColumn1(), activate ? 0.15f : 0.0f);
+	}
 
-	SAFE_HUD_FUNC(GetScopes()->ShowBinoculars(select));
+	SAFE_HUD_FUNC(GetScopes()->ShowBinoculars(activate));
 
-	if (select)
+	if (activate)
 		SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_BINOCULARS))
 	else
 		SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_BINOCULARS))
 
-		if (select && m_zm)
-		{
-			SetBusy(false);
+	if (activate && m_zm)
+	{
+		SetBusy(false);
 
-			m_zm->StartZoom();
-		}
+		m_zm->StartZoom();
+	}
 }
 
 //---------------------------------------------------------------------
