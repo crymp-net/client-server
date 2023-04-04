@@ -3425,6 +3425,14 @@ void CPlayer::EnableThirdPerson(bool enable)
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
 	CheckCurrentWeapon(enable);
+
+	if (m_stats.isShattered)
+	{
+		//CryMP: Fix visible model on shatter
+		//Following is already done OnShatter, but we have to do it here as well incase we switch to ThirdPerson
+		//Gets reset OnRevive
+		GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) & (~ENTITY_SLOT_RENDER));
+	}
 }
 
 void CPlayer::CheckCurrentWeapon(bool thirdperson)
