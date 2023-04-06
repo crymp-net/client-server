@@ -155,7 +155,10 @@ void CRocketLauncher::Select(bool select)
 
 	CWeapon::Select(select);
 
-	if (select)
+	CActor* pOwner = GetOwnerActor();
+	const bool alive = pOwner && pOwner->GetHealth() > 0;
+
+	if (select && alive) //CryMP: Don't attach laser if we're dead
 	{
 		if (GetStats().fp)
 		{
