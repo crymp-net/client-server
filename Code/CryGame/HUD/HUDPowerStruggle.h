@@ -101,6 +101,8 @@ public:
 	// hide/unhide SOM
 	void HideSOM(bool hide);
 
+	void SetLastBuyMenuPage(BuyMenuPage page, bool updateTime = false);
+
 	void DetermineCurrentBuyZone(bool sendToFlash = false);
 
 	void GetTeamStatus(int teamId, float &power, float &turretstatus, int &controlledAliens, EntityId &prototypeFactoryId);

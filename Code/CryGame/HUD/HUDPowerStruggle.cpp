@@ -1155,10 +1155,13 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		}
 	}
 
-	m_eCurBuyMenuPage = factory;
+	if (factory != BUY_PAGE_WEAPONS && m_eCurBuyMenuPage != BUY_PAGE_EQUIPMENT && m_eCurBuyMenuPage != BUY_PAGE_AMMO)
+	{
+		m_eCurBuyMenuPage = factory;
+	}
 
 	//CryMP: Restore buypage state
-	if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS && m_restoreBuyMenuPage != BUY_PAGE_NONE)
+	if (m_restoreBuyMenuPage != BUY_PAGE_NONE)
 	{
 		const int time = g_pGameCVars->mp_buyPageKeepTime;
 		if (time > 0 && gEnv->pTimer->GetCurrTime() - m_restoreBuyMenuPageTime < time)
@@ -1651,6 +1654,18 @@ void CHUDPowerStruggle::UpdateBuyZone(bool trespassing, EntityId zone)
 	m_factoryTypes[3] = false;
 	m_factoryTypes[4] = false;
 
+	//CryMP start
+	//Default to Vehicle or Proto if entering such zone
+	if (IsFactoryType(zone, BUY_PAGE_VEHICLES) || IsFactoryType(zone, BUY_PAGE_PROTOTYPES))
+	{
+		SetLastBuyMenuPage(BUY_PAGE_NONE, false);
+	}
+	else if (IsFactoryType(zone, BUY_PAGE_WEAPONS))
+	{
+		SetLastBuyMenuPage(m_eCurBuyMenuPage, true);
+	}
+	//CryMP end
+
 	//check whether the player is in a buy zone, he can use ...
 	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
 	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
@@ -1852,17 +1867,31 @@ void CHUDPowerStruggle::HideSOM(bool hide)
 			if (!m_animSwingOMeter.GetFlashPlayer()->GetVisible())
 				m_animSwingOMeter.GetFlashPlayer()->SetVisible(true);
 
-		//CryMP
+		//CryMP start
 		//Closing buymenu - save buypage state
-		m_restoreBuyMenuPageTime = gEnv->pTimer->GetCurrTime();
-		if (m_eCurBuyMenuPage == BUY_PAGE_WEAPONS || m_eCurBuyMenuPage == BUY_PAGE_AMMO || m_eCurBuyMenuPage == BUY_PAGE_EQUIPMENT)
+		SetLastBuyMenuPage(m_eCurBuyMenuPage, true);
+		//CryMP end
+	}
+}
+
+void CHUDPowerStruggle::SetLastBuyMenuPage(BuyMenuPage page, bool updateTime)
+{
+	if (g_pGameCVars->mp_buyPageKeepTime < 1)
+		return;
+
+	if (page == BUY_PAGE_WEAPONS || page == BUY_PAGE_AMMO || page == BUY_PAGE_EQUIPMENT)
+	{
+		//Closing buymenu - save buypage state
+		if (updateTime)
 		{
-			m_restoreBuyMenuPage = m_eCurBuyMenuPage;
+			m_restoreBuyMenuPageTime = gEnv->pTimer->GetCurrTime();
 		}
-		if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
-		{
-			m_restoreBuyMenuPage = BUY_PAGE_NONE;
-		}
+
+		m_restoreBuyMenuPage = page;
+	}
+	else if (page == BUY_PAGE_NONE)
+	{
+		m_restoreBuyMenuPage = BUY_PAGE_NONE;
 	}
 }
 
