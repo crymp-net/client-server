@@ -127,4 +127,9 @@ jobs:
         asset_content_type: application/zip
 
     - name: Notify CryMP master server
-      run: curl --silent --show-error -X POST "https://crymp.nullptr.one/api/release"
+      env:
+        SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+      run: |
+        timestamp=$(date +%s)
+        signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
+        curl -sS -X POST "https://crymp.nullptr.one/api/release?context=release&time=$timestamp&signature=$signature"

@@ -45,4 +45,16 @@ jobs:
 
     steps:
     - name: Notify CryMP master server
-      run: Invoke-RestMethod -Uri "https://crymp.nullptr.one/api/release?context=dev" -Method POST
+      env:
+        SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+      run: |
+        $timestamp = [DateTimeOffset]::Now.ToUnixTimeSeconds().ToString()
+        $hmac_sha256 = New-Object System.Security.Cryptography.HMACSHA256
+        $hmac_sha256.key = [Text.Encoding]::ASCII.GetBytes($env:SECRET)
+        $signature = $hmac_sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($timestamp))
+        $signature = [BitConverter]::ToString($signature).Replace('-', '').ToLower()
+        $params = @{
+          Method = "POST"
+          Uri = "https://crymp.nullptr.one/api/release?context=dev&time=$timestamp&signature=$signature"
+        }
+        Invoke-RestMethod @params
