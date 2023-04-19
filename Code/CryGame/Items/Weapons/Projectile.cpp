@@ -107,12 +107,14 @@ bool CProjectile::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			{
 				params.pParticle = m_pAmmoParams->pParticleParams;
 
+				/* Disabled for now
 				//CryMP: Fix for projectiles colliding with host 
 				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(g_pGame->GetWeaponSystem()->GetLastHostId());
 				if (IPhysicalEntity *pHostPhys = pEntity ? pEntity->GetPhysics() : nullptr)
 				{
 					params.pParticle->pColliderToIgnore = pHostPhys;
 				}
+				*/
 			}
 
 			GetEntity()->Physicalize(params);
@@ -175,7 +177,7 @@ bool CProjectile::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			params.type = PE_NONE;
 			params.nSlot = 0;
 
-			GetEntity()->Physicalize(params);
+				GetEntity()->Physicalize(params);
 		}
 		break;
 		}
@@ -575,14 +577,13 @@ void CProjectile::SetParams(EntityId ownerId, EntityId hostId, EntityId weaponId
 					pAIActor->SetParameters(ap);
 				}
 			}
-			//CryMP: This is now done earlier
-			/*
+
 			if (m_pPhysicalEntity && m_pPhysicalEntity->GetType() == PE_PARTICLE)
 			{
 				pe_params_particle pparams;
 				pparams.pColliderToIgnore = pEntity->GetPhysics();
 				m_pPhysicalEntity->SetParams(&pparams);
-			}*/
+			}
 		}
 	}
 }
