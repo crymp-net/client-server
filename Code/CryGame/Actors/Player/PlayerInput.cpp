@@ -556,7 +556,7 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 				}
 			}
 			//CryMP: IA right click to spectate player works now without having to press 'space' 2 x
-			else if (m_pPlayer->GetSpectatorMode() > CActor::eASM_None && g_pGame->GetGameRules())
+			if (m_pPlayer->GetSpectatorMode() > CActor::eASM_None && g_pGame->GetGameRules())
 			{
 				if (actions.next_spectator_target == actionId && activationMode == eAAM_OnPress && g_pGame->GetGameRules()->GetTeamCount() == 0)
 				{
@@ -571,6 +571,24 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 							pSS->PushFuncParam(server);
 							pSS->PushFuncParam(ScriptHandle(m_pPlayer->GetEntityId()));
 							pSS->PushFuncParam(1);
+							pSS->EndCall();
+						}
+					}
+				}
+				if (actions.attack1 == actionId && activationMode == eAAM_OnPress && g_pGame->GetGameRules()->GetTeamCount() > 0 && g_pGame->GetGameRules()->IsNeutral(m_pPlayer->GetEntityId()))
+				{
+					//Add previous spectator left click option if we are in spectator team
+					IScriptTable* scriptTbl = g_pGame->GetGameRules()->GetEntity()->GetScriptTable();
+					if (scriptTbl)
+					{
+						IScriptSystem* pSS = gEnv->pScriptSystem;
+
+						SmartScriptTable server;
+						if (scriptTbl->GetValue("server", server) && pSS->BeginCall(server, "RequestSpectatorTarget"))
+						{
+							pSS->PushFuncParam(server);
+							pSS->PushFuncParam(ScriptHandle(m_pPlayer->GetEntityId()));
+							pSS->PushFuncParam(-1);
 							pSS->EndCall();
 						}
 					}
