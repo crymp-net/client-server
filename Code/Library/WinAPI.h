@@ -268,4 +268,10 @@ namespace WinAPI
 		int timeout,
 		HTTPRequestCallback callback
 	);
+
+	///////////////
+	// Clipboard //
+	///////////////
+
+	std::string GetClipboardText(std::size_t maxLength = std::size_t(-1));
 }
