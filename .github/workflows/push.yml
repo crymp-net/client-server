@@ -15,7 +15,7 @@ jobs:
       matrix:
         type: [ RelWithDebInfo ]
         bits: [ 32, 64 ]
-    uses: crymp-net/client-server/.github/workflows/build.yml
+    uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
       bits: ${{ matrix.bits }}
       type: ${{ matrix.type }}
@@ -23,6 +23,6 @@ jobs:
   notify:
     if: github.ref == 'refs/heads/master'
     needs: build
-    uses: crymp-net/client-server/.github/workflows/notify.yml
+    uses: crymp-net/client-server/.github/workflows/notify.yml@master
     with:
       context: dev

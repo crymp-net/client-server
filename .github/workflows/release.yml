@@ -11,14 +11,14 @@ on:
 
 jobs:
   build_32:
-    uses: crymp-net/client-server/.github/workflows/build.yml
+    uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
       bits: 32
       type: Release
       sign: true
 
   build_64:
-    uses: crymp-net/client-server/.github/workflows/build.yml
+    uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
       bits: 32
       type: Release
@@ -82,6 +82,6 @@ jobs:
 
   notify:
     needs: release
-    uses: crymp-net/client-server/.github/workflows/notify.yml
+    uses: crymp-net/client-server/.github/workflows/notify.yml@master
     with:
       context: release
