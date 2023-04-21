@@ -27,7 +27,7 @@ jobs:
       run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ matrix.type }}
 
     - name: Build
-      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }}
+      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }} --parallel $env:NUMBER_OF_PROCESSORS
 
     - name: Hash
       run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $Env:GITHUB_ENV
