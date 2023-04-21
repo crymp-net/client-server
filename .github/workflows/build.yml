@@ -2,9 +2,8 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+    - '**'
 
 jobs:
   build_windows_msvc:
@@ -41,6 +40,7 @@ jobs:
           ${{ env.RESULT }}.pdb
 
   notify_master:
+    if: github.event.base_ref == 'refs/heads/master'
     runs-on: windows-latest
 
     needs: build_windows_msvc
