@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-    - v*
+      - v*
 
 jobs:
   build_32:
@@ -11,128 +11,128 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Configure CMake
-      run: cmake -A Win32 -B ${{ github.workspace }}/Build32 -DCMAKE_BUILD_TYPE=Release
+      - name: Configure CMake
+        run: cmake -A Win32 -B ${{ github.workspace }}/Build32 -DCMAKE_BUILD_TYPE=Release
 
-    - name: Build
-      run: cmake --build ${{ github.workspace }}/Build32 --config Release
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/Build32 --config Release
 
-    - name: Sign
-      env:
-        CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
-        CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
-      run: |
-        Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
-        certutil -decode bundle.txt bundle.pfx
-        $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-        & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
-          /tr "http://timestamp.digicert.com" /td SHA256 `
-          "${{ github.workspace }}/Build32/Release/CryMP-Client32.exe"
-        Remove-Item bundle.*
+      - name: Sign
+        env:
+          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
+          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
+        run: |
+          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+          certutil -decode bundle.txt bundle.pfx
+          $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
+          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+            /tr "http://timestamp.digicert.com" /td SHA256 `
+            "${{ github.workspace }}/Build32/Release/CryMP-Client32.exe"
+          Remove-Item bundle.*
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: CryMP-Client32-Release
-        path: ${{ github.workspace }}/Build32/Release/CryMP-Client32.exe
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: CryMP-Client32-Release
+          path: ${{ github.workspace }}/Build32/Release/CryMP-Client32.exe
 
   build_64:
     if: github.event.base_ref == 'refs/heads/master'
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Configure CMake
-      run: cmake -A x64 -B ${{ github.workspace }}/Build64 -DCMAKE_BUILD_TYPE=Release
+      - name: Configure CMake
+        run: cmake -A x64 -B ${{ github.workspace }}/Build64 -DCMAKE_BUILD_TYPE=Release
 
-    - name: Build
-      run: cmake --build ${{ github.workspace }}/Build64 --config Release
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/Build64 --config Release
 
-    - name: Sign
-      env:
-        CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
-        CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
-      run: |
-        Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
-        certutil -decode bundle.txt bundle.pfx
-        $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-        & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
-          /tr "http://timestamp.digicert.com" /td SHA256 `
-          "${{ github.workspace }}/Build64/Release/CryMP-Client64.exe"
-        Remove-Item bundle.*
+      - name: Sign
+        env:
+          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
+          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
+        run: |
+          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+          certutil -decode bundle.txt bundle.pfx
+          $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
+          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+            /tr "http://timestamp.digicert.com" /td SHA256 `
+            "${{ github.workspace }}/Build64/Release/CryMP-Client64.exe"
+          Remove-Item bundle.*
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: CryMP-Client64-Release
-        path: ${{ github.workspace }}/Build64/Release/CryMP-Client64.exe
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: CryMP-Client64-Release
+          path: ${{ github.workspace }}/Build64/Release/CryMP-Client64.exe
 
   do_release:
     if: github.event.base_ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     needs:
-    - build_32
-    - build_64
+      - build_32
+      - build_64
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Get changelog
-      run: |
-        echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-        sed -n "/^## \[${{ github.ref_name }}\] /,/^## /p" ${{ github.workspace }}/CHANGELOG.md | sed '1d;$d' >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+      - name: Get changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          sed -n "/^## \[${{ github.ref_name }}\] /,/^## /p" ${{ github.workspace }}/CHANGELOG.md | sed '1d;$d' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-    - name: Download 32-bit build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: CryMP-Client32-Release
+      - name: Download 32-bit build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: CryMP-Client32-Release
 
-    - name: Download 64-bit build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: CryMP-Client64-Release
+      - name: Download 64-bit build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: CryMP-Client64-Release
 
-    - name: Make it executable
-      # make Linux users happy
-      run: chmod 755 CryMP-Client32.exe CryMP-Client64.exe
+      - name: Make it executable
+        # make Linux users happy
+        run: chmod 755 CryMP-Client32.exe CryMP-Client64.exe
 
-    - name: Create ZIP file
-      run: zip crymp-client-${{ github.ref_name }}-build.zip CryMP-Client32.exe CryMP-Client64.exe
+      - name: Create ZIP file
+        run: zip crymp-client-${{ github.ref_name }}-build.zip CryMP-Client32.exe CryMP-Client64.exe
 
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref_name }}
-        body: ${{ env.CHANGELOG }}
-        draft: false
-        prerelease: false
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref_name }}
+          body: ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: false
 
-    - name: Add the ZIP file to the release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: crymp-client-${{ github.ref_name }}-build.zip
-        asset_name: crymp-client-${{ github.ref_name }}-build.zip
-        asset_content_type: application/zip
+      - name: Add the ZIP file to the release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: crymp-client-${{ github.ref_name }}-build.zip
+          asset_name: crymp-client-${{ github.ref_name }}-build.zip
+          asset_content_type: application/zip
 
-    - name: Notify CryMP master server
-      env:
-        SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
-      run: |
-        timestamp=$(date +%s)
-        signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
-        curl -sS -X POST "https://crymp.nullptr.one/api/release?context=release&time=$timestamp&signature=$signature"
+      - name: Notify CryMP master server
+        env:
+          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+        run: |
+          timestamp=$(date +%s)
+          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
+          curl -sS -X POST "https://crymp.nullptr.one/api/release?context=release&time=$timestamp&signature=$signature"

@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-    - '**'
+      - '**'
 
 jobs:
   build_windows_msvc:
@@ -18,42 +18,42 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}\Build${{ matrix.bits }}
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Get Ninja
-      run: |
-        $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
-        $release
-        $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
-        $ninja_dir = Join-Path $env:BUILD_DIR 'ninja-win'
-        New-Item $ninja_dir -ItemType Directory | Out-Null
-        Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja_dir + '.zip')
-        Expand-Archive ($ninja_dir + '.zip') -DestinationPath $ninja_dir
-        'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
+      - name: Get Ninja
+        run: |
+          $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+          $release
+          $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
+          $ninja_dir = Join-Path $env:BUILD_DIR 'ninja-win'
+          New-Item $ninja_dir -ItemType Directory | Out-Null
+          Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja_dir + '.zip')
+          Expand-Archive ($ninja_dir + '.zip') -DestinationPath $ninja_dir
+          'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
 
-    - name: Build
-      run: |
-        $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
-        $vspath = & $vswhere -latest -property installationPath
-        Import-Module (Join-Path $vspath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
-        $arch = if (${{ matrix.bits }} -eq 32) { 'x86' } else { 'amd64' }
-        Enter-VsDevShell -VsInstallPath $vspath -SkipAutomaticLocation -Arch $arch
-        $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
-        cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
-        cmake --build $env:BUILD_DIR
+      - name: Build
+        run: |
+          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          $vspath = & $vswhere -latest -property installationPath
+          Import-Module (Join-Path $vspath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
+          $arch = if (${{ matrix.bits }} -eq 32) { 'x86' } else { 'amd64' }
+          Enter-VsDevShell -VsInstallPath $vspath -SkipAutomaticLocation -Arch $arch
+          $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
+          cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
+          cmake --build $env:BUILD_DIR
+          'EXE_PATH=' + (Join-Path $env:BUILD_DIR 'CryMP-Client${{ matrix.bits }}.exe') >> $env:GITHUB_ENV
+          'PDB_PATH=' + (Join-Path $env:BUILD_DIR 'CryMP-Client${{ matrix.bits }}.pdb') >> $env:GITHUB_ENV
 
-    - name: Hash
-      run: |
-        $result = Get-FileHash -Algorithm SHA256 -Path ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.exe
-        'EXE_HASH=' + $result.Hash.ToLower() >> $env:GITHUB_ENV
+      - name: Hash
+        run: 'EXE_HASH=' + (Get-FileHash -Algorithm SHA256 -Path $env:EXE_PATH).Hash.ToLower() >> $env:GITHUB_ENV
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
-        path: |
-          ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.exe
-          ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.pdb
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
+          path: |
+            ${{ env.EXE_PATH }}
+            ${{ env.PDB_PATH }}
 
   notify_master:
     if: github.ref == 'refs/heads/master'
@@ -62,17 +62,17 @@ jobs:
     needs: build_windows_msvc
 
     steps:
-    - name: Notify CryMP master server
-      env:
-        SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
-      run: |
-        $timestamp = [DateTimeOffset]::Now.ToUnixTimeSeconds().ToString()
-        $hmac_sha256 = New-Object System.Security.Cryptography.HMACSHA256
-        $hmac_sha256.key = [Text.Encoding]::ASCII.GetBytes($env:SECRET)
-        $signature = $hmac_sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($timestamp))
-        $signature = [BitConverter]::ToString($signature).Replace('-', '').ToLower()
-        $params = @{
-          Method = "POST"
-          Uri = "https://crymp.nullptr.one/api/release?context=dev&time=$timestamp&signature=$signature"
-        }
-        Invoke-RestMethod @params
+      - name: Notify CryMP master server
+        env:
+          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+        run: |
+          $timestamp = [DateTimeOffset]::Now.ToUnixTimeSeconds().ToString()
+          $hmac_sha256 = New-Object System.Security.Cryptography.HMACSHA256
+          $hmac_sha256.key = [Text.Encoding]::ASCII.GetBytes($env:SECRET)
+          $signature = $hmac_sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($timestamp))
+          $signature = [BitConverter]::ToString($signature).Replace('-', '').ToLower()
+          $params = @{
+            Method = "POST"
+            Uri = "https://crymp.nullptr.one/api/release?context=dev&time=$timestamp&signature=$signature"
+          }
+          Invoke-RestMethod @params
