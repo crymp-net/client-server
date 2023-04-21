@@ -45,7 +45,9 @@ jobs:
           'PDB_PATH=' + (Join-Path $env:BUILD_DIR 'CryMP-Client${{ matrix.bits }}.pdb') >> $env:GITHUB_ENV
 
       - name: Hash
-        run: 'EXE_HASH=' + (Get-FileHash -Algorithm SHA256 -Path $env:EXE_PATH).Hash.ToLower() >> $env:GITHUB_ENV
+        run: |
+          $result = Get-FileHash -Algorithm SHA256 -Path $env:EXE_PATH
+          'EXE_HASH=' + $result.Hash.ToLower() >> $env:GITHUB_ENV
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
