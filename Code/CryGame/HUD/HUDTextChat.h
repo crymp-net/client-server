@@ -79,9 +79,11 @@ private:
 	void Backspace();
 	void Left();
 	void Right();
+	void Up();
+	void Down();
 	void Insert(char ch);
 	void Paste();
-	void Flush(bool close = true);
+	void Flush();
 	void ProcessInput(const SInputEvent& event);
 	void VirtualKeyboardInput(const char* direction);
 };

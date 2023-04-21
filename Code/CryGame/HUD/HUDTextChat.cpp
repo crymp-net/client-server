@@ -99,7 +99,7 @@ void CHUDTextChat::Update(float deltaTime)
 		return;
 	}
 
-	if (m_repeatEvent.keyId != eKI_Unknown)
+	if (m_repeatEvent.keyId != eKI_Unknown && !gEnv->pConsole->GetStatus())
 	{
 		const float now = gEnv->pTimer->GetAsyncTime().GetMilliSeconds();
 
@@ -216,6 +216,11 @@ bool CHUDTextChat::OnInputEventUI(const SInputEvent& event)
 
 void CHUDTextChat::HandleFSCommand(const char* command, const char* args)
 {
+	if (!m_flashChat)
+	{
+		return;
+	}
+
 	if (_stricmp(command, "sendChatText") == 0)
 	{
 		const std::string_view text(args);
@@ -226,141 +231,6 @@ void CHUDTextChat::HandleFSCommand(const char* command, const char* args)
 		}
 
 		this->Flush();
-	}
-}
-
-void CHUDTextChat::Delete()
-{
-	if (m_cursor < m_inputText.length())
-	{
-		m_inputText.erase(m_cursor, 1);
-	}
-}
-
-void CHUDTextChat::Backspace()
-{
-	if (m_cursor > 0)
-	{
-		m_inputText.erase(m_cursor - 1, 1);
-		m_cursor--;
-	}
-}
-
-void CHUDTextChat::Left()
-{
-	if (m_cursor > 0)
-	{
-		m_cursor--;
-	}
-}
-
-void CHUDTextChat::Right()
-{
-	if (m_cursor < m_inputText.length())
-	{
-		m_cursor++;
-	}
-}
-
-void CHUDTextChat::Insert(char ch)
-{
-	if (m_inputText.length() >= MAX_MESSAGE_LENGTH)
-	{
-		return;
-	}
-
-	if (!std::isprint(ch))
-	{
-		// allow only printable ASCII characters
-		return;
-	}
-
-	m_inputText.insert(m_cursor, 1, ch);
-	m_cursor++;
-}
-
-void CHUDTextChat::Paste()
-{
-	for (char ch : WinAPI::GetClipboardText(MAX_MESSAGE_LENGTH))
-	{
-		this->Insert(ch);
-	}
-}
-
-void CHUDTextChat::Flush(bool close)
-{
-	gEnv->pInput->ClearKeyState();
-
-	if (!m_inputText.empty())
-	{
-		const EChatMessageType chatType = m_teamChat ? eChatToTeam : eChatToAll;
-		const EntityId senderID = m_pHUD->m_pClientActor->GetEntityId();
-
-		m_pHUD->m_pGameRules->SendChatMessage(chatType, senderID, 0, m_inputText.c_str());
-
-		m_history.Add(m_inputText);
-
-		m_inputText.clear();
-		m_cursor = 0;
-	}
-
-	if (close)
-	{
-		m_isListening = false;
-		gEnv->pInput->SetExclusiveListener(nullptr);
-		m_flashChat->Invoke("setVisibleChatBox", 0);
-		m_flashChat->Invoke("GamepadAvailable", false);
-	}
-}
-
-void CHUDTextChat::ProcessInput(const SInputEvent& event)
-{
-	if (gEnv->pConsole->GetStatus())
-	{
-		return;
-	}
-
-	if (event.keyId == eKI_Backspace)
-	{
-		this->Backspace();
-	}
-	else if (event.keyId == eKI_Delete)
-	{
-		this->Delete();
-	}
-	else if (event.keyId == eKI_Left)
-	{
-		this->Left();
-	}
-	else if (event.keyId == eKI_Right)
-	{
-		this->Right();
-	}
-	else if (event.keyId == eKI_Up)
-	{
-		if (m_history.MoveUp(m_inputText))
-		{
-			m_cursor = m_inputText.length();
-		}
-	}
-	else if (event.keyId == eKI_Down)
-	{
-		if (m_history.MoveDown(m_inputText))
-		{
-			m_cursor = m_inputText.length();
-		}
-	}
-	else if (event.keyId == eKI_Home)
-	{
-		m_cursor = 0;
-	}
-	else if (event.keyId == eKI_End)
-	{
-		m_cursor = m_inputText.length();
-	}
-	else if (event.keyId == eKI_V && (event.modifiers & eMM_Ctrl))
-	{
-		this->Paste();
 	}
 }
 
@@ -421,17 +291,9 @@ void CHUDTextChat::AddChatMessage(const char* nick, const char* msg, int teamFac
 	}
 }
 
-void CHUDTextChat::VirtualKeyboardInput(const char* direction)
-{
-	if (m_flashChat && m_isListening)
-	{
-		m_flashChat->Invoke("moveCursor", direction);
-	}
-}
-
 void CHUDTextChat::OpenChat(int type)
 {
-	if (m_isListening)
+	if (!m_flashChat || m_isListening)
 	{
 		return;
 	}
@@ -460,4 +322,151 @@ void CHUDTextChat::OpenChat(int type)
 	m_cursor = 0;
 
 	m_history.ResetSelection();
+}
+
+void CHUDTextChat::Delete()
+{
+	if (m_cursor < m_inputText.length())
+	{
+		m_inputText.erase(m_cursor, 1);
+	}
+}
+
+void CHUDTextChat::Backspace()
+{
+	if (m_cursor > 0)
+	{
+		m_cursor--;
+		m_inputText.erase(m_cursor, 1);
+	}
+}
+
+void CHUDTextChat::Left()
+{
+	if (m_cursor > 0)
+	{
+		m_cursor--;
+	}
+}
+
+void CHUDTextChat::Right()
+{
+	if (m_cursor < m_inputText.length())
+	{
+		m_cursor++;
+	}
+}
+
+void CHUDTextChat::Up()
+{
+	if (m_history.MoveUp(m_inputText))
+	{
+		m_cursor = m_inputText.length();
+	}
+}
+
+void CHUDTextChat::Down()
+{
+	if (m_history.MoveDown(m_inputText))
+	{
+		m_cursor = m_inputText.length();
+	}
+}
+
+void CHUDTextChat::Insert(char ch)
+{
+	if (m_inputText.length() >= MAX_MESSAGE_LENGTH)
+	{
+		return;
+	}
+
+	if (!std::isprint(ch))
+	{
+		// allow only printable ASCII characters
+		return;
+	}
+
+	m_inputText.insert(m_cursor, 1, ch);
+	m_cursor++;
+}
+
+void CHUDTextChat::Paste()
+{
+	for (char ch : WinAPI::GetClipboardText(MAX_MESSAGE_LENGTH))
+	{
+		this->Insert(ch);
+	}
+}
+
+void CHUDTextChat::Flush()
+{
+	gEnv->pInput->ClearKeyState();
+
+	if (!m_inputText.empty())
+	{
+		const EChatMessageType chatType = m_teamChat ? eChatToTeam : eChatToAll;
+		const EntityId senderID = m_pHUD->m_pClientActor->GetEntityId();
+
+		m_pHUD->m_pGameRules->SendChatMessage(chatType, senderID, 0, m_inputText.c_str());
+
+		m_history.Add(m_inputText);
+
+		m_inputText.clear();
+		m_cursor = 0;
+	}
+
+	m_isListening = false;
+
+	gEnv->pInput->SetExclusiveListener(nullptr);
+
+	m_flashChat->Invoke("setVisibleChatBox", 0);
+	m_flashChat->Invoke("GamepadAvailable", false);
+}
+
+void CHUDTextChat::ProcessInput(const SInputEvent& event)
+{
+	if (event.keyId == eKI_Backspace)
+	{
+		this->Backspace();
+	}
+	else if (event.keyId == eKI_Delete)
+	{
+		this->Delete();
+	}
+	else if (event.keyId == eKI_Left)
+	{
+		this->Left();
+	}
+	else if (event.keyId == eKI_Right)
+	{
+		this->Right();
+	}
+	else if (event.keyId == eKI_Up)
+	{
+		this->Up();
+	}
+	else if (event.keyId == eKI_Down)
+	{
+		this->Down();
+	}
+	else if (event.keyId == eKI_Home)
+	{
+		m_cursor = 0;
+	}
+	else if (event.keyId == eKI_End)
+	{
+		m_cursor = m_inputText.length();
+	}
+	else if (event.keyId == eKI_V && (event.modifiers & eMM_Ctrl))
+	{
+		this->Paste();
+	}
+}
+
+void CHUDTextChat::VirtualKeyboardInput(const char* direction)
+{
+	if (m_isListening)
+	{
+		m_flashChat->Invoke("moveCursor", direction);
+	}
 }
