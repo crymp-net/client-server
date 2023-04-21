@@ -1,0 +1,28 @@
+################################################################################
+# Push workflow running on a push to any branch
+################################################################################
+
+name: Push
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        type: [ RelWithDebInfo ]
+        bits: [ 32, 64 ]
+    uses: crymp-net/client-server/.github/workflows/build.yml
+    with:
+      bits: ${{ matrix.bits }}
+      type: ${{ matrix.type }}
+
+  notify:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    uses: crymp-net/client-server/.github/workflows/notify.yml
+    with:
+      context: dev

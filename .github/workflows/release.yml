@@ -1,3 +1,7 @@
+################################################################################
+# Release workflow running on new tags
+################################################################################
+
 name: Release
 
 on:
@@ -7,73 +11,20 @@ on:
 
 jobs:
   build_32:
-    if: github.event.base_ref == 'refs/heads/master'
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Configure CMake
-        run: cmake -A Win32 -B ${{ github.workspace }}/Build32 -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build ${{ github.workspace }}/Build32 --config Release
-
-      - name: Sign
-        env:
-          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
-          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
-        run: |
-          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
-          certutil -decode bundle.txt bundle.pfx
-          $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
-            /tr "http://timestamp.digicert.com" /td SHA256 `
-            "${{ github.workspace }}/Build32/Release/CryMP-Client32.exe"
-          Remove-Item bundle.*
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: CryMP-Client32-Release
-          path: ${{ github.workspace }}/Build32/Release/CryMP-Client32.exe
+    uses: crymp-net/client-server/.github/workflows/build.yml
+    with:
+      bits: 32
+      type: Release
+      sign: true
 
   build_64:
-    if: github.event.base_ref == 'refs/heads/master'
-    runs-on: windows-latest
+    uses: crymp-net/client-server/.github/workflows/build.yml
+    with:
+      bits: 32
+      type: Release
+      sign: true
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Configure CMake
-        run: cmake -A x64 -B ${{ github.workspace }}/Build64 -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build ${{ github.workspace }}/Build64 --config Release
-
-      - name: Sign
-        env:
-          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
-          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
-        run: |
-          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
-          certutil -decode bundle.txt bundle.pfx
-          $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
-            /tr "http://timestamp.digicert.com" /td SHA256 `
-            "${{ github.workspace }}/Build64/Release/CryMP-Client64.exe"
-          Remove-Item bundle.*
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: CryMP-Client64-Release
-          path: ${{ github.workspace }}/Build64/Release/CryMP-Client64.exe
-
-  do_release:
-    if: github.event.base_ref == 'refs/heads/master'
+  release:
     runs-on: ubuntu-latest
 
     needs:
@@ -86,22 +37,22 @@ jobs:
 
       - name: Get changelog
         run: |
+          changelog_file="${{ github.workspace }}/CHANGELOG.md"
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          sed -n "/^## \[${{ github.ref_name }}\] /,/^## /p" ${{ github.workspace }}/CHANGELOG.md | sed '1d;$d' >> $GITHUB_ENV
+          sed -n "/^## \[${{ github.ref_name }}\] /,/^## /p" "$changelog_file" | sed '1d;$d' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Download 32-bit build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: CryMP-Client32-Release
+          name: CryMP-Client32-${{ needs.build_32.outputs.hash }}
 
       - name: Download 64-bit build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: CryMP-Client64-Release
+          name: CryMP-Client64-${{ needs.build_64.outputs.hash }}
 
       - name: Make it executable
-        # make Linux users happy
         run: chmod 755 CryMP-Client32.exe CryMP-Client64.exe
 
       - name: Create ZIP file
@@ -129,10 +80,8 @@ jobs:
           asset_name: crymp-client-${{ github.ref_name }}-build.zip
           asset_content_type: application/zip
 
-      - name: Notify CryMP master server
-        env:
-          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
-        run: |
-          timestamp=$(date +%s)
-          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
-          curl -sS -X POST "https://crymp.nullptr.one/api/release?context=release&time=$timestamp&signature=$signature"
+  notify:
+    needs: release
+    uses: crymp-net/client-server/.github/workflows/notify.yml
+    with:
+      context: release

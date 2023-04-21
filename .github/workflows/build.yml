@@ -1,24 +1,40 @@
+################################################################################
+# Reusable build workflow
+################################################################################
+
 name: Build
 
 on:
-  push:
-    branches:
-      - '**'
+  workflow_call:
+    inputs:
+      bits:
+        required: true
+        type: string
+      type:
+        required: true
+        type: string
+      sign:
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      hash:
+        description: "Hash of the build"
+        value: ${{ jobs.build_windows_msvc.outputs.hash }}
 
 jobs:
   build_windows_msvc:
     runs-on: windows-latest
 
-    strategy:
-      matrix:
-        type: [ RelWithDebInfo ]
-        bits: [ 32, 64 ]
-
     env:
-      BUILD_DIR: ${{ github.workspace }}\Build${{ matrix.bits }}
+      BUILD_DIR: ${{ github.workspace }}\Build${{ inputs.bits }}
+
+    outputs:
+      hash: ${{ steps.build.outputs.hash }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Get Ninja
         run: |
@@ -32,49 +48,35 @@ jobs:
           'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
 
       - name: Build
+        id: build
         run: |
-          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
-          $vspath = & $vswhere -latest -property installationPath
-          Import-Module (Join-Path $vspath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
-          $arch = if (${{ matrix.bits }} -eq 32) { 'x86' } else { 'amd64' }
-          Enter-VsDevShell -VsInstallPath $vspath -SkipAutomaticLocation -Arch $arch
+          $vs_where = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          $vs_path = & $vs_where -latest -property installationPath
+          Import-Module (Join-Path $vs_path 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
+          $arch = if (${{ inputs.bits }} -eq 32) { 'x86' } else { 'amd64' }
+          Enter-VsDevShell -VsInstallPath $vs_path -SkipAutomaticLocation -Arch $arch
           $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
-          cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
+          cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
-          'EXE_PATH=' + (Join-Path $env:BUILD_DIR 'CryMP-Client${{ matrix.bits }}.exe') >> $env:GITHUB_ENV
-          'PDB_PATH=' + (Join-Path $env:BUILD_DIR 'CryMP-Client${{ matrix.bits }}.pdb') >> $env:GITHUB_ENV
+          exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
+          'hash=' + (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower() >> $env:GITHUB_OUTPUT
 
-      - name: Hash
+      - name: Sign
+        if: ${{ inputs.sign }}
+        env:
+          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
+          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
         run: |
-          $result = Get-FileHash -Algorithm SHA256 -Path $env:EXE_PATH
-          'EXE_HASH=' + $result.Hash.ToLower() >> $env:GITHUB_ENV
+          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+          certutil -decode bundle.txt bundle.pfx
+          $signtool = 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe'
+          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+            /tr "http://timestamp.digicert.com" /td SHA256 `
+            (Get-Item ${env:BUILD_DIR}\*.exe).FullName
+          Remove-Item bundle.*
 
-      - name: Upload artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
-          path: |
-            ${{ env.EXE_PATH }}
-            ${{ env.PDB_PATH }}
-
-  notify_master:
-    if: github.ref == 'refs/heads/master'
-    runs-on: windows-latest
-
-    needs: build_windows_msvc
-
-    steps:
-      - name: Notify CryMP master server
-        env:
-          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
-        run: |
-          $timestamp = [DateTimeOffset]::Now.ToUnixTimeSeconds().ToString()
-          $hmac_sha256 = New-Object System.Security.Cryptography.HMACSHA256
-          $hmac_sha256.key = [Text.Encoding]::ASCII.GetBytes($env:SECRET)
-          $signature = $hmac_sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($timestamp))
-          $signature = [BitConverter]::ToString($signature).Replace('-', '').ToLower()
-          $params = @{
-            Method = "POST"
-            Uri = "https://crymp.nullptr.one/api/release?context=dev&time=$timestamp&signature=$signature"
-          }
-          Invoke-RestMethod @params
+          name: CryMP-Client${{ inputs.bits }}-${{ steps.build.outputs.hash }}
+          path: ${{ env.BUILD_DIR }}/*.(exe|pdb)

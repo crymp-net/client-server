@@ -1,0 +1,26 @@
+################################################################################
+# Reusable workflow for notifying the CryMP master server about new builds
+################################################################################
+
+name: Notify
+
+on:
+  workflow_call:
+    inputs:
+      context:
+        required: true
+        type: string
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify CryMP master server
+        env:
+          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+        run: |
+          context='${{ inputs.context }}'
+          timestamp=$(date +%s)
+          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
+          curl --silent --show-error --request POST \
+            "https://crymp.nullptr.one/api/release?context=$context&time=$timestamp&signature=$signature"
