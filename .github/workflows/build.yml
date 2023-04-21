@@ -24,16 +24,14 @@ jobs:
 
     - name: Get Ninja
       run: |
+        Set-PSDebug -Trace 2
         $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
-        $release
         $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
-        $asset
         $ninja = Join-Path $env:BUILD_DIR 'ninja-win'
-        $ninja
+        New-Item $ninja -ItemType Directory
         Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja + '.zip')
         Expand-Archive ($ninja + '.zip') -DestinationPath $ninja
         $env:PATH = $ninja + ';' + $env:PATH
-        $env:PATH
         'PATH=' + $env:PATH >> $env:GITHUB_ENV
 
     - name: Configure CMake
