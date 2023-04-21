@@ -18,7 +18,7 @@ jobs:
       run: cmake -A Win32 -B ${{ github.workspace }}/Build32 -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/Build32 --config Release --parallel $env:NUMBER_OF_PROCESSORS
+      run: cmake --build ${{ github.workspace }}/Build32 --config Release
 
     - name: Sign
       env:
@@ -51,7 +51,7 @@ jobs:
       run: cmake -A x64 -B ${{ github.workspace }}/Build64 -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/Build64 --config Release --parallel $env:NUMBER_OF_PROCESSORS
+      run: cmake --build ${{ github.workspace }}/Build64 --config Release
 
     - name: Sign
       env:

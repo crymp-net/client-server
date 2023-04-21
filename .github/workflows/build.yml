@@ -22,11 +22,26 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Get latest Ninja release
+      run: $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+
+    - name: Find Ninja asset
+      run: $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
+
+    - name: Download Ninja asset
+      run: Invoke-WebRequest $asset.browser_download_url -OutFile 'C:\ninja-win.zip'
+
+    - name: Extract Ninja asset
+      run: Expand-Archive 'ninja-win.zip' -DestinationPath 'C:\ninja-win'
+
+    - name: Add Ninja to PATH
+      run: $env:PATH = 'C:\ninja-win;' + $env:PATH
+
     - name: Configure CMake
-      run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ matrix.type }}
+      run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.type }}
 
     - name: Build
-      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }} --parallel $env:NUMBER_OF_PROCESSORS
+      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }}
 
     - name: Hash
       run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $Env:GITHUB_ENV
@@ -40,7 +55,7 @@ jobs:
           ${{ env.RESULT }}.pdb
 
   notify_master:
-    if: github.event.base_ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     runs-on: windows-latest
 
     needs: build_windows_msvc
