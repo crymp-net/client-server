@@ -8,6 +8,66 @@
 #include "HUDTextChat.h"
 #include "HUD.h"
 
+void CHUDTextChat::History::Add(const std::string& message)
+{
+	if (message.empty() || this->messages[this->last] == message)
+	{
+		return;
+	}
+
+	this->last = (this->last + 1) % this->messages.size();
+	this->messages[this->last] = message;
+
+	this->ResetSelection();
+}
+
+void CHUDTextChat::History::ResetSelection()
+{
+	this->pos = 0;
+}
+
+bool CHUDTextChat::History::MoveUp(std::string& message)
+{
+	if (this->pos >= this->messages.size())
+	{
+		return false;
+	}
+
+	const std::string& next = this->messages[(this->last - this->pos) % this->messages.size()];
+
+	if (next.empty())
+	{
+		return false;
+	}
+
+	message = next;
+
+	this->pos++;
+
+	return true;
+}
+
+bool CHUDTextChat::History::MoveDown(std::string& message)
+{
+	if (this->pos == 0)
+	{
+		return false;
+	}
+
+	this->pos--;
+
+	if (this->pos == 0)
+	{
+		message.clear();
+	}
+	else
+	{
+		message = this->messages[(this->last - (this->pos - 1)) % this->messages.size()];
+	}
+
+	return true;
+}
+
 CHUDTextChat::CHUDTextChat(CHUD* pHUD) : m_pHUD(pHUD)
 {
 	m_inputText.reserve(MAX_MESSAGE_LENGTH);
@@ -238,6 +298,8 @@ void CHUDTextChat::Flush(bool close)
 
 		m_pHUD->m_pGameRules->SendChatMessage(chatType, senderID, 0, m_inputText.c_str());
 
+		m_history.Add(m_inputText);
+
 		m_inputText.clear();
 		m_cursor = 0;
 	}
@@ -273,6 +335,20 @@ void CHUDTextChat::ProcessInput(const SInputEvent& event)
 	else if (event.keyId == eKI_Right)
 	{
 		this->Right();
+	}
+	else if (event.keyId == eKI_Up)
+	{
+		if (m_history.MoveUp(m_inputText))
+		{
+			m_cursor = m_inputText.length();
+		}
+	}
+	else if (event.keyId == eKI_Down)
+	{
+		if (m_history.MoveDown(m_inputText))
+		{
+			m_cursor = m_inputText.length();
+		}
 	}
 	else if (event.keyId == eKI_Home)
 	{
@@ -382,4 +458,6 @@ void CHUDTextChat::OpenChat(int type)
 	m_repeatEvent = SInputEvent();
 	m_inputText.clear();
 	m_cursor = 0;
+
+	m_history.ResetSelection();
 }

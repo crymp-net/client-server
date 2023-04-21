@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <string>
 
@@ -29,6 +30,20 @@ class CHUDTextChat : public CHUDObject, public IInputEventListener, public IFSCo
 
 	float m_repeatTimer = 0;
 	SInputEvent m_repeatEvent;
+
+	struct History
+	{
+		unsigned int pos = 0;
+		unsigned int last = 0;
+		std::array<std::string, 64> messages;  // use a power of 2 as the size for maximum performance
+
+		void Add(const std::string& message);
+		void ResetSelection();
+		bool MoveUp(std::string& message);
+		bool MoveDown(std::string& message);
+	};
+
+	History m_history;
 
 public:
 	explicit CHUDTextChat(CHUD* pHUD);
