@@ -12,13 +12,13 @@ jobs:
 
     strategy:
       matrix:
-        type: [ Release ]
+        type: [ RelWithDebInfo ]
         bits: [ 32, 64 ]
 
     env:
       BUILD_DIR: ${{ github.workspace }}/Build${{ matrix.bits }}
       BUILD_PLATFORM: ${{ matrix.bits == '32' && 'Win32' || 'x64' }}
-      EXE_PATH: ${{ github.workspace }}/Build${{ matrix.bits }}/${{ matrix.type }}/CryMP-Client${{ matrix.bits }}.exe
+      RESULT: ${{ github.workspace }}/Build${{ matrix.bits }}/${{ matrix.type }}/CryMP-Client${{ matrix.bits }}
 
     steps:
     - uses: actions/checkout@v3
@@ -30,13 +30,15 @@ jobs:
       run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }}
 
     - name: Hash
-      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.EXE_PATH }}).Hash.ToLower()) >> $Env:GITHUB_ENV
+      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $Env:GITHUB_ENV
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
-        path: ${{ env.EXE_PATH }}
+        path: |
+          ${{ env.RESULT }}.exe
+          ${{ env.RESULT }}.pdb
 
   notify_master:
     runs-on: windows-latest
