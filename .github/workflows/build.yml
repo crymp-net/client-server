@@ -16,7 +16,6 @@ jobs:
 
     env:
       BUILD_DIR: ${{ github.workspace }}/Build${{ matrix.bits }}
-      BUILD_PLATFORM: ${{ matrix.bits == '32' && 'Win32' || 'x64' }}
       RESULT: ${{ github.workspace }}/Build${{ matrix.bits }}/${{ matrix.type }}/CryMP-Client${{ matrix.bits }}
 
     steps:
@@ -34,8 +33,14 @@ jobs:
         $env:PATH = $ninja + ';' + $env:PATH
         'PATH=' + $env:PATH >> $env:GITHUB_ENV
 
-    - name: Configure CMake
-      run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.type }}
+    - name: Configure
+      run: |
+        $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+        $vspath = & $vswhere -latest -property installationPath
+        Import-Module (Join-Path $vspath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
+        $arch = if (${{ matrix.bits }} -eq 32) { 'x86' } else { 'amd64' }
+        Enter-VsDevShell -VsInstallPath $vspath -SkipAutomaticLocation -Arch $arch
+        cmake -S . -B ${{ env.BUILD_DIR }} -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
 
     - name: Build
       run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }}
