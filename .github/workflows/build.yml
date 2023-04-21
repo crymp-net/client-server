@@ -28,9 +28,13 @@ jobs:
         $release
         $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
         $asset
-        Invoke-WebRequest $asset.browser_download_url -OutFile 'C:\ninja-win.zip'
-        Expand-Archive 'ninja-win.zip' -DestinationPath 'C:\ninja-win'
-        ('PATH=C:\ninja-win;' + $env:PATH) >> $env:GITHUB_ENV
+        $ninja = Join-Path $env:BUILD_DIR 'ninja-win'
+        $ninja
+        Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja + '.zip')
+        Expand-Archive ($ninja + '.zip') -DestinationPath $ninja
+        $env:PATH = $ninja + ';' + $env:PATH
+        $env:PATH
+        'PATH=' + $env:PATH >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: cmake -A ${{ env.BUILD_PLATFORM }} -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.type }}
