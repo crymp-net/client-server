@@ -16,7 +16,6 @@ jobs:
 
     env:
       BUILD_DIR: ${{ github.workspace }}\Build${{ matrix.bits }}
-      RESULT: ${{ github.workspace }}\Build${{ matrix.bits }}\${{ matrix.type }}\CryMP-Client${{ matrix.bits }}
 
     steps:
     - uses: actions/checkout@v3
@@ -27,7 +26,7 @@ jobs:
         $release
         $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
         $ninja_path = Join-Path $env:BUILD_DIR 'ninja-win'
-        New-Item $ninja_path -ItemType Directory
+        New-Item $ninja_path -ItemType Directory | Out-Null
         Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja_path + '.zip')
         Expand-Archive ($ninja_path + '.zip') -DestinationPath $ninja_path
         'NINJA_PATH=' + $ninja_path >> $env:GITHUB_ENV
@@ -44,15 +43,17 @@ jobs:
         cmake --build $env:BUILD_DIR
 
     - name: Hash
-      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $env:GITHUB_ENV
+      run: |
+        $result = Get-FileHash -Algorithm SHA256 -Path ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.exe
+        'EXE_HASH=' + result.Hash.ToLower() >> $env:GITHUB_ENV
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: CryMP-Client${{ matrix.bits }}-${{ env.EXE_HASH }}
         path: |
-          ${{ env.RESULT }}.exe
-          ${{ env.RESULT }}.pdb
+          ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.exe
+          ${{ env.BUILD_DIR }}\CryMP-Client${{ matrix.bits }}.pdb
 
   notify_master:
     if: github.ref == 'refs/heads/master'
