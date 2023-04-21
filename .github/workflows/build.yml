@@ -15,38 +15,36 @@ jobs:
         bits: [ 32, 64 ]
 
     env:
-      BUILD_DIR: ${{ github.workspace }}/Build${{ matrix.bits }}
-      RESULT: ${{ github.workspace }}/Build${{ matrix.bits }}/${{ matrix.type }}/CryMP-Client${{ matrix.bits }}
+      BUILD_DIR: ${{ github.workspace }}\Build${{ matrix.bits }}
+      RESULT: ${{ github.workspace }}\Build${{ matrix.bits }}\${{ matrix.type }}\CryMP-Client${{ matrix.bits }}
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Get Ninja
       run: |
-        Set-PSDebug -Trace 2
         $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+        $release
         $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
-        $ninja = Join-Path $env:BUILD_DIR 'ninja-win'
-        New-Item $ninja -ItemType Directory
-        Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja + '.zip')
-        Expand-Archive ($ninja + '.zip') -DestinationPath $ninja
-        $env:PATH = $ninja + ';' + $env:PATH
-        'PATH=' + $env:PATH >> $env:GITHUB_ENV
+        $ninja_path = Join-Path $env:BUILD_DIR 'ninja-win'
+        New-Item $ninja_path -ItemType Directory
+        Invoke-WebRequest $asset.browser_download_url -OutFile ($ninja_path + '.zip')
+        Expand-Archive ($ninja_path + '.zip') -DestinationPath $ninja_path
+        'NINJA_PATH=' + $ninja_path >> $env:GITHUB_ENV
 
-    - name: Configure
+    - name: Build
       run: |
         $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
         $vspath = & $vswhere -latest -property installationPath
         Import-Module (Join-Path $vspath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
         $arch = if (${{ matrix.bits }} -eq 32) { 'x86' } else { 'amd64' }
         Enter-VsDevShell -VsInstallPath $vspath -SkipAutomaticLocation -Arch $arch
-        cmake -S . -B ${{ env.BUILD_DIR }} -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
-
-    - name: Build
-      run: cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.type }}
+        $env:PATH = $env:NINJA_PATH + ';' + $env:PATH
+        cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ matrix.type }}
+        cmake --build $env:BUILD_DIR
 
     - name: Hash
-      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $Env:GITHUB_ENV
+      run: ('EXE_HASH=' + (Get-FileHash -Algorithm SHA256 ${{ env.RESULT }}.exe).Hash.ToLower()) >> $env:GITHUB_ENV
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
