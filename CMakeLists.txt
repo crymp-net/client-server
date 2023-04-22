@@ -38,6 +38,16 @@ endif()
 
 ################################################################################
 
+set(FT_DISABLE_ZLIB ON CACHE BOOL "Disable zlib")
+set(FT_DISABLE_BZIP2 TRUE CACHE BOOL "Disable bzip2")
+set(FT_DISABLE_PNG TRUE CACHE BOOL "Disable libpng")
+set(FT_DISABLE_HARFBUZZ TRUE CACHE BOOL "Disable HarfBuzz")
+set(FT_DISABLE_BROTLI TRUE CACHE BOOL "Disable Brotli")
+
+add_subdirectory(ThirdParty/FreeType)
+
+################################################################################
+
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
@@ -213,6 +223,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CrySystem/IValidator.h
 	Code/CryCommon/CrySystem/IXml.h
 	Code/CryCommon/CrySystem/TimeValue.h
+	Code/CryFont/CryFont.cpp
+	Code/CryFont/CryFont.h
+	Code/CryFont/Font.cpp
+	Code/CryFont/Font.h
 	Code/CryGame/Actors/Actor.cpp
 	Code/CryGame/Actors/Actor.h
 	Code/CryGame/Actors/Alien/Alien.cpp
@@ -761,7 +775,7 @@ target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
 
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp freetype)
 
 # prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
 target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)
