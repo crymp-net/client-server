@@ -26,3 +26,5 @@ jobs:
     uses: crymp-net/client-server/.github/workflows/notify.yml@master
     with:
       context: dev
+    secrets:
+      key: ${{ secrets.MASTER_NOTIFY_KEY }}

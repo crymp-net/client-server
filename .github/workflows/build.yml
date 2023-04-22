@@ -79,4 +79,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: CryMP-Client${{ inputs.bits }}-${{ steps.build.outputs.hash }}
-          path: ${{ env.BUILD_DIR }}/*.(exe|pdb)
+          path: |
+            ${{ env.BUILD_DIR }}\*.exe
+            ${{ env.BUILD_DIR }}\*.pdb

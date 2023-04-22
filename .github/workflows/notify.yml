@@ -10,6 +10,9 @@ on:
       context:
         required: true
         type: string
+    secrets:
+      key:
+        required: true
 
 jobs:
   crymp:
@@ -17,10 +20,10 @@ jobs:
     steps:
       - name: Notify CryMP master server
         env:
-          SECRET: ${{ secrets.MASTER_NOTIFY_SECRET }}
+          KEY: ${{ secrets.key }}
         run: |
           context='${{ inputs.context }}'
           timestamp=$(date +%s)
-          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$SECRET" | sed 's/^.* //')
-          curl --silent --show-error --request POST \
+          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$KEY" | sed 's/^.* //')
+          curl --silent --show-error --fail-with-body --request POST \
             "https://crymp.nullptr.one/api/release?context=$context&time=$timestamp&signature=$signature"
