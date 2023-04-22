@@ -44,7 +44,7 @@ jobs:
           New-Item $env:BUILD_DIR\ninja -ItemType Directory | Out-Null
           Invoke-WebRequest $asset.browser_download_url -OutFile $env:BUILD_DIR\ninja.zip
           Expand-Archive $env:BUILD_DIR\ninja.zip -DestinationPath $env:BUILD_DIR\ninja
-          'NINJA_DIR=' + $env:BUILD_DIR\ninja >> $env:GITHUB_ENV
+          "NINJA_DIR=$env:BUILD_DIR\ninja" >> $env:GITHUB_ENV
 
       - name: Build
         id: build
