@@ -19,11 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify CryMP master server
-        env:
-          KEY: ${{ secrets.key }}
         run: |
           context='${{ inputs.context }}'
           timestamp=$(date +%s)
-          signature=$(printf %s "$timestamp" | openssl sha256 -hmac "$KEY" | sed 's/^.* //')
+          signature=$(printf %s "$timestamp" | openssl sha256 -hmac '${{ secrets.key }}' | sed 's/^.* //')
           curl --silent --show-error --fail-with-body --request POST \
             "https://crymp.nullptr.one/api/release?context=$context&time=$timestamp&signature=$signature"
