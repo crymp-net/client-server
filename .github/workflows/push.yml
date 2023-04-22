@@ -13,8 +13,8 @@ jobs:
   build:
     strategy:
       matrix:
-        type: [ RelWithDebInfo ]
         bits: [ 32, 64 ]
+        type: [ RelWithDebInfo ]
     uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
       bits: ${{ matrix.bits }}

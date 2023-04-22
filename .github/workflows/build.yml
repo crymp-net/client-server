@@ -20,10 +20,10 @@ on:
     outputs:
       hash:
         description: "Hash of the build"
-        value: ${{ jobs.build_windows_msvc.outputs.hash }}
+        value: ${{ jobs.windows_msvc.outputs.hash }}
 
 jobs:
-  build_windows_msvc:
+  windows_msvc:
     runs-on: windows-latest
 
     env:
@@ -58,7 +58,7 @@ jobs:
           $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
           cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
-          exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
+          $exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
           'hash=' + (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower() >> $env:GITHUB_OUTPUT
 
       - name: Sign
