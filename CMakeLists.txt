@@ -15,7 +15,10 @@ if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
-add_compile_options(/ZI)
+if(MSVC_IDE)
+	# enable Edit and Continue
+	add_compile_options(/ZI)
+endif()
 
 ################################################################################
 
