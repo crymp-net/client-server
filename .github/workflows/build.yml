@@ -57,7 +57,7 @@ jobs:
           $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
           cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
-          $exe_path = $env:BUILD_DIR\CryMP-Client${{ inputs.bits }}.exe
+          $exe_path = "$env:BUILD_DIR\CryMP-Client${{ inputs.bits }}.exe"
           'hash=' + (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower() >> $env:GITHUB_OUTPUT
 
       - name: Sign
