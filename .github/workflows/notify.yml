@@ -11,6 +11,14 @@ on:
         description: "Either release or dev"
         required: true
         type: string
+      artifact_32:
+        description: "Name of 32-bit build artifact"
+        required: true
+        type: string
+      artifact_64:
+        description: "Name of 64-bit build artifact"
+        required: true
+        type: string
     secrets:
       key:
         description: "Notification API key"
@@ -20,10 +28,21 @@ jobs:
   crymp:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for artifacts
+        timeout-minutes: 2
+        run: |
+          while ! curl --silent --show-error \
+              --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              'https://api.github.com/repos/crymp-net/client-server/actions/artifacts' \
+            | jq -e '(.artifacts[] | select(.name == "${{ inputs.artifact_32 }}"))
+                 and (.artifacts[] | select(.name == "${{ inputs.artifact_64 }}"))'
+          do
+            sleep 2
+          done
+
       - name: Notify CryMP master server
         run: |
-          context='${{ inputs.context }}'
           timestamp=$(date +%s)
           signature=$(printf %s "$timestamp" | openssl sha256 -hmac '${{ secrets.key }}' | sed 's/^.* //')
           curl --silent --show-error --fail-with-body --request POST \
-            "https://crymp.nullptr.one/api/release?context=$context&time=$timestamp&signature=$signature"
+            "https://crymp.nullptr.one/api/release?context=${{ inputs.context }}&time=$timestamp&signature=$signature"

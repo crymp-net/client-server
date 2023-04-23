@@ -16,27 +16,24 @@ on:
         required: true
         type: string
     secrets:
-      sign-cert:
+      sign_cert:
         description: "Base64-encoded PFX file"
         required: false
-      sign-pass:
+      sign_pass:
         description: "Password for the PFX file"
         required: false
     outputs:
-      hash:
-        description: "Hash of the build"
-        value: ${{ jobs.windows_msvc.outputs.hash }}
+      artifact_name:
+        description: "Name of the resulting artifact"
+        value: ${{ jobs.windows_msvc.outputs.artifact_name }}
 
 jobs:
   windows_msvc:
     runs-on: windows-latest
-
     env:
       BUILD_DIR: ${{ github.workspace }}\Build${{ inputs.bits }}
-
     outputs:
-      hash: ${{ steps.build.outputs.hash }}
-
+      artifact_name: ${{ steps.build.outputs.artifact_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -46,40 +43,43 @@ jobs:
           $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
           $release
           $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
-          New-Item $env:BUILD_DIR\ninja -ItemType Directory | Out-Null
-          Invoke-WebRequest $asset.browser_download_url -OutFile $env:BUILD_DIR\ninja.zip
-          Expand-Archive $env:BUILD_DIR\ninja.zip -DestinationPath $env:BUILD_DIR\ninja
-          "NINJA_DIR=$env:BUILD_DIR\ninja" >> $env:GITHUB_ENV
+          $ninja_dir = Join-Path $env:BUILD_DIR 'ninja'
+          $ninja_zip = Join-Path $env:BUILD_DIR 'ninja.zip'
+          New-Item $ninja_dir -ItemType Directory | Out-Null
+          Invoke-WebRequest $asset.browser_download_url -OutFile $ninja_zip
+          Expand-Archive $ninja_zip -DestinationPath $ninja_dir
+          'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
 
       - name: Build
         id: build
         run: |
-          $vs_where = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
-          $vs_path = & $vs_where -latest -property installationPath
-          Import-Module $vs_path\Common7\Tools\Microsoft.VisualStudio.DevShell.dll
+          $vs_path = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' `
+            -latest -property installationPath
+          Import-Module (Join-Path $vs_path 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
           $arch = if (${{ inputs.bits }} -eq 32) { 'x86' } else { 'amd64' }
           Enter-VsDevShell -VsInstallPath $vs_path -SkipAutomaticLocation -Arch $arch
           $env:PATH = $env:NINJA_DIR + ';' + $env:PATH
           cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
-          $exe_path = "$env:BUILD_DIR\CryMP-Client${{ inputs.bits }}.exe"
-          'hash=' + (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower() >> $env:GITHUB_OUTPUT
+          $exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
+          $exe_hash = (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower()
+          'artifact_name=CryMP-Client${{ inputs.bits }}-' + $exe_hash >> $env:GITHUB_OUTPUT
 
       - name: Sign
-        if: secrets.sign-cert != ''
+        if: secrets.sign_cert != ''
         run: |
-          Set-Content -Path bundle.txt -Value '${{ secrets.sign-cert }}'
+          Set-Content -Path bundle.txt -Value '${{ secrets.sign_cert }}'
           certutil -decode bundle.txt bundle.pfx
-          $signtool = 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe'
-          & $signtool sign /fd SHA256 /f bundle.pfx /p '${{ secrets.sign-pass }}' `
-            /tr "http://timestamp.digicert.com" /td SHA256 `
-            (Get-Item $env:BUILD_DIR\*.exe).FullName
+          & 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe' `
+            sign /fd SHA256 /f bundle.pfx /p '${{ secrets.sign_pass }}' `
+            /tr 'http://timestamp.digicert.com' /td SHA256 `
+            (Get-Item (Join-Path $env:BUILD_DIR '*.exe').FullName
           Remove-Item bundle.*
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          name: CryMP-Client${{ inputs.bits }}-${{ steps.build.outputs.hash }}
+          name: ${{ steps.build.outputs.artifact_name }}
           path: |
             ${{ env.BUILD_DIR }}\*.exe
             ${{ env.BUILD_DIR }}\*.pdb

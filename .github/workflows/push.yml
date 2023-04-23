@@ -10,21 +10,27 @@ on:
       - '**'
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        bits: [ 32, 64 ]
-        type: [ RelWithDebInfo ]
+  build_32:
     uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
-      bits: ${{ matrix.bits }}
-      type: ${{ matrix.type }}
+      bits: 32
+      type: RelWithDebInfo
+
+  build_64:
+    uses: crymp-net/client-server/.github/workflows/build.yml@master
+    with:
+      bits: 64
+      type: RelWithDebInfo
 
   notify:
     if: github.ref == 'refs/heads/master'
-    needs: build
+    needs:
+      - build_32
+      - build_64
     uses: crymp-net/client-server/.github/workflows/notify.yml@master
     with:
       context: dev
+      artifact_32: ${{ needs.build_32.outputs.artifact_name }}
+      artifact_64: ${{ needs.build_64.outputs.artifact_name }}
     secrets:
       key: ${{ secrets.MASTER_NOTIFY_KEY }}
