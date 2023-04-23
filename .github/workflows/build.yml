@@ -8,15 +8,20 @@ on:
   workflow_call:
     inputs:
       bits:
+        description: "Either 32 or 64"
         required: true
         type: string
       type:
+        description: "CMake build type"
         required: true
         type: string
-      sign:
+    secrets:
+      sign-cert:
+        description: "Base64-encoded PFX file"
         required: false
-        default: false
-        type: boolean
+      sign-pass:
+        description: "Password for the PFX file"
+        required: false
     outputs:
       hash:
         description: "Hash of the build"
@@ -61,15 +66,12 @@ jobs:
           'hash=' + (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower() >> $env:GITHUB_OUTPUT
 
       - name: Sign
-        if: ${{ inputs.sign }}
-        env:
-          CODE_SIGNING_PFX: ${{ secrets.CODE_SIGNING_PFX }}
-          CODE_SIGNING_PFX_PASSWORD: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
+        if: secrets.sign-cert != ''
         run: |
-          Set-Content -Path bundle.txt -Value $env:CODE_SIGNING_PFX
+          Set-Content -Path bundle.txt -Value '${{ secrets.sign-cert }}'
           certutil -decode bundle.txt bundle.pfx
           $signtool = 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe'
-          & $signtool sign /fd SHA256 /f bundle.pfx /p "$env:CODE_SIGNING_PFX_PASSWORD" `
+          & $signtool sign /fd SHA256 /f bundle.pfx /p '${{ secrets.sign-pass }}' `
             /tr "http://timestamp.digicert.com" /td SHA256 `
             (Get-Item $env:BUILD_DIR\*.exe).FullName
           Remove-Item bundle.*

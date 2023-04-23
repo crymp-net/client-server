@@ -8,10 +8,12 @@ on:
   workflow_call:
     inputs:
       context:
+        description: "Either release or dev"
         required: true
         type: string
     secrets:
       key:
+        description: "Notification API key"
         required: true
 
 jobs:

@@ -15,14 +15,16 @@ jobs:
     with:
       bits: 32
       type: Release
-      sign: true
+      sign-cert: ${{ secrets.CODE_SIGNING_PFX }}
+      sign-pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
   build_64:
     uses: crymp-net/client-server/.github/workflows/build.yml@master
     with:
       bits: 32
       type: Release
-      sign: true
+      sign-cert: ${{ secrets.CODE_SIGNING_PFX }}
+      sign-pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
   release:
     runs-on: ubuntu-latest
