@@ -15,6 +15,11 @@ on:
         description: "CMake build type"
         required: true
         type: string
+      sign:
+        description: "Code signing"
+        required: false
+        default: false
+        type: boolean
     secrets:
       sign_cert:
         description: "Base64-encoded PFX file"
@@ -66,7 +71,7 @@ jobs:
           'artifact_name=CryMP-Client${{ inputs.bits }}-' + $exe_hash >> $env:GITHUB_OUTPUT
 
       - name: Sign
-        if: secrets.sign_cert != ''
+        if: inputs.sign
         run: |
           Set-Content -Path bundle.txt -Value '${{ secrets.sign_cert }}'
           certutil -decode bundle.txt bundle.pfx

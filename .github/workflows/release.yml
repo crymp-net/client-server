@@ -15,6 +15,7 @@ jobs:
     with:
       bits: 32
       type: Release
+      sign: true
       sign_cert: ${{ secrets.CODE_SIGNING_PFX }}
       sign_pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
@@ -23,6 +24,7 @@ jobs:
     with:
       bits: 64
       type: Release
+      sign: true
       sign_cert: ${{ secrets.CODE_SIGNING_PFX }}
       sign_pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
