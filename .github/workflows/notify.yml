@@ -44,4 +44,5 @@ jobs:
           time=$(date +%s)
           signature=$(printf %s "$time" | openssl sha256 -hmac '${{ secrets.MASTER_NOTIFY_KEY }}' | sed 's/^.* //')
           curl --silent --show-error --fail-with-body --request POST \
-            "https://crymp.nullptr.one/api/release?context=${{ inputs.context }}&time=$time&signature=$signature"
+            "https://crymp.nullptr.one/api/release?context=${{ inputs.context }}&time=$time&signature=$signature" \
+          | jq .
