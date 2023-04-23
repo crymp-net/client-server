@@ -87,10 +87,14 @@ jobs:
       - build_32
       - build_64
       - release
-    uses: crymp-net/client-server/.github/workflows/notify.yml@master
-    with:
-      context: release
-      artifact_32: ${{ needs.build_32.outputs.artifact_name }}
-      artifact_64: ${{ needs.build_64.outputs.artifact_name }}
-    secrets:
-      key: ${{ secrets.MASTER_NOTIFY_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch notify workflow
+        run: |
+          curl --silent --show-error --fail-with-body --request POST \
+            --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            --url 'https://api.github.com/repos/crymp-net/client-server/actions/workflows/notify.yml/dispatches' \
+            --data '{"ref":"master","inputs":{"context":"release",
+              "build_32":"${{ needs.build_32.outputs.artifact_name }}",
+              "build_64":"${{ needs.build_64.outputs.artifact_name }}",
+              }}'

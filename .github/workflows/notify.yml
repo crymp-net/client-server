@@ -1,11 +1,11 @@
 ################################################################################
-# Reusable workflow for notifying the CryMP master server about new builds
+# Dispatchable workflow to notify the CryMP master server about new builds
 ################################################################################
 
 name: Notify
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       context:
         description: "Either release or dev"
@@ -19,10 +19,6 @@ on:
         description: "Name of 64-bit build artifact"
         required: true
         type: string
-    secrets:
-      key:
-        description: "Notification API key"
-        required: true
 
 jobs:
   crymp:
@@ -42,7 +38,7 @@ jobs:
 
       - name: Notify CryMP master server
         run: |
-          timestamp=$(date +%s)
-          signature=$(printf %s "$timestamp" | openssl sha256 -hmac '${{ secrets.key }}' | sed 's/^.* //')
+          time=$(date +%s)
+          signature=$(printf %s "$time" | openssl sha256 -hmac '${{ secrets.MASTER_NOTIFY_KEY }}' | sed 's/^.* //')
           curl --silent --show-error --fail-with-body --request POST \
-            "https://crymp.nullptr.one/api/release?context=${{ inputs.context }}&time=$timestamp&signature=$signature"
+            "https://crymp.nullptr.one/api/release?context=${{ inputs.context }}&time=$time&signature=$signature"
