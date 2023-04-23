@@ -8,15 +8,18 @@ on:
   workflow_dispatch:
     inputs:
       context:
-        description: "Either release or dev"
+        description: Build type
         required: true
-        type: string
+        type: choice
+        options:
+          - dev
+          - release
       artifact_32:
-        description: "Name of 32-bit build artifact"
+        description: Name of 32-bit build artifact
         required: true
         type: string
       artifact_64:
-        description: "Name of 64-bit build artifact"
+        description: Name of 64-bit build artifact
         required: true
         type: string
 
@@ -28,7 +31,7 @@ jobs:
         timeout-minutes: 2
         run: |
           while ! curl --silent --show-error \
-              --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
               'https://api.github.com/repos/crymp-net/client-server/actions/artifacts' \
             | jq -e '(.artifacts[] | select(.name == "${{ inputs.artifact_32 }}"))
                  and (.artifacts[] | select(.name == "${{ inputs.artifact_64 }}"))'

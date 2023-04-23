@@ -92,9 +92,8 @@ jobs:
       - name: Dispatch notify workflow
         run: |
           curl --silent --show-error --fail-with-body --request POST \
-            --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --url 'https://api.github.com/repos/crymp-net/client-server/actions/workflows/notify.yml/dispatches' \
             --data '{"ref":"master","inputs":{"context":"release",
               "build_32":"${{ needs.build_32.outputs.artifact_name }}",
-              "build_64":"${{ needs.build_64.outputs.artifact_name }}",
-              }}'
+              "build_64":"${{ needs.build_64.outputs.artifact_name }}"}}'
