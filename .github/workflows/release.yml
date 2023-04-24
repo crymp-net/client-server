@@ -82,14 +82,13 @@ jobs:
           asset_name: crymp-client-${{ github.ref_name }}-build.zip
           asset_content_type: application/zip
 
-      - name: Dispatch notify workflow
-        run: |
-          curl --silent --show-error --fail-with-body --request POST \
-            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data '{"ref":"master","inputs":{
-              "context":"release",
-              "artifact_32":"${{ needs.build_32.outputs.artifact_name }}",
-              "artifact_64":"${{ needs.build_64.outputs.artifact_name }}"
-              }}' \
-            'https://api.github.com/repos/crymp-net/client-server/actions/workflows/notify.yml/dispatches'
+  notify:
+    needs:
+      - build_32
+      - build_64
+      - release
+    uses: crymp-net/client-server/.github/workflows/notify-dispatch.yml@master
+    with:
+      context: release
+      artifact_32: needs.build_32.outputs.artifact_name
+      artifact_64: needs.build_64.outputs.artifact_name
