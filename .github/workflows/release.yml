@@ -90,5 +90,5 @@ jobs:
     uses: crymp-net/client-server/.github/workflows/notify-dispatch.yml@master
     with:
       context: release
-      artifact_32: needs.build_32.outputs.artifact_name
-      artifact_64: needs.build_64.outputs.artifact_name
+      artifact_32: ${{ needs.build_32.outputs.artifact_name }}
+      artifact_64: ${{ needs.build_64.outputs.artifact_name }}
