@@ -4619,7 +4619,7 @@ void CHUD::GetMemoryStatistics(ICrySizer* s)
 
 	CHILD_STATISTICS(m_pHUDRadar);
 	CHILD_STATISTICS(m_pHUDScore);
-	CHILD_STATISTICS(m_pHUDTextChat);
+	//CHILD_STATISTICS(m_pHUDTextChat);
 	CHILD_STATISTICS(m_pHUDObituary);
 	CHILD_STATISTICS(m_pHUDTextArea);
 	CHILD_STATISTICS(m_pHUDTweakMenu);

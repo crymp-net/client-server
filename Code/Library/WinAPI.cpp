@@ -902,3 +902,40 @@ int WinAPI::HTTPRequest(
 
 	return statusCode;
 }
+
+///////////////
+// Clipboard //
+///////////////
+
+std::string WinAPI::GetClipboardText(std::size_t maxLength)
+{
+	if (!OpenClipboard(nullptr))
+	{
+		throw StringTools::SysErrorFormat("OpenClipboard");
+	}
+
+	struct Closer { ~Closer() { CloseClipboard(); } } closer;
+
+	if (!IsClipboardFormatAvailable(CF_TEXT))
+	{
+		return {};
+	}
+
+	HANDLE dataHandle = GetClipboardData(CF_TEXT);
+	if (!dataHandle)
+	{
+		throw StringTools::SysErrorFormat("GetClipboardData");
+	}
+
+	const char* data = static_cast<char*>(GlobalLock(dataHandle));
+	if (!data)
+	{
+		throw StringTools::SysErrorFormat("GlobalLock");
+	}
+
+	struct Unlocker { HANDLE handle; ~Unlocker() { GlobalUnlock(this->handle); } } unlocker{ dataHandle };
+
+	const std::size_t dataLength = std::strlen(data);
+
+	return { data, (dataLength <= maxLength) ? dataLength : maxLength };
+}
