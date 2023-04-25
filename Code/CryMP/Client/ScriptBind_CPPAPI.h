@@ -30,6 +30,8 @@ public:
 	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
 	int SetOpacity(IFunctionHandler* pH, ScriptHandle entity, float fAmount);
 	int GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity);
+	int GetLP(IFunctionHandler* pH);
+	int GetNumVars(IFunctionHandler* pH);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization

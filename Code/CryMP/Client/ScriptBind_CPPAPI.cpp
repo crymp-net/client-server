@@ -55,6 +55,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
 	SCRIPT_REG_TEMPLFUNC(SetOpacity, "entityId, fAmount");
 	SCRIPT_REG_TEMPLFUNC(GetLastSeenTime, "entityId");
+	SCRIPT_REG_FUNC(GetLP);
+	SCRIPT_REG_FUNC(GetNumVars);
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -422,6 +424,26 @@ int ScriptBind_CPPAPI::GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity
 		return pH->EndFunction(-1);
 
 	return pH->EndFunction(pRenderProxy->GetLastSeenTime());
+}
+
+int ScriptBind_CPPAPI::GetLP(IFunctionHandler* pH)
+{
+	SmartScriptTable pks(m_pSS);
+	ICryPak::PakInfo* pPakInfo = gEnv->pCryPak->GetPakInfo();
+	size_t openPakSize = 0;
+	for (uint32 pak = 0; pak < pPakInfo->numOpenPaks; pak++)
+	{
+		const auto &c = pPakInfo->arrPaks[pak];
+		std::string path = StringTools::ToLower(c.szFilePath);
+		pks->SetValue(path.c_str(), static_cast<int>(c.nUsedMem));
+	}
+	gEnv->pCryPak->FreePakInfo(pPakInfo);
+	return pH->EndFunction(pks);
+}
+
+int ScriptBind_CPPAPI::GetNumVars(IFunctionHandler* pH)
+{
+	return pH->EndFunction(gEnv->pConsole->GetNumVars());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
