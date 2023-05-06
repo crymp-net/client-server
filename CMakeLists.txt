@@ -560,6 +560,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Voting.h
 	Code/CryMP/Client/Client.cpp
 	Code/CryMP/Client/Client.h
+	Code/CryMP/Client/DrawTools.cpp
+	Code/CryMP/Client/DrawTools.h
 	Code/CryMP/Client/EngineCache.cpp
 	Code/CryMP/Client/EngineCache.h
 	Code/CryMP/Client/FileCache.cpp

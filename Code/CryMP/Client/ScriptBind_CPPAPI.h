@@ -44,4 +44,14 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 	int VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool enable);
+
+	////////////////////////////////////////////////////////////////////////////////
+	// DrawTools
+	////////////////////////////////////////////////////////////////////////////////
+
+	int DrawText(IFunctionHandler* pH, float posX, float posY, float xscale, float yscale, float color1, float color2, float color3, float color4, const char* text);
+	int DrawImage(IFunctionHandler* pH, float posX, float posY, float width, float height, const char* texturePath);
+	int DrawColorBox(IFunctionHandler* pH, float posX, float posY, float width, float height, float color1, float color2, float color3, float opacity);
+	int RemoveTextOrImageById(IFunctionHandler* pH, int id);
+	int RemoveTextOrImageAll(IFunctionHandler* pH);
 };
