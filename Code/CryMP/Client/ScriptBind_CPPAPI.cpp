@@ -14,6 +14,7 @@
 #include "Client.h"
 #include "ScriptCommands.h"
 #include "ScriptCallbacks.h"
+#include "DrawTools.h"
 #include "CryGame/GameActions.h"
 
 ScriptBind_CPPAPI::ScriptBind_CPPAPI()
@@ -64,6 +65,13 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(AddLocalizedLabel, "name, params");
 
 	SCRIPT_REG_TEMPLFUNC(VehicleNoSeatChangeAndExit, "enable");
+
+	// DrawTools
+	SCRIPT_REG_TEMPLFUNC(DrawText, "posX, posY, xscale, yscale, color1, color2, color3, color4, text");
+	SCRIPT_REG_TEMPLFUNC(DrawImage, "posX, posY, width, height, texturePath");
+	SCRIPT_REG_TEMPLFUNC(DrawColorBox, "posX, posY, width, height, color1, color2, color3, opacity");
+	SCRIPT_REG_TEMPLFUNC(RemoveTextById, "");
+	SCRIPT_REG_FUNC(RemoveTextAll);
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -537,5 +545,87 @@ int ScriptBind_CPPAPI::VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool ena
 {
 	g_pGameActions->FilterVehicleNoSeatChangeAndExit()->Enable(enable);
 
+	return pH->EndFunction();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DrawTools
+////////////////////////////////////////////////////////////////////////////////
+int ScriptBind_CPPAPI::DrawText(IFunctionHandler* pH, float posX, float posY, float xscale, float yscale, float color1, float color2, float color3, float color4, const char* text)
+{
+	int replace = 0;
+	if (pH->GetParamCount() > 9)
+	{
+		pH->GetParam(10, replace);
+	}
+
+	DrawTools::Text m;
+	m.posX = posX;
+	m.posY = posY;
+	m.text = text;
+	m.xscale = xscale;
+	m.yscale = yscale;
+	m.color[0] = color1;
+	m.color[1] = color2;
+	m.color[2] = color3;
+	m.color[3] = color4;
+
+	if (replace)
+	{
+		m.id = replace;
+	}
+
+	const int id = gClient->GetDrawTools()->Add(m);
+
+	return pH->EndFunction(id);
+}
+
+int ScriptBind_CPPAPI::DrawImage(IFunctionHandler* pH, float posX, float posY, float width, float height, const char* texturePath)
+{
+	ITexture* pTexture = gEnv->pRenderer->EF_LoadTexture(texturePath, FT_FROMIMAGE, eTT_2D);
+	if (!pTexture)
+	{
+		CryLogWarningAlways("[DrawImage] Failed to load texture '%s'", texturePath);
+		return pH->EndFunction(-1);
+	}
+
+	DrawTools::Image m;
+	m.posX = posX;
+	m.posY = posY;
+	m.width = width;
+	m.height = height;
+
+	const int id = gClient->GetDrawTools()->Add(m, pTexture->GetTextureID());
+
+	return pH->EndFunction(id);
+}
+
+int ScriptBind_CPPAPI::DrawColorBox(IFunctionHandler* pH, float posX, float posY, float width, float height, float color1, float color2, float color3, float opacity)
+{
+	DrawTools::Image m;
+	m.posX = posX;
+	m.posY = posY;
+	m.width = width;
+	m.height = height;
+	m.colorBox = true;
+	m.color[0] = color1;
+	m.color[1] = color2;
+	m.color[2] = color3;
+	m.color[3] = opacity;
+
+	const int id = gClient->GetDrawTools()->Add(m, 0);
+
+	return pH->EndFunction(id);
+}
+
+int ScriptBind_CPPAPI::RemoveTextById(IFunctionHandler* pH, int id)
+{
+	gClient->GetDrawTools()->RemoveTextById(id);
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::RemoveTextAll(IFunctionHandler* pH)
+{
+	gClient->GetDrawTools()->ClearScreen();
 	return pH->EndFunction();
 }

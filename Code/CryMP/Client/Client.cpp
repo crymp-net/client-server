@@ -28,6 +28,7 @@
 #include "EngineCache.h"
 #include "ParticleManager.h"
 #include "FlashFileHooks.h"
+#include "DrawTools.h"
 
 #include "config.h"
 
@@ -236,6 +237,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pEngineCache       = std::make_unique<EngineCache>();
 	m_pParticleManager   = std::make_unique<ParticleManager>();
 	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
+	m_pDrawTools		 = std::make_unique<DrawTools>();
 
 	// prepare Lua scripts
 	m_scriptMain         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
@@ -429,6 +431,7 @@ void Client::OnPostUpdate(float deltaTime)
 
 	m_pExecutor->OnUpdate();
 	m_pScriptCallbacks->OnUpdate(deltaTime);
+	m_pDrawTools->OnUpdate();
 }
 
 void Client::OnSaveGame(ISaveGame *pSaveGame)
@@ -456,6 +459,7 @@ void Client::OnActionEvent(const SActionEvent & event)
 
 			m_pScriptCallbacks->OnDisconnect(reason, message);
 			m_pServerPAK->OnDisconnect(reason, message);
+			m_pDrawTools->OnDisconnect(reason, message);
 
 			// prevent evil servers from changing the client version
 			SetVersionInLua();

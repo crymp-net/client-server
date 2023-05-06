@@ -27,6 +27,7 @@ class ServerPAK;
 class EngineCache;
 class ParticleManager;
 class FlashFileHooks;
+class DrawTools;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
 {
@@ -54,6 +55,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<EngineCache> m_pEngineCache;
 	std::unique_ptr<ParticleManager> m_pParticleManager;
 	std::unique_ptr<FlashFileHooks> m_pFlashFileHooks;
+	std::unique_ptr<DrawTools> m_pDrawTools;
 
 	std::string m_hwid;
 	std::string m_locale;
@@ -206,6 +208,11 @@ public:
 	EngineCache* GetEngineCache()
 	{
 		return m_pEngineCache.get();
+	}
+
+	DrawTools* GetDrawTools()
+	{
+		return m_pDrawTools.get();
 	}
 
 	const std::vector<std::string> & GetMasters() const
