@@ -237,7 +237,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pEngineCache       = std::make_unique<EngineCache>();
 	m_pParticleManager   = std::make_unique<ParticleManager>();
 	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
-	m_pDrawTools		 = std::make_unique<DrawTools>();
+	m_pDrawTools         = std::make_unique<DrawTools>();
 
 	// prepare Lua scripts
 	m_scriptMain         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);

@@ -38,7 +38,7 @@ public:
 	int Add(Image image, int textureId);
 
 	void OnDisconnect(int reason, const char* message);
-	void RemoveTextById(int id);
+	void RemoveTextOrImageById(int id);
 	void ClearScreen();
 
 private:

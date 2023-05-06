@@ -70,8 +70,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(DrawText, "posX, posY, xscale, yscale, color1, color2, color3, color4, text");
 	SCRIPT_REG_TEMPLFUNC(DrawImage, "posX, posY, width, height, texturePath");
 	SCRIPT_REG_TEMPLFUNC(DrawColorBox, "posX, posY, width, height, color1, color2, color3, opacity");
-	SCRIPT_REG_TEMPLFUNC(RemoveTextById, "");
-	SCRIPT_REG_FUNC(RemoveTextAll);
+	SCRIPT_REG_TEMPLFUNC(RemoveTextOrImageById, "");
+	SCRIPT_REG_FUNC(RemoveTextOrImageAll);
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -618,13 +618,13 @@ int ScriptBind_CPPAPI::DrawColorBox(IFunctionHandler* pH, float posX, float posY
 	return pH->EndFunction(id);
 }
 
-int ScriptBind_CPPAPI::RemoveTextById(IFunctionHandler* pH, int id)
+int ScriptBind_CPPAPI::RemoveTextOrImageById(IFunctionHandler* pH, int id)
 {
-	gClient->GetDrawTools()->RemoveTextById(id);
+	gClient->GetDrawTools()->RemoveTextOrImageById(id);
 	return pH->EndFunction();
 }
 
-int ScriptBind_CPPAPI::RemoveTextAll(IFunctionHandler* pH)
+int ScriptBind_CPPAPI::RemoveTextOrImageAll(IFunctionHandler* pH)
 {
 	gClient->GetDrawTools()->ClearScreen();
 	return pH->EndFunction();

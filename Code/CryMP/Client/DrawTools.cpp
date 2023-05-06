@@ -132,7 +132,7 @@ int DrawTools::Add(Image image, int textureId)
 	return m_idGenerator;
 }
 
-void DrawTools::RemoveTextById(int id)
+void DrawTools::RemoveTextOrImageById(int id)
 {
 	for (auto& image : m_ImageData)
 	{
