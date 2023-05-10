@@ -2179,6 +2179,7 @@ bool CActor::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, 
 			return true;
 
 		IEntityPhysicalProxy* pEPP = (IEntityPhysicalProxy*)GetEntity()->GetProxy(ENTITY_PROXY_PHYSICS);
+	
 		if (ser.IsWriting())
 		{
 			if (!pEPP || !pEPP->GetPhysicalEntity() || pEPP->GetPhysicalEntity()->GetType() != type)
@@ -4112,3 +4113,80 @@ void CActor::SaveNick(const std::string_view& name)
 	m_playerNameClean = Util::RemoveColorCodes(name);
 }
 
+bool CActor::IsGhostPit()
+{
+	if (IVehicle* pVehicle = GetLinkedVehicle())
+	{
+		IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId());
+		if (pSeat)
+		{
+			if (IVehicleView* pView = pSeat->GetView(pSeat->GetCurrentView()))
+				return pView->IsPassengerHidden();
+		}
+	}
+
+	return false;
+}
+
+void CActor::HideAllAttachments(int characterSlot, bool hide, bool hideShadow)
+{
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
+	if (!pCharacter)
+	{
+		return;
+	}
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+	if (pIAttachmentManager)
+	{
+		int n = pIAttachmentManager->GetAttachmentCount();
+		for (int i = 0;i < n;i++)
+		{
+			IAttachment* pAttachment = pIAttachmentManager->GetInterfaceByIndex(i);
+			if (pAttachment)
+			{
+				pAttachment->HideAttachment(hide);
+				pAttachment->HideInRecursion(hideShadow);
+				pAttachment->HideInShadow(hideShadow);
+			}
+		}
+	}
+}
+
+void CActor::HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow)
+{
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
+	if (!pCharacter)
+	{
+		return;
+	}
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+	if (pIAttachmentManager)
+	{
+		IAttachment* pAttachment = pIAttachmentManager->GetInterfaceByName(attachmentName);
+
+		if (pAttachment)
+		{
+			pAttachment->HideAttachment(hide);
+			pAttachment->HideInRecursion(hideShadow);
+			pAttachment->HideInShadow(hideShadow);
+		}
+	}
+}
+
+void CActor::DrawSlot(int nSlot, int nEnable)
+{
+	if (nEnable)
+	{
+		int flags = GetEntity()->GetSlotFlags(nSlot) | ENTITY_SLOT_RENDER;
+		if (nEnable == 2)
+			flags |= ENTITY_SLOT_RENDER_NEAREST;
+
+		GetEntity()->SetSlotFlags(nSlot, flags);
+	}
+	else
+	{
+		GetEntity()->SetSlotFlags(nSlot, GetEntity()->GetSlotFlags(nSlot) & ~(ENTITY_SLOT_RENDER | ENTITY_SLOT_RENDER_NEAREST));
+	}
+}

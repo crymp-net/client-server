@@ -1286,6 +1286,13 @@ public:
 
 	void SaveNick(const std::string_view& name);
 
+	bool IsGhostPit();
+
+	void HideAllAttachments(int characterSlot, bool hide, bool hideShadow);
+	void HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow);
+
+	void DrawSlot(int nSlot, int nEnable);
+
 	std::string GetCleanNick()
 	{
 		if (m_playerNameClean.empty())
