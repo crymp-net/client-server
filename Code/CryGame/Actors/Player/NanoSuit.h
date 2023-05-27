@@ -258,6 +258,13 @@ public:
 	void AddListener(INanoSuitListener* pListener);
 	void RemoveListener(INanoSuitListener* pListener);
 
+	void SetDynamicAnimSpeed(bool enable);
+
+	void PauseDynamicAnimSpeed(bool enable)
+	{
+		m_pauseAnimSpeedMult = enable;
+	}
+
 private:
 	void Precache();
 	void Balance(float energy);
@@ -320,6 +327,8 @@ private:
 	SSuitSound m_sounds[ESound_Suit_Last];
 
 	std::vector<INanoSuitListener*> m_listeners;
+
+	bool m_pauseAnimSpeedMult = false;
 };
 
 #endif //__NANOSUIT_H__

@@ -712,6 +712,39 @@ bool CNanoSuit::SetAllSlots(float armor, float strength, float speed)
 	return true;
 }
 
+void CNanoSuit::SetDynamicAnimSpeed(bool enable)
+{
+	ICharacterInstance* pCharacter = m_pOwner->GetEntity()->GetCharacter(0);
+	ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
+	if (pSkeletonAnim)
+	{
+		if (!enable)
+		{
+			//Weapon Animations
+			pSkeletonAnim->SetLayerUpdateMultiplier(1, 1); 
+			//Character Animations
+			pSkeletonAnim->SetLayerUpdateMultiplier(0, 1);
+
+			PauseDynamicAnimSpeed(true);
+
+			return;
+		}
+
+		if (m_pauseAnimSpeedMult)
+			return;
+
+		const float multWeapon = g_pGameCVars->mp_animationWeaponMult;
+		const float multWeaponSpeed = g_pGameCVars->mp_animationWeaponMultSpeed;
+		const float multModel = g_pGameCVars->mp_animationModelMult;
+		const float multModelSpeed = g_pGameCVars->mp_animationModelMultSpeed;
+		//Weapon Animations
+		pSkeletonAnim->SetLayerUpdateMultiplier(1, (GetMode() == NANOMODE_SPEED ? multWeaponSpeed : multWeapon)); //Speed up 3rd person weapon animation to match 1st person 
+		//Character Animations
+		pSkeletonAnim->SetLayerUpdateMultiplier(0, (GetMode() == NANOMODE_SPEED ? multModelSpeed : multModel));
+	}
+}
+
+
 bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 {
 	if (!m_active)
@@ -720,26 +753,14 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 	if (m_currentMode == mode && !forceUpdate)
 		return false;
 
-	// CryMP: control character animation speed
-	ICharacterInstance* pCharacter = m_pOwner->GetEntity()->GetCharacter(0);
-	ISkeletonAnim* pSkeletonAnim = (pCharacter != NULL) ? pCharacter->GetISkeletonAnim() : NULL;
-	if (pSkeletonAnim)
-	{
-		const float multWeapon = g_pGameCVars->mp_animationWeaponMult;
-		const float multWeaponSpeed = g_pGameCVars->mp_animationWeaponMultSpeed;
-		const float multModel = g_pGameCVars->mp_animationModelMult;
-		const float multModelSpeed = g_pGameCVars->mp_animationModelMultSpeed;
-		//Weapon Animations
-		pSkeletonAnim->SetLayerUpdateMultiplier(1, ((mode == NANOMODE_SPEED) ? multWeaponSpeed : multWeapon)); //Speed up 3rd person weapon animation to match 1st person 
-		//Character Animations
-		pSkeletonAnim->SetLayerUpdateMultiplier(0, ((mode == NANOMODE_SPEED) ? multModelSpeed : multModel));
-	}
-
 	if (!(m_featureMask & (1 << mode)) && !forceUpdate)
 		return false;
 
 	ENanoMode lastMode = m_currentMode;
 	m_currentMode = mode;
+
+	// CryMP: control character animation speed
+	SetDynamicAnimSpeed(true);
 
 	const char* effectName = "";
 	switch (mode)

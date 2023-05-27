@@ -89,6 +89,15 @@ void CShotgun::StartReload(int zoomed)
 	m_pWeapon->GetScheduler()->TimerAction(animTime, CSchedulerAction<BeginReloadLoop>::Create(BeginReloadLoop(this, zoomed)), false);
 
 	m_pWeapon->GetScheduler()->TimerAction((uint)((m_fireparams.reload_time-0.125f)*1000), CSchedulerAction<SliderBack>::Create(this), false);
+
+	// CryMP: temporary reset animation mult to avoid super fast shotgun reloading
+	if (CActor* pOwner = m_pWeapon->GetOwnerActor())
+	{
+		if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pOwner))
+		{
+			pSuit->SetDynamicAnimSpeed(false);
+		}
+	}
 }
 
 // Reload shells
@@ -210,6 +219,16 @@ void CShotgun::EndReload(int zoomed)
 		m_pWeapon->GetScheduler()->TimerAction(animTime, CSchedulerAction<ReloadEndAction>::Create(ReloadEndAction(m_pWeapon, zoomed)), false);
 	else
 		m_pWeapon->GetScheduler()->TimerAction(100, CSchedulerAction<ReloadEndAction>::Create(ReloadEndAction(m_pWeapon, zoomed)), false);
+
+	// CryMP: control character animation speed
+	if (pActor)
+	{
+		if (CNanoSuit* pSuit = CPlayer::GetNanoSuit(pActor))
+		{
+			pSuit->PauseDynamicAnimSpeed(false);
+			pSuit->SetDynamicAnimSpeed(true);
+		}
+	}
 
 }
 
