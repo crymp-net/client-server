@@ -611,6 +611,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_attachBoughtEquipment", &mp_attachBoughtEquipment, 0, VF_NOT_NET_SYNCED, "Automatically attach bought weapon attachments");
 	pConsole->Register("mp_netAimLerpFactor", &mp_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients (1-50, 0:off)");
 	pConsole->Register("mp_netAimLerpFactorCrymp", &mp_netAimLerpFactorCrymp, 42.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients when mp_crymp 1 (1-50, 0:off)");
+	pConsole->Register("mp_explosiveSilhouettes", &mp_explosiveSilhouettes, 1, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives");
 }
 
 //------------------------------------------------------------------------

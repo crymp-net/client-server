@@ -955,7 +955,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 									if (bSpectating && bEnemyExplosive)
 									{
 										//in spectator mode (team 0) we also show enemy explosives (red)
-										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), 0.9f, 0.1f, 0.1f, 1.0f, 3.0f);
+										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), 0.9f, 0.1f, 0.1f, 0.7f, -1);
 									}
 									else if ((bOwnerOfExplosive) || (explosiveTeam && playerTeam == explosiveTeam))
 									{

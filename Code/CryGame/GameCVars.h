@@ -459,6 +459,7 @@ struct SCVars
 	int			mp_attachBoughtEquipment;
 	float		mp_netAimLerpFactor;
 	float		mp_netAimLerpFactorCrymp;
+	int         mp_explosiveSilhouettes;
 
 	SCVars()
 	{

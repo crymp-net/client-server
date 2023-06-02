@@ -511,6 +511,7 @@ private:
 	void QuickMenuSnapToMode(ENanoMode mode);
 	void AutoSnap();
 	void TrackProjectiles(CPlayer* pPlayerActor);
+	bool UseSilhouetteIndicator();
 	void UpdateProjectileTracker(CGameFlashAnimation &anim, IEntity *pProjectile, uint8 &status, const Vec3 &player);
 	void Targetting(EntityId pTargetEntity, bool bStatic);
 	void UpdateVoiceChat();
