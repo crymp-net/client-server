@@ -47,10 +47,6 @@ History:
 #include "CryGame/Items/Weapons/OffHand.h"
 #include "CryGame/Actors/Player/PlayerInput.h"
 
-
-//CPlayerView::SViewStateIn CPlayerView::m_in;
-//CPlayerView::SViewStateInOut CPlayerView::m_io;
-
 CPlayerView::CPlayerView(const CPlayer& rPlayer, SViewParams& viewParams) : m_in(m_viewStateIn_private)
 {
 	ViewPreProcess(rPlayer, viewParams, m_viewStateIn_private);
@@ -85,7 +81,7 @@ void CPlayerView::ViewPreProcess(const CPlayer& rPlayer, SViewParams& viewParams
 		m_in.defaultFov = g_pGameCVars->cl_fov;
 
 		m_in.frameTime = min(gEnv->pTimer->GetFrameTime(), 0.1f);
-		viewParams.frameTime = m_in.frameTime; 
+		viewParams.frameTime = m_in.frameTime;
 
 		m_in.pCharacter = rPlayer.GetEntity()->GetCharacter(0);
 		m_in.pVehicle = rPlayer.GetLinkedVehicle();
@@ -273,7 +269,6 @@ void CPlayerView::ViewProcess(SViewParams& viewParams)
 			ViewThirdPersonOnLadder(viewParams);
 		else
 			ViewFirstPersonOnLadder(viewParams);
-		
 	}
 	else if (m_in.stats_spectatorMode == CActor::eASM_Follow)
 	{
@@ -468,76 +463,162 @@ void CPlayerView::ViewFirstThirdSharedPost(SViewParams& viewParams)
 
 }
 
-void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
+Vec3 CPlayerView::Project(Vec3 vector, Vec3 onNormal)
 {
-	if (m_in.thirdPersonYaw > 0.001f)
+	const f32 sqrMag = onNormal.Dot(onNormal);
+	const f32 dot = vector.Dot(onNormal);
+	return Vec3(onNormal.x * dot / sqrMag,
+		onNormal.y * dot / sqrMag,
+		onNormal.z * dot / sqrMag);
+}
+
+Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, const Vec3 vector, IPhysicalEntity* pPlayerPhysics, float radius, bool pushByNormal)
+{
+	int farEnough = 1;
+
+	Vec3 origin = vector;
+	Vec3 checkDir = origin - transformPos;
+
+	const auto dt = forward.Dot(checkDir);
+	if (dt < 0)
 	{
-		viewParams.rotation *= Quat::CreateRotationXYZ(Ang3(0, 0, m_in.thirdPersonYaw * gf_PI / 180.0f));
-		m_io.viewQuatFinal = viewParams.rotation;
+		checkDir *= -1;
 	}
 
-	Vec3 target(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
-	static Vec3 current(target);
+	geom_contact* pContact = nullptr;
+	primitives::sphere sphere;
+	sphere.center = origin;
+	sphere.r = radius;
+	const float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, checkDir.normalized() * farEnough,
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
 
+	if (hitDist > 0.0f && pContact)
+	{
+		origin = origin + checkDir.normalized() * hitDist;
+	}
+	else
+	{
+		origin += checkDir.normalized() * farEnough;
+	}
+
+	checkDir = origin - transformPos;
+
+	geom_contact* pSecContact = nullptr;
+	sphere.center = origin;
+	sphere.r = radius;
+	
+	Vec3 newDir = -checkDir.normalized() * checkDir.GetLength();
+	const float hitDist2 = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir,
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
+
+	if (hitDist2 > 0.0f && pSecContact)
+	{
+		return pushByNormal ? pSecContact->pt + pSecContact->n * radius : pSecContact->pt;
+	}
+	else
+	{
+		return transformPos;
+	}
+}
+
+void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
+{
 	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.entityId));
+	if (!pActor)
+		return;
 
-	CWeapon* pWeapon = pActor ? pActor->GetCurrentWeapon(false) : nullptr;
+	CPlayer* pPlayer = CPlayer::FromActor(pActor);
+	if (!pPlayer)
+		return;
+
+	IPhysicalEntity* pPlayerPhysics = pActor->GetEntity()->GetPhysics();
+	if (!pPlayerPhysics)
+		return;
+
+	Vec3 viewOffset(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
+
+	CWeapon* pWeapon = pActor->GetCurrentWeapon(false);
 	if (pWeapon)
 	{
 		if (pWeapon->IsModifyingNoTS())
 		{
 			viewParams.rotation *= Quat::CreateRotationX(-0.8f);
 
-			target.x = 0.3f;
-			target.y = -0.3f;
-			target.z = 0.6f;
+			viewOffset.x = 0.3f;
+			viewOffset.y = -0.3f;
+			viewOffset.z = 0.6f;
 		}
 	}
 
-	Interpolate(current, target, 5.0f, m_in.frameTime);
+	Vec3 offsetX = m_io.viewQuatFinal.GetColumn0() * viewOffset.x;
+	Vec3 offsetY = m_io.viewQuatFinal.GetColumn1() * viewOffset.y;
+	Vec3 offsetZ = m_io.viewQuatFinal.GetColumn2() * viewOffset.z;
 
-	// make sure we don't clip through stuff that much
-	Vec3 offsetX(0, 0, 0);
-	Vec3 offsetY(0, 0, 0);
-	Vec3 offsetZ(0, 0, 0);
-	offsetX = m_io.viewQuatFinal.GetColumn0() * current.x;
-	offsetY = m_io.viewQuatFinal.GetColumn1() * (current.y - 0.25f);
-	offsetZ = m_io.viewQuatFinal.GetColumn2() * current.z;
+	float* noLean = nullptr;
+	Vec3 origin(pActor->GetEntity()->GetWorldPos() + m_io.baseQuat * pPlayer->GetStanceViewOffset(pActor->GetStance(), noLean));
+	Vec3 transformPos = origin + offsetX + offsetY + offsetZ;
+	Vec3 occRay = transformPos - origin;
 
-	if (pActor)
+	const float thinRadius = 0.1f;
+	const float thickRadius = 0.5;
+
+	const Vec3 forward = viewParams.rotation.GetColumn1();
+
+	const Vec3 colPoint = GetCollision(transformPos, forward, origin, pPlayerPhysics, thinRadius, true);
+	const Vec3 colPointThick = GetCollision(transformPos, forward, origin, pPlayerPhysics, thickRadius, false);
+
+	const Vec3 projection = Project((colPointThick - origin), occRay.normalized());
+	const Vec3 colPointThickProjectedOnRay = projection + origin;
+	const Vec3 vecToProjected = (colPointThickProjectedOnRay - colPointThick).normalized();
+	const Vec3 colPointThickProjectedOnThinCapsule = colPointThickProjectedOnRay - vecToProjected * thinRadius;
+
+	const auto thin2ThickDist = MIN(0.15, colPointThickProjectedOnThinCapsule.GetDistance(colPointThick)); 
+	const auto thin2ThickDistNorm = thin2ThickDist / (thickRadius - thinRadius); 
+	auto currentColDist = origin.GetDistance(colPoint);
+	const auto currentColDistThick = origin.GetDistance(colPointThickProjectedOnRay);
+
+	currentColDist = LERP(currentColDistThick, currentColDist, thin2ThickDistNorm);
+
+	const auto previous = pPlayer->m_ColDistance;
+
+	const float deltaTime = gEnv->pTimer->GetFrameTime();
+	if (currentColDist < previous)
+		Interpolate(pPlayer->m_ColDistance, currentColDist, 25.0f, deltaTime);
+	else
+		Interpolate(pPlayer->m_ColDistance, currentColDist, 5.0f, deltaTime);
+
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+	if (pRenderProxy)
 	{
-		static ray_hit hit;
-		IPhysicalEntity* pSkipEntities[10];
-		int nSkip = 0;
+		pRenderProxy->SetOpacity(std::min(1.0f, pPlayer->m_ColDistance));
+	}
 
-		if (pWeapon)
+	Vec3 customOrigin = origin;
+	const EStance stance = pPlayer->GetStance();
+
+	const bool freeFall = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 1 : false;
+
+	if (!freeFall)
+	{
+		if (stance == EStance::STANCE_CROUCH || stance == EStance::STANCE_PRONE)
 		{
-			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+			customOrigin.z -= 0.6;
 		}
-
-		float oldLen = offsetY.len();
-		float oldLenX = offsetX.len();
-
-		Vec3 start = m_io.baseQuat * m_io.eyeOffsetView + viewParams.position + offsetX + offsetZ;
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(start, offsetY, ent_static | ent_terrain | ent_rigid,
-			rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
+		else
 		{
-			offsetY = hit.pt - start;
-			current.y = current.y * (hit.dist / oldLen);
-		}
-		
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(start, offsetX, ent_static | ent_terrain | ent_rigid,
-			rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
-		{
-			offsetX = hit.pt - start;
-			current.x = current.x * (hit.dist / oldLenX);
+			customOrigin.z -= 1.6;
 		}
 	}
 
-	//viewParams.position += m_io.viewQuatFinal.GetColumn0() * current.x;		// right 
-	//viewParams.position += m_io.viewQuatFinal.GetColumn1() * current.y;	// back
-	//viewParams.position += m_io.viewQuatFinal.GetColumn2() * current.z;	// up
-	viewParams.position += offsetX + offsetY + offsetZ;
+	const Vec3 customCamPos = customOrigin + offsetX + offsetY + offsetZ;
+	const Vec3 ray = customCamPos - customOrigin;
+	const float safeBuffer = 0.2f;
+	const float minDistance = 0.2f;
+	const float maxDistance = 4.0f;
+
+	pPlayer->m_ColDistance = std::max(minDistance, std::min(pPlayer->m_ColDistance, maxDistance));
+
+	viewParams.position = customOrigin + ray.normalized() * (pPlayer->m_ColDistance - safeBuffer);
 }
 
 // jump/land spring effect. Adjust the eye and weapon pos as required.
@@ -902,7 +983,7 @@ void CPlayerView::ViewVehicle(SViewParams& viewParams)
 				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
 				{
 					pView->UpdateView(viewParams, m_in.entityId);
-				
+
 					//viewParams.viewID = 2;
 				}
 			}
@@ -920,7 +1001,7 @@ void CPlayerView::ViewVehicle(SViewParams& viewParams)
 				const Vec3 forwardDir = worldTM.GetColumn1().normalized();
 				const Vec3 revdir = forwardDir * -1;
 				const Matrix33 rotation = Matrix33::CreateRotationVDir(revdir);
-				
+
 				Vec3 worldPos = worldTM.GetTranslation();
 				worldPos.z += 2.5f;
 
@@ -1158,7 +1239,7 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	//Zooming ability
 	if (CPlayer* pPlayer = CPlayer::FromIActor(gEnv->pGame->GetIGameFramework()->GetClientActor()))
 	{
-		distance += (pPlayer->GetSpectatorZoom() - 2);
+		distance += (pPlayer->GetSpectatorZoom() - 1);
 	}
 
 	Vec3 goal;
@@ -1173,6 +1254,14 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	float offset = defaultOffset;
 	if (pTarget->GetLinkedVehicle())
 		offset = 2.0f;
+	else
+	{
+		SActorStats* pStats = pTarget->GetActorStats();
+		if (pStats && pStats->inFreefall == 1)
+		{
+			offset = -1.0f;
+		}
+	}
 	goal.z += pTarget->GetEntity()->GetWorldPos().z + offset;
 
 	// store / interpolate the offset, not the world pos (reduces percieved jitter in vehicles)

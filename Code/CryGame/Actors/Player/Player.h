@@ -903,6 +903,7 @@ public:
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
+	float m_ColDistance = 2.0f;
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }
