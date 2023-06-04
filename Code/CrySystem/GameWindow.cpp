@@ -272,6 +272,8 @@ void GameWindow::OnQuit()
 {
 	MSG msg;
 
+	// the engine contains multiple window message loops
+	// but this is the only unfiltered one accepting messages from all windows
 	while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
 	{
 		TranslateMessage(&msg);

@@ -8,6 +8,7 @@
 #include "CryGame/Game.h"
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
+#include "CrySystem/GameWindow.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/StringTools.h"
@@ -325,9 +326,11 @@ void Client::UpdateLoop()
 	const bool haveFocus = true;
 	const unsigned int updateFlags = 0;
 
-	while (m_pGame->Update(haveFocus, updateFlags))
+	while (GameWindow::GetInstance().OnUpdate() && m_pGame->Update(haveFocus, updateFlags))
 	{
 	}
+
+	GameWindow::GetInstance().OnQuit();
 }
 
 void Client::HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback)
