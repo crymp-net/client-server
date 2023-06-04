@@ -43,6 +43,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # version generator requires git tags to be fetched
+      - name: Get tags
+        run: git fetch --tags
+
       - name: Get Ninja
         run: |
           $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
