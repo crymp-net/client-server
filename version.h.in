@@ -1,0 +1,10 @@
+/**
+ * @file
+ * @brief Project version.
+ * This file is processed by CMake.
+ */
+
+#pragma once
+
+#define CRYMP_CLIENT_VERSION @CRYMP_CLIENT_VERSION@
+#define CRYMP_CLIENT_VERSION_STRING "@CRYMP_CLIENT_VERSION_STRING@"

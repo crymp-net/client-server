@@ -71,6 +71,7 @@ void Client::InitMasters()
 void Client::SetVersionInLua()
 {
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT", CRYMP_CLIENT_VERSION);
+	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_STRING", CRYMP_CLIENT_VERSION_STRING);
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_BITS", CRYMP_CLIENT_BITS);
 }
 
