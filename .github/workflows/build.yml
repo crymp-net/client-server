@@ -42,10 +42,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      # version generator requires git tags to be fetched
-      - name: Get tags
-        run: git fetch --tags
+        with:
+          # for version generator
+          fetch-depth: 0
 
       - name: Get Ninja
         run: |
