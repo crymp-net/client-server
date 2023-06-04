@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 ################################################################################
 
-project(CryMP-Client VERSION 20 LANGUAGES C CXX RC)
+project(CryMP-Client LANGUAGES C CXX RC)
 
 ################################################################################
 
@@ -22,21 +22,36 @@ endif()
 
 ################################################################################
 
-# detect 64-bit compiler
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(BUILD_64BIT TRUE)
-	message(STATUS "64-bit build")
-else()
-	message(STATUS "32-bit build")
-endif()
+math(EXPR BUILD_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 
-if(BUILD_64BIT)
-	set(CRYMP_CLIENT_EXE "CryMP-Client64")
-else()
-	set(CRYMP_CLIENT_EXE "CryMP-Client32")
-endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Build bits: ${BUILD_BITS}-bit")
 
 ################################################################################
+
+find_package(Git REQUIRED)
+
+include(CMake/GenerateVersion.cmake)
+
+add_custom_target(GenerateVersion
+	${CMAKE_COMMAND}
+		-D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+		-D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+		-D PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+		-P ${PROJECT_SOURCE_DIR}/CMake/GenerateVersion.cmake
+	VERBATIM
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	BYPRODUCTS ${PROJECT_BINARY_DIR}/version.h
+)
+
+message(STATUS "Version number: ${CRYMP_CLIENT_VERSION}")
+message(STATUS "Version string: ${CRYMP_CLIENT_VERSION_STRING}")
+
+################################################################################
+
+set(CRYMP_CLIENT_EXE "CryMP-Client${BUILD_BITS}")
+
+message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
@@ -719,6 +734,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	ThirdParty/nlohmann/json_fwd.hpp
 	ThirdParty/picosha2.h
 	${PROJECT_BINARY_DIR}/config.h
+	${PROJECT_BINARY_DIR}/version.h
 )
 
 ################################################################################
@@ -752,7 +768,7 @@ set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${C
 set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD 20)
 set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-if(BUILD_64BIT)
+if(BUILD_BITS EQUAL 64)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 

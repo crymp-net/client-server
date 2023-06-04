@@ -22,8 +22,6 @@
 
 #include "config.h"
 
-#define BUILD_DATE_TIME __DATE__ " " __TIME__
-
 static IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
 {
 	CryLogAlways("$3[CryMP] Initializing Script System");
@@ -555,8 +553,8 @@ void Launcher::OnInit(ISystem* pSystem)
 	const SFileVersion& version = gEnv->pSystem->GetProductVersion();
 
 	logger.LogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
-	logger.LogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS);
-	logger.LogAlways("Compiled by " CRYMP_CLIENT_COMPILER " at " BUILD_DATE_TIME " [" CRYMP_CLIENT_BUILD_TYPE "]");
+	logger.LogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS " " CRYMP_CLIENT_BUILD_TYPE);
+	logger.LogAlways("Compiled by " CRYMP_CLIENT_COMPILER);
 	logger.LogAlways("Copyright (C) 2001-2008 Crytek GmbH");
 	logger.LogAlways("Copyright (C) 2014-2022 CryMP Network");
 	logger.LogAlways("");
