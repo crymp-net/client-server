@@ -1950,14 +1950,24 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 
 		IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(vehicleId);
 
-		if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntity()->GetId()))
+		if (IVehicleSeat* pSeat = pVehicle ? pVehicle->GetSeatForPassenger(GetEntity()->GetId()) : nullptr)
 		{
 			CALL_PLAYER_EVENT_LISTENERS(OnEnterVehicle(this, pVehicle->GetEntity()->GetClass()->GetName(), pSeat->GetSeatName(), m_stats.isThirdPerson));
 		}
 
 		// don't interpolate to vehicle camera (otherwise it intersects the vehicle)
 		if (IsClient())
+		{
 			SupressViewBlending();
+
+			//CryMP: reset opacity (just incase)
+			IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+			if (pRenderProxy)
+			{
+				pRenderProxy->SetOpacity(1.0f);
+			}
+
+		}
 	}
 	else
 	{
