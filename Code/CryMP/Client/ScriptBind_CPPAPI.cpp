@@ -72,6 +72,8 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(DrawColorBox, "posX, posY, width, height, color1, color2, color3, opacity");
 	SCRIPT_REG_TEMPLFUNC(RemoveTextOrImageById, "");
 	SCRIPT_REG_FUNC(RemoveTextOrImageAll);
+
+	SCRIPT_REG_TEMPLFUNC(GetLoadingScreenMapPicturePath, "");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -628,4 +630,70 @@ int ScriptBind_CPPAPI::RemoveTextOrImageAll(IFunctionHandler* pH)
 {
 	gClient->GetDrawTools()->ClearScreen();
 	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::GetLoadingScreenMapPicturePath(IFunctionHandler* pH, const char* level)
+{
+	ILevelInfo* pLI = gClient->GetGameFramework()->GetILevelSystem()->GetLevelInfo(level);
+	if (!pLI)
+	{
+		return pH->EndFunction();
+	}
+	string rootName = pLI->GetPath();
+
+	//now load the actual map
+	string mapName = rootName;
+	int slashPos = mapName.rfind('\\');
+	if (slashPos == -1)
+		slashPos = mapName.rfind('/');
+	mapName = mapName.substr(slashPos + 1, mapName.length() - slashPos);
+
+	string sXml = rootName;
+	sXml.append("/");
+	sXml.append(mapName);
+	sXml.append(".xml");
+	XmlNodeRef mapInfo = GetISystem()->LoadXmlFile(sXml.c_str());
+	std::vector<string> screenArray;
+
+	const char* header = NULL;
+	const char* description = NULL;
+
+	if (mapInfo == 0)
+	{
+		return pH->EndFunction();
+	}
+	else
+	{
+		//retrieve the coordinates of the map
+		for (int n = 0; n < mapInfo->getChildCount(); ++n)
+		{
+			XmlNodeRef mapNode = mapInfo->getChild(n);
+			const char* name = mapNode->getTag();
+			if (!_stricmp(name, "LoadingScreens"))
+			{
+				int attribs = mapNode->getNumAttributes();
+				const char* key;
+				const char* value;
+				for (int i = 0; i < attribs; ++i)
+				{
+					mapNode->getAttributeByIndex(i, &key, &value);
+					screenArray.push_back(value);
+				}
+			}
+		}
+	}
+
+	int size = screenArray.size();
+	if (size <= 0)
+	{
+		screenArray.push_back("loading.dds");
+		size = 1;
+	}
+
+	uint iUse = cry_rand() % size;
+	string sImg = rootName;
+	sImg.append("/");
+	sImg.append(screenArray[iUse]);
+
+	return pH->EndFunction(sImg.c_str());
 }

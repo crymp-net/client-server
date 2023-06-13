@@ -54,4 +54,5 @@ public:
 	int DrawColorBox(IFunctionHandler* pH, float posX, float posY, float width, float height, float color1, float color2, float color3, float opacity);
 	int RemoveTextOrImageById(IFunctionHandler* pH, int id);
 	int RemoveTextOrImageAll(IFunctionHandler* pH);
+	int GetLoadingScreenMapPicturePath(IFunctionHandler* pH, const char* level);
 };
