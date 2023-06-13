@@ -556,7 +556,7 @@ int ScriptBind_CPPAPI::VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool ena
 int ScriptBind_CPPAPI::DrawText(IFunctionHandler* pH, float posX, float posY, float xscale, float yscale, float color1, float color2, float color3, float color4, const char* text)
 {
 	int replace = 0;
-	if (pH->GetParamCount() > 9)
+	if (pH->GetParamType(10) == svtNumber)
 	{
 		pH->GetParam(10, replace);
 	}

@@ -57,9 +57,6 @@ void DrawTools::OnDisconnect(int reason, const char* message)
 
 int DrawTools::Add(Text text)
 {
-	if (text.text.empty())
-		return -1;
-
 	if (text.id)
 	{
 		//id specified, try to update existing 
