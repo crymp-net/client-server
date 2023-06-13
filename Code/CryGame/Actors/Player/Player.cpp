@@ -3432,6 +3432,7 @@ void CPlayer::EnableThirdPerson(bool enable)
 		//Following is already done OnShatter, but we have to do it here as well incase we switch to ThirdPerson
 		//Gets reset OnRevive
 		GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) & (~ENTITY_SLOT_RENDER));
+		m_stats.isHidden = true;
 	}
 }
 
