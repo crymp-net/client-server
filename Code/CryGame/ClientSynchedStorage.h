@@ -1,7 +1,5 @@
 #pragma once
 
-#include <mutex>
-
 #include "CryCommon/CrySystem/ISystem.h"  // required by NetHelpers.h
 #include "CryCommon/CryNetwork/NetHelpers.h"
 
@@ -27,15 +25,13 @@ class CServerSynchedStorage;
 
 class CClientSynchedStorage: public CNetMessageSinkHelper<CClientSynchedStorage, CSynchedStorage>
 {
-	std::mutex m_mutex;
-
 public:
 	CClientSynchedStorage(IGameFramework *pGameFramework)
 	{
 		m_pGameFramework = pGameFramework;
 	}
 
-	virtual void DefineProtocol(IProtocolBuilder *pBuilder);
+	void DefineProtocol(IProtocolBuilder *pBuilder) override;
 
 	class CResetMsg: public INetMessage
 	{
@@ -61,9 +57,9 @@ public:
 		TSynchedKey key;
 		TSynchedValue value;
 
-		virtual EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
-		virtual void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
-		virtual size_t GetSize();
+		EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq) override;
+		void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update) override;
+		size_t GetSize() override;
 	};
 
 	DECLARE_GLOBAL_MESSAGE(CSetGlobalBoolMsg);
@@ -84,9 +80,9 @@ public:
 		TSynchedKey key;
 		TSynchedValue value;
 
-		virtual EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq);
-		virtual void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update);
-		virtual size_t GetSize();
+		EMessageSendResult WritePayload(TSerialize ser, uint32 currentSeq, uint32 basisSeq) override;
+		void UpdateState(uint32 fromSeq, ENetSendableStateUpdate update) override;
+		size_t GetSize() override;
 	};
 
 	DECLARE_ENTITY_MESSAGE(CSetEntityBoolMsg);

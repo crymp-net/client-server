@@ -8,8 +8,6 @@ void CClientSynchedStorage::DefineProtocol(IProtocolBuilder *pBuilder)
 
 NET_IMPLEMENT_IMMEDIATE_MESSAGE(CClientSynchedStorage, ResetMsg, eNRT_ReliableOrdered, eMPF_BlocksStateChange)
 {
-	std::lock_guard lock(m_mutex);
-
 	Reset();
 
 	return true;
@@ -50,7 +48,6 @@ size_t CClientSynchedStorage::CResetMsg::GetSize()
 	return eMSR_SentOk; }
 
 #define IMPLEMENT_IMMEDIATE_GLOBAL_MESSAGE(type) \
-	std::lock_guard lock(m_mutex); \
 	TSynchedKey		key; \
 	TSynchedValue value; \
 	SerializeValue(ser, key, value, NTypelist::IndexOf<type, TSynchedValueTypes>::value); \
@@ -163,7 +160,6 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CClientSynchedStorage, SetChannelStringMsg, eNRT
 	return eMSR_SentOk; }
 
 #define IMPLEMENT_IMMEDIATE_ENTITY_MESSAGE(type) \
-	std::lock_guard lock(m_mutex); \
 	TSynchedKey		key; \
 	TSynchedValue value; \
 	EntityId			id; \

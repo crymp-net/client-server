@@ -1,7 +1,5 @@
 #pragma once
 
-#include <mutex>
-
 #include "ClientSynchedStorage.h"
 
 class CServerSynchedStorage : public CNetMessageSinkHelper<CServerSynchedStorage, CSynchedStorage>
@@ -83,11 +81,16 @@ class CServerSynchedStorage : public CNetMessageSinkHelper<CServerSynchedStorage
 	TChannelQueueMap m_globalQueue;
 	TChannelEntityQueueMap m_entityQueue;
 	TChannelMap m_channels;
-	std::mutex m_mutex;
 
 	SChannel *GetChannel(int channelId);
 	SChannel *GetChannel(INetChannel *pNetChannel);
-	int GetChannelId(INetChannel *pNetChannel) const;
+	int GetChannelId(INetChannel *pNetChannel);
+
+	void AddToGlobalQueue(TSynchedKey key);
+	void AddToEntityQueue(EntityId entityId, TSynchedKey key);
+
+	void AddToGlobalQueueFor(int channelId, TSynchedKey key);
+	void AddToEntityQueueFor(int channelId, EntityId entityId, TSynchedKey key);
 
 public:
 	CServerSynchedStorage(IGameFramework *pGameFramework)
@@ -95,27 +98,18 @@ public:
 		m_pGameFramework = pGameFramework;
 	}
 
-	virtual void DefineProtocol(IProtocolBuilder *pBuilder);
+	void DefineProtocol(IProtocolBuilder *pBuilder) override;
 
-	virtual void Reset();
-	virtual void ResetChannel(int channelId);
+	void Reset() override;
+	void ResetChannel(int channelId);
 
-	virtual bool OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGlobalMsg *pMsg, int channelId, uint32 fromSeq, bool ack);
-	virtual bool OnSetEntityMsgComplete(CClientSynchedStorage::CSetEntityMsg *pMsg, int channelId, uint32 fromSeq, bool ack);
+	void FullSynch(int channelId, bool reset);
 
-	// these should only be called from the main thread
-	virtual void AddToGlobalQueue(TSynchedKey key);
-	virtual void AddToEntityQueue(EntityId entityId, TSynchedKey key);
+	void OnClientConnect(int channelId);
+	void OnClientDisconnect(int channelId, bool onhold);
+	void OnClientEnteredGame(int channelId);
 
-	virtual void AddToGlobalQueueFor(int channelId, TSynchedKey key);
-	virtual void AddToEntityQueueFor(int channelId, EntityId entityId, TSynchedKey key);
-
-	virtual void FullSynch(int channelId, bool reset);
-
-	virtual void OnClientConnect(int channelId);
-	virtual void OnClientDisconnect(int channelId, bool onhold);
-	virtual void OnClientEnteredGame(int channelId);
-
-	virtual void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value);
-	virtual void OnEntityChanged(EntityId entityId, TSynchedKey key, const TSynchedValue & value);
+protected:
+	void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value) override;
+	void OnEntityChanged(EntityId entityId, TSynchedKey key, const TSynchedValue & value) override;
 };

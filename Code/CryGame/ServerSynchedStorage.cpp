@@ -24,7 +24,7 @@ CServerSynchedStorage::SChannel *CServerSynchedStorage::GetChannel(INetChannel *
 	return nullptr;
 }
 
-int CServerSynchedStorage::GetChannelId(INetChannel *pNetChannel) const
+int CServerSynchedStorage::GetChannelId(INetChannel *pNetChannel)
 {
 	for (const auto & item : m_channels)
 	{
@@ -190,6 +190,8 @@ void CServerSynchedStorage::AddToEntityQueueFor(int channelId, EntityId entityId
 //------------------------------------------------------------------------
 void CServerSynchedStorage::FullSynch(int channelId, bool reset)
 {
+	std::lock_guard lock(m_mutex);
+
 	if (reset)
 	{
 		ResetChannel(channelId);
@@ -221,6 +223,8 @@ void CServerSynchedStorage::OnEntityChanged(EntityId entityId, TSynchedKey key, 
 
 void CServerSynchedStorage::OnClientConnect(int channelId)
 {
+	std::lock_guard lock(m_mutex);
+
 	INetChannel *pNetChannel = m_pGameFramework->GetNetChannel(channelId);
 
 	SChannel *pChannel = GetChannel(channelId);
@@ -244,6 +248,8 @@ void CServerSynchedStorage::OnClientConnect(int channelId)
 
 void CServerSynchedStorage::OnClientDisconnect(int channelId, bool onhold)
 {
+	std::lock_guard lock(m_mutex);
+
 	SChannel *pChannel = GetChannel(channelId);
 	if (pChannel)
 	{
@@ -267,35 +273,11 @@ void CServerSynchedStorage::OnClientDisconnect(int channelId, bool onhold)
 
 void CServerSynchedStorage::OnClientEnteredGame(int channelId)
 {
+	std::lock_guard lock(m_mutex);
+
 	SChannel *pChannel = GetChannel(channelId);
 	if (pChannel && pChannel->pNetChannel && !pChannel->pNetChannel->IsLocal())
 	{
 		FullSynch(channelId, true);
 	}
-}
-
-bool CServerSynchedStorage::OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGlobalMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
-{
-	std::lock_guard lock(m_mutex);
-
-	if (!ack)
-	{
-		// got a nack, so reque
-		AddToGlobalQueueFor(channelId, pMsg->key);
-	}
-
-	return true;
-}
-
-bool CServerSynchedStorage::OnSetEntityMsgComplete(CClientSynchedStorage::CSetEntityMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
-{
-	std::lock_guard lock(m_mutex);
-
-	if (!ack)
-	{
-		// got a nack, so reque
-		AddToEntityQueueFor(channelId, pMsg->entityId, pMsg->key);
-	}
-
-	return true;
 }

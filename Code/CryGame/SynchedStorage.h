@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <mutex>
 
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryAction/IGameFramework.h"
@@ -34,6 +35,8 @@ protected:
 
 	IGameFramework *m_pGameFramework = nullptr;
 
+	std::recursive_mutex m_mutex;
+
 	CSynchedStorage() = default;
 
 public:
@@ -42,6 +45,8 @@ public:
 	template<typename ValueType>
 	void SetGlobalValue(TSynchedKey key, const ValueType & value)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto it = m_globalStorage.find(key);
 		if (it == m_globalStorage.end())
 		{
@@ -65,7 +70,9 @@ public:
 	template<typename ValueType>
 	void SetEntityValue(EntityId id, TSynchedKey key, const ValueType & value)
 	{
-		TStorage & storage = *GetEntityStorage(id, true);
+		std::lock_guard lock(m_mutex);
+
+		TStorage & storage = m_entityStorage[id];
 
 		auto it = storage.find(key);
 		if (it == storage.end())
@@ -88,8 +95,10 @@ public:
 	}
 
 	template<typename ValueType>
-	bool GetGlobalValue(TSynchedKey key, ValueType & value) const
+	bool GetGlobalValue(TSynchedKey key, ValueType & value)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto it = m_globalStorage.find(key);
 		if (it == m_globalStorage.end())
 		{
@@ -107,8 +116,10 @@ public:
 		return true;
 	}
 
-	bool GetGlobalValue(TSynchedKey key, TSynchedValue & value) const
+	bool GetGlobalValue(TSynchedKey key, TSynchedValue & value)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto it = m_globalStorage.find(key);
 		if (it == m_globalStorage.end())
 		{
@@ -121,8 +132,10 @@ public:
 	}
 
 	template<typename ValueType>
-	bool GetEntityValue(EntityId entityId, TSynchedKey key, ValueType & value) const
+	bool GetEntityValue(EntityId entityId, TSynchedKey key, ValueType & value)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto eit = m_entityStorage.find(entityId);
 		if (eit == m_entityStorage.end())
 		{
@@ -146,8 +159,10 @@ public:
 		return true;
 	}
 
-	bool GetEntityValue(EntityId entityId, TSynchedKey key, TSynchedValue & value) const
+	bool GetEntityValue(EntityId entityId, TSynchedKey key, TSynchedValue & value)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto eit = m_entityStorage.find(entityId);
 		if (eit == m_entityStorage.end())
 		{
@@ -165,8 +180,10 @@ public:
 		return true;
 	}
 
-	int GetGlobalValueType(TSynchedKey key) const
+	int GetGlobalValueType(TSynchedKey key)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto it = m_globalStorage.find(key);
 		if (it == m_globalStorage.end())
 		{
@@ -176,8 +193,10 @@ public:
 		return it->second.GetType();
 	}
 
-	int GetEntityValueType(EntityId id, TSynchedKey key) const
+	int GetEntityValueType(EntityId id, TSynchedKey key)
 	{
+		std::lock_guard lock(m_mutex);
+
 		auto eit = m_entityStorage.find(id);
 		if (eit == m_entityStorage.end())
 		{
@@ -197,11 +216,10 @@ public:
 
 	virtual void Dump();
 
-	virtual void SerializeValue(TSerialize ser, TSynchedKey & key, TSynchedValue & value, int type);
-	virtual void SerializeEntityValue(TSerialize ser, EntityId id, TSynchedKey & key, TSynchedValue & value, int type);
+	void SerializeValue(TSerialize ser, TSynchedKey & key, TSynchedValue & value, int type);
+	void SerializeEntityValue(TSerialize ser, EntityId id, TSynchedKey & key, TSynchedValue & value, int type);
 
-	virtual TStorage *GetEntityStorage(EntityId id, bool create = false);
-
+protected:
 	virtual void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value)
 	{
 	}

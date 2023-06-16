@@ -42,12 +42,16 @@ static void DumpValue(TSynchedKey key, const TSynchedValue & value)
 
 void CSynchedStorage::Reset()
 {
+	std::lock_guard lock(m_mutex);
+
 	m_globalStorage.clear();
 	m_entityStorage.clear();
 }
 
 void CSynchedStorage::Dump()
 {
+	std::lock_guard lock(m_mutex);
+
 	CryLogAlways("---------------------------");
 	CryLogAlways(" SYNCHED STORAGE DUMP");
 	CryLogAlways("---------------------------\n");
@@ -270,20 +274,4 @@ void CSynchedStorage::SerializeEntityValue(TSerialize ser, EntityId id, TSynched
 			break;
 		}
 	}
-}
-
-CSynchedStorage::TStorage *CSynchedStorage::GetEntityStorage(EntityId id, bool create)
-{
-	auto it = m_entityStorage.find(id);
-	if (it == m_entityStorage.end())
-	{
-		if (create)
-		{
-			return &m_entityStorage[id];
-		}
-
-		return nullptr;
-	}
-
-	return &it->second;
 }
