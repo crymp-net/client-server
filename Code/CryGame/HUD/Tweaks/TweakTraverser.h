@@ -3,7 +3,7 @@ Crytek Source File.
 Copyright (C), Crytek Studios, 2006.
 -------------------------------------------------------------------------
 
-Description: 
+Description:
 	Header for CTweakTraverser
 
 -------------------------------------------------------------------------
@@ -36,7 +36,7 @@ public:
 	friend class CTweakMenu;
 
 	// Create an empty Traverser
-	CTweakTraverser(void);
+	CTweakTraverser();
 
 	// Create a Traverser, registering it in the process
 	CTweakTraverser(CTweakMenu *root);
@@ -45,7 +45,7 @@ public:
 	CTweakTraverser(const CTweakTraverser &that);
 
 	// Copy a Traverser, registering the copy
-	void operator= (const CTweakTraverser &that);
+	CTweakTraverser& operator= (const CTweakTraverser &that);
 
 	// Deregister and destroy
 	~CTweakTraverser();

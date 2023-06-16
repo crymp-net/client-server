@@ -3,7 +3,7 @@ Crytek Source File.
 Copyright (C), Crytek Studios, 2006.
 -------------------------------------------------------------------------
 
-Description: 
+Description:
 	Handle class for traversing a Tweak menu structure
 
 -------------------------------------------------------------------------
@@ -25,7 +25,7 @@ const int CTweakTraverser::START_INDEX = -1;
 
 
 
-CTweakTraverser::CTweakTraverser(void) {
+CTweakTraverser::CTweakTraverser() {
 	m_index = START_INDEX;
 }
 
@@ -49,14 +49,18 @@ CTweakTraverser::CTweakTraverser(const CTweakTraverser &that) {
 
 //-------------------------------------------------------------------------
 
-void CTweakTraverser::operator= (const CTweakTraverser &that) {
-	Deregister();
+CTweakTraverser& CTweakTraverser::operator= (const CTweakTraverser &that) {
+	if (this != &that) {
+		Deregister();
 
-	if (that.IsRegistered()) {
-		Register(that.m_menuPath[0]);
+		if (that.IsRegistered()) {
+			Register(that.m_menuPath[0]);
+		}
+		m_menuPath = that.m_menuPath;
+		m_index = that.m_index;
 	}
-	m_menuPath = that.m_menuPath;
-	m_index = that.m_index;
+
+	return *this;
 }
 
 //-------------------------------------------------------------------------
@@ -77,7 +81,7 @@ void CTweakTraverser::Register(CTweakMenu * root) {
 
 	// Register ourselves with the root
 	m_menuPath[0]->RegisterTraverser(this);
-	
+
 	// Go to top of that menu
 	Top();
 }
@@ -128,7 +132,7 @@ bool CTweakTraverser::Forward(void) {
 	// Is it a menu?
 	if (GetItem()->GetType() != CTweakCommon::eTT_Menu) return false;
 
-	// Traverse into that menu	
+	// Traverse into that menu
 	CTweakMenu *submenu = (CTweakMenu*) GetItem();
 	m_menuPath.push_back(submenu);
 
@@ -169,19 +173,19 @@ void CTweakTraverser::Top(void) {
 
 void CTweakTraverser::Bottom(void) {
 	m_index = START_INDEX;  // For empty list, START_INDEX == after-end index
-	
+
 	if (IsRegistered())	m_index = GetMenuItems().size();
 }
 
 bool CTweakTraverser::First(void) {
 	if (! IsRegistered())	return false;
-	
+
 	if (GetMenuItems().size() == 0) {
 		m_index = START_INDEX;
 		return false;
 	}
 
-	m_index = 0; 
+	m_index = 0;
 	return true;
 }
 
@@ -199,7 +203,7 @@ bool CTweakTraverser::Last(void) {
 
 bool CTweakTraverser::Goto(const char *name) {
 	// This could become more efficient, by storing Traversers in path, or other ways
-	
+
 	// Create a temporary Traverser
 	CTweakTraverser t = (*this);
 	t.Top();
