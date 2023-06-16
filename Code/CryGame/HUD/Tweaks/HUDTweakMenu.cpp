@@ -175,7 +175,7 @@ void CHUDTweakMenu::DrawMenu()
 		}
 
 		// Is this the currently selected item?
-		if (itemIter == m_traverser) colour = eTC_Red;
+		if (itemIter.IsEqual(m_traverser)) colour = eTC_Red;
 
 		// Display it
 		PrintToMenuPane( text.c_str(), colour );
