@@ -27,13 +27,10 @@ public:
 	using TStorage = std::map<TSynchedKey, TSynchedValue>;
 
 	using TEntityStorageMap = std::map<EntityId, TStorage>;
-	using TChannelStorageMap = std::map<int, TStorage>;
 
 protected:
 	TStorage m_globalStorage;
-	TStorage m_channelStorage;
 	TEntityStorageMap m_entityStorage;
-	TChannelStorageMap m_channelStorageMap;
 
 	IGameFramework *m_pGameFramework = nullptr;
 
@@ -65,57 +62,6 @@ public:
 		}
 	}
 
-	void SetGlobalValue(TSynchedKey key, const TSynchedValue & value)
-	{
-		m_globalStorage[key] = value;
-
-		// always true since we can't compare two TSynchedValue
-		OnGlobalChanged(key, value);
-	}
-
-	template<typename ValueType>
-	void SetChannelValue(int channelId, TSynchedKey key, const ValueType & value)
-	{
-		TStorage *pStorage = GetChannelStorage(channelId, true);
-		if (!pStorage)
-		{
-			return;
-		}
-
-		auto it = pStorage->find(key);
-		if (it == pStorage->end())
-		{
-			TSynchedValue & newValue = (*pStorage)[key];
-			newValue.Set(value);
-
-			OnChannelChanged(channelId, key, newValue);
-		}
-		else
-		{
-			const ValueType *pStoredValue = it->second.GetPtr<ValueType>();
-			if (!pStoredValue || *pStoredValue != value)
-			{
-				it->second.Set(value);
-
-				OnChannelChanged(channelId, key, it->second);
-			}
-		}
-	}
-
-	void SetChannelValue(int channelId, TSynchedKey key, const TSynchedValue & value)
-	{
-		TStorage *pStorage = GetChannelStorage(channelId, true);
-		if (!pStorage)
-		{
-			return;
-		}
-
-		(*pStorage)[key] = value;
-
-		// always true since we can't compare two TSynchedValue
-		OnChannelChanged(channelId, key, value);
-	}
-
 	template<typename ValueType>
 	void SetEntityValue(EntityId id, TSynchedKey key, const ValueType & value)
 	{
@@ -139,16 +85,6 @@ public:
 				OnEntityChanged(id, key, it->second);
 			}
 		}
-	}
-
-	void SetEntityValue(EntityId id, TSynchedKey key, const TSynchedValue & value)
-	{
-		TStorage & storage = *GetEntityStorage(id, true);
-
-		storage[key] = value;
-
-		// always true since we can't compare two TSynchedValue
-		OnEntityChanged(id, key, value);
 	}
 
 	template<typename ValueType>
@@ -175,96 +111,6 @@ public:
 	{
 		auto it = m_globalStorage.find(key);
 		if (it == m_globalStorage.end())
-		{
-			return false;
-		}
-
-		value = it->second;
-
-		return true;
-	}
-
-	template<typename ValueType>
-	bool GetChannelValue(int channelId, TSynchedKey key, ValueType & value) const
-	{
-		auto cit = m_channelStorageMap.find(channelId);
-		if (cit == m_channelStorageMap.end())
-		{
-			INetChannel *pNetChannel = m_pGameFramework->GetNetChannel(channelId);
-			if (pNetChannel && pNetChannel->IsLocal())
-			{
-				return GetChannelValue(key, value);  // m_channelStorage
-			}
-
-			return false;
-		}
-		
-		auto it = cit->second.find(key);
-		if (it == cit->second.end())
-		{
-			return false;
-		}
-
-		const ValueType *pStoredValue = it->second.GetPtr<ValueType>();
-		if (!pStoredValue)
-		{
-			return false;
-		}
-
-		value = *pStoredValue;
-
-		return true;
-	}
-
-	bool GetChannelValue(int channelId, TSynchedKey key, TSynchedValue & value) const
-	{
-		auto cit = m_channelStorageMap.find(channelId);
-		if (cit == m_channelStorageMap.end())
-		{
-			INetChannel *pNetChannel = m_pGameFramework->GetNetChannel(channelId);
-			if (pNetChannel && pNetChannel->IsLocal())
-			{
-				return GetChannelValue(key, value);  // m_channelStorage
-			}
-
-			return false;
-		}
-
-		auto it = cit->second.find(key);
-		if (it == cit->second.end())
-		{
-			return false;
-		}
-
-		value = it->second;
-
-		return true;
-	}
-
-	template<typename ValueType>
-	bool GetChannelValue(TSynchedKey key, ValueType & value) const
-	{
-		auto it = m_channelStorage.find(key);
-		if (it == m_channelStorage.end())
-		{
-			return false;
-		}
-
-		const ValueType *pStoredValue = it->second.GetPtr<ValueType>();
-		if (!pStoredValue)
-		{
-			return false;
-		}
-
-		value = *pStoredValue;
-
-		return true;
-	}
-
-	bool GetChannelValue(TSynchedKey key, TSynchedValue & value) const
-	{
-		auto it = m_channelStorage.find(key);
-		if (it == m_channelStorage.end())
 		{
 			return false;
 		}
@@ -355,13 +201,8 @@ public:
 	virtual void SerializeEntityValue(TSerialize ser, EntityId id, TSynchedKey & key, TSynchedValue & value, int type);
 
 	virtual TStorage *GetEntityStorage(EntityId id, bool create = false);
-	virtual TStorage *GetChannelStorage(int channelId, bool create = false);
 
 	virtual void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value)
-	{
-	}
-
-	virtual void OnChannelChanged(int channelId, TSynchedKey key, const TSynchedValue & value)
 	{
 	}
 

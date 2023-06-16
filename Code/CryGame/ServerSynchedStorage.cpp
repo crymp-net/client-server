@@ -53,12 +53,6 @@ void CServerSynchedStorage::ResetChannel(int channelId)
 {
 	std::lock_guard lock(m_mutex);
 
-	auto cit = m_channelQueue.lower_bound(SChannelQueueEnt(channelId, 0));
-	while (cit != m_channelQueue.end() && cit->first.channel == channelId)
-	{
-		cit = m_channelQueue.erase(cit);
-	}
-
 	auto git = m_globalQueue.lower_bound(SChannelQueueEnt(channelId, 0));
 	while (git != m_globalQueue.end() && git->first.channel == channelId)
 	{
@@ -104,49 +98,6 @@ void CServerSynchedStorage::AddToEntityQueue(EntityId entityId, TSynchedKey key)
 		{
 			AddToEntityQueueFor(item.first, entityId, key);
 		}
-	}
-}
-
-void CServerSynchedStorage::AddToChannelQueue(int channelId, TSynchedKey key)
-{
-	SChannel * pChannel = GetChannel(channelId);
-	if (!pChannel || !pChannel->pNetChannel || pChannel->local)
-	{
-		return;
-	}
-
-	SSendableHandle & msgHandle = m_channelQueue[SChannelQueueEnt(channelId, key)];
-
-	TSynchedValue value;
-	if (!GetChannelValue(channelId, key, value))
-	{
-		return;
-	}
-
-	CClientSynchedStorage::CSetChannelMsg *pMsg = nullptr;
-
-	switch (value.GetType())
-	{
-		case eSVT_Bool:
-			pMsg = new CClientSynchedStorage::CSetChannelBoolMsg(channelId, this, key, value);
-			break;
-		case eSVT_Float:
-			pMsg = new CClientSynchedStorage::CSetChannelFloatMsg(channelId, this, key, value);
-			break;
-		case eSVT_Int:
-			pMsg = new CClientSynchedStorage::CSetChannelIntMsg(channelId, this, key, value);
-			break;
-		case eSVT_EntityId:
-			pMsg = new CClientSynchedStorage::CSetChannelEntityIdMsg(channelId, this, key, value);
-			break;
-		case eSVT_String:
-			pMsg = new CClientSynchedStorage::CSetChannelStringMsg(channelId, this, key, value);
-			break;
-	}
-
-	if (pMsg)
-	{
-		pChannel->pNetChannel->SubstituteSendable(pMsg, 1, &pChannel->lastOrderedMessage, &msgHandle);
 	}
 }
 
@@ -244,11 +195,6 @@ void CServerSynchedStorage::FullSynch(int channelId, bool reset)
 		ResetChannel(channelId);
 	}
 
-	for (const auto & item : m_channelStorage)
-	{
-		AddToChannelQueue(channelId, item.first);
-	}
-
 	for (const auto & item : m_globalStorage)
 	{
 		AddToGlobalQueueFor(channelId, item.first);
@@ -266,11 +212,6 @@ void CServerSynchedStorage::FullSynch(int channelId, bool reset)
 void CServerSynchedStorage::OnGlobalChanged(TSynchedKey key, const TSynchedValue & value)
 {
 	AddToGlobalQueue(key);
-}
-
-void CServerSynchedStorage::OnChannelChanged(int channelId, TSynchedKey key, const TSynchedValue & value)
-{
-	AddToChannelQueue(channelId, key);
 }
 
 void CServerSynchedStorage::OnEntityChanged(EntityId entityId, TSynchedKey key, const TSynchedValue & value)
@@ -341,19 +282,6 @@ bool CServerSynchedStorage::OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGl
 	{
 		// got a nack, so reque
 		AddToGlobalQueueFor(channelId, pMsg->key);
-	}
-
-	return true;
-}
-
-bool CServerSynchedStorage::OnSetChannelMsgComplete(CClientSynchedStorage::CSetChannelMsg *pMsg, int channelId, uint32 fromSeq, bool ack)
-{
-	std::lock_guard lock(m_mutex);
-
-	if (!ack)
-	{
-		// got a nack, so reque
-		AddToChannelQueue(channelId, pMsg->key);
 	}
 
 	return true;

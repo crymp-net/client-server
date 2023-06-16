@@ -44,8 +44,6 @@ void CSynchedStorage::Reset()
 {
 	m_globalStorage.clear();
 	m_entityStorage.clear();
-	m_channelStorageMap.clear();
-	m_channelStorage.clear();
 }
 
 void CSynchedStorage::Dump()
@@ -58,32 +56,6 @@ void CSynchedStorage::Dump()
 	for (const auto & item : m_globalStorage)
 	{
 		DumpValue(item.first, item.second);
-	}
-
-	CryLogAlways("---------------------------\n");
-	CryLogAlways("Local Channel:");
-
-	for (const auto & item : m_channelStorage)
-	{
-		DumpValue(item.first, item.second);
-	}
-
-	if (gEnv->bServer)
-	{
-		CryLogAlways("---------------------------\n");
-
-		for (const auto & channelItem : m_channelStorageMap)
-		{
-			INetChannel *pNetChannel = m_pGameFramework->GetNetChannel(channelItem.first);
-			const char *name = pNetChannel ? pNetChannel->GetName() : "null";
-
-			CryLogAlways("Channel %d (%s)", channelItem.first, name);
-
-			for (const auto & item : channelItem.second)
-			{
-				DumpValue(item.first, item.second);
-			}
-		}
 	}
 
 	CryLogAlways("---------------------------\n");
@@ -308,26 +280,6 @@ CSynchedStorage::TStorage *CSynchedStorage::GetEntityStorage(EntityId id, bool c
 		if (create)
 		{
 			return &m_entityStorage[id];
-		}
-
-		return nullptr;
-	}
-
-	return &it->second;
-}
-
-CSynchedStorage::TStorage *CSynchedStorage::GetChannelStorage(int channelId, bool create)
-{
-	auto it = m_channelStorageMap.find(channelId);
-	if (it == m_channelStorageMap.end())
-	{
-		INetChannel *pNetChannel = m_pGameFramework->GetNetChannel(channelId);
-		if ((!gEnv->bServer && !pNetChannel) || (gEnv->bServer && pNetChannel->IsLocal()))
-			return &m_channelStorage;
-
-		if (gEnv->bServer && create)
-		{
-			return &m_channelStorageMap[channelId];
 		}
 
 		return nullptr;

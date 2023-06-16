@@ -81,7 +81,6 @@ class CServerSynchedStorage : public CNetMessageSinkHelper<CServerSynchedStorage
 	using TChannelMap = std::map<int, SChannel>;
 
 	TChannelQueueMap m_globalQueue;
-	TChannelQueueMap m_channelQueue;
 	TChannelEntityQueueMap m_entityQueue;
 	TChannelMap m_channels;
 	std::mutex m_mutex;
@@ -102,13 +101,11 @@ public:
 	virtual void ResetChannel(int channelId);
 
 	virtual bool OnSetGlobalMsgComplete(CClientSynchedStorage::CSetGlobalMsg *pMsg, int channelId, uint32 fromSeq, bool ack);
-	virtual bool OnSetChannelMsgComplete(CClientSynchedStorage::CSetChannelMsg *pMsg, int channelId, uint32 fromSeq, bool ack);
 	virtual bool OnSetEntityMsgComplete(CClientSynchedStorage::CSetEntityMsg *pMsg, int channelId, uint32 fromSeq, bool ack);
 
 	// these should only be called from the main thread
 	virtual void AddToGlobalQueue(TSynchedKey key);
 	virtual void AddToEntityQueue(EntityId entityId, TSynchedKey key);
-	virtual void AddToChannelQueue(int channelId, TSynchedKey key);
 
 	virtual void AddToGlobalQueueFor(int channelId, TSynchedKey key);
 	virtual void AddToEntityQueueFor(int channelId, EntityId entityId, TSynchedKey key);
@@ -120,6 +117,5 @@ public:
 	virtual void OnClientEnteredGame(int channelId);
 
 	virtual void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value);
-	virtual void OnChannelChanged(int channelId, TSynchedKey key, const TSynchedValue & value);
 	virtual void OnEntityChanged(EntityId entityId, TSynchedKey key, const TSynchedValue & value);
 };
