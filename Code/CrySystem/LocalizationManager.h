@@ -38,14 +38,7 @@ public:
 	};
 
 private:
-	constexpr auto GetLabelNameCompare() const
-	{
-		return [](const Label& label, const std::string& name) { return label.name < name; };
-	}
-
-	Language m_emptyLanguage;
-	Language* m_currentLanguage = &m_emptyLanguage;
-	std::vector<Language> m_languages;
+	Language m_language;
 	std::vector<std::string> m_filenames;
 
 	static LocalizationManager s_globalInstance;
@@ -60,12 +53,15 @@ public:
 		return s_globalInstance;
 	}
 
+	const Language& GetCurrentLanguage() const
+	{
+		return m_language;
+	}
+
 	bool Add(Label&& label, bool keepExisting = false);
 
 	std::string Localize(const std::string_view& text) const;
 	std::string LocalizeEnglish(const std::string_view& text) const;
-
-	const Language& GetCurrentLanguage() const;
 
 	////////////////////////////////////////////////////////////////////////////////
 	// ILocalizationManager - legacy API

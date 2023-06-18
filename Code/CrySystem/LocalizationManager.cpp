@@ -325,11 +325,6 @@ LocalizationManager::~LocalizationManager()
 
 bool LocalizationManager::Add(Label&& label, bool keepExisting)
 {
-	if (m_currentLanguage == &m_emptyLanguage)
-	{
-		return false;
-	}
-
 	if (label.name.length() > 0 && label.name[0] == '@')
 	{
 		label.name.erase(0, 1);
@@ -355,14 +350,17 @@ bool LocalizationManager::Add(Label&& label, bool keepExisting)
 	ExpandNewlineInPlace(label.localizedText);
 	ExpandNewlineInPlace(label.localizedSubtitle);
 
-	std::vector<Label>& labels = m_currentLanguage->labels;
-
 	// binary search
-	const auto it = std::lower_bound(labels.begin(), labels.end(), label.name, GetLabelNameCompare());
+	const auto it = std::lower_bound(m_language.labels.begin(), m_language.labels.end(), label.name,
+		[](const Label& label, const std::string& name)
+		{
+			return label.name < name;
+		}
+	);
 
-	if (it == labels.end() || it->name != label.name)
+	if (it == m_language.labels.end() || it->name != label.name)
 	{
-		labels.insert(it, std::move(label));
+		m_language.labels.insert(it, std::move(label));
 
 		return true;
 	}
@@ -398,46 +396,25 @@ std::string LocalizationManager::LocalizeEnglish(const std::string_view& text) c
 	return result;
 }
 
-const LocalizationManager::Language& LocalizationManager::GetCurrentLanguage() const
-{
-	return *m_currentLanguage;
-}
-
 bool LocalizationManager::SetLanguage(const char* name)
 {
 	const std::string loweredName = StringTools::ToLower(name);
 
-	for (Language& language : m_languages)
-	{
-		if (language.name == loweredName)
-		{
-			m_currentLanguage = &language;
-
-			return true;
-		}
-	}
-
-	m_currentLanguage = &m_languages.emplace_back();
-	m_currentLanguage->id = LanguageNameToID(loweredName);
-	m_currentLanguage->name = loweredName;
-	m_currentLanguage->prettyName = name;
+	m_language.id = LanguageNameToID(loweredName);
+	m_language.name = loweredName;
+	m_language.prettyName = name;
 
 	return true;
 }
 
 const char* LocalizationManager::GetLanguage()
 {
-	return m_currentLanguage->prettyName.c_str();
+	return m_language.prettyName.c_str();
 }
 
 bool LocalizationManager::LoadExcelXmlSpreadsheet(const char* filename, bool reload)
 {
 	const std::string loweredFilename = StringTools::ToLower(filename);
-
-	if (m_currentLanguage == &m_emptyLanguage)
-	{
-		return false;
-	}
 
 	const bool wasLoaded = std::find(m_filenames.begin(), m_filenames.end(), loweredFilename) != m_filenames.end();
 
@@ -480,7 +457,7 @@ bool LocalizationManager::LoadExcelXmlSpreadsheet(const char* filename, bool rel
 
 	if (!wasLoaded)
 	{
-		m_currentLanguage->labels.reserve(m_currentLanguage->labels.size() + (rowCount - row));
+		m_language.labels.reserve(m_language.labels.size() + (rowCount - row));
 	}
 
 	for (; row < rowCount; row++)
@@ -507,8 +484,7 @@ bool LocalizationManager::LoadExcelXmlSpreadsheet(const char* filename, bool rel
 
 void LocalizationManager::FreeData()
 {
-	m_currentLanguage = &m_emptyLanguage;
-	m_languages.clear();
+	m_language = {};
 	m_filenames.clear();
 }
 
@@ -553,14 +529,14 @@ bool LocalizationManager::GetLocalizedInfo(const char* name, SLocalizedInfo& inf
 
 int LocalizationManager::GetLocalizedStringCount()
 {
-	return static_cast<int>(m_currentLanguage->labels.size());
+	return static_cast<int>(m_language.labels.size());
 }
 
 bool LocalizationManager::GetLocalizedInfoByIndex(int index, SLocalizedInfo& info)
 {
 	if (index >= 0 && index < GetLocalizedStringCount())
 	{
-		AssignLocalizedInfo(info, m_currentLanguage->labels[index]);
+		AssignLocalizedInfo(info, m_language.labels[index]);
 
 		return true;
 	}
@@ -677,12 +653,12 @@ void LocalizationManager::FormatStringMessage(wstring& result, const wstring& fo
 
 wchar_t LocalizationManager::ToUpperCase(wchar_t ch)
 {
-	return WinAPI::WideCharToUpper(ch, m_currentLanguage->id);
+	return WinAPI::WideCharToUpper(ch, m_language.id);
 }
 
 wchar_t LocalizationManager::ToLowerCase(wchar_t ch)
 {
-	return WinAPI::WideCharToLower(ch, m_currentLanguage->id);
+	return WinAPI::WideCharToLower(ch, m_language.id);
 }
 
 void LocalizationManager::LocalizeTime(time_t time, bool isLocalTime, bool showSeconds, wstring& result)
@@ -762,12 +738,15 @@ const LocalizationManager::Label* LocalizationManager::FindLabel(NameStringView 
 	StringTools::AppendTo(loweredName, name);
 	StringTools::ToLowerInPlace(loweredName);
 
-	const std::vector<Label>& labels = m_currentLanguage->labels;
-
 	// binary search
-	const auto it = std::lower_bound(labels.begin(), labels.end(), loweredName, GetLabelNameCompare());
+	const auto it = std::lower_bound(m_language.labels.begin(), m_language.labels.end(), loweredName,
+		[](const Label& label, const std::string& name)
+		{
+			return label.name < name;
+		}
+	);
 
-	if (it != labels.end() && it->name == loweredName)
+	if (it != m_language.labels.end() && it->name == loweredName)
 	{
 		return &(*it);
 	}
@@ -839,7 +818,7 @@ bool LocalizationManager::LocalizeControlCode(NameStringView name, ResultString&
 	constexpr std::size_t BUFFER_SIZE = 32;
 	wchar_t buffer[BUFFER_SIZE] = {};
 	WinAPI::RawANSIToWide(localizedKeyName, StringTools::Length(localizedKeyName), buffer, BUFFER_SIZE - 1);
-	buffer[0] = WinAPI::WideCharToUpper(buffer[0], m_currentLanguage->id);
+	buffer[0] = WinAPI::WideCharToUpper(buffer[0], m_language.id);
 
 	StringTools::AppendTo(result, buffer);
 
