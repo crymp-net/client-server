@@ -63,6 +63,8 @@ public:
 	std::string Localize(const std::string_view& text) const;
 	std::string LocalizeEnglish(const std::string_view& text) const;
 
+	static std::string_view GetLanguageFromSystem();
+
 	////////////////////////////////////////////////////////////////////////////////
 	// ILocalizationManager - legacy API
 	////////////////////////////////////////////////////////////////////////////////

@@ -61,6 +61,16 @@ static void ReplaceScriptSystem(void* pCrySystem)
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
 }
 
+static bool LanguagePakExists(std::string_view language)
+{
+	std::filesystem::path path = "Game";
+	path /= "Localized";
+	path /= language;
+	path += ".pak";
+
+	return std::filesystem::exists(path);
+}
+
 static void ReplaceLocalizationManager(void* pCrySystem)
 {
 	struct DummyCSystem
@@ -70,9 +80,78 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 			return &LocalizationManager::GetInstance();
 		}
 
-		static void InitLocalizationManager()
+		static void InitLocalizationManager(const char* defaultLanguage)
 		{
 			CryLogAlways("$3[CryMP] Initializing Localization Manager");
+
+			std::string_view language = defaultLanguage;
+			if (language.empty())
+			{
+				CryLogAlways("$4[CryMP] Missing or invalid Game/Localized/Default.lng file!");
+				CryLogAlways("$4[CryMP] Trying to guess the language from the system!");
+				language = LocalizationManager::GetLanguageFromSystem();
+			}
+
+			if (language.empty())
+			{
+				CryLogAlways("$4[CryMP] Failed to guess the language from the system!");
+				CryLogAlways("$4[CryMP] Falling back to English language!");
+				language = "English";
+			}
+
+			bool exists = LanguagePakExists(language);
+			if (!exists)
+			{
+				if (language == "English")
+				{
+					CryLogAlways("$4[CryMP] Not even English language exists!");
+				}
+				else
+				{
+					CryLogAlways("$4[CryMP] %s language does not exist!", language.data());
+					CryLogAlways("$4[CryMP] Falling back to English language!");
+					language = "English";
+
+					exists = LanguagePakExists(language);
+					if (!exists)
+					{
+						CryLogAlways("$4[CryMP] Not even English language exists!");
+					}
+				}
+			}
+
+			if (!exists)
+			{
+				CryLogAlways("$4[CryMP] No suitable language found!");
+
+				WinAPI::ErrorBox(
+					"No suitable language found!\n"
+					"\n"
+					"Localization files are incomplete!\n"
+					"This is a known issue in the Steam version of Crysis.\n"
+					"\n"
+					"You can try the following:\n"
+					"    1. Go to Game/Localized\n"
+					"    2. Choose a suitable *.lng file\n"
+					"    3. Make a copy of the file\n"
+					"    4. Rename the copy to Default.lng\n"
+					"\n"
+					"At least one matching *.pak file for the chosen *.lng file must exist!"
+				);
+
+				// throwing an exception through the engine is undefined behavior
+				std::exit(1);
+			}
+
+			CryLogAlways("$3[CryMP] Using %s language", language.data());
+
+			ICVar* pLanguageCVar = gEnv->pConsole->GetCVar("g_language");
+			if (pLanguageCVar)
+			{
+				pLanguageCVar->Set(language.data());
+			}
+
+			LocalizationManager::GetInstance().SetLanguage(language.data());
 		}
 	};
 
@@ -85,12 +164,13 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 
 	unsigned char code[] = {
 		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x48, 0x8B, 0x4C, 0x24, 0x30,                                // mov rcx, qword ptr ss:[rsp+0x30]
 		0xFF, 0xD0                                                   // call rax
 	};
 
 	std::memcpy(&code[2], &pNewFunc, 8);
 
-	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x62);
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x1A8);
 	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof code);
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x50A5C), 0x28);
 #else
@@ -98,12 +178,14 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 
 	unsigned char code[] = {
 		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-		0xFF, 0xD0                     // call eax
+		0xFF, 0x74, 0x24, 0x1C,        // push dword ptr ss:[esp+0x1C]
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x04               // add esp, 0x4
 	};
 
 	std::memcpy(&code[1], &pNewFunc, 4);
 
-	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0x29);
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0xA4);
 	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof code);
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x624E1), 0x23);
 #endif

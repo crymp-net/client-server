@@ -396,6 +396,45 @@ std::string LocalizationManager::LocalizeEnglish(const std::string_view& text) c
 	return result;
 }
 
+std::string_view LocalizationManager::GetLanguageFromSystem()
+{
+	static constexpr struct { std::string_view code; std::string_view name; } LANGUAGE_TABLE[] = {
+		{ "en", "English" },
+		{ "de", "German" },
+		{ "cs", "Czech" },
+		{ "sk", "Czech" },  // Slovak -> Czech
+		{ "pl", "Polish" },
+		{ "es", "Spanish" },
+		{ "fr", "French" },
+		{ "it", "Italian" },
+		{ "hu", "Hungarian" },
+		{ "ru", "Russian" },
+		{ "be", "Russian" },  // Belarusian -> Russian
+	//	{ "uk", "Russian" },  // Ukrainian -> Russian, disabled for political reasons
+		{ "tr", "Turkish" },
+		{ "ja", "Japanese" },
+		{ "zn", "Chinese" },
+		{ "th", "Thai" },
+	};
+
+	const std::string locale = WinAPI::GetLocale();
+
+	if (locale.length() < 2)
+	{
+		return {};
+	}
+
+	for (const auto& language : LANGUAGE_TABLE)
+	{
+		if (language.code == std::string_view(locale.c_str(), 2))
+		{
+			return language.name;
+		}
+	}
+
+	return {};
+}
+
 bool LocalizationManager::SetLanguage(const char* name)
 {
 	const std::string loweredName = StringTools::ToLower(name);
