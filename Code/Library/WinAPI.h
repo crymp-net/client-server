@@ -252,6 +252,8 @@ namespace WinAPI
 
 	unsigned int GetLogicalProcessorCount();
 
+	std::size_t GetSystemLanguageCode(char* buffer, std::size_t bufferSize);
+
 	//////////
 	// HTTP //
 	//////////

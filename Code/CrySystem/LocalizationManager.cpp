@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <cwchar>
 #include <type_traits>
@@ -398,7 +399,7 @@ std::string LocalizationManager::LocalizeEnglish(const std::string_view& text) c
 
 std::string_view LocalizationManager::GetLanguageFromSystem()
 {
-	static constexpr struct { std::string_view code; std::string_view name; } LANGUAGE_TABLE[] = {
+	static constexpr struct { char code[2 + 1]; const char* name; } LANGUAGES[] = {
 		{ "en", "English" },
 		{ "de", "German" },
 		{ "cs", "Czech" },
@@ -417,16 +418,12 @@ std::string_view LocalizationManager::GetLanguageFromSystem()
 		{ "th", "Thai" },
 	};
 
-	const std::string locale = WinAPI::GetLocale();
+	char code[8] = {};
+	WinAPI::GetSystemLanguageCode(code, sizeof(code));
 
-	if (locale.length() < 2)
+	for (const auto& language : LANGUAGES)
 	{
-		return {};
-	}
-
-	for (const auto& language : LANGUAGE_TABLE)
-	{
-		if (language.code == std::string_view(locale.c_str(), 2))
+		if (std::memcmp(language.code, code, 2 + 1) == 0)
 		{
 			return language.name;
 		}

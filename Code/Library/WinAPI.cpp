@@ -732,6 +732,16 @@ unsigned int WinAPI::GetLogicalProcessorCount()
 	return info.dwNumberOfProcessors;
 }
 
+std::size_t WinAPI::GetSystemLanguageCode(char* buffer, std::size_t bufferSize)
+{
+	return static_cast<std::size_t>(::GetLocaleInfoA(
+		LOCALE_SYSTEM_DEFAULT,
+		LOCALE_SISO639LANGNAME,
+		buffer,
+		static_cast<int>(bufferSize)
+	));
+}
+
 //////////
 // HTTP //
 //////////
