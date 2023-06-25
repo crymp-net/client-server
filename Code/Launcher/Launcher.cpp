@@ -71,6 +71,88 @@ static bool LanguagePakExists(std::string_view language)
 	return std::filesystem::exists(path);
 }
 
+static std::string_view ChooseLanguage(std::string_view defaultLanguage, ICVar* pLanguageCVar)
+{
+	std::string_view language = WinAPI::CmdLine::GetArgValue("-language");
+
+	if (!language.empty())
+	{
+		return language;
+	}
+
+	if (pLanguageCVar)
+	{
+		const std::string_view value = pLanguageCVar->GetString();
+
+		if (!value.empty())
+		{
+			return value;
+		}
+	}
+
+	language = defaultLanguage;
+
+	if (language.empty())
+	{
+		CryLogAlways("$4[CryMP] Missing or invalid Game/Localized/Default.lng file!");
+		CryLogAlways("$4[CryMP] Trying to guess language from the system!");
+		language = LocalizationManager::GetLanguageFromSystem();
+
+		if (language.empty())
+		{
+			CryLogAlways("$4[CryMP] Failed to guess language from the system!");
+			CryLogAlways("$4[CryMP] Falling back to English language!");
+			language = "English";
+		}
+	}
+
+	bool exists = LanguagePakExists(language);
+	if (!exists)
+	{
+		if (language == "English")
+		{
+			CryLogAlways("$4[CryMP] Not even English language exists!");
+		}
+		else
+		{
+			CryLogAlways("$4[CryMP] %s language does not exist!", language.data());
+			CryLogAlways("$4[CryMP] Falling back to English language!");
+			language = "English";
+
+			exists = LanguagePakExists(language);
+			if (!exists)
+			{
+				CryLogAlways("$4[CryMP] Not even English language exists!");
+			}
+		}
+	}
+
+	if (!exists)
+	{
+		CryLogAlways("$4[CryMP] No suitable language found!");
+
+		WinAPI::ErrorBox(
+			"No suitable language found!\n"
+			"\n"
+			"Localization files are incomplete!\n"
+			"This is a known issue in the Steam version of Crysis.\n"
+			"\n"
+			"You can try the following:\n"
+			"    1. Go to Game/Localized\n"
+			"    2. Choose a suitable *.lng file\n"
+			"    3. Make a copy of that file\n"
+			"    4. Rename the copy to Default.lng\n"
+			"\n"
+			"One or more *.pak files of the chosen language must exist!"
+		);
+
+		// throwing an exception through the engine is undefined behavior
+		std::exit(1);
+	}
+
+	return language;
+}
+
 static void ReplaceLocalizationManager(void* pCrySystem)
 {
 	struct DummyCSystem
@@ -84,68 +166,11 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 		{
 			CryLogAlways("$3[CryMP] Initializing Localization Manager");
 
-			std::string_view language = defaultLanguage;
-			if (language.empty())
-			{
-				CryLogAlways("$4[CryMP] Missing or invalid Game/Localized/Default.lng file!");
-				CryLogAlways("$4[CryMP] Trying to guess the language from the system!");
-				language = LocalizationManager::GetLanguageFromSystem();
-			}
+			ICVar* pLanguageCVar = gEnv->pConsole->GetCVar("g_language");
 
-			if (language.empty())
-			{
-				CryLogAlways("$4[CryMP] Failed to guess the language from the system!");
-				CryLogAlways("$4[CryMP] Falling back to English language!");
-				language = "English";
-			}
-
-			bool exists = LanguagePakExists(language);
-			if (!exists)
-			{
-				if (language == "English")
-				{
-					CryLogAlways("$4[CryMP] Not even English language exists!");
-				}
-				else
-				{
-					CryLogAlways("$4[CryMP] %s language does not exist!", language.data());
-					CryLogAlways("$4[CryMP] Falling back to English language!");
-					language = "English";
-
-					exists = LanguagePakExists(language);
-					if (!exists)
-					{
-						CryLogAlways("$4[CryMP] Not even English language exists!");
-					}
-				}
-			}
-
-			if (!exists)
-			{
-				CryLogAlways("$4[CryMP] No suitable language found!");
-
-				WinAPI::ErrorBox(
-					"No suitable language found!\n"
-					"\n"
-					"Localization files are incomplete!\n"
-					"This is a known issue in the Steam version of Crysis.\n"
-					"\n"
-					"You can try the following:\n"
-					"    1. Go to Game/Localized\n"
-					"    2. Choose a suitable *.lng file\n"
-					"    3. Make a copy of the file\n"
-					"    4. Rename the copy to Default.lng\n"
-					"\n"
-					"At least one matching *.pak file for the chosen *.lng file must exist!"
-				);
-
-				// throwing an exception through the engine is undefined behavior
-				std::exit(1);
-			}
-
+			const std::string_view language = ChooseLanguage(defaultLanguage, pLanguageCVar);
 			CryLogAlways("$3[CryMP] Using %s language", language.data());
 
-			ICVar* pLanguageCVar = gEnv->pConsole->GetCVar("g_language");
 			if (pLanguageCVar)
 			{
 				pLanguageCVar->Set(language.data());
