@@ -486,6 +486,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Items/Weapons/WeaponInput.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.h
+	Code/CryGame/Items/Weapons/WeaponSystem_AmmoData.cpp
 	Code/CryGame/Items/Weapons/ZoomModes/IronSight.cpp
 	Code/CryGame/Items/Weapons/ZoomModes/IronSight.h
 	Code/CryGame/Items/Weapons/ZoomModes/Scope.cpp

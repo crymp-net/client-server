@@ -79,7 +79,6 @@ CWeaponSystem::CWeaponSystem(CGame *pGame, ISystem *pSystem)
 	m_pItemSystem(pGame->GetIGameFramework()->GetIItemSystem()),
 	m_pPrecache(0),
 	m_reloading(false),
-	m_recursing(false),
 	m_frozenEnvironment(false),
 	m_wetEnvironment(false),
 	m_tokensUpdated(false)
@@ -191,8 +190,7 @@ void CWeaponSystem::Reload()
 
 	m_tracerManager.Reset();
 
-	for (TFolderList::iterator it=m_folders.begin(); it!=m_folders.end(); ++it)
-		Scan(it->c_str());
+	this->RegisterAmmoData();
 
 	m_reloading = false;
 }
@@ -423,91 +421,17 @@ int  CWeaponSystem::QueryProjectiles(SProjectileQuery& q)
 }
 
 //------------------------------------------------------------------------
-void CWeaponSystem::Scan(const char *folderName)
+void CWeaponSystem::RegisterAmmo(const char* name, const char* className, const char* script, const char* config, IItemParamsNode* params)
 {
-	string folder = folderName;
-	string search = folder;
-	search += "/*.*";
-
-	if (!m_recursing)
-		CryLog("Loading ammo XML definitions from '%s'!", folderName);
-
-	for (auto& entry : CryFind(search.c_str()))
-	{
-		if (entry.IsDirectory())
-		{
-			string subName = folder + "/" + entry.name;
-			if (m_recursing)
-			{
-				Scan(subName.c_str());
-			}
-			else
-			{
-				m_recursing=true;
-				Scan(subName.c_str());
-				m_recursing=false;
-			}
-			continue;
-		}
-
-		if (_stricmp(CryPath::GetExt(entry.name), "xml"))
-		{
-			continue;
-		}
-
-		string xmlFile = folder + string("/") + string(entry.name);
-		XmlNodeRef rootNode = m_pSystem->LoadXmlFile(xmlFile.c_str());
-
-		if (!rootNode)
-		{
-			CryLogWarning("Invalid XML file '%s'! Skipping...", xmlFile.c_str());
-			continue;
-		}
-
-		ScanXML(rootNode, xmlFile.c_str());
-	}
-
-	if (!m_recursing)
-		CryLog("Finished loading ammo XML definitions from '%s'!", folderName);
-
-	if (!m_reloading && !m_recursing)
-		m_folders.push_back(folderName);
-}
-
-//------------------------------------------------------------------------
-bool CWeaponSystem::ScanXML(XmlNodeRef &root, const char *xmlFile)
-{
-	if (strcmpi(root->getTag(), "ammo"))
-		return false;
-
-	const char *name = root->getAttr("name");
-	if (!name)
-	{
-		CryLogWarning("Missing ammo name in XML '%s'! Skipping...", xmlFile);
-		return false;
-	}
-
-	const char *className = root->getAttr("class");
-
-	if (!className)
-	{
-		CryLogWarning("Missing ammo class in XML '%s'! Skipping...", xmlFile);
-		return false;
-	}
-
-	TProjectileRegistry::iterator it = m_projectileregistry.find(CONST_TEMP_STRING(className));
+	auto it = m_projectileregistry.find(CONST_TEMP_STRING(className));
 	if (it == m_projectileregistry.end())
 	{
-		CryLogWarning("Unknown ammo class '%s' specified in XML '%s'! Skipping...", className, xmlFile);
-		return false;
+		CryLogWarningAlways("Unknown ammo class '%s'! Skipping...", className);
 	}
 
-	const char *scriptName = root->getAttr("script");
 	IEntityClassRegistry::SEntityClassDesc classDesc;
 	classDesc.sName = name;
-	classDesc.sScriptFile = scriptName?scriptName:"";
-	//classDesc.pUserProxyData = (void *)it->second;
-	//classDesc.pUserProxyCreateFunc = &CreateProxy<CProjectile>;
+	classDesc.sScriptFile = script;
 	classDesc.flags |= ECLF_INVISIBLE;
 
 	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
@@ -519,33 +443,29 @@ bool CWeaponSystem::ScanXML(XmlNodeRef &root, const char *xmlFile)
 		assert(pClass);
 	}
 
-
-	TAmmoTypeParams::iterator ait=m_ammoparams.find(pClass);
-	if (ait==m_ammoparams.end())
+	auto ait = m_ammoparams.find(pClass);
+	if (ait == m_ammoparams.end())
 	{
-		std::pair<TAmmoTypeParams::iterator, bool> result = m_ammoparams.insert(TAmmoTypeParams::value_type(pClass, SAmmoTypeDesc()));
-		ait=result.first;
+		auto result = m_ammoparams.insert(TAmmoTypeParams::value_type(pClass, SAmmoTypeDesc()));
+		ait = result.first;
 	}
 
-	const char *configName = root->getAttr("configuration");
+	SAmmoParams* pAmmoParams = new SAmmoParams(params, pClass);
+	SAmmoTypeDesc& desc = ait->second;
 
-	IItemParamsNode *params = m_pItemSystem->CreateParams();
-	params->ConvertFromXML(root);
-
-	SAmmoParams *pAmmoParams=new SAmmoParams(params, pClass);
-
-	SAmmoTypeDesc &desc=ait->second;
-
-	if (!configName || !configName[0])
+	if (!config || !config[0])
 	{
 		if (desc.params)
+		{
 			delete desc.params;
+		}
+
 		desc.params=pAmmoParams;
 	}
 	else
-		desc.configurations.insert(std::make_pair<string, const SAmmoParams*>(configName, static_cast<const SAmmoParams*>(pAmmoParams)));
-
-	return true;
+	{
+		desc.configurations.insert(std::make_pair<string, const SAmmoParams*>(config, static_cast<const SAmmoParams*>(pAmmoParams)));
+	}
 }
 
 //------------------------------------------------------------------------
@@ -715,7 +635,6 @@ void CWeaponSystem::GetMemoryStatistics(ICrySizer * s)
 	s->AddContainer(m_fmregistry);
 	s->AddContainer(m_zmregistry);
 	s->AddContainer(m_projectileregistry);
-	s->AddContainer(m_folders);
 	s->AddContainer(m_queryResults);
 	s->AddContainer(m_config);
 

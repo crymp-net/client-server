@@ -178,7 +178,7 @@ bool CGame::Init(IGameFramework* pFramework)
 
 	string itemFolder = "scripts/entities/items/xml";
 	pFramework->GetIItemSystem()->Scan(itemFolder.c_str());
-	m_pWeaponSystem->Scan(itemFolder.c_str());
+	m_pWeaponSystem->RegisterAmmoData();
 
 	m_pOptionsManager = COptionsManager::CreateOptionsManager();
 

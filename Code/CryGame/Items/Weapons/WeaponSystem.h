@@ -103,8 +103,9 @@ public:
 
 	CTracerManager &GetTracerManager() { return m_tracerManager; };
 
-	void Scan(const char *folderName);
-	bool ScanXML(XmlNodeRef &root, const char *xmlFile);
+	// WeaponSystem_AmmoData.cpp
+	void RegisterAmmoData();
+	void RegisterAmmo(const char* name, const char* className, const char* script, const char* config, IItemParamsNode* params);
 
   static void DebugGun(IConsoleCmdArgs *args = 0);
 	static void RefGun(IConsoleCmdArgs *args = 0);
@@ -143,9 +144,7 @@ private:
 	TAmmoTypeParams			m_ammoparams;
 	TProjectileMap			m_projectiles;
 
-	TFolderList					m_folders;
 	bool								m_reloading;
-	bool								m_recursing;
 
 	string							m_config;
 
