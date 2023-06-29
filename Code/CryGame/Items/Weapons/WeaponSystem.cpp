@@ -11,6 +11,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
@@ -284,7 +285,7 @@ CProjectile *CWeaponSystem::SpawnAmmo(IEntityClass* pAmmoType, bool isRemote, En
 	TAmmoTypeParams::const_iterator it = m_ammoparams.find(pAmmoType);
 	if (it == m_ammoparams.end())
 	{
-		GameWarning("Failed to spawn ammo '%s'! Unknown class or entity class not registered...", pAmmoType?pAmmoType->GetName():"");
+		CryLogWarning("Failed to spawn ammo '%s'! Unknown class or entity class not registered...", pAmmoType?pAmmoType->GetName():"");
 		return 0;
 	}
 
@@ -317,7 +318,7 @@ CProjectile *CWeaponSystem::SpawnAmmo(IEntityClass* pAmmoType, bool isRemote, En
 	IEntity *pEntity = gEnv->pEntitySystem->SpawnEntity(spawnParams);
 	if (!pEntity)
 	{
-		GameWarning("Failed to spawn ammo '%s'! Entity creation failed...", pAmmoType->GetName());
+		CryLogWarning("Failed to spawn ammo '%s'! Entity creation failed...", pAmmoType->GetName());
 		return 0;
 	}
 	
@@ -464,7 +465,7 @@ void CWeaponSystem::Scan(const char *folderName)
 
 			if (!rootNode)
 			{
-				GameWarning("Invalid XML file '%s'! Skipping...", xmlFile.c_str());
+				CryLogWarning("Invalid XML file '%s'! Skipping...", xmlFile.c_str());
 				continue;
 			}
 
@@ -490,7 +491,7 @@ bool CWeaponSystem::ScanXML(XmlNodeRef &root, const char *xmlFile)
 	const char *name = root->getAttr("name");
 	if (!name)
 	{
-		GameWarning("Missing ammo name in XML '%s'! Skipping...", xmlFile);
+		CryLogWarning("Missing ammo name in XML '%s'! Skipping...", xmlFile);
 		return false;
 	}
 
@@ -498,14 +499,14 @@ bool CWeaponSystem::ScanXML(XmlNodeRef &root, const char *xmlFile)
 
 	if (!className)
 	{
-		GameWarning("Missing ammo class in XML '%s'! Skipping...", xmlFile);
+		CryLogWarning("Missing ammo class in XML '%s'! Skipping...", xmlFile);
 		return false;
 	}
 
 	TProjectileRegistry::iterator it = m_projectileregistry.find(CONST_TEMP_STRING(className));
 	if (it == m_projectileregistry.end())
 	{
-		GameWarning("Unknown ammo class '%s' specified in XML '%s'! Skipping...", className, xmlFile);
+		CryLogWarning("Unknown ammo class '%s' specified in XML '%s'! Skipping...", className, xmlFile);
 		return false;
 	}
 

@@ -15,6 +15,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "HUDCommon.h"
 #include "HUD.h"
 

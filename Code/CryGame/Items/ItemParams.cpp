@@ -23,7 +23,7 @@ bool CItem::ReadItemParams(const IItemParamsNode *root)
 {
   if (!root)
   {
-    GameWarning("Warning: ItemParams for item <%s> NULL", GetEntity()->GetName());
+    CryLogWarning("Warning: ItemParams for item <%s> NULL", GetEntity()->GetName());
     return false;
   }
 
@@ -164,13 +164,13 @@ bool CItem::ReadGeometry(const IItemParamsNode *geometry)
 				int islot = TargetToSlot(slot);
 				if (islot == eIGS_Last)
 				{
-					GameWarning("Invalid attachment helper target for item '%s'! Skipping...", GetEntity()->GetName());
+					CryLogWarning("Invalid attachment helper target for item '%s'! Skipping...", GetEntity()->GetName());
 					continue;
 				}
 
 				if (!name || !bone)
 				{
-					GameWarning("Invalid attachment helper specification for item '%s'! Skipping...", GetEntity()->GetName());
+					CryLogWarning("Invalid attachment helper specification for item '%s'! Skipping...", GetEntity()->GetName());
 					continue;
 				}
 
@@ -233,7 +233,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 	const char *actionName = actionparams->GetAttribute("name");
 	if (!actionName)
 	{
-		GameWarning("Missing action name for item '%s'! Skipping...", GetEntity()->GetName());
+		CryLogWarning("Missing action name for item '%s'! Skipping...", GetEntity()->GetName());
 		return false;
 	}
 
@@ -251,7 +251,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 			const char *name = child->GetAttribute("name");
 			if (!name)
 			{
-				GameWarning("Missing name of sound for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
+				CryLogWarning("Missing name of sound for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -260,13 +260,13 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 
 			if ((islot != eIGS_FirstPerson) && (islot != eIGS_ThirdPerson))
 			{
-				GameWarning("Invalid sound target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
+				CryLogWarning("Invalid sound target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
 				return false;
 			}
 
 			if (!pAction->sound[islot].name.empty())
 			{
-				GameWarning("Sound target '%s' for action '%s' in item '%s' already specified! Skipping...", slot, actionName, GetEntity()->GetName());
+				CryLogWarning("Sound target '%s' for action '%s' in item '%s' already specified! Skipping...", slot, actionName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -285,7 +285,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 			const char *name = child->GetAttribute("name");
 			if (!name)
 			{
-				GameWarning("Missing name of animation for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
+				CryLogWarning("Missing name of animation for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -294,7 +294,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 			
 			if (islot == eIGS_Last)
 			{
-				GameWarning("Invalid animation target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
+				CryLogWarning("Invalid animation target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -328,7 +328,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
       const char *name = child->GetAttribute("name");
       if (!name)
       {
-        GameWarning("Missing name of effect for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
+        CryLogWarning("Missing name of effect for action '%s' in item '%s'! Skipping...", actionName, GetEntity()->GetName());
         return false;
       }
 
@@ -337,13 +337,13 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
 
       if ((islot != eIGS_FirstPerson) && (islot != eIGS_ThirdPerson))
       {
-        GameWarning("Invalid effect target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
+        CryLogWarning("Invalid effect target '%s' for action '%s' in item '%s'! Skipping...", slot, actionName, GetEntity()->GetName());
         return false;
       }
 
       if (!pAction->effect[islot].name.empty())
       {
-        GameWarning("Effect target '%s' for action '%s' in item '%s' already specified! Skipping...", slot, actionName, GetEntity()->GetName());
+        CryLogWarning("Effect target '%s' for action '%s' in item '%s' already specified! Skipping...", slot, actionName, GetEntity()->GetName());
         return false;
       }
       
@@ -355,7 +355,7 @@ bool CItem::ReadAction(const IItemParamsNode *actionparams, SAction *pAction)
     }
 		else
 		{
-			GameWarning("Unknown param '%s' for action '%s' in item '%s'! Skipping...", childName, actionName, GetEntity()->GetName());
+			CryLogWarning("Unknown param '%s' for action '%s' in item '%s'! Skipping...", childName, actionName, GetEntity()->GetName());
 			return false;
 		}
 	}
@@ -423,7 +423,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 	const char *layerName = layer->GetAttribute("name");
 	if (!layerName)
 	{
-		GameWarning("Missing layer name for item '%s'! Skipping...", GetEntity()->GetName());
+		CryLogWarning("Missing layer name for item '%s'! Skipping...", GetEntity()->GetName());
 		return false;
 	}
 
@@ -442,7 +442,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 			const char *name = child->GetAttribute("name");
 			if (!name)
 			{
-				GameWarning("Missing name of animation for layer '%s' in item '%s'! Skipping...", layerName, GetEntity()->GetName());
+				CryLogWarning("Missing name of animation for layer '%s' in item '%s'! Skipping...", layerName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -451,7 +451,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 
 			if (islot == eIGS_Last)
 			{
-				GameWarning("Invalid animation target '%s' of for layer '%s' in item '%s'! Skipping...", slot, layerName, GetEntity()->GetName());
+				CryLogWarning("Invalid animation target '%s' of for layer '%s' in item '%s'! Skipping...", slot, layerName, GetEntity()->GetName());
 				return false;
 			}
 
@@ -469,7 +469,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 					const char *name = bone->GetAttribute("name");
 					if (!name)
 					{
-						GameWarning("Missing name of bone for layer '%s' in item '%s'! Skipping...", layerName, GetEntity()->GetName());
+						CryLogWarning("Missing name of bone for layer '%s' in item '%s'! Skipping...", layerName, GetEntity()->GetName());
 						return false;
 					}
 
@@ -479,7 +479,7 @@ bool CItem::ReadLayer(const IItemParamsNode *layer, SLayer *pLayer)
 		}
 		else
 		{
-			GameWarning("Unknown param '%s' for layer '%s' in item '%s'! Skipping...", layer->GetChildName(i), layerName, GetEntity()->GetName());
+			CryLogWarning("Unknown param '%s' for layer '%s' in item '%s'! Skipping...", layer->GetChildName(i), layerName, GetEntity()->GetName());
 			return false;
 		}
 	}
@@ -520,7 +520,7 @@ bool CItem::ReadAccessories(const IItemParamsNode *accessories)
 					const char *name = accessory->GetAttribute("name");
 					if (!name || !name[0])
 					{
-						GameWarning("Missing accessory name for initial setup in item '%s'! Skipping...", GetEntity()->GetName());
+						CryLogWarning("Missing accessory name for initial setup in item '%s'! Skipping...", GetEntity()->GetName());
 						continue;
 					}
 
@@ -528,7 +528,7 @@ bool CItem::ReadAccessories(const IItemParamsNode *accessories)
 				}
 				else
 				{
-					GameWarning("Unknown param '%s' in initial setup for item '%s'! Skipping...", child->GetChildName(k), GetEntity()->GetName());
+					CryLogWarning("Unknown param '%s' in initial setup for item '%s'! Skipping...", child->GetChildName(k), GetEntity()->GetName());
 					continue;
 				}
 			}
@@ -544,7 +544,7 @@ bool CItem::ReadAccessoryParams(const IItemParamsNode *accessory, SAccessoryPara
 	const char *name = accessory->GetAttribute("name");
 	if (!name || !name[0])
 	{
-		GameWarning("Missing accessory name for item '%s'! Skipping...", GetEntity()->GetName());
+		CryLogWarning("Missing accessory name for item '%s'! Skipping...", GetEntity()->GetName());
 		return false;
 	}
 
@@ -553,7 +553,7 @@ bool CItem::ReadAccessoryParams(const IItemParamsNode *accessory, SAccessoryPara
 
 	if (!attach || !detach)
 	{
-		GameWarning("Missing attach/detach details for accessory '%s' in item '%s'! Skipping...", name, GetEntity()->GetName());
+		CryLogWarning("Missing attach/detach details for accessory '%s' in item '%s'! Skipping...", name, GetEntity()->GetName());
 		return false;
 	}
 
@@ -627,7 +627,7 @@ bool CItem::SetGeometryFromParams(int slot, const IItemParamsNode *geometry)
 	const char *name = geometry->GetAttribute("name");
 	if (!name || !name[0])
 	{
-		GameWarning("Missing geometry name for loading item '%s'!", GetEntity()->GetName());
+		CryLogWarning("Missing geometry name for loading item '%s'!", GetEntity()->GetName());
 		return false;
 	}
 
@@ -647,7 +647,7 @@ bool CItem::SetGeometryFromParams(int slot, const IItemParamsNode *geometry)
 				idx = 2;
 			else
 			{
-				GameWarning("Invalid hand '%s' loading item '%s'!", hand, GetEntity()->GetName());
+				CryLogWarning("Invalid hand '%s' loading item '%s'!", hand, GetEntity()->GetName());
 				return false;
 			}
 		}

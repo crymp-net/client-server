@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "PlayerMovementController.h"
 #include "CryCommon/CryGame/GameUtils.h"
@@ -1470,7 +1471,7 @@ void CPlayerMovementController::UpdateMovementState(SMovementState& state)
 	//		assert(state.stance == STANCE_NULL);
 			state.maxSpeed = state.minSpeed;
 			//if (!g_pGame->GetIGameFramework()->IsEditing())
-			//	GameWarning("%s In STANCE_NULL - movement speed is clamped", pEntity->GetName());
+			//	CryLogWarning("%s In STANCE_NULL - movement speed is clamped", pEntity->GetName());
 		}
 		if (state.normalSpeed < state.minSpeed)
 			state.normalSpeed = state.minSpeed;

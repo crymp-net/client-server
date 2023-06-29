@@ -13,6 +13,7 @@ History:
 *************************************************************************/
 
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include "Voting.h"
 
 CVotingSystem::CVotingSystem():

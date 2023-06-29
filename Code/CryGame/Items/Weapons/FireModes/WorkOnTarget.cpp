@@ -11,6 +11,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "WorkOnTarget.h"
 #include "CryGame/Game.h"
 #include "../../Item.h"

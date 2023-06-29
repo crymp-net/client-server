@@ -7,6 +7,7 @@
 #include "HUDRadar.h"
 #include "HUDSilhouettes.h"
 #include "GameFlashAnimation.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Items/Weapons/WeaponSystem.h"

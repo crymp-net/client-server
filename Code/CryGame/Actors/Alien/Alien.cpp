@@ -11,6 +11,7 @@
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "Alien.h"
@@ -1865,7 +1866,7 @@ void CAlien::RagDollize(bool fallAndPlay)
 		sp.mass = m_stats.mass;
 		if (sp.mass <= 0)
 		{
-			GameWarning("Tried ragdollizing alien with 0 mass.");
+			CryLogWarning("Tried ragdollizing alien with 0 mass.");
 			sp.mass = 200.0f;
 		}
 		pPhysEnt->SetParams(&sp);

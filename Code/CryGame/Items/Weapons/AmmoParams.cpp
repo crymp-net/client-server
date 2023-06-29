@@ -304,7 +304,7 @@ void SAmmoParams::LoadPhysics()
 		}
 		else
 		{
-			GameWarning("Unknow physicalization type '%s' for projectile '%s'!", typ, pEntityClass->GetName());
+			CryLogWarning("Unknow physicalization type '%s' for projectile '%s'!", typ, pEntityClass->GetName());
 		}
 	}
 

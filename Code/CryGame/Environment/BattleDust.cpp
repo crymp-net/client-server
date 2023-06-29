@@ -13,6 +13,7 @@ History:
 *************************************************************************/
 
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 
 #include "BattleDust.h"
 

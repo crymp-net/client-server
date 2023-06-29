@@ -5,6 +5,9 @@
 #ifndef __GAMECVARS_H__
 #define __GAMECVARS_H__
 
+struct IConsole;
+struct ICVar;
+
 struct SCVars
 {	
 	static const float v_altitudeLimitDefault()
@@ -471,5 +474,7 @@ struct SCVars
 	void InitCVars(IConsole *pConsole);
 	void ReleaseCVars();
 };
+
+extern struct SCVars *g_pGameCVars;
 
 #endif //__GAMECVARS_H__

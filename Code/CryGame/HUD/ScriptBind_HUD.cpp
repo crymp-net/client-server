@@ -12,6 +12,7 @@
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "ScriptBind_HUD.h"
 #include "HUD.h"
 #include "CryCommon/CryAction/IGameObject.h"
@@ -121,7 +122,7 @@ int CScriptBind_HUD::SetObjectiveStatus(IFunctionHandler* pH, const char* pObjec
 		pObj->SetStatus((CHUDMissionObjective::HUDMissionStatus)status);
 	}
 	else
-		GameWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
+		CryLogWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
 	return pH->EndFunction();
 }
 
@@ -137,7 +138,7 @@ int CScriptBind_HUD::GetObjectiveStatus(IFunctionHandler* pH, const char* pObjec
 		return pH->EndFunction(pObj->GetStatus());
 	}
 	else
-		GameWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
+		CryLogWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
 
 	return pH->EndFunction();
 }
@@ -173,7 +174,7 @@ int CScriptBind_HUD::SetObjectiveEntity(IFunctionHandler* pH, const char* pObjec
 	if (pObj)
 		pObj->SetTrackedEntity((EntityId)entityID.n);
 	else
-		GameWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
+		CryLogWarning("CScriptBind_HUD::Tried to access non existing MissionObjective '%s'", pObjectiveID);
 	return pH->EndFunction();
 }
 

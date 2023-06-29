@@ -20,6 +20,7 @@ History:
 #include "CryCommon/CryGame/IGameTokens.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/CryGame/GameUtils.h"
+#include "CryCommon/CryInput/IInput.h"
 
 
 #define RUNSOUND_FADEIN_TIME 0.5f

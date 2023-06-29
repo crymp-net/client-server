@@ -17,12 +17,14 @@
 #include "CryGame/GameCVars.h"
 #include "Actor.h"
 #include "ScriptBind_Actor.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryAnimation/ICryAnimation.h"
 #include "CryCommon/CryGame/IGameTokens.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IInteractor.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "CryGame/Items/Item.h"
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "Player/Player.h"
@@ -1322,7 +1324,7 @@ void CActor::Update(SEntityUpdateContext& ctx, int slot)
 		UpdateFootSteps(ctx.fFrameTime);
 
 	//if (!m_pAnimatedCharacter)
-	//	GameWarning("%s has no AnimatedCharacter!", GetEntity()->GetName());
+	//	CryLogWarning("%s has no AnimatedCharacter!", GetEntity()->GetName());
 
 	if (GetHealth() > 0.0f || (gEnv->bMultiplayer && GetSpectatorMode() != eASM_None))
 	{
@@ -2495,7 +2497,7 @@ bool CActor::CheckInventoryRestrictions(const char* itemClassName)
 	const char* itemCategory = m_pItemSystem->GetItemCategory(itemClassName);
 	if (!itemCategory)
 	{
-		GameWarning("Item class %s has no category", itemClassName);
+		CryLogWarning("Item class %s has no category", itemClassName);
 		return false;
 	}
 
@@ -2528,7 +2530,7 @@ bool CActor::CheckVirtualInventoryRestrictions(const std::vector<string>& invent
 	const char* itemCategory = m_pItemSystem->GetItemCategory(itemClassName);
 	if (!itemCategory)
 	{
-		GameWarning("Item class %s has no category", itemClassName);
+		CryLogWarning("Item class %s has no category", itemClassName);
 		return false;
 	}
 
@@ -2836,7 +2838,7 @@ void CActor::SelectItem(EntityId itemId, bool keepHistory)
 
 		if (pInventory->FindItem(itemId) < 0)
 		{
-			//GameWarning("Trying to select an item which is not in %s's inventory!", GetEntity()->GetName());
+			//CryLogWarning("Trying to select an item which is not in %s's inventory!", GetEntity()->GetName());
 			return;
 		}
 
@@ -3284,7 +3286,7 @@ IMPLEMENT_RMI(CActor, SvRequestDropItem)
 	CItem* pItem = GetItem(params.itemId);
 	if (!pItem)
 	{
-		GameWarning("[gamenet] Failed to drop item. Item not found!");
+		CryLogWarning("[gamenet] Failed to drop item. Item not found!");
 		return false;
 	}
 

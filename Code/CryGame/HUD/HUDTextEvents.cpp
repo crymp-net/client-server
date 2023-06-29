@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "HUD.h"
 #include "GameFlashAnimation.h"
 #include "GameFlashLogic.h"
@@ -579,7 +580,7 @@ void CHUD::SubtitleCreateChunks(CHUD::SSubtitleEntry& entry, const wstring& loca
 
 		if (nChunks == MAX_CHUNKS-1)
 		{
-			GameWarning("CHUD::SubtitleCreateChunks: Localization Entry '%s' exceeds max. number of chunks [%d]", entry.key.c_str(), MAX_CHUNKS);
+			CryLogWarning("CHUD::SubtitleCreateChunks: Localization Entry '%s' exceeds max. number of chunks [%d]", entry.key.c_str(), MAX_CHUNKS);
 			break;
 		}
 		startPos = pos+tokenLen;

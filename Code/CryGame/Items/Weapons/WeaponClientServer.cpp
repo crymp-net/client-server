@@ -11,6 +11,7 @@
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "Weapon.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Game.h"
@@ -514,7 +515,7 @@ IMPLEMENT_RMI(CWeapon, ClShootX)
 	}
 	else
 	{
-		GameWarning("ClShootX: invalid entity id %.8x", params.eid);
+		CryLogWarning("ClShootX: invalid entity id %.8x", params.eid);
 	}
 
 	return true;

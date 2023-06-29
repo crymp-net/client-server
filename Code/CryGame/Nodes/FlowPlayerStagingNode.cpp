@@ -102,7 +102,7 @@ public:
 					if (stance < STANCE_NULL || stance >= STANCE_LAST)
 					{
 						stance = STANCE_NULL;
-						GameWarning("[flow] PlayerStaging: stance=%d invalid", stance);
+						CryLogWarning("[flow] PlayerStaging: stance=%d invalid", stance);
 					}
 					stagingParams.stance = (EStance) stance;
 

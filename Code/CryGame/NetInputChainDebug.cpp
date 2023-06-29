@@ -12,6 +12,7 @@ History:
 *************************************************************************/
 
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "NetInputChainDebug.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/ITextModeConsole.h"

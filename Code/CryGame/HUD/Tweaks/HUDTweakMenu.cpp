@@ -14,6 +14,7 @@ History:
 
 
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "HUDTweakMenu.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
@@ -308,12 +309,12 @@ SmartScriptTable CHUDTweakMenu::FetchSaveTable( void ) {
 	IScriptSystem * pScripts = gEnv->pScriptSystem;
 	SmartScriptTable tweakTable;
 	if (! pScripts->GetGlobalValue("Tweaks", tweakTable)) {
-		gEnv->pLog->Log("Can't find Tweak table");
+		CryLogWarning("Can't find Tweak table");
 	}
 
 	SmartScriptTable saveTable;
 	if (!tweakTable->GetValue("TweaksSave", saveTable)) {
-		gEnv->pLog->Log("Can't find Tweak save tables");
+		CryLogWarning("Can't find Tweak save tables");
 	}
 
 	return saveTable;
@@ -342,7 +343,7 @@ void CHUDTweakMenu::WriteChanges( void ) {
 		fprintf(file, "%s", luaText.c_str());
 		fclose(file);
 	} else {
-		gEnv->pLog->Log("No save - failed to open Tweak save file");
+		CryLogWarning("No save - failed to open Tweak save file");
 	}
 }
 

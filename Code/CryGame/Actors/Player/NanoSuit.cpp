@@ -28,6 +28,7 @@
 #include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryGame/IGameTokens.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 
 CNanoSuit::SNanoMaterial g_USNanoMats[NANOMODE_LAST];
 CNanoSuit::SNanoMaterial g_AsianNanoMats[NANOMODE_LAST];
@@ -803,7 +804,7 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 		break;
 	default:
 		assert(0);
-		GameWarning("Non existing NANOMODE selected: %d", mode);
+		CryLogWarning("Non existing NANOMODE selected: %d", mode);
 		return false;
 	}
 

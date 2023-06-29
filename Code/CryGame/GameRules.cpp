@@ -2996,7 +2996,7 @@ void CGameRules::ResetReviveCycleTime()
 {
 	if (!gEnv->bServer)
 	{
-		GameWarning("CGameRules::ResetReviveCycleTime() called on client");
+		CryLogWarning("CGameRules::ResetReviveCycleTime() called on client");
 		return;
 	}
 
@@ -3022,7 +3022,7 @@ void CGameRules::ResetGameStartTimer(float time)
 {
 	if (!gEnv->bServer)
 	{
-		GameWarning("CGameRules::ResetGameStartTimer() called on client");
+		CryLogWarning("CGameRules::ResetGameStartTimer() called on client");
 		return;
 	}
 

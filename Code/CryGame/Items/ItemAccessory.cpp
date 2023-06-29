@@ -24,7 +24,7 @@ CItem* CItem::AddAccessory(const ItemString& name)
 	SAccessoryParams* pAccessoryParams = GetAccessoryParams(name);
 	if (!pAccessoryParams)
 	{
-		GameWarning("Trying to add unknown accessory '%s' to item '%s'!", name.c_str(), GetEntity()->GetName());
+		CryLogWarning("Trying to add unknown accessory '%s' to item '%s'!", name.c_str(), GetEntity()->GetName());
 		return 0;
 	}
 
@@ -42,7 +42,7 @@ CItem* CItem::AddAccessory(const ItemString& name)
 
 	if (!params.pClass)
 	{
-		GameWarning("Trying to add unknown accessory '%s' to item '%s'!", name.c_str(), GetEntity()->GetName());
+		CryLogWarning("Trying to add unknown accessory '%s' to item '%s'!", name.c_str(), GetEntity()->GetName());
 		return 0;
 	}
 

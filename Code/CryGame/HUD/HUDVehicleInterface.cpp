@@ -221,7 +221,7 @@ void CHUDVehicleInterface::OnEnterVehicle(CPlayer* pPlayer)
 
 	if (m_pVehicle)
 	{
-		GameWarning("[HUD]: Attempt to enter a vehicle while already in one!");
+		CryLogWarning("[HUD]: Attempt to enter a vehicle while already in one!");
 		return;
 	}
 

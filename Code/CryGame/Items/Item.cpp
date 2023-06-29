@@ -11,6 +11,7 @@
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "CryGame/Game.h"
@@ -834,7 +835,7 @@ void CItem::PostSerialize()
 			//}
 		}
 		else
-			GameWarning("Item %s has ownerId %i but owner actor does not exist!", GetEntity()->GetName(), m_ownerId);
+			CryLogWarning("Item %s has ownerId %i but owner actor does not exist!", GetEntity()->GetName(), m_ownerId);
 	}
 
 	if (m_stats.mounted && !m_hostId)
@@ -1514,7 +1515,7 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 	IInventory* pInventory = GetActorInventory(pActor);
 	if (!pInventory)
 	{
-		GameWarning("Actor '%s' has no inventory, when trying to pickup '%s'!", pActor->GetEntity()->GetName(), GetEntity()->GetName());
+		CryLogWarning("Actor '%s' has no inventory, when trying to pickup '%s'!", pActor->GetEntity()->GetName(), GetEntity()->GetName());
 		return;
 	}
 
@@ -1772,7 +1773,7 @@ void CItem::AttachArms(bool attach, bool shadow)
 
 		if (!pAttachment)
 		{
-			GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetEntity()->GetName(), m_params.attachment[m_stats.hand].c_str());
+			CryLogWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetEntity()->GetName(), m_params.attachment[m_stats.hand].c_str());
 			return;
 		}
 
@@ -2283,7 +2284,7 @@ bool CItem::AttachToHand(bool attach, bool checkAttachment)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.attachment[m_stats.hand].c_str());
+		CryLogWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.attachment[m_stats.hand].c_str());
 		return false;
 	}
 
@@ -2422,9 +2423,9 @@ bool CItem::AttachToBack(bool attach)
 		if (!pAttachment)
 		{
 			if (m_stats.backAttachment == eIBA_Primary)
-				GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_01.c_str());
+				CryLogWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_01.c_str());
 			else
-				GameWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_02.c_str());
+				CryLogWarning("Item owner '%s' doesn't have third-person item attachment point '%s'!", pOwner->GetName(), m_params.bone_attachment_02.c_str());
 
 			m_stats.backAttachment = eIBA_Unknown;
 		}

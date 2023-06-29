@@ -631,6 +631,8 @@ protected:
 	void InitAIData(const IItemParamsNode* aiDescriptor);
 	void InitAIOffsets(const IItemParamsNode* aiOffsetData);
 
+	static float LinePointDistanceSqr(const Line& line, const Vec3& point, float zScale = 1.0f);
+
 	EntityId	GetLAMAttachment();
 	EntityId  GetFlashlightAttachment();
 

@@ -77,7 +77,7 @@ uint CItem::AttachEffect(int slot, uint id, bool attach, const char* effectName,
 
 			if (!pAttachment)
 			{
-				GameWarning("Item '%s' trying to attach effect '%s' to attachment '%s' which does not exist!", GetEntity()->GetName(), effectName, helper);
+				CryLogWarning("Item '%s' trying to attach effect '%s' to attachment '%s' which does not exist!", GetEntity()->GetName(), effectName, helper);
 				return 0;
 			}
 
@@ -215,7 +215,7 @@ uint CItem::AttachLight(int slot, uint id, bool attach, float radius, const Vec3
 
 			if (!light.m_pLightImage || !light.m_pLightImage->IsTextureLoaded())
 			{
-				GameWarning("Item '%s' failed to load projecting light texture '%s'!", GetEntity()->GetName(), projectTexture);
+				CryLogWarning("Item '%s' failed to load projecting light texture '%s'!", GetEntity()->GetName(), projectTexture);
 				return 0;
 			}
 		}
@@ -292,7 +292,7 @@ uint CItem::AttachLight(int slot, uint id, bool attach, float radius, const Vec3
 
 			if (!pAttachment)
 			{
-				GameWarning("Item '%s' trying to attach light to attachment '%s' which does not exist!", GetEntity()->GetName(), helper);
+				CryLogWarning("Item '%s' trying to attach light to attachment '%s' which does not exist!", GetEntity()->GetName(), helper);
 				return 0;
 			}
 
@@ -391,7 +391,7 @@ uint CItem::AttachLightEx(int slot, uint id, bool attach, bool fakeLight /*= fal
 
 			if (!light.m_pLightImage || !light.m_pLightImage->IsTextureLoaded())
 			{
-				GameWarning("Item '%s' failed to load projecting light texture '%s'!", GetEntity()->GetName(), projectTexture);
+				CryLogWarning("Item '%s' failed to load projecting light texture '%s'!", GetEntity()->GetName(), projectTexture);
 				return 0;
 			}
 		}
@@ -461,7 +461,7 @@ uint CItem::AttachLightEx(int slot, uint id, bool attach, bool fakeLight /*= fal
 
 			if (!pAttachment)
 			{
-				GameWarning("Item '%s' trying to attach light to attachment '%s' which does not exist!", GetEntity()->GetName(), helper);
+				CryLogWarning("Item '%s' trying to attach light to attachment '%s' which does not exist!", GetEntity()->GetName(), helper);
 				return 0;
 			}
 
@@ -605,7 +605,7 @@ IParticleEmitter* CItem::GetEffectEmitter(uint id) const
 			if (!pEffectAttachment)
 			{
 				// commenting out for silencer functionality
-				//GameWarning("CItem::GetEffectEmitter: no effect attachment on %s (helper %s)", GetEntity()->GetName(), info.helper.c_str());
+				//CryLogWarning("CItem::GetEffectEmitter: no effect attachment on %s (helper %s)", GetEntity()->GetName(), info.helper.c_str());
 				return 0;
 			}
 			return pEffectAttachment->GetEmitter();

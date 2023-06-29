@@ -151,7 +151,7 @@ public:
 		if (p_x != 0) return *p_x;
 		SFlowNodeConfig config;
 		const_cast<CFlowBaseNode*> (this)->GetConfiguration(config);
-		GameWarning("CFlowBaseNode::GetPortBool: Node=%p Port=%d '%s' Tag=%d -> Not a bool tag!", this, nPort,
+		CryLogWarning("CFlowBaseNode::GetPortBool: Node=%p Port=%d '%s' Tag=%d -> Not a bool tag!", this, nPort,
 			config.pInputPorts[nPort].name,
 			pActInfo->pInputPorts[nPort].GetTag());
 		return false;
@@ -188,7 +188,7 @@ public:
 		const static string empty ("");
 		SFlowNodeConfig config;
 		const_cast<CFlowBaseNode*> (this)->GetConfiguration(config);
-		GameWarning("CFlowBaseNode::GetPortString: Node=%p Port=%d '%s' Tag=%d -> Not a string tag!", this, nPort,
+		CryLogWarning("CFlowBaseNode::GetPortString: Node=%p Port=%d '%s' Tag=%d -> Not a string tag!", this, nPort,
 			config.pInputPorts[nPort].name,
 			pActInfo->pInputPorts[nPort].GetTag());
 		return empty;

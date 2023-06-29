@@ -123,7 +123,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/ConfigurableVariant.h
 	Code/CryCommon/CryCore/CryArray.h
 	Code/CryCommon/CryCore/CryFixedString.h
-	Code/CryCommon/CryCore/CryModuleDefs.h
 	Code/CryCommon/CryCore/CryName.h
 	Code/CryCommon/CryCore/CryPodArray.h
 	Code/CryCommon/CryCore/CrySizer.h

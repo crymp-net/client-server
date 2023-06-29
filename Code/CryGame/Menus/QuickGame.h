@@ -16,6 +16,8 @@ History:
 
 #pragma once
 
+#include <memory>
+
 struct IServerBrowser;
 class  CMPHub;
 class  CQuickGameDlg;

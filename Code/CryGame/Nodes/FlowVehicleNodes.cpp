@@ -12,6 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IFlowSystem.h"

@@ -1016,7 +1016,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 
 	if (mapInfo == 0)
 	{
-		GameWarning("Did not find a map info file %s in %s.", sXml.c_str(), mapName.c_str());
+		CryLogWarning("Did not find a map info file %s in %s.", sXml.c_str(), mapName.c_str());
 	}
 	else
 	{
@@ -3730,7 +3730,7 @@ void CFlashMenuObject::OnSaveGame(ISaveGame* pSaveGame)
 			if (captureDestWidth > imageWidth || captureDestHeight > imageHeight)
 			{
 				assert(false);
-				GameWarning("CFlashMenuObject::OnSaveGame: capWidth=%d capHeight=%d", captureDestWidth, captureDestHeight);
+				CryLogWarning("CFlashMenuObject::OnSaveGame: capWidth=%d capHeight=%d", captureDestWidth, captureDestHeight);
 				captureDestHeight = imageHeight;
 				captureDestWidth = imageWidth;
 				captureDestOffX = captureDestOffY = 0;
@@ -3891,7 +3891,7 @@ struct ForceSetEntrySink : public ILoadConfigurationEntrySink
 		}
 		else
 		{
-			GameWarning("%s : Can only set existing CVars during loading (no commands!) (%s = %s)", m_who, szKey, szValue);
+			CryLogWarning("%s : Can only set existing CVars during loading (no commands!) (%s = %s)", m_who, szKey, szValue);
 		}
 	}
 

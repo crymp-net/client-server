@@ -1599,7 +1599,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 
 		if (!m_pClientActor)
 		{
-			GameWarning("Tried loading a map without having a client.");
+			CryLogWarning("Tried loading a map without having a client.");
 			return;
 		}
 
@@ -1656,7 +1656,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 	XmlNodeRef mapInfo = GetISystem()->LoadXmlFile(fullPath.c_str());
 	if (mapInfo == 0)
 	{
-		GameWarning("Did not find a level meta data file %s in %s.", fullPath.c_str(), mapName.c_str());
+		CryLogWarning("Did not find a level meta data file %s in %s.", fullPath.c_str(), mapName.c_str());
 		return;
 	}
 
@@ -1698,7 +1698,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 								mapNr = n;
 							else
 							{
-								GameWarning("Couldn't read map index correctly : %s.", keyString.c_str());
+								CryLogWarning("Couldn't read map index correctly : %s.", keyString.c_str());
 								return;
 							}
 						}
@@ -2876,7 +2876,7 @@ void CHUDRadar::SetMiniMapTexture(int mapId, bool forceUpdate)
 {
 	if (mapId < 0 || mapId >= NUM_MAP_TEXTURES)
 	{
-		GameWarning("Failed loading map texture id %i. (out of id space, current maximum are %i)", mapId, NUM_MAP_TEXTURES);
+		CryLogWarning("Failed loading map texture id %i. (out of id space, current maximum are %i)", mapId, NUM_MAP_TEXTURES);
 		return;
 	}
 
@@ -2895,7 +2895,7 @@ void CHUDRadar::SetMiniMapTexture(int mapId, bool forceUpdate)
 
 	}
 	else
-		GameWarning("Failed loading map texture id %i.", mapId);
+		CryLogWarning("Failed loading map texture id %i.", mapId);
 }
 
 bool CHUDRadar::RadarBounds_Inside(const Vec2& pos, Vec2& intersectionPoint)

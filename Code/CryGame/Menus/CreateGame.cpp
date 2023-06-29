@@ -12,6 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "MPHub.h"
 #include "MPLobbyUI.h"
 #include "MultiplayerMenu.h"

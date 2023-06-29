@@ -34,6 +34,8 @@ History:
 #include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
+#include "CryCommon/CrySystem/IConsole.h"
 
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
@@ -3822,7 +3824,7 @@ void CPlayer::RagDollize(bool fallAndPlay)
 
 		if (sp.mass <= 0.0f)
 		{
-			GameWarning("Tried ragdollizing player with 0 mass.");
+			CryLogWarning("Tried ragdollizing player with 0 mass.");
 			sp.mass = 80.0f;
 		}
 
@@ -4200,7 +4202,7 @@ void CPlayer::Freeze(bool freeze)
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (!pCharacter)
 	{
-		GameWarning("CPlayer::Freeze: no character instance");
+		CryLogWarning("CPlayer::Freeze: no character instance");
 		return;
 	}
 
@@ -4221,7 +4223,7 @@ void CPlayer::Freeze(bool freeze)
 		assert(pPhysicalEntity);
 		if (!pPhysicalEntity)
 		{
-			GameWarning("CPlayer::Freeze: no physical entity");
+			CryLogWarning("CPlayer::Freeze: no physical entity");
 			return;
 		}
 

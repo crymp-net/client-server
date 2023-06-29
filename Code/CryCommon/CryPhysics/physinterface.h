@@ -1949,13 +1949,6 @@ struct ray_hit_cached {
 	int iNode;
 };
 
-#ifndef PWI_NAME_TAG
-#define PWI_NAME_TAG "PrimitiveWorldIntersection"
-#endif
-#ifndef RWI_NAME_TAG
-#define RWI_NAME_TAG "RayWorldIntersection"
-#endif
-
 struct pe_explosion {
 	pe_explosion() { nOccRes=0; nGrow=0; rminOcc=0.1f; holeSize=0; explDir.Set(0,0,1); iholeType=0; forceDeformEntities=false; }
 	Vec3 epicenter;
@@ -2242,7 +2235,7 @@ struct IPhysicalWorld {
 	*/
 	virtual int RayWorldIntersection(Vec3 org,Vec3 dir, int objtypes, unsigned int flags, ray_hit *hits,int nMaxHits,
 		IPhysicalEntity **pSkipEnts=0,int nSkipEnts=0, void *pForeignData=0,int iForeignData=0, 
-		const char *pNameTag=RWI_NAME_TAG, ray_hit_cached *phitLast=0, int iCaller=1) = 0;
+		const char *pNameTag="RayWorldIntersection(Game)", ray_hit_cached *phitLast=0, int iCaller=1) = 0;
 	int RayWorldIntersection(Vec3 org,Vec3 dir, int objtypes, unsigned int flags, ray_hit *hits,int nMaxHits, 
 		IPhysicalEntity *pSkipEnt,IPhysicalEntity *pSkipEntAux=0, void *pForeignData=0,int iForeignData=0) 
 	{
@@ -2329,7 +2322,7 @@ struct IPhysicalWorld {
 	//		distance to the first hit for sweep checks and the number of hits for intersection checks (as float)
 	virtual float PrimitiveWorldIntersection(int itype, primitives::primitive *pprim, const Vec3 &sweepDir=Vec3(ZERO), int entTypes=ent_all, 
 		geom_contact **ppcontact=0, int geomFlagsAll=0,int geomFlagsAny=geom_colltype0|geom_colltype_player, intersection_params *pip=0,
-		void *pForeignData=0, int iForeignData=0, IPhysicalEntity **pSkipEnts=0,int nSkipEnts=0, const char *pNameTag=PWI_NAME_TAG) = 0;
+		void *pForeignData=0, int iForeignData=0, IPhysicalEntity **pSkipEnts=0,int nSkipEnts=0, const char *pNameTag="PrimitiveWorldIntersection(Game)") = 0;
 
 	virtual void GetMemoryStatistics(ICrySizer *pSizer) = 0;
 

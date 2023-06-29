@@ -12,12 +12,11 @@
 #include "IGameObjectSystem.h"
 #endif
 
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryNetwork/SerializeFwd.h"
 #include "IActionMapManager.h"
 #include "CryCommon/CryCore/PoolAllocator.h"
-
-inline void GameWarning(const char * ,...) PRINTF_PARAMS(1, 2);
 
 struct IGameObjectExtension;
 struct IGameObjectView;
@@ -380,18 +379,18 @@ public:
 			}
 			else
 			{
-				sprintf(msg, "Game object extension with base %.8x for entity %s for RMI %s not found", (uint32)m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
-				GameWarning("%s", msg);
+				snprintf(msg, sizeof(msg), "Game object extension with base %.8x for entity %s for RMI %s not found", (uint32)m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
+				CryLogWarning("%s", msg);
 			}
 		}
 		else
 		{
-			sprintf(msg, "Entity %d for RMI %s not found", m_id, m_pRMI->pMsgDef->description);
+			snprintf(msg, sizeof(msg), "Entity %d for RMI %s not found", m_id, m_pRMI->pMsgDef->description);
 		}
 
 		if (!ok)
 		{
-			GameWarning("Error handling RMI %s", m_pRMI->pMsgDef->description);
+			CryLogWarning("Error handling RMI %s", m_pRMI->pMsgDef->description);
 
 			if (!foundObject && !gEnv->bServer && !m_pChannel->IsInTransition())
 			{

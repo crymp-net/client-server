@@ -45,7 +45,7 @@ bool CItem::CreateCharacterAttachment(int slot, const char* name, int type, cons
 
 	if (pAttachment)
 	{
-		//		GameWarning("Item '%s' trying to create attachment '%s' which already exists!", GetEntity()->GetName(), name);
+		//		CryLogWarning("Item '%s' trying to create attachment '%s' which already exists!", GetEntity()->GetName(), name);
 		return false;
 	}
 
@@ -54,7 +54,7 @@ bool CItem::CreateCharacterAttachment(int slot, const char* name, int type, cons
 	if (!pAttachment)
 	{
 		if (type == CA_BONE)
-			GameWarning("Item '%s' failed to create attachment '%s' on bone '%s'!", GetEntity()->GetName(), name, bone);
+			CryLogWarning("Item '%s' failed to create attachment '%s' on bone '%s'!", GetEntity()->GetName(), name, bone);
 		return false;
 	}
 
@@ -84,7 +84,7 @@ void CItem::ResetCharacterAttachment(int slot, const char* name)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to reset attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to reset attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -103,7 +103,7 @@ const char* CItem::GetCharacterAttachmentBone(int slot, const char* name)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to get attachment bone on '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to get attachment bone on '%s' which does not exist!", GetEntity()->GetName(), name);
 		return 0;
 	}
 
@@ -122,7 +122,7 @@ void CItem::SetCharacterAttachment(int slot, const char* name, IEntity* pEntity,
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to attach entity on '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to attach entity on '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -145,7 +145,7 @@ void CItem::SetCharacterAttachment(int slot, const char* name, IStatObj* pObj, i
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to attach static object on '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to attach static object on '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -167,7 +167,7 @@ void CItem::SetCharacterAttachment(int slot, const char* name, ICharacterInstanc
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to attach character on '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to attach character on '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -197,7 +197,7 @@ void CItem::SetCharacterAttachment(int slot, const char* name, CDLight& light, i
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to attach light on '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to attach light on '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -233,7 +233,7 @@ void CItem::SetCharacterAttachmentLocalTM(int slot, const char* name, const Matr
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to set local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to set local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -252,7 +252,7 @@ void CItem::SetCharacterAttachmentWorldTM(int slot, const char* name, const Matr
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to set world TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to set world TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -275,7 +275,7 @@ Matrix34 CItem::GetCharacterAttachmentLocalTM(int slot, const char* name)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to get local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to get local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return Matrix34::CreateIdentity();
 	}
 
@@ -294,7 +294,7 @@ Matrix34 CItem::GetCharacterAttachmentWorldTM(int slot, const char* name)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to get local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to get local TM on attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return Matrix34::CreateIdentity();
 	}
 
@@ -313,7 +313,7 @@ void CItem::HideCharacterAttachment(int slot, const char* name, bool hide)
 
 	if (!pAttachment)
 	{
-		GameWarning("Item '%s' trying to hide attachment '%s' which does not exist!", GetEntity()->GetName(), name);
+		CryLogWarning("Item '%s' trying to hide attachment '%s' which does not exist!", GetEntity()->GetName(), name);
 		return;
 	}
 
@@ -486,7 +486,7 @@ void CItem::SetDefaultIdleAnimation(int slot, const ItemString& actionName)
 	TActionMap::iterator it = m_sharedparams->actions.find(actionName);
 	if (it == m_sharedparams->actions.end())
 	{
-		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
+		//		CryLogWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
 		return;
 	}
 
@@ -638,7 +638,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 	TActionMap::iterator it = m_sharedparams->actions.find(actionName);
 	if (it == m_sharedparams->actions.end())
 	{
-		//		GameWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
+		//		CryLogWarning("Action '%s' not found on item '%s'!", actionName, GetEntity()->GetName());
 
 		for (int i = 0;i < eIGS_Last;i++)
 		{

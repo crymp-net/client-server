@@ -17,6 +17,7 @@ History:
 
 #pragma once
 
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryGame/GameCVars.h"
 

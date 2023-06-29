@@ -2,6 +2,7 @@
 #include <string_view>
 
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/GameRules.h"
 #include "Library/WinAPI.h"
 

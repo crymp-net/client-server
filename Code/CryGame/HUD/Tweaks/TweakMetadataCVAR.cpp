@@ -13,8 +13,10 @@ History:
 *************************************************************************/
 
 #include "CryGame/StdAfx.h"
-#include "TweakMetadataCVAR.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
+
+#include "TweakMetadataCVAR.h"
 
 //-------------------------------------------------------------------------
 

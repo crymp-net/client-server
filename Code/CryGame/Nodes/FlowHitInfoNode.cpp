@@ -108,7 +108,7 @@ public:
 		CGameRules* pGR = g_pGame->GetGameRules();
 		if (!pGR)
 		{
-			GameWarning("[flow] CFlowHitInfoNode::DoRegister: No GameRules!");
+			CryLogWarning("[flow] CFlowHitInfoNode::DoRegister: No GameRules!");
 			return;
 		}
 
@@ -288,7 +288,7 @@ public:
 		CGameRules* pGR = g_pGame->GetGameRules();
 		if (!pGR)
 		{
-			GameWarning("[flow] CFlowExplosionInfoNode::DoRegister No GameRules!");
+			CryLogWarning("[flow] CFlowExplosionInfoNode::DoRegister No GameRules!");
 			return;
 		}
 

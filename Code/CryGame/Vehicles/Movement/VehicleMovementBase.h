@@ -20,6 +20,7 @@ History:
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "VehicleMovementTweaks.h"
 
 #include "CryCommon/CryCore/platform.h"

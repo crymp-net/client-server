@@ -138,7 +138,7 @@ void CHUDMissionObjectiveSystem::LoadLevelObjectives(const char *filename)
 				m_currentMissionObjectives.push_back(CHUDMissionObjective(this, id.c_str(), objective, text, mapLabel, secondaryObjective));
 			}
 			else
-				GameWarning("Error reading mission objectives.");
+				CryLogWarning("Error reading mission objectives.");
 		}
 	}
 }

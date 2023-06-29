@@ -3,6 +3,8 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryInput/IInput.h"
 #include "Radio.h"
 #include "GameRules.h"
 #include "Game.h"

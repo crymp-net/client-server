@@ -19,6 +19,7 @@ History:
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CryAction/IGameObjectSystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "WeaponSystem.h"
 #include "Weapon.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
@@ -241,7 +242,7 @@ void CWeapon::InitFireModes(const IItemParamsNode* firemodes)
 
 		if (!typ || !typ[0])
 		{
-			GameWarning("Missing type for firemode in weapon '%s'! Skipping...", GetEntity()->GetName());
+			CryLogWarning("Missing type for firemode in weapon '%s'! Skipping...", GetEntity()->GetName());
 			continue;
 		}
 
@@ -250,14 +251,14 @@ void CWeapon::InitFireModes(const IItemParamsNode* firemodes)
 
 		if (!name || !name[0])
 		{
-			GameWarning("Missing name for firemode in weapon '%s'! Skipping...", GetEntity()->GetName());
+			CryLogWarning("Missing name for firemode in weapon '%s'! Skipping...", GetEntity()->GetName());
 			continue;
 		}
 
 		IFireMode* pFireMode = g_pGame->GetWeaponSystem()->CreateFireMode(typ);
 		if (!pFireMode)
 		{
-			GameWarning("Cannot create firemode '%s' in weapon '%s'! Skipping...", typ, GetEntity()->GetName());
+			CryLogWarning("Cannot create firemode '%s' in weapon '%s'! Skipping...", typ, GetEntity()->GetName());
 			continue;
 		}
 		pFireMode->SetName(name);
@@ -317,7 +318,7 @@ void CWeapon::InitZoomModes(const IItemParamsNode* zoommodes)
 
 		if (!typ || !typ[0])
 		{
-			GameWarning("Missing type for zoommode in weapon '%s'! Skipping...", GetEntity()->GetName());
+			CryLogWarning("Missing type for zoommode in weapon '%s'! Skipping...", GetEntity()->GetName());
 			continue;
 		}
 
@@ -326,14 +327,14 @@ void CWeapon::InitZoomModes(const IItemParamsNode* zoommodes)
 
 		if (!name || !name[0])
 		{
-			GameWarning("Missing name for zoommode in weapon '%s'! Skipping...", GetEntity()->GetName());
+			CryLogWarning("Missing name for zoommode in weapon '%s'! Skipping...", GetEntity()->GetName());
 			continue;
 		}
 
 		IZoomMode* pZoomMode = g_pGame->GetWeaponSystem()->CreateZoomMode(typ);
 		if (!pZoomMode)
 		{
-			GameWarning("Cannot create zoommode '%s' in weapon '%s'! Skipping...", typ, GetEntity()->GetName());
+			CryLogWarning("Cannot create zoommode '%s' in weapon '%s'! Skipping...", typ, GetEntity()->GetName());
 			continue;
 		}
 
@@ -658,7 +659,7 @@ void CWeapon::FullSerialize(TSerialize ser)
 		{
 			assert(numFiremodes == GetNumOfFireModes());
 			if (numFiremodes != GetNumOfFireModes())
-				GameWarning("Num of firemodes changed - loading will be corrupted.");
+				CryLogWarning("Num of firemodes changed - loading will be corrupted.");
 		}
 		
 		//for (int i = 0; i < numFiremodes; ++i)
@@ -781,7 +782,7 @@ void CWeapon::SerializeLTL(TSerialize ser)
 		{
 			assert(numFiremodes == GetNumOfFireModes());
 			if (numFiremodes != GetNumOfFireModes())
-				GameWarning("Num of firemodes changed - loading will be corrupted.");
+				CryLogWarning("Num of firemodes changed - loading will be corrupted.");
 		}
 		for (int i = 0; i < numFiremodes; ++i)
 			m_firemodes[i]->Serialize(ser);
@@ -866,7 +867,7 @@ void CWeapon::Update(SEntityUpdateContext& ctx, int update)
 			m_dofValue += m_dofSpeed * ctx.fFrameTime;
 			m_dofValue = CLAMP(m_dofValue, 0, 1);
 
-			//GameWarning("Actual DOF value = %f",m_dofValue);
+			//CryLogWarning("Actual DOF value = %f",m_dofValue);
 			if (m_dofSpeed < 0.0f)
 			{
 				m_focusValue -= m_dofSpeed * ctx.fFrameTime * 150.0f;
@@ -2911,7 +2912,7 @@ void CWeapon::ActivateLamLaser(bool activate, bool aiRequest /* = true */)
 	}
 	else
 	{
-		GameWarning("No LAM attached!! Laser could not be activated/deactivated");
+		CryLogWarning("No LAM attached!! Laser could not be activated/deactivated");
 	}
 }
 
@@ -2932,7 +2933,7 @@ void CWeapon::ActivateLamLight(bool activate, bool aiRequest /* = true */)
 	}
 	else
 	{
-		GameWarning("No LAM attached!! Light could not be activated/deactivated");
+		CryLogWarning("No LAM attached!! Light could not be activated/deactivated");
 	}
 }
 
@@ -3771,4 +3772,18 @@ void CWeapon::CacheRaisePose()
 		m_raisePose = (uint8)eWeaponRaisedPose_Rocket;
 	else if (strcmp(name, "mg") == 0)
 		m_raisePose = (uint8)eWeaponRaisedPose_MG;
+}
+
+//------------------------------------------------
+float CWeapon::LinePointDistanceSqr(const Line& line, const Vec3& point, float zScale)
+{
+	Vec3 x0=point;
+	Vec3 x1=line.pointonline;
+	Vec3 x2=line.pointonline+line.direction;
+
+	x0.z*=zScale;
+	x1.z*=zScale;
+	x2.z*=zScale;
+
+	return ((x2-x1).Cross(x1-x0)).GetLengthSquared()/(x2-x1).GetLengthSquared();
 }

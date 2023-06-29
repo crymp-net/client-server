@@ -3,6 +3,8 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryInput/IInput.h"
 #include "PlayerInput.h"
 #include "Player.h"
 #include "CryGame/Game.h"
@@ -1015,7 +1017,7 @@ void CPlayerInput::GetState(SSerializedPlayerInput& input)
 
 void CPlayerInput::SetState(const SSerializedPlayerInput& input)
 {
-	GameWarning("CPlayerInput::SetState called: should never happen");
+	CryLogWarning("CPlayerInput::SetState called: should never happen");
 }
 
 void CPlayerInput::SerializeSaveGame(TSerialize ser)

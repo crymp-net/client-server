@@ -11,6 +11,7 @@
 
 *************************************************************************/
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "GameCVars.h"
 #include "GameRules.h"
 #include "Items/ItemSharedParams.h"
@@ -1250,7 +1251,7 @@ void CGame::CmdReloadGameRules(IConsoleCmdArgs* pArgs)
 		if (pGameRulesSystem->CreateGameRules(name))
 			CryLog("reloaded GameRules <%s>", name);
 		else
-			GameWarning("reloading GameRules <%s> failed!", name);
+			CryLogWarningAlways("reloading GameRules <%s> failed!", name);
 	}
 }
 

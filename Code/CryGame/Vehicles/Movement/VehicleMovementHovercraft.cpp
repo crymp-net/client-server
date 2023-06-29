@@ -211,7 +211,7 @@ bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
   }
   else
   {
-    GameWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
+    CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
     m_pEntity->GetLocalBounds(bbox);
   }
 

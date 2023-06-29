@@ -251,14 +251,14 @@ bool CGame::Init(IGameFramework* pFramework)
 
 						if (pProfile == 0)
 						{
-							GameWarning("[GameProfiles]: Cannot activate profile '%s' for user '%s'. Trying to re-create.", desc.name, userName);
+							CryLogWarningAlways("[GameProfiles]: Cannot activate profile '%s' for user '%s'. Trying to re-create.", desc.name, userName);
 							IPlayerProfileManager::EProfileOperationResult profileResult;
 							m_pPlayerProfileManager->CreateProfile(userName, desc.name, true, profileResult); // override if present!
 							pProfile = m_pPlayerProfileManager->ActivateProfile(userName, desc.name);
 							if (pProfile == 0)
-								GameWarning("[GameProfiles]: Cannot activate profile '%s' for user '%s'.", desc.name, userName);
+								CryLogWarningAlways("[GameProfiles]: Cannot activate profile '%s' for user '%s'.", desc.name, userName);
 							else
-								GameWarning("[GameProfiles]: Successfully re-created profile '%s' for user '%s'.", desc.name, userName);
+								CryLogWarningAlways("[GameProfiles]: Successfully re-created profile '%s' for user '%s'.", desc.name, userName);
 						}
 
 						if (pProfile)
@@ -276,20 +276,20 @@ bool CGame::Init(IGameFramework* pFramework)
 					}
 					else
 					{
-						GameWarning("[GameProfiles]: Cannot get profile info for user '%s'", userName);
+						CryLogWarningAlways("[GameProfiles]: Cannot get profile info for user '%s'", userName);
 					}
 				}
 			}
 			else
 			{
-				GameWarning("[GameProfiles]: User 'dude' has no profiles");
+				CryLogWarningAlways("[GameProfiles]: User 'dude' has no profiles");
 			}
 		}
 		else
-			GameWarning("[GameProfiles]: Cannot login user '%s'", userName);
+			CryLogWarningAlways("[GameProfiles]: Cannot login user '%s'", userName);
 	}
 	else
-		GameWarning("[GameProfiles]: PlayerProfileManager not available. Running without.");
+		CryLogWarningAlways("[GameProfiles]: PlayerProfileManager not available. Running without.");
 
 	m_pOptionsManager->SetProfileManager(m_pPlayerProfileManager);
 

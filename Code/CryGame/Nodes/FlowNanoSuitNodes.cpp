@@ -398,7 +398,7 @@ public:
 					int mode = GetPortInt(pActInfo, EIP_Mode);
 					if (mode < 0 || mode >= sizeof(PortInt2ModeMapping)/sizeof(PortInt2ModeMapping[0]))
 					{
-						GameWarning("[flow] CFlowNanoSuitControlNode: Illegal mode %d", mode);
+						CryLogWarning("[flow] CFlowNanoSuitControlNode: Illegal mode %d", mode);
 						return;
 					}
 					if (bAdd)

@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "PlayerMovement.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryGame/Game.h"

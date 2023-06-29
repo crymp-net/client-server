@@ -11,6 +11,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "Single.h"
 #include "../../Item.h"
 #include "../Weapon.h"
@@ -26,6 +27,7 @@ History:
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "CryGame/GameRules.h"
 #include "CryCommon/CryMath/Cry_GeoDistance.h"
 #include "CryGame/Actors/Player/IPlayerInput.h"

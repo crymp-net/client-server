@@ -11,6 +11,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "CryGame/Game.h"
 #include "Detonate.h"
 #include "../WeaponSystem.h"

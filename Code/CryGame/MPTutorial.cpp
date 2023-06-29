@@ -13,6 +13,7 @@ History:
 *************************************************************************/
 
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 
 #include "MPTutorial.h"
 
@@ -630,7 +631,7 @@ void CMPTutorial::CreateTextChunks(const wstring& localizedString)
 
 		if (m_currentEvent.m_numChunks == MAX_CHUNKS-1)
 		{
-			GameWarning("CMPTutorial::CreateTextChunks: tutorial event '%S' exceeds max. number of chunks [%d]", localizedString.c_str(), MAX_CHUNKS);
+			CryLogWarning("CMPTutorial::CreateTextChunks: tutorial event '%S' exceeds max. number of chunks [%d]", localizedString.c_str(), MAX_CHUNKS);
 			break;
 		}
 		startPos = pos+tokenLen;

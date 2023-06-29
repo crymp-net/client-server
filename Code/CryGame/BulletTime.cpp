@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include "BulletTime.h"
 #include "GameCVars.h"
 #include "CryCommon/CrySoundSystem/ISound.h"

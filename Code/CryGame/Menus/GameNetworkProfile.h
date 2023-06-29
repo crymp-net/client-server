@@ -17,6 +17,10 @@ History:
 
 #pragma once
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "CryCommon/CryCore/StlUtils.h"
 #include "CryCommon/CryNetwork/INetworkService.h"
 

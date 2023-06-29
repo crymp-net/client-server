@@ -305,7 +305,7 @@ bool CC4Projectile::StickToCharacter(bool stick, IEntity* pActor)
 
 	if (!pAttachment)
 	{
-		GameWarning("No c4 face attachment found in actor");
+		CryLogWarning("No c4 face attachment found in actor");
 		if (!pAttachment)
 			return false;
 	}

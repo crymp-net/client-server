@@ -113,7 +113,7 @@ bool CVehicleMovementStdBoat::Init(IVehicle* pVehicle, const SmartScriptTable &t
 	}
 	else
 	{
-		GameWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
+		CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
 		m_pEntity->GetLocalBounds(bbox);
 	}
 

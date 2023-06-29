@@ -1665,7 +1665,7 @@ int CScriptBind_Actor::SetNanoSuitMode(IFunctionHandler* pH, int mode)
 	if (CNanoSuit* pSuit = ((CPlayer*)pActor)->GetNanoSuit())
 		pSuit->SetMode((ENanoMode)mode);
 	else
-		GameWarning("Lua tried to set NanoMode on not activated/existing Nanosuit of Player %s!", pActor->GetEntity()->GetName());
+		CryLogWarning("Lua tried to set NanoMode on not activated/existing Nanosuit of Player %s!", pActor->GetEntity()->GetName());
 
 	return pH->EndFunction();
 }

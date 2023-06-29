@@ -433,7 +433,7 @@ void COffHand::PostPostSerialize()
 			IEntity* pEntity = m_pEntitySystem->GetEntity(m_heldEntityId);
 			if (!pEntity)
 			{
-				GameWarning("Offhand held entity did not exist anymore! Perhaps it was a boid ... ");
+				CryLogWarning("Offhand held entity did not exist anymore! Perhaps it was a boid ... ");
 				needsReset = true;
 			}
 			else

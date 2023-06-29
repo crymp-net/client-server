@@ -12,6 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryNetwork/INetworkService.h"
 #include "QuickGame.h"
