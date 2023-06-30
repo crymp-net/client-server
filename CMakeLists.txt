@@ -146,6 +146,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/functor.h
 	Code/CryCommon/CryCore/platform.h
 	Code/CryCommon/CryCore/smartptr.h
+	Code/CryCommon/CryEntitySystem/EntityId.h
 	Code/CryCommon/CryEntitySystem/IEntity.h
 	Code/CryCommon/CryEntitySystem/IEntityClass.h
 	Code/CryCommon/CryEntitySystem/IEntityProxy.h

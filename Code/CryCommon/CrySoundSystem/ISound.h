@@ -19,6 +19,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CryMath/Cry_Math.h"
 #include "CryCommon/CrySystem/TimeValue.h"
 #include "CryCommon/CryNetwork/SerializeFwd.h"
@@ -41,10 +42,6 @@ struct IMicrophoneStream;
 struct IEntitySoundProxy;
 
 struct IVisArea;
-
-// need this explicit here to prevent circular includes to IEntity
-typedef unsigned int EntityId;	//! unique identifier for each entity instance
-
 
 // Unique ID of a sound
 typedef uint32	tSoundID;

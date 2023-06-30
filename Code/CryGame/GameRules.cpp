@@ -28,6 +28,7 @@
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "Items/Weapons/WeaponSystem.h"
 #include "CryCommon/CryAction/IUIDraw.h"
+#include "CryCommon/CryEntitySystem/EntityId.h"
 
 #include "ServerSynchedStorage.h"
 

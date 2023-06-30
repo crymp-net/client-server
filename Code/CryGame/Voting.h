@@ -15,6 +15,9 @@ History:
 #ifndef __VOTING_H__
 #define __VOTING_H__
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
+#include "CryCommon/CrySystem/TimeValue.h"
+
 #pragma once
 
 // Summary

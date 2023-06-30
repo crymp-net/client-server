@@ -18,6 +18,7 @@
 # pragma once
 #endif
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
 
 //

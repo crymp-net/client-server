@@ -26,6 +26,7 @@ History:
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"
+#include "CryCommon/CryEntitySystem/EntityId.h"
 
 #include "Items/Weapons/Weapon.h"
 #include "Items/Weapons/WeaponSystem.h"

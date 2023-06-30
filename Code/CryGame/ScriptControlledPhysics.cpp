@@ -11,6 +11,8 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
+#include "CryCommon/CryCore/TArray.h"  // CLAMP
+#include "CryCommon/CryPhysics/IPhysics.h"
 #include "ScriptControlledPhysics.h"
 
 

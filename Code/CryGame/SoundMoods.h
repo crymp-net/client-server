@@ -18,7 +18,8 @@ History:
 //-----------------------------------------------------------------------------------------------------
 
 #include "CryCommon/CryNetwork/ISerialize.h"
-#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
+
+struct ISoundMoodManager;
 
 //-----------------------------------------------------------------------------------------------------
 

@@ -16,6 +16,7 @@ History:
 #pragma once
 
 #include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryCore/CrySizer.h"
 
 class CShake : public CGameObjectExtensionHelper<CShake, IGameObjectExtension>
 {

@@ -13,6 +13,7 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CryAction/IUIDraw.h"
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "HUD.h"

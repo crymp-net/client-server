@@ -53,6 +53,7 @@ enum enumGroupParamSemantics
 };
 // forward declaration
 
+struct ptParam;
 struct ISoundMoodManager;
 
 struct ICategory : public _i_reference_target_t

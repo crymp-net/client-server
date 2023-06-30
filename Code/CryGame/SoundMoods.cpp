@@ -13,6 +13,8 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "SoundMoods.h"
 

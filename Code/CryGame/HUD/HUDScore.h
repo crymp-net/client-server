@@ -14,6 +14,8 @@ History:
 #ifndef __HUDSCORE_H__
 #define __HUDSCORE_H__
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
+
 #include "HUDObject.h"
 
 struct IActor;

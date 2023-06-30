@@ -18,6 +18,7 @@ History:
 # pragma once
 #endif
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
 
 class CTracer
 {

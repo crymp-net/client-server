@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CryCommon/CryCore/ConfigurableVariant.h"
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CryNetwork/SerializeFwd.h"
 
 // Help message.

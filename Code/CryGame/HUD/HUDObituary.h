@@ -17,6 +17,7 @@ History:
 
 #include "HUDObject.h"
 #include "CryCommon/CryInput/IInput.h"
+#include "CryCommon/CrySystem/TimeValue.h"
 
 struct IFFont;
 

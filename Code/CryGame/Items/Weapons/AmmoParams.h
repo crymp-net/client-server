@@ -10,6 +10,8 @@
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IWeapon.h"
 
+struct ISurfaceType;
+
 struct SScaledEffectParams
 {
 	const char* ppname;

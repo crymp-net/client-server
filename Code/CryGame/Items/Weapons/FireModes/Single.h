@@ -109,11 +109,7 @@ public:
 				PreLoadAssets();
 			}
 		}
-		void PreLoadAssets()
-		{
-			for (int i = 0; i < 2; i++)
-				gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
-		}
+		void PreLoadAssets();
 		void GetMemoryStatistics(ICrySizer * s)
 		{
 			for (int i=0; i<2; i++)
@@ -300,11 +296,8 @@ protected:
 		int			frequency;
 		ItemString	helper[2];
 
-		void PreLoadAssets()
-		{
-			gEnv->p3DEngine->FindParticleEffect(effect.c_str());
-			gEnv->p3DEngine->FindParticleEffect(effectFP.c_str());
-		}
+		void PreLoadAssets();
+
 		void GetMemoryStatistics(ICrySizer * s)
 		{
 			s->Add(geometry);
@@ -339,11 +332,8 @@ protected:
 		float		duration;
 		float		cooldown_time;
 
-		void PreLoadAssets()
-		{
-			for (int i = 0; i < 2; i++)
-				gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
-		}
+		void PreLoadAssets();
+
 		void GetMemoryStatistics(ICrySizer * s)
 		{
 			for (int i=0; i<2; i++)

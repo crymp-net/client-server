@@ -19,6 +19,7 @@
 #endif
 
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 

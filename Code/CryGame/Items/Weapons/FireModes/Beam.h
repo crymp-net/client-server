@@ -61,11 +61,7 @@ class CBeam :
 			}
 		};
 
-		void PreLoadAssets()
-		{
-			for (int i = 0; i < 2; i++)
-				gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
-		}
+		void PreLoadAssets();
 
 		void GetMemoryStatistics(ICrySizer * s)
 		{
@@ -103,10 +99,8 @@ class CBeam :
 			PreLoadAssets();
 		};
 
-		void PreLoadAssets()
-		{
-			gEnv->p3DEngine->FindParticleEffect(hit_effect.c_str());
-		}
+		void PreLoadAssets();
+
 		void GetMemoryStatistics(ICrySizer * s)
 		{
 			s->Add(hit_effect);

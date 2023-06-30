@@ -21,6 +21,7 @@ History:
 
 #include <vector>
 #include "CryCommon/CrySystem/ITimer.h"
+#include "CryCommon/CryCore/CrySizer.h"
 #include "CryCommon/CryCore/PoolAllocator.h"
 
 

@@ -18,7 +18,20 @@ History:
 #include "CryGame/GameRules.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
 
+void CBeam::SBeamEffectParams::PreLoadAssets()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
+	}
+}
+
+void CBeam::SBeamParams::PreLoadAssets()
+{
+	gEnv->p3DEngine->FindParticleEffect(hit_effect.c_str());
+}
 
 //------------------------------------------------------------------------
 CBeam::CBeam()

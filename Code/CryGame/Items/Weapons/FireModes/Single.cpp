@@ -34,6 +34,7 @@ History:
 
 #include "../ZoomModes/IronSight.h"
 
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
@@ -60,7 +61,27 @@ DBG_shoot DGB_shots[DGB_ShotCounter];
 // remove over
 //---------------------------------------------------------------------------
 
+void CSingle::SEffectParams::PreLoadAssets()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
+	}
+}
 
+void CSingle::STracerParams::PreLoadAssets()
+{
+	gEnv->p3DEngine->FindParticleEffect(effect.c_str());
+	gEnv->p3DEngine->FindParticleEffect(effectFP.c_str());
+}
+
+void CSingle::SHeatingParams::PreLoadAssets()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		gEnv->p3DEngine->FindParticleEffect(effect[i].c_str());
+	}
+}
 
 //------------------------------------------------------------------------
 CSingle::CSingle()

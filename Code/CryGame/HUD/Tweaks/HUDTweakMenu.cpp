@@ -23,6 +23,7 @@ History:
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryGame/IGame.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryCore/CrySizer.h"
 //-----------------------------------------------------------------------------------------------------
 
 CHUDTweakMenu::CHUDTweakMenu(IScriptSystem *pScriptSystem) //, m_menu(pScriptSystem)

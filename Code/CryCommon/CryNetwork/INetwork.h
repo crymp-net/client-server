@@ -29,6 +29,8 @@
 #endif
 
 #include "ISerialize.h"
+
+#include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CrySystem/ITimer.h"
 
 #include <vector>				// STL vector<>
@@ -72,8 +74,6 @@ struct IContextEstablisher;
 struct INetSendable;
 
 class CNetSerialize;
-
-typedef unsigned int EntityId;
 
 typedef _smart_ptr<IRMIMessageBody> IRMIMessageBodyPtr;
 

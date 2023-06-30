@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
 #include "CryGame/Game.h"
 #include "G2FlowBaseNode.h"
 

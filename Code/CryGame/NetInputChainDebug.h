@@ -18,6 +18,8 @@ History:
 	#define ENABLE_NETINPUTCHAINDEBUG 1
 #endif
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
+
 void NetInputChainInitCVars();
 
 #if ENABLE_NETINPUTCHAINDEBUG

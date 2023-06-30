@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "CryCommon/CrySystem/TimeValue.h"
+
 enum EGameplayEvent
 {
 	eGE_DiscreetSample = 0,

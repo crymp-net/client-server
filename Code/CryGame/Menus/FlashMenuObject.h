@@ -21,6 +21,7 @@ History:
 #include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 
 //-----------------------------------------------------------------------------------------------------
 

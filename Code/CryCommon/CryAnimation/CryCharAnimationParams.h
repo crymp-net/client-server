@@ -6,6 +6,7 @@
 #define _CRY_COMMON_CRY_CHAR_ANIMATION_PARAMS_HDR_
 
 
+#include "CryCommon/CryCore/TArray.h"  // LERP
 #include "CryCommon/CryNetwork/ISerialize.h"
 
 
