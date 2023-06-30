@@ -24,7 +24,7 @@ enum EPhysicalizationType
 struct IFireMode
 {
 	virtual void Init(IWeapon *pWeapon, const struct IItemParamsNode *params) = 0;
-	virtual void Update(float frameTime, uint frameId) = 0;
+	virtual void Update(float frameTime, unsigned int frameId) = 0;
 	virtual void PostUpdate(float frameTime) = 0;
 	virtual void UpdateFPView(float frameTime) = 0;
 	virtual void Release() = 0;
@@ -119,7 +119,7 @@ struct IFireMode
 struct IZoomMode
 {
 	virtual void Init(IWeapon *pWeapon, const struct IItemParamsNode *params) = 0;
-	virtual void Update(float frameTime, uint frameId) = 0;
+	virtual void Update(float frameTime, unsigned int frameId) = 0;
 	virtual void Release() = 0;
 	virtual void GetMemoryStatistics(ICrySizer * s) = 0;
 

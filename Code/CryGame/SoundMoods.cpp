@@ -163,7 +163,7 @@ void CSoundMoods::Serialize(TSerialize ser)
 	if(!m_pSoundMoodManager)
 		return;
 
-	uint uiSoundMood = 0;
+	unsigned int uiSoundMood = 0;
 	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter,++uiSoundMood)
 	{
 		SSoundMood *pSoundMood = &(*iter);

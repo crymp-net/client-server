@@ -85,7 +85,7 @@ void CItemScheduler::Update(float frameTime)
 
 	if (!m_timers.empty())
 	{
-		uint count=0;
+		unsigned int count=0;
 		m_actives.swap(m_timers);
 
 		for (TTimerActionVector::iterator it = m_actives.begin(); it != m_actives.end(); it++)
@@ -141,7 +141,7 @@ void CItemScheduler::ScheduleAction(ISchedulerAction *action, bool persistent)
 }
 
 //------------------------------------------------------------------------
-void CItemScheduler::TimerAction(uint time, ISchedulerAction *action, bool persistent)
+void CItemScheduler::TimerAction(unsigned int time, ISchedulerAction *action, bool persistent)
 {
 	if (m_locked)
 		return;

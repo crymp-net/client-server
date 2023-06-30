@@ -447,7 +447,7 @@ void CFists::FullSerialize(TSerialize ser)
 }
 
 //-----------------------------------------------------
-tSoundID CFists::PlayAction(const ItemString& action, int layer /* =0  */, bool loop /* =false  */, uint flags /* = eIPAF_Default  */, float speedOverride /* = -1.0f  */)
+tSoundID CFists::PlayAction(const ItemString& action, int layer /* =0  */, bool loop /* =false  */, unsigned int flags /* = eIPAF_Default  */, float speedOverride /* = -1.0f  */)
 {
 	if (action == g_pItemStrings->offhand_on && m_currentAnimState == eFAS_RELAXED)
 		return CWeapon::PlayAction(g_pItemStrings->offhand_on_akimbo, layer, loop, flags, speedOverride);

@@ -83,7 +83,7 @@ void CTacBullet::HandleEvent(const SGameObjectEvent &event)
 		else if (pCollision->pEntity[0]->GetType() == PE_PARTICLE)
 		{
 			float bouncy, friction;
-			uint	pierceabilityMat;
+			unsigned int pierceabilityMat;
 			gEnv->pPhysicalWorld->GetSurfaceParameters(pCollision->idmat[1], bouncy, friction, pierceabilityMat);
 			pierceabilityMat&=sf_pierceable_mask;
 

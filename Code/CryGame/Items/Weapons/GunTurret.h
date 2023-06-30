@@ -381,7 +381,7 @@ private:
   uint8 m_fireHint;
 
 	tSoundID m_turretSound,m_cannonSound,m_lightSound;
-  uint m_lightId;  
+  unsigned int m_lightId;
 
   Matrix34 m_barrelRotation;
 

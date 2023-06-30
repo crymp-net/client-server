@@ -1166,11 +1166,11 @@ void CItem::Select(bool select)
 			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend);
 
 		//ForceSkinning(true);
-		uint selectBusyTimer = 0;
+		unsigned int selectBusyTimer = 0;
 		if (m_params.select_override == 0.0f)
 			selectBusyTimer = MAX(250, GetCurrentAnimationTime(eIGS_FirstPerson)) - 250;
 		else
-			selectBusyTimer = (uint)m_params.select_override * 1000;
+			selectBusyTimer = (unsigned int)m_params.select_override * 1000;
 		SetBusy(true);
 		GetScheduler()->TimerAction(selectBusyTimer, CSchedulerAction<SelectAction>::Create(), false);
 

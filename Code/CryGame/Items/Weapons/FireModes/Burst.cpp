@@ -26,7 +26,7 @@ CBurst::~CBurst()
 }
 
 //------------------------------------------------------------------------
-void CBurst::Update(float frameTime, uint frameId)
+void CBurst::Update(float frameTime, unsigned int frameId)
 {
 	CSingle::Update(frameTime, frameId);
 

@@ -69,16 +69,16 @@ struct IRenderMesh
 
 	virtual unsigned short *GetIndices(int * pIndicesCount) = 0;
 
-	virtual byte *GetStridedPosPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
-	virtual byte *GetStridedUVPtr(int & Stride, int Id=0, bool bWrite=false) = 0;
-	virtual byte *GetStridedColorPtr(int & Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedPosPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedUVPtr(int & Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedColorPtr(int & Stride, int Id=0, bool bWrite=false) = 0;
 
-	virtual byte *GetStridedHWSkinPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
-	virtual byte *GetStridedShapePtr(int& Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedHWSkinPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedShapePtr(int& Stride, int Id=0, bool bWrite=false) = 0;
 
 
-	virtual byte *GetStridedBinormalPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
-	virtual byte *GetStridedTangentPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedBinormalPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
+	virtual unsigned char *GetStridedTangentPtr(int& Stride, int Id=0, bool bWrite=false) = 0;
 
   virtual void UnlockStream(int nStream) = 0;
 
@@ -99,7 +99,7 @@ struct IRenderMesh
 
 	virtual void * GetCustomData() = 0;
 	virtual CVertexBuffer * GetVideoVertBuffer() = 0;
-	virtual void UpdateSysIndices(const ushort *pNewInds, int nInds) = 0;
+	virtual void UpdateSysIndices(const unsigned short *pNewInds, int nInds) = 0;
 	virtual void UpdateSysVertices(void * pNewVertices, int nNewVerticesCount, int nVertFormat, int nStream) = 0;
   virtual void UpdateVidVertices(void * pNewVertices, int nNewVerticesCount, int nStream, bool bReleaseSys)=0;
   virtual bool CreateSysVertices(int nVerts=0, int VertFormat=-1, int nStream=VSF_GENERAL)=0;
@@ -111,17 +111,17 @@ struct IRenderMesh
   virtual void UpdateBBoxFromMesh() = 0;
 	virtual void InvalidateVideoBuffer(int flags=-1) = 0;
 	virtual void AddRE(CRenderObject * pObj, IShader * pEf, int nList=EFSLIST_GENERAL, int nAW=1) = 0;
-	virtual uint GetUpdateFrame() = 0;
+	virtual unsigned int GetUpdateFrame() = 0;
 	virtual void SetVertexContainer(IRenderMesh *pBuf) = 0;
-	virtual void SetUpdateFrame(uint nUpdateFrame) = 0;
+	virtual void SetUpdateFrame(unsigned int nUpdateFrame) = 0;
 	virtual bool IsMaterialsWasCreatedInRenderer() = 0;
 	virtual int	GetPrimetiveType() = 0;
 	virtual int GetVertexFormat() = 0;
 //	virtual bool CreateFromVertexBufferSource( struct VertexBufferSource* pSource ) = 0;
 	virtual void Render(const struct SRendParams & rParams, CRenderObject * pObj, IMaterial *pMaterial, bool bSkinned=false) = 0;
 	virtual void RenderDebugLightPass(const Matrix34 & mat, const int nLightMask, const float fAlpha, const int nMaxLightNumber) = 0;
-	virtual uint * GetPhysVertexMap() = 0;
-	virtual void SetPhysVertexMap(uint * pVtxMap) = 0;
+	virtual unsigned int * GetPhysVertexMap() = 0;
+	virtual void SetPhysVertexMap(unsigned int * pVtxMap) = 0;
 	virtual bool IsEmpty() = 0;
 	virtual void CopyTo(IRenderMesh *pDst, bool bUseSysBuf, int nAppendVtx=0) = 0;
 	virtual void SetSkinningDataVegetation(struct SMeshBoneMapping *pBoneMapping, Vec3 *pBSStreamTemp=0) = 0;

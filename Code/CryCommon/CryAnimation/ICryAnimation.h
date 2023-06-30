@@ -34,10 +34,8 @@
 #include "CryCommon/CryMath/Cry_Geo.h"
 
 #include "CryCommon/CryRenderer/IRenderer.h"
-#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryRenderer/ISkinnable.h"
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
-#include "CryCommon/CryEntitySystem/IEntityRenderState.h"
-#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "CryCharAnimationParams.h"

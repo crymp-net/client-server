@@ -15,6 +15,7 @@ History:
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryCommon/Cry3DEngine/ParticleParams.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "Weapons/Weapon.h"
 #include "CryGame/GameCVars.h"
 
@@ -24,7 +25,7 @@ History:
 #define  LASER_UPDATE_TIME		0.15f
 #define  LASER_UPDATE_TIME_FP 0.15f
 
-uint CLam::s_lightCount = 0;		//Init light count
+unsigned int CLam::s_lightCount = 0;		//Init light count
 
 
 CLam::CLam()

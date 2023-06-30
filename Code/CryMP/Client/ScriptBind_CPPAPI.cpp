@@ -690,7 +690,7 @@ int ScriptBind_CPPAPI::GetLoadingScreenMapPicturePath(IFunctionHandler* pH, cons
 		size = 1;
 	}
 
-	uint iUse = cry_rand() % size;
+	unsigned int iUse = cry_rand() % size;
 	string sImg = rootName;
 	sImg.append("/");
 	sImg.append(screenArray[iUse]);

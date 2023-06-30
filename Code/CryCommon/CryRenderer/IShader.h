@@ -145,7 +145,7 @@ enum EParamType
 
 union UParamVal
 {
-  byte m_Byte;
+  unsigned char m_Byte;
   bool m_Bool;
   short m_Short;
   int m_Int;
@@ -209,8 +209,8 @@ struct SShaderParam
 
   static bool SetParam(const char* name, DynArray<SShaderParam> *Params, UParamVal& pr)
   {
-    uint i;
-    for (i=0; i<(uint)Params->size(); i++)
+    unsigned int i;
+    for (i=0; i<(unsigned int)Params->size(); i++)
     { 
       SShaderParam *sp = &(*Params)[i]; 
       if (!sp)
@@ -339,16 +339,6 @@ struct SRenderObjData
 //////////////////////////////////////////////////////////////////////
 // Objects using in shader pipeline
 
-// interface for the skinnable objects (renderer calls its functions to get teh skinning data)
-struct ISkinnable 
-{
-  virtual void AddRef() = 0;
-  virtual void Release() = 0;
-
-  //! Renderer calls this function to allow update the video vertex buffers right before the rendering
-  virtual uint32 GetSkeletonPose(int nLod, const Matrix34& RenderMat34, QuatTS*& pBoneQuatsL, QuatTS*& pBoneQuatsS, QuatTS*& pMBBoneQuatsL, QuatTS*& pMBBoneQuatsS, Vec4 shapeDeformationData[], uint32 &DoWeNeedMorphtargets, uint8*& pRemapTable ) = 0;
-};
-
 //same as in the 3dEngine
 #define MAX_LIGHTS_NUM 32
 
@@ -384,7 +374,7 @@ public:
   int16 m_nObjDataId;
   uint16 m_FogVolumeContribIdx;
 
-  uint m_ObjFlags;
+  unsigned int m_ObjFlags;
 
   SInstanceInfo m_II;
   Matrix34 m_prevMatrix;
@@ -394,7 +384,7 @@ public:
   uint8                       m_nMotionBlurAmount;        // per object motion blur scale
   uint8												m_AlphaRef;								//
 
-  uint                        m_DynLMMask;
+  unsigned int                        m_DynLMMask;
 
   // Different useful vars (ObjVal component in shaders)
   // [0] - used for blending trees sun-rabbits on distance (0-1)
@@ -403,7 +393,7 @@ public:
   CRendElement *							m_pRE;										//
   IRenderMesh *               m_pWeights;								//
   void *											m_CustomData;							//  
-  uint												m_RState;									//
+  unsigned int												m_RState;									//
 
   float												m_fSort;									// Custom sort value
 
@@ -504,10 +494,10 @@ public:
   // - and we need to store only the offset, not the actual pointer
   void* operator new( size_t Size )
   {
-    byte *ptr = (byte *)malloc(Size+16+4);
+    unsigned char *ptr = (unsigned char *)malloc(Size+16+4);
     memset(ptr, 0, Size+16+4);
-    byte *bPtrRes = (byte *)((INT_PTR)(ptr+4+16) & ~0xf);
-    ((byte**)bPtrRes)[-1] = ptr;
+    unsigned char *bPtrRes = (unsigned char *)((INT_PTR)(ptr+4+16) & ~0xf);
+    ((unsigned char**)bPtrRes)[-1] = ptr;
 
     return bPtrRes;
   }
@@ -517,10 +507,10 @@ public:
   }
   void* operator new[](size_t Size)
   {
-    byte *ptr = (byte *)malloc(Size+16+2*sizeof(INT_PTR));
+    unsigned char *ptr = (unsigned char *)malloc(Size+16+2*sizeof(INT_PTR));
     memset(ptr, 0, Size+16+2*sizeof(INT_PTR));
-    byte *bPtrRes = (byte *)((INT_PTR)(ptr+16+2*sizeof(INT_PTR)) & ~0xf);
-    ((byte**)bPtrRes)[-2] = ptr;
+    unsigned char *bPtrRes = (unsigned char *)((INT_PTR)(ptr+16+2*sizeof(INT_PTR)) & ~0xf);
+    ((unsigned char**)bPtrRes)[-2] = ptr;
 
     return bPtrRes-sizeof(INT_PTR);
   }
@@ -530,14 +520,14 @@ public:
   }
   void operator delete( void *Ptr )
   {
-    byte *bActualPtr = ((byte **)Ptr)[-1];
-    assert (bActualPtr <= (byte*)Ptr && (byte*)Ptr-bActualPtr < 20);
+    unsigned char *bActualPtr = ((unsigned char **)Ptr)[-1];
+    assert (bActualPtr <= (unsigned char*)Ptr && (unsigned char*)Ptr-bActualPtr < 20);
     free ((void *)bActualPtr);
   }
 
   void operator delete[]( void *Ptr )
   {
-    byte *bActualPtr = ((byte **)Ptr)[-1];
+    unsigned char *bActualPtr = ((unsigned char **)Ptr)[-1];
     free ((void *)bActualPtr);
   }
 };
@@ -688,15 +678,15 @@ public:
   virtual int GetSourceWidth() = 0;
   virtual int GetSourceHeight() = 0;
   virtual int GetTextureID() = 0;
-  virtual uint GetFlags() = 0;
+  virtual unsigned int GetFlags() = 0;
   virtual int GetNumMips() = 0;
   virtual int GetDeviceDataSize() = 0;
   virtual ETEX_Type GetTextureType() = 0;
   virtual bool IsTextureLoaded() = 0;
   virtual void PrecacheAsynchronously(float fDist, int nFlags) = 0;
   virtual void Preload (int nFlags)=0;
-  virtual byte *GetData32(int nSide=0, int nLevel=0)=0;
-  virtual byte *LockData(int& nPitch, int nSide=0, int nLevel=0)=0;
+  virtual unsigned char *GetData32(int nSide=0, int nLevel=0)=0;
+  virtual unsigned char *LockData(int& nPitch, int nSide=0, int nLevel=0)=0;
   virtual void UnlockData(int nSide=0, int nLevel=0)=0;
   virtual bool SaveTGA(const char *szName, bool bMips=false)=0;
   virtual bool SaveJPG(const char *szName, bool bMips=false)=0;
@@ -807,7 +797,7 @@ enum EWaveForm
 struct SWaveForm
 {
   EWaveForm m_eWFType;
-  byte m_Flags;
+  unsigned char m_Flags;
 
   float m_Level;
   float m_Level1;
@@ -1001,7 +991,7 @@ struct STexAnim
 
   ~STexAnim()
   {     
-    for (uint i=0; i<m_TexPics.Num(); i++)
+    for (unsigned int i=0; i<m_TexPics.Num(); i++)
     {
       ITexture *pTex = (ITexture *) m_TexPics[i];
       SAFE_RELEASE(pTex);
@@ -1017,14 +1007,14 @@ struct STexAnim
       return *this;
     }
 
-    for (uint i=0; i<m_TexPics.Num(); i++)
+    for (unsigned int i=0; i<m_TexPics.Num(); i++)
     {
       ITexture *pTex = (ITexture *)m_TexPics[i];
       SAFE_RELEASE(pTex);
     }
     m_TexPics.Free();
 
-    for (uint i=0; i<sl.m_TexPics.Num(); i++)
+    for (unsigned int i=0; i<sl.m_TexPics.Num(); i++)
     {
       ITexture *pTex = (ITexture *)sl.m_TexPics[i];
       if(pTex)
@@ -1092,7 +1082,7 @@ enum ETexGenType
 #define CASE_TEXMODBYTE(var_name)\
   if(!_stricmp(#var_name,szParamName))\
 {\
-  var_name = (byte)fValue;\
+  var_name = (unsigned char)fValue;\
   return true;\
 }\
 
@@ -1146,19 +1136,19 @@ struct SEfTexModificator
     return false;
   }
 
-  byte m_eTGType;
-  byte m_eRotType;
-  byte m_eUMoveType;
-  byte m_eVMoveType;
+  unsigned char m_eTGType;
+  unsigned char m_eRotType;
+  unsigned char m_eUMoveType;
+  unsigned char m_eVMoveType;
   bool m_bTexGenProjected;
 
   float m_Tiling[3];
   float m_Offs[3];
 
-  ushort m_Rot[3];
-  ushort m_RotOscRate[3];
-  ushort m_RotOscAmplitude[3];
-  ushort m_RotOscPhase[3];
+  unsigned short m_Rot[3];
+  unsigned short m_RotOscRate[3];
+  unsigned short m_RotOscAmplitude[3];
+  unsigned short m_RotOscPhase[3];
   float m_RotOscCenter[3];
 
   float m_UOscRate;
@@ -1277,8 +1267,8 @@ struct STexState
   }
   _inline friend bool operator == (const STexState &m1, const STexState &m2)
   {
-    if (*(uint *)&m1.m_nMinFilter == *(uint *)&m2.m_nMinFilter &&
-        *(uint *)&m1.m_nAddressV == *(uint *)&m2.m_nAddressV &&
+    if (*(unsigned int *)&m1.m_nMinFilter == *(unsigned int *)&m2.m_nMinFilter &&
+        *(unsigned int *)&m1.m_nAddressV == *(unsigned int *)&m2.m_nAddressV &&
         m1.m_dwBorderColor == m2.m_dwBorderColor &&
         m1.m_bComparison == m2.m_bComparison)
       return true;
@@ -1322,10 +1312,10 @@ struct STexSampler
   };
 
   int m_nTexState;
-  byte m_eTexType;						// ETEX_Type e.g. eTT_2D or eTT_Cube
+  unsigned char m_eTexType;						// ETEX_Type e.g. eTT_2D or eTT_Cube
   int8 m_nSamplerSlot;
-  uint m_nFlags;
-  uint m_nTexFlags;
+  unsigned int m_nFlags;
+  unsigned int m_nTexFlags;
   STexAnim *m_pAnimInfo;
   IDynTextureSource* m_pDynTexSource;
   STexSampler()
@@ -1354,7 +1344,7 @@ struct STexSampler
     nSize += m_Texture.size();
     return nSize;
   }
-  uint GetTexFlags() { return m_nTexFlags; }
+  unsigned int GetTexFlags() { return m_nTexFlags; }
   void Update();
   STexSampler (const STexSampler& src)
   {
@@ -1401,8 +1391,8 @@ struct SEfResTexture
   // in order to facilitate the memory allocation tracking, we're using here this class;
   // if you don't like it, please write a substitute for all string within the project and use them everywhere
   string m_Name;
-  byte m_TexFlags;
-  byte m_Amount;
+  unsigned char m_TexFlags;
+  unsigned char m_Amount;
   bool m_bUTile;
   bool m_bVTile;
   signed char m_Filter;
@@ -1509,7 +1499,7 @@ struct SEfResTexture
 
 struct SBaseShaderResources
 {
-  uint m_ResFlags;
+  unsigned int m_ResFlags;
   float m_AlphaRef;
   uint8 m_PostEffects;
   DynArray<SShaderParam> m_ShaderParams;
@@ -1686,7 +1676,7 @@ struct SShaderGenBit
   string m_ParamDesc;
   int m_NameLength;
   uint64 m_Mask;
-  uint m_Flags;
+  unsigned int m_Flags;
   uint32 m_dwToken;
   std::vector<uint32> m_PrecacheNames;
   std::vector<string> m_DependSets;
@@ -1705,7 +1695,7 @@ struct SShaderGen
   }
   ~SShaderGen()
   {
-    uint i;
+    unsigned int i;
     for (i=0; i<m_BitMask.Num(); i++)
     {
       SShaderGenBit *pBit = m_BitMask[i];
@@ -1947,7 +1937,7 @@ public:
   virtual int GetVertexFormat(void) = 0;
   virtual ECull GetCull(void) = 0;
   virtual int Size(int Flags) = 0;
-  virtual uint GetGenerationMask() = 0;
+  virtual unsigned int GetGenerationMask() = 0;
   virtual SShaderGen* GetGenerationParams() = 0;
   virtual int GetTechniqueID(int nTechnique, int nRegisteredTechnique) = 0;
 
@@ -1960,7 +1950,7 @@ struct SShaderItem
   IShader *m_pShader;
   IRenderShaderResources *m_pShaderResources;
   int m_nTechnique;
-  uint m_nPreprocessFlags;
+  unsigned int m_nPreprocessFlags;
 
   SShaderItem()
   {
@@ -2036,7 +2026,7 @@ struct CRenderChunk
   CREMesh *pRE;        // Pointer to the mesh.
   int m_nMatFlags;       // Material flags from originally assigned material @see EMaterialFlags.
   int m_nMatID;          // Material Sub-object id.
-  ushort m_dwNumSections;
+  unsigned short m_dwNumSections;
   PodArray<uint16> m_arrChunkBoneIDs;
 
   //////////////////////////////////////////////////////////////////////////
@@ -2257,10 +2247,10 @@ public:
   SShaderItem                     m_Shader;
   Ang3                            m_ProjAngles;
 
-  uint                            m_Flags;                  //!< flags from above (prefix DLF_)
+  unsigned int                            m_Flags;                  //!< flags from above (prefix DLF_)
 
 //  char                            m_sDebugName[16];
-  uint                            m_nLightStyle;
+  unsigned int                            m_nLightStyle;
   float                           m_fCoronaScale;
   float                           m_fCoronaDistSizeFactor;
   float                           m_fCoronaDistIntensityFactor;
@@ -2289,7 +2279,7 @@ public:
 */
 
   //Prepocessed light infos
-  uint														m_AreaLightType;						//!< Area light type
+  unsigned int														m_AreaLightType;						//!< Area light type
   int															m_nAreaSampleNumber;				//!< How much sample needed for this area light
   bool														m_bLightmapLinearAttenuation; //!< To be compatible with realtime lights - prebaked lights can use linear attenuation
   float														m_fFalloffStart;								//!< The start of the falloff

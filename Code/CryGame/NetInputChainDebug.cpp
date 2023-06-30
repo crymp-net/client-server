@@ -16,6 +16,7 @@ History:
 #include "NetInputChainDebug.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/ITextModeConsole.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 
 #if ENABLE_NETINPUTCHAINDEBUG
 #include "CryCommon/CryCore/ConfigurableVariant.h"

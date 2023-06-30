@@ -18,6 +18,7 @@ History:
 #include "HUDObject.h"
 #include <list>
 
+struct IFFont;
 struct ITimer;
 
 class CHUDTextArea : public CHUDObject

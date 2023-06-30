@@ -7,6 +7,7 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 
 #include "TimeOfDay.h"
 

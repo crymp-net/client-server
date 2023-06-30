@@ -71,7 +71,7 @@ void CRocket::HandleEvent(const SGameObjectEvent& event)
 		if (pCollision && pCollision->pEntity[0]->GetType() == PE_PARTICLE)
 		{
 			float bouncy, friction;
-			uint	pierceabilityMat;
+			unsigned int pierceabilityMat;
 			gEnv->pPhysicalWorld->GetSurfaceParameters(pCollision->idmat[1], bouncy, friction, pierceabilityMat);
 
 			pe_params_particle params;

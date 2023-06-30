@@ -1085,7 +1085,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 		description = "";
 	}
 
-	uint iUse = cry_rand() % size;
+	unsigned int iUse = cry_rand() % size;
 	string sImg = rootName;
 	sImg.append("/");
 	sImg.append(screenArray[iUse]);

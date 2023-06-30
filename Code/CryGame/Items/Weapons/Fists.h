@@ -75,7 +75,7 @@ public:
 
 	virtual void ForcePendingActions() {};
 
-	virtual tSoundID PlayAction(const ItemString& action, int layer = 0, bool loop = false, uint flags = eIPAF_Default, float speedOverride = -1.0f);
+	virtual tSoundID PlayAction(const ItemString& action, int layer = 0, bool loop = false, unsigned int flags = eIPAF_Default, float speedOverride = -1.0f);
 
 protected:
 	void	UpdateAnimState(float frameTime);

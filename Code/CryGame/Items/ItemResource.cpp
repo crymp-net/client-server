@@ -630,7 +630,7 @@ void CItem::FixResourceName(const ItemString& inName, TempResourceName& name, in
 }
 
 //------------------------------------------------------------------------
-tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, uint flags, float speedOverride)
+tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, unsigned int flags, float speedOverride)
 {
 	if (!m_enableAnimations)
 		return -1;
@@ -831,7 +831,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 						CItem* pOffHand = pOwner->GetItemByClass(CItem::sOffHandClass);
 						if (pOffHand && pOffHand != this)
 						{
-							uint ohflags = eIPAF_Default;
+							unsigned int ohflags = eIPAF_Default;
 							if (action.animation[eIGS_OffHand][anim].blend == 0.0f)
 								ohflags |= eIPAF_NoBlend;
 							pOffHand->PlayAction(action.animation[eIGS_OffHand][anim].name, 0, false, ohflags);
@@ -889,7 +889,7 @@ tSoundID CItem::PlayAction(const ItemString& actionName, int layer, bool loop, u
 }
 
 //------------------------------------------------------------------------
-void CItem::PlayAnimation(const char* animationName, int layer, bool loop, uint flags)
+void CItem::PlayAnimation(const char* animationName, int layer, bool loop, unsigned int flags)
 {
 	for (int i = 0; i < eIGS_Last; i++)
 	{
@@ -901,7 +901,7 @@ void CItem::PlayAnimation(const char* animationName, int layer, bool loop, uint 
 }
 
 //------------------------------------------------------------------------
-void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool loop, float blend, float speed, uint flags)
+void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool loop, float blend, float speed, unsigned int flags)
 {
 	bool start = true;
 
@@ -955,8 +955,8 @@ void CItem::PlayAnimationEx(const char* animationName, int slot, int layer, bool
 		if (animationId >= 0)
 			duration = pCharacter->GetIAnimationSet()->GetDuration_sec(animationId);
 
-		m_animationTime[slot] = (uint)(duration * 1000.0f / speed);
-		m_animationEnd[slot] = (uint)(gEnv->pTimer->GetCurrTime() * 1000.0f) + m_animationTime[slot];
+		m_animationTime[slot] = (unsigned int)(duration * 1000.0f / speed);
+		m_animationEnd[slot] = (unsigned int)(gEnv->pTimer->GetCurrTime() * 1000.0f) + m_animationTime[slot];
 		m_animationSpeed[slot] = speed;
 	}
 }
@@ -1059,7 +1059,7 @@ void CItem::RestoreLayers()
 }
 
 //------------------------------------------------------------------------
-void CItem::ResetAnimation(int layer, uint flags)
+void CItem::ResetAnimation(int layer, unsigned int flags)
 {
 	for (int i = 0; i < eIGS_Last; i++)
 	{
@@ -1076,19 +1076,19 @@ void CItem::ResetAnimation(int layer, uint flags)
 }
 
 //------------------------------------------------------------------------
-uint CItem::GetCurrentAnimationTime(int slot)
+unsigned int CItem::GetCurrentAnimationTime(int slot)
 {
 	return m_animationTime[slot];
 }
 
 //------------------------------------------------------------------------
-uint CItem::GetCurrentAnimationEnd(int slot)
+unsigned int CItem::GetCurrentAnimationEnd(int slot)
 {
 	return m_animationEnd[slot];
 }
 
 //------------------------------------------------------------------------
-uint CItem::GetCurrentAnimationStart(int slot)
+unsigned int CItem::GetCurrentAnimationStart(int slot)
 {
 	return m_animationEnd[slot] - m_animationTime[slot];
 }
@@ -1096,7 +1096,7 @@ uint CItem::GetCurrentAnimationStart(int slot)
 //------------------------------------------------------------------------
 void CItem::DrawSlot(int slot, bool bDraw, bool bNear)
 {
-	uint flags = GetEntity()->GetSlotFlags(slot);
+	unsigned int flags = GetEntity()->GetSlotFlags(slot);
 	if (bDraw)
 		flags |= ENTITY_SLOT_RENDER;
 	else

@@ -86,7 +86,7 @@ public:
 	virtual ~CRapid();
 
 	// CSingle
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 
 	virtual void ResetParams(const struct IItemParamsNode *params);
 	virtual void PatchParams(const struct IItemParamsNode *patch);
@@ -132,8 +132,8 @@ protected:
 	bool	m_accelerating;
 	bool	m_decelerating;
 
-	uint	m_soundId;
-	uint	m_spinUpSoundId;
+	unsigned int	m_soundId;
+	unsigned int	m_spinUpSoundId;
 
 	bool  m_startedToFire;
 

@@ -31,7 +31,7 @@ public:
 	~CScan();
 
 	virtual void Init(IWeapon *pWeapon, const struct IItemParamsNode *params);
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void PostUpdate(float frameTime) {};
 	virtual void UpdateFPView(float frameTime) {};
 	virtual void Release();

@@ -49,6 +49,7 @@ class ICrySizer;
 class INetMessage;
 struct INetMessageSink;
 
+struct AABB;
 struct IGameNub;
 struct IGameQuery;
 struct IGameSecurity;
@@ -71,6 +72,8 @@ struct IContextEstablisher;
 struct INetSendable;
 
 class CNetSerialize;
+
+typedef unsigned int EntityId;
 
 typedef _smart_ptr<IRMIMessageBody> IRMIMessageBodyPtr;
 

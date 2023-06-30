@@ -94,7 +94,7 @@ ISerializableInfoPtr CAmmoPickup::GetSpawnInfo()
 	{
 		string modelName;
 		uint16 ammoClassId;
-		uint count;
+		unsigned int count;
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("modelName", modelName);

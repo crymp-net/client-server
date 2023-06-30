@@ -12,6 +12,7 @@ History:
 *************************************************************************/
 #include "StdAfx.h"
 #include "FlashAnimation.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "HUD/FlashPlayerNULL.h"
 

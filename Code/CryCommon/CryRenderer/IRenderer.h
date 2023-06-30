@@ -25,20 +25,6 @@ enum eSplashType
 
 // Global typedefs.
 //////////////////////////////////////////////////////////////////////
-#ifndef BOOL
-typedef int                 BOOL;
-#endif
-typedef unsigned char       BYTE;
-typedef unsigned short      WORD;
-typedef float               FLOAT;
-typedef int                 INT;
-typedef unsigned int        UINT;
-
-#ifndef uchar
-typedef unsigned char   uchar;
-typedef unsigned int    uint;
-typedef unsigned short  ushort;
-#endif
 
 // callback used for DXTCompress
 typedef void (*MIPDXTcallback)( const void *buffer, size_t count, void * userData );
@@ -87,11 +73,11 @@ struct IParticleVertexCreator;
 //////////////////////////////////////////////////////////////////////
 typedef unsigned char bvec4[4];
 typedef float vec4_t[4];
-typedef unsigned char byte;
 typedef float vec2_t[2];
 
 //DOC-IGNORE-BEGIN
 #include "CryCommon/CryMath/Cry_Color.h"
+#include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryCommon/CryCore/TArray.h"
 
 #include "CryCommon/CryFont/IFont.h"
@@ -1227,7 +1213,7 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual int  GetDynVBSize( int vertexType = VERTEX_FORMAT_P3F_COL4UB_TEX2F ) = 0;
   virtual void *GetDynVBPtr(int nVerts, int &nOffs, int Pool) = 0;
   virtual void DrawDynVB(int nOffs, int Pool, int nVerts) = 0;
-  virtual void DrawDynVB(struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F *pBuf, ushort *pInds, int nVerts, int nInds, int nPrimType) = 0;
+  virtual void DrawDynVB(struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F *pBuf, unsigned short *pInds, int nVerts, int nInds, int nPrimType) = 0;
 
   //! Create a vertex buffer
   virtual CVertexBuffer *CreateBuffer(int  vertexcount,int vertexformat, const char *szSource, bool bDynamic=false)=0;
@@ -1355,16 +1341,16 @@ struct IRenderer//: public IRendererCallbackServer
   //! for editor
   virtual Vec3 GetUnProject(const Vec3 &WindowCoords,const CCamera &cam)=0;
 
-  virtual bool WriteDDS(byte *dat, int wdt, int hgt, int Size, const char *name, ETEX_Format eF, int NumMips)=0;
-  virtual bool WriteTGA(byte *dat, int wdt, int hgt, const char *name, int src_bits_per_pixel, int dest_bits_per_pixel )=0;
-  virtual bool WriteJPG(byte *dat, int wdt, int hgt, char *name, int src_bits_per_pixel )=0;
+  virtual bool WriteDDS(unsigned char *dat, int wdt, int hgt, int Size, const char *name, ETEX_Format eF, int NumMips)=0;
+  virtual bool WriteTGA(unsigned char *dat, int wdt, int hgt, const char *name, int src_bits_per_pixel, int dest_bits_per_pixel )=0;
+  virtual bool WriteJPG(unsigned char *dat, int wdt, int hgt, char *name, int src_bits_per_pixel )=0;
 
   /////////////////////////////////////////////////////////////////////////////////
   //Replacement functions for Font
 
   virtual bool FontUploadTexture(class CFBitmap*, ETEX_Format eTF=eTF_A8R8G8B8)=0;
-  virtual int  FontCreateTexture(int Width, int Height, byte *pData, ETEX_Format eTF=eTF_A8R8G8B8, bool genMips=false)=0;
-  virtual bool FontUpdateTexture(int nTexId, int X, int Y, int USize, int VSize, byte *pData)=0;
+  virtual int  FontCreateTexture(int Width, int Height, unsigned char *pData, ETEX_Format eTF=eTF_A8R8G8B8, bool genMips=false)=0;
+  virtual bool FontUpdateTexture(int nTexId, int X, int Y, int USize, int VSize, unsigned char *pData)=0;
   virtual void FontReleaseTexture(class CFBitmap *pBmp)=0;
   virtual void FontSetTexture(class CFBitmap*, int nFilterMode)=0;
   virtual void FontSetTexture(int nTexId, int nFilterMode)=0;
@@ -1402,7 +1388,7 @@ struct IRenderer//: public IRendererCallbackServer
   /////////////////////////////////////////////////////////////////////////////////
   virtual string       *EF_GetShaderNames(int& nNumShaders)=0;
   // Load shader for name (name)
-  virtual IShader      *EF_LoadShader (const char *name, int flags=0, uint nMaskGen=0)=0;
+  virtual IShader      *EF_LoadShader (const char *name, int flags=0, unsigned int nMaskGen=0)=0;
 
   virtual const SShaderProfile &GetShaderProfile(EShaderType eST) const= 0;
   virtual void          SetShaderQuality(EShaderType eST, EShaderQuality eSQ) = 0;
@@ -1413,7 +1399,7 @@ struct IRenderer//: public IRendererCallbackServer
   virtual EShaderQuality EF_GetShaderQuality(EShaderType eST) = 0;
 
   // Load shader item for name (name)
-  virtual SShaderItem   EF_LoadShaderItem (const char *szName, bool bShare, int flags=0, SInputShaderResources *Res=NULL, uint nMaskGen=0)=0;
+  virtual SShaderItem   EF_LoadShaderItem (const char *szName, bool bShare, int flags=0, SInputShaderResources *Res=NULL, unsigned int nMaskGen=0)=0;
   // reload file
   virtual bool          EF_ReloadFile (const char *szFileName)=0;
   // Reinit all shader files (build hash tables)
@@ -1423,7 +1409,7 @@ struct IRenderer//: public IRendererCallbackServer
   // Get texture object by ID
   virtual ITexture     *EF_GetTextureByID(int Id)=0;
   // Loading of the texture for name(nameTex)
-  virtual ITexture     *EF_LoadTexture(const char* nameTex, uint flags, byte eTT, float fAmount1=-1.0f, float fAmount2=-1.0f)=0;
+  virtual ITexture     *EF_LoadTexture(const char* nameTex, unsigned int flags, unsigned char eTT, float fAmount1=-1.0f, float fAmount2=-1.0f)=0;
   // Load lightmap for name (name)
   virtual int           EF_LoadLightmap (const char *name)=0;
   virtual bool          EF_ScanEnvironmentCM (const char *name, int size, Vec3& Pos)=0;
@@ -1482,7 +1468,7 @@ struct IRenderer//: public IRendererCallbackServer
 
   virtual struct IRenderMesh * CreateRenderMeshInitialized(
     void * pVertBuffer, int nVertCount, int nVertFormat,
-    ushort* pIndices, int nIndices,
+    unsigned short* pIndices, int nIndices,
     int nPrimetiveType, const char *szType,const char *szSourceName, EBufferType eBufType = eBT_Static,
     int nMatInfoCount=1, int nClientTextureBindID=0,
     bool (*PrepareBufferCallback)(IRenderMesh *, bool)=NULL,
@@ -1518,7 +1504,7 @@ struct IRenderer//: public IRendererCallbackServer
   virtual void SetFog   (float density,float fogstart,float fogend,const float *color,int fogmode)=0;
   virtual void SetFogColor(float * color)=0;
 
-  virtual void SetColorOp(byte eCo, byte eAo, byte eCa, byte eAa)=0;
+  virtual void SetColorOp(unsigned char eCo, unsigned char eAo, unsigned char eCa, unsigned char eAa)=0;
 
   virtual void SetTerrainAONodes(PodArray<SSectorTextureSet> * terrainAONodes)=0;
 
@@ -1536,12 +1522,12 @@ struct IRenderer//: public IRendererCallbackServer
   virtual void SelectTMU(int tnum)=0;
 
   virtual unsigned int DownLoadToVideoMemory(unsigned char *data,int w, int h, ETEX_Format eTFSrc, ETEX_Format eTFDst, int nummipmap, bool repeat=true, int filter=FILTER_BILINEAR, int Id=0, char *szCacheName=NULL, int flags=0)=0;
-  virtual void UpdateTextureInVideoMemory(uint tnum, unsigned char *newdata,int posx,int posy,int w,int h,ETEX_Format eTFSrc=eTF_R8G8B8)=0; 
+  virtual void UpdateTextureInVideoMemory(unsigned int tnum, unsigned char *newdata,int posx,int posy,int w,int h,ETEX_Format eTFSrc=eTF_R8G8B8)=0;
 	// without header
 	// Arguments:
 	//   vLumWeight - 0,0,0 if default should be used
-  virtual bool DXTCompress( byte *raw_data,int nWidth,int nHeight,ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, const Vec3 vLumWeight, MIPDXTcallback callback )=0;
-  virtual bool DXTDecompress(byte *srcData, const size_t srcFileSize, byte *dstData, int nWidth,int nHeight,int nMips,ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix)=0;
+  virtual bool DXTCompress( unsigned char *raw_data,int nWidth,int nHeight,ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, const Vec3 vLumWeight, MIPDXTcallback callback )=0;
+  virtual bool DXTDecompress(unsigned char *srcData, const size_t srcFileSize, unsigned char *dstData, int nWidth,int nHeight,int nMips,ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix)=0;
   virtual void RemoveTexture(unsigned int TextureId)=0;
 
   virtual void TextToScreen(float x, float y, const char * format, ...) PRINTF_PARAMS(4, 5)=0;
@@ -1550,13 +1536,13 @@ struct IRenderer//: public IRendererCallbackServer
   virtual void SetMaterialColor(float r, float g, float b, float a)=0;
 
   virtual void DrawLine(const Vec3 & vPos1, const Vec3 & vPos2)=0;
-  virtual void Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, char *text, ColorF& color, float fScale)=0;
+  virtual void Graph(unsigned char *g, int x, int y, int wdt, int hgt, int nC, int type, char *text, ColorF& color, float fScale)=0;
   virtual void FlushTextMessages()=0;
   virtual void DrawObjSprites(PodArray<struct SVegetationSpriteInfo> *pList, float fMaxViewDist, CObjManager *pObjMan, float fZoomFactor)=0;
   virtual void GenerateObjSprites(PodArray<struct SVegetationSpriteInfo> *pList, float fMaxViewDist, CObjManager *pObjMan, float fZoomFactor)=0;
   virtual void DrawQuad(const Vec3 &right, const Vec3 &up, const Vec3 &origin,int nFlipMode=0)=0;
   virtual void DrawQuad(float dy,float dx, float dz, float x, float y, float z)=0;
-  virtual void ClearBuffer(uint nFlags, ColorF *vColor, float depth = 1.0f)=0;
+  virtual void ClearBuffer(unsigned int nFlags, ColorF *vColor, float depth = 1.0f)=0;
   virtual void ReadFrameBuffer(unsigned char * pRGB, int nImageX, int nSizeX, int nSizeY, ERB_Type eRBType, bool bRGBA, int nScaledX=-1, int nScaledY=-1)=0;
 	virtual void ReadFrameBufferFast(unsigned int* pDstARGBA8, int dstWidth, int dstHeight)=0;
   virtual char* GetVertexProfile(bool bSupportedProfile)=0;
@@ -1564,7 +1550,7 @@ struct IRenderer//: public IRendererCallbackServer
 	// Arguments:
 	//		fBrightnessMultiplier - >0, object is rendered with 1/fBrightnessMultiplier brightness so it can later be used with tex2d()*fBrightnessMultiplier (needed for HDR sprites in 8bit)
 	//		rParams used to pass SH data
-	virtual uint RenderOccludersIntoBuffer(const CCamera & viewCam, int nTexSize, PodArray<struct IRenderNode*> & lstOccluders, float * pBuffer)=0;
+	virtual unsigned int RenderOccludersIntoBuffer(const CCamera & viewCam, int nTexSize, PodArray<struct IRenderNode*> & lstOccluders, float * pBuffer)=0;
   virtual void Set2DMode(bool enable, int ortox, int ortoy,float znear=-1e10f,float zfar=1e10f)=0;
   virtual int ScreenToTexture()=0;
   virtual void EnableSwapBuffers(bool bEnable) = 0;
@@ -1752,7 +1738,7 @@ struct SRendParams
 	//! Quality of shaders rendering
 	float fRenderQuality;
 	//! skeleton implementation for bendable foliage
-	ISkinnable *pFoliage;
+	struct ISkinnable *pFoliage;
 	//! weights stream for deform morphs
 	IRenderMesh *pWeights;
 	//! defines per object AlphaRef value if used by shader
@@ -1763,7 +1749,7 @@ struct SRendParams
 	uint8 nMaterialLayers;
   uint32 nMaterialLayersBlend;
 	//! custom offset for sorting by distance
-	byte  nAfterWater;
+	unsigned char  nAfterWater;
 	//! TerrainTexInfo for grass
 	struct SSectorTextureSet * pTerrainTexInfo;
 	//! Heightmap adaption data

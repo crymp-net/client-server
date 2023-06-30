@@ -104,8 +104,8 @@ public:
 		string    m_modVersion;
 
     uint32    m_publicIP;
-    ushort    m_publicPort;
-    ushort		m_hostPort;
+    unsigned short    m_publicPort;
+    unsigned short		m_hostPort;
     uint32		m_privateIP;
     int				m_numPlayers;
     int				m_maxPlayers;

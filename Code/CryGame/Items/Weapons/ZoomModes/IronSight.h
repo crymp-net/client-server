@@ -276,7 +276,7 @@ public:
 
 	// IZoomMode
 	virtual void Init(IWeapon *pWeapon, const struct IItemParamsNode *params);
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void Release();
 
 	virtual void ResetParams(const struct IItemParamsNode *params);

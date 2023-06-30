@@ -47,7 +47,7 @@ enum EItemParamMapTypes
 struct IItemParamsNode
 {
 	virtual void AddRef() const = 0;
-	virtual uint GetRefCount() const = 0;
+	virtual unsigned int GetRefCount() const = 0;
 	virtual void Release() const = 0;
 
 	virtual int GetAttributeCount() const = 0;

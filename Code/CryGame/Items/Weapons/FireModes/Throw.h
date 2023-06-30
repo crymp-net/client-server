@@ -88,7 +88,7 @@ public:
 	CThrow();
 	virtual ~CThrow();
 
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void GetMemoryStatistics(ICrySizer * s);
 
 	virtual void ResetParams(const struct IItemParamsNode *params);
@@ -152,4 +152,4 @@ private:
 	SThrowParams	m_throwparams;
 };
 
-#endif 
+#endif

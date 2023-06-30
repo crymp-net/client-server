@@ -29,7 +29,7 @@ History:
 #include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"
 #include "CryGame/GameRules.h"
-#include "CryCommon/CryMath/Cry_GeoDistance.h"
+#include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryGame/Actors/Player/IPlayerInput.h"
 
 #include "../ZoomModes/IronSight.h"
@@ -129,7 +129,7 @@ void CSingle::Init(IWeapon* pWeapon, const IItemParamsNode* params)
 }
 
 //------------------------------------------------------------------------
-void CSingle::Update(float frameTime, uint frameId)
+void CSingle::Update(float frameTime, unsigned int frameId)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
@@ -1068,9 +1068,9 @@ void CSingle::StartReload(int zoomed)
 
 	if (m_pWeapon->IsOwnerFP())
 	{
-		uint animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+		unsigned int animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
 		if (m_pWeapon->GetHostId() && animTime == 0)
-			animTime = (uint)(m_fireparams.reload_time * 1000.0f);
+			animTime = (unsigned int)(m_fireparams.reload_time * 1000.0f);
 		else if (animTime > 1200)
 			animTime -= 500;  //Trigger it a bit earlier to make anim match better with the upgraded ammo count
 		m_pWeapon->GetScheduler()->TimerAction(animTime, CSchedulerAction<EndReloadAction>::Create(EndReloadAction(this, zoomed, m_reloadStartFrame)), false);
@@ -1078,7 +1078,7 @@ void CSingle::StartReload(int zoomed)
 	}
 	else
 	{
-		m_pWeapon->GetScheduler()->TimerAction((uint)(m_fireparams.reload_time * 1000), CSchedulerAction<EndReloadAction>::Create(EndReloadAction(this, zoomed, m_reloadStartFrame)), false);
+		m_pWeapon->GetScheduler()->TimerAction((unsigned int)(m_fireparams.reload_time * 1000), CSchedulerAction<EndReloadAction>::Create(EndReloadAction(this, zoomed, m_reloadStartFrame)), false);
 		time = (int)(MAX(0, ((m_fireparams.reload_time * 1000) - m_fireparams.slider_layer_time)));
 	}
 
@@ -1461,7 +1461,7 @@ bool CSingle::Shoot(bool resetAnimation, bool autoreload, bool noSound)
 
 
 	//Check for fire+cocking anim
-	uint time = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+	unsigned int time = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
 	if (time > 800)
 	{
 		m_cocking = true;
@@ -2334,7 +2334,7 @@ void CSingle::SpinUpEffect(bool attach)
 				m_spinup.light_helper[id].c_str());
 		}
 
-		m_suTimer = (uint)(m_spinup.time[id]);
+		m_suTimer = (unsigned int)(m_spinup.time[id]);
 	}
 	else
 	{
@@ -2845,7 +2845,7 @@ void CSingle::NetShootEx(const Vec3& pos, const Vec3& dir, const Vec3& vel, cons
 
 
 		//Check for fire+cocking anim
-		uint time = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+		unsigned int time = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
 		if (time > 800)
 		{
 			m_cocking = true;

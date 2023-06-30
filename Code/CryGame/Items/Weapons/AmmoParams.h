@@ -86,14 +86,14 @@ struct SWhizParams
 struct SAmmoParams
 {
 	//flags
-	uint	flags;
+	unsigned int	flags;
 	int		serverSpawn;
 	int		predictSpawn;
 
 	// common parameters
 	float	lifetime;
 	float	showtime;
-	ushort aiType;
+	unsigned short aiType;
 	int		bulletType;
 	int		hitPoints;
 	bool   noBulletHits;

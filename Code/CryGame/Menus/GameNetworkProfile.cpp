@@ -1403,7 +1403,7 @@ struct CGameNetworkProfile::SStoredServerLists
 			m_ui->AddRecentServer(m_recent[i].ip, m_recent[i].port);
 	}
 
-	void AddFavoriteServer(uint ip, ushort port)
+	void AddFavoriteServer(unsigned int ip, unsigned short port)
 	{
 		SStoredServer s;
 		s.ip = ip;
@@ -1412,7 +1412,7 @@ struct CGameNetworkProfile::SStoredServerLists
 		SaveFavoritesList();
 	}
 
-	void RemoveFavoriteServer(uint ip, ushort port)
+	void RemoveFavoriteServer(unsigned int ip, unsigned short port)
 	{
 		for (int i = 0;i < m_favorites.size();++i)
 		{
@@ -1425,7 +1425,7 @@ struct CGameNetworkProfile::SStoredServerLists
 		}
 	}
 
-	void AddRecentServer(uint ip, ushort port)
+	void AddRecentServer(unsigned int ip, unsigned short port)
 	{
 		SStoredServer s;
 		s.ip = ip;
@@ -1574,17 +1574,17 @@ void CGameNetworkProfile::DestroyUI()
 		m_buddies->m_ui = 0;
 }
 
-void CGameNetworkProfile::AddFavoriteServer(uint ip, ushort port)
+void CGameNetworkProfile::AddFavoriteServer(unsigned int ip, unsigned short port)
 {
 	m_stroredServers->AddFavoriteServer(ip, port);
 }
 
-void CGameNetworkProfile::RemoveFavoriteServer(uint ip, ushort port)
+void CGameNetworkProfile::RemoveFavoriteServer(unsigned int ip, unsigned short port)
 {
 	m_stroredServers->RemoveFavoriteServer(ip, port);
 }
 
-void CGameNetworkProfile::AddRecentServer(uint ip, ushort port)
+void CGameNetworkProfile::AddRecentServer(unsigned int ip, unsigned short port)
 {
 	m_stroredServers->AddRecentServer(ip, port);
 }
@@ -1671,7 +1671,7 @@ bool CGameNetworkProfile::IsIgnored(const char* nick)
 	return m_buddies->IsIgnoring(nick);
 }
 
-void CGameNetworkProfile::SetPlayingStatus(uint ip, ushort port, ushort publicport, const char* game_type)
+void CGameNetworkProfile::SetPlayingStatus(unsigned int ip, unsigned short port, unsigned short publicport, const char* game_type)
 {
 	string loc;
 	loc.Format("%d.%d.%d.%d:%d/?type=game&queryport=%d&game=%s", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF, port, publicport, game_type);

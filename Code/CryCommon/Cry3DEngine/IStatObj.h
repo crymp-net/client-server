@@ -188,7 +188,7 @@ struct IStatObj
 	// Return Value:
 	// Summary:
 	//     Copies foliage data to another statobj
-	virtual void CopyFoliageData(IStatObj *pObjDst, bool bMove=false, IFoliage *pSrcFoliage=0, int *pVtxMap=0, 
+	virtual void CopyFoliageData(IStatObj *pObjDst, bool bMove=false, struct IFoliage *pSrcFoliage=0, int *pVtxMap=0,
 		primitives::box *pMovedBoxes=0,int nMovedBoxes=-1) = 0;
 
 	// Description:

@@ -3,7 +3,6 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/Cry3DEngine/I3DEngine.h"  // required by IRenderer.h
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CryInput/IHardwareMouse.h"
 #include "CryCommon/CryInput/IInput.h"

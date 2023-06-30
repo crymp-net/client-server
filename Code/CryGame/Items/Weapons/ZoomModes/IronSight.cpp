@@ -57,7 +57,7 @@ void CIronSight::Init(IWeapon* pWeapon, const struct IItemParamsNode* params)
 }
 
 //------------------------------------------------------------------------
-void CIronSight::Update(float frameTime, uint frameId)
+void CIronSight::Update(float frameTime, unsigned int frameId)
 {
 	bool keepUpdating = false;
 	CActor* pActor = m_pWeapon->GetOwnerActor();
@@ -556,7 +556,7 @@ void CIronSight::TurnOff(bool enable, bool smooth, bool anim)
 			m_pWeapon->PlayAction(m_actions.zoom_in);
 		}
 
-		m_pWeapon->GetScheduler()->TimerAction((uint)(m_zoomparams.zoom_out_time * 1000), CSchedulerAction<DisableTurnOffAction>::Create(this), false);
+		m_pWeapon->GetScheduler()->TimerAction((unsigned int)(m_zoomparams.zoom_out_time * 1000), CSchedulerAction<DisableTurnOffAction>::Create(this), false);
 		m_savedFoVScale = 0.0f;
 	}
 	else if (m_zoomed && enable)
@@ -581,7 +581,7 @@ void CIronSight::TurnOff(bool enable, bool smooth, bool anim)
 			m_pWeapon->SetActionSuffix("");
 		}
 
-		m_pWeapon->GetScheduler()->TimerAction((uint)(m_zoomparams.zoom_out_time * 1000), CSchedulerAction<EnableTurnOffAction>::Create(this), false);
+		m_pWeapon->GetScheduler()->TimerAction((unsigned int)(m_zoomparams.zoom_out_time * 1000), CSchedulerAction<EnableTurnOffAction>::Create(this), false);
 	}
 }
 

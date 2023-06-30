@@ -92,7 +92,7 @@ void CRapid::Activate(bool activate)
 }
 
 //------------------------------------------------------------------------
-void CRapid::Update(float frameTime, uint frameId)
+void CRapid::Update(float frameTime, unsigned int frameId)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 

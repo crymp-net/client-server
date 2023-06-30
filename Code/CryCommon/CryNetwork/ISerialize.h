@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "CryCommon/CryEntitySystem/IEntity.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 #include <vector>

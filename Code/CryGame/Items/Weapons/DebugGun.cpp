@@ -12,6 +12,8 @@ History:
 *************************************************************************/
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "DebugGun.h"
 
 #include "CryCommon/CryAction/IActorSystem.h"

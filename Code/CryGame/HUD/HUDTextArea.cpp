@@ -3,6 +3,7 @@
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CryFont/IFont.h"
 #include "HUDTextArea.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryGame/Game.h"

@@ -400,7 +400,7 @@ struct IGameRules : public IGameObjectExtension
 	// Parameters
 	//   type - indicated the message type
 	//   msg - the message to be sent
-	virtual void SendTextMessage(ETextMessageType type, const char *msg, uint to=eRMI_ToAllClients, int channelId=-1,
+	virtual void SendTextMessage(ETextMessageType type, const char *msg, unsigned int to=eRMI_ToAllClients, int channelId=-1,
 		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0) = 0;
 
 	// Summary

@@ -58,7 +58,7 @@ void CMelee::Init(IWeapon* pWeapon, const struct IItemParamsNode* params)
 }
 
 //------------------------------------------------------------------------
-void CMelee::Update(float frameTime, uint frameId)
+void CMelee::Update(float frameTime, unsigned int frameId)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 

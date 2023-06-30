@@ -5,6 +5,7 @@
 #include "CryGame/StdAfx.h"
 #include "HUDObituary.h"
 #include "CryCommon/CryAction/IUIDraw.h"
+#include "CryCommon/CryFont/IFont.h"
 #include "CryGame/Game.h"
 
 CHUDObituary::CHUDObituary()

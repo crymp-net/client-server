@@ -151,7 +151,7 @@ public:
 	virtual ~CBeam();
 
 	// IFireMode
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void GetMemoryStatistics(ICrySizer * s);
 
 	virtual void ResetParams(const struct IItemParamsNode *params);
@@ -190,8 +190,8 @@ protected:
 	SBeamEffectParams	m_effectparams;
 	SBeamEffectParams	m_hitbeameffectparams;
 
-	uint							m_effectId;
-	uint							m_hitbeameffectId;
+	unsigned int							m_effectId;
+	unsigned int							m_hitbeameffectId;
 	tSoundID					m_fireLoopId;
 	tSoundID					m_hitSoundId;
 	bool							m_lastHitValid;

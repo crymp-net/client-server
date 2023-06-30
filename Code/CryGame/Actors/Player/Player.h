@@ -868,7 +868,7 @@ protected:
 
 	SStagingParams m_stagingParams;
 
-	static uint s_ladderMaterial;
+	static unsigned int s_ladderMaterial;
 public:
 	IDebugHistoryManager* m_pDebugHistoryManager;
 	void DebugGraph_AddValue(const char* id, float value) const;

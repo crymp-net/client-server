@@ -26,10 +26,12 @@
 	#define CRY3DENGINEENGINE_API DLL_IMPORT
 #endif
 
+#include "CryCommon/CryMath/Cry_Color.h"
+#include "CryCommon/CryMath/Cry_Math.h"
+
 // !!! Do not add any headers here !!!
 #include "CryEngineDecalInfo.h" 
 #include "IStatObj.h"
-#include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CrySystem/IProcess.h"
 #include "IMaterial.h"
 #include "ISurfaceType.h"
@@ -50,6 +52,7 @@ struct SpawnParams;
 struct ForceObject;
 class I3DSampler;
 struct IAutoCubeMapRenderNode;
+class CRenderCamera;
 
 /*!
 IParticleEffect interface.
@@ -863,7 +866,7 @@ struct SOcTreeNodeChunk
 		int		nChunkVersion;
 		AABB	nodeBox;
 		int		nObjectsBlockSize;
-		uchar ucChildsMask;
+		unsigned char ucChildsMask;
 
 		AUTO_STRUCT_INFO
 };
@@ -900,10 +903,10 @@ struct IIndirectLighting
 struct ITerrain
 {
 	//! load data into terrain engine from memory block
-	virtual bool SetCompiledData(byte * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
+	virtual bool SetCompiledData(unsigned char * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
 
 	//! save data from terrain engine into memory block
-	virtual bool GetCompiledData(byte * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
+	virtual bool GetCompiledData(unsigned char * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
 
 	//! return terrain data memory block size
 	virtual int GetCompiledDataSize() = 0;
@@ -912,7 +915,7 @@ struct ITerrain
 	virtual bool Compile() = 0;
 
 	//! creates and place a new vegetation object on the terrain.
-	virtual IRenderNode* AddVegetationInstance( int nStaticGroupID,const Vec3 &vPos,const float fScale,uchar ucBright,uchar angle ) = 0;
+	virtual IRenderNode* AddVegetationInstance( int nStaticGroupID,const Vec3 &vPos,const float fScale,unsigned char ucBright,unsigned char angle ) = 0;
 
 	//! set ocean level
 	virtual void SetOceanWaterLevel( float fOceanWaterLevel ) = 0;
@@ -935,10 +938,10 @@ struct IVisAreaCallback
 struct IVisAreaManager
 {
 	//! load data into VisAreaManager engine from memory block
-//	virtual bool SetCompiledData(byte * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
+//	virtual bool SetCompiledData(unsigned char * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
 
 	//! save data from VisAreaManager engine into memory block
-	virtual bool GetCompiledData(byte * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
+	virtual bool GetCompiledData(unsigned char * pData, int nDataSize, std::vector<struct CStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable) = 0;
 
 	//! return VisAreaManager data memory block size
 	virtual int GetCompiledDataSize() = 0;
@@ -1019,16 +1022,6 @@ struct ITimeOfDay
 };
 
 
-struct IFoliage : ISkinnable
-{
-	enum EFoliageFlags { FLAG_FROZEN=1 };
-	virtual int Serialize(TSerialize ser) = 0;
-	virtual void SetFlags(int flags) = 0;
-	virtual int GetFlags() = 0;
-	virtual IRenderNode* GetIRenderNode() = 0;
-};
-
-
 struct SSkyLightRenderParams
 {
 	SSkyLightRenderParams()
@@ -1085,7 +1078,7 @@ struct SSkyLightRenderParams
 struct sRAEColdData
 {
 	Vec4												m_RAEPortalInfos[96];											// it store all datas needed to solve the problem between the portals & indirect lighting
-//	byte												m_OcclLights[MAX_LIGHTS_NUM];
+//	unsigned char												m_OcclLights[MAX_LIGHTS_NUM];
 };
 
 struct SVisAreaInfo
@@ -2211,12 +2204,12 @@ enum EFileTypes
 // Common header for binary files used by 3dengine
 struct SCommonFileHeader
 {
-	void Set(ushort t, ushort v) { strcpy(signature,"CRY"); type = t; version = v; }
-	bool Check(ushort t, ushort v) { return strcmp(signature,"CRY")==0 && t==type && v==version; }
+	void Set(unsigned short t, unsigned short v) { strcpy(signature,"CRY"); type = t; version = v; }
+	bool Check(unsigned short t, unsigned short v) { return strcmp(signature,"CRY")==0 && t==type && v==version; }
 
 	char				signature[4];						// File signature, should be "CRY "
-	ushort			type;										// File type
-	ushort			version;								// File version
+	unsigned short			type;										// File type
+	unsigned short			version;								// File version
 
 	AUTO_STRUCT_INFO
 };
@@ -2225,10 +2218,10 @@ struct SCommonFileHeader
 // Sub header for terrain texture file
 struct STerrainTextureFileHeader_old
 {
-	ushort			nSectorSizeMeters;			//
-	ushort			nLodsNum;								//
-	ushort			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
-	ushort			nReserved;
+	unsigned short			nSectorSizeMeters;			//
+	unsigned short			nLodsNum;								//
+	unsigned short			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
+	unsigned short			nReserved;
 
   AUTO_STRUCT_INFO
 };
@@ -2238,8 +2231,8 @@ struct STerrainTextureFileHeader_old
 // Sub header for terrain texture file
 struct STerrainTextureFileHeader
 {
-	ushort			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
-	ushort			dwFlags;
+	unsigned short			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
+	unsigned short			dwFlags;
 	float				m_fSunShadowIntensity;	// 0=no shadow..1=full shadow
 
   AUTO_STRUCT_INFO
@@ -2248,9 +2241,9 @@ struct STerrainTextureFileHeader
 // layer header for terrain texture file (for each layer)
 struct STerrainTextureLayerFileHeader
 {
-	ushort			nSectorSizePixels;	//
-	ushort			nReserved;					// ensure padding and for later usage
-	ETEX_Format eTexFormat;					// typically eTF_DXT1, eTF_A4R4G4B4 or eTF_R5G6B5
+	unsigned short			nSectorSizePixels;	//
+	unsigned short			nReserved;					// ensure padding and for later usage
+	int eTexFormat;					// typically eTF_DXT1, eTF_A4R4G4B4 or eTF_R5G6B5
 	uint32			nSectorSizeBytes;		// redundant information for more convenient loading code
 
   AUTO_STRUCT_INFO

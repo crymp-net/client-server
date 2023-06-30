@@ -687,7 +687,7 @@ public:
 	typedef std::map<ItemString, int>							TActiveLayerMap;
 	typedef std::vector<SAttachmentHelper>				THelperVector;
 	typedef std::map<ItemString, bool>						TDualWieldSupportMap;
-	typedef	std::map<uint, SEffectInfo>						TEffectInfoMap;
+	typedef	std::map<unsigned int, SEffectInfo>						TEffectInfoMap;
 	typedef std::map<ItemString, EntityId>				TAccessoryMap;
 	typedef std::map<ItemString, SAccessoryParams>TAccessoryParamsMap;
 	typedef std::vector<ItemString>								TInitialSetup;
@@ -892,23 +892,23 @@ public:
 	virtual bool GivesAmmo() { return (!m_bonusAccessoryAmmo.empty() || m_params.attachment_gives_ammo);}
 
 	// effects
-	uint AttachEffect(int slot, uint id, bool attach, const char *effectName=0, const char *helper=0,
+	unsigned int AttachEffect(int slot, unsigned int id, bool attach, const char *effectName=0, const char *helper=0,
 		const Vec3 &offset=Vec3Constants<float>::fVec3_Zero, const Vec3 &dir=Vec3Constants<float>::fVec3_OneY, float scale=1.0f, bool prime=true);
-  uint AttachLight(int slot, uint id, bool attach, float radius=5.0f, const Vec3 &color=Vec3Constants<float>::fVec3_One,
+  unsigned int AttachLight(int slot, unsigned int id, bool attach, float radius=5.0f, const Vec3 &color=Vec3Constants<float>::fVec3_One,
 		const float fSpecularMult=1.0f, const char *projectTexture=0, float projectFov=0, const char *helper=0,
 		const Vec3 &offset=Vec3Constants<float>::fVec3_Zero, const Vec3 &dir=Vec3Constants<float>::fVec3_OneY, 
     const char* material=0, float fHDRDynamic=0.f );
-	uint AttachLightEx(int slot, uint id, bool attach, bool fakeLight = false , bool castShadows = false, IRenderNode* pCasterException = NULL, float radius=5.0f, const Vec3 &color=Vec3Constants<float>::fVec3_One,
+	unsigned int AttachLightEx(int slot, unsigned int id, bool attach, bool fakeLight = false , bool castShadows = false, IRenderNode* pCasterException = NULL, float radius=5.0f, const Vec3 &color=Vec3Constants<float>::fVec3_One,
 		const float fSpecularMult=1.0f, const char *projectTexture=0, float projectFov=0, const char *helper=0,
 		const Vec3 &offset=Vec3Constants<float>::fVec3_Zero, const Vec3 &dir=Vec3Constants<float>::fVec3_OneY, 
 		const char* material=0, float fHDRDynamic=0.f );
 	void SpawnEffect(int slot, const char *effectName, const char *helper, const Vec3 &offset=Vec3Constants<float>::fVec3_Zero,
 		const Vec3 &dir=Vec3Constants<float>::fVec3_OneY, float scale=1.0f);
-	IParticleEmitter *GetEffectEmitter(uint id) const;
-	void SetEffectWorldTM(uint id, const Matrix34 &tm);
-	Matrix34 GetEffectWorldTM(uint it);
-  void EnableLight(bool enable, uint id);
-	void SetLightRadius(float radius, uint id);
+	IParticleEmitter *GetEffectEmitter(unsigned int id) const;
+	void SetEffectWorldTM(unsigned int id, const Matrix34 &tm);
+	Matrix34 GetEffectWorldTM(unsigned int it);
+  void EnableLight(bool enable, unsigned int id);
+	void SetLightRadius(float radius, unsigned int id);
 
 	// misc
 	bool AttachToHand(bool attach, bool checkAttachment = false);
@@ -1001,16 +1001,16 @@ public:
 
 	typedef CryFixedStringT<256> TempResourceName;
 	void FixResourceName(const ItemString& name, TempResourceName& fixedName, int flags, const char *hand=0, const char *suffix=0, const char *pose=0, const char *pov=0, const char *env=0);
-	virtual tSoundID PlayAction(const ItemString& action, int layer=0, bool loop=false, uint flags = eIPAF_Default, float speedOverride = -1.0f);
-	void PlayAnimation(const char* animationName, int layer=0, bool loop=false, uint flags = eIPAF_Default);
-	void PlayAnimationEx(const char* animationName, int slot=eIGS_FirstPerson, int layer=0, bool loop=false, float blend=0.175f, float speed=1.0f, uint flags = eIPAF_Default);
+	virtual tSoundID PlayAction(const ItemString& action, int layer=0, bool loop=false, unsigned int flags = eIPAF_Default, float speedOverride = -1.0f);
+	void PlayAnimation(const char* animationName, int layer=0, bool loop=false, unsigned int flags = eIPAF_Default);
+	void PlayAnimationEx(const char* animationName, int slot=eIGS_FirstPerson, int layer=0, bool loop=false, float blend=0.175f, float speed=1.0f, unsigned int flags = eIPAF_Default);
 	void PlayLayer(const ItemString& name, int flags = eIPAF_Default, bool record=true);
 	void StopLayer(const ItemString& name, int flags = eIPAF_Default, bool record=true);
 	void RestoreLayers();
-	void ResetAnimation(int layer=0, uint flags = eIPAF_Default);
-	uint GetCurrentAnimationTime(int slot);
-	uint GetCurrentAnimationEnd(int slot);
-	uint GetCurrentAnimationStart(int slot);
+	void ResetAnimation(int layer=0, unsigned int flags = eIPAF_Default);
+	unsigned int GetCurrentAnimationTime(int slot);
+	unsigned int GetCurrentAnimationEnd(int slot);
+	unsigned int GetCurrentAnimationStart(int slot);
 	void DrawSlot(int slot, bool draw, bool near=false);
 	Vec3 GetSlotHelperPos(int slot, const char *helper, bool worldSpace, bool relative=false);
 	const Matrix33 &GetSlotHelperRotation(int slot, const char *helper, bool worldSpace, bool relative=false);
@@ -1283,7 +1283,7 @@ protected:
 
 	TInitialSetup					m_initialSetup;
 		
-	uint									m_effectGenId;
+	unsigned int									m_effectGenId;
 
 	EntityId							m_dualWieldMasterId;
 	EntityId							m_dualWieldSlaveId;
@@ -1296,8 +1296,8 @@ protected:
 	SmartScriptTable			m_stateTable[3];		// root, server, client
 
 	ItemString						m_idleAnimation[eIGS_Last];
-	uint									m_animationTime[eIGS_Last];
-	uint									m_animationEnd[eIGS_Last];
+	unsigned int									m_animationTime[eIGS_Last];
+	unsigned int									m_animationEnd[eIGS_Last];
 	float									m_animationSpeed[eIGS_Last];
 
 	string								m_actionSuffix;

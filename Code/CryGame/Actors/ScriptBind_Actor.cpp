@@ -26,7 +26,6 @@
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
-#include "CryCommon/CryMath/Cry_GeoDistance.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 //------------------------------------------------------------------------
@@ -1153,7 +1152,7 @@ int CScriptBind_Actor::SetPhysicalizationProfile(IFunctionHandler* pH, const cha
 	if (!pActor)
 		return pH->EndFunction();
 
-	uint p = 0;
+	unsigned int p = 0;
 	if (!_stricmp(profile, "alive"))
 		p = eAP_Alive;
 	else if (!_stricmp(profile, "unragdoll"))

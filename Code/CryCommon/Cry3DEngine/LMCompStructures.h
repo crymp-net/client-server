@@ -8,7 +8,6 @@
 #pragma once 
 
 #include "CryCommon/CryRenderer/IRenderer.h"
-#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #define USE_DOT3_ALPHA 
 
@@ -108,11 +107,11 @@ struct LMGenParam
     m_bHDR = false;
 	};
  
-	UINT m_iTextureResolution;		//!< Resolution of the produced textures
+	unsigned int m_iTextureResolution;		//!< Resolution of the produced textures
 	float m_fTexelSize;				//!< World space size of one texel
-	UINT m_iSubSampling;			//!< Amount of sub-sampling used for shadows etc.
-	UINT m_iMinBlockSize;			//!< Smallest possible block assigned on a lightmap
-	UINT m_uiSmoothingAngle;		//!< smoothing angle where edge sharing triangles be treated as smooth even when the normal is not smoothed and normal generation gets smoothed to
+	unsigned int m_iSubSampling;			//!< Amount of sub-sampling used for shadows etc.
+	unsigned int m_iMinBlockSize;			//!< Smallest possible block assigned on a lightmap
+	unsigned int m_uiSmoothingAngle;		//!< smoothing angle where edge sharing triangles be treated as smooth even when the normal is not smoothed and normal generation gets smoothed to
 	bool m_bDebugBorders;			//!< Add colored borders to the generated lightmaps
 	bool m_bGenOcclMaps;			//!< indicates whether to generate occlusion maps or not
 	bool m_bComputeShadows;			//!< Set to true to enable shadow casting
@@ -132,7 +131,7 @@ struct LMFalseLightFileHeader
 	};
 
 	uint8 iVersion;
-	UINT iNumObjects;
+	unsigned int iNumObjects;
 	AUTO_STRUCT_INFO
 };
 
@@ -169,8 +168,8 @@ struct LMStatLightFileHeader
 	};
 
 	uint8 iVersion;
-	UINT iSizeOfDLight;
-	UINT iNumDLights;
+	unsigned int iSizeOfDLight;
+	unsigned int iNumDLights;
 };
 
 struct SSharedLMEditorData

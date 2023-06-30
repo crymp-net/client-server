@@ -14,6 +14,8 @@ History:
 #ifndef __IUIDRAW_H__
 #define __IUIDRAW_H__
 
+struct IFFont;
+
 //-----------------------------------------------------------------------------------------------------
 
 enum EUIDRAWHORIZONTAL
@@ -41,20 +43,20 @@ struct IUIDraw
 
 	// TODO: uintARGB or float,float,float,float ?
 
-	virtual uint GetColorARGB(uint8 ucAlpha,uint8 ucRed,uint8 ucGreen,uint8 ucBlue) = 0;
+	virtual unsigned int GetColorARGB(uint8 ucAlpha,uint8 ucRed,uint8 ucGreen,uint8 ucBlue) = 0;
 
 	virtual int CreateTexture(const char *strName) = 0;
 
 	virtual void GetTextureSize(int iTextureID,float &rfSizeX,float &rfSizeY) = 0;
 
-//	virtual void DrawTriangle(float fX0,float fY0,float fX1,float fY1,float fX2,float fY2,uint uiColor) = 0;
+//	virtual void DrawTriangle(float fX0,float fY0,float fX1,float fY1,float fX2,float fY2,unsigned int uiColor) = 0;
 
 	virtual void DrawQuad(float fX,
 												float fY,
 												float fSizeX,
 												float fSizeY,
-												uint uiDiffuse=0,
-												uint uiDiffuseTL=0,uint uiDiffuseTR=0,uint uiDiffuseDL=0,uint uiDiffuseDR=0,
+												unsigned int uiDiffuse=0,
+												unsigned int uiDiffuseTL=0,unsigned int uiDiffuseTR=0,unsigned int uiDiffuseDL=0,unsigned int uiDiffuseDR=0,
 												int iTextureID=0,
 												float fUTexCoordsTL=0.0f,float fVTexCoordsTL=0.0f,
 												float fUTexCoordsTR=1.0f,float fVTexCoordsTR=0.0f,

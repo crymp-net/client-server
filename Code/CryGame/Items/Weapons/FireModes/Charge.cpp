@@ -33,7 +33,7 @@ CCharge::~CCharge()
 }
 
 //----------------------------------------"--------------------------------
-void CCharge::Update(float frameTime, uint frameId)
+void CCharge::Update(float frameTime, unsigned int frameId)
 {
 	if (m_charging)
 	{
@@ -194,7 +194,7 @@ void CCharge::ChargeEffect(bool attach)
 		m_chlightId = m_pWeapon->AttachLight(slot, 0, true, m_chargeeffect.light_radius[id], m_chargeeffect.light_color[id], 1.0f, 0, 0,
 			m_chargeeffect.light_helper[id].c_str());
 
-		m_chTimer = (uint)(m_chargeeffect.time[id]);
+		m_chTimer = (unsigned int)(m_chargeeffect.time[id]);
 
 	}
 }

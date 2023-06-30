@@ -142,7 +142,7 @@ int PlayerProcessBones(ICharacterInstance* pCharacter, void* pPlayer)
 //--------------------
 
 CPlayer::TAlienInterferenceParams CPlayer::m_interferenceParams;
-uint CPlayer::s_ladderMaterial = 0;
+unsigned int CPlayer::s_ladderMaterial = 0;
 
 #define SafePhysEntGetStatus(pPhysEnt, status)		\
 if ((pPhysEnt != NULL) &&													\

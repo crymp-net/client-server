@@ -82,7 +82,7 @@ class CRendElement
 {
 public:
   EDataType m_Type;
-  uint m_Flags;
+  unsigned int m_Flags;
 
 public:
   void *m_CustomData;
@@ -140,10 +140,10 @@ public:
 
   void mfSetType(EDataType t) { m_Type = t; }
 
-  uint mfGetFlags(void) { return m_Flags; }
-  void mfSetFlags(uint fl) { m_Flags = fl; }
-  void mfUpdateFlags(uint fl) { m_Flags |= fl; }
-  void mfClearFlags(uint fl) { m_Flags &= ~fl; }
+  unsigned int mfGetFlags(void) { return m_Flags; }
+  void mfSetFlags(unsigned int fl) { m_Flags = fl; }
+  void mfUpdateFlags(unsigned int fl) { m_Flags |= fl; }
+  void mfClearFlags(unsigned int fl) { m_Flags &= ~fl; }
 
   virtual void mfPrepare();
   virtual bool mfCullByClipPlane(CRenderObject *pObj);

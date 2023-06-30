@@ -103,7 +103,7 @@ public:
 	virtual ~CItemScheduler();
 	void Reset(bool keepPersistent=false);
 	void Update(float frameTime);
-	void TimerAction(uint time, ISchedulerAction *action, bool persistent=false);
+	void TimerAction(unsigned int time, ISchedulerAction *action, bool persistent=false);
 	void ScheduleAction(ISchedulerAction *action, bool persistent=false);
 	void GetMemoryStatistics(ICrySizer * s);
 

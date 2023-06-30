@@ -85,12 +85,12 @@ void CShotgun::StartReload(int zoomed)
 	m_pWeapon->PlayAction(g_pItemStrings->begin_reload, 0, false, CItem::eIPAF_Default|CItem::eIPAF_RepeatLastFrame);
 
 	m_reload_pump = ammoCount > 0 ? false : true;
-	uint animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+	unsigned int animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
 	if(animTime==0)
 		animTime = 500; //For DS
 	m_pWeapon->GetScheduler()->TimerAction(animTime, CSchedulerAction<BeginReloadLoop>::Create(BeginReloadLoop(this, zoomed)), false);
 
-	m_pWeapon->GetScheduler()->TimerAction((uint)((m_fireparams.reload_time-0.125f)*1000), CSchedulerAction<SliderBack>::Create(this), false);
+	m_pWeapon->GetScheduler()->TimerAction((unsigned int)((m_fireparams.reload_time-0.125f)*1000), CSchedulerAction<SliderBack>::Create(this), false);
 
 	// CryMP: temporary reset animation mult to avoid super fast shotgun reloading
 	if (CActor* pOwner = m_pWeapon->GetOwnerActor())
@@ -152,7 +152,7 @@ void CShotgun::ReloadShell(int zoomed)
 		
 		// reload a shell
 		m_pWeapon->PlayAction(g_pItemStrings->reload_shell, 0, false, CItem::eIPAF_Default|CItem::eIPAF_RepeatLastFrame|CItem::eIPAF_RestartAnimation);
-		uint animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
+		unsigned int animTime = m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson);
 		if(animTime==0)
 			animTime = 530; //For DS
 		m_pWeapon->GetScheduler()->TimerAction(animTime, CSchedulerAction<ReloadOneShellAction>::Create(ReloadOneShellAction(m_pWeapon, zoomed)), false);
@@ -208,7 +208,7 @@ void CShotgun::EndReload(int zoomed)
 	if(m_reload_was_broken)
 		speedOverride = 1.75f;
 
-	uint animTime = 100;
+	unsigned int animTime = 100;
 
 	if (m_reload_pump && !m_reload_was_broken)
 		m_pWeapon->PlayAction(g_pItemStrings->exit_reload_pump,0,false,CItem::eIPAF_Default,speedOverride);

@@ -197,7 +197,7 @@ public:
 	virtual void OnItemDropped(EntityId itemId, EntityId actorId);
 	virtual void OnItemPickedUp(EntityId itemId, EntityId actorId);
 
-	virtual void SendTextMessage(ETextMessageType type, const char *msg, uint to=eRMI_ToAllClients, int channelId=-1,
+	virtual void SendTextMessage(ETextMessageType type, const char *msg, unsigned int to=eRMI_ToAllClients, int channelId=-1,
 		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0);
 	virtual void SendChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg);
 	virtual bool CanReceiveChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId) const;

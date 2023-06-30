@@ -20,6 +20,11 @@
 #ifndef _CRY_ENGINE_DECAL_INFO_HDR_
 #define _CRY_ENGINE_DECAL_INFO_HDR_
 
+#include "CryCommon/CryMath/Cry_Math.h"
+
+struct IRenderNode;
+struct IStatObj;
+
 // Summary:
 //     Structure containing common parameters that describe a decal
 

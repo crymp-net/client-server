@@ -51,7 +51,7 @@ public:
 	CScope();
 
 	// IZoomMode
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 
 	virtual void ResetParams(const struct IItemParamsNode *params);
 	virtual void PatchParams(const struct IItemParamsNode *patch);

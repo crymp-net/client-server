@@ -14,6 +14,7 @@ History:
 #include "CryGame/StdAfx.h"
 #include "FlashMenuScreen.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 
 //-----------------------------------------------------------------------------------------------------
 

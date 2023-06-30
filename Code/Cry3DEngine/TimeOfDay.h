@@ -5,7 +5,6 @@
 #include <vector>
 #include <string_view>
 
-#include "CryCommon/CrySystem/ISystem.h"  // FIXME: required by I3DEngine.h and ISplines.h
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
 #include "CryCommon/Cry3DEngine/ISplines.h"
 

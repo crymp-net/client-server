@@ -455,7 +455,7 @@ void CItem::SetViewMode(int mode)
 
 		if (!m_parentId)
 		{
-			uint flags = GetEntity()->GetFlags();
+			unsigned int flags = GetEntity()->GetFlags();
 			if (!m_stats.mounted)
 				flags &= ~ENTITY_FLAG_CASTSHADOW;
 			else
@@ -513,8 +513,8 @@ void CItem::CopyRenderFlags(IEntity* pOwner)
 			pRenderNode->SetViewDistRatio(pOwnerRenderNode->GetViewDistRatio());
 			pRenderNode->SetLodRatio(pOwnerRenderNode->GetLodRatio());
 
-			uint flags = pOwner->GetFlags() & (ENTITY_FLAG_CASTSHADOW);
-			uint mflags = GetEntity()->GetFlags() & (~(ENTITY_FLAG_CASTSHADOW));
+			unsigned int flags = pOwner->GetFlags() & (ENTITY_FLAG_CASTSHADOW);
+			unsigned int mflags = GetEntity()->GetFlags() & (~(ENTITY_FLAG_CASTSHADOW));
 			GetEntity()->SetFlags(mflags | flags);
 		}
 	}

@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------
 #include "CryGame/StdAfx.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryGame/Game.h"
 #include "PlayerMovementController.h"
 #include "CryCommon/CryGame/GameUtils.h"

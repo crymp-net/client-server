@@ -50,7 +50,7 @@ void CWorkOnTarget::Init(IWeapon *pWeapon, const struct IItemParamsNode *params)
 }
 
 //------------------------------------------------------------------------
-void CWorkOnTarget::Update(float frameTime, uint frameId)
+void CWorkOnTarget::Update(float frameTime, unsigned int frameId)
 {
 	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 

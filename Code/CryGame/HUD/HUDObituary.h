@@ -18,6 +18,7 @@ History:
 #include "HUDObject.h"
 #include "CryCommon/CryInput/IInput.h"
 
+struct IFFont;
 
 class CHUDObituary : public CHUDObject
 {

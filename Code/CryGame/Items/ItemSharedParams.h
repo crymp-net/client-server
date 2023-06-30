@@ -26,14 +26,14 @@ History:
 class CItemSharedParams
 {
 protected:
-	mutable uint	m_refs;
+	mutable unsigned int	m_refs;
 	bool					m_valid;
 public:
 	CItemSharedParams(): m_refs(0), m_valid(false) {};
 	virtual ~CItemSharedParams() {};
 
 	virtual void AddRef() const { ++m_refs; };
-	virtual uint GetRefCount() const { return m_refs; };
+	virtual unsigned int GetRefCount() const { return m_refs; };
 	virtual void Release() const { 
 		if (--m_refs <= 0)
 			delete this;

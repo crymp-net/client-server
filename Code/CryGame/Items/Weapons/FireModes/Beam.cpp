@@ -38,7 +38,7 @@ CBeam::~CBeam()
 //std::vector<Vec3> gpoints;
 
 //------------------------------------------------------------------------
-void CBeam::Update(float frameTime, uint frameId)
+void CBeam::Update(float frameTime, unsigned int frameId)
 {
 
 	//for (std::vector<Vec3>::iterator it=gpoints.begin(); gpoints.end()!=it;++it)

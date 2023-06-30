@@ -91,7 +91,7 @@ void CScan::Activate(bool activate)
 }
 
 //------------------------------------------------------------------------
-void CScan::Update(float frameTime, uint frameId)
+void CScan::Update(float frameTime, unsigned int frameId)
 {
 	auto* pOwner = m_pWeapon->GetOwnerActor();
 	if (m_scanning && m_pWeapon->IsClient() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))

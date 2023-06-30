@@ -102,7 +102,7 @@ struct SLodTransitionState
 {
   float fStartTime;
   IStatObj * pStatObj;
-  uchar ucLods[2];
+  unsigned char ucLods[2];
 };
 
 struct SLightInfo
@@ -226,7 +226,7 @@ struct IRenderNode : public IShadowCaster
 	//   Returns vertex buffer holding instance specific texture coordinate set for dot3 lightmaps
 	//	virtual struct IRenderMesh * GetLightmapTexCoord(int nLod) { return 0; };
 	virtual int GetLightmapTexCoord(int nLod) { return 0; };
-	virtual SLMData* GetLightmapData(int nLod,int SubObject=-1)	{	return 0;}
+	virtual struct SLMData* GetLightmapData(int nLod,int SubObject=-1)	{	return 0;}
 
 	// Summary:
 	//   Returns IRenderMesh of the object
@@ -432,7 +432,7 @@ const int IVOXELOBJECT_FLAG_EXIST = 64;
 struct IVoxelObject : public IRenderNode
 {
 	virtual struct IMemoryBlock * GetCompiledData() = 0;
-	virtual void SetCompiledData(void * pData, int nSize, uchar ucChildId = 0) = 0;
+	virtual void SetCompiledData(void * pData, int nSize, unsigned char ucChildId = 0) = 0;
   virtual void SetObjectName( const char * pName ) = 0;
   virtual void SetMatrix( const Matrix34& mat ) = 0;
 	virtual bool ResetTransformation() = 0;

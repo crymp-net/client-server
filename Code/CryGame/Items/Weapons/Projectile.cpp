@@ -1185,7 +1185,7 @@ void CProjectile::Ricochet(EventPhysCollision* pCollision)
 		return;
 
 	float b = 0, f = 0;
-	uint matPierceability = 0;
+	unsigned int matPierceability = 0;
 	if (!gEnv->pPhysicalWorld->GetSurfaceParameters(pCollision->idmat[1], b, f, matPierceability))
 		return;
 

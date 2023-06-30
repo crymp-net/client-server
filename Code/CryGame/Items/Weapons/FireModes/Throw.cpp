@@ -38,7 +38,7 @@ CThrow::~CThrow()
 
 
 //------------------------------------------------------------------------
-void CThrow::Update(float frameTime, uint frameId)
+void CThrow::Update(float frameTime, unsigned int frameId)
 {
 	CSingle::Update(frameTime, frameId);
 

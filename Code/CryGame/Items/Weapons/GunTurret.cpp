@@ -11,9 +11,10 @@ History:
 
 *************************************************************************/
 #include "CryGame/StdAfx.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "GunTurret.h"
 
-#include "CryCommon/CryMath/Cry_GeoOverlap.h"
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAction/IMovementController.h"
 #include "CryCommon/CryAction/IGameObjectSystem.h"

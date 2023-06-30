@@ -555,7 +555,7 @@ public:
 
 	//IFireMode
 	virtual void Init(IWeapon *pWeapon, const IItemParamsNode *params);
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void UpdateFPView(float frameTime);
 	virtual void Release();
 	virtual void GetMemoryStatistics(ICrySizer * s);
@@ -740,7 +740,7 @@ protected:
 
   struct SMuzzleEffectInfo
   {
-    uint mfId[2];
+    unsigned int mfId[2];
 
     SMuzzleEffectInfo()
     {
@@ -749,12 +749,12 @@ protected:
   };
     
   std::vector<SMuzzleEffectInfo> m_mfIds;
-	uint			m_mflightId[2];	
+	unsigned int			m_mflightId[2];
 	float			m_mflTimer;
 	int				m_mflFrameId;
 
-	uint			m_suId;
-	uint			m_sulightId;
+	unsigned int			m_suId;
+	unsigned int			m_sulightId;
 	float			m_suTimer;
 
 	float			m_recoil;
@@ -769,7 +769,7 @@ protected:
 
 	bool			m_enabled;
 
-	uint						m_ammoid;
+	unsigned int						m_ammoid;
 
 	float						m_spinUpTime;
 

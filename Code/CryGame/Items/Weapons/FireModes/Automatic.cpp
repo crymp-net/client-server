@@ -34,7 +34,7 @@ void CAutomatic::StartFire()
 		m_soundId = m_pWeapon->PlayAction(m_automaticactions.automatic_fire);
 }
 //------------------------------------------------------------------------
-void CAutomatic::Update(float frameTime, uint frameId)
+void CAutomatic::Update(float frameTime, unsigned int frameId)
 {
 	CSingle::Update(frameTime, frameId);
 

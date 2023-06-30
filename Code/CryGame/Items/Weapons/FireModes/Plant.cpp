@@ -145,7 +145,7 @@ int CPlant::GetDamage(float distance) const
 }
 
 //------------------------------------------------------------------------
-void CPlant::Update(float frameTime, uint frameId)
+void CPlant::Update(float frameTime, unsigned int frameId)
 {
 	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
 

@@ -512,7 +512,7 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 		}
 	}
 
-	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
+	virtual void ServerDirectConnect(bool neednat, unsigned int ip, unsigned short port)
 	{
 		g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(
 			StringTools::Format("connect %d.%d.%d.%d %d",
@@ -676,7 +676,7 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 		m_menu->m_profile->SendBuddyMessage(m_selectedBuddy, message);
 	}
 
-	virtual void AddFavoriteServer(uint ip, ushort port)
+	virtual void AddFavoriteServer(unsigned int ip, unsigned short port)
 	{
 		SStoredServer s;
 		s.ip = ip;
@@ -684,7 +684,7 @@ struct CMultiPlayerMenu::SGSNetworkProfile : public INProfileUI
 		m_menu->m_favouriteServers.push_back(s);
 	}
 
-	virtual void AddRecentServer(uint ip, ushort port)
+	virtual void AddRecentServer(unsigned int ip, unsigned short port)
 	{
 		SStoredServer s;
 		s.ip = ip;
@@ -1081,7 +1081,7 @@ void CMultiPlayerMenu::JoinServer()
 			m_profile->SetPlayingStatus(serv.m_publicIP, serv.m_hostPort, serv.m_publicPort, serv.m_gameType.c_str());
 		if (m_lan)
 		{
-			uint ip = serv.m_publicIP;
+			unsigned int ip = serv.m_publicIP;
 			string connect;
 			connect.Format("connect %d.%d.%d.%d:%d", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF, serv.m_hostPort);
 			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame(connect.c_str());

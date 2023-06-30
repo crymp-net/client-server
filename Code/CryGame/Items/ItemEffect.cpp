@@ -19,7 +19,7 @@ History:
 
 
 //------------------------------------------------------------------------
-uint CItem::AttachEffect(int slot, uint id, bool attach, const char* effectName, const char* helper, const Vec3& offset, const Vec3& dir, float scale, bool prime)
+unsigned int CItem::AttachEffect(int slot, unsigned int id, bool attach, const char* effectName, const char* helper, const Vec3& offset, const Vec3& dir, float scale, bool prime)
 {
 	if (m_stats.mounted)
 		slot = eIGS_FirstPerson;
@@ -127,7 +127,7 @@ uint CItem::AttachEffect(int slot, uint id, bool attach, const char* effectName,
 
 namespace
 {
-	void	TurnOnShadowCasting(CItem* pItem, int shadowType, uint& lightFlags, IRenderNode** pCasterException)
+	void	TurnOnShadowCasting(CItem* pItem, int shadowType, unsigned int& lightFlags, IRenderNode** pCasterException)
 	{
 		CActor* pOwner = pItem->GetOwnerActor();
 		if (!pOwner)
@@ -178,7 +178,7 @@ namespace
 };
 
 //------------------------------------------------------------------------
-uint CItem::AttachLight(int slot, uint id, bool attach, float radius, const Vec3& color, const float fSpecularMult, const char* projectTexture, float projectFov, const char* helper, const Vec3& offset, const Vec3& dir, const char* material, float fHDRDynamic)
+unsigned int CItem::AttachLight(int slot, unsigned int id, bool attach, float radius, const Vec3& color, const float fSpecularMult, const char* projectTexture, float projectFov, const char* helper, const Vec3& offset, const Vec3& dir, const char* material, float fHDRDynamic)
 {
 	if (m_stats.mounted)
 		slot = eIGS_FirstPerson;
@@ -350,7 +350,7 @@ uint CItem::AttachLight(int slot, uint id, bool attach, float radius, const Vec3
 //------------------------------------------------------------------------
 //Above function is almost the same, just some special stuff for flashlight
 //------------------------------------------------------------------------
-uint CItem::AttachLightEx(int slot, uint id, bool attach, bool fakeLight /*= false */, bool castShadows /*= false*/, IRenderNode* pCasterException, float radius, const Vec3& color, const float fSpecularMult, const char* projectTexture, float projectFov, const char* helper, const Vec3& offset, const Vec3& dir, const char* material, float fHDRDynamic)
+unsigned int CItem::AttachLightEx(int slot, unsigned int id, bool attach, bool fakeLight /*= false */, bool castShadows /*= false*/, IRenderNode* pCasterException, float radius, const Vec3& color, const float fSpecularMult, const char* projectTexture, float projectFov, const char* helper, const Vec3& offset, const Vec3& dir, const char* material, float fHDRDynamic)
 {
 	if (m_stats.mounted)
 		slot = eIGS_FirstPerson;
@@ -582,7 +582,7 @@ void CItem::SpawnEffect(int slot, const char* effectName, const char* helper, co
 }
 
 //------------------------------------------------------------------------
-IParticleEmitter* CItem::GetEffectEmitter(uint id) const
+IParticleEmitter* CItem::GetEffectEmitter(unsigned int id) const
 {
 	TEffectInfoMap::const_iterator it = m_effects.find(id);
 	if (it == m_effects.end())
@@ -616,7 +616,7 @@ IParticleEmitter* CItem::GetEffectEmitter(uint id) const
 }
 
 //------------------------------------------------------------------------
-void CItem::EnableLight(bool enable, uint id)
+void CItem::EnableLight(bool enable, unsigned int id)
 {
 	TEffectInfoMap::const_iterator it = m_effects.find(id);
 	if (it == m_effects.end())
@@ -655,7 +655,7 @@ void CItem::EnableLight(bool enable, uint id)
 }
 
 //------------------------------------------------------------------------
-void CItem::SetLightRadius(float radius, uint id)
+void CItem::SetLightRadius(float radius, unsigned int id)
 {
 	TEffectInfoMap::const_iterator it = m_effects.find(id);
 	if (it == m_effects.end())
@@ -694,7 +694,7 @@ void CItem::SetLightRadius(float radius, uint id)
 }
 
 //------------------------------------------------------------------------
-void CItem::SetEffectWorldTM(uint id, const Matrix34& tm)
+void CItem::SetEffectWorldTM(unsigned int id, const Matrix34& tm)
 {
 	TEffectInfoMap::const_iterator it = m_effects.find(id);
 	if (it == m_effects.end())
@@ -715,7 +715,7 @@ void CItem::SetEffectWorldTM(uint id, const Matrix34& tm)
 }
 
 //------------------------------------------------------------------------
-Matrix34 CItem::GetEffectWorldTM(uint id)
+Matrix34 CItem::GetEffectWorldTM(unsigned int id)
 {
 	TEffectInfoMap::const_iterator it = m_effects.find(id);
 	if (it == m_effects.end())

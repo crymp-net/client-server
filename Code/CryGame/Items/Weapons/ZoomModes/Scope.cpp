@@ -27,7 +27,7 @@ CScope::CScope() :
 }
 
 //------------------------------------------------------------------------
-void CScope::Update(float frameTime, uint frameId)
+void CScope::Update(float frameTime, unsigned int frameId)
 {
 	CIronSight::Update(frameTime, frameId);
 

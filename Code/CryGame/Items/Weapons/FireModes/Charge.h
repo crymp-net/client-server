@@ -62,7 +62,7 @@ public:
 	CCharge();
 	virtual ~CCharge();
 
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); CSingle::GetMemoryStatistics(s); }
 
 	virtual void ResetParams(const struct IItemParamsNode *params);
@@ -88,8 +88,8 @@ protected:
 	SChargeParams		m_chargeparams;
 	SChargeActions	m_chargeactions;
 
-	uint					m_chId;
-	uint					m_chlightId;
+	unsigned int					m_chId;
+	unsigned int					m_chlightId;
 	float					m_chTimer;
 };
 

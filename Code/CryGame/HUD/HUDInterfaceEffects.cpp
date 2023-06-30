@@ -9,6 +9,7 @@
 #include "GameFlashAnimation.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Items/Weapons/WeaponSystem.h"
 #include "CryGame/Items/Weapons/Weapon.h"

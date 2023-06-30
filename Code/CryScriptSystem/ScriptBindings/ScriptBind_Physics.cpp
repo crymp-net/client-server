@@ -1,6 +1,7 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryPhysics/IPhysics.h"
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
+#include "CryCommon/Cry3DEngine/IFoliage.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "ScriptBind_Physics.h"

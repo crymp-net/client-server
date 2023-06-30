@@ -13,6 +13,8 @@
 #ifndef CRYTEK_CRYCOLOR_H
 #define CRYTEK_CRYCOLOR_H
 
+#include "Cry_Math.h"
+
 _inline float FClamp( float X, float Min, float Max ) {
 	return X<Min ? Min : X<Max ? X : Max;
 }

@@ -54,7 +54,7 @@ public:
 
 	virtual void GetMemoryStatistics(ICrySizer * s);
 
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void StartFire();
 	virtual void StopFire();
 	virtual const char *GetType() const;
@@ -65,7 +65,7 @@ public:
 protected:
 
 	SAutomaticActions m_automaticactions;
-	uint							m_soundId;
+	unsigned int							m_soundId;
 };
 
 #endif //__AUTOMATIC_H__

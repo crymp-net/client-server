@@ -121,11 +121,11 @@ struct CQuickGame::SQGServerList : public IServerListener
 	struct SRatedServer
 	{
 		int id;
-		uint port;
+		unsigned int port;
 
-		uint ping;
-		uint players;
-		uint maxplayers;
+		unsigned int ping;
+		unsigned int players;
+		unsigned int maxplayers;
 		string name;
 		string map;
 		string mode;
@@ -349,7 +349,7 @@ struct CQuickGame::SQGServerList : public IServerListener
 
 	}
 
-	virtual void ServerDirectConnect(bool neednat, uint ip, ushort port)
+	virtual void ServerDirectConnect(bool neednat, unsigned int ip, unsigned short port)
 	{
 		string connect;
 		//    if(neednat)
@@ -377,8 +377,8 @@ struct CQuickGame::SQGServerList : public IServerListener
 	bool                      m_preferFav;
 	bool                      m_preferCountry;
 	string										m_country;
-	uint											m_ping1;
-	uint											m_ping2;
+	unsigned int											m_ping1;
+	unsigned int											m_ping2;
 	std::vector<SStoredServer>m_favorites;
 	CQuickGame* m_qg;
 };

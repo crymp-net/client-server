@@ -93,7 +93,7 @@ public:
 	{
 		return (float)m_Key / float(0xFFFFFFFF) * fRange;
 	}
-	inline uint operator *(uint nRange) const
+	inline unsigned int operator *(unsigned int nRange) const
 	{
 		return m_Key % nRange;
 	}
@@ -623,10 +623,10 @@ protected:
 
 struct STextureTiling
 {
-	uint	nTilesX, nTilesY;		// $<Min=1> Number of tiles texture is split into 
-	uint	nFirstTile;					// $<Min=0> First (or only) tile to use.
-	uint	nVariantCount;			// $<Min=1> Number of randomly selectable tiles; 0 or 1 if no variation.
-	uint	nAnimFramesCount;		// $<Min=1> Number of tiles (frames) of animation; 0 or 1 if no animation.
+	unsigned int	nTilesX, nTilesY;		// $<Min=1> Number of tiles texture is split into
+	unsigned int	nFirstTile;					// $<Min=0> First (or only) tile to use.
+	unsigned int	nVariantCount;			// $<Min=1> Number of randomly selectable tiles; 0 or 1 if no variation.
+	unsigned int	nAnimFramesCount;		// $<Min=1> Number of tiles (frames) of animation; 0 or 1 if no animation.
 	float	fAnimFramerate;			// $<Min=0> $<SoftMax=60> Tex framerate; 0 = 1 cycle / particle life.
 	bool	bAnimCycle;					// Whether animation cycles, or holds last frame.
 
@@ -638,7 +638,7 @@ struct STextureTiling
 		nTilesX = nTilesY = nVariantCount = nAnimFramesCount = 1;
 	}
 
-	uint GetFrameCount() const
+	unsigned int GetFrameCount() const
 	{
 		return nTilesX * nTilesY - nFirstTile;
 	}
@@ -710,7 +710,7 @@ struct ParticleParams
 	// Size
 	TVarEPParam<float> fSize;					// $<Group="Size"> $<Min=0> $<SoftMax=10> Particle size.
 	TVarEPParam<float> fTailLength;		// $<Min=0> $<SoftMax=10> Delay of tail ( 0 - no tail, 1 meter if speed is 1 meter/sec
-	uint nTailSteps;									// $<Min=0> $<SoftMax=16> How many tail steps particles have.
+	unsigned int nTailSteps;									// $<Min=0> $<SoftMax=16> How many tail steps particles have.
 	TVarEPParam<float> fStretch;			// $<Min=0> $<SoftMax=10> Stretch particle into moving direction
 	float fStretchOffsetRatio;				// Move particle center this fraction in direction of stretch.
 	float fMinPixels;									// $<Min=0> $<SoftMax=10> Augment true size with this many pixels.
@@ -754,7 +754,7 @@ struct ParticleParams
 	float fDynamicFriction;						// $<Min=0> $<SoftMax=10> Sliding drag value, in inverse seconds.
 	float fThickness;									// $<Min=0> $<SoftMax=1> Lying thickness ratio - for physicalized particles only
 	float fDensity;										// $<Min=0> $<SoftMax=2000> Mass density for physicslized particles.
-	uint nMaxCollisionEvents;					// $<Min=0> $<SoftMax=10> Max # collision events generatable per frame per particle.
+	unsigned int nMaxCollisionEvents;					// $<Min=0> $<SoftMax=10> Max # collision events generatable per frame per particle.
 	EParticleForceType eForceGeneration;	// Generate physical forces if set.
 
 	// Sound

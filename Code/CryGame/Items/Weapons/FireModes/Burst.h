@@ -46,7 +46,7 @@ public:
 	virtual ~CBurst();
 
 	// CSingle
-	virtual void Update(float frameTime, uint frameId);
+	virtual void Update(float frameTime, unsigned int frameId);
 	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); CSingle::GetMemoryStatistics(s); }
 
 	virtual void ResetParams(const struct IItemParamsNode *params);

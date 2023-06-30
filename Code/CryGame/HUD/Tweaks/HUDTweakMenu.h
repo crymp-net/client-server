@@ -96,7 +96,7 @@ protected:
 	int m_nOriginalStateAICVAR;
 
 	// black texture
-	uint	m_nBlackTexID;
+	unsigned int	m_nBlackTexID;
 
 	IFFont *m_pDefaultFont;
 };

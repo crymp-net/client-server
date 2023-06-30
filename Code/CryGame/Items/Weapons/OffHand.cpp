@@ -3162,7 +3162,7 @@ void COffHand::PlaySound(EOffHandSounds sound, bool play)
 		return;
 
 	bool repeating = false;
-	uint idx = 0;
+	unsigned int idx = 0;
 	const char* soundName = NULL;
 
 	switch (sound)

@@ -44,7 +44,7 @@ struct CDetonate::ExplodeAction
 	}
 };
 
-void CDetonate::Update(float frameTime, uint frameId)
+void CDetonate::Update(float frameTime, unsigned int frameId)
 {
 	CSingle::Update(frameTime, frameId);
 
@@ -59,7 +59,7 @@ void CDetonate::Update(float frameTime, uint frameId)
 			bool detonated = Detonate();
 
 			if (detonated && m_pWeapon->GetOwnerActor() && m_pWeapon->GetOwnerActor()->IsClient())
-				m_pWeapon->GetScheduler()->TimerAction(uint(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson)*0.35f), CSchedulerAction<ExplodeAction>::Create(this), false);
+				m_pWeapon->GetScheduler()->TimerAction((unsigned int)(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson)*0.35f), CSchedulerAction<ExplodeAction>::Create(this), false);
 		}
 		else
 			m_pWeapon->RequireUpdate(eIUS_FireMode);

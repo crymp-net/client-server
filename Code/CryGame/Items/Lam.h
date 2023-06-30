@@ -21,7 +21,6 @@ History:
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"
-#include "CryCommon/CryRenderer/IShader.h"
 #include "CryCommon/CryCore/VectorSet.h"
 
 class CLam : public CItem
@@ -169,7 +168,7 @@ public:
 	virtual void FullSerialize(TSerialize ser);
 	virtual void PostSerialize();
 
-	static  inline  uint GetNumLightsActivated() { return s_lightCount; }
+	static  inline  unsigned int GetNumLightsActivated() { return s_lightCount; }
 
 	inline bool IsLaserActivated() const { return m_laserActivated; }
 	inline bool IsLightActivated() const { return m_lightActivated; }
@@ -210,7 +209,7 @@ private:
 
 	//Flashlight
 	bool    m_lightActivated;
-	uint		m_lightID[2];
+	unsigned int		m_lightID[2];
 	tSoundID m_lightSoundId;
 
 	//Track previous state (after select/deselect)
@@ -232,7 +231,7 @@ private:
 
 	bool m_lightActiveSerialize, m_laserActiveSerialize;
 
-	static uint s_lightCount;
+	static unsigned int s_lightCount;
 };
 
 #endif

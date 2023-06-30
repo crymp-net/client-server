@@ -65,6 +65,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/Cry3DEngine/CryVertexBinding.h
 	Code/CryCommon/Cry3DEngine/I3DEngine.h
 	Code/CryCommon/Cry3DEngine/I3DSampler.h
+	Code/CryCommon/Cry3DEngine/IFoliage.h
 	Code/CryCommon/Cry3DEngine/IIndexedMesh.h
 	Code/CryCommon/Cry3DEngine/ILMSerializationManager.h
 	Code/CryCommon/Cry3DEngine/IMaterial.h
@@ -192,6 +193,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryRenderer/IRenderMesh.h
 	Code/CryCommon/CryRenderer/IRenderer.h
 	Code/CryCommon/CryRenderer/IShader.h
+	Code/CryCommon/CryRenderer/ISkinnable.h
 	Code/CryCommon/CryRenderer/IVideoPlayer.h
 	Code/CryCommon/CryRenderer/RendElement.h
 	Code/CryCommon/CryRenderer/VertexBufferSource.h

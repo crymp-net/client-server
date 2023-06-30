@@ -111,13 +111,13 @@ struct INProfileUI
   virtual void SearchCompleted()=0;
   virtual void ShowError(const char* descr)=0;
   virtual void OnAuthRequest(int id, const char* nick, const char* message)=0;
-  virtual void AddFavoriteServer(uint ip, ushort port)=0;
-  virtual void AddRecentServer(uint ip, ushort port)=0;
+  virtual void AddFavoriteServer(unsigned int ip, unsigned short port)=0;
+  virtual void AddRecentServer(unsigned int ip, unsigned short port)=0;
 };
 
 struct SStoredServer
 {
-  SStoredServer(uint i = 0, ushort p = 0):ip(i),port(p){}
+  SStoredServer(unsigned int i = 0, unsigned short p = 0):ip(i),port(p){}
   int			ip;
   int			port;
 	bool operator==(const SStoredServer& svr)
@@ -188,7 +188,7 @@ public:
 	bool GetUserInfo(int id, SUserInfo& info);
 	bool GetUserInfo(const char* nick, SUserInfo& info, int &id);
 
-  void SetPlayingStatus(uint ip, ushort port, ushort publicport, const char* game_type);
+  void SetPlayingStatus(unsigned int ip, unsigned short port, unsigned short publicport, const char* game_type);
   void SetChattingStatus();
 
 	void OnUserStats(int id, const SUserStats& stats, EUserInfoSource src, const char* country ="");
@@ -197,9 +197,9 @@ public:
   void InitUI(INProfileUI* a);
   void DestroyUI();
 
-  void AddFavoriteServer(uint ip, ushort port);
-  void RemoveFavoriteServer(uint ip, ushort port);
-  void AddRecentServer(uint ip, ushort port);
+  void AddFavoriteServer(unsigned int ip, unsigned short port);
+  void RemoveFavoriteServer(unsigned int ip, unsigned short port);
+  void AddRecentServer(unsigned int ip, unsigned short port);
 
   bool IsLoggedIn()const;
 	bool IsLoggingIn()const;
