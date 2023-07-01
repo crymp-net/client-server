@@ -6,15 +6,17 @@
 #pragma once
 
 #include "CryCommon/CryCore/platform.h"
+#include "CryCommon/CryCore/smartptr.h"
+
+#include "IXml.h"
+#include "IValidator.h"
+#include "CryVersion.h"
+
+#include "gEnv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#include "IXml.h"
-#include "IValidator.h"
-#include "CryVersion.h"
-#include "CryCommon/CryCore/smartptr.h"
-
 struct ISystem;
 struct ILog;
 struct ILogCallback;
@@ -378,100 +380,11 @@ struct SSystemInitParams
 };
 
 
-// Typedef for frame profile callback function.
-typedef void (*FrameProfilerSectionCallback)( class CFrameProfilerSection *pSection );
-
 // can be used for LoadConfiguration()
 struct ILoadConfigurationEntrySink
 {
 	virtual void OnLoadConfigurationEntry( const char *szKey, const char *szValue, const char *szGroup )=0;
 	virtual void OnLoadConfigurationEntry_End() {}
-};
-
-struct SPlatformInfo
-{
-	unsigned int numCoresAvailableToProcess;
-
-#if defined(WIN32) || defined(WIN64)
-	enum EWinVersion
-	{
-		WinUndetected,
-		Win2000,
-		WinXP,
-		WinSrv2003,
-		WinVista
-	};
-
-	EWinVersion winVer;
-	bool win64Bit;
-	bool vistaKB940105Required;
-#endif
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Global environment.
-// Contain pointers to all global often needed interfaces.
-// This is a faster way to get interface pointer then calling ISystem interface to retrieve one.
-// Some pointers can be NULL, use with care.
-//////////////////////////////////////////////////////////////////////////
-struct SSystemGlobalEnvironment
-{
-	ISystem*                   pSystem;
-
-	IGame*                     pGame;
-	INetwork*                  pNetwork;
-	IRenderer*                 pRenderer;
-	IInput*                    pInput;
-	ITimer*                    pTimer;
-	IConsole*                  pConsole;
-	IScriptSystem*             pScriptSystem;
-	I3DEngine*                 p3DEngine;
-	ISoundSystem*              pSoundSystem;
-	IMusicSystem*              pMusicSystem;
-	IPhysicalWorld*            pPhysicalWorld;
-	IMovieSystem*              pMovieSystem;
-	IAISystem*                 pAISystem;
-	IEntitySystem*             pEntitySystem;
-	ICryFont*                  pCryFont;
-	ICryPak*                   pCryPak;
-	ILog*                      pLog;
-	ICharacterManager*         pCharacterManager;
-	IFrameProfileSystem*       pFrameProfileSystem;
-	INameTable*                pNameTable;
-	IFlowSystem*               pFlowSystem;
-	IAnimationGraphSystem*     pAnimationGraphSystem;
-	IDialogSystem*             pDialogSystem;
-	IHardwareMouse*            pHardwareMouse;
-	IMaterialEffects*          pMaterialEffects;
-
-	//////////////////////////////////////////////////////////////////////////
-	// Used to tell if this is a server/client/multiplayer instance
-	bool										   bClient;
-	bool                       bServer;
-	bool											 bMultiplayer;
-	//////////////////////////////////////////////////////////////////////////
-
-	//////////////////////////////////////////////////////////////////////////
-	// Used by frame profiler.
-	bool                       bProfilerEnabled;
-	FrameProfilerSectionCallback callbackStartSection;
-	FrameProfilerSectionCallback callbackEndSection;
-	//////////////////////////////////////////////////////////////////////////
-
-	//////////////////////////////////////////////////////////////////////////
-	// Indicate Editor status.
-	//////////////////////////////////////////////////////////////////////////
-	bool                       bEditor;          // Engine is running under editor.
-	bool                       bEditorGameMode;  // Engine is in editor game mode.
-	//////////////////////////////////////////////////////////////////////////
-
-	//////////////////////////////////////////////////////////////////////////
-	// Used by CRY_ASSERT
-	bool											 bIgnoreAllAsserts;
-	//////////////////////////////////////////////////////////////////////////
-
-	SPlatformInfo pi;
-
 };
 
 
@@ -783,11 +696,6 @@ struct ISystem
 
 
 
-
-//////////////////////////////////////////////////////////////////////////
-// Global environment variable.
-//////////////////////////////////////////////////////////////////////////
-inline SSystemGlobalEnvironment* gEnv;
 
 //////////////////////////////////////////////////////////////////////////
 // Get the system interface

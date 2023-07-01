@@ -9,6 +9,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <cstdint>
+
+#include "CryCommon/CryCore/TypeInfo.h"
 
 class CTimeValue
 {
@@ -32,7 +35,7 @@ public:
 
 	//! constructor
 	// /param inllValue positive negative, absolute or relative in 1 second= TIMEVALUE_PRECISION units
-	CTimeValue( const int64 &inllValue )
+	CTimeValue( const std::int64_t &inllValue )
 	{
 		m_lValue=inllValue;
 	}
@@ -63,23 +66,23 @@ public:
 	//!
 	void SetSeconds( const float infSec )
 	{
-		m_lValue = (int64)(infSec*TIMEVALUE_PRECISION);
+		m_lValue = (std::int64_t)(infSec*TIMEVALUE_PRECISION);
 	}
 
 	//!
 	void SetSeconds( const double infSec )
 	{
-		m_lValue = (int64)(infSec*TIMEVALUE_PRECISION);
+		m_lValue = (std::int64_t)(infSec*TIMEVALUE_PRECISION);
 	}
 
 	//!
-	void SetSeconds( const int64 indwSec )
+	void SetSeconds( const std::int64_t indwSec )
 	{
 		m_lValue=indwSec*TIMEVALUE_PRECISION;
 	}
 
 	//!
-	void SetMilliSeconds( const int64 indwMilliSec )
+	void SetMilliSeconds( const std::int64_t indwMilliSec )
 	{
 		m_lValue=indwMilliSec*(TIMEVALUE_PRECISION/1000);
 	}
@@ -90,17 +93,17 @@ public:
 		return m_lValue * (1000.f/TIMEVALUE_PRECISION);
 	}
 
-	int64 GetMilliSecondsAsInt64() const
+	std::int64_t GetMilliSecondsAsInt64() const
 	{
 		return m_lValue * 1000 / TIMEVALUE_PRECISION;
 	}
 
-	int64 GetValue() const
+	std::int64_t GetValue() const
 	{
 		return m_lValue;
 	}
 
-	void SetValue( int64 val )
+	void SetValue( std::int64_t val )
 	{
 		m_lValue = val;
 	}
@@ -108,32 +111,32 @@ public:
 	// math operations -----------------------
 
 	//! minus
-	ILINE CTimeValue operator-( const CTimeValue &inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue - inRhs.m_lValue;return ret; };
+	CTimeValue operator-( const CTimeValue &inRhs ) const { CTimeValue ret; ret.m_lValue = m_lValue - inRhs.m_lValue;return ret; };
 	//! plus
-	ILINE CTimeValue operator+( const CTimeValue &inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue + inRhs.m_lValue;return ret;	};
+	CTimeValue operator+( const CTimeValue &inRhs ) const { CTimeValue ret; ret.m_lValue = m_lValue + inRhs.m_lValue;return ret;	};
 	//! unary minus
-	ILINE CTimeValue operator-() const { CTimeValue ret; ret.m_lValue = -m_lValue;return ret; };
+	CTimeValue operator-() const { CTimeValue ret; ret.m_lValue = -m_lValue;return ret; };
 
-	ILINE CTimeValue& operator+=( const CTimeValue& inRhs ) { m_lValue += inRhs.m_lValue; return *this; }
-	ILINE CTimeValue& operator-=( const CTimeValue& inRhs ) { m_lValue -= inRhs.m_lValue; return *this; }
+	CTimeValue& operator+=( const CTimeValue& inRhs ) { m_lValue += inRhs.m_lValue; return *this; }
+	CTimeValue& operator-=( const CTimeValue& inRhs ) { m_lValue -= inRhs.m_lValue; return *this; }
 
-	ILINE CTimeValue& operator/=( int inRhs ) { m_lValue /= inRhs; return *this; }
+	CTimeValue& operator/=( int inRhs ) { m_lValue /= inRhs; return *this; }
 
 	// comparison -----------------------
 
-	ILINE bool operator<( const CTimeValue &inRhs ) const {	return m_lValue < inRhs.m_lValue; };
-	ILINE bool operator>( const CTimeValue &inRhs ) const {	return m_lValue > inRhs.m_lValue;	};
-	ILINE bool operator>=( const CTimeValue &inRhs ) const { return m_lValue >= inRhs.m_lValue;	};
-	ILINE bool operator<=( const CTimeValue &inRhs ) const { return m_lValue <= inRhs.m_lValue;	};
-	ILINE bool operator==( const CTimeValue &inRhs ) const { return m_lValue == inRhs.m_lValue;	};
-	ILINE bool operator!=( const CTimeValue &inRhs ) const { return m_lValue != inRhs.m_lValue;	};
+	bool operator<( const CTimeValue &inRhs ) const { return m_lValue < inRhs.m_lValue; };
+	bool operator>( const CTimeValue &inRhs ) const { return m_lValue > inRhs.m_lValue; };
+	bool operator>=( const CTimeValue &inRhs ) const { return m_lValue >= inRhs.m_lValue; };
+	bool operator<=( const CTimeValue &inRhs ) const { return m_lValue <= inRhs.m_lValue; };
+	bool operator==( const CTimeValue &inRhs ) const { return m_lValue == inRhs.m_lValue; };
+	bool operator!=( const CTimeValue &inRhs ) const { return m_lValue != inRhs.m_lValue; };
 
 	AUTO_STRUCT_INFO
 
 private: // ----------------------------------------------------------
 
-	int64									m_lValue;											// absolute or relative value in 1/TIMEVALUE_PRECISION, might be negative
-	static const int64		TIMEVALUE_PRECISION=100000;			//
+	std::int64_t m_lValue;  // absolute or relative value in 1/TIMEVALUE_PRECISION, might be negative
+	static const std::int64_t TIMEVALUE_PRECISION = 100000;
 
 
 	friend class CTimer;

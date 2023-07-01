@@ -9,10 +9,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <ctime>
+
 #include "TimeValue.h"
 #include "CryCommon/CryNetwork/SerializeFwd.h"
 
-struct tm;
 /*! Interface to the Timer System.
 */
 
@@ -85,10 +86,10 @@ struct ITimer
 	virtual bool SetTimer(ETimer which, float timeInSeconds) = 0;
 
 	//! make a tm struct from a time_t in UTC (like gmtime)
-	virtual void SecondsToDateUTC(time_t time, struct tm& outDateUTC) = 0;
+	virtual void SecondsToDateUTC(std::time_t time, std::tm& outDateUTC) = 0;
 
 	//! make a UTC time from a tm (like timegm, but not available on all platforms)
-	virtual time_t DateToSecondsUTC(struct tm& timePtr) = 0;
+	virtual std::time_t DateToSecondsUTC(std::tm& timePtr) = 0;
 	
 };
 

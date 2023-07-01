@@ -4,6 +4,10 @@
 // -------------------------------------------------------------------------
 #ifndef _SMART_PTR_H_
 #define _SMART_PTR_H_
+
+#include <atomic>
+#include <cassert>
+
 //////////////////////////////////////////////////////////////////
 // SMART POINTER
 //////////////////////////////////////////////////////////////////
@@ -240,23 +244,28 @@ typedef _i_reference_target<int> _i_reference_target_t;
 
 class CMultiThreadRefCount
 {
+	std::atomic<int> m_count = 0;
+
 public:
-	CMultiThreadRefCount() : m_cnt(0) {}
-	virtual ~CMultiThreadRefCount() {}
+	CMultiThreadRefCount() = default;
+
+	virtual ~CMultiThreadRefCount() = 0;
 
 	void AddRef()
 	{
-		CryInterlockedIncrement(&m_cnt);
-	}
-	void Release()
-	{
-		if (CryInterlockedDecrement(&m_cnt) <= 0)
-			delete this;
+		m_count.fetch_add(1);
 	}
 
-private:
-	volatile int m_cnt;
+	void Release()
+	{
+		if ((m_count.fetch_sub(1) - 1) <= 0)
+		{
+			delete this;
+		}
+	}
 };
+
+inline CMultiThreadRefCount::~CMultiThreadRefCount() {}
 
 // TYPEDEF_AUTOPTR macro, declares Class_AutoPtr, which is the smart pointer to the given class,
 // and Class_AutoArray, which is the array(STL vector) of autopointers

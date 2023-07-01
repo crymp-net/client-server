@@ -10,6 +10,8 @@
   - 11:8:2004   10:50 : Created by Márcio Martins
 
 *************************************************************************/
+#include <cstring>
+
 #include "StdAfx.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "GameCVars.h"
@@ -66,7 +68,7 @@ static void BroadcastChangeSafeMode(ICVar*)
 	}
 }
 
-void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
+static void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
 {
 	g_pGameCVars->goc_enable = 0;
 	g_pGameCVars->goc_tpcrosshair = 0;
@@ -79,7 +81,7 @@ void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
 	g_pGameCVars->bt_end_melee = 0;
 }
 
-void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
+static void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
 {
 	g_pGameCVars->goc_enable = 1;
 	g_pGameCVars->goc_tpcrosshair = 1;
@@ -97,6 +99,16 @@ void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
 	{
 		pPlayer->ToggleThirdPerson();
 	}
+}
+
+SCVars::SCVars()
+{
+	std::memset(this, 0, sizeof(SCVars));
+}
+
+SCVars::~SCVars()
+{
+	this->ReleaseCVars();
 }
 
 // game related cvars must start with an g_

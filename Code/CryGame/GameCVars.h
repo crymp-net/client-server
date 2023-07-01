@@ -464,12 +464,8 @@ struct SCVars
 	float		mp_netAimLerpFactorCrymp;
 	int         mp_explosiveSilhouettes;
 
-	SCVars()
-	{
-		memset(this,0,sizeof(SCVars));
-	}
-
-	~SCVars() { ReleaseCVars(); }
+	SCVars();
+	~SCVars();
 
 	void InitCVars(IConsole *pConsole);
 	void ReleaseCVars();
