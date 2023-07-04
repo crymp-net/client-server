@@ -26,7 +26,7 @@
 
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"
 

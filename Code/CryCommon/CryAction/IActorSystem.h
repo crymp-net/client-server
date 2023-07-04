@@ -18,13 +18,13 @@
 # pragma once
 #endif
 
+#include <cstdint>
 
-#include "CryCommon/CryEntitySystem/IEntity.h"
+#include "IGameObjectSystem.h"
+#include "IGameObject.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CryPhysics/IPhysics.h"
-#include "IGameObjectSystem.h"
-#include "IGameObject.h"
 
 enum EActorPhysicalization
 {
@@ -112,13 +112,13 @@ struct IActor:
 	// get current item (from inventory / in hands)
 	//virtual IItem *GetCurrentItem() const = 0;
 
-	uint16 GetChannelId() const
+	std::uint16_t GetChannelId() const
 	{
 		return GetGameObject()->GetChannelId();
 	}
-	void SetChannelId( uint16 id )
+	void SetChannelId(std::uint16_t id)
 	{
-		GetGameObject()->SetChannelId( id );
+		GetGameObject()->SetChannelId(id);
 	}
 	bool IsPlayer() const
 	{
@@ -157,10 +157,10 @@ typedef _smart_ptr<IActorIterator> IActorIteratorPtr;
 
 struct IActorSystem
 {
-	virtual void  Reset() = 0;
+	virtual void Reset() = 0;
 	virtual IActor *GetActor(EntityId entityId) = 0;
-	virtual IActor *GetActorByChannelId(uint16 channelId) = 0;
-	virtual IActor *CreateActor(uint16 channelId, const char *name, const char *actorClass, const Vec3 &pos, const Quat &rot, const Vec3 &scale, EntityId id = 0) = 0;
+	virtual IActor *GetActorByChannelId(std::uint16_t channelId) = 0;
+	virtual IActor *CreateActor(std::uint16_t channelId, const char *name, const char *actorClass, const Vec3 &pos, const Quat &rot, const Vec3 &scale, EntityId id = 0) = 0;
 
 	virtual int GetActorCount() const = 0;
 	virtual IActorIteratorPtr CreateActorIterator() = 0;

@@ -83,6 +83,26 @@ message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
+	Code/CryAction/ActorSystem.cpp
+	Code/CryAction/ActorSystem.h
+	Code/CryAction/DevMode.cpp
+	Code/CryAction/DevMode.h
+	Code/CryAction/EffectSystem.cpp
+	Code/CryAction/EffectSystem.h
+	Code/CryAction/GameFramework.cpp
+	Code/CryAction/GameFramework.h
+	Code/CryAction/GameTokenSystem.cpp
+	Code/CryAction/GameTokenSystem.h
+	Code/CryAction/ItemSystem.cpp
+	Code/CryAction/ItemSystem.h
+	Code/CryAction/LevelSystem.cpp
+	Code/CryAction/LevelSystem.h
+	Code/CryAction/ScriptRMI.cpp
+	Code/CryAction/ScriptRMI.h
+	Code/CryAction/TimeDemoRecorder.cpp
+	Code/CryAction/TimeDemoRecorder.h
+	Code/CryAction/UIDraw.cpp
+	Code/CryAction/UIDraw.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
 	Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
 	Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
@@ -125,6 +145,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryAction/IGameObject.h
 	Code/CryCommon/CryAction/IGameObjectSystem.h
 	Code/CryCommon/CryAction/IGameRulesSystem.h
+	Code/CryCommon/CryAction/IGameTokens.h
 	Code/CryCommon/CryAction/IGameplayRecorder.h
 	Code/CryCommon/CryAction/IInteractor.h
 	Code/CryCommon/CryAction/IItem.h
@@ -186,7 +207,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryGame/IGame.h
 	Code/CryCommon/CryGame/IGameRef.h
 	Code/CryCommon/CryGame/IGameStartup.h
-	Code/CryCommon/CryGame/IGameTokens.h
 	Code/CryCommon/CryInput/IInput.h
 	Code/CryCommon/CryMath/AABBSV.h
 	Code/CryCommon/CryMath/Cry_Camera.h

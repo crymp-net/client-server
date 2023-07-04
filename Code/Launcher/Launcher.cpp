@@ -4,6 +4,7 @@
 #include <tracy/Tracy.hpp>
 
 #include "Cry3DEngine/TimeOfDay.h"
+#include "CryAction/GameFramework.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/FrameProfiler.h"
 #include "CryCommon/CrySystem/gEnv.h"
@@ -984,6 +985,7 @@ void Launcher::PatchEngine()
 
 void Launcher::StartEngine()
 {
+/*
 	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
 	if (!entry)
 	{
@@ -995,6 +997,8 @@ void Launcher::StartEngine()
 	{
 		throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
 	}
+*/
+	IGameFramework* pGameFramework = &GameFramework::GetInstance();
 
 	GameWindow::GetInstance().Init();
 

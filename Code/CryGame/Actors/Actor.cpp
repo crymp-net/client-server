@@ -21,7 +21,7 @@
 #include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryAnimation/ICryAnimation.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IInteractor.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"

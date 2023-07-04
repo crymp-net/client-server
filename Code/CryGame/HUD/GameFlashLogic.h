@@ -17,7 +17,7 @@ History:
 //-----------------------------------------------------------------------------------------------------
 
 #include "GameFlashAnimation.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 
 //-----------------------------------------------------------------------------------------------------
 
