@@ -8,13 +8,13 @@ struct IEntitySystem;
 class ActorSystem : public IActorSystem
 {
 #ifdef BUILD_64BIT
-	unsigned char m_data[0xA0 - 0x8] = {};
+	unsigned char m_data[0xa0 - 0x8] = {};
 #else
 	unsigned char m_data[0x54 - 0x4] = {};
 #endif
 
 public:
-	ActorSystem(ISystem* pSystem, IEntitySystem* pEntitySystem);
+	explicit ActorSystem(ISystem* pSystem, IEntitySystem* pEntitySystem);
 	virtual ~ActorSystem();
 
 	////////////////////////////////////////////////////////////////////////////////

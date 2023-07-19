@@ -6,13 +6,13 @@
 class LevelSystem : public ILevelSystem, public ISystem::ILoadingProgressListener
 {
 #ifdef BUILD_64BIT
-	unsigned char m_data[0xC8 - 0x10] = {};
+	unsigned char m_data[0xc8 - 0x10] = {};
 #else
 	unsigned char m_data[0x78 - 0x8] = {};
 #endif
 
 public:
-	LevelSystem(ISystem* pSystem, const char* levelsFolder);
+	explicit LevelSystem(ISystem* pSystem, const char* levelsFolder);
 	virtual ~LevelSystem();
 
 	////////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 
 class EffectSystem : public IEffectSystem
 {
-	void* m_reserved1[16 - 1] = {};
+	void* m_reserved[16 - 1] = {};
 
 public:
 	EffectSystem();

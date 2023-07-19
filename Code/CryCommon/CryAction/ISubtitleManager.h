@@ -17,6 +17,8 @@
 #define __ISUBTITLEMANAGER_H__
 #pragma once
 
+struct ISound;
+
 //////////////////////////////////////////////////////////////////////////
 struct ISubtitleHandler
 {

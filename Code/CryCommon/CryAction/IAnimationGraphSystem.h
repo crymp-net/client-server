@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CrySystem/IXml.h"
 
 struct IAnimationGraphCategoryIterator
 {

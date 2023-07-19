@@ -4,7 +4,7 @@
 
 class DevMode : public IInputEventListener
 {
-	void* m_reserved1 = nullptr;
+	void* m_reserved = nullptr;
 
 public:
 	DevMode();

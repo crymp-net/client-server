@@ -15,7 +15,7 @@ class ItemSystem : public ILevelSystemListener, public IItemSystem
 #endif
 
 public:
-	ItemSystem(IGameFramework* pGameFramework, ISystem* pSystem);
+	explicit ItemSystem(IGameFramework* pGameFramework, ISystem* pSystem);
 	virtual ~ItemSystem();
 
 	////////////////////////////////////////////////////////////////////////////////

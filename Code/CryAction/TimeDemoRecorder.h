@@ -11,5 +11,5 @@ class TimeDemoRecorder
 #endif
 
 public:
-	TimeDemoRecorder(ISystem* pSystem);
+	explicit TimeDemoRecorder(ISystem* pSystem);
 };

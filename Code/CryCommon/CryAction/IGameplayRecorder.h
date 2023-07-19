@@ -9,6 +9,8 @@
 
 #include "CryCommon/CrySystem/TimeValue.h"
 
+struct IEntity;
+
 enum EGameplayEvent
 {
 	eGE_DiscreetSample = 0,

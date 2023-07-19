@@ -1,21 +1,94 @@
 #include <cstdint>
 
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CrySystem/CryLog.h"
+
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
-#include "CryCommon/CrySystem/gEnv.h"
-#include "CryCommon/CrySystem/IConsole.h"
-
+#include "ActionMapManager.h"
 #include "ActorSystem.h"
+#include "AnimationGraphSystem.h"
+#include "CallbackTimer.h"
+#include "DebrisMgr.h"
 #include "DevMode.h"
+#include "DialogSystem.h"
 #include "EffectSystem.h"
 #include "GameFramework.h"
+#include "GameFrameworkCVars.h"
+#include "GameObject.h"
+#include "GameObjectSystem.h"
+#include "GameplayAnalyst.h"
+#include "GameplayRecorder.h"
+#include "GameRulesSystem.h"
+#include "GameSerialize.h"
+#include "GameStatsConfig.h"
 #include "GameTokenSystem.h"
 #include "ItemSystem.h"
 #include "LevelSystem.h"
+#include "NetworkCVars.h"
+#include "PersistantDebug.h"
+#include "PlayerProfileManager.h"
 #include "ScriptRMI.h"
+#include "SubtitleManager.h"
 #include "TimeDemoRecorder.h"
+#include "TimeOfDayScheduler.h"
 #include "UIDraw.h"
+#include "VehicleSystem.h"
+#include "ViewSystem.h"
+
+static ISystem* InitCrySystem(SSystemInitParams& startupParams)
+{
+	// Launcher takes care of loading and patching CrySystem DLL
+	void* pCrySystemDLL = WinAPI::DLL::Get("CrySystem.dll");
+	if (!pCrySystemDLL)
+	{
+		throw StringTools::ErrorFormat("The CrySystem DLL is not loaded!");
+	}
+
+	using CrySystemEntry = ISystem* (*)(SSystemInitParams&);
+
+	auto entry = static_cast<CrySystemEntry>(WinAPI::DLL::GetSymbol(pCrySystemDLL, "CreateSystemInterface"));
+	if (!entry)
+	{
+		throw StringTools::ErrorFormat("The CrySystem DLL is not valid!");
+	}
+
+	ISystem* pSystem = entry(startupParams);
+	if (!pSystem)
+	{
+		throw StringTools::ErrorFormat("CrySystem initialization failed!");
+	}
+
+	return pSystem;
+}
+
+static void RegisterInventoryFactory(IGameFramework* pGameFramework)
+{
+#ifdef BUILD_64BIT
+	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(0x309651a8);
+	auto* vtable = reinterpret_cast<void*>(0x3088c968);
+#else
+	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(0x307db8dc);
+	auto* vtable = reinterpret_cast<void*>(0x30798bd4);
+#endif
+
+	// construct
+	*reinterpret_cast<void**>(pInventoryCreator) = vtable;
+
+	pGameFramework->RegisterFactory("Inventory", pInventoryCreator, false);
+}
+
+static void RegisterSomeExtensions(IGameFramework* pGameFramework)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x307bb6d0;
+#else
+	std::uintptr_t func = 0x306dbcb0;
+#endif
+
+	reinterpret_cast<void(*)(IGameFramework*)>(func)(pGameFramework);
+}
 
 GameFramework::GameFramework()
 {
@@ -53,6 +126,7 @@ GameFramework::GameFramework()
 
 	const std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
 
+	// use original functions from CryAction DLL except the following
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[94] = current_vtable[94];  // GameFramework::~GameFramework
 
@@ -73,8 +147,8 @@ GameFramework::~GameFramework()
 
 IGameFramework& GameFramework::GetInstance()
 {
-	static GameFramework instance;
-	return instance;
+	static GameFramework* pInstance = new GameFramework();
+	return *pInstance;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,26 +185,10 @@ void GameFramework::RegisterFactory(const char* gameObjectExtension, IGameObject
 
 bool GameFramework::Init(SSystemInitParams& startupParams)
 {
-	using CrySystemEntry = ISystem* (*)(SSystemInitParams& startupParams);
+	// start CryEngine
+	m_pSystem = InitCrySystem(startupParams);
 
-	// our launcher takes care of loading CrySystem DLL
-	void* pCrySystemDLL = WinAPI::DLL::Get("CrySystem.dll");
-	if (!pCrySystemDLL)
-	{
-		throw StringTools::ErrorFormat("The CrySystem DLL is not loaded!");
-	}
-
-	auto entry = static_cast<CrySystemEntry>(WinAPI::DLL::GetSymbol(pCrySystemDLL, "CreateSystemInterface"));
-	if (!entry)
-	{
-		throw StringTools::ErrorFormat("The CrySystem DLL is not valid!");
-	}
-
-	m_pSystem = entry(startupParams);
-	if (!m_pSystem)
-	{
-		throw StringTools::ErrorFormat("CrySystem initialization failed!");
-	}
+	CryLogAlways("$3[CryMP] Initializing Game Framework");
 
 	// set gEnv inside CryAction DLL
 #ifdef BUILD_64BIT
@@ -154,24 +212,11 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	m_pLog = m_pSystem->GetILog();
 
 	// original CryAction obtains Crysis CD key from Windows registry at this point
-	// our client sets a random CD key during its initialization
-	// so let's skip obtaining CD key here
+	// CryMP client sets a random CD key during its initialization
+	// no need to obtain CD key here
 
-#ifdef BUILD_64BIT
-	std::uintptr_t registerConsoleVariables = 0x308212a0;
-#else
-	std::uintptr_t registerConsoleVariables = 0x30721ab0;
-#endif
-	// call the original registration of console variables
-	(this->*reinterpret_cast<decltype(&GameFramework::RegisterConsoleVariables)&>(registerConsoleVariables))();
-
-#ifdef BUILD_64BIT
-	std::uintptr_t registerConsoleCommands = 0x308277a0;
-#else
-	std::uintptr_t registerConsoleCommands = 0x30743600;
-#endif
-	// call the original registration of console commands
-	(this->*reinterpret_cast<decltype(&GameFramework::RegisterConsoleCommands)&>(registerConsoleCommands))();
+	this->RegisterConsoleVariables();
+	this->RegisterConsoleCommands();
 
 	if (m_pSystem->IsDevMode())
 	{
@@ -180,47 +225,8 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 
 	m_pTimeDemoRecorder = new TimeDemoRecorder(m_pSystem);
 
-	IConsole* pConsole = gEnv->pConsole;
-
-#ifdef BUILD_64BIT
-	ICVar** pLogRMICVar = reinterpret_cast<ICVar**>(0x30961068);
-	ICVar** pDisconnectOnRMIErrorCVar = reinterpret_cast<ICVar**>(0x30961070);
-#else
-	ICVar** pLogRMICVar = reinterpret_cast<ICVar**>(0x307d79a8);
-	ICVar** pDisconnectOnRMIErrorCVar = reinterpret_cast<ICVar**>(0x307d79ac);
-#endif
-
-	*pLogRMICVar = pConsole->RegisterInt("net_log_remote_methods", 0, VF_DUMPTODISK,
-		"Log remote method invocations."
-	);
-	*pDisconnectOnRMIErrorCVar = pConsole->RegisterInt("net_disconnect_on_rmi_error", 0, VF_DUMPTODISK,
-		"Disconnect remote connections on script exceptions during RMI calls."
-	);
-
-#ifdef BUILD_64BIT
-	ICVar** pForceFastUpdateCVar = reinterpret_cast<ICVar**>(0x30941ae0);
-	ICVar** pVisibilityTimeoutCVar = reinterpret_cast<ICVar**>(0x30941ae8);
-	ICVar** pVisibilityTimeoutTimeCVar = reinterpret_cast<ICVar**>(0x30941af0);
-	int* pShowUpdateState = reinterpret_cast<int*>(0x30941adc);
-#else
-	ICVar** pForceFastUpdateCVar = reinterpret_cast<ICVar**>(0x307b9030);
-	ICVar** pVisibilityTimeoutCVar = reinterpret_cast<ICVar**>(0x307b9034);
-	ICVar** pVisibilityTimeoutTimeCVar = reinterpret_cast<ICVar**>(0x307b9038);
-	int* pShowUpdateState = reinterpret_cast<int*>(0x307b902c);
-#endif
-
-	*pForceFastUpdateCVar = pConsole->RegisterInt("g_goForceFastUpdate", 0, VF_CHEAT,
-		"GameObjects IsProbablyVisible->TRUE && IsProbablyDistant()->FALSE"
-	);
-	*pVisibilityTimeoutCVar = pConsole->RegisterInt("g_VisibilityTimeout", 0, VF_CHEAT,
-		"Add visibility timeout to IsProbablyVisible() calculations."
-	);
-	*pVisibilityTimeoutTimeCVar = pConsole->RegisterFloat("g_VisibilityTimeoutTime", 30.0f, VF_CHEAT,
-		"Visibility timeout time used by IsProbablyVisible() calculations."
-	);
-	pConsole->Register("g_showUpdateState", pShowUpdateState, 0, VF_CHEAT,
-		"Show the game object update state of any activated entities; 3-4 -- AI objects only."
-	);
+	ScriptRMI::RegisterCVars();
+	GameObject::RegisterCVars();
 
 	m_pScriptRMI = new ScriptRMI();
 	m_pGameTokenSystem = new GameTokenSystem();
@@ -230,9 +236,75 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	m_pLevelSystem = new LevelSystem(m_pSystem, "levels");
 	m_pActorSystem = new ActorSystem(m_pSystem, m_pEntitySystem);
 	m_pItemSystem = new ItemSystem(this, m_pSystem);
+	m_pActionMapManager = new ActionMapManager(m_pSystem->GetIInput());
+	m_pViewSystem = new ViewSystem(m_pSystem);
+	m_pGameplayRecorder = new GameplayRecorder(this);
+	m_pGameplayAnalyst = new GameplayAnalyst();
+	m_pGameRulesSystem = new GameRulesSystem(m_pSystem, this);
+	m_pVehicleSystem = new VehicleSystem(m_pSystem, m_pEntitySystem);
+	m_pNetworkCVars = new NetworkCVars();
+	m_pGameFrameworkCVars = new GameFrameworkCVars();
 
-	// TODO
-	throw StringTools::ErrorFormat("End of GameFramework::Init reached!!");
+	m_pGameObjectSystem = new GameObjectSystem();
+	m_pGameObjectSystem->Init();
+	m_pGameObjectSystem->RegisterEvent(eGFE_PauseGame, "PauseGame");
+	m_pGameObjectSystem->RegisterEvent(eGFE_ResumeGame, "ResumeGame");
+	m_pGameObjectSystem->RegisterEvent(eGFE_OnCollision, "OnCollision");
+	m_pGameObjectSystem->RegisterEvent(eGFE_OnPostStep, "OnPostStep");
+	m_pGameObjectSystem->RegisterEvent(eGFE_OnStateChange, "OnStateChange");
+	m_pGameObjectSystem->RegisterEvent(eGFE_ResetAnimationGraphs, "ResetAnimationGraphs");
+	m_pGameObjectSystem->RegisterEvent(eGFE_OnBreakable2d, "OnBreakable2d");
+	m_pGameObjectSystem->RegisterEvent(eGFE_OnBecomeVisible, "OnBecomeVisible");
+	m_pGameObjectSystem->RegisterEvent(eGFE_PreFreeze, "PreFreeze");
+	m_pGameObjectSystem->RegisterEvent(eGFE_PreShatter, "PreShatter");
+	m_pGameObjectSystem->RegisterEvent(eGFE_BecomeLocalPlayer, "BecomeLocalPlayer");
+	m_pGameObjectSystem->RegisterEvent(eGFE_DisablePhysics, "DisablePhysics");
+	m_pGameObjectSystem->RegisterEvent(eGFE_EnablePhysics, "EnablePhysics");
+
+	m_pAnimationGraphSystem = new AnimationGraphSystem();
+	m_pGameSerialize = new GameSerialize();
+	m_pCallbackTimer = new CallbackTimer();
+	m_pPersistantDebug = new PersistantDebug();
+	m_pPlayerProfileManager = new PlayerProfileManager();
+	m_pDialogSystem = new DialogSystem();
+	m_pDialogSystem->Init();
+	m_pDebrisMgr = new DebrisMgr();
+	m_pTimeOfDayScheduler = new TimeOfDayScheduler();
+	m_pSubtitleManager = new SubtitleManager();
+
+	IMovieSystem* pMovieSystem = m_pSystem->GetIMovieSystem();
+	if (pMovieSystem)
+	{
+		pMovieSystem->SetUser(m_pViewSystem);
+	}
+
+	m_pVehicleSystem->Init();
+
+	RegisterInventoryFactory(this);
+
+	m_pLevelSystem->AddListener(m_pItemSystem);
+
+	this->RegisterScriptBindings();
+
+	m_pSomeStrings = new SomeStrings();
+
+	m_pVehicleSystem->RegisterVehicles(this);
+	m_pGameObjectSystem->RegisterFactories(this);
+	m_pGameSerialize->RegisterFactories(this);
+
+	RegisterSomeExtensions(this);
+
+	m_pPlayerProfileManager->Initialize();
+
+	// skip instantiating some broken thing for downloading maps and stuff (m_reserved_0x51c_0x5b8)
+	// it is more harmful than useful and all accesses seem to be guarded by null checks making it optional
+
+	m_pListeners = new Listeners();
+	m_pAdditionalListenersData = new AdditionalListenersData();
+	m_pNextFrameCommand = new CryStringT<char>();
+
+	m_pGameStatsConfig = new GameStatsConfig();
+	m_pGameStatsConfig->Init();
 
 	return true;
 }
@@ -363,7 +435,7 @@ IPlayerProfileManager* GameFramework::GetIPlayerProfileManager()
 	return nullptr;
 }
 
-IDebrisMgr* GameFramework::GetDebrisMgr ()
+IDebrisMgr* GameFramework::GetDebrisMgr()
 {
 	return nullptr;
 }
@@ -656,8 +728,33 @@ void GameFramework::UnknownFunction2()
 
 void GameFramework::RegisterConsoleVariables()
 {
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x308212a0;
+#else
+	std::uintptr_t func = 0x30721ab0;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
 }
 
 void GameFramework::RegisterConsoleCommands()
 {
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x308277a0;
+#else
+	std::uintptr_t func = 0x30743600;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
+}
+
+void GameFramework::RegisterScriptBindings()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x30818610;
+#else
+	std::uintptr_t func = 0x3071c0c0;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
 }

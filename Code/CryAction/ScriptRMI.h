@@ -10,4 +10,6 @@ class ScriptRMI
 
 public:
 	ScriptRMI();
+
+	static void RegisterCVars();
 };

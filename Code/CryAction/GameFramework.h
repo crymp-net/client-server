@@ -4,13 +4,42 @@
 
 struct ICVar;
 
+class CallbackTimer;
 class DevMode;
+class DialogSystem;
+class GameFrameworkCVars;
+class GameObjectSystem;
+class GameplayAnalyst;
+class GameSerialize;
+class GameStatsConfig;
+class ItemSystem;
+class NetworkCVars;
 class ScriptRMI;
 class TimeDemoRecorder;
+class TimeOfDayScheduler;
+class ViewSystem;
 
 class GameFramework : public IGameFramework
 {
-	void* m_reserved_0x4_0x8 = {};
+	struct SomeStrings
+	{
+		CryStringT<char> reserved[3];
+	};
+
+	struct Listeners
+	{
+		// probably std::vector<IGameFrameworkListener*>
+		void* reserved[3] = {};
+	};
+
+	struct AdditionalListenersData
+	{
+		// probably std::vector of something
+		void* reserved[3] = {};
+	};
+
+	// m_reserved_<32-bit-offset>_<64-bit-offset>
+	void* m_reserved_0x4_0x8 = nullptr;
 	ISystem* m_pSystem = nullptr;
 	INetwork* m_pNetwork = nullptr;
 	I3DEngine* m_p3DEngine = nullptr;
@@ -18,32 +47,70 @@ class GameFramework : public IGameFramework
 	IEntitySystem* m_pEntitySystem = nullptr;
 	ITimer* m_pTimer = nullptr;
 	ILog* m_pLog = nullptr;
-	void* m_reserved_0x24_0x48[2] = {};
+	void* m_reserved_0x24_0x48 = nullptr;
+	void* m_reserved_0x28_0x50 = nullptr;  // contains client actor and server net nub
 	char m_reserved_0x2c_0x58[1024] = {};
 	char m_guid[128] = "{00000000-0000-0000-0000-000000000000}";
 	ILevelSystem* m_pLevelSystem = nullptr;
 	IActorSystem* m_pActorSystem = nullptr;
-	IItemSystem* m_pItemSystem = nullptr;
-	void* m_reserved_0x4b8_0x4f0[6] = {};
+	ItemSystem* m_pItemSystem = nullptr;
+	IVehicleSystem* m_pVehicleSystem = nullptr;
+	IActionMapManager* m_pActionMapManager = nullptr;
+	ViewSystem* m_pViewSystem = nullptr;
+	IGameplayRecorder* m_pGameplayRecorder = nullptr;
+	IGameRulesSystem* m_pGameRulesSystem = nullptr;  // m_reserved_0x4c8_0x510
+	IFlowSystem* m_pFlowSystem = nullptr;  // m_reserved_0x4cc_0x518
 	IUIDraw* m_pUIDraw = nullptr;
-	void* m_reserved_0x4d4_0x528 = {};
+	GameObjectSystem* m_pGameObjectSystem = nullptr;  // m_reserved_0x4d4_0x528
 	ScriptRMI* m_pScriptRMI = nullptr;
-	void* m_reserved_0x4dc_0x538[6] = {};
+	IAnimationGraphSystem* m_pAnimationGraphSystem = nullptr;  // m_reserved_0x4dc_0x538
+	IMaterialEffects* m_pMaterialEffects = nullptr;  // m_reserved_0x4e0_0x540
+	IPlayerProfileManager* m_pPlayerProfileManager = nullptr;  // m_reserved_0x4e4_0x548
+	DialogSystem* m_pDialogSystem = nullptr;  // m_reserved_0x4e8_0x550
+	IDebrisMgr* m_pDebrisMgr = nullptr;  // m_reserved_0x4ec_0x558
+	ISubtitleManager* m_pSubtitleManager = nullptr;  // m_reserved_0x4f0_0x560
 	IGameTokenSystem* m_pGameTokenSystem = nullptr;
 	IEffectSystem* m_pEffectSystem = nullptr;
-	void* m_reserved_0x4fc_0x578[5] = {};
+	GameSerialize* m_pGameSerialize = nullptr;  // m_reserved_0x4fc_0x578
+	CallbackTimer* m_pCallbackTimer = nullptr;  // m_reserved_0x500_0x580
+	GameplayAnalyst* m_pGameplayAnalyst = nullptr;  // m_reserved_0x504_0x588
+	ILanQueryListener* m_pLanQueryListener = nullptr;  // m_reserved_0x508_0x590
+	GameStatsConfig* m_pGameStatsConfig = nullptr;  // m_reserved_0x50c_0x598
 	DevMode* m_pDevMode = nullptr;
 	TimeDemoRecorder* m_pTimeDemoRecorder = nullptr;
-	void* m_reserved_0x518_0x5b0[21] = {};
+	void* m_reserved_0x518_0x5b0 = nullptr;
+	void* m_reserved_0x51c_0x5b8 = nullptr;
+	void* m_reserved_0x520_0x5c0 = nullptr;
+	void* m_reserved_0x524_0x5c8 = nullptr;
+	void* m_reserved_0x528_0x5d0 = nullptr;
+	void* m_reserved_0x52c_0x5d8 = nullptr;
+	void* m_reserved_0x530_0x5e0 = nullptr;
+	void* m_reserved_0x534_0x5e8 = nullptr;
+	void* m_reserved_0x538_0x5f0 = nullptr;
+	void* m_reserved_0x53c_0x5f8 = nullptr;
+	void* m_reserved_0x540_0x600 = nullptr;
+	void* m_reserved_0x544_0x608 = nullptr;
+	void* m_reserved_0x548_0x610 = nullptr;
+	void* m_reserved_0x54c_0x618 = nullptr;
+	TimeOfDayScheduler* m_pTimeOfDayScheduler = nullptr;  // m_reserved_0x550_0x620
+	IPersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
+	NetworkCVars* m_pNetworkCVars = nullptr;  // m_reserved_0x558_0x630
+	GameFrameworkCVars* m_pGameFrameworkCVars = nullptr;  // m_reserved_0x55c_0x638
+	void* m_reserved_0x560_0x640 = nullptr;
+	IAnimationGraphState* m_pMusicGraphState = nullptr;  // m_reserved_0x564_0x648
+	IMusicLogic* m_pMusicLogic = nullptr;  // m_reserved_0x568_0x650
 	ICVar* m_pEnableLoadingScreenCVar = nullptr;
-	void* m_reserved_0x570_0x660 = {};
+	void* m_reserved_0x570_0x660 = nullptr;
 	ICVar* m_pLANBrowserCVar = nullptr;
 	int m_reserved_0x578_0x670[3] = {};
-	void* m_reserved_0x584_0x680[3] = {};
+	SomeStrings* m_pSomeStrings = nullptr;  // m_reserved_0x584_0x680
+	Listeners* m_pListeners = nullptr;  // m_reserved_0x588_0x688
+	AdditionalListenersData* m_pAdditionalListenersData = nullptr;  // m_reserved_0x58c_0x690
 	int m_voiceRecording = 0;
 	bool m_unknownFlag1 = true;
 	bool m_unknownFlag2 = true;
-	void* m_reserved_0x598_0x6a0[64] = {};  // some free space at the end, total size is unknown
+	CryStringT<char>* m_pNextFrameCommand = nullptr;  // m_reserved_0x598_0x6a0
+	void* m_reserved_0x59c_0x6a8[64] = {};  // some free space at the end, total size is unknown
 
 	GameFramework();
 
@@ -59,10 +126,10 @@ public:
 	void RegisterFactory(const char* name, IAnimationStateNodeFactory* (*)(), bool isAI) override;
 	void RegisterFactory(const char* name, ISaveGame* (*)(), bool isAI) override;
 	void RegisterFactory(const char* name, ILoadGame* (*)(), bool isAI) override;
-	void RegisterFactory(const char* actor, IActorCreator*, bool isAI) override;
-	void RegisterFactory(const char* item, IItemCreator*, bool isAI) override;
-	void RegisterFactory(const char* vehicle, IVehicleCreator*, bool isAI) override;
-	void RegisterFactory(const char* gameObjectExtension, IGameObjectExtensionCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IActorCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IItemCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IVehicleCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI) override;
 
 	bool Init(SSystemInitParams& startupParams) override;
 	bool CompleteInit() override;
@@ -92,7 +159,7 @@ public:
 	IMaterialEffects* GetIMaterialEffects() override;
 	IDialogSystem* GetIDialogSystem() override;
 	IPlayerProfileManager* GetIPlayerProfileManager() override;
-	IDebrisMgr* GetDebrisMgr () override;
+	IDebrisMgr* GetDebrisMgr() override;
 	ISubtitleManager* GetISubtitleManager() override;
 
 	bool StartGameContext(const SGameStartParams* pGameStartParams) override;
@@ -194,4 +261,5 @@ public:
 private:
 	void RegisterConsoleVariables();
 	void RegisterConsoleCommands();
+	void RegisterScriptBindings();
 };

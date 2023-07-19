@@ -4,7 +4,7 @@
 
 class UIDraw : public IUIDraw
 {
-	void* m_reserved1[8 - 1] = {};
+	void* m_reserved[8 - 1] = {};
 
 public:
 	UIDraw();

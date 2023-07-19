@@ -83,26 +83,66 @@ message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
+	Code/CryAction/ActionMapManager.cpp
+	Code/CryAction/ActionMapManager.h
 	Code/CryAction/ActorSystem.cpp
 	Code/CryAction/ActorSystem.h
+	Code/CryAction/AnimationGraphSystem.cpp
+	Code/CryAction/AnimationGraphSystem.h
+	Code/CryAction/CallbackTimer.cpp
+	Code/CryAction/CallbackTimer.h
+	Code/CryAction/DebrisMgr.cpp
+	Code/CryAction/DebrisMgr.h
 	Code/CryAction/DevMode.cpp
 	Code/CryAction/DevMode.h
+	Code/CryAction/DialogSystem.cpp
+	Code/CryAction/DialogSystem.h
 	Code/CryAction/EffectSystem.cpp
 	Code/CryAction/EffectSystem.h
 	Code/CryAction/GameFramework.cpp
 	Code/CryAction/GameFramework.h
+	Code/CryAction/GameFrameworkCVars.cpp
+	Code/CryAction/GameFrameworkCVars.h
+	Code/CryAction/GameObjectSystem.cpp
+	Code/CryAction/GameObjectSystem.h
+	Code/CryAction/GameplayAnalyst.cpp
+	Code/CryAction/GameplayAnalyst.h
+	Code/CryAction/GameplayRecorder.cpp
+	Code/CryAction/GameplayRecorder.h
+	Code/CryAction/GameObject.cpp
+	Code/CryAction/GameObject.h
+	Code/CryAction/GameRulesSystem.cpp
+	Code/CryAction/GameRulesSystem.h
+	Code/CryAction/GameSerialize.cpp
+	Code/CryAction/GameSerialize.h
+	Code/CryAction/GameStatsConfig.cpp
+	Code/CryAction/GameStatsConfig.h
 	Code/CryAction/GameTokenSystem.cpp
 	Code/CryAction/GameTokenSystem.h
 	Code/CryAction/ItemSystem.cpp
 	Code/CryAction/ItemSystem.h
 	Code/CryAction/LevelSystem.cpp
 	Code/CryAction/LevelSystem.h
+	Code/CryAction/NetworkCVars.cpp
+	Code/CryAction/NetworkCVars.h
+	Code/CryAction/PersistantDebug.cpp
+	Code/CryAction/PersistantDebug.h
+	Code/CryAction/PlayerProfileManager.cpp
+	Code/CryAction/PlayerProfileManager.h
 	Code/CryAction/ScriptRMI.cpp
 	Code/CryAction/ScriptRMI.h
+	Code/CryAction/SubtitleManager.cpp
+	Code/CryAction/SubtitleManager.h
 	Code/CryAction/TimeDemoRecorder.cpp
 	Code/CryAction/TimeDemoRecorder.h
+	Code/CryAction/TimeOfDayScheduler.cpp
+	Code/CryAction/TimeOfDayScheduler.h
 	Code/CryAction/UIDraw.cpp
 	Code/CryAction/UIDraw.h
+	Code/CryAction/VehicleSystem.cpp
+	Code/CryAction/VehicleSystem.h
+	Code/CryAction/ViewSystem.cpp
+	Code/CryAction/ViewSystem.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
 	Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
 	Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h

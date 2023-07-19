@@ -20,6 +20,7 @@
 #pragma once
 #endif
 
+#include "CryCommon/CryCore/smartptr.h"
 #include "CryCommon/Cry3DEngine/CGF/CryHeaders.h"
 
 #include "CryCommon/CryMath/Range.h"
