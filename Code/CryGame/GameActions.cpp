@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryInput/IInput.h"
 #include "GameActions.h"
 #include "Game.h"

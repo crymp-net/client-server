@@ -10,7 +10,7 @@ History:
 - 26:7:2007   17:01 : Created by Márcio Martins
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/TArray.h"  // CLAMP
 #include "CryCommon/CryPhysics/IPhysics.h"
 #include "ScriptControlledPhysics.h"

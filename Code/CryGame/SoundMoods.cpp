@@ -12,7 +12,7 @@ History:
 - 31:07:2007: Created by Julien Darre
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
 #include "CryCommon/CrySystem/ITimer.h"

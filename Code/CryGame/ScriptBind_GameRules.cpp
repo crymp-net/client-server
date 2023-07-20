@@ -10,7 +10,7 @@ History:
 - 27:10:2004   11:29 : Created by Márcio Martins
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "ScriptBind_GameRules.h"
 #include "GameRules.h"
 #include "Actors/Actor.h"

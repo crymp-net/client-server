@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "HUDObituary.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryCommon/CryFont/IFont.h"

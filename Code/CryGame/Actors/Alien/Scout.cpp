@@ -10,7 +10,7 @@
   - 4:12:2005: Created by Filippo De Luca
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "Scout.h"
 #include "CryCommon/CryGame/GameUtils.h"

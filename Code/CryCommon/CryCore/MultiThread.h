@@ -14,7 +14,9 @@
 
 #pragma once
 
+#ifdef _MSC_VER
 #include <intrin.h>
+#endif
 
 #define WRITE_LOCK_VAL (1<<16)
 

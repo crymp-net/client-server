@@ -11,7 +11,7 @@
 												taken over by Filippo De Luca
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/StringUtils.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"

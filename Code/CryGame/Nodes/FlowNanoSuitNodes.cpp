@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/Actors/Player/NanoSuit.h"

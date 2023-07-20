@@ -530,8 +530,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/ShotValidator.h
 	Code/CryGame/SoundMoods.cpp
 	Code/CryGame/SoundMoods.h
-	Code/CryGame/StdAfx.cpp
-	Code/CryGame/StdAfx.h
 	Code/CryGame/SynchedStorage.cpp
 	Code/CryGame/SynchedStorage.h
 	Code/CryGame/Vehicles/Action/VehicleActionAutomaticDoor.cpp

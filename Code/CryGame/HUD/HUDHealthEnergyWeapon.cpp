@@ -6,7 +6,7 @@ History:
 				
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "HUDVehicleInterface.h"
 #include "HUDCrosshair.h"
 #include "HUD.h"

@@ -10,7 +10,7 @@ History:
 - 12:10:2007   15:00 : Created by Márcio Martins
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "ShotValidator.h"
 #include "GameRules.h"
 

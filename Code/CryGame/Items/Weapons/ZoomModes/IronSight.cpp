@@ -10,7 +10,7 @@ History:
 - 28:10:2005   16:00 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "IronSight.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/GameCVars.h"

@@ -10,7 +10,7 @@ History:
 - 11:9:2005   15:00 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Rapid.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Actors/Player/Player.h"

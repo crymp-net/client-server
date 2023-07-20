@@ -11,7 +11,7 @@
   - 15:8:2005: Renamed CDrone to CObserver by Mikko Mononen
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "Observer.h"
 #include "CryCommon/CryGame/GameUtils.h"

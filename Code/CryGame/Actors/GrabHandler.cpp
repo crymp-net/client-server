@@ -10,7 +10,7 @@
   - 19:6:2006 : Created by Filippo De Luca
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "Actor.h"
 #include "ScriptBind_Actor.h"

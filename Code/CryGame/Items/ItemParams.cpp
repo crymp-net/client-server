@@ -10,7 +10,7 @@ History:
 - 30:8:2005   12:33 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "ItemParamReader.h"

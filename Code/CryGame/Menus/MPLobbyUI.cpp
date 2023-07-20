@@ -11,7 +11,7 @@ History:
 - 02/6/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "MPLobbyUI.h"
 #include "CryGame/Game.h"
 #include "OptionsManager.h"

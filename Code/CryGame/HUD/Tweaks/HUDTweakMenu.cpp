@@ -13,7 +13,7 @@ History:
 *************************************************************************/
 
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "HUDTweakMenu.h"

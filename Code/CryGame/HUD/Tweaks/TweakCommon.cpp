@@ -14,7 +14,7 @@ Notes:	m_bIsInit is a bad idea - only need one in HUDTweak
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "TweakCommon.h"
 #include "TweakMenu.h"
 #include "TweakMetadata.h"

@@ -12,7 +12,7 @@
 *************************************************************************/
 #include <cstring>
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "GameCVars.h"
 #include "GameRules.h"

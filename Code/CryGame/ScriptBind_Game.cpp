@@ -10,7 +10,7 @@ History:
 - 14:08:2006   11:29 : Created by AlexL
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "ScriptBind_Game.h"
 #include "Game.h"
 #include "Menus/FlashMenuObject.h"

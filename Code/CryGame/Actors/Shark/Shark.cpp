@@ -10,7 +10,7 @@ History:
 - Aug 2007: Created by Luciano Morpurgo
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "Shark.h"

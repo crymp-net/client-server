@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "OffHand.h"
 #include "CryGame/Actors/Actor.h"
 #include "FireModes/Throw.h"

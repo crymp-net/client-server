@@ -10,7 +10,7 @@
   - 7:10:2004   14:19 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "ScriptBind_Actor.h"
 #include "Actor.h"
 #include "CryCommon/CryAction/IMovementController.h"

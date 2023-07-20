@@ -11,7 +11,7 @@
 	- 04:04:2006	 17:30 : Extended by Jan Müller
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "ScriptBind_HUD.h"
 #include "HUD.h"

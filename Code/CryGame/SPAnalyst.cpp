@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "SPAnalyst.h"
 
 #include "CryCommon/CryNetwork/ISerialize.h"

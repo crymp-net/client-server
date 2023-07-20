@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 
 #include "MPTutorial.h"

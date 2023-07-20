@@ -12,7 +12,7 @@ History:
 - 2007 : Taken over by Jan Neugebauer
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/StlUtils.h"
 
 #include "CryCommon/CryRenderer/IVideoPlayer.h"

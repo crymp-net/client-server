@@ -10,7 +10,7 @@ History:
 - 18:10:2005   14:14 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "Projectile.h"

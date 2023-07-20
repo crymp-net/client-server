@@ -11,7 +11,7 @@ History:
 - 2006/2007: Jan Müller
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IUIDraw.h"
 #include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryGame/Actors/Actor.h"

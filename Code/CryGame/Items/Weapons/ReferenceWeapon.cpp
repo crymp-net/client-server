@@ -5,7 +5,7 @@
 // Reference weapon for lighting tests
 // John Newfield
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAnimation/ICryAnimation.h"
 #include "ReferenceWeapon.h"
 

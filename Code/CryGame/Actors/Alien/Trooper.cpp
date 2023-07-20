@@ -10,7 +10,7 @@ History:
 - 21:7:2005: Created by Mikko Mononen
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 

@@ -11,7 +11,7 @@ History:
 - 03:28:2006: Created by Michael Rauh
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleDamageBehaviorTire.h"
 #include "CryGame/Game.h"

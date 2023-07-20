@@ -18,7 +18,7 @@ History:
 - 2007: Refactored by Jan Müller
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/StlUtils.h"
 #include <ctype.h>
 

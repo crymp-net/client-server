@@ -11,7 +11,7 @@
   - 17:8:2005        : Modified - NickH: Factory registration moved to GameFactory.cpp
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "GameActions.h"

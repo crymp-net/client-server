@@ -15,7 +15,7 @@ History:
 - 22:02:2006: Refactored for G04 by Matthew Jack
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "HUDObject.h"
 #include "CryCommon/CryGame/IGame.h"
 #include "CryCommon/CryAction/IGameFramework.h"

@@ -10,7 +10,7 @@ History:
 - 08:06:2007   : Created by Benito G.R.
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "C4Projectile.h"
 #include "CryGame/Actors/Player/Player.h"

@@ -10,7 +10,7 @@ History:
 - 16:10:2006   16:56 : Created by Benito Gangoso Rodriguez
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Lam.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Actors/Player/Player.h"

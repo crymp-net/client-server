@@ -11,7 +11,7 @@ History:
 - 10:09:2006: Created by Jan Neugebauer
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"

@@ -10,7 +10,7 @@ History:
 - 09:01:2006   14:00 : Created by Michael Rauh
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"

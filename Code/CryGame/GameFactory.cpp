@@ -17,7 +17,7 @@
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Game.h"
 #include "Actors/Player/Player.h"
 //aliens

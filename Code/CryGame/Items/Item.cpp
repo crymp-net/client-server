@@ -10,7 +10,7 @@
   - 27:10:2004   11:26 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "Item.h"
 #include "ItemSharedParams.h"

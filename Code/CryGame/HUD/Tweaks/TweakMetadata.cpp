@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "TweakMetadata.h"
 #include "TweakMetadataCVAR.h"
 #include "TweakMetadataLUA.h"

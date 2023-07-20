@@ -10,7 +10,7 @@ History:
 - 29:05:2007 Benito G.R.
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "C4Detonator.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameActions.h"
