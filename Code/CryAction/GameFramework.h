@@ -10,9 +10,11 @@ class DialogSystem;
 class GameFrameworkCVars;
 class GameObjectSystem;
 class GameplayAnalyst;
+class GameplayRecorder;
 class GameSerialize;
 class GameStatsConfig;
 class ItemSystem;
+class MaterialEffects;
 class NetworkCVars;
 class ScriptRMI;
 class TimeDemoRecorder;
@@ -39,7 +41,8 @@ class GameFramework : public IGameFramework
 	};
 
 	// m_reserved_<32-bit-offset>_<64-bit-offset>
-	void* m_reserved_0x4_0x8 = nullptr;
+	bool m_isPaused = false;  // m_reserved_0x4_0x8
+	bool m_isForcedPaused = false; // m_reserved_0x5_0x9
 	ISystem* m_pSystem = nullptr;
 	INetwork* m_pNetwork = nullptr;
 	I3DEngine* m_p3DEngine = nullptr;
@@ -57,14 +60,14 @@ class GameFramework : public IGameFramework
 	IVehicleSystem* m_pVehicleSystem = nullptr;
 	IActionMapManager* m_pActionMapManager = nullptr;
 	ViewSystem* m_pViewSystem = nullptr;
-	IGameplayRecorder* m_pGameplayRecorder = nullptr;
+	GameplayRecorder* m_pGameplayRecorder = nullptr;
 	IGameRulesSystem* m_pGameRulesSystem = nullptr;  // m_reserved_0x4c8_0x510
 	IFlowSystem* m_pFlowSystem = nullptr;  // m_reserved_0x4cc_0x518
 	IUIDraw* m_pUIDraw = nullptr;
 	GameObjectSystem* m_pGameObjectSystem = nullptr;  // m_reserved_0x4d4_0x528
 	ScriptRMI* m_pScriptRMI = nullptr;
 	IAnimationGraphSystem* m_pAnimationGraphSystem = nullptr;  // m_reserved_0x4dc_0x538
-	IMaterialEffects* m_pMaterialEffects = nullptr;  // m_reserved_0x4e0_0x540
+	MaterialEffects* m_pMaterialEffects = nullptr;  // m_reserved_0x4e0_0x540
 	IPlayerProfileManager* m_pPlayerProfileManager = nullptr;  // m_reserved_0x4e4_0x548
 	DialogSystem* m_pDialogSystem = nullptr;  // m_reserved_0x4e8_0x550
 	IDebrisMgr* m_pDebrisMgr = nullptr;  // m_reserved_0x4ec_0x558
@@ -258,8 +261,12 @@ public:
 	virtual void UnknownFunction1();
 	virtual void UnknownFunction2();
 
+	void DispatchActionEvent(const SActionEvent& event);
+
 private:
 	void RegisterConsoleVariables();
 	void RegisterConsoleCommands();
 	void RegisterScriptBindings();
+
+	void CheckEndLevelSchedule();
 };

@@ -12,3 +12,14 @@ CallbackTimer::CallbackTimer()
 
 	(this->*reinterpret_cast<void(CallbackTimer::*&)()>(ctor))();
 }
+
+void CallbackTimer::UpdateTimer()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x308172f0;
+#else
+	std::uintptr_t func = 0x3071a580;
+#endif
+
+	(this->*reinterpret_cast<void(CallbackTimer::*&)()>(func))();
+}

@@ -12,4 +12,6 @@ class TimeDemoRecorder
 
 public:
 	explicit TimeDemoRecorder(ISystem* pSystem);
+
+	void PreUpdate();
 };

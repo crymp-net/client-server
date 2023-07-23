@@ -123,6 +123,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/ItemSystem.h
 	Code/CryAction/LevelSystem.cpp
 	Code/CryAction/LevelSystem.h
+	Code/CryAction/MaterialEffects.cpp
+	Code/CryAction/MaterialEffects.h
 	Code/CryAction/NetworkCVars.cpp
 	Code/CryAction/NetworkCVars.h
 	Code/CryAction/PersistantDebug.cpp

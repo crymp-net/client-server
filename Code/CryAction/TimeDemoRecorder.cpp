@@ -12,3 +12,14 @@ TimeDemoRecorder::TimeDemoRecorder(ISystem* pSystem)
 
 	(this->*reinterpret_cast<void(TimeDemoRecorder::*&)(ISystem*)>(ctor))(pSystem);
 }
+
+void TimeDemoRecorder::PreUpdate()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x3075d450;
+#else
+	std::uintptr_t func = 0x3069caf0;
+#endif
+
+	(this->*reinterpret_cast<void(TimeDemoRecorder::*&)()>(func))();
+}

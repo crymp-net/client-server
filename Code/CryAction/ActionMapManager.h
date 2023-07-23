@@ -12,7 +12,7 @@ class ActionMapManager : public IActionMapManager, public IInputEventListener
 #endif
 
 public:
-	ActionMapManager(IInput* pInput);
+	explicit ActionMapManager(IInput* pInput);
 	virtual ~ActionMapManager();
 
 	////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,12 @@
+#include <algorithm>
 #include <cstdint>
 
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ITextModeConsole.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include "CrySystem/CryLog.h"
 
 #include "Library/StringTools.h"
@@ -26,6 +32,7 @@
 #include "GameTokenSystem.h"
 #include "ItemSystem.h"
 #include "LevelSystem.h"
+#include "MaterialEffects.h"
 #include "NetworkCVars.h"
 #include "PersistantDebug.h"
 #include "PlayerProfileManager.h"
@@ -128,6 +135,7 @@ GameFramework::GameFramework()
 
 	// use original functions from CryAction DLL except the following
 	vtable[7] = current_vtable[7];    // GameFramework::Init
+	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
 	vtable[94] = current_vtable[94];  // GameFramework::~GameFramework
 
 	// replace our vtable
@@ -296,7 +304,7 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 
 	m_pPlayerProfileManager->Initialize();
 
-	// skip instantiating some broken thing for downloading maps and stuff (m_reserved_0x51c_0x5b8)
+	// skip instantiating CDownloadTask for downloading maps and stuff (m_reserved_0x51c_0x5b8)
 	// it is more harmful than useful and all accesses seem to be guarded by null checks making it optional
 
 	m_pListeners = new Listeners();
@@ -316,7 +324,94 @@ bool GameFramework::CompleteInit()
 
 bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)
 {
-	return false;
+	if (!m_pNextFrameCommand->empty())
+	{
+		gEnv->pConsole->ExecuteString(m_pNextFrameCommand->c_str());
+		m_pNextFrameCommand->clear();
+	}
+
+	this->CheckEndLevelSchedule();
+
+	ITextModeConsole* pTextModeConsole = m_pSystem->GetITextModeConsole();
+	if (pTextModeConsole)
+	{
+		pTextModeConsole->BeginDraw();
+	}
+
+	bool isGameStarted = this->IsGameStarted();
+	bool isGamePaused = !isGameStarted || this->IsGamePaused();
+
+	if (!this->IsGamePaused())
+	{
+		m_pTimeDemoRecorder->PreUpdate();
+	}
+
+	if (!isGamePaused)
+	{
+		m_pCallbackTimer->UpdateTimer();
+	}
+
+	if (!(updateFlags & ESYSUPDATE_EDITOR))
+	{
+		gEnv->pFrameProfileSystem->StartFrame();
+	}
+
+	m_pSystem->RenderBegin();
+
+	const float frameTime = gEnv->pTimer->GetFrameTime();
+	bool status = true;
+
+	if (!(updateFlags & ESYSUPDATE_EDITOR))
+	{
+		int pauseMode = (!isGameStarted || m_isPaused) ? 1 : 0;
+
+		if (gEnv->bMultiplayer && !gEnv->bServer)
+		{
+			pauseMode = 0;
+		}
+
+		status = m_pSystem->Update(0, pauseMode);
+
+		this->DispatchActionEvent(SActionEvent(eAE_earlyPreUpdate));
+
+		isGameStarted = this->IsGameStarted();
+		const bool wasGamePaused = isGamePaused;
+		isGamePaused = !isGameStarted || this->IsGamePaused();
+
+		if (!isGamePaused)
+		{
+			if (!wasGamePaused)
+			{
+				m_pViewSystem->Update(std::min(frameTime, 0.1f));
+				m_pGameplayRecorder->Update(frameTime);
+			}
+
+			m_pFlowSystem->Update();
+		}
+	}
+
+	m_pActionMapManager->Update();
+
+	if (!isGamePaused)
+	{
+		m_pItemSystem->Update();
+		m_pMaterialEffects->Update(frameTime);
+		m_pDialogSystem->Update(frameTime);
+		m_pMusicLogic->Update();
+
+		if (m_pMusicGraphState)
+		{
+			m_pMusicGraphState->Update();
+		}
+
+		m_pDebrisMgr->Update();
+	}
+
+	// skip updating CDownloadTask
+	// skip updating RCon server
+	// skip updating HTTP server
+
+	return status;
 }
 
 void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
@@ -726,6 +821,17 @@ void GameFramework::UnknownFunction2()
 {
 }
 
+void GameFramework::DispatchActionEvent(const SActionEvent& event)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x30824ea0;
+#else
+	std::uintptr_t func = 0x30741b00;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
+}
+
 void GameFramework::RegisterConsoleVariables()
 {
 #ifdef BUILD_64BIT
@@ -754,6 +860,17 @@ void GameFramework::RegisterScriptBindings()
 	std::uintptr_t func = 0x30818610;
 #else
 	std::uintptr_t func = 0x3071c0c0;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
+}
+
+void GameFramework::CheckEndLevelSchedule()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x30824a50;
+#else
+	std::uintptr_t func = 0x307418e0;
 #endif
 
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();

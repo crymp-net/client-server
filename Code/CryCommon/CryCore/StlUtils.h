@@ -19,6 +19,8 @@
 #include <map>
 #include <vector>
 
+#include "platform.h"
+
 // auto-cleaner: upon destruction, calls the clear() method
 template <class T>
 class CAutoClear

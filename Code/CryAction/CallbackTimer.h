@@ -6,4 +6,6 @@ class CallbackTimer
 
 public:
 	CallbackTimer();
+
+	void UpdateTimer();
 };

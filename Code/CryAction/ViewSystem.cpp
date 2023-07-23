@@ -13,6 +13,17 @@ ViewSystem::ViewSystem(ISystem* pSystem)
 	(this->*reinterpret_cast<void(IViewSystem::*&)(ISystem*)>(ctor))(pSystem);
 }
 
+void ViewSystem::Update(float frameTime)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x3051c340;
+#else
+	std::uintptr_t func = 0x30518fe0;
+#endif
+
+	(this->*reinterpret_cast<void(IViewSystem::*&)(float)>(func))(frameTime);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IViewSystem
 ////////////////////////////////////////////////////////////////////////////////

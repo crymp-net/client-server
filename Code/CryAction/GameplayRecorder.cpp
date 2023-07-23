@@ -17,6 +17,17 @@ GameplayRecorder::~GameplayRecorder()
 {
 }
 
+void GameplayRecorder::Update(float frameTime)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x307f3960;
+#else
+	std::uintptr_t func = 0x30702970;
+#endif
+
+	(this->*reinterpret_cast<void(GameplayRecorder::*&)(float)>(func))(frameTime);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IGameplayRecorder
 ////////////////////////////////////////////////////////////////////////////////

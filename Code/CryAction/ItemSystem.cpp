@@ -41,6 +41,17 @@ ItemSystem::~ItemSystem()
 */
 }
 
+void ItemSystem::Update()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x30528d90;
+#else
+	std::uintptr_t func = 0x30520880;
+#endif
+
+	(this->*reinterpret_cast<void(ILevelSystemListener::*&)()>(func))();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ILevelSystemListener
 ////////////////////////////////////////////////////////////////////////////////
