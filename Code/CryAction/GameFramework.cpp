@@ -134,8 +134,13 @@ GameFramework::GameFramework()
 	const std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
 
 	// use original functions from CryAction DLL except the following
+	vtable[2] = current_vtable[2];    // GameFramework::RegisterFactory(IItemCreator)
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
+	vtable[11] = current_vtable[11];  // GameFramework::Shutdown
+	vtable[22] = current_vtable[22];  // GameFramework::GetIItemSystem
+	vtable[81] = current_vtable[81];  // GameFramework::GetMemoryStatistics
+	vtable[92] = current_vtable[92];  // GameFramework::PrefetchLevelAssets
 	vtable[94] = current_vtable[94];  // GameFramework::~GameFramework
 
 	// replace our vtable
@@ -175,19 +180,20 @@ void GameFramework::RegisterFactory(const char* name, ILoadGame* (*)(), bool isA
 {
 }
 
-void GameFramework::RegisterFactory(const char* actor, IActorCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IActorCreator*, bool isAI)
 {
 }
 
-void GameFramework::RegisterFactory(const char* item, IItemCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI)
+{
+	m_pItemSystem->RegisterItemFactory(name, pCreator);
+}
+
+void GameFramework::RegisterFactory(const char* name, IVehicleCreator*, bool isAI)
 {
 }
 
-void GameFramework::RegisterFactory(const char* vehicle, IVehicleCreator*, bool isAI)
-{
-}
-
-void GameFramework::RegisterFactory(const char* gameObjectExtension, IGameObjectExtensionCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI)
 {
 }
 
@@ -394,7 +400,7 @@ bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)
 
 	if (!isGamePaused)
 	{
-		m_pItemSystem->Update();
+		m_pItemSystem->Update(frameTime);
 		m_pMaterialEffects->Update(frameTime);
 		m_pDialogSystem->Update(frameTime);
 		m_pMusicLogic->Update();
@@ -420,6 +426,7 @@ void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 
 void GameFramework::Shutdown()
 {
+	CryLogErrorAlways("[GameFramework::Shutdown] Not implemented!");
 }
 
 void GameFramework::Reset(bool clients)
@@ -472,7 +479,7 @@ IActorSystem* GameFramework::GetIActorSystem()
 
 IItemSystem* GameFramework::GetIItemSystem()
 {
-	return nullptr;
+	return m_pItemSystem;
 }
 
 IActionMapManager* GameFramework::GetIActionMapManager()
@@ -804,6 +811,7 @@ bool GameFramework::SaveServerConfig(const char* path)
 
 void GameFramework::PrefetchLevelAssets(const bool enforceAll)
 {
+	m_pItemSystem->PrecacheLevel();
 }
 
 bool GameFramework::GetModInfo(SModInfo* modInfo, const char* modPath)

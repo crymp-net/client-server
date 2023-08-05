@@ -1,34 +1,87 @@
 #pragma once
 
+#include <map>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 
-struct IGameFramework;
-struct ISystem;
+struct ICVar;
+struct IConsoleCmdArgs;
+struct ICharacterInstance;
+struct IStatObj;
 
-class ItemSystem : public ILevelSystemListener, public IItemSystem
+class EquipmentManager;
+
+class ItemSystem final : public ILevelSystemListener, public IItemSystem
 {
-#ifdef BUILD_64BIT
-	unsigned char m_data[0x1b0 - 0x10] = {};
-#else
-	unsigned char m_data[0xe0 - 0x8] = {};
-#endif
+	template<class T>
+	struct Releaser
+	{
+		void operator()(T* p) const { p->Release(); }
+	};
+
+	using SmartParamsNode = std::unique_ptr<IItemParamsNode, Releaser<IItemParamsNode>>;
+	using SmartCharacterInstance = std::unique_ptr<ICharacterInstance, Releaser<ICharacterInstance>>;
+	using SmartStatObj = std::unique_ptr<IStatObj, Releaser<IStatObj>>;
+
+	struct ItemFactory
+	{
+		IGameFramework::IItemCreator* pCreator = nullptr;
+	};
+
+	struct ItemParams
+	{
+		SmartParamsNode root;
+		SmartParamsNode root_multiplayer;
+
+		const char* category;
+		int priority = 0;
+		int uniqueId = 0;
+
+		bool geometryCached = false;
+		bool soundCached = false;
+	};
+
+	std::map<std::string, ItemFactory, std::less<void>> m_factories;
+	std::map<std::string, ItemParams, std::less<void>> m_params;
+	std::map<EntityId, IItem*> m_items;
+
+	std::map<std::string, SmartCharacterInstance, std::less<void>> m_cachedCharacters;
+	std::map<std::string, SmartStatObj, std::less<void>> m_cachedObjects;
+
+	std::vector<EntityId> m_garbage;
+	std::vector<IItemSystemListener*> m_listeners;
+
+	std::unique_ptr<EquipmentManager> m_pEquipmentManager;
+
+	XmlNodeRef m_playerLevelToLevelData;
+
+	std::string m_spawnName;
+	unsigned int m_spawnCount = 0;
+
+	IGameFramework* m_pGameFramework = nullptr;
+
+	bool m_reloading = false;
+	bool m_multiplayer = false;
+
+	ICVar* m_pPrecacheCVar = nullptr;
+	ICVar* m_pNoWeaponLimitCVar = nullptr;
+	ICVar* m_pLyingItemLimitCVar = nullptr;
 
 public:
 	explicit ItemSystem(IGameFramework* pGameFramework, ISystem* pSystem);
 	virtual ~ItemSystem();
 
-	void Update();
+	void Update(float frameTime);
 
-	////////////////////////////////////////////////////////////////////////////////
-	// ILevelSystemListener
-	////////////////////////////////////////////////////////////////////////////////
+	void PrecacheLevel();
 
-	void OnLevelNotFound(const char* levelName) override;
-	void OnLoadingStart(ILevelInfo* pLevel) override;
-	void OnLoadingComplete(ILevel* pLevel) override;
-	void OnLoadingError(ILevelInfo* pLevel, const char* error) override;
-	void OnLoadingProgress(ILevelInfo* pLevel, int progressAmount) override;
+	void RegisterItemFactory(const char* name, IGameFramework::IItemCreator* pCreator);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IItemSystem
@@ -82,4 +135,41 @@ public:
 	IEquipmentManager* GetIEquipmentManager() override;
 
 	////////////////////////////////////////////////////////////////////////////////
+	// ILevelSystemListener
+	////////////////////////////////////////////////////////////////////////////////
+
+	void OnLevelNotFound(const char* levelName) override;
+	void OnLoadingStart(ILevelInfo* pLevel) override;
+	void OnLoadingComplete(ILevel* pLevel) override;
+	void OnLoadingError(ILevelInfo* pLevel, const char* error) override;
+	void OnLoadingProgress(ILevelInfo* pLevel, int progressAmount) override;
+
+	////////////////////////////////////////////////////////////////////////////////
+
+	virtual void SerializePlayerLTLInfo(bool reading);
+
+private:
+	const IItemParamsNode* GetParamsRoot(const ItemParams& params) const;
+
+	void SetSpawnName(std::string_view name);
+
+	struct ItemClassData
+	{
+		const char* name = nullptr;
+		const char* factory = nullptr;
+		const char* script = nullptr;
+		IItemParamsNode* params = nullptr;
+		bool multiplayer = false;
+		bool invisible = false;
+	};
+
+	void RegisterItemClass(const ItemClassData& item);
+	void RegisterXMLData();
+
+	void RegisterCVars();
+	void UnregisterCVars();
+
+	static void GiveItemCmd(IConsoleCmdArgs* args);
+	static void GiveAllItemsCmd(IConsoleCmdArgs* args);
+	static void GiveDebugItemsCmd(IConsoleCmdArgs* args);
 };

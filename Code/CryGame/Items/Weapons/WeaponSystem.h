@@ -103,9 +103,10 @@ public:
 
 	CTracerManager &GetTracerManager() { return m_tracerManager; };
 
-	// WeaponSystem_AmmoData.cpp
-	void RegisterAmmoData();
 	void RegisterAmmo(const char* name, const char* className, const char* script, const char* config, IItemParamsNode* params);
+
+	// WeaponSystem_XMLData.cpp
+	void RegisterXMLData();
 
   static void DebugGun(IConsoleCmdArgs *args = 0);
 	static void RefGun(IConsoleCmdArgs *args = 0);

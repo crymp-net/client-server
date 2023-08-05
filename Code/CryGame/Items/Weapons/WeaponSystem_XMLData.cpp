@@ -1,7 +1,7 @@
 #include "CryGame/StdAfx.h"
 #include "WeaponSystem.h"
 
-void CWeaponSystem::RegisterAmmoData()
+void CWeaponSystem::RegisterXMLData()
 {
 	// Scripts/Entities/Items/XML/Ammo/Rock.xml
 	{

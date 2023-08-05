@@ -99,6 +99,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/DialogSystem.h
 	Code/CryAction/EffectSystem.cpp
 	Code/CryAction/EffectSystem.h
+	Code/CryAction/EquipmentManager.cpp
+	Code/CryAction/EquipmentManager.h
 	Code/CryAction/GameFramework.cpp
 	Code/CryAction/GameFramework.h
 	Code/CryAction/GameFrameworkCVars.cpp
@@ -119,6 +121,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/GameStatsConfig.h
 	Code/CryAction/GameTokenSystem.cpp
 	Code/CryAction/GameTokenSystem.h
+	Code/CryAction/ItemParamsNode.cpp
+	Code/CryAction/ItemParamsNode.h
+	Code/CryAction/ItemSystem_XMLData.cpp
 	Code/CryAction/ItemSystem.cpp
 	Code/CryAction/ItemSystem.h
 	Code/CryAction/LevelSystem.cpp
@@ -546,9 +551,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Items/Weapons/WeaponClientServer.cpp
 	Code/CryGame/Items/Weapons/WeaponEvent.cpp
 	Code/CryGame/Items/Weapons/WeaponInput.cpp
+	Code/CryGame/Items/Weapons/WeaponSystem_XMLData.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.h
-	Code/CryGame/Items/Weapons/WeaponSystem_AmmoData.cpp
 	Code/CryGame/Items/Weapons/ZoomModes/IronSight.cpp
 	Code/CryGame/Items/Weapons/ZoomModes/IronSight.h
 	Code/CryGame/Items/Weapons/ZoomModes/Scope.cpp
@@ -762,6 +767,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/CPUID.h
 	Code/Library/CrashLogger.cpp
 	Code/Library/CrashLogger.h
+	Code/Library/DigitCount.h
 	Code/Library/PathTools.cpp
 	Code/Library/PathTools.h
 	Code/Library/PathTree.h

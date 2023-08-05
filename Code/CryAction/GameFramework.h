@@ -130,7 +130,7 @@ public:
 	void RegisterFactory(const char* name, ISaveGame* (*)(), bool isAI) override;
 	void RegisterFactory(const char* name, ILoadGame* (*)(), bool isAI) override;
 	void RegisterFactory(const char* name, IActorCreator*, bool isAI) override;
-	void RegisterFactory(const char* name, IItemCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI) override;
 	void RegisterFactory(const char* name, IVehicleCreator*, bool isAI) override;
 	void RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI) override;
 
