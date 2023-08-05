@@ -284,7 +284,9 @@ const char* ItemSystem::GetItemCategory(const char* item) const
 		return nullptr;
 	}
 
-	return it->second.category;
+	const char* category = it->second.category;
+
+	return (category) ? category : "";
 }
 
 std::uint8_t ItemSystem::GetItemUniqueId(const char* item) const
