@@ -150,6 +150,9 @@ public:
 
 private:
 	const IItemParamsNode* GetParamsRoot(const ItemParams& params) const;
+	const IItemParamsNode* FindParamNode(const IItemParamsNode* root, const char* name) const;
+	bool IsGiveableItem(const IItemParamsNode* root) const;
+	bool IsDebugItem(const IItemParamsNode* root) const;
 
 	void SetSpawnName(std::string_view name);
 
@@ -168,6 +171,8 @@ private:
 
 	void RegisterCVars();
 	void UnregisterCVars();
+
+	void GiveOneItemOrAll(const char* actorName, const char* itemName, bool debugOnly);
 
 	static void GiveItemCmd(IConsoleCmdArgs* args);
 	static void GiveAllItemsCmd(IConsoleCmdArgs* args);

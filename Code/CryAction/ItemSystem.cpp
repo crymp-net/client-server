@@ -30,6 +30,11 @@ static char FixSlash(char ch)
 
 static bool IsEqualNoCase(const char* strA, const char* strB)
 {
+	if (!strA || !strB)
+	{
+		return false;
+	}
+
 	char chA;
 
 	do
@@ -878,6 +883,50 @@ const IItemParamsNode* ItemSystem::GetParamsRoot(const ItemParams& params) const
 	}
 }
 
+const IItemParamsNode* ItemSystem::FindParamNode(const IItemParamsNode* root, const char* name) const
+{
+	if (!root)
+	{
+		return nullptr;
+	}
+
+	const IItemParamsNode* params = root->GetChild("params");
+	if (!params)
+	{
+		return nullptr;
+	}
+
+	const int childCount = params->GetChildCount();
+
+	for (int i = 0; i < childCount; i++)
+	{
+		const IItemParamsNode* child = params->GetChild(i);
+
+		if (IsEqualNoCase(child->GetNameAttribute(), name))
+		{
+			return child;
+		}
+	}
+
+	return nullptr;
+}
+
+bool ItemSystem::IsGiveableItem(const IItemParamsNode* root) const
+{
+	const IItemParamsNode* param = this->FindParamNode(root, "giveable");
+
+	int value = 0;
+	return param && param->GetAttribute("value", value) && value != 0;
+}
+
+bool ItemSystem::IsDebugItem(const IItemParamsNode* root) const
+{
+	const IItemParamsNode* param = this->FindParamNode(root, "debug");
+
+	int value = 0;
+	return param && param->GetAttribute("value", value) && value != 0;
+}
+
 void ItemSystem::SetSpawnName(std::string_view name)
 {
 	// more efficient than "%s%.03d" in the original implementation
@@ -997,20 +1046,79 @@ void ItemSystem::UnregisterCVars()
 	pConsole->RemoveCommand("i_givedebugitems");
 }
 
+void ItemSystem::GiveOneItemOrAll(const char* actorName, const char* itemName, bool onlyDebugItems)
+{
+	IActor* pActor = nullptr;
+
+	if (actorName)
+	{
+		IEntity* pActorEntity = gEnv->pEntitySystem->FindEntityByName(actorName);
+		if (pActorEntity)
+		{
+			pActor = m_pGameFramework->GetIActorSystem()->GetActor(pActorEntity->GetId());
+		}
+	}
+	else
+	{
+		pActor = m_pGameFramework->GetClientActor();
+	}
+
+	if (!pActor)
+	{
+		return;
+	}
+
+	if (itemName)
+	{
+		this->GiveItem(pActor, itemName, true, true, true);
+
+		// only one specific item requested
+		return;
+	}
+
+	for (const auto& [name, params] : m_params)
+	{
+		const IItemParamsNode* root = this->GetParamsRoot(params);
+
+		if (onlyDebugItems ? this->IsDebugItem(root) : this->IsGiveableItem(root))
+		{
+			this->GiveItem(pActor, name.c_str(), true, true, true);
+		}
+	}
+}
+
 void ItemSystem::GiveItemCmd(IConsoleCmdArgs* args)
 {
-	// TODO
-	CryLogErrorAlways("[ItemSystem::GiveItemCmd] NOT IMPLEMENTED !!!");
+	const int argCount = args->GetArgCount();
+	const char* itemName = (argCount > 1) ? args->GetArg(1) : nullptr;
+	const char* actorName = (argCount > 2) ? args->GetArg(2) : nullptr;
+
+	if (!itemName)
+	{
+		return;
+	}
+
+	ItemSystem* self = static_cast<ItemSystem*>(gEnv->pGame->GetIGameFramework()->GetIItemSystem());
+
+	self->GiveOneItemOrAll(actorName, itemName, false);
 }
 
 void ItemSystem::GiveAllItemsCmd(IConsoleCmdArgs* args)
 {
-	// TODO
-	CryLogErrorAlways("[ItemSystem::GiveAllItemsCmd] NOT IMPLEMENTED !!!");
+	const int argCount = args->GetArgCount();
+	const char* actorName = (argCount > 1) ? args->GetArg(1) : nullptr;
+
+	ItemSystem* self = static_cast<ItemSystem*>(gEnv->pGame->GetIGameFramework()->GetIItemSystem());
+
+	self->GiveOneItemOrAll(actorName, nullptr, false);
 }
 
 void ItemSystem::GiveDebugItemsCmd(IConsoleCmdArgs* args)
 {
-	// TODO
-	CryLogErrorAlways("[ItemSystem::GiveDebugItemsCmd] NOT IMPLEMENTED !!!");
+	const int argCount = args->GetArgCount();
+	const char* actorName = (argCount > 1) ? args->GetArg(1) : nullptr;
+
+	ItemSystem* self = static_cast<ItemSystem*>(gEnv->pGame->GetIGameFramework()->GetIItemSystem());
+
+	self->GiveOneItemOrAll(actorName, nullptr, true);
 }
