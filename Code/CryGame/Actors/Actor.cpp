@@ -569,24 +569,13 @@ IGrabHandler* CActor::CreateGrabHanlder()
 //------------------------------------------------------------------------
 void CActor::Physicalize(EStance stance)
 {
-	//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
-	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
-	assert(pScriptTable);
-	if (!pScriptTable)
-		return;
+	pe_player_dimensions playerDim;
+	pe_player_dynamics playerDyn;
+	SEntityPhysicalizeParams pp;
 
-	SmartScriptTable physicsParams;
-	if (pScriptTable->GetValue("physicsParams", physicsParams))
+	if (gEnv->bMultiplayer && IsPlayer())
 	{
-		//first, the actor model has to be loaded, this is still using lua for the moment.
-		//ICharacterInstance *pChar = GetEntity()->GetCharacter(0);
-		//pChar->GetModelFilePath()
-
 		SetActorModel();
-
-		pe_player_dimensions playerDim;
-		pe_player_dynamics playerDyn;
-		SEntityPhysicalizeParams pp;
 
 		pp.pPlayerDimensions = &playerDim;
 		pp.pPlayerDynamics = &playerDyn;
@@ -594,105 +583,194 @@ void CActor::Physicalize(EStance stance)
 		pp.nSlot = 0;
 		pp.type = PE_LIVING;
 
-		physicsParams->GetValue("mass", pp.mass);
-		physicsParams->GetValue("density", pp.density);
-		physicsParams->GetValue("flags", pp.nFlagsOR);
-		physicsParams->GetValue("partid", pp.nAttachToPart);
-		physicsParams->GetValue("stiffness_scale", pp.fStiffnessScale);
+		pp.mass = 80.f;
+		pp.density = -1.0f;
+		pp.nFlagsOR = 0;
+		pp.nAttachToPart = -1;
+		pp.fStiffnessScale = 73.f;
 
-
-		SmartScriptTable props;
-		if (GetEntity()->GetScriptTable()->GetValue("Properties", props))
+		// Player Dimensions
+		if (stance == STANCE_NULL)
 		{
-			float massMult = 1.0f;
-			props->GetValue("physicMassMult", massMult);
-			pp.mass *= massMult;
-		}
-
-		SmartScriptTable livingTab;
-		if (physicsParams->GetValue("Living", livingTab))
-		{
-			// Player Dimensions
-			if (stance == STANCE_NULL)
-			{
-				livingTab->GetValue("height", playerDim.heightCollider);
-				livingTab->GetValue("size", playerDim.sizeCollider);
-				livingTab->GetValue("height_eye", playerDim.heightEye);
-				livingTab->GetValue("height_pivot", playerDim.heightPivot);
-				livingTab->GetValue("use_capsule", playerDim.bUseCapsule);
-			}
-			else
-			{
-				const SStanceInfo* sInfo = GetStanceInfo(stance);
-				playerDim.heightCollider = sInfo->heightCollider;
-				playerDim.sizeCollider = sInfo->size;
-				playerDim.heightPivot = sInfo->heightPivot;
-				playerDim.maxUnproj = max(0.0f, sInfo->heightPivot);
-				playerDim.bUseCapsule = sInfo->useCapsule;
-			}
-
-			playerDim.headRadius = 0.0f;
+			playerDim.heightCollider = 1.10000002f;
+			playerDim.sizeCollider = Vec3(0.400000006f, 0.400000006f, 0.600000024f);
 			playerDim.heightEye = 0.0f;
-
-			// Player Dynamics.
-			livingTab->GetValue("inertia", playerDyn.kInertia);
-			livingTab->GetValue("k_air_control", playerDyn.kAirControl);
-			livingTab->GetValue("inertiaAccel", playerDyn.kInertiaAccel);
-			livingTab->GetValue("air_resistance", playerDyn.kAirResistance);
-			livingTab->GetValue("gravity", playerDyn.gravity.z);
-			livingTab->GetValue("mass", playerDyn.mass);
-			livingTab->GetValue("min_slide_angle", playerDyn.minSlideAngle);
-			livingTab->GetValue("max_climb_angle", playerDyn.maxClimbAngle);
-			livingTab->GetValue("max_jump_angle", playerDyn.maxJumpAngle);
-			livingTab->GetValue("min_fall_angle", playerDyn.minFallAngle);
-			livingTab->GetValue("max_vel_ground", playerDyn.maxVelGround);
-			livingTab->GetValue("timeImpulseRecover", playerDyn.timeImpulseRecover);
-
-			// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
-			if (gEnv->bMultiplayer)
-				playerDyn.maxVelGround = 200.0f;
-
-			SActorParams* params = GetActorParams();
-
-
-			if (!is_unused(playerDyn.timeImpulseRecover))
-				m_timeImpulseRecover = playerDyn.timeImpulseRecover;
-			else
-				m_timeImpulseRecover = 0.0f;
-
-			if (!is_unused(playerDyn.kAirResistance))
-				m_airResistance = playerDyn.kAirResistance;
-			else
-				m_airResistance = 0.0f;
-
-			if (!is_unused(playerDyn.kAirControl))
-				m_airControl = playerDyn.kAirControl;
-			else
-				m_airControl = 1.0f;
-
-			const char* colliderMat = 0;
-			if (livingTab->GetValue("colliderMat", colliderMat) && colliderMat && colliderMat[0])
-			{
-				if (ISurfaceType* pSurfaceType = gEnv->p3DEngine->GetMaterialManager()->GetSurfaceTypeByName(colliderMat))
-					playerDyn.surface_idx = pSurfaceType->GetId();
-			}
+			playerDim.heightPivot = 0.0f;
+			playerDim.bUseCapsule = 0;
 		}
-
-		if (IPhysicalEntity* pPrevPE = GetEntity()->GetPhysics())
+		else
 		{
-			if (GetEntity()->GetParent() == NULL)
-			{
-				Ang3 rot(GetEntity()->GetWorldAngles());
-				GetEntity()->SetRotation(Quat::CreateRotationZ(rot.z));
-			}
-
-			SEntityPhysicalizeParams nop;
-			nop.type = PE_NONE;
-			GetEntity()->Physicalize(nop);
+			const SStanceInfo* sInfo = GetStanceInfo(stance);
+			playerDim.heightCollider = sInfo->heightCollider;
+			playerDim.sizeCollider = sInfo->size;
+			playerDim.heightPivot = sInfo->heightPivot;
+			playerDim.maxUnproj = max(0.0f, sInfo->heightPivot);
+			playerDim.bUseCapsule = sInfo->useCapsule;
 		}
 
-		GetEntity()->Physicalize(pp);
+		playerDim.headRadius = 0.0f;
+		playerDim.heightEye = 0.0f;
+
+		// Player Dynamics.
+
+		playerDyn.kInertia = -NAN;
+		playerDyn.kAirControl = 0.899999976f;
+		playerDyn.kInertiaAccel = -NAN;
+		playerDyn.kAirResistance = 0.5f;
+		playerDyn.gravity.z = 9.81000042f;
+		playerDyn.mass = 80.f;
+		playerDyn.minSlideAngle = 45.f;
+		playerDyn.maxClimbAngle = 50.f;
+		playerDyn.maxJumpAngle = -NAN;
+		playerDyn.minFallAngle = 50.f;
+		// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
+		playerDyn.maxVelGround = 200.f;
+		playerDyn.timeImpulseRecover = 1.0f;
+
+		SActorParams* params = GetActorParams();
+
+		if (!is_unused(playerDyn.timeImpulseRecover))
+			m_timeImpulseRecover = playerDyn.timeImpulseRecover;
+		else
+			m_timeImpulseRecover = 0.0f;
+
+		if (!is_unused(playerDyn.kAirResistance))
+			m_airResistance = playerDyn.kAirResistance;
+		else
+			m_airResistance = 0.0f;
+
+		if (!is_unused(playerDyn.kAirControl))
+			m_airControl = playerDyn.kAirControl;
+		else
+			m_airControl = 1.0f;
+
+		playerDyn.surface_idx = 100; //colliderMat = 0x00000000182e5cf8 "mat_player_collider"
 	}
+	else
+	{
+		//CryMP (default code for SP and Aliens etc)
+		// 
+		//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
+		IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+		assert(pScriptTable);
+		if (!pScriptTable)
+			return;
+
+		SmartScriptTable physicsParams;
+		if (pScriptTable->GetValue("physicsParams", physicsParams))
+		{
+			//first, the actor model has to be loaded, this is still using lua for the moment.
+			//ICharacterInstance *pChar = GetEntity()->GetCharacter(0);
+			//pChar->GetModelFilePath()
+
+			SetActorModel();
+
+			pp.pPlayerDimensions = &playerDim;
+			pp.pPlayerDynamics = &playerDyn;
+
+			pp.nSlot = 0;
+			pp.type = PE_LIVING;
+
+			physicsParams->GetValue("mass", pp.mass);
+			physicsParams->GetValue("density", pp.density);
+			physicsParams->GetValue("flags", pp.nFlagsOR);
+			physicsParams->GetValue("partid", pp.nAttachToPart);
+			physicsParams->GetValue("stiffness_scale", pp.fStiffnessScale);
+
+
+			SmartScriptTable props;
+			if (GetEntity()->GetScriptTable()->GetValue("Properties", props))
+			{
+				float massMult = 1.0f;
+				props->GetValue("physicMassMult", massMult);
+				pp.mass *= massMult;
+			}
+
+			SmartScriptTable livingTab;
+			if (physicsParams->GetValue("Living", livingTab))
+			{
+				// Player Dimensions
+				if (stance == STANCE_NULL)
+				{
+					livingTab->GetValue("height", playerDim.heightCollider);
+					livingTab->GetValue("size", playerDim.sizeCollider);
+					livingTab->GetValue("height_eye", playerDim.heightEye);
+					livingTab->GetValue("height_pivot", playerDim.heightPivot);
+					livingTab->GetValue("use_capsule", playerDim.bUseCapsule);
+				}
+				else
+				{
+					const SStanceInfo* sInfo = GetStanceInfo(stance);
+					playerDim.heightCollider = sInfo->heightCollider;
+					playerDim.sizeCollider = sInfo->size;
+					playerDim.heightPivot = sInfo->heightPivot;
+					playerDim.maxUnproj = max(0.0f, sInfo->heightPivot);
+					playerDim.bUseCapsule = sInfo->useCapsule;
+				}
+
+				playerDim.headRadius = 0.0f;
+				playerDim.heightEye = 0.0f;
+
+				// Player Dynamics.
+				livingTab->GetValue("inertia", playerDyn.kInertia);
+				livingTab->GetValue("k_air_control", playerDyn.kAirControl);
+				livingTab->GetValue("inertiaAccel", playerDyn.kInertiaAccel);
+				livingTab->GetValue("air_resistance", playerDyn.kAirResistance);
+				livingTab->GetValue("gravity", playerDyn.gravity.z);
+				livingTab->GetValue("mass", playerDyn.mass);
+				livingTab->GetValue("min_slide_angle", playerDyn.minSlideAngle);
+				livingTab->GetValue("max_climb_angle", playerDyn.maxClimbAngle);
+				livingTab->GetValue("max_jump_angle", playerDyn.maxJumpAngle);
+				livingTab->GetValue("min_fall_angle", playerDyn.minFallAngle);
+				livingTab->GetValue("max_vel_ground", playerDyn.maxVelGround);
+				livingTab->GetValue("timeImpulseRecover", playerDyn.timeImpulseRecover);
+
+				// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
+				if (gEnv->bMultiplayer)
+					playerDyn.maxVelGround = 200.0f;
+
+				SActorParams* params = GetActorParams();
+
+
+				if (!is_unused(playerDyn.timeImpulseRecover))
+					m_timeImpulseRecover = playerDyn.timeImpulseRecover;
+				else
+					m_timeImpulseRecover = 0.0f;
+
+				if (!is_unused(playerDyn.kAirResistance))
+					m_airResistance = playerDyn.kAirResistance;
+				else
+					m_airResistance = 0.0f;
+
+				if (!is_unused(playerDyn.kAirControl))
+					m_airControl = playerDyn.kAirControl;
+				else
+					m_airControl = 1.0f;
+
+				const char* colliderMat = 0;
+				if (livingTab->GetValue("colliderMat", colliderMat) && colliderMat && colliderMat[0])
+				{
+					if (ISurfaceType* pSurfaceType = gEnv->p3DEngine->GetMaterialManager()->GetSurfaceTypeByName(colliderMat))
+						playerDyn.surface_idx = pSurfaceType->GetId();
+				}
+			}
+		}
+	}
+
+	if (IPhysicalEntity* pPrevPE = GetEntity()->GetPhysics())
+	{
+		if (GetEntity()->GetParent() == NULL)
+		{
+			Ang3 rot(GetEntity()->GetWorldAngles());
+			GetEntity()->SetRotation(Quat::CreateRotationZ(rot.z));
+		}
+
+		SEntityPhysicalizeParams nop;
+		nop.type = PE_NONE;
+		GetEntity()->Physicalize(nop);
+	}
+
+	GetEntity()->Physicalize(pp);
 
 	// for the client we add an additional proxy for bending vegetation to look correctly
 	if (IsPlayer())
