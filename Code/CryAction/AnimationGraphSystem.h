@@ -1,6 +1,9 @@
 #pragma once
 
+#include "CryCommon/CryAction/IAnimationGraph.h"
 #include "CryCommon/CryAction/IAnimationGraphSystem.h"
+
+struct IGameFramework;
 
 class AnimationGraphSystem : public IAnimationGraphSystem
 {
@@ -12,6 +15,10 @@ class AnimationGraphSystem : public IAnimationGraphSystem
 
 public:
 	AnimationGraphSystem();
+
+	void RegisterFactories(IGameFramework* pGameFramework);
+
+	IAnimationGraphPtr LoadGraph(const char* filename, bool reload, bool loadBinary);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IAnimationGraphSystem

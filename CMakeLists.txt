@@ -101,6 +101,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/EffectSystem.h
 	Code/CryAction/EquipmentManager.cpp
 	Code/CryAction/EquipmentManager.h
+	Code/CryAction/FlowSystem.cpp
+	Code/CryAction/FlowSystem.h
 	Code/CryAction/GameFramework.cpp
 	Code/CryAction/GameFramework.h
 	Code/CryAction/GameFrameworkCVars.cpp
@@ -130,12 +132,16 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/LevelSystem.h
 	Code/CryAction/MaterialEffects.cpp
 	Code/CryAction/MaterialEffects.h
+	Code/CryAction/MusicLogic.cpp
+	Code/CryAction/MusicLogic.h
 	Code/CryAction/NetworkCVars.cpp
 	Code/CryAction/NetworkCVars.h
 	Code/CryAction/PersistantDebug.cpp
 	Code/CryAction/PersistantDebug.h
 	Code/CryAction/PlayerProfileManager.cpp
 	Code/CryAction/PlayerProfileManager.h
+	Code/CryAction/ScriptBind_MaterialEffects.cpp
+	Code/CryAction/ScriptBind_MaterialEffects.h
 	Code/CryAction/ScriptRMI.cpp
 	Code/CryAction/ScriptRMI.h
 	Code/CryAction/SubtitleManager.cpp

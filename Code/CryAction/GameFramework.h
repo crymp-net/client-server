@@ -4,6 +4,7 @@
 
 struct ICVar;
 
+class AnimationGraphSystem;
 class CallbackTimer;
 class DevMode;
 class DialogSystem;
@@ -16,6 +17,7 @@ class GameStatsConfig;
 class ItemSystem;
 class MaterialEffects;
 class NetworkCVars;
+class ScriptBind_MaterialEffects;
 class ScriptRMI;
 class TimeDemoRecorder;
 class TimeOfDayScheduler;
@@ -66,7 +68,7 @@ class GameFramework : public IGameFramework
 	IUIDraw* m_pUIDraw = nullptr;
 	GameObjectSystem* m_pGameObjectSystem = nullptr;  // m_reserved_0x4d4_0x528
 	ScriptRMI* m_pScriptRMI = nullptr;
-	IAnimationGraphSystem* m_pAnimationGraphSystem = nullptr;  // m_reserved_0x4dc_0x538
+	AnimationGraphSystem* m_pAnimationGraphSystem = nullptr;  // m_reserved_0x4dc_0x538
 	MaterialEffects* m_pMaterialEffects = nullptr;  // m_reserved_0x4e0_0x540
 	IPlayerProfileManager* m_pPlayerProfileManager = nullptr;  // m_reserved_0x4e4_0x548
 	DialogSystem* m_pDialogSystem = nullptr;  // m_reserved_0x4e8_0x550
@@ -94,7 +96,7 @@ class GameFramework : public IGameFramework
 	void* m_reserved_0x540_0x600 = nullptr;
 	void* m_reserved_0x544_0x608 = nullptr;
 	void* m_reserved_0x548_0x610 = nullptr;
-	void* m_reserved_0x54c_0x618 = nullptr;
+	ScriptBind_MaterialEffects* m_pScriptBind_MaterialEffects = nullptr;  // m_reserved_0x54c_0x618
 	TimeOfDayScheduler* m_pTimeOfDayScheduler = nullptr;  // m_reserved_0x550_0x620
 	IPersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
 	NetworkCVars* m_pNetworkCVars = nullptr;  // m_reserved_0x558_0x630

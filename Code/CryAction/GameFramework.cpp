@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CrySoundSystem/IMusicSystem.h"
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -20,6 +21,7 @@
 #include "DevMode.h"
 #include "DialogSystem.h"
 #include "EffectSystem.h"
+#include "FlowSystem.h"
 #include "GameFramework.h"
 #include "GameFrameworkCVars.h"
 #include "GameObject.h"
@@ -33,9 +35,11 @@
 #include "ItemSystem.h"
 #include "LevelSystem.h"
 #include "MaterialEffects.h"
+#include "MusicLogic.h"
 #include "NetworkCVars.h"
 #include "PersistantDebug.h"
 #include "PlayerProfileManager.h"
+#include "ScriptBind_MaterialEffects.h"
 #include "ScriptRMI.h"
 #include "SubtitleManager.h"
 #include "TimeDemoRecorder.h"
@@ -136,6 +140,7 @@ GameFramework::GameFramework()
 	// use original functions from CryAction DLL except the following
 	vtable[2] = current_vtable[2];    // GameFramework::RegisterFactory(IItemCreator)
 	vtable[7] = current_vtable[7];    // GameFramework::Init
+	vtable[8] = current_vtable[8];    // GameFramework::CompleteInit
 	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
 	vtable[11] = current_vtable[11];  // GameFramework::Shutdown
 	vtable[22] = current_vtable[22];  // GameFramework::GetIItemSystem
@@ -325,7 +330,58 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 
 bool GameFramework::CompleteInit()
 {
-	return false;
+	m_pAnimationGraphSystem->RegisterFactories(this);
+
+	if (IAnimationGraphPtr pMusicGraph = m_pAnimationGraphSystem->LoadGraph("MusicLogic.xml", false, true))
+	{
+		m_pMusicGraphState = pMusicGraph->CreateState();
+	}
+
+	if (!m_pMusicGraphState)
+	{
+		CryLogWarningAlways("[GameFramework::CompleteInit] Unable to load music logic graph");
+	}
+
+	m_pMusicLogic = new MusicLogic(m_pMusicGraphState);
+	m_pMusicLogic->Init();
+
+	this->EndGameContext();
+
+	m_pFlowSystem = new FlowSystem();
+
+	m_pSystem->SetIFlowSystem(m_pFlowSystem);
+	m_pSystem->SetIAnimationGraphSystem(m_pAnimationGraphSystem);
+	m_pSystem->SetIDialogSystem(m_pDialogSystem);
+
+	m_pGameplayRecorder->RegisterListener(m_pGameplayAnalyst);
+
+	m_pMaterialEffects = new MaterialEffects();
+	m_pScriptBind_MaterialEffects = new ScriptBind_MaterialEffects(m_pSystem, m_pMaterialEffects);
+	m_pMaterialEffects->Load("MaterialEffects.xml");
+
+	m_pSystem->SetIMaterialEffects(m_pMaterialEffects);
+
+	if (!m_pSystem->IsEditor())
+	{
+		IEquipmentManager* pEquipmentManager = m_pItemSystem->GetIEquipmentManager();
+
+		pEquipmentManager->DeleteAllEquipmentPacks();
+		pEquipmentManager->LoadEquipmentPacksFromPath("Libs/EquipmentPacks");
+	}
+
+	IGame* pGame = gEnv->pGame;
+	if (pGame)
+	{
+		pGame->CompleteInit();
+	}
+
+	m_pMaterialEffects->LoadFlowGraphLibs();
+
+	m_pScriptSystem->ExecuteFile("scripts/main.lua");
+	m_pScriptSystem->BeginCall("OnInit");
+	m_pScriptSystem->EndCall();
+
+	return true;
 }
 
 bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)

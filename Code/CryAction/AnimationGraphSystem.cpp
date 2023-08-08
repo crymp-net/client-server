@@ -13,6 +13,30 @@ AnimationGraphSystem::AnimationGraphSystem()
 	(this->*reinterpret_cast<void(AnimationGraphSystem::*&)()>(ctor))();
 }
 
+void AnimationGraphSystem::RegisterFactories(IGameFramework* pGameFramework)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x306f9b60;
+#else
+	std::uintptr_t func = 0x306590e0;
+#endif
+
+	(this->*reinterpret_cast<void(AnimationGraphSystem::*&)(IGameFramework*)>(func))(pGameFramework);
+}
+
+IAnimationGraphPtr AnimationGraphSystem::LoadGraph(const char* filename, bool reload, bool loadBinary)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = 0x306f53f0;
+#else
+	std::uintptr_t func = 0x30656430;
+#endif
+
+	return (this->*reinterpret_cast<
+		IAnimationGraphPtr(AnimationGraphSystem::*&)(const CryStringT<char>&, bool, bool)
+	>(func))(filename, reload, loadBinary);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IAnimationGraphSystem
 ////////////////////////////////////////////////////////////////////////////////
