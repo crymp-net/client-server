@@ -78,8 +78,8 @@ CHUDVehicleInterface::~CHUDVehicleInterface()
 
 void CHUDVehicleInterface::Update(float fDeltaTime)
 {
-	//CryMP do not update this mess while not in vehicle...
-	if (!m_pVehicle)
+	//CryMP do not update this mess while not in vehicle... and Parachute is also a vehicle apparently :D...
+	if (GetHUDType() == CHUDVehicleInterface::EHUD_NONE)
 		return;
 
 	if (m_animMainWindow.GetVisible())
@@ -550,7 +550,7 @@ void CHUDVehicleInterface::UpdateSeats()
 					if (pActor && pActor->GetHealth() > 0) // don't show dead players on the hud
 					{
 						// set different colors if the passenger is the player
-						args[1] = (passenger == gEnv->pGame->GetIGameFramework()->GetClientActor()->GetEntityId()) ? 2 : 1;
+						args[1] = (passenger == g_pHUD->m_pClientActor->GetEntityId()) ? 2 : 1;
 					}
 				}
 				else if (pSeat->IsLocked())
@@ -576,14 +576,12 @@ void CHUDVehicleInterface::OnVehicleEvent(EVehicleEvent event, const SVehicleEve
 	if (!m_pVehicle)
 		return;
 
-	CActor* pPlayerActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (!pPlayerActor)
-		return;
+	CPlayer* pPlayerActor = g_pHUD->m_pClientActor;
 
 	if (event == eVE_PassengerEnter || event == eVE_PassengerChangeSeat || event == eVE_SeatFreed)
 	{
 		g_pHUD->m_buyMenuKeyLog.Clear();
-		if (params.entityId == pPlayerActor->GetEntityId())
+		if (params.entityId == g_pHUD->m_pClientActor->GetEntityId())
 		{
 			m_seatId = params.iParam;
 
@@ -615,9 +613,7 @@ void CHUDVehicleInterface::OnVehicleEvent(EVehicleEvent event, const SVehicleEve
 
 void CHUDVehicleInterface::UpdateVehicleHUDDisplay()
 {
-	CActor* pPlayerActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (!pPlayerActor)
-		return;
+	CPlayer* pPlayerActor = g_pHUD->m_pClientActor;
 
 	IVehicleSeat* seat = NULL;
 	if (m_pVehicle)
@@ -692,11 +688,7 @@ float CHUDVehicleInterface::GetVehicleSpeed()
 	}
 	else
 	{
-		CActor* pPlayerActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-		if (pPlayerActor)
-		{
-			fSpeed = pPlayerActor->GetActorStats()->velocity.len();
-		}
+		fSpeed = g_pHUD->m_pClientActor->GetActorStats()->velocity.len();
 	}
 	fSpeed *= 2.24f; // Meter per second TO Miles hour
 	return fSpeed;
@@ -728,27 +720,23 @@ float CHUDVehicleInterface::GetRelativeHeading()
 	float fAngle = 0.0;
 	if (m_pVehicle)
 	{
-		CActor* pPlayerActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-		if (pPlayerActor)
+		if (IVehicleSeat* pSeat = m_pVehicle->GetSeatForPassenger(g_pHUD->m_pClientActor->GetEntityId()))
 		{
-			if (IVehicleSeat* pSeat = m_pVehicle->GetSeatForPassenger(pPlayerActor->GetEntityId()))
+			//this is kinda workaround since it requires the "turning part" of the vehicle to be called "turret" (but everything else would be way more complicated)
+			if (IVehiclePart* pPart = m_pVehicle->GetPart("turret"))
 			{
-				//this is kinda workaround since it requires the "turning part" of the vehicle to be called "turret" (but everything else would be way more complicated)
-				if (IVehiclePart* pPart = m_pVehicle->GetPart("turret"))
-				{
-					const Matrix34& matLocal = pPart->GetLocalTM(false);
+				const Matrix34& matLocal = pPart->GetLocalTM(false);
 
-					Vec3 vLocalLook = matLocal.GetColumn(1);
-					vLocalLook.z = 0.0f;
-					vLocalLook.normalize();
+				Vec3 vLocalLook = matLocal.GetColumn(1);
+				vLocalLook.z = 0.0f;
+				vLocalLook.normalize();
 
-					fAngle = RAD2DEG(acos_tpl(vLocalLook.x));
-					if (vLocalLook.y < 0) fAngle = -fAngle;
-					fAngle -= 90.0f;
-				}
-				else
-					return 0.0f;
+				fAngle = RAD2DEG(acos_tpl(vLocalLook.x));
+				if (vLocalLook.y < 0) fAngle = -fAngle;
+				fAngle -= 90.0f;
 			}
+			else
+				return 0.0f;
 		}
 	}
 	return fAngle;
@@ -761,9 +749,7 @@ void CHUDVehicleInterface::ShowVehicleInterface(EVehicleHud type, bool forceFlas
 	if (!m_pVehicle && !m_bParachute)
 		return;
 
-	CActor* pPlayerActor = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetClientActor()); //crash hard?
-	if (!pPlayerActor)
-		return;
+	CActor* pPlayerActor = g_pHUD->m_pClientActor;
 
 	IVehicleSeat* pSeat = NULL;
 	if (m_pVehicle)
