@@ -1,4 +1,3 @@
-#include "CryGame/StdAfx.h"
 #include "WeaponSystem.h"
 
 void CWeaponSystem::RegisterXMLData()

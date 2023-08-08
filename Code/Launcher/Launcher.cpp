@@ -32,6 +32,22 @@
 
 #include "config.h"
 
+static void InitCrySystem(void* pCrySystem, SSystemInitParams& params)
+{
+	using CrySystemEntry = ISystem* (*)(SSystemInitParams&);
+
+	auto entry = static_cast<CrySystemEntry>(WinAPI::DLL::GetSymbol(pCrySystem, "CreateSystemInterface"));
+	if (!entry)
+	{
+		throw StringTools::ErrorFormat("The CrySystem DLL is not valid!");
+	}
+
+	if (!entry(params))
+	{
+		throw StringTools::ErrorFormat("CrySystem initialization failed!");
+	}
+}
+
 static void LogBytes(const char* message, std::size_t bytes)
 {
 	const char* unit = "";
@@ -985,28 +1001,53 @@ void Launcher::PatchEngine()
 
 void Launcher::StartEngine()
 {
-/*
-	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
-	if (!entry)
-	{
-		throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
-	}
+	const bool oldAction = WinAPI::CmdLine::HasArg("-oldaction");
 
-	IGameFramework* pGameFramework = entry();
-	if (!pGameFramework)
+	IGameFramework* pGameFramework = nullptr;
+
+	if (oldAction)
 	{
-		throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
+		using CryActionEntry = IGameFramework::TEntryFunction;
+
+		auto entry = static_cast<CryActionEntry>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
+		if (!entry)
+		{
+			throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
+		}
+
+		pGameFramework = entry();
+		if (!pGameFramework)
+		{
+			throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
+		}
 	}
-*/
-	IGameFramework* pGameFramework = &GameFramework::GetInstance();
+	else
+	{
+		pGameFramework = &GameFramework::GetInstance();
+	}
 
 	GameWindow::GetInstance().Init();
 
-	// initialize CryEngine
-	// Launcher::OnEarlyEngineInit is called here
-	if (!pGameFramework->Init(m_params))
+	if (oldAction)
 	{
-		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
+		// initialize CryEngine
+		// Launcher::OnEarlyEngineInit is called here
+		if (!pGameFramework->Init(m_params))
+		{
+			throw StringTools::ErrorFormat("CryENGINE initialization failed!");
+		}
+	}
+	else
+	{
+		// initialize CryEngine without CryAction
+		// Launcher::OnEarlyEngineInit is called here
+		InitCrySystem(m_dlls.pCrySystem, m_params);
+
+		// initialize our CryAction
+		if (!pGameFramework->Init(m_params))
+		{
+			throw StringTools::ErrorFormat("CryAction initialization failed!");
+		}
 	}
 
 #ifdef CRYMP_TRACY_ENABLED

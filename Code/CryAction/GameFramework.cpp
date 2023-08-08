@@ -10,9 +10,6 @@
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CrySystem/CryLog.h"
 
-#include "Library/StringTools.h"
-#include "Library/WinAPI.h"
-
 #include "ActionMapManager.h"
 #include "ActorSystem.h"
 #include "AnimationGraphSystem.h"
@@ -47,32 +44,6 @@
 #include "UIDraw.h"
 #include "VehicleSystem.h"
 #include "ViewSystem.h"
-
-static ISystem* InitCrySystem(SSystemInitParams& startupParams)
-{
-	// Launcher takes care of loading and patching CrySystem DLL
-	void* pCrySystemDLL = WinAPI::DLL::Get("CrySystem.dll");
-	if (!pCrySystemDLL)
-	{
-		throw StringTools::ErrorFormat("The CrySystem DLL is not loaded!");
-	}
-
-	using CrySystemEntry = ISystem* (*)(SSystemInitParams&);
-
-	auto entry = static_cast<CrySystemEntry>(WinAPI::DLL::GetSymbol(pCrySystemDLL, "CreateSystemInterface"));
-	if (!entry)
-	{
-		throw StringTools::ErrorFormat("The CrySystem DLL is not valid!");
-	}
-
-	ISystem* pSystem = entry(startupParams);
-	if (!pSystem)
-	{
-		throw StringTools::ErrorFormat("CrySystem initialization failed!");
-	}
-
-	return pSystem;
-}
 
 static void RegisterInventoryFactory(IGameFramework* pGameFramework)
 {
@@ -204,10 +175,9 @@ void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreato
 
 bool GameFramework::Init(SSystemInitParams& startupParams)
 {
-	// start CryEngine
-	m_pSystem = InitCrySystem(startupParams);
-
 	CryLogAlways("$3[CryMP] Initializing Game Framework");
+
+	m_pSystem = gEnv->pSystem;
 
 	// set gEnv inside CryAction DLL
 #ifdef BUILD_64BIT
