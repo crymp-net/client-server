@@ -1,6 +1,5 @@
 #include <stdexcept>
 #include <string>
-#include <system_error>
 
 #include "Library/WinAPI.h"
 
@@ -28,16 +27,6 @@ static std::string RuntimeErrorToString(const std::runtime_error& error)
 	return message;
 }
 
-static std::string SystemErrorToString(const std::system_error& error)
-{
-	std::string message = RuntimeErrorToString(error);
-
-	message += "\n\nError code ";
-	message += std::to_string(error.code().value());
-
-	return message;
-}
-
 int __stdcall WinMain(void*, void*, char*, int)
 {
 	Launcher launcher;
@@ -46,11 +35,6 @@ int __stdcall WinMain(void*, void*, char*, int)
 	try
 	{
 		launcher.Run();
-	}
-	catch (const std::system_error& error)
-	{
-		WinAPI::ErrorBox(SystemErrorToString(error).c_str());
-		return 1;
 	}
 	catch (const std::runtime_error& error)
 	{

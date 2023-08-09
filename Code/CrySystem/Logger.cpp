@@ -95,7 +95,9 @@ void Logger::OpenFile(const std::filesystem::path& filePath)
 	FileHandle file(std::fopen(filePathString.c_str(), "w"));
 	if (!file)
 	{
-		throw std::system_error(errno, std::generic_category(), "Failed to open log file: " + filePathString);
+		const int code = errno;
+		throw std::system_error(code, std::generic_category(),
+			"Failed to open log file: " + filePathString + ": Error code " + std::to_string(code));
 	}
 
 	m_file = std::move(file);

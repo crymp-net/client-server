@@ -138,9 +138,12 @@ std::system_error StringTools::SysErrorFormat(const char* format, ...)
 
 std::system_error StringTools::SysErrorFormatV(const char* format, va_list args)
 {
-	const int code = static_cast<int>(GetLastError());
+	const unsigned long code = ::GetLastError();
 
-	const std::string message = FormatV(format, args);
+	std::string message = FormatV(format, args);
 
-	return std::system_error(code, std::system_category(), message);
+	message += ": Error code ";
+	message += std::to_string(code);
+
+	return std::system_error(static_cast<int>(code), std::system_category(), message);
 }
