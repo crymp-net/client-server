@@ -140,8 +140,30 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/PersistantDebug.h
 	Code/CryAction/PlayerProfileManager.cpp
 	Code/CryAction/PlayerProfileManager.h
+	Code/CryAction/ScriptBind_ActionMapManager.cpp
+	Code/CryAction/ScriptBind_ActionMapManager.h
+	Code/CryAction/ScriptBind_Actor.cpp
+	Code/CryAction/ScriptBind_Actor.h
+	Code/CryAction/ScriptBind_AI.cpp
+	Code/CryAction/ScriptBind_AI.h
+	Code/CryAction/ScriptBind_CryAction.cpp
+	Code/CryAction/ScriptBind_CryAction.h
+	Code/CryAction/ScriptBind_DialogSystem.cpp
+	Code/CryAction/ScriptBind_DialogSystem.h
+	Code/CryAction/ScriptBind_Inventory.cpp
+	Code/CryAction/ScriptBind_Inventory.h
+	Code/CryAction/ScriptBind_ItemSystem.cpp
+	Code/CryAction/ScriptBind_ItemSystem.h
 	Code/CryAction/ScriptBind_MaterialEffects.cpp
 	Code/CryAction/ScriptBind_MaterialEffects.h
+	Code/CryAction/ScriptBind_Network.cpp
+	Code/CryAction/ScriptBind_Network.h
+	Code/CryAction/ScriptBind_Vehicle.cpp
+	Code/CryAction/ScriptBind_Vehicle.h
+	Code/CryAction/ScriptBind_VehicleSeat.cpp
+	Code/CryAction/ScriptBind_VehicleSeat.h
+	Code/CryAction/ScriptBind_VehicleSystem.cpp
+	Code/CryAction/ScriptBind_VehicleSystem.h
 	Code/CryAction/ScriptRMI.cpp
 	Code/CryAction/ScriptRMI.h
 	Code/CryAction/SubtitleManager.cpp

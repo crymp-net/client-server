@@ -36,7 +36,18 @@
 #include "NetworkCVars.h"
 #include "PersistantDebug.h"
 #include "PlayerProfileManager.h"
+#include "ScriptBind_ActionMapManager.h"
+#include "ScriptBind_Actor.h"
+#include "ScriptBind_AI.h"
+#include "ScriptBind_CryAction.h"
+#include "ScriptBind_DialogSystem.h"
+#include "ScriptBind_Inventory.h"
+#include "ScriptBind_ItemSystem.h"
 #include "ScriptBind_MaterialEffects.h"
+#include "ScriptBind_Network.h"
+#include "ScriptBind_Vehicle.h"
+#include "ScriptBind_VehicleSeat.h"
+#include "ScriptBind_VehicleSystem.h"
 #include "ScriptRMI.h"
 #include "SubtitleManager.h"
 #include "TimeDemoRecorder.h"
@@ -113,6 +124,7 @@ GameFramework::GameFramework()
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[8] = current_vtable[8];    // GameFramework::CompleteInit
 	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
+	//vtable[10] = current_vtable[10];  // GameFramework::PostUpdate
 	vtable[11] = current_vtable[11];  // GameFramework::Shutdown
 	vtable[22] = current_vtable[22];  // GameFramework::GetIItemSystem
 	vtable[81] = current_vtable[81];  // GameFramework::GetMemoryStatistics
@@ -288,8 +300,9 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	// skip instantiating CDownloadTask for downloading maps and stuff (m_reserved_0x51c_0x5b8)
 	// it is more harmful than useful and all accesses seem to be guarded by null checks making it optional
 
-	m_pListeners = new Listeners();
-	m_pAdditionalListenersData = new AdditionalListenersData();
+	m_pListenersA = new Listeners();
+	m_pListenersB = new Listeners();
+
 	m_pNextFrameCommand = new CryStringT<char>();
 
 	m_pGameStatsConfig = new GameStatsConfig();
@@ -448,6 +461,44 @@ bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)
 
 void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 {
+	if (m_pLanBrowserCVar->GetIVal())
+	{
+		if (!m_isLanBrowserRunning)
+		{
+			m_isLanBrowserRunning = true;
+			this->BeginLanQuery();
+		}
+	}
+	else
+	{
+		if (m_isLanBrowserRunning)
+		{
+			m_isLanBrowserRunning = false;
+			this->EndCurrentQuery();
+		}
+	}
+
+	const float frameTime = gEnv->pTimer->GetFrameTime();
+
+	if (!this->IsGamePaused())
+	{
+		m_pEffectSystem->Update(frameTime);
+
+		if (m_lastSaveLoad > 0)
+		{
+			m_lastSaveLoad -= frameTime;
+
+			if (m_lastSaveLoad < 0)
+			{
+				m_lastSaveLoad = 0;
+			}
+		}
+	}
+
+	m_pSystem->Render();
+
+	// TODO: call OnPostUpdate on listeners
+	// TODO
 }
 
 void GameFramework::Shutdown()
@@ -890,13 +941,17 @@ void GameFramework::RegisterConsoleCommands()
 
 void GameFramework::RegisterScriptBindings()
 {
-#ifdef BUILD_64BIT
-	std::uintptr_t func = 0x30818610;
-#else
-	std::uintptr_t func = 0x3071c0c0;
-#endif
-
-	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
+	m_pScriptBind_Network = new ScriptBind_Network(m_pSystem, this);
+	m_pScriptBind_CryAction = new ScriptBind_CryAction(this);
+	m_pScriptBind_ItemSystem = new ScriptBind_ItemSystem(m_pSystem, m_pItemSystem, this);
+	m_pScriptBind_Actor = new ScriptBind_Actor(m_pSystem, this);
+	m_pScriptBind_AI = new ScriptBind_AI(m_pSystem);
+	m_pScriptBind_ActionMapManager = new ScriptBind_ActionMapManager(m_pSystem, m_pActionMapManager);
+	m_pScriptBind_VehicleSystem = new ScriptBind_VehicleSystem(m_pSystem, m_pVehicleSystem);
+	m_pScriptBind_Vehicle = new ScriptBind_Vehicle(m_pSystem, this);
+	m_pScriptBind_VehicleSeat = new ScriptBind_VehicleSeat(m_pSystem, this);
+	m_pScriptBind_Inventory = new ScriptBind_Inventory(m_pSystem, this);
+	m_pScriptBind_DialogSystem = new ScriptBind_DialogSystem(m_pSystem, m_pDialogSystem);
 }
 
 void GameFramework::CheckEndLevelSchedule()

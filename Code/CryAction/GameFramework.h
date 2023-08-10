@@ -17,7 +17,18 @@ class GameStatsConfig;
 class ItemSystem;
 class MaterialEffects;
 class NetworkCVars;
+class ScriptBind_ActionMapManager;
+class ScriptBind_Actor;
+class ScriptBind_AI;
+class ScriptBind_CryAction;
+class ScriptBind_DialogSystem;
+class ScriptBind_Inventory;
+class ScriptBind_ItemSystem;
 class ScriptBind_MaterialEffects;
+class ScriptBind_Network;
+class ScriptBind_Vehicle;
+class ScriptBind_VehicleSeat;
+class ScriptBind_VehicleSystem;
 class ScriptRMI;
 class TimeDemoRecorder;
 class TimeOfDayScheduler;
@@ -33,12 +44,6 @@ class GameFramework : public IGameFramework
 	struct Listeners
 	{
 		// probably std::vector<IGameFrameworkListener*>
-		void* reserved[3] = {};
-	};
-
-	struct AdditionalListenersData
-	{
-		// probably std::vector of something
 		void* reserved[3] = {};
 	};
 
@@ -85,17 +90,17 @@ class GameFramework : public IGameFramework
 	TimeDemoRecorder* m_pTimeDemoRecorder = nullptr;
 	void* m_reserved_0x518_0x5b0 = nullptr;
 	void* m_reserved_0x51c_0x5b8 = nullptr;
-	void* m_reserved_0x520_0x5c0 = nullptr;
-	void* m_reserved_0x524_0x5c8 = nullptr;
-	void* m_reserved_0x528_0x5d0 = nullptr;
-	void* m_reserved_0x52c_0x5d8 = nullptr;
-	void* m_reserved_0x530_0x5e0 = nullptr;
-	void* m_reserved_0x534_0x5e8 = nullptr;
-	void* m_reserved_0x538_0x5f0 = nullptr;
-	void* m_reserved_0x53c_0x5f8 = nullptr;
-	void* m_reserved_0x540_0x600 = nullptr;
-	void* m_reserved_0x544_0x608 = nullptr;
-	void* m_reserved_0x548_0x610 = nullptr;
+	ScriptBind_CryAction* m_pScriptBind_CryAction = nullptr;  // m_reserved_0x520_0x5c0
+	ScriptBind_ItemSystem* m_pScriptBind_ItemSystem = nullptr;  // m_reserved_0x524_0x5c8
+	ScriptBind_Actor* m_pScriptBind_Actor = nullptr;  // m_reserved_0x528_0x5d0
+	ScriptBind_AI* m_pScriptBind_AI = nullptr;  // m_reserved_0x52c_0x5d8
+	ScriptBind_Network* m_pScriptBind_Network = nullptr;  // m_reserved_0x530_0x5e0
+	ScriptBind_ActionMapManager* m_pScriptBind_ActionMapManager = nullptr;  // m_reserved_0x534_0x5e8
+	ScriptBind_VehicleSystem* m_pScriptBind_VehicleSystem = nullptr;  // m_reserved_0x538_0x5f0
+	ScriptBind_Vehicle* m_pScriptBind_Vehicle = nullptr;  // m_reserved_0x53c_0x5f8
+	ScriptBind_VehicleSeat* m_pScriptBind_VehicleSeat = nullptr;  // m_reserved_0x540_0x600
+	ScriptBind_Inventory* m_pScriptBind_Inventory = nullptr;  // m_reserved_0x544_0x608
+	ScriptBind_DialogSystem* m_pScriptBind_DialogSystem = nullptr;  // m_reserved_0x548_0x610
 	ScriptBind_MaterialEffects* m_pScriptBind_MaterialEffects = nullptr;  // m_reserved_0x54c_0x618
 	TimeOfDayScheduler* m_pTimeOfDayScheduler = nullptr;  // m_reserved_0x550_0x620
 	IPersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
@@ -106,16 +111,19 @@ class GameFramework : public IGameFramework
 	IMusicLogic* m_pMusicLogic = nullptr;  // m_reserved_0x568_0x650
 	ICVar* m_pEnableLoadingScreenCVar = nullptr;
 	void* m_reserved_0x570_0x660 = nullptr;
-	ICVar* m_pLANBrowserCVar = nullptr;
-	int m_reserved_0x578_0x670[3] = {};
+	ICVar* m_pLanBrowserCVar = nullptr;  // m_reserved_0x574_0x668
+	bool m_isLanBrowserRunning = false;  // m_reserved_0x578_0x670
+	int m_reserved_0x57c_0x674[2] = {};
 	SomeStrings* m_pSomeStrings = nullptr;  // m_reserved_0x584_0x680
-	Listeners* m_pListeners = nullptr;  // m_reserved_0x588_0x688
-	AdditionalListenersData* m_pAdditionalListenersData = nullptr;  // m_reserved_0x58c_0x690
+	Listeners* m_pListenersA = nullptr;  // m_reserved_0x588_0x688
+	Listeners* m_pListenersB = nullptr;  // m_reserved_0x58c_0x690
 	int m_voiceRecording = 0;
 	bool m_unknownFlag1 = true;
 	bool m_unknownFlag2 = true;
 	CryStringT<char>* m_pNextFrameCommand = nullptr;  // m_reserved_0x598_0x6a0
-	void* m_reserved_0x59c_0x6a8[64] = {};  // some free space at the end, total size is unknown
+	void* m_reserved_0x59c_0x6a8 = nullptr;
+	float m_lastSaveLoad = 0;  // m_reserved_0x5a0_0x6b0
+	void* m_reserved_0x5a4_0x6b8[64] = {};  // some free space at the end, total size is unknown
 
 	GameFramework();
 

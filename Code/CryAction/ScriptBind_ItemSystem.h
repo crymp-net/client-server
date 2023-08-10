@@ -2,9 +2,12 @@
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
-class MaterialEffects;
+struct ISystem;
+struct IGameFramework;
 
-class ScriptBind_MaterialEffects : public CScriptableBase
+class ItemSystem;
+
+class ScriptBind_ItemSystem : public CScriptableBase
 {
 #ifdef BUILD_64BIT
 	unsigned char m_data[0x78 - sizeof(CScriptableBase)] = {};
@@ -13,5 +16,5 @@ class ScriptBind_MaterialEffects : public CScriptableBase
 #endif
 
 public:
-	explicit ScriptBind_MaterialEffects(ISystem* pSystem, MaterialEffects* pMaterialEffects);
+	explicit ScriptBind_ItemSystem(ISystem* pSystem, ItemSystem* pItemSystem, IGameFramework* pGameFramework);
 };
