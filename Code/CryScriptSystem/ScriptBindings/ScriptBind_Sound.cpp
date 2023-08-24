@@ -175,6 +175,7 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(SetMasterVolumeScale, "scale");
 	SCRIPT_REG_FUNC(SetMinMaxDistance);
 	SCRIPT_REG_FUNC(SetParameterValue);
+	SCRIPT_REG_FUNC(SetParameterValueById);
 	SCRIPT_REG_FUNC(SetSoundLoop);
 	SCRIPT_REG_FUNC(SetSoundPaused);
 	SCRIPT_REG_FUNC(SetSoundPosition);
@@ -614,6 +615,26 @@ int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 		{
 			pSound->SetParam(paramName, paramValue);
 		}
+	}
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::SetParameterValueById(IFunctionHandler* pH)
+{
+	SCRIPT_CHECK_PARAMETERS(3);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	int paramId = 0;
+	float paramValue = 0;
+
+	pH->GetParam(2, paramId);
+	pH->GetParam(3, paramValue);
+
+	if (pSound)
+	{
+		return pH->EndFunction(pSound->SetParam(paramId, paramValue));
 	}
 
 	return pH->EndFunction();
