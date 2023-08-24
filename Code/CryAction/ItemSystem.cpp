@@ -84,7 +84,7 @@ static std::string_view GetPathExtension(std::string_view path)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ItemSystem::ItemSystem(IGameFramework* pGameFramework, ISystem* pSystem) : m_pGameFramework(pGameFramework)
+ItemSystem::ItemSystem(IGameFramework* pGameFramework) : m_pGameFramework(pGameFramework)
 {
 	this->RegisterCVars();
 
@@ -147,7 +147,7 @@ void ItemSystem::PrecacheLevel()
 
 void ItemSystem::RegisterItemFactory(const char* name, IGameFramework::IItemCreator* pCreator)
 {
-	m_factories[name] = ItemFactory(pCreator);
+	m_factories[name] = pCreator;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,19 +193,11 @@ void ItemSystem::Reset()
 		return;
 	}
 
-	IEntitySystem* pEntitySystem = gEnv->pEntitySystem;
-
-	for (auto it = m_items.begin(); it != m_items.end();)
+	std::erase_if(m_items, [pEntitySystem = gEnv->pEntitySystem](const auto& item)
 	{
-		if (pEntitySystem->GetEntity(it->first))
-		{
-			++it;
-		}
-		else
-		{
-			it = m_items.erase(it);
-		}
-	}
+		const auto& [itemId, pItem] = item;
+		return pEntitySystem->GetEntity(itemId) == nullptr;
+	});
 }
 
 void ItemSystem::Reload()
@@ -244,6 +236,11 @@ IItemParamsNode* ItemSystem::CreateParams()
 
 const IItemParamsNode* ItemSystem::GetItemParams(const char* itemName) const
 {
+	if (!itemName)
+	{
+		return nullptr;
+	}
+
 	const auto it = m_params.find(itemName);
 	if (it == m_params.end())
 	{
@@ -272,6 +269,11 @@ const char* ItemSystem::GetItemParamName(int index) const
 
 std::uint8_t ItemSystem::GetItemPriority(const char* item) const
 {
+	if (!item)
+	{
+		return 0;
+	}
+
 	const auto it = m_params.find(item);
 	if (it == m_params.end())
 	{
@@ -283,6 +285,11 @@ std::uint8_t ItemSystem::GetItemPriority(const char* item) const
 
 const char* ItemSystem::GetItemCategory(const char* item) const
 {
+	if (!item)
+	{
+		return nullptr;
+	}
+
 	const auto it = m_params.find(item);
 	if (it == m_params.end())
 	{
@@ -296,6 +303,11 @@ const char* ItemSystem::GetItemCategory(const char* item) const
 
 std::uint8_t ItemSystem::GetItemUniqueId(const char* item) const
 {
+	if (!item)
+	{
+		return 0;
+	}
+
 	const auto it = m_params.find(item);
 	if (it == m_params.end())
 	{
@@ -307,6 +319,11 @@ std::uint8_t ItemSystem::GetItemUniqueId(const char* item) const
 
 bool ItemSystem::IsItemClass(const char* name) const
 {
+	if (!name)
+	{
+		return false;
+	}
+
 	return m_params.contains(name);
 }
 
@@ -457,6 +474,11 @@ void ItemSystem::CacheGeometry(const IItemParamsNode* geometry)
 
 void ItemSystem::CacheItemGeometry(const char* className)
 {
+	if (!className)
+	{
+		return;
+	}
+
 	const auto it = m_params.find(className);
 	if (it == m_params.end())
 	{
@@ -493,18 +515,13 @@ void ItemSystem::ClearGeometryCache()
 void ItemSystem::CacheItemSound(const char* className)
 {
 	ISoundSystem* pSoundSystem = gEnv->pSoundSystem;
-	if (!pSoundSystem)
+	if (!pSoundSystem || !className)
 	{
 		return;
 	}
 
 	const auto it = m_params.find(className);
-	if (it == m_params.end())
-	{
-		return;
-	}
-
-	if (it->second.soundCached)
+	if (it == m_params.end() || it->second.soundCached)
 	{
 		return;
 	}
@@ -966,7 +983,7 @@ void ItemSystem::RegisterItemClass(const ItemClassData& item)
 
 	if (added)
 	{
-		IGameObjectExtensionCreatorBase* pCreator = factoryIt->second.pCreator;
+		IGameFramework::IItemCreator* pCreator = factoryIt->second;
 
 		IEntityClassRegistry::SEntityClassDesc entityClass;
 		entityClass.flags = 0;

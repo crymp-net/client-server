@@ -53,7 +53,7 @@
 #include "TimeDemoRecorder.h"
 #include "TimeOfDayScheduler.h"
 #include "UIDraw.h"
-#include "VehicleSystem.h"
+#include "Vehicles/VehicleSystem.h"
 #include "ViewSystem.h"
 
 static void RegisterInventoryFactory(IGameFramework* pGameFramework)
@@ -120,6 +120,7 @@ GameFramework::GameFramework()
 	const std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
 
 	// use original functions from CryAction DLL except the following
+	vtable[1] = current_vtable[1];    // GameFramework::RegisterFactory(IVehicleCreator)
 	vtable[2] = current_vtable[2];    // GameFramework::RegisterFactory(IItemCreator)
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[8] = current_vtable[8];    // GameFramework::CompleteInit
@@ -127,6 +128,7 @@ GameFramework::GameFramework()
 	//vtable[10] = current_vtable[10];  // GameFramework::PostUpdate
 	vtable[11] = current_vtable[11];  // GameFramework::Shutdown
 	vtable[22] = current_vtable[22];  // GameFramework::GetIItemSystem
+	vtable[26] = current_vtable[26];  // GameFramework::GetIVehicleSystem
 	vtable[81] = current_vtable[81];  // GameFramework::GetMemoryStatistics
 	vtable[92] = current_vtable[92];  // GameFramework::PrefetchLevelAssets
 	vtable[94] = current_vtable[94];  // GameFramework::~GameFramework
@@ -177,8 +179,9 @@ void GameFramework::RegisterFactory(const char* name, IItemCreator* pCreator, bo
 	m_pItemSystem->RegisterItemFactory(name, pCreator);
 }
 
-void GameFramework::RegisterFactory(const char* name, IVehicleCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IVehicleCreator* pCreator, bool isAI)
 {
+	m_pVehicleSystem->RegisterVehicleFactory(name, pCreator);
 }
 
 void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI)
@@ -236,13 +239,13 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	m_pUIDraw = new UIDraw();
 	m_pLevelSystem = new LevelSystem(m_pSystem, "levels");
 	m_pActorSystem = new ActorSystem(m_pSystem, m_pEntitySystem);
-	m_pItemSystem = new ItemSystem(this, m_pSystem);
+	m_pItemSystem = new ItemSystem(this);
 	m_pActionMapManager = new ActionMapManager(m_pSystem->GetIInput());
 	m_pViewSystem = new ViewSystem(m_pSystem);
 	m_pGameplayRecorder = new GameplayRecorder(this);
 	m_pGameplayAnalyst = new GameplayAnalyst();
 	m_pGameRulesSystem = new GameRulesSystem(m_pSystem, this);
-	m_pVehicleSystem = new VehicleSystem(m_pSystem, m_pEntitySystem);
+	m_pVehicleSystem = new VehicleSystem(this);
 	m_pNetworkCVars = new NetworkCVars();
 	m_pGameFrameworkCVars = new GameFrameworkCVars();
 
@@ -576,7 +579,7 @@ IGameplayRecorder* GameFramework::GetIGameplayRecorder()
 
 IVehicleSystem* GameFramework::GetIVehicleSystem()
 {
-	return nullptr;
+	return m_pVehicleSystem;
 }
 
 IGameRulesSystem* GameFramework::GetIGameRulesSystem()
@@ -914,7 +917,7 @@ void GameFramework::DispatchActionEvent(const SActionEvent& event)
 	std::uintptr_t func = 0x30741b00;
 #endif
 
-	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
+	(this->*reinterpret_cast<void(GameFramework::*&)(const SActionEvent&)>(func))(event);
 }
 
 void GameFramework::RegisterConsoleVariables()
@@ -947,7 +950,7 @@ void GameFramework::RegisterScriptBindings()
 	m_pScriptBind_Actor = new ScriptBind_Actor(m_pSystem, this);
 	m_pScriptBind_AI = new ScriptBind_AI(m_pSystem);
 	m_pScriptBind_ActionMapManager = new ScriptBind_ActionMapManager(m_pSystem, m_pActionMapManager);
-	m_pScriptBind_VehicleSystem = new ScriptBind_VehicleSystem(m_pSystem, m_pVehicleSystem);
+	m_pScriptBind_VehicleSystem = new ScriptBind_VehicleSystem(m_pVehicleSystem);
 	m_pScriptBind_Vehicle = new ScriptBind_Vehicle(m_pSystem, this);
 	m_pScriptBind_VehicleSeat = new ScriptBind_VehicleSeat(m_pSystem, this);
 	m_pScriptBind_Inventory = new ScriptBind_Inventory(m_pSystem, this);

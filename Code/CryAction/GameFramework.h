@@ -32,6 +32,7 @@ class ScriptBind_VehicleSystem;
 class ScriptRMI;
 class TimeDemoRecorder;
 class TimeOfDayScheduler;
+class VehicleSystem;
 class ViewSystem;
 
 class GameFramework : public IGameFramework
@@ -64,7 +65,7 @@ class GameFramework : public IGameFramework
 	ILevelSystem* m_pLevelSystem = nullptr;
 	IActorSystem* m_pActorSystem = nullptr;
 	ItemSystem* m_pItemSystem = nullptr;
-	IVehicleSystem* m_pVehicleSystem = nullptr;
+	VehicleSystem* m_pVehicleSystem = nullptr;
 	IActionMapManager* m_pActionMapManager = nullptr;
 	ViewSystem* m_pViewSystem = nullptr;
 	GameplayRecorder* m_pGameplayRecorder = nullptr;
@@ -141,7 +142,7 @@ public:
 	void RegisterFactory(const char* name, ILoadGame* (*)(), bool isAI) override;
 	void RegisterFactory(const char* name, IActorCreator*, bool isAI) override;
 	void RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI) override;
-	void RegisterFactory(const char* name, IVehicleCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IVehicleCreator* pCreator, bool isAI) override;
 	void RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI) override;
 
 	bool Init(SSystemInitParams& startupParams) override;

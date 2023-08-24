@@ -29,11 +29,6 @@ class ItemSystem final : public ILevelSystemListener, public IItemSystem
 	using SmartCharacterInstance = std::unique_ptr<ICharacterInstance, Releaser<ICharacterInstance>>;
 	using SmartStatObj = std::unique_ptr<IStatObj, Releaser<IStatObj>>;
 
-	struct ItemFactory
-	{
-		IGameFramework::IItemCreator* pCreator = nullptr;
-	};
-
 	struct ItemParams
 	{
 		SmartParamsNode root;
@@ -47,7 +42,7 @@ class ItemSystem final : public ILevelSystemListener, public IItemSystem
 		bool soundCached = false;
 	};
 
-	std::map<std::string, ItemFactory, std::less<void>> m_factories;
+	std::map<std::string, IGameFramework::IItemCreator*, std::less<void>> m_factories;
 	std::map<std::string, ItemParams, std::less<void>> m_params;
 	std::map<EntityId, IItem*> m_items;
 
@@ -74,7 +69,7 @@ class ItemSystem final : public ILevelSystemListener, public IItemSystem
 	ICVar* m_pLyingItemLimitCVar = nullptr;
 
 public:
-	explicit ItemSystem(IGameFramework* pGameFramework, ISystem* pSystem);
+	explicit ItemSystem(IGameFramework* pGameFramework);
 	virtual ~ItemSystem();
 
 	void Update(float frameTime);

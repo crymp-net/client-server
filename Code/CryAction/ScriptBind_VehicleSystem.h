@@ -2,17 +2,19 @@
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
-struct ISystem;
-struct IVehicleSystem;
+class VehicleSystem;
 
 class ScriptBind_VehicleSystem : public CScriptableBase
 {
-#ifdef BUILD_64BIT
-	unsigned char m_data[0x68 - sizeof(CScriptableBase)] = {};
-#else
-	unsigned char m_data[0x54 - sizeof(CScriptableBase)] = {};
-#endif
+	VehicleSystem* m_pVehicleSystem = nullptr;
 
 public:
-	explicit ScriptBind_VehicleSystem(ISystem* pSystem, IVehicleSystem* pVehicleSystem);
+	explicit ScriptBind_VehicleSystem(VehicleSystem* pVehicleSystem);
+
+	int LogSlots(IFunctionHandler* pH, const char* vehicleName);
+	int GetVehicleImplementations(IFunctionHandler* pH);
+	int GetOptionalScript(IFunctionHandler* pH, const char* vehicleName);
+	int SetTpvDistance(IFunctionHandler* pH, float distance);
+	int SetTpvHeight(IFunctionHandler* pH, float height);
+	int ReloadSystem(IFunctionHandler* pH);
 };

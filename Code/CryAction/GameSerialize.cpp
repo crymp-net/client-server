@@ -4,6 +4,7 @@
 
 GameSerialize::GameSerialize()
 {
+	// TODO: this is not good, implement this class ASAP
 	// probably some C++ allocator stuff
 #ifdef BUILD_64BIT
 	void* magicValue = reinterpret_cast<void*>(sizeof(GameSerialize));
