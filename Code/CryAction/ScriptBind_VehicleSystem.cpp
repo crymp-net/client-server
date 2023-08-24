@@ -1,4 +1,5 @@
 #include "CryCommon/CrySystem/gEnv.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CrySystem/CryLog.h"
 
 #include "ScriptBind_VehicleSystem.h"
@@ -52,6 +53,11 @@ int ScriptBind_VehicleSystem::GetOptionalScript(IFunctionHandler* pH, const char
 	path += "Scripts/Entities/Vehicles/Implementations/";
 	path += vehicleName;
 	path += ".lua";
+
+	if (!gEnv->pCryPak->IsFileExist(path.c_str()))
+	{
+		return pH->EndFunction();
+	}
 
 	return pH->EndFunction(path.c_str());
 }
