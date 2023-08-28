@@ -175,7 +175,7 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(SetMasterVolumeScale, "scale");
 	SCRIPT_REG_FUNC(SetMinMaxDistance);
 	SCRIPT_REG_FUNC(SetParameterValue);
-	SCRIPT_REG_FUNC(SetParameterValueById);
+	SCRIPT_REG_FUNC(GetParameterValue);
 	SCRIPT_REG_FUNC(SetSoundLoop);
 	SCRIPT_REG_FUNC(SetSoundPaused);
 	SCRIPT_REG_FUNC(SetSoundPosition);
@@ -598,13 +598,16 @@ int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 
 	_smart_ptr<ISound> pSound = GetSound(pH, 1);
 
-	const char *paramName = nullptr;
-	float paramValue = 0;
+	if (!pSound)
+		return pH->EndFunction();
 
-	pH->GetParam(2, paramName);
+	const char *paramName = nullptr;
+	int paramId = 0;
+	float paramValue = 0.0f;
+
 	pH->GetParam(3, paramValue);
 
-	if (pSound)
+	if (pH->GetParamType(2) == svtString && pH->GetParam(2, paramName))
 	{
 		if (strcmp(paramName, "pitch") == 0)
 		{
@@ -616,25 +619,44 @@ int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 			pSound->SetParam(paramName, paramValue);
 		}
 	}
+	else if (pH->GetParamType(2) == svtNumber && pH->GetParam(2, paramId))
+	{
+		return pH->EndFunction(pSound->SetParam(paramId, paramValue));
+	}
 
 	return pH->EndFunction();
 }
 
-int ScriptBind_Sound::SetParameterValueById(IFunctionHandler* pH)
+int ScriptBind_Sound::GetParameterValue(IFunctionHandler* pH)
 {
-	SCRIPT_CHECK_PARAMETERS(3);
+	SCRIPT_CHECK_PARAMETERS(2);
 
 	_smart_ptr<ISound> pSound = GetSound(pH, 1);
 
-	int paramId = 0;
-	float paramValue = 0;
+	if (!pSound)
+		return pH->EndFunction();
 
-	pH->GetParam(2, paramId);
-	pH->GetParam(3, paramValue);
-
-	if (pSound)
+	if (pH->GetParamType(2) == svtNumber)
 	{
-		return pH->EndFunction(pSound->SetParam(paramId, paramValue));
+		int paramId = 0;
+		if (pH->GetParam(2, paramId))
+		{
+			float value = 0;
+			pSound->GetParam(paramId, &value);
+
+			return pH->EndFunction(value);
+		}
+	}
+	else if (pH->GetParamType(2) == svtString)
+	{
+		const char* paramStr = nullptr;
+		if (pH->GetParam(2, paramStr))
+		{
+			float value = 0;
+			pSound->GetParam(paramStr, &value);
+
+			return pH->EndFunction(value);
+		}
 	}
 
 	return pH->EndFunction();

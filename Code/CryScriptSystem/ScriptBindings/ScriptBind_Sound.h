@@ -35,7 +35,7 @@ public:
 	int SetMasterVolumeScale(IFunctionHandler *pH, float scale);
 	int SetMinMaxDistance(IFunctionHandler *pH);
 	int SetParameterValue(IFunctionHandler *pH);
-	int SetParameterValueById(IFunctionHandler* pH);
+	int GetParameterValue(IFunctionHandler* pH);
 	int SetSoundLoop(IFunctionHandler *pH);
 	int SetSoundPaused(IFunctionHandler *pH);
 	int SetSoundPosition(IFunctionHandler *pH);
