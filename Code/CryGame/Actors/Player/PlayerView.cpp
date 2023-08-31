@@ -537,6 +537,19 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 
 	Vec3 viewOffset(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
 
+	const EStance stance = pPlayer->GetStance();
+	const bool freeFall = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 1 : false;
+	//const bool parachute = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 2 : false;
+	const bool inFreeFalllOrPara = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall > 0 : false;
+	const float distanceOffsetPara = -12.f;
+
+	if (inFreeFalllOrPara)
+	{
+		viewOffset.x = 0.0f;
+		viewOffset.y = distanceOffsetPara;
+		viewOffset.z = 3.0f;
+	}
+
 	CWeapon* pWeapon = pActor->GetCurrentWeapon(false);
 	if (pWeapon)
 	{
@@ -583,21 +596,20 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 
 	const float deltaTime = gEnv->pTimer->GetFrameTime();
 	if (currentColDist < previous)
-		Interpolate(pPlayer->m_ColDistance, currentColDist, 25.0f, deltaTime);
+		Interpolate(pPlayer->m_ColDistance, currentColDist, 15.0f, deltaTime);
 	else
-		Interpolate(pPlayer->m_ColDistance, currentColDist, 5.0f, deltaTime);
+		Interpolate(pPlayer->m_ColDistance, currentColDist, 8.0f, deltaTime);
 
 	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 	if (pRenderProxy)
 	{
-		pRenderProxy->SetOpacity(std::min(1.0f, pPlayer->m_ColDistance));
+		pPlayer->m_targetOpacity = std::min(1.0f, pPlayer->m_ColDistance-0.2f);
+		Interpolate(pPlayer->m_smoothedOpacity, pPlayer->m_targetOpacity, 5.f, deltaTime);
+
+		pRenderProxy->SetOpacity(pPlayer->m_targetOpacity);
 	}
 
 	Vec3 customOrigin = origin;
-	const EStance stance = pPlayer->GetStance();
-
-	const bool freeFall = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 1 : false;
-
 	if (!freeFall)
 	{
 		if (stance == EStance::STANCE_CROUCH || stance == EStance::STANCE_PRONE)
@@ -614,7 +626,7 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	const Vec3 ray = customCamPos - customOrigin;
 	const float safeBuffer = 0.2f;
 	const float minDistance = 0.2f;
-	const float maxDistance = 4.0f;
+	const float maxDistance = inFreeFalllOrPara ? std::fabs(distanceOffsetPara) : 4.0f;
 
 	pPlayer->m_ColDistance = std::max(minDistance, std::min(pPlayer->m_ColDistance, maxDistance));
 

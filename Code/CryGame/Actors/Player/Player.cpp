@@ -5088,7 +5088,10 @@ void CPlayer::ChangeParachuteState(int8 newState)
 				pEnt->SetSlotFlags(m_nParachuteSlot, flags);
 			}
 
-			AddAngularImpulse(Ang3(1.35f, RANDOM() * 0.5f, RANDOM() * 0.5f), 0.0f, 1.5f);
+			if (!IsThirdPerson())
+			{
+				AddAngularImpulse(Ang3(1.35f, RANDOM() * 0.5f, RANDOM() * 0.5f), 0.0f, 1.5f);
+			}
 
 			if (IPhysicalEntity* pPE = pEnt->GetPhysics())
 			{

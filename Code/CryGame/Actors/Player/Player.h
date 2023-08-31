@@ -904,6 +904,8 @@ public:
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
 	float m_ColDistance = 2.0f;
+	float m_targetOpacity = 1.0f;
+	float m_smoothedOpacity = 1.0f;
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }
