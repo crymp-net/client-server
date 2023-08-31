@@ -180,7 +180,7 @@ CPlayer::CPlayer()
 	m_pNanoSuit = NULL;
 
 	m_nParachuteSlot = 0;
-	m_fParachuteMorph = 0;
+	m_fParachuteMorph = 0.f;
 
 	m_pVehicleClient = 0;
 
@@ -1097,16 +1097,7 @@ void CPlayer::UpdateParachute(float frameTime)
 	}
 	else if (m_stats.inFreefall.Value() == 2)
 	{
-		// update parachute morph
-		m_fParachuteMorph += frameTime;
-		if (m_fParachuteMorph > 1.0f)
-			m_fParachuteMorph = 1.0f;
-		if (m_nParachuteSlot)
-		{
-			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(m_nParachuteSlot);
-			//if (pCharacter)
-			//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
-		}
+		UpdateParachuteMorph(frameTime);
 	}
 	else if (m_stats.inFreefall.Value() == 3)
 	{
@@ -1123,6 +1114,44 @@ void CPlayer::UpdateParachute(float frameTime)
 	else if (m_stats.inFreefall.Value() == -1)
 	{
 		ChangeParachuteState(0);
+	}
+
+	//remove the parachute, if one was loaded. additional sounds should go in here
+	if (m_nParachuteSlot && m_stats.inFreefall.Value() <= 0)
+	{
+		if (m_fParachuteMorph > 0.0f)
+		{
+			// update parachute morph (closing)
+			UpdateParachuteMorph(frameTime);
+		}
+		else
+		{
+			DeployParachute(false, true);
+		}
+	}
+}
+
+void CPlayer::UpdateParachuteMorph(float frameTime)
+{
+	const bool open = m_stats.inFreefall.Value() == 2;
+	// update parachute 
+	if (open)
+	{
+		m_fParachuteMorph += frameTime;
+		if (m_fParachuteMorph > 1.0f)
+			m_fParachuteMorph = 1.0f;
+	}
+	else
+	{
+		m_fParachuteMorph -= frameTime;
+	}
+	if (m_nParachuteSlot)
+	{
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(m_nParachuteSlot);
+		if (pCharacter)
+		{
+			pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+		}
 	}
 }
 
@@ -3534,6 +3563,8 @@ void CPlayer::Revive(ReasonForRevive reason)
 	m_openParachuteTimer = -1.0f;
 	m_openingParachute = false;
 
+	DeployParachute(false, false);
+
 	m_bSwimming = false;
 	m_actions = 0;
 	m_forcedRotation = false;
@@ -5052,13 +5083,6 @@ void CPlayer::ChangeParachuteState(int8 newState)
 			if (m_stats.inFreefall.Value() > 0)
 				AddAngularImpulse(Ang3(-0.5f, RANDOM() * 0.5f, RANDOM() * 0.35f), 0.0f, 0.5f);
 
-			//remove the parachute, if one was loaded. additional sounds should go in here
-			if (m_nParachuteSlot)
-			{
-				int flags = GetEntity()->GetSlotFlags(m_nParachuteSlot) & ~ENTITY_SLOT_RENDER;
-				GetEntity()->SetSlotFlags(m_nParachuteSlot, flags);
-			}
-
 			if (IsClient())
 			{
 				if (CHUD* pHUD = g_pGame->GetHUD())
@@ -5072,33 +5096,25 @@ void CPlayer::ChangeParachuteState(int8 newState)
 
 		case 2:
 		{
-			IEntity* pEnt = GetEntity();
-			// load and draw the parachute
-			if (!m_nParachuteSlot)
-				m_nParachuteSlot = pEnt->LoadCharacter(10, "Objects/Vehicles/Parachute/parachute_opening.chr");
-			if (m_nParachuteSlot) // check if it was correctly loaded...dont wanna modify another character slot
-			{
-				m_fParachuteMorph = 0;
-				ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
-				//if (pCharacter)
-				//{
-				//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
-				//}
-				int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
-				pEnt->SetSlotFlags(m_nParachuteSlot, flags);
-			}
+			DeployParachute(true, true);
 
 			if (!IsThirdPerson())
 			{
 				AddAngularImpulse(Ang3(1.35f, RANDOM() * 0.5f, RANDOM() * 0.5f), 0.0f, 1.5f);
 			}
 
-			if (IPhysicalEntity* pPE = pEnt->GetPhysics())
+			if (IPhysicalEntity* pPE = GetEntity()->GetPhysics())
 			{
 				pe_action_impulse actionImp;
 				actionImp.impulse = Vec3(0, 0, 9.81f) * m_stats.mass;
 				actionImp.iApplyTime = 0;
 				pPE->Action(&actionImp);
+			}
+
+			//CryMP: Start parachute runsound
+			if (!m_sounds[ESound_ParachuteRun])
+			{
+				PlaySound(ESound_ParachuteRun, true);
 			}
 
 			//if (IsClient())
@@ -5120,6 +5136,55 @@ void CPlayer::ChangeParachuteState(int8 newState)
 		m_stats.inFreefall = newState;
 
 		UpdateFreefallAnimationInputs();
+	}
+}
+
+void CPlayer::DeployParachute(bool deploy, bool sound)
+{
+	if (deploy)
+	{
+		IEntity* pEnt = GetEntity();
+		// load and draw the parachute
+		if (!m_nParachuteSlot)
+		{
+			m_nParachuteSlot = pEnt->LoadCharacter(10, "Objects/Vehicles/Parachute/parachute_opening.chr");
+		}
+
+		if (m_nParachuteSlot && !(pEnt->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)) // check if it was correctly loaded...dont wanna modify another character slot
+		{
+			m_fParachuteMorph = 0.0f;
+			ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
+			if (pCharacter)
+			{
+				pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+			}
+			int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
+			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+
+			if (sound)
+			{
+				PlaySound(ESound_ParachuteStart);
+			}
+		}
+	}
+	else
+	{
+		if (m_sounds[ESound_ParachuteRun])
+		{
+			//Stop sound
+			PlaySound(ESound_ParachuteRun, false);
+		}
+
+		if (GetEntity()->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)
+		{
+			int flags = GetEntity()->GetSlotFlags(m_nParachuteSlot) & ~ENTITY_SLOT_RENDER;
+			GetEntity()->SetSlotFlags(m_nParachuteSlot, flags);
+
+			if (sound)
+			{
+				PlaySound(ESound_ParachuteStop);
+			}
+		}
 	}
 }
 
@@ -5837,6 +5902,25 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 		if (!IsThirdPerson())
 			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
+		break;
+	case ESound_ParachuteStart:
+		soundName = "sounds/vehicles:us_parachute:start";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		break;
+	case ESound_ParachuteRun:
+		soundName = "sounds/vehicles:us_parachute:run";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = true;
+		break;
+	case ESound_ParachuteStop:
+		soundName = "sounds/vehicles:us_parachute:stop";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		break;
 	default:
 		break;
 	}
@@ -5868,8 +5952,9 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 			pSound->SetSemantic(soundSemantic);
 
 			if (repeating)
+			{
 				m_sounds[sound] = pSound->GetId();
-
+			}
 
 			IEntity* pEntity = GetEntity();
 			assert(pEntity);

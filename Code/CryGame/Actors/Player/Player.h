@@ -317,6 +317,9 @@ public:
 		ESound_ThrustersDashRecharged,
 		ESound_ThrustersDashRecharged02,
 		ESound_TacBulletFeedBack,
+		ESound_ParachuteStart,
+		ESound_ParachuteRun,
+		ESound_ParachuteStop,
 		ESound_Player_Last
 	};
 
@@ -620,7 +623,9 @@ public:
 	virtual bool CanSleep() { return true; }
 
 	void UpdateParachute(float frameTime);
+	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
+	void DeployParachute(bool show, bool sound);
 	void UpdateFreefallAnimationInputs(bool force = false);
 
 	void ProcessCharacterOffset(float frameTime);
@@ -906,6 +911,11 @@ public:
 	float m_ColDistance = 2.0f;
 	float m_targetOpacity = 1.0f;
 	float m_smoothedOpacity = 1.0f;
+
+	bool IsParachuteMorphActive()
+	{
+		return m_fParachuteMorph > 0.0f;
+	}
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }

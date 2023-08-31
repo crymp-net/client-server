@@ -540,7 +540,8 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	const EStance stance = pPlayer->GetStance();
 	const bool freeFall = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 1 : false;
 	//const bool parachute = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 2 : false;
-	const bool inFreeFalllOrPara = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall > 0 : false;
+	const bool inFreeFalllOrPara = pPlayer->GetPlayerStats() ? (pPlayer->GetPlayerStats()->inFreefall > 0 || pPlayer->IsParachuteMorphActive()) : false;
+
 	const float distanceOffsetPara = -12.f;
 
 	if (inFreeFalllOrPara)
