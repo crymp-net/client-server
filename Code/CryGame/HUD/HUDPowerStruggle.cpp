@@ -1155,7 +1155,8 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		}
 	}
 
-	if (factory != BUY_PAGE_WEAPONS && m_eCurBuyMenuPage != BUY_PAGE_EQUIPMENT && m_eCurBuyMenuPage != BUY_PAGE_AMMO)
+	const bool otherFac = factory != BUY_PAGE_WEAPONS && m_eCurBuyMenuPage != BUY_PAGE_EQUIPMENT && m_eCurBuyMenuPage != BUY_PAGE_AMMO;
+	if (otherFac)
 	{
 		m_eCurBuyMenuPage = factory;
 	}
@@ -1172,6 +1173,10 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		{
 			m_restoreBuyMenuPage = BUY_PAGE_NONE;
 		}
+	}
+	else if (!otherFac)
+	{
+		m_eCurBuyMenuPage = factory;
 	}
 
 	if (sendToFlash)
@@ -1889,7 +1894,7 @@ void CHUDPowerStruggle::SetLastBuyMenuPage(BuyMenuPage page, bool updateTime)
 
 		m_restoreBuyMenuPage = page;
 	}
-	else if (page == BUY_PAGE_NONE)
+	else if (page == BUY_PAGE_NONE || page == BUY_PAGE_LOADOUT)
 	{
 		m_restoreBuyMenuPage = BUY_PAGE_NONE;
 	}
