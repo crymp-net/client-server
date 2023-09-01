@@ -404,6 +404,8 @@ void CVehicleMovementBase::Update(const float deltaTime)
 
 	if (gEnv->bClient)
 	{
+		UpdateDamageSound();
+
 		if (!m_pVehicle->IsPlayerDriving(true))
 		{
 			if (m_boost != m_wasBoosting)
@@ -517,35 +519,12 @@ void CVehicleMovementBase::Update(const float deltaTime)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateRunSound(const float deltaTime)
 {
-	float radius = 200.0f;
-	ISound* pEngineSound = GetSound(eSID_Run);
-
-	if (pEngineSound)
-		radius = MAX(radius, pEngineSound->GetMaxDistance());
-
-	// not needed... ambient sound is much quieter than the engine sound; code is here for reference
-	//	ISound* pAmbientSound = GetSound(eSID_Ambience);
-	//	if (pAmbientSound)
-	//		radius = std::max(radius, pAmbientSound->GetMaxDistance());
-
-	if (IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
-	{
-		// 1.1f is a small safety factor to get sound params updated before they're heard
-		if (pActor->GetEntity()->GetWorldPos().GetDistance(m_pVehicle->GetEntity()->GetWorldPos()) > radius * 1.1f)
-			return;
-	}
+	if (!IsSoundWithinReach(eSID_Run))
+		return;
 
 	float soundSpeedRatio = ENGINESOUND_IDLE_RATIO + (1.f - ENGINESOUND_IDLE_RATIO) * m_speedRatio;
-
 	SetSoundParam(eSID_Run, "speed", soundSpeedRatio);
 	SetSoundParam(eSID_Ambience, "speed", soundSpeedRatio);
-
-	float damage = GetSoundDamage();
-	if (damage > 0.1f)
-	{
-		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
-			SetSoundParam(pSound, "damage", damage);
-	}
 
 	//SetSoundParam(eSID_Run, "boost", Boosting() ? 1.f : 0.f);
 
@@ -565,6 +544,80 @@ void CVehicleMovementBase::UpdateRunSound(const float deltaTime)
 	}
 }
 
+//------------------------------------------------------------------------
+bool CVehicleMovementBase::IsSoundWithinReach(EVehicleMovementSound soundId)
+{
+	float radius = 200.0f;
+	ISound* pSound = GetSound(soundId);
+
+	if (pSound)
+		radius = MAX(radius, pSound->GetMaxDistance());
+
+	// not needed... ambient sound is much quieter than the engine sound; code is here for reference
+	//	ISound* pAmbientSound = GetSound(eSID_Ambience);
+	//	if (pAmbientSound)
+	//		radius = std::max(radius, pAmbientSound->GetMaxDistance());
+
+	if (IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
+	{
+		// 1.1f is a small safety factor to get sound params updated before they're heard
+		if (pActor->GetEntity()->GetWorldPos().GetDistance(m_pVehicle->GetEntity()->GetWorldPos()) > radius * 1.1f)
+			return false;
+	}
+
+	return true;
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::UpdateDamageSound()
+{
+	if (!CanUpdateDamageSound() || !IsSoundWithinReach(eSID_Damage))
+		return;
+
+	//IVehicleComponent* pEngine = m_pVehicle->GetComponent("Engine");
+	//if (!pEngine)
+	//	pEngine = m_pVehicle->GetComponent("engine");
+
+	const float damage = GetSoundDamage();
+
+	if (damage > 0.1f)
+	{
+		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
+		{
+			//CryMP: These seem to change, index can be 17, 5 other times etc.. so we need to set all...
+			SetSoundParam(pSound, "damage", damage);
+			SetSoundParam(pSound, 1, damage);
+			SetSoundParam(pSound, 2, damage);
+			SetSoundParam(pSound, 3, damage);
+			SetSoundParam(pSound, 4, damage);
+			SetSoundParam(pSound, 5, damage);
+			SetSoundParam(pSound, 6, damage);
+			SetSoundParam(pSound, 7, damage);
+			SetSoundParam(pSound, 8, damage);
+			SetSoundParam(pSound, 9, damage);
+			SetSoundParam(pSound, 10,damage);
+			SetSoundParam(pSound, 11, damage);
+			SetSoundParam(pSound, 12, damage);
+			SetSoundParam(pSound, 13, damage);
+			SetSoundParam(pSound, 14, damage);
+			SetSoundParam(pSound, 15, damage);
+			SetSoundParam(pSound, 16, damage);
+			SetSoundParam(pSound, 17, damage);
+			SetSoundParam(pSound, 18, damage);
+		}
+	}
+	else
+	{
+		StopSound(eSID_Damage);
+	}
+}
+
+
+//------------------------------------------------------------------------
+bool CVehicleMovementBase::CanUpdateDamageSound()
+{
+	return m_isEnginePowered;
+}
 
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateGameTokens(const float deltaTime)
@@ -576,16 +629,25 @@ void CVehicleMovementBase::UpdateGameTokens(const float deltaTime)
 }
 
 //------------------------------------------------------------------------
-void CVehicleMovementBase::UpdateDamage(const float deltaTime)
+bool CVehicleMovementBase::IsSubmerged()
 {
 	const SVehicleStatus& status = m_pVehicle->GetStatus();
 	const SVehicleDamageParams& damageParams = m_pVehicle->GetDamageParams();
 
-	if (status.submergedRatio > damageParams.submergedRatioMax)
+	return status.submergedRatio > damageParams.submergedRatioMax;
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::UpdateDamage(const float deltaTime)
+{
+	if (IsSubmerged())
 	{
 		if (m_damage < 1.f)
 		{
+			const SVehicleDamageParams& damageParams = m_pVehicle->GetDamageParams();
 			SetDamage(m_damage + deltaTime * damageParams.submergedDamageMult, true);
+
+			OnEngineDisabled();
 
 			if (m_pVehicle)
 			{
@@ -613,22 +675,6 @@ void CVehicleMovementBase::SetDamage(float damage, bool fatal)
 		return;
 
 	m_damage = min(1.f, max(m_damage, damage));
-
-	if (m_damage == 1.f && fatal)
-	{
-		if (m_isEnginePowered || m_isEngineStarting)
-			OnEngineCompletelyStopped();
-
-		m_isEngineDisabled = true;
-		m_isEnginePowered = false;
-		m_isEngineStarting = false;
-		m_isEngineGoingOff = false;
-
-		m_movementAction.Clear();
-
-		StopExhaust();
-		StopSounds();
-	}
 }
 
 //------------------------------------------------------------------------
@@ -872,6 +918,10 @@ void CVehicleMovementBase::Boost(bool enable)
 
 		if ((m_statusDyn.submergedFraction > 0.75f) && (GetMovementType() != IVehicleMovement::eVMT_Amphibious))
 			return; // can't boost if underwater and not amphibious
+
+		//CryMP no boost 
+		if (m_isEngineDisabled)
+			return;
 	}
 
 	if (m_playerBoostTweaksId != -1)
@@ -1081,6 +1131,31 @@ void CVehicleMovementBase::OnEvent(EVehicleMovementEvent event, const SVehicleMo
 		if (!params.bValue && !IsPowered())
 			RemoveSurfaceEffects();
 	}
+	else if (event == eVME_VehicleDestroyed)
+	{
+		OnEngineDisabled();
+	}
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::OnEngineDisabled()
+{
+	if (m_isEnginePowered || m_isEngineStarting)
+	{
+		OnEngineCompletelyStopped();
+	}
+
+	m_isEngineDisabled = true;
+	m_isEnginePowered = false;
+	m_isEngineStarting = false;
+	m_isEngineGoingOff = false;
+
+	m_movementAction.Clear();
+
+	StopExhaust();
+	StopSounds();
+
+	RemoveSurfaceEffects();
 }
 
 //------------------------------------------------------------------------
@@ -1123,7 +1198,7 @@ void CVehicleMovementBase::StopSounds()
 //------------------------------------------------------------------------
 void CVehicleMovementBase::StopSound(EVehicleMovementSound eSID)
 {
-	assert(eSID >= 0 && eSID < eSID_Max);
+	//assert(eSID >= 0 && eSID < eSID_Max);
 
 	if (m_soundStats.sounds[eSID] != INVALID_SOUNDID)
 	{
@@ -1131,7 +1206,6 @@ void CVehicleMovementBase::StopSound(EVehicleMovementSound eSID)
 		m_soundStats.sounds[eSID] = INVALID_SOUNDID;
 	}
 }
-
 
 //------------------------------------------------------------------------
 ISound* CVehicleMovementBase::PlaySound(EVehicleMovementSound eSID, float pulse, const Vec3& offset, int soundFlags)
@@ -1443,6 +1517,18 @@ void CVehicleMovementBase::UpdateExhaust(const float deltaTime)
 
 		sp.fSizeScale = sizeScale;
 		sp.fSpeedScale = speedScale;
+
+		if (g_pGameCVars->cl_bob > 1.)
+		{
+			IVehicleComponent* pEngine = m_pVehicle->GetComponent("Engine");
+			if (!pEngine)
+				pEngine = m_pVehicle->GetComponent("engine");
+
+			if (pEngine && pEngine->GetDamageRatio() > 0.0f)
+			{
+				sp.fSizeScale += pEngine->GetDamageRatio();
+			}
+		}
 
 		if (exParams->disableWithNegativePower && GetEnginePedal() < 0.0f)
 		{
@@ -1964,7 +2050,16 @@ void CVehicleMovementBase::SetSoundParam(EVehicleMovementSound eSID, const char*
 {
 	if (ISound* pSound = GetSound(eSID))
 	{
-		pSound->SetParam(param, value, false);
+		pSound->SetParam(param, value, true);
+	}
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::SetSoundParam(EVehicleMovementSound eSID, int id, float value)
+{
+	if (ISound* pSound = GetSound(eSID))
+	{
+		pSound->SetParam(id, value, true);
 	}
 }
 
@@ -1972,6 +2067,12 @@ void CVehicleMovementBase::SetSoundParam(EVehicleMovementSound eSID, const char*
 void CVehicleMovementBase::SetSoundParam(ISound* pSound, const char* param, float value)
 {
 	pSound->SetParam(param, value, false);
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::SetSoundParam(ISound* pSound, int id, float value)
+{
+	pSound->SetParam(id, value, false);
 }
 
 //------------------------------------------------------------------------

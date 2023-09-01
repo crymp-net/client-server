@@ -293,8 +293,10 @@ bool CVehicleMovementHelicopter::StartEngine(EntityId driverId)
 
   m_powerPID.Reset();
 
-	if (m_pRotorAnim)
-		m_pRotorAnim->StartAnimation();
+  if (m_pRotorAnim)
+  {
+	  m_pRotorAnim->StartAnimation();
+	}
 
 	m_playerControls.Reset();
 
@@ -316,15 +318,15 @@ void CVehicleMovementHelicopter::StopEngine()
 void CVehicleMovementHelicopter::OnEvent(EVehicleMovementEvent event, const SVehicleMovementEventParams& params)
 {
 	CVehicleMovementBase::OnEvent(event, params);
-
+	
 	if (event == eVME_DamageSteering)
 	{
 		float newSteeringDamage = (((float(cry_rand()) / float(RAND_MAX)) * 2.5f ) + 0.5f);
 		m_steeringDamage = max(m_steeringDamage, newSteeringDamage);
 	}
-  else if (event == eVME_Repair)
-  {
-    m_steeringDamage = min(m_steeringDamage, params.fValue);
+	else if (event == eVME_Repair)
+	{
+		m_steeringDamage = min(m_steeringDamage, params.fValue);
 
 		// bit workaround - we never get a repair message for the last bit (as the damage level hasn't changed).
 		//	However, the helicopter only ever sends 1.0 or 0.0 to here...
@@ -332,8 +334,8 @@ void CVehicleMovementHelicopter::OnEvent(EVehicleMovementEvent event, const SVeh
 		{
 			m_damageActual = 0.0f;
 			m_damage = 0.0f;
-		}
-  }
+		}	
+	}
 	else if (event == eVME_GroundCollision)
 	{
 		const float stopOver = 1.0f;
@@ -363,6 +365,10 @@ void CVehicleMovementHelicopter::OnEvent(EVehicleMovementEvent event, const SVeh
 	else if (event == eVME_Turbulence)
 	{
  		m_turbulence = max(m_turbulence, params.fValue);
+	}
+	else if (event == eVME_VehicleDestroyed)
+	{
+		m_rotorSlowDownSpeed = 0.0f;
 	}
 }
 
@@ -928,6 +934,37 @@ void CVehicleMovementHelicopter::UpdateDamages(float deltaTime)
 }
 
 //------------------------------------------------------------------------
+bool CVehicleMovementHelicopter::IsDestroyed()
+{
+	return GetSoundDamage() >= 1.0f;
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementHelicopter::SetDamage(float damage, bool fatal)
+{
+	if (m_pRotorAnim)
+	{
+		if (fatal && !IsDestroyed() && m_rotorSlowDownSpeed == 0.0f && !IsSubmerged())
+		{
+			//CryMP: heli falls of the sky
+			m_rotorSlowDownSpeed = 10.0f;
+			m_isEngineGoingOff = true; //plays engine off sound
+		}
+	}
+
+	CVehicleMovementBase::SetDamage(damage, fatal);
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementHelicopter::StopSound(EVehicleMovementSound eSID)
+{
+	if (eSID == eSID_Damage && (m_pRotorAnim && m_rotorSlowDownSpeed > 0.0f))
+		return;
+
+	CVehicleMovementBase::StopSound(eSID);
+}
+
+//------------------------------------------------------------------------
 void CVehicleMovementHelicopter::UpdateEngine(float deltaTime)
 {
 	// will update the engine power up to the maximum according to the ignition time
@@ -1021,9 +1058,7 @@ void CVehicleMovementHelicopter::Update(const float deltaTime)
 		}
 	}
 
-	// update animation
-	if (m_pRotorAnim)
-		m_pRotorAnim->SetSpeed(m_enginePower / m_enginePowerMax);
+	UpdateRotorAnimation(deltaTime);
 
 	IActor* pActor = m_pActorSystem->GetActor(m_actorId);
 
@@ -1058,10 +1093,52 @@ void CVehicleMovementHelicopter::Update(const float deltaTime)
 	}
 }
 
+
+//------------------------------------------------------------------------
+void CVehicleMovementHelicopter::UpdateRotorAnimation(float frameTime)
+{
+	// update animation
+	if (!m_pRotorAnim) //Only helis
+		return;
+
+	if (m_pVehicle->IsDestroyed())
+		return;
+
+	if (m_damage == 1.f)
+	{
+		m_rotorSlowDownSpeed -= frameTime;
+
+		m_pRotorAnim->SetSpeed(m_rotorSlowDownSpeed);
+		if (m_rotorSlowDownSpeed < 0.0f)
+		{
+			m_pVehicle->GetGameObject()->DisableUpdateSlot(m_pVehicle, IVehicle::eVUS_EnginePowered);
+
+			m_rotorSlowDownSpeed = 0.0f;
+			m_isEngineDisabled = true;
+
+			StopSound(eSID_Damage);
+			OnEngineCompletelyStopped();
+		}
+	}
+	else
+	{
+		m_pRotorAnim->SetSpeed((m_enginePower / m_enginePowerMax));
+	}
+}
+
+//------------------------------------------------------------------------
+bool CVehicleMovementHelicopter::CanUpdateDamageSound()
+{
+	return m_isEnginePowered || m_rotorSlowDownSpeed > 0.0f;
+}
+
 //------------------------------------------------------------------------
 void CVehicleMovementHelicopter::OnEngineCompletelyStopped()
 {
-  CVehicleMovementBase::OnEngineCompletelyStopped();
+	if (m_rotorSlowDownSpeed > 0.0f)
+		return;
+	
+	CVehicleMovementBase::OnEngineCompletelyStopped();
 
 	RemoveSurfaceEffects();
 
