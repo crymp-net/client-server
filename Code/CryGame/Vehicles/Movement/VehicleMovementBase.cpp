@@ -1518,18 +1518,6 @@ void CVehicleMovementBase::UpdateExhaust(const float deltaTime)
 		sp.fSizeScale = sizeScale;
 		sp.fSpeedScale = speedScale;
 
-		if (g_pGameCVars->cl_bob > 1.)
-		{
-			IVehicleComponent* pEngine = m_pVehicle->GetComponent("Engine");
-			if (!pEngine)
-				pEngine = m_pVehicle->GetComponent("engine");
-
-			if (pEngine && pEngine->GetDamageRatio() > 0.0f)
-			{
-				sp.fSizeScale += pEngine->GetDamageRatio();
-			}
-		}
-
 		if (exParams->disableWithNegativePower && GetEnginePedal() < 0.0f)
 		{
 			sp.fSizeScale *= 0.35f;
