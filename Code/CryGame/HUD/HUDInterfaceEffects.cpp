@@ -721,11 +721,24 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		}
 		else
 		{
-			if (!gEnv->bMultiplayer)
+			float r = 0.8f;
+			float g = 0.8f;
+			float b = 1.0f;
+			//VTOL lockons
+			//CryMP lets add different colors according to team as well, like we did for binoculars ages ago :)
+			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_entityTargetAutoaimId))
 			{
-				//Not sure why it's added here as well, let's keep it in SP for now
-				m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, 0.8f, 0.8f, 1.0f, 0.5f, -1.0f);
+				r = 1.0f;
+				g = 0.1f;
+				b = 0.0f;
 			}
+			else if (m_pGameRules->IsSameTeam(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()))
+			{
+				r = 0.137255f;
+				g = 0.137255f;
+				b = 0.556863f;
+			}
+			m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, r, g, b, 0.5f, -1.0f);
 		}
 	}
 
