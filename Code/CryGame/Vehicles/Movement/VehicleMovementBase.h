@@ -271,7 +271,8 @@ public:
 
 	virtual void OnAction(const TVehicleActionId actionId, int activationMode, float value);
 	virtual void OnEvent(EVehicleMovementEvent event, const SVehicleMovementEventParams& params);
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
+	void OnEngineDisabled();
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
 
 	virtual void ProcessMovement(const float deltaTime);
 	virtual void ProcessActions(const float deltaTime) {}
@@ -315,12 +316,14 @@ protected:
   // sound methods
   ISound* PlaySound(EVehicleMovementSound eSID, float pulse=0.f, const Vec3& offset=Vec3Constants<float>::fVec3_Zero, int soundFlags=0);
   ISound* GetOrPlaySound(EVehicleMovementSound eSID, float pulse=0.f, const Vec3& offset=Vec3Constants<float>::fVec3_Zero, int soundFlags=0);
-  void StopSound(EVehicleMovementSound eSID);
+  virtual void StopSound(EVehicleMovementSound eSID);
   void StopSounds();
   ISound* GetSound(EVehicleMovementSound eSID);
   const string& GetSoundName(EVehicleMovementSound eSID);
   void SetSoundParam(EVehicleMovementSound eSID, const char* param, float value);
+  void SetSoundParam(EVehicleMovementSound eSID, int id, float value);
   void SetSoundParam(ISound* pSound, const char* param, float value);
+  void SetSoundParam(ISound* pSound, int id, float value);
   tSoundID GetSoundId(EVehicleMovementSound eSID);
   void DebugDraw(const float deltaTime);
 
@@ -329,11 +332,16 @@ protected:
   void StopAnimation(EVehicleMovementAnimation eAnim);
   void SetAnimationSpeed(EVehicleMovementAnimation eAnim, float speed);
 
-  void SetDamage(float damage, bool fatal);
+  virtual void SetDamage(float damage, bool fatal);
   virtual void UpdateDamage(const float deltaTime);
 
+  virtual bool CanUpdateDamageSound();
+
   virtual void UpdateGameTokens(const float deltaTime);
+  bool IsSubmerged();
   virtual void UpdateRunSound(const float deltaTime);
+  bool IsSoundWithinReach(EVehicleMovementSound soundId);
+  void UpdateDamageSound();
   virtual void UpdateSpeedRatio(const float deltaTime);
   virtual float GetEnginePedal(){ return m_movementAction.power; }
 
@@ -389,6 +397,7 @@ protected:
 
   bool m_bMovementProcessingEnabled;
 	bool m_isEnginePowered;
+	bool m_isReducedPower = false;
 	float m_damage;
 
   string m_soundNames[eSID_Max];
