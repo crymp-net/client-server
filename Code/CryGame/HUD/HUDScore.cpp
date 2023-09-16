@@ -27,7 +27,7 @@ History:
 #include "HUDCommon.h"
 #include "CryGame/Actors/Actor.h"
 
-CHUDScore::ScoreEntry::ScoreEntry(EntityId id, int kills, int deaths, int ping) : m_entityId(id), m_team(-1)
+CHUDScore::ScoreEntry::ScoreEntry(EntityId id, int kills, int deaths, int ping)
 {
 	m_kills = kills;
 	m_deaths = deaths;
@@ -364,8 +364,28 @@ void CHUDScore::Render()
 		if (player.m_spectating)
 			team = 3;
 
-		SFlashVarValue args[12] = { name.c_str(), team, (player.m_entityId == pClientActor->GetEntityId()) ? true : false, pp, player.m_kills, player.m_deaths, player.m_ping, player.m_entityId, strRank.c_str(), player.m_alive ? 0 : 1,selected, muted };
-		m_pFlashBoard->Invoke("addEntry", args, 12);
+		if (g_pGame->GetHUD()->GetCurrentGameRules() == EHUD_TEAMINSTANTACTION)
+		{
+			int playerScore = player.m_score;
+			SFlashVarValue args[12] = { name.c_str(),
+																	team,
+																	(player.m_entityId == pClientActor->GetEntityId()) ? true : false,
+																	playerScore,
+																	player.m_kills,
+																	player.m_teamKills,
+																	player.m_deaths,
+																	player.m_ping,
+																	player.m_entityId,
+																	player.m_alive ? 0 : 1,
+																	selected,
+																	muted };
+			m_pFlashBoard->Invoke("addEntry", args, 12);
+		}
+		else
+		{
+			SFlashVarValue args[12] = { name.c_str(), team, (player.m_entityId == pClientActor->GetEntityId()) ? true : false, pp, player.m_kills, player.m_deaths, player.m_ping, player.m_entityId, strRank.c_str(), player.m_alive ? 0 : 1,selected, muted };
+			m_pFlashBoard->Invoke("addEntry", args, 12);
+		}
 	}
 
 	if (drawTeamScores)

@@ -19,6 +19,9 @@ extern "C"
 #include "ScriptTable.h"
 #include "ScriptUtil.h"
 
+#include "Launcher/Resources.h"
+#include "Library/WinAPI.h"
+
 extern "C"
 {
 	int bitlib_init(lua_State *L);
@@ -459,8 +462,14 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 
 		CCryFile file;
 
+		if (scriptName == "scripts/gamerules/teaminstantaction.lua")
+		{
+			const std::string_view content = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_TIA_GAMERULES);
+
+			success = this->ExecuteBuffer(content.data(), content.length(), scriptName.c_str());
+		}
 		// try to load and execute the script file
-		if (file.Open(fileName, "rb"))
+		else if (file.Open(fileName, "rb"))
 		{
 			std::vector<char> content;
 

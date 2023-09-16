@@ -145,7 +145,7 @@ public:
 
 	struct SGameRulesListener
 	{
-		virtual void GameOver(int localWinner) = 0;
+		virtual void GameOver(int localWinner, int winnerTeam, EntityId id) = 0;
 		virtual void EnteredGame() = 0;
 		virtual void EndGameNear(EntityId id) = 0;
 	};
@@ -179,6 +179,8 @@ public:
 	// IViewSystemListener
 	virtual bool OnBeginCutScene(IAnimSequence* pSeq, bool bResetFX);
 	virtual bool OnEndCutScene(IAnimSequence* pSeq);
+	bool IsSpawnUsedTouch(EntityId spawnId);
+	bool IsSpawnUsed(EntityId spawnId) const;
 	virtual void OnPlayCutSceneSound(IAnimSequence* pSeq, ISound* pSound) {};
 	virtual bool OnCameraChange(const SCameraParams& cameraParams){ return true; };
 	// ~IViewSystemListener
@@ -205,6 +207,7 @@ public:
 	virtual void ForbiddenAreaWarning(bool active, int timer, EntityId targetId);
 
 	virtual void ResetGameTime();
+	void AddOvertime(float overTime);
 	virtual float GetRemainingGameTime() const;
 	virtual bool IsTimeLimited() const;
 
@@ -277,9 +280,9 @@ public:
 	virtual int GetPlayerCount(bool inGame=false) const;
 	virtual int GetSpectatorCount(bool inGame=false) const;
 	virtual EntityId GetPlayer(int idx);
-	virtual void GetPlayers(TPlayers &players);
+	void GetPlayers(TPlayers& players) const;
 	virtual bool IsPlayerInGame(EntityId playerId) const;
-	virtual bool IsPlayerActivelyPlaying(EntityId playerId) const;	// [playing / dead / waiting to respawn (inc spectating while dead): true] [not yet joined game / selected Spectate: false]
+	virtual bool IsPlayerActivelyPlaying(EntityId playerId, bool mustBeAlive = false) const;	// [playing / dead / waiting to respawn (inc spectating while dead): true] [not yet joined game / selected Spectate: false]
 	virtual bool IsChannelInGame(int channelId) const;
   virtual void StartVoting(CActor *pActor, EVotingState t, EntityId id, const char* param);
   virtual void Vote(CActor *pActor, bool yes);
@@ -292,8 +295,10 @@ public:
 	virtual const char *GetTeamName(int teamId) const;
 	virtual int GetTeamId(const char *name) const;
 	virtual int GetTeamCount() const;
-	virtual int GetTeamPlayerCount(int teamId, bool inGame=false) const;
+	int GetTeamPlayerCount(int teamId, bool inGame = false, bool isActive = false, EntityId skip = 0) const;
+	int GetTotalAlivePlayerCount(const EntityId skipPlayerId) const;
 	virtual int GetTeamChannelCount(int teamId, bool inGame=false) const;
+	EntityId GetTeamActivePlayer(int teamId, int idx) const;
 	virtual EntityId GetTeamPlayer(int teamId, int idx);
 
 	virtual void GetTeamPlayers(int teamId, TPlayers &players);
@@ -342,10 +347,16 @@ public:
 	virtual int GetSpawnLocationCount() const;
 	virtual EntityId GetSpawnLocation(int idx) const;
 	virtual void GetSpawnLocations(TSpawnLocations &locations) const;
-	virtual bool IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, bool ignoreTeam, float zoffset) const;
+	bool IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, float zoffset) const;
 	virtual bool IsSpawnLocationFarEnough(EntityId spawnLocationId, float minDistance, const Vec3 &testPosition) const;
 	virtual bool TestSpawnLocationWithEnvironment(EntityId spawnLocationId, EntityId playerId, float offset=0.0f, float height=0.0f) const;
-	virtual EntityId GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool includeNeutral, EntityId groupId=0, float minDistToDeath=0.0f, const Vec3 &deathPos=Vec3(0,0,0), float *pZOffset=0) const;
+	EntityId GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool includeNeutral, EntityId groupId, float minDistToDeath, const Vec3& deathPos, float* pZOffset, EntityId skipId) const;
+	float GetMinEnemyDist() const;
+	EntityId GetSpawnLocationTeamFirst() const;
+	EntityId GetSpawnLocationTeam(EntityId playerId, const Vec3& deathPos) const;
+	int GetEnemyTeamId(int myTeamId) const;
+	float GetClosestPlayerDistSqr(const EntityId spawnLocationId, const EntityId skipId) const;
+	float GetClosestTeamMateDistSqr(int teamId, const Vec3& pos, EntityId skipId = 0) const;
 	virtual EntityId GetFirstSpawnLocation(int teamId=0, EntityId groupId=0) const;
 
 	//------------------------------------------------------------------------
@@ -392,8 +403,8 @@ public:
 	virtual void NextLevel();
 	virtual void ResetEntities();
 	virtual void OnEndGame();
+	void GameOver(int localWinner, int winnerTeam, EntityId id);
 	virtual void EnteredGame();
-	virtual void GameOver(int localWinner);
 	virtual void EndGameNear(EntityId id);
 
 	virtual void ValidateShot(EntityId playerId, EntityId weaponId, uint16 seq, uint8 seqr);
@@ -1173,6 +1184,10 @@ protected:
 	bool                m_explosionScreenFX;
 
 	CShotValidator			*m_pShotValidator;
+
+	// need this to mark all the used spawn-points to fix issue on restarting level
+	// when players are placed at the same location, some may end up underground
+	std::map< EntityId, float > m_SpawnPointUseTime;
 };
 
 #endif //__GAMERULES_H__

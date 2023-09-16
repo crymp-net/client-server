@@ -54,6 +54,7 @@ class CHUDTextArea;
 class CHUDTweakMenu;
 class CHUDVehicleInterface;
 class CHUDPowerStruggle;
+class CHUDTeamInstantAction;
 class CHUDScopes;
 class CHUDCrosshair;
 class CHUDSilhouettes;
@@ -109,7 +110,7 @@ public:
 	void ResetPostSerElements();
 	void PlayerIdSet(EntityId playerId);
 	void PostSerialize();
-	void GameRulesSet(const char* name);
+	void GameRulesSet();
 	//handle game events
 	void HandleEvent(const SGameObjectEvent &rGameObjectEvent);
 	void WeaponAccessoriesInterface(bool visible, bool force = false);
@@ -339,6 +340,7 @@ public:
 	ILINE CHUDRadar* GetRadar() {return m_pHUDRadar;}
 	ILINE CHUDVehicleInterface* GetVehicleInterface() { return m_pHUDVehicleInterface; }
 	ILINE CHUDPowerStruggle* GetPowerStruggleHUD() { return m_pHUDPowerStruggle; }
+	ILINE CHUDTeamInstantAction* GetTeamInstantActionHUD() { return m_pHUDTeamInstantAction; }
 	ILINE CHUDTextChat* GetMPChat() {return m_pHUDTextChat;}
 	ILINE CHUDScopes* GetScopes() { return m_pHUDScopes; }
 	ILINE CHUDCrosshair* GetCrosshair() { return m_pHUDCrosshair; }
@@ -399,6 +401,8 @@ public:
 	void BreakHUD(int state = 1);  //1 malfunction, 2 dead
 	void RebootHUD();
 
+	void SetTeamDisplay(std::string team);
+
 	//bool ShowPDA(bool bShow, int iTab=-1);
 	ILINE bool ShowBuyMenu(bool show) { return ShowPDA(show, true); }
 	bool ShowPDA(bool show, bool buyMenu = false);
@@ -408,6 +412,7 @@ public:
 	bool IsPDAActive() const { return m_animPDA.GetVisible(); };
 	bool IsBuyMenuActive() const { return (m_pModalHUD == &m_animBuyMenu); };
 	bool IsScoreboardActive() const;
+	void GameOver(int localWinner, int winnerTeam, EntityId id);
 	ILINE bool HasTACWeapon() { return m_hasTACWeapon; };
 	void SetTACWeapon(bool hasTACWeapon);
 	void SetStealthExposure(float exposure);
@@ -538,18 +543,19 @@ private:
 	bool ShowWeaponAccessories(bool enable);
 
 	//member hud objects (sub huds)
-	CHUDRadar							*m_pHUDRadar;
-	CHUDScore							*m_pHUDScore;
-	CHUDTextChat					*m_pHUDTextChat;
-	CHUDObituary					*m_pHUDObituary;
-	CHUDTextArea					*m_pHUDTextArea;
-	CHUDTweakMenu					*m_pHUDTweakMenu;
-	CHUDVehicleInterface	*m_pHUDVehicleInterface;
-	CHUDPowerStruggle			*m_pHUDPowerStruggle;
-	CHUDScopes						*m_pHUDScopes;
-	CHUDCrosshair					*m_pHUDCrosshair;
-	CHUDTagNames					*m_pHUDTagNames;
-	CHUDSilhouettes 			*m_pHUDSilhouettes;
+	CHUDRadar							*m_pHUDRadar = nullptr;
+	CHUDScore							*m_pHUDScore = nullptr;
+	CHUDTextChat					*m_pHUDTextChat = nullptr;
+	CHUDObituary					*m_pHUDObituary = nullptr;
+	CHUDTextArea					*m_pHUDTextArea = nullptr;
+	CHUDTweakMenu					*m_pHUDTweakMenu = nullptr;
+	CHUDVehicleInterface	*m_pHUDVehicleInterface = nullptr;
+	CHUDPowerStruggle			*m_pHUDPowerStruggle = nullptr;
+	CHUDTeamInstantAction	* m_pHUDTeamInstantAction = nullptr;
+	CHUDScopes						*m_pHUDScopes = nullptr;
+	CHUDCrosshair					*m_pHUDCrosshair = nullptr;
+	CHUDTagNames					*m_pHUDTagNames = nullptr;
+	CHUDSilhouettes 			*m_pHUDSilhouettes = nullptr;
 
 	bool					m_forceScores;
 

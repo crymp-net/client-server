@@ -607,6 +607,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_rpgMod", &mp_rpgMod, 0, OPTIONAL_SYNC);
+	pConsole->Register("mp_scoreLimit", &mp_scoreLimit, 300, OPTIONAL_SYNC, "Score before a round restarts. Default is 300, 0 means no score-limit.");
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("mp_newSpectator", &mp_newSpectator, 1, VF_NOT_NET_SYNCED, "");

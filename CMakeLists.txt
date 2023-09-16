@@ -338,6 +338,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/HUD/HUDTextArea.h
 	Code/CryGame/HUD/HUDTextChat.cpp
 	Code/CryGame/HUD/HUDTextChat.h
+	Code/CryGame/HUD/HUDTeamInstantAction.cpp
+	Code/CryGame/HUD/HUDTeamInstantAction.h
 	Code/CryGame/HUD/HUDTextEvents.cpp
 	Code/CryGame/HUD/HUDVehicleInterface.cpp
 	Code/CryGame/HUD/HUDVehicleInterface.h

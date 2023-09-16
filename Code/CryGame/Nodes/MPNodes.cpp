@@ -208,7 +208,7 @@ public:
 	}
 
 protected:
-		virtual void GameOver(int localWinner)
+		virtual void GameOver(int localWinner, int winnerTeam, EntityId id)
 		{
 			switch(localWinner)
 			{

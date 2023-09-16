@@ -109,6 +109,7 @@ void CScriptBind_GameRules::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(GetSpawnLocationByIdx, "idx");
 	SCRIPT_REG_TEMPLFUNC(GetSpawnLocations, "");
 	SCRIPT_REG_TEMPLFUNC(GetSpawnLocation, "playerId, teamId, ignoreTeam, includeNeutral");
+	SCRIPT_REG_TEMPLFUNC(GetSpawnLocationTeam, "playerId");
 	SCRIPT_REG_TEMPLFUNC(GetFirstSpawnLocation, "teamId");
 
 	SCRIPT_REG_TEMPLFUNC(AddSpawnGroup, "groupId");
@@ -171,6 +172,7 @@ void CScriptBind_GameRules::RegisterMethods()
 
 	SCRIPT_REG_TEMPLFUNC(ResetGameTime, "");
 	SCRIPT_REG_TEMPLFUNC(GetRemainingGameTime, "");
+	SCRIPT_REG_TEMPLFUNC(AddOvertime, "time");
 	SCRIPT_REG_TEMPLFUNC(IsTimeLimited, "");
 
 	SCRIPT_REG_TEMPLFUNC(ResetRoundTime, "");
@@ -226,6 +228,8 @@ void CScriptBind_GameRules::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(GetFragLead, "");
 	SCRIPT_REG_TEMPLFUNC(GetFriendlyFireRatio, "");
 	SCRIPT_REG_TEMPLFUNC(GetReviveTime, "");
+	SCRIPT_REG_TEMPLFUNC(GetScoreLimit, "");
+	SCRIPT_REG_TEMPLFUNC(GetScoreLead, "");
 	SCRIPT_REG_TEMPLFUNC(GetMinPlayerLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetMinTeamLimit, "");
 	SCRIPT_REG_TEMPLFUNC(GetTeamLock, "");
@@ -247,7 +251,7 @@ void CScriptBind_GameRules::RegisterMethods()
 
 	SCRIPT_REG_TEMPLFUNC(TutorialEvent, "type");
 
-	SCRIPT_REG_TEMPLFUNC(GameOver, "localWinner");
+	SCRIPT_REG_TEMPLFUNC(GameOver, "localWinner, winnerTeam, id");
 	SCRIPT_REG_TEMPLFUNC(EnteredGame, "");
 	SCRIPT_REG_TEMPLFUNC(EndGameNear, "entityId");
 
@@ -656,6 +660,7 @@ int CScriptBind_GameRules::GetSpawnLocation(IFunctionHandler* pH, ScriptHandle p
 		float minDistanceToDeath = 0.0f;
 		float zOffset = 0.0f;
 		Vec3 deathPos(ZERO);
+		EntityId skipId = 0;
 
 		if (pH->GetParamCount() > 3 && pH->GetParamType(4) == svtPointer)
 		{
@@ -669,12 +674,48 @@ int CScriptBind_GameRules::GetSpawnLocation(IFunctionHandler* pH, ScriptHandle p
 			pH->GetParam(5, minDistanceToDeath);
 			pH->GetParam(6, deathPos);
 		}
+		if (pH->GetParamCount() > 6 && pH->GetParamType(7) == svtPointer)
+		{
+			ScriptHandle skipIdHdl;
+			pH->GetParam(7, skipIdHdl);
+			skipId = (EntityId)skipIdHdl.n;
+		}
 
-		EntityId id = pGameRules->GetSpawnLocation((EntityId)playerId.n, ignoreTeam, includeNeutral, groupId, minDistanceToDeath, deathPos, &zOffset);
+		EntityId id = pGameRules->GetSpawnLocation((EntityId)playerId.n, ignoreTeam, includeNeutral, groupId, minDistanceToDeath, deathPos, &zOffset, skipId);
 		if (id)
 			return pH->EndFunction(ScriptHandle(id), zOffset);
 	}
 
+	return pH->EndFunction();
+}
+
+//------------------------------------------------------------------------
+int CScriptBind_GameRules::GetSpawnLocationTeam(IFunctionHandler* pH, ScriptHandle playerId)
+{
+	CGameRules* pGameRules = GetGameRules(pH);
+
+	if (!pGameRules)
+		return pH->EndFunction();
+
+	float zOffset = 0.0f;
+	Vec3 deathPos(ZERO);
+	if (pH->GetParamCount() > 1 && pH->GetParamType(2) == svtObject)
+		pH->GetParam(2, deathPos);
+
+	EntityId id = pGameRules->GetSpawnLocationTeam((EntityId)playerId.n, deathPos);
+
+	if (!id)
+	{
+		float minDistToDeath = 20.f; // g_pGameCVars->g_spawndeathdist;
+		id = pGameRules->GetSpawnLocation((EntityId)playerId.n, true, true, 0, minDistToDeath, deathPos, &zOffset, 0);
+	}
+
+	if (id)
+	{
+		if (pGameRules->IsSpawnUsedTouch(id))
+			zOffset += .5f;
+		return pH->EndFunction(ScriptHandle(id), zOffset);
+	}
 	return pH->EndFunction();
 }
 
@@ -1576,6 +1617,17 @@ int CScriptBind_GameRules::ResetGameTime(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
+int CScriptBind_GameRules::AddOvertime(IFunctionHandler* pH, float time)
+{
+	CGameRules* pGameRules = GetGameRules(pH);
+
+	if (pGameRules)
+		pGameRules->AddOvertime(time);
+
+	return pH->EndFunction();
+}
+
+//------------------------------------------------------------------------
 int CScriptBind_GameRules::GetRemainingGameTime(IFunctionHandler* pH)
 {
 	CGameRules* pGameRules = GetGameRules(pH);
@@ -2119,6 +2171,18 @@ int CScriptBind_GameRules::GetFragLead(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
+int CScriptBind_GameRules::GetScoreLimit(IFunctionHandler* pH)
+{
+	return pH->EndFunction(g_pGameCVars->mp_scoreLimit);
+}
+
+//------------------------------------------------------------------------
+int CScriptBind_GameRules::GetScoreLead(IFunctionHandler* pH)
+{
+	return pH->EndFunction(1);
+}
+
+//------------------------------------------------------------------------
 int CScriptBind_GameRules::GetFriendlyFireRatio(IFunctionHandler* pH)
 {
 	return pH->EndFunction(g_pGameCVars->g_friendlyfireratio);
@@ -2314,7 +2378,21 @@ int CScriptBind_GameRules::GameOver(IFunctionHandler* pH, int localWinner)
 {
 	CGameRules* pGameRules = g_pGame->GetGameRules();
 	if (pGameRules)
-		pGameRules->GameOver(localWinner);
+	{
+		EntityId winnerId = 0;
+		int winnerTeamId = 0;
+		if (pH->GetParamCount() > 1 && pH->GetParamType(2) == svtNumber)
+		{
+			pH->GetParam(2, winnerTeamId);
+		}
+		if (pH->GetParamCount() > 2 && pH->GetParamType(3) == svtPointer)
+		{
+			ScriptHandle wIdHdl;
+			pH->GetParam(3, wIdHdl);
+			winnerId = (EntityId)wIdHdl.n;
+		}
+		pGameRules->GameOver(localWinner, winnerTeamId, winnerId);
+	}
 
 	return pH->EndFunction();
 }
