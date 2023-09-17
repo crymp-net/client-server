@@ -1055,3 +1055,40 @@ CPPAPI.AddLocalizedLabel("Detonator", {
 		},
 	},
 })
+
+--------------------------------------------------------------------------------
+-- TIA
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("ui_TeamInstantAction", {
+	english_text = "TEAM INSTANT ACTION",
+	languages = {
+		czech = {
+			localized_text = "TÝMOVÁ OKAMŽITÁ AKCE",
+		},
+		french = {
+			localized_text = "PARTIE IMMEDIATE EN EQUIPE",
+		},
+		german = {
+			localized_text = "TEAM-SOFORTACTION",
+		},
+		hungarian = {
+			localized_text = "AZONNALI AKCIÓ",
+		},
+		italian = {
+			localized_text = "INSTANT ACTION A SQUADRE",
+		},
+		polish = {
+			localized_text = "INSTANT ACTION (DRUŻYNOWE)",
+		},
+		russian = {
+			localized_text = "КОМАНДНАЯ СХВАТКА",
+		},
+		spanish = {
+			localized_text = "ACCIÓN INSTANTÁNEA DE EQUIPO", 
+		},
+		turkish = {
+			localized_text = "INSTANT ACTION TAKIMI",
+		},
+	},
+})
