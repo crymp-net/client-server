@@ -24,6 +24,7 @@ History:
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "HUDVehicleInterface.h"
 #include "CryGame/Menus/OptionsManager.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #define HUD_CALL_LISTENERS_PS(func) \
 { \
@@ -271,7 +272,15 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 		static char text[32];
 		if (m_capturing)
 		{
-			int icap = (int)(m_captureProgress * 100.0f);
+			if (m_updateCaptureProgress)
+			{
+				m_captureProgressSmooth = m_captureProgress;
+				m_updateCaptureProgress = false;
+			}
+
+			Interpolate(m_captureProgressSmooth, m_captureProgress, 15.f, fDeltaTime);
+
+			int icap = (int)(m_captureProgressSmooth * 100.0f);
 			//sprintf(text, "%d%%", icap);
 			//DrawBar(16.0f, 80.0f, 72.0f, 14.0f, 2.0f, m_captureProgress, Col_DarkGray, Col_LightGray, text, Col_White, fabsf(cry_sinf(gEnv->pTimer->GetCurrTime()*2.5f)));
 			if (icap != m_lastBuildingTime)
@@ -743,6 +752,11 @@ void CHUDPowerStruggle::ShowCaptureProgress(bool show)
 	if (m_capturing != show)
 	{
 		m_captureProgress = -1.0f;
+
+		if (show)
+		{
+			m_updateCaptureProgress = true;
+		}
 	}
 
 	if (show)

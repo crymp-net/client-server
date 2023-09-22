@@ -209,6 +209,8 @@ private:
 
 	bool m_capturing;
 	float m_captureProgress;
+	float m_captureProgressSmooth = 0.0f;
+	bool m_updateCaptureProgress = false;
 
 	bool m_constructing;
 	bool m_constructionQueued;
