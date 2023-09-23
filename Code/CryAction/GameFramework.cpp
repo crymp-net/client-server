@@ -148,10 +148,10 @@ GameFramework::~GameFramework()
 {
 }
 
-IGameFramework& GameFramework::GetInstance()
+GameFramework* GameFramework::GetInstance()
 {
 	static GameFramework* pInstance = new GameFramework();
-	return *pInstance;
+	return pInstance;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -25,7 +25,7 @@ public:
 };
 
 #ifdef BUILD_64BIT
-	static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x58);
+static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x58);
 #else
-	static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x2c);
+static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x2c);
 #endif

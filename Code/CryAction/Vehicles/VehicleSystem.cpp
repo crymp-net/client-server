@@ -41,13 +41,52 @@
 #include "Views/VehicleViewFirstPerson.h"
 #include "Views/VehicleViewThirdPerson.h"
 
-#include "Vehicle.h"
+#include "Implementations/Alien_warrior.h"
+#include "Implementations/Asian_aaa.h"
+#include "Implementations/Asian_apc.h"
+#include "Implementations/Asian_helicopter.h"
+#include "Implementations/Asian_ltv.h"
+#include "Implementations/Asian_patrolboat.h"
+#include "Implementations/Asian_tank.h"
+#include "Implementations/Asian_truck.h"
+#include "Implementations/Civ_car1.h"
+#include "Implementations/Civ_speedboat.h"
+#include "Implementations/DefaultVehicle.h"
+#include "Implementations/US_apc.h"
+#include "Implementations/US_hovercraft.h"
+#include "Implementations/US_ltv.h"
+#include "Implementations/US_smallboat.h"
+#include "Implementations/US_tank.h"
+#include "Implementations/US_transportVTOL.h"
+#include "Implementations/US_trolley.h"
+#include "Implementations/US_vtol.h"
+
 #include "VehicleCVars.h"
 #include "VehicleDamagesTemplateRegistry.h"
 #include "VehicleIterator.h"
 #include "VehiclePartDetached.h"
 #include "VehicleSeatSerializer.h"
 #include "VehicleSystem.h"
+
+static constinit IGameFramework::CVehicleCreator<Alien_warrior> g_creator_Alien_warrior;
+static constinit IGameFramework::CVehicleCreator<Asian_aaa> g_creator_Asian_aaa;
+static constinit IGameFramework::CVehicleCreator<Asian_apc> g_creator_Asian_apc;
+static constinit IGameFramework::CVehicleCreator<Asian_helicopter> g_creator_Asian_helicopter;
+static constinit IGameFramework::CVehicleCreator<Asian_ltv> g_creator_Asian_ltv;
+static constinit IGameFramework::CVehicleCreator<Asian_patrolboat> g_creator_Asian_patrolboat;
+static constinit IGameFramework::CVehicleCreator<Asian_tank> g_creator_Asian_tank;
+static constinit IGameFramework::CVehicleCreator<Asian_truck> g_creator_Asian_truck;
+static constinit IGameFramework::CVehicleCreator<Civ_car1> g_creator_Civ_car1;
+static constinit IGameFramework::CVehicleCreator<Civ_speedboat> g_creator_Civ_speedboat;
+static constinit IGameFramework::CVehicleCreator<DefaultVehicle> g_creator_DefaultVehicle;
+static constinit IGameFramework::CVehicleCreator<US_apc> g_creator_US_apc;
+static constinit IGameFramework::CVehicleCreator<US_hovercraft> g_creator_US_hovercraft;
+static constinit IGameFramework::CVehicleCreator<US_ltv> g_creator_US_ltv;
+static constinit IGameFramework::CVehicleCreator<US_smallboat> g_creator_US_smallboat;
+static constinit IGameFramework::CVehicleCreator<US_tank> g_creator_US_tank;
+static constinit IGameFramework::CVehicleCreator<US_transportVTOL> g_creator_US_transportVTOL;
+static constinit IGameFramework::CVehicleCreator<US_trolley> g_creator_US_trolley;
+static constinit IGameFramework::CVehicleCreator<US_vtol> g_creator_US_vtol;
 
 VehicleSystem::VehicleSystem(IGameFramework* pGameFramework) : m_pGameFramework(pGameFramework)
 {
@@ -158,26 +197,25 @@ void VehicleSystem::RegisterVehicles(IGameFramework* pGameFramework)
 	VehiclePartDetached::Register(m_pGameFramework);
 
 	// Implementations - originally in XMLs
-	static IGameFramework::CVehicleCreator<Vehicle> creator;
-	this->RegisterVehicleFactory("Alien_warrior", &creator);
-	this->RegisterVehicleFactory("Asian_aaa", &creator);
-	this->RegisterVehicleFactory("Asian_apc", &creator);
-	this->RegisterVehicleFactory("Asian_helicopter", &creator);
-	this->RegisterVehicleFactory("Asian_ltv", &creator);
-	this->RegisterVehicleFactory("Asian_patrolboat", &creator);
-	this->RegisterVehicleFactory("Asian_tank", &creator);
-	this->RegisterVehicleFactory("Asian_truck", &creator);
-	this->RegisterVehicleFactory("Civ_car1", &creator);
-	this->RegisterVehicleFactory("Civ_speedboat", &creator);
-	this->RegisterVehicleFactory("DefaultVehicle", &creator);
-	this->RegisterVehicleFactory("US_apc", &creator);
-	this->RegisterVehicleFactory("US_hovercraft", &creator);
-	this->RegisterVehicleFactory("US_ltv", &creator);
-	this->RegisterVehicleFactory("US_smallboat", &creator);
-	this->RegisterVehicleFactory("US_tank", &creator);
-	this->RegisterVehicleFactory("US_transportVTOL", &creator);
-	this->RegisterVehicleFactory("US_trolley", &creator);
-	this->RegisterVehicleFactory("US_vtol", &creator);
+	this->RegisterVehicleFactory("Alien_warrior", &g_creator_Alien_warrior);
+	this->RegisterVehicleFactory("Asian_aaa", &g_creator_Asian_aaa);
+	this->RegisterVehicleFactory("Asian_apc", &g_creator_Asian_apc);
+	this->RegisterVehicleFactory("Asian_helicopter", &g_creator_Asian_helicopter);
+	this->RegisterVehicleFactory("Asian_ltv", &g_creator_Asian_ltv);
+	this->RegisterVehicleFactory("Asian_patrolboat", &g_creator_Asian_patrolboat);
+	this->RegisterVehicleFactory("Asian_tank", &g_creator_Asian_tank);
+	this->RegisterVehicleFactory("Asian_truck", &g_creator_Asian_truck);
+	this->RegisterVehicleFactory("Civ_car1", &g_creator_Civ_car1);
+	this->RegisterVehicleFactory("Civ_speedboat", &g_creator_Civ_speedboat);
+	this->RegisterVehicleFactory("DefaultVehicle", &g_creator_DefaultVehicle);
+	this->RegisterVehicleFactory("US_apc", &g_creator_US_apc);
+	this->RegisterVehicleFactory("US_hovercraft", &g_creator_US_hovercraft);
+	this->RegisterVehicleFactory("US_ltv", &g_creator_US_ltv);
+	this->RegisterVehicleFactory("US_smallboat", &g_creator_US_smallboat);
+	this->RegisterVehicleFactory("US_tank", &g_creator_US_tank);
+	this->RegisterVehicleFactory("US_transportVTOL", &g_creator_US_transportVTOL);
+	this->RegisterVehicleFactory("US_trolley", &g_creator_US_trolley);
+	this->RegisterVehicleFactory("US_vtol", &g_creator_US_vtol);
 
 	// Views
 	VehicleViewActionThirdPerson::Register(this);

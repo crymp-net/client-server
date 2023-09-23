@@ -131,7 +131,7 @@ class GameFramework : public IGameFramework
 public:
 	virtual ~GameFramework();
 
-	static IGameFramework& GetInstance();
+	static GameFramework* GetInstance();
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IGameFramework
@@ -273,6 +273,9 @@ public:
 	virtual void UnknownFunction2();
 
 	void DispatchActionEvent(const SActionEvent& event);
+
+	ScriptBind_Vehicle* GetScriptBind_Vehicle() { return m_pScriptBind_Vehicle; }
+	ScriptBind_VehicleSeat* GetScriptBind_VehicleSeat() { return m_pScriptBind_VehicleSeat; }
 
 private:
 	void RegisterConsoleVariables();

@@ -198,6 +198,44 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSink.h
 	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.cpp
 	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.h
+	Code/CryAction/Vehicles/Implementations/Alien_warrior.cpp
+	Code/CryAction/Vehicles/Implementations/Alien_warrior.h
+	Code/CryAction/Vehicles/Implementations/Asian_aaa.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_aaa.h
+	Code/CryAction/Vehicles/Implementations/Asian_apc.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_apc.h
+	Code/CryAction/Vehicles/Implementations/Asian_helicopter.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_helicopter.h
+	Code/CryAction/Vehicles/Implementations/Asian_ltv.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_ltv.h
+	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.h
+	Code/CryAction/Vehicles/Implementations/Asian_tank.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_tank.h
+	Code/CryAction/Vehicles/Implementations/Asian_truck.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_truck.h
+	Code/CryAction/Vehicles/Implementations/Civ_car1.cpp
+	Code/CryAction/Vehicles/Implementations/Civ_car1.h
+	Code/CryAction/Vehicles/Implementations/Civ_speedboat.cpp
+	Code/CryAction/Vehicles/Implementations/Civ_speedboat.h
+	Code/CryAction/Vehicles/Implementations/DefaultVehicle.cpp
+	Code/CryAction/Vehicles/Implementations/DefaultVehicle.h
+	Code/CryAction/Vehicles/Implementations/US_apc.cpp
+	Code/CryAction/Vehicles/Implementations/US_apc.h
+	Code/CryAction/Vehicles/Implementations/US_hovercraft.cpp
+	Code/CryAction/Vehicles/Implementations/US_hovercraft.h
+	Code/CryAction/Vehicles/Implementations/US_ltv.cpp
+	Code/CryAction/Vehicles/Implementations/US_ltv.h
+	Code/CryAction/Vehicles/Implementations/US_smallboat.cpp
+	Code/CryAction/Vehicles/Implementations/US_smallboat.h
+	Code/CryAction/Vehicles/Implementations/US_tank.cpp
+	Code/CryAction/Vehicles/Implementations/US_tank.h
+	Code/CryAction/Vehicles/Implementations/US_transportVTOL.cpp
+	Code/CryAction/Vehicles/Implementations/US_transportVTOL.h
+	Code/CryAction/Vehicles/Implementations/US_trolley.cpp
+	Code/CryAction/Vehicles/Implementations/US_trolley.h
+	Code/CryAction/Vehicles/Implementations/US_vtol.cpp
+	Code/CryAction/Vehicles/Implementations/US_vtol.h
 	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.cpp
 	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.h
 	Code/CryAction/Vehicles/Parts/VehiclePartAnimatedJoint.cpp
@@ -242,6 +280,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/Vehicles/Views/VehicleViewThirdPerson.h
 	Code/CryAction/Vehicles/Vehicle.cpp
 	Code/CryAction/Vehicles/Vehicle.h
+	Code/CryAction/Vehicles/VehicleAnimation.cpp
+	Code/CryAction/Vehicles/VehicleAnimation.h
+	Code/CryAction/Vehicles/VehicleComponent.cpp
+	Code/CryAction/Vehicles/VehicleComponent.h
 	Code/CryAction/Vehicles/VehicleCVars.cpp
 	Code/CryAction/Vehicles/VehicleCVars.h
 	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.cpp
@@ -250,6 +292,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/Vehicles/VehicleIterator.h
 	Code/CryAction/Vehicles/VehiclePartDetached.cpp
 	Code/CryAction/Vehicles/VehiclePartDetached.h
+	Code/CryAction/Vehicles/VehicleSeat.cpp
+	Code/CryAction/Vehicles/VehicleSeat.h
+	Code/CryAction/Vehicles/VehicleSeatGroup.cpp
+	Code/CryAction/Vehicles/VehicleSeatGroup.h
 	Code/CryAction/Vehicles/VehicleSeatSerializer.cpp
 	Code/CryAction/Vehicles/VehicleSeatSerializer.h
 	Code/CryAction/Vehicles/VehicleSystem.cpp
@@ -878,6 +924,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/PathTools.h
 	Code/Library/PathTree.h
 	Code/Library/SlotVector.h
+	Code/Library/StlportVector.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h
 	Code/Library/Util.cpp

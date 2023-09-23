@@ -51,7 +51,7 @@ public:
 };
 
 #ifdef BUILD_64BIT
-	static_assert(sizeof(VehiclePartDetached) == 0x28);
+static_assert(sizeof(VehiclePartDetached) == 0x28);
 #else
-	static_assert(sizeof(VehiclePartDetached) == 0x14);
+static_assert(sizeof(VehiclePartDetached) == 0x14);
 #endif

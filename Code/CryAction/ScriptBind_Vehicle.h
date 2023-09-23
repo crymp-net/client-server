@@ -4,6 +4,7 @@
 
 struct ISystem;
 struct IGameFramework;
+struct IVehicle;
 
 class ScriptBind_Vehicle : public CScriptableBase
 {
@@ -15,4 +16,6 @@ class ScriptBind_Vehicle : public CScriptableBase
 
 public:
 	explicit ScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGameFramework);
+
+	void AttachTo(IVehicle* pVehicle);
 };

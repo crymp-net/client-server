@@ -56,7 +56,7 @@ public:
 };
 
 #ifdef BUILD_64BIT
-	static_assert(sizeof(VehicleSeatSerializer) == 0x30);
+static_assert(sizeof(VehicleSeatSerializer) == 0x30);
 #else
-	static_assert(sizeof(VehicleSeatSerializer) == 0x18);
+static_assert(sizeof(VehicleSeatSerializer) == 0x18);
 #endif
