@@ -276,6 +276,7 @@ public:
 	void SetFlashColor(CGameFlashAnimation* pGameFlashAnimation);
 	//render boot-up animation
 	virtual void ShowBootSequence();
+	void OnAmmoChanged(CActor *pActor);
 	//render download animation
 	virtual void ShowDownloadSequence();
 	//render Death effects

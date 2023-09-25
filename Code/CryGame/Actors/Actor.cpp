@@ -3935,42 +3935,51 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 	if (pInventory)
 	{
 		IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(params.ammo.c_str());
-		assert(pClass);
+		if (!pClass)
+			return true;
 
-		int capacity = pInventory->GetAmmoCapacity(pClass);
-		int current = pInventory->GetAmmoCount(pClass);
+		const int capacity = pInventory->GetAmmoCapacity(pClass);
+		const int current = pInventory->GetAmmoCount(pClass);
 		if ((!gEnv->pSystem->IsEditor()) && (params.count > capacity))
 		{
 			//If still there's some place, full inventory to maximum...
 			if (current < capacity)
 			{
 				pInventory->SetAmmoCount(pClass, capacity);
-				if (IsClient() && g_pGame->GetHUD() && capacity - current > 0)
+
+				if (IsClient() && capacity - current > 0)
 				{
-					//char buffer[5];
-					//_itoa(capacity - current, buffer, 10);
-					//g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);
-					if (g_pGame->GetHUD())
-						g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
+					/*char buffer[5];
+					_itoa(capacity - current, buffer, 10);
+					SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@") + pClass->GetName()).c_str(), buffer));*/
+
+					SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), capacity - current));
 				}
 			}
 			else
 			{
-				if (IsClient() && g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str());
+				if (IsClient())
+				{
+					SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
+				}
 			}
 		}
 		else
 		{
 			pInventory->SetAmmoCount(pClass, params.count);
-			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
+
+			if (IsClient() && params.count - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(params.count - current, buffer, 10);
-				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
+				SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@") + pClass->GetName()).c_str(), buffer));*/
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), params.count - current));
 			}
+		}
+
+		if (IsClient())
+		{
+			SAFE_HUD_FUNC(OnAmmoChanged(this));
 		}
 	}
 
@@ -3984,37 +3993,45 @@ IMPLEMENT_RMI(CActor, ClAddAmmo)
 	if (pInventory)
 	{
 		IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(params.ammo.c_str());
-		assert(pClass);
+		if (!pClass)
+			return true;
 
-		int capacity = pInventory->GetAmmoCapacity(pClass);
-		int current = pInventory->GetAmmoCount(pClass);
+		const int capacity = pInventory->GetAmmoCapacity(pClass);
+		const int current = pInventory->GetAmmoCount(pClass);
 		if ((!gEnv->pSystem->IsEditor()) && (pInventory->GetAmmoCount(pClass) + params.count > capacity))
 		{
-			if (IsClient() && g_pGame->GetHUD())
-				g_pGame->GetHUD()->DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str());
+			if (IsClient())
+			{
+				SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
+			}
 
 			//If still there's some place, full inventory to maximum...
 			pInventory->SetAmmoCount(pClass, capacity);
-			if (capacity != current && IsClient() && g_pGame->GetHUD() && capacity - current > 0)
+
+			if (capacity != current && IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(capacity - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), capacity - current));
 			}
 		}
 		else
 		{
 			pInventory->SetAmmoCount(pClass, pInventory->GetAmmoCount(pClass) + params.count);
-			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
+
+			if (IsClient() && params.count - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(params.count - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), params.count - current));
 			}
+		}
+
+		if (IsClient())
+		{
+			SAFE_HUD_FUNC(OnAmmoChanged(this));
 		}
 	}
 
