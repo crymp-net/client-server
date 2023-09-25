@@ -1627,17 +1627,21 @@ bool CFlashMenuObject::IsOnScreen(EMENUSCREEN screen)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
+void CFlashMenuObject::OnHardwareMouseEvent(int x, int y, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
 		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
 		{
-			int x(iX), y(iY);
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
 			SFlashVarValue args[2] = { x,y };
+
 			m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
 			m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
+		
+			//CryMP
+			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(SFlashCursorEvent::eCursorPressed, x, y));
+			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
+
 		}
 	}
 	else
@@ -1650,15 +1654,10 @@ void CFlashMenuObject::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT 
 		else if (HARDWAREMOUSEEVENT_LBUTTONUP == eHardwareMouseEvent)
 		{
 			eCursorState = SFlashCursorEvent::eCursorReleased;
-
-
-
-
 		}
 
 		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
 		{
-			int x(iX), y(iY);
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
 			UpdateButtonSnap(Vec2(x, y));
@@ -1666,7 +1665,6 @@ void CFlashMenuObject::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT 
 
 		if (m_pFlashPlayer)
 		{
-			int x(iX), y(iY);
 			m_pFlashPlayer->ScreenToClient(x, y);
 			m_pFlashPlayer->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
 		}
@@ -2331,7 +2329,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 	}
 	else if (!strcmp(szCommand, "Click"))
 	{
-		PlaySound(ESound_Click1);
+		PlaySound(ESound_Click1); //not used 
 	}
 	else if (!strcmp(szCommand, "ScreenChange"))
 	{

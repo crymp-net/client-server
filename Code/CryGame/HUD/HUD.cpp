@@ -691,6 +691,16 @@ bool CHUD::Init(IActor* pActor)
 
 //-----------------------------------------------------------------------------------------------------
 
+void CHUD::OnAmmoChanged(CActor *pActor)
+{
+	if (pActor && pActor->IsClient() && IsBuyMenuActive() && GetPowerStruggleHUD())
+	{
+		GetPowerStruggleHUD()->UpdateBuyList(nullptr, false);
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void CHUD::ShowBootSequence()
 {
 	if (m_pHUDScopes->m_animBinoculars.IsLoaded())
@@ -1192,7 +1202,7 @@ void CHUD::OnSetActorItem(IActor* pActor, IItem* pItem)
 
 	//notify the buymenu of the item change
 	if (m_pHUDPowerStruggle)
-		m_pHUDPowerStruggle->PopulateBuyList();
+		m_pHUDPowerStruggle->PopulateBuyList(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2850,16 +2860,18 @@ void CHUD::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMou
 		return;
 	}
 
+	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
 		if (m_pModalHUD)
 		{
 			m_pModalHUD->CheckedInvoke("DoubleClick");
 		}
-	}
 
-	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
-	if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
+		//CryMP:
+		eCursorState = SFlashCursorEvent::eCursorPressed;
+	}
+	else if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
 	{
 		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}

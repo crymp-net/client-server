@@ -1206,15 +1206,17 @@ bool CMultiPlayerMenu::CUI::OnHandleCommand(EGsUiCommand cmd, const char* pArgs)
 			m_menu->m_profile->SearchUsers(pArgs);
 		break;
 	case eGUC_selectServer:
-
-		//break;
+		if (!m_menu->m_joiningServer)
+		{
+			ResetServerDetails();
+			RefreshServer();
+		}
+		break;
 	case eGUC_refreshServer:
-	{
 		ResetServerDetails();
 		m_menu->m_joiningServer = false;
 		RefreshServer();
-	}
-	break;
+		break;
 	default:
 		handled = false;
 	}
