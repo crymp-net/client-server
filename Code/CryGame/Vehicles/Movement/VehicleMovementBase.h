@@ -467,6 +467,7 @@ protected:
   static float m_sprintTime;
 
 	std::mutex m_lock;
+	int m_lastSoundDamage = 0;
 };
 
 struct SPID

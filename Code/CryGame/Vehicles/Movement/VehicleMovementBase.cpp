@@ -584,26 +584,31 @@ void CVehicleMovementBase::UpdateDamageSound()
 	{
 		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
 		{
-			//CryMP: These seem to change, index can be 17, 5 other times etc.. so we need to set all...
-			SetSoundParam(pSound, "damage", damage);
-			SetSoundParam(pSound, 1, damage);
-			SetSoundParam(pSound, 2, damage);
-			SetSoundParam(pSound, 3, damage);
-			SetSoundParam(pSound, 4, damage);
-			SetSoundParam(pSound, 5, damage);
-			SetSoundParam(pSound, 6, damage);
-			SetSoundParam(pSound, 7, damage);
-			SetSoundParam(pSound, 8, damage);
-			SetSoundParam(pSound, 9, damage);
-			SetSoundParam(pSound, 10,damage);
-			SetSoundParam(pSound, 11, damage);
-			SetSoundParam(pSound, 12, damage);
-			SetSoundParam(pSound, 13, damage);
-			SetSoundParam(pSound, 14, damage);
-			SetSoundParam(pSound, 15, damage);
-			SetSoundParam(pSound, 16, damage);
-			SetSoundParam(pSound, 17, damage);
-			SetSoundParam(pSound, 18, damage);
+			if (static_cast<int>(damage * 100.f) != m_lastSoundDamage)
+			{
+				//CryMP: These seem to change, index can be 17, 5 other times etc.. so we need to set all...
+				SetSoundParam(pSound, "damage", damage);
+				SetSoundParam(pSound, 1, damage);
+				SetSoundParam(pSound, 2, damage);
+				SetSoundParam(pSound, 3, damage);
+				SetSoundParam(pSound, 4, damage);
+				SetSoundParam(pSound, 5, damage);
+				SetSoundParam(pSound, 6, damage);
+				SetSoundParam(pSound, 7, damage);
+				SetSoundParam(pSound, 8, damage);
+				SetSoundParam(pSound, 9, damage);
+				SetSoundParam(pSound, 10, damage);
+				SetSoundParam(pSound, 11, damage);
+				SetSoundParam(pSound, 12, damage);
+				SetSoundParam(pSound, 13, damage);
+				SetSoundParam(pSound, 14, damage);
+				SetSoundParam(pSound, 15, damage);
+				SetSoundParam(pSound, 16, damage);
+				SetSoundParam(pSound, 17, damage);
+				SetSoundParam(pSound, 18, damage);
+
+				m_lastSoundDamage = static_cast<int>(damage * 100.f);
+			}
 		}
 	}
 	else
@@ -2047,7 +2052,7 @@ void CVehicleMovementBase::SetSoundParam(EVehicleMovementSound eSID, int id, flo
 {
 	if (ISound* pSound = GetSound(eSID))
 	{
-		pSound->SetParam(id, value, true);
+		pSound->SetParam(id, value, false);
 	}
 }
 
