@@ -542,13 +542,17 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	//const bool parachute = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 2 : false;
 	const bool inFreeFalllOrPara = pPlayer->GetPlayerStats() ? (pPlayer->GetPlayerStats()->inFreefall > 0 || pPlayer->IsParachuteMorphActive()) : false;
 
-	const float distanceOffsetPara = -12.f;
+	float distanceOffsetPara = -8.f;
 
 	if (inFreeFalllOrPara)
 	{
 		viewOffset.x = 0.0f;
 		viewOffset.y = distanceOffsetPara;
-		viewOffset.z = 3.0f;
+		viewOffset.z = 1.0f;
+	}
+	else if (m_in.stats_isRagDoll)
+	{
+		viewOffset.x = 0.0f;
 	}
 
 	CWeapon* pWeapon = pActor->GetCurrentWeapon(false);

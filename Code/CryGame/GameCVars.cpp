@@ -140,7 +140,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	//CryMP: enable improved TP camera (might remove some of these later)
 	pConsole->Register("goc_tpcrosshair", &goc_tpcrosshair, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "keep crosshair in third person");
 	pConsole->Register("goc_targetx", &goc_targetx, 0.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
-	pConsole->Register("goc_targety", &goc_targety, -2.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
+	pConsole->Register("goc_targety", &goc_targety, -3.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 
 	pConsole->Register("cl_leanAmount", &cl_leanAmount, 0.25f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set amount of lean");
