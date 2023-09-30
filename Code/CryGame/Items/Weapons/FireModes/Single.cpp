@@ -746,6 +746,19 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 	BackUpOriginalSpreadRecoil();
 
 	Activate(true);
+
+	//CryMP hack : enable tracers on AAA.. TOOD: move to CryAction param
+	const IEntityClass* pWClass = m_pWeapon->GetEntity()->GetClass();
+	if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AACannon"))
+	{
+		m_tracerparams.effectFP = "";
+		m_tracerparams.effect = "";
+		m_tracerparams.geometryFP = "objects/effects/tracer_standard_red_new.cgf";
+		m_tracerparams.geometry = "objects/effects/tracer_standard_red_new.cgf";
+		m_tracerparams.frequency = 1;
+		m_tracerparams.speed = 230;
+		m_tracerparams.speedFP = 300;
+	}
 }
 
 //------------------------------------------------------------------------
