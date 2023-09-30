@@ -513,7 +513,20 @@ bool CSingle::CheckAutoAimTolerance(const Vec3& aimPos, const Vec3& aimDir)
 	Vec3 maxVec = (targetPos - aimPos) + (right * m_fireparams.autoaim_tolerance);
 	float maxDot = dirToTarget.Dot(maxVec.normalize());
 
-	return (dot >= maxDot);
+	if (dot < maxDot)
+	{
+		return false;
+	}
+
+	Vec3 up = mat.GetColumn(2).normalize();
+	Vec3 maxVecUp = (targetPos - aimPos) + (up * m_fireparams.autoaim_tolerance);
+	float maxDot2 = dirToTarget.Dot(maxVecUp.normalize());
+	if (dot < maxDot2)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void CSingle::Lock(EntityId targetId, int partId /*=0*/)
@@ -780,7 +793,7 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 			m_fireparams.autoaim = true;
 			m_fireparams.autoaim_targetaironly = true;
 			m_fireparams.autoaim_distance = 350.f;
-			m_fireparams.autoaim_tolerance = 100.f;
+			m_fireparams.autoaim_tolerance = 30.f;
 			m_fireparams.autoaim_locktime = 0.5f;
 		}
 	}
