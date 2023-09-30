@@ -3408,10 +3408,18 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 						pLS->Invoke("setServerInfo2", args, 2);
 					}
 					ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
-					if (pCVar3 && pCVar3->GetIVal())
+					if (pCVar3 && pCVar3->GetFVal() > 0.0f)
 					{
-						SFlashVarValue args[2] = { "@ui_circle_jump", "@ui_menu_ON" };
-						pLS->Invoke("setServerInfo3", args, 2);
+						if (pCVar3->GetFVal() == 1.f)
+						{
+							SFlashVarValue args[2] = { "@ui_circle_jump", "@ui_menu_ON" };
+							pLS->Invoke("setServerInfo3", args, 2);
+						} 
+						else
+						{
+							SFlashVarValue args[2] = { "@ui_circle_jump", pCVar3->GetFVal() };
+							pLS->Invoke("setServerInfo3", args, 2);
+						}
 					}
 					ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
 					if (pCVar4 && pCVar4->GetIVal() > 0)
