@@ -436,48 +436,59 @@ void CSingle::UpdateFPView(float frameTime)
 //------------------------------------------------------------------------
 bool CSingle::IsValidAutoAimTarget(IEntity* pEntity, int partId /*= 0*/)
 {
-	IActor* pActor = 0;
-	IVehicle* pVehicle = 0;
-
 	if (pEntity->IsHidden())
 		return false;
 
 	AABB box;
 	pEntity->GetLocalBounds(box);
-	float vol = box.GetVolume();
+	const float vol = box.GetVolume();
 
-	if (vol < m_fireparams.autoaim_minvolume || vol > m_fireparams.autoaim_maxvolume)
+	if (!m_fireparams.autoaim_targetaironly)
 	{
-		//CryLogAlways("volume check failed: %f", vol);
-		return false;
-	}
-
-	CActor* pPlayer = m_pWeapon->GetOwnerActor();
-
-	if (!pPlayer)
-		return false;
-
-	pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
-	if (pActor && pActor->GetHealth() > 0.f &&
-		pActor->GetEntity()->GetAI() && pActor->GetEntity()->GetAI()->IsHostile(pPlayer->GetEntity()->GetAI(), false))
-		return true;
-
-	pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId());
-	if (gEnv->bMultiplayer && pVehicle && pVehicle->GetStatus().health > 0.f)
-	{
-		//Check for teams
-		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		if (vol < m_fireparams.autoaim_minvolume || vol > m_fireparams.autoaim_maxvolume)
 		{
-			if (pGameRules->GetTeam(pVehicle->GetEntityId()) != pGameRules->GetTeam(pPlayer->GetEntityId()))
-				return true;
+			return false;
 		}
-		return false;
 	}
 
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
+		return false;
 
-	if (pVehicle && pVehicle->GetStatus().health > 0.f &&
-		pVehicle->GetEntity()->GetAI() && pVehicle->GetEntity()->GetAI()->IsHostile(pPlayer->GetEntity()->GetAI(), false))
-		return true;
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
+	if (pActor)
+	{
+		if (pActor->GetHealth() > 0.f &&
+			pActor->GetEntity()->GetAI() && pActor->GetEntity()->GetAI()->IsHostile(pOwner->GetEntity()->GetAI(), false))
+			return true;
+	} 
+
+	IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId());
+	if (pVehicle)
+	{
+		if (gEnv->bMultiplayer && pVehicle->GetStatus().health > 0.f)
+		{
+			//Check for teams
+			if (CGameRules* pGameRules = g_pGame->GetGameRules())
+			{
+				if (pGameRules->GetTeam(pVehicle->GetEntityId()) != pGameRules->GetTeam(pOwner->GetEntityId()))
+				{
+					//CryMP
+					if (m_fireparams.autoaim_targetaironly)
+					{
+						return pVehicle->GetMovement() && pVehicle->GetMovement()->GetMovementType() == IVehicleMovement::EVehicleMovementType::eVMT_Air;
+					}
+
+					return true;
+				}
+			}
+			return false;
+		}
+
+		if (pVehicle->GetStatus().health > 0.f &&
+			pVehicle->GetEntity()->GetAI() && pVehicle->GetEntity()->GetAI()->IsHostile(pOwner->GetEntity()->GetAI(), false))
+			return true;
+	}
 
 	return false;
 }
@@ -488,7 +499,9 @@ bool CSingle::CheckAutoAimTolerance(const Vec3& aimPos, const Vec3& aimDir)
 	// todo: this check is probably not sufficient
 	IEntity* pLocked = gEnv->pEntitySystem->GetEntity(m_lockedTarget);
 	if (!pLocked)
+	{
 		return false;
+	}
 
 	AABB bbox;
 	pLocked->GetWorldBounds(bbox);
@@ -747,7 +760,7 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 
 	Activate(true);
 
-	//CryMP hack : enable tracers on AAA.. TOOD: move to CryAction param
+	//CryMP hack: enable tracers on AAA.. TOOD: move to CryAction params
 	const IEntityClass* pWClass = m_pWeapon->GetEntity()->GetClass();
 	if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AACannon"))
 	{
@@ -758,6 +771,18 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 		m_tracerparams.frequency = 1;
 		m_tracerparams.speed = 230;
 		m_tracerparams.speedFP = 300;
+	}
+	//CryMP hack: enable lockon missiles.. TOOD: move to CryAction params
+	else if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AARocketLauncher"))
+	{
+		if (g_pGameCVars->mp_aaLockOn)
+		{
+			m_fireparams.autoaim = true;
+			m_fireparams.autoaim_targetaironly = true;
+			m_fireparams.autoaim_distance = 350.f;
+			m_fireparams.autoaim_tolerance = 100.f;
+			m_fireparams.autoaim_locktime = 0.5f;
+		}
 	}
 }
 

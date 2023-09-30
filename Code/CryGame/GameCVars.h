@@ -447,6 +447,7 @@ struct SCVars
 	int			mp_ragdollUnrestricted;
 	int			mp_killMessages;
 	int			mp_rpgMod;
+	int			mp_aaLockOn;
 	int			mp_newSpectator;
 	int			mp_usePostProcessAimDir;
 	int			mp_messageCenterColor;

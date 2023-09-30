@@ -379,6 +379,7 @@ protected:
 			ResetValue(spin_up_time,	0.0f);
 			ResetValue(spin_down_time,0.0f);
 			ResetValue(autoaim,		false);
+			ResetValue(autoaim_targetaironly, false);
 			ResetValue(autoaim_zoom , false);
 			ResetValue(autozoom,	false);
 			ResetValue(autoaim_distance, 10.f);
@@ -456,6 +457,7 @@ protected:
 		float		spin_down_time;
 
 		bool	  autoaim;
+		bool	  autoaim_targetaironly;
 		bool		autoaim_zoom;
 		float   autoaim_distance;
 		float   autoaim_tolerance;
