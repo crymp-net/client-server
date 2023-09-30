@@ -448,6 +448,7 @@ struct SCVars
 	int			mp_killMessages;
 	int			mp_rpgMod;
 	int			mp_aaLockOn;
+	float		mp_C4StrengthThrowMult;
 	int			mp_newSpectator;
 	int			mp_usePostProcessAimDir;
 	int			mp_messageCenterColor;
