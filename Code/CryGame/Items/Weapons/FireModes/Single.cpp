@@ -471,7 +471,7 @@ bool CSingle::IsValidAutoAimTarget(IEntity* pEntity, int partId /*= 0*/)
 			//Check for teams
 			if (CGameRules* pGameRules = g_pGame->GetGameRules())
 			{
-				if (pGameRules->GetTeam(pVehicle->GetEntityId()) != pGameRules->GetTeam(pOwner->GetEntityId()))
+				if (pGameRules->IsHostile(pVehicle->GetEntityId(), pGameRules->GetTeam(pOwner->GetEntityId())))
 				{
 					//CryMP
 					if (m_fireparams.autoaim_targetaironly)
@@ -736,6 +736,8 @@ void CSingle::ResetParams(const IItemParamsNode* params)
 	m_dustparams.Reset(dust);
 
 	BackUpOriginalSpreadRecoil();
+
+	PatchParamsCryMP();
 }
 
 //------------------------------------------------------------------------
@@ -773,6 +775,11 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 
 	Activate(true);
 
+	PatchParamsCryMP();
+}
+
+void CSingle::PatchParamsCryMP()
+{
 	//CryMP hack: enable tracers on AAA.. TOOD: move to CryAction params
 	const IEntityClass* pWClass = m_pWeapon->GetEntity()->GetClass();
 	if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AACannon"))

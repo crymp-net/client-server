@@ -555,6 +555,8 @@ public:
 	virtual void ResetParams(const struct IItemParamsNode *params);
 	virtual void PatchParams(const struct IItemParamsNode *patch);
 
+	void PatchParamsCryMP();
+
 	virtual void Activate(bool activate);
 
 	virtual int GetAmmoCount() const;
