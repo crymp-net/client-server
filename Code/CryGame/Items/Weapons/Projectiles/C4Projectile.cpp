@@ -70,7 +70,14 @@ void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocit
 
 	if (gEnv->bMultiplayer)
 	{
-		CPlayer* pOwner = CPlayer::FromActor(GetWeapon()->GetOwnerActor());
+		CWeapon* pWeapon = this->GetWeapon();
+		if (!pWeapon)
+		{
+			CryLogError("[CC4Projectile::Launch] Weapon with ID %u does not exist!", m_weaponId);
+			return;
+		}
+
+		CPlayer* pOwner = CPlayer::FromActor(pWeapon->GetOwnerActor());
 		if (pOwner)
 		{
 			if (gEnv->bServer)
