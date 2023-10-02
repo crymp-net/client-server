@@ -66,18 +66,10 @@ void CC4Projectile::HandleEvent(const SGameObjectEvent& event)
 //-------------------------------------------
 void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocity, float speedScale)
 {
-	CProjectile::Launch(pos, dir, velocity, speedScale);
-
 	if (gEnv->bMultiplayer)
 	{
 		CWeapon* pWeapon = this->GetWeapon();
-		if (!pWeapon)
-		{
-			CryLogError("[CC4Projectile::Launch] Weapon with ID %u does not exist!", m_weaponId);
-			return;
-		}
-
-		CPlayer* pOwner = CPlayer::FromActor(pWeapon->GetOwnerActor());
+		CPlayer* pOwner = pWeapon ? CPlayer::FromActor(pWeapon->GetOwnerActor()) : nullptr;
 		if (pOwner)
 		{
 			if (gEnv->bServer)
@@ -87,12 +79,13 @@ void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocit
 					pOwner->RecordExplosivePlaced(GetEntityId(), 2);
 				}
 
-				//CryMP: Here is server handler
+				// CryMP: Here is server handler
 				if (g_pGameCVars->mp_C4StrengthThrowMult > 1.0f)
 				{
 					speedScale *= g_pGameCVars->mp_C4StrengthThrowMult;
 				}
 			}
+
 			if (gEnv->bClient)
 			{
 				if (CNanoSuit* pSuit = pOwner->GetNanoSuit())
@@ -106,6 +99,8 @@ void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocit
 			}
 		}
 	}
+
+	CProjectile::Launch(pos, dir, velocity, speedScale);
 
 	if (gEnv->bClient)
 	{
