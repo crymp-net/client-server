@@ -225,6 +225,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	AddFlashFileHook("Libs/UI/HUD_Spectate.gfx", RESOURCE_HUD_SPECTATE_GFX);
 	AddFlashFileHook("Libs/UI/HUD_MP_Radio_Buttons.gfx", RESOURCE_HUD_MP_RADIO_BUTTONS_GFX);
 	AddFlashFileHook("Libs/UI/HUD_ChatSystem_HR.gfx", RESOURCE_HUD_CHAT_SYSTEM_HR_GFX);
+	AddFlashFileHook("Libs/UI/HUD_KillLog.gfx", RESOURCE_HUD_KILL_LOG_GFX);
 
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
