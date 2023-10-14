@@ -880,7 +880,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	if (targetId == shooterId)
 		bSuicide = true;
 
-	std::string iconName = weaponClassName;
+	const char* iconName = weaponClassName;
 	const IEntityClass* pWeaponClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(weaponClassName);
 	
 	if(!_stricmp(weaponClassName, "AutoTurret") || !_stricmp(weaponClassName, "AutoTurretAA") || !_stricmp(weaponClassName, "AlienTurret"))
@@ -1020,12 +1020,12 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	
 	if (skipShooter)
 	{
-		SFlashVarValue args[6] = { "", iconName.c_str(), target.c_str(), headshot, shooterFriendly, targetFriendly };
+		SFlashVarValue args[6] = { "", iconName, target.c_str(), headshot, shooterFriendly, targetFriendly };
 		m_animKillLog.Invoke("addLog", args, 6);
 	}
 	else
 	{
-		SFlashVarValue args[6] = { shooter.c_str(), iconName.c_str(), target.c_str(), headshot, shooterFriendly, targetFriendly };
+		SFlashVarValue args[6] = { shooter.c_str(), iconName, target.c_str(), headshot, shooterFriendly, targetFriendly };
 		m_animKillLog.Invoke("addLog", args, 6);
 	}
 }
