@@ -1233,11 +1233,12 @@ void CPlayerView::ViewSpectatorTarget(SViewParams& viewParams)
 
 void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 {
-	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget);
-	if (!pTarget)
+	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget));
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_in.stats_spectatorTarget);
+	if (!pEntity)
 		return;
 
-	Matrix34 worldTM = pTarget->GetEntity()->GetWorldTM();
+	Matrix34 worldTM = pEntity->GetWorldTM();
 
 	Vec3 worldPos = worldTM.GetTranslation();
 	worldPos.z += 1.5f;
@@ -1246,11 +1247,14 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	float rot = worldAngles.z;// + m_rot;
 	float distance = 3;//(m_defaultDistance != 0) ? m_defaultDistance : m_distance;
 
-	if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
+	if (pActor)
 	{
-		AABB vehicleBox;
-		pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
-		distance = 2.0f * vehicleBox.GetRadius();
+		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+		{
+			AABB vehicleBox;
+			pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
+			distance = 2.0f * vehicleBox.GetRadius();
+		}
 	}
 
 	//Zooming ability
@@ -1265,21 +1269,24 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	goal.y = distance * zoom * sinf(rot - gf_PI / 2.0f) + worldPos.y;
 
 	AABB targetBounds;
-	pTarget->GetEntity()->GetLocalBounds(targetBounds);
+	pEntity->GetLocalBounds(targetBounds);
 	goal.z = targetBounds.max.z;
 	static float defaultOffset = 0.75f;
 	float offset = defaultOffset;
-	if (pTarget->GetLinkedVehicle())
-		offset = 2.0f;
-	else
+	if (pActor)
 	{
-		SActorStats* pStats = pTarget->GetActorStats();
-		if (pStats && pStats->inFreefall == 1)
+		if (pActor->GetLinkedVehicle())
+			offset = 2.0f;
+		else
 		{
-			offset = -1.0f;
+			SActorStats* pStats = pActor->GetActorStats();
+			if (pStats && pStats->inFreefall == 1)
+			{
+				offset = -1.0f;
+			}
 		}
 	}
-	goal.z += pTarget->GetEntity()->GetWorldPos().z + offset;
+	goal.z += pEntity->GetWorldPos().z + offset;
 
 	// store / interpolate the offset, not the world pos (reduces percieved jitter in vehicles)
 	static Vec3 viewOffset(goal - worldPos);
@@ -1291,17 +1298,20 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	static ray_hit hit;
 	IPhysicalEntity* pSkipEntities[10];
 	int nSkip = 0;
-	IItem* pItem = pTarget->GetCurrentItem();
-	if (pItem)
+	if (pActor)
 	{
-		CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-		if (pWeapon)
-			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
-	}
-	else if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
-	{
-		// vehicle drivers don't seem to have current items, so need to add the vehicle itself here
-		nSkip = pVehicle->GetSkipEntities(pSkipEntities, 10);
+		IItem* pItem = pActor->GetCurrentItem();
+		if (pItem)
+		{
+			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
+			if (pWeapon)
+				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+		}
+		else if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+		{
+			// vehicle drivers don't seem to have current items, so need to add the vehicle itself here
+			nSkip = pVehicle->GetSkipEntities(pSkipEntities, 10);
+		}
 	}
 
 	const float wallSafeDistance = 0.2f; // how far to keep camera from walls
@@ -1364,7 +1374,7 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 		lastSpectatorTarget = m_in.stats_spectatorTarget;
 	}
 	frameNo = thisFrameId;
-	if (pTarget->GetLinkedVehicle())
+	if (pActor && pActor->GetLinkedVehicle())
 	{
 		Interpolate(viewOffset, goal - worldPos, 5.0f, viewParams.frameTime);
 		entPos = worldPos;
