@@ -1,5 +1,6 @@
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
+#include "CryCommon/Cry3DEngine/CryParticleSpawnInfo.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 #include "ScriptBind_Particle.h"
@@ -9,11 +10,18 @@ ScriptBind_Particle::ScriptBind_Particle(IScriptSystem *pSS)
 	CScriptableBase::Init(pSS, gEnv->pSystem);
 	SetGlobalName("Particle");
 
+	pSS->SetGlobalValue("CRYPARTICLE_RAIN_MODE", CryParticleSpawnInfo::FLAGS_RAIN_MODE);
+	pSS->SetGlobalValue("CRYPARTICLE_ONE_TIME_SPAWN", CryParticleSpawnInfo::FLAGS_ONE_TIME_SPAWN);
+
+	pSS->SetGlobalValue("ParticleBlendType_AlphaBased", ParticleBlendType_AlphaBased);
+	pSS->SetGlobalValue("ParticleBlendType_ColorBased", ParticleBlendType_ColorBased);
+	pSS->SetGlobalValue("ParticleBlendType_Additive", ParticleBlendType_Additive);
+	pSS->SetGlobalValue("ParticleBlendType_None", ParticleBlendType_None);
+
 #undef SCRIPT_REG_CLASSNAME
 #define SCRIPT_REG_CLASSNAME &ScriptBind_Particle::
 
 	SCRIPT_REG_TEMPLFUNC(SpawnEffect, "effectName, pos, dir, [scale], [entityId], [partId]");
-	SCRIPT_REG_TEMPLFUNC(EmitParticle, "pos, dir, entityId, slotId");
 	SCRIPT_REG_TEMPLFUNC(CreateDecal, "pos, normal, size, lifeTime, textureName, [angle], [hitDirection], [entityId], [partid]");
 	SCRIPT_REG_TEMPLFUNC(CreateMatDecal, "pos, normal, size, lifeTime, materialName, [angle], [hitDirection], [entityId], [partid]");
 }
@@ -48,24 +56,6 @@ int ScriptBind_Particle::SpawnEffect(IFunctionHandler *pH, const char *effectNam
 	}
 
 	return pH->EndFunction(entitySlot);
-}
-
-int ScriptBind_Particle::EmitParticle(IFunctionHandler *pH, Vec3 pos, Vec3 dir, ScriptHandle entityId, int slotId)
-{
-	IEntity *pEntity = gEnv->pEntitySystem->GetEntity(static_cast<EntityId>(entityId.n));
-	if (!pEntity)
-		return pH->EndFunction();
-
-	IParticleEmitter *pEmitter = pEntity->GetParticleEmitter(slotId);
-	if (!pEmitter)
-		return pH->EndFunction();
-
-	QuatTS location(IDENTITY, pos, 1.0f);
-	location.q.SetRotationVDir(dir);
-
-	pEmitter->EmitParticle(nullptr, nullptr, &location, nullptr);
-
-	return pH->EndFunction();
 }
 
 static void SetAdditionalDecalInfo(CryEngineDecalInfo & decal, IFunctionHandler *pH)

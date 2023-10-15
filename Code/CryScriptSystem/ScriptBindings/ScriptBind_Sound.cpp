@@ -118,6 +118,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	pSS->SetGlobalValue("SOUNDSCALE_UNDERWATER", SOUNDSCALE_UNDERWATER);
 	pSS->SetGlobalValue("SOUNDSCALE_MISSIONHINT", SOUNDSCALE_MISSIONHINT);
 
+	pSS->SetGlobalValue("SOUND_VOLUMESCALEMISSIONHINT", 0.45f);
+
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NONE", eSoundSemantic_None);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_ONLYVOICE", eSoundSemantic_OnlyVoice);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NOVOICE", eSoundSemantic_NoVoice);
