@@ -73,7 +73,7 @@ void ScriptTable::PushRef()
 	}
 	else
 	{
-		CryLogWarning("[Script] Pushing Nil table reference");
+		CryLogWarningAlways("[Script] Pushing nil table");
 
 		lua_pushnil(m_L);
 	}

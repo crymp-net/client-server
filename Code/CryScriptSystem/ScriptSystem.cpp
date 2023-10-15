@@ -574,7 +574,7 @@ int ScriptSystem::BeginCall(HSCRIPTFUNCTION func)
 	lua_getref(m_L, funcHandle);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%d): Function not found", funcHandle);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%d): Not a function", funcHandle);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -591,7 +591,7 @@ int ScriptSystem::BeginCall(const char *funcName)
 	lua_getglobal(m_L, funcName);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s): Function not found", funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -608,7 +608,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Table not found", tableName, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -618,7 +618,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Function not found", tableName, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(%s.%s): Not a function", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -639,7 +639,7 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(0x%p, %s): Function not found", pTable, funcName);
+		CryLogWarningAlways("ScriptSystem::BeginCall(0x%p, %s): Not a function", pTable, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -651,38 +651,33 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 
 bool ScriptSystem::EndCall()
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, 0);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, 0) : false;
 }
 
 bool ScriptSystem::EndCallAny(ScriptAnyValue & any)
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, 1) && PopAny(any);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, 1) && PopAny(any) : false;
 }
 
 bool ScriptSystem::EndCallAnyN(int resultCount, ScriptAnyValue *anys)
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, resultCount) && PopAnys(anys, resultCount);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, resultCount) && PopAnys(anys, resultCount) : false;
 }
 
 HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *funcName)
 {
 	lua_getglobal(m_L, funcName);
-	if (lua_isnil(m_L, -1) || !lua_isfunction(m_L, -1))
+	if (!lua_isfunction(m_L, -1))
 	{
+		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
 
-	return reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	lua_pop(m_L, 1);
+
+	return result;
 }
 
 HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *funcName)
@@ -690,20 +685,24 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
+		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
 
 	lua_pushstring(m_L, funcName);
 	lua_gettable(m_L, -2);
-	lua_remove(m_L, -2);  // remove global table
-	if (lua_isnil(m_L, -1) || !lua_isfunction(m_L, -1))
+	if (!lua_isfunction(m_L, -1))
 	{
-		lua_pop(m_L, 1);
+		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s.%s): Not a function", tableName, funcName);
+		lua_pop(m_L, 2);
 		return nullptr;
 	}
 
-	return reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	lua_pop(m_L, 2);
+
+	return result;
 }
 
 void ScriptSystem::ReleaseFunc(HSCRIPTFUNCTION func)
