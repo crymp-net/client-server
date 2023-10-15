@@ -724,14 +724,117 @@ void ScriptSystem::PushFuncParamAny(const ScriptAnyValue & any)
 
 void ScriptSystem::SetGlobalAny(const char *key, const ScriptAnyValue & any)
 {
-	PushAny(any);
-	lua_setglobal(m_L, key);
+	const size_t key_length = strlen(key);
+
+	char key_buffer[256];
+	if (key_length >= sizeof(key_buffer))
+	{
+		CryLogErrorAlways("ScriptSystem::SetGlobalAny(%s): Too long key", key);
+		return;
+	}
+
+	memcpy(key_buffer, key, key_length + 1);
+	char* current_key = key_buffer;
+
+	bool success = false;
+	bool is_nested = false;
+	ScriptAnyValue nested_any;
+	for (; char* dot = strchr(current_key, '.'); current_key = dot + 1)
+	{
+		*dot = '\0';
+
+		if (!is_nested)
+		{
+			is_nested = true;
+			lua_getglobal(m_L, current_key);
+			success = PopAny(nested_any);
+		}
+		else
+		{
+			ScriptAnyValue temp;
+			success = nested_any.table->GetValueAny(current_key, temp);
+			nested_any.Swap(temp);
+		}
+
+		if (!success || nested_any.type != ANY_TTABLE)
+		{
+			CryLogWarningAlways("ScriptSystem::SetGlobalAny(%s): %s is not a table", key, current_key);
+			return;
+		}
+	}
+
+	if (is_nested)
+	{
+		nested_any.table->SetValueAny(current_key, any);
+	}
+	else
+	{
+		PushAny(any);
+		lua_setglobal(m_L, current_key);
+	}
 }
 
 bool ScriptSystem::GetGlobalAny(const char *key, ScriptAnyValue & any)
 {
-	lua_getglobal(m_L, key);
-	return PopAny(any);
+	const size_t key_length = strlen(key);
+
+	char key_buffer[256];
+	if (key_length >= sizeof(key_buffer))
+	{
+		CryLogErrorAlways("ScriptSystem::GetGlobalAny(%s): Too long key", key);
+		return false;
+	}
+
+	memcpy(key_buffer, key, key_length + 1);
+	char* current_key = key_buffer;
+
+	bool success = false;
+	bool is_nested = false;
+	ScriptAnyValue nested_any;
+	for (; char* dot = strchr(current_key, '.'); current_key = dot + 1)
+	{
+		*dot = '\0';
+
+		if (!is_nested)
+		{
+			is_nested = true;
+			lua_getglobal(m_L, current_key);
+			success = PopAny(nested_any);
+		}
+		else
+		{
+			ScriptAnyValue temp;
+			success = nested_any.table->GetValueAny(current_key, temp);
+			nested_any.Swap(temp);
+		}
+
+		if (!success || nested_any.type != ANY_TTABLE)
+		{
+			CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): %s is not a table", key, current_key);
+			return false;
+		}
+	}
+
+	if (is_nested)
+	{
+		success = nested_any.table->GetValueAny(current_key, any);
+	}
+	else
+	{
+		lua_getglobal(m_L, current_key);
+		success = PopAny(any);
+	}
+
+	if (!success)
+	{
+		CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): Failed", key);
+	}
+	else if (any.type == ANY_TNIL)
+	{
+		CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): Nil value", key);
+	}
+
+	return success;
 }
 
 void ScriptSystem::SetGlobalToNull(const char *key)
