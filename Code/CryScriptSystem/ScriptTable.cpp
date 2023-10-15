@@ -485,6 +485,12 @@ bool ScriptTable::AddFunction(const SUserFunctionDesc & fd)
 	return true;
 }
 
+bool ScriptTable::GetValueRecursive(const char *path, IScriptTable *pTable)
+{
+	CryLogErrorAlways("[ScriptTable::GetValueRecursive] Should not be used");
+	return false;
+}
+
 ///////////////////////
 // Private functions //
 ///////////////////////
