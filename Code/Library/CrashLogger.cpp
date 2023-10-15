@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <mutex>
 
 #define WIN32_LEAN_AND_MEAN
@@ -320,8 +321,29 @@ static void DumpLoadedModules(std::FILE* file)
 static void DumpCommandLine(std::FILE* file)
 {
 	std::fprintf(file, "Command line:\n");
-	std::fprintf(file, "%s\n", GetCommandLineA());
 
+	const char* cmdLine = GetCommandLineA();
+
+	// hide login name and token
+	while (const char* cmd = std::strstr(cmdLine, "+secu_login"))
+	{
+		for (; *cmd != ' ' && *cmd; cmd++) {}
+
+		const char* end = cmd;
+
+		// skip name
+		for (; *end == ' '; end++) {}
+		for (; *end != ' ' && *end; end++) {}
+		// skip token
+		for (; *end == ' '; end++) {}
+		for (; *end != ' ' && *end; end++) {}
+
+		std::fprintf(file, "%.*s <hidden> <hidden>", static_cast<int>(cmd - cmdLine), cmdLine);
+
+		cmdLine = end;
+	}
+
+	std::fprintf(file, "%s\n", cmdLine);
 	std::fflush(file);
 }
 
