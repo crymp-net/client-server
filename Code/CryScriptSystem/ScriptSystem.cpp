@@ -26,6 +26,7 @@ extern "C"
 
 ScriptSystem::ScriptSystem()
 {
+	m_scripts.reserve(128);
 }
 
 ScriptSystem::~ScriptSystem()
@@ -440,23 +441,17 @@ void ScriptSystem::SetGCFrequency(const float rate)
 
 bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool forceReload)
 {
-	const std::string scriptName = SanitizeScriptFileName(fileName);
+	const bool isNew = this->AddToScripts(fileName);
 
-	bool isNew = false;
-	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
-
-	if (it == m_scripts.end() || it->name != scriptName)
+	if (forceReload)
 	{
-		isNew = true;
-		it = m_scripts.emplace(it);
-		it->name = scriptName;
-		it->prettyName = fileName;
+		m_nestedForceReload++;
 	}
 
-	if (isNew || forceReload)
-	{
-		bool success = false;
+	bool success = true;
 
+	if (isNew || forceReload || m_nestedForceReload > 0)
+	{
 		CCryFile file;
 
 		// try to load and execute the script file
@@ -475,21 +470,29 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 			// execute the file
 			success = ExecuteBuffer(content.data(), content.size(), description);
 		}
+		else
+		{
+			success = false;
+		}
 
 		if (!success)
 		{
-			if (raiseError)
+			// always log failed script execution
+			//if (raiseError)
 			{
 				CryLogErrorAlways("[Script] Failed to load %s", fileName);
 			}
 
-			m_scripts.erase(it);
-
-			return false;
+			this->RemoveFromScripts(fileName);
 		}
 	}
 
-	return true;
+	if (forceReload)
+	{
+		m_nestedForceReload--;
+	}
+
+	return success;
 }
 
 bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const char *bufferDescription)
@@ -512,14 +515,7 @@ bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const ch
 
 void ScriptSystem::UnloadScript(const char *fileName)
 {
-	const std::string scriptName = SanitizeScriptFileName(fileName);
-
-	const auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
-
-	if (it != m_scripts.end() && it->name == scriptName)
-	{
-		m_scripts.erase(it);
-	}
+	this->RemoveFromScripts(fileName);
 }
 
 void ScriptSystem::UnloadScripts()
@@ -529,20 +525,18 @@ void ScriptSystem::UnloadScripts()
 
 bool ScriptSystem::ReloadScript(const char *fileName, bool raiseError)
 {
-	const bool forceReload = gEnv->pSystem->IsDevMode();
+	const bool forceReload = false;
 
 	return ExecuteFile(fileName, raiseError, forceReload);
 }
 
 bool ScriptSystem::ReloadScripts()
 {
-	const bool raiseError = true;
-
 	bool status = true;
 
 	for (const Script& script : m_scripts)
 	{
-		if (!ReloadScript(script.prettyName.c_str(), raiseError))
+		if (!ReloadScript(script.prettyName.c_str()))
 		{
 			status = false;
 		}
@@ -886,7 +880,7 @@ bool ScriptSystem::LuaCall(int paramCount, int resultCount)
 	return (status == 0);
 }
 
-std::string ScriptSystem::SanitizeScriptFileName(const char *fileName)
+static std::string SanitizeScriptFileName(const char *fileName)
 {
 	std::string result;
 
@@ -901,15 +895,45 @@ std::string ScriptSystem::SanitizeScriptFileName(const char *fileName)
 				// convert backslashes to normal slashes
 				ch = '/';
 			}
-			else if (ch >= 'A' && ch <= 'Z')
-			{
-				// convert to lowercase
-				ch += ('a' - 'A');
-			}
+
+			// convert to lowercase
+			ch |= (ch >= 'A' && ch <= 'Z') << 5;
 		}
 	}
 
 	return result;
+}
+
+bool ScriptSystem::AddToScripts(const char *fileName)
+{
+	const std::string sanitizedName = SanitizeScriptFileName(fileName);
+
+	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), sanitizedName);
+	if (it != m_scripts.end() && it->sanitizedName == sanitizedName)
+	{
+		return false;
+	}
+
+	it = m_scripts.emplace(it);
+	it->sanitizedName = sanitizedName;
+	it->prettyName = fileName;
+
+	return true;
+}
+
+bool ScriptSystem::RemoveFromScripts(const char *fileName)
+{
+	const std::string sanitizedName = SanitizeScriptFileName(fileName);
+
+	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), sanitizedName);
+	if (it == m_scripts.end() || it->sanitizedName != sanitizedName)
+	{
+		return false;
+	}
+
+	m_scripts.erase(it);
+
+	return true;
 }
 
 int ScriptSystem::ErrorHandler(lua_State *L)
@@ -960,7 +984,9 @@ void *ScriptSystem::LuaAllocator(void *userData, void *originalBlock, size_t ori
 			void *newBlock = self->Allocate(newSize);
 
 			if (originalSize > 0)
+			{
 				memcpy(newBlock, originalBlock, originalSize);
+			}
 
 			return newBlock;
 		}

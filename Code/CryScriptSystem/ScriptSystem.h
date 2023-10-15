@@ -16,22 +16,20 @@ class ScriptSystem : public IScriptSystem
 	lua_State *m_L = nullptr;
 	int m_funcParamCount = -1;
 	int m_errorHandlerRef = 0;
+	int m_nestedForceReload = 0;
 
 	ScriptTimerManager m_timers;
 	ScriptBindings m_bindings;
 
 	struct Script
 	{
-		std::string name;
+		std::string sanitizedName;
 		std::string prettyName;
+
+		bool operator<(const std::string& name) const { return this->sanitizedName < name; }
 	};
 
 	std::vector<Script> m_scripts;
-
-	constexpr auto GetScriptNameCompare() const
-	{
-		return [](const Script& script, const std::string& name) { return script.name < name; };
-	}
 
 public:
 	ScriptSystem();
@@ -123,7 +121,8 @@ private:
 	void LuaGarbageCollectFull();
 	bool LuaCall(int paramCount, int resultCount);
 
-	std::string SanitizeScriptFileName(const char *fileName);
+	bool AddToScripts(const char *fileName);
+	bool RemoveFromScripts(const char *fileName);
 
 	static int ErrorHandler(lua_State *L);
 	static int PanicHandler(lua_State *L);
