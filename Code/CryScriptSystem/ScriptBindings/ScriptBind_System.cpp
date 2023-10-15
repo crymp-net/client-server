@@ -16,7 +16,6 @@
 #include "CryCommon/CryMath/Cry_Camera.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
-#include "CryCommon/CrySystem/IBudgetingSystem.h"
 
 #include "ScriptBind_System.h"
 
@@ -67,10 +66,8 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(GetPhysicalEntitiesInBoxByClass, "center, radius, className");
 	SCRIPT_REG_TEMPLFUNC(GetEntitiesByClass, "EntityClass");
 	SCRIPT_REG_TEMPLFUNC(GetNearestEntityByClass, "center, radius, className");
-
 	SCRIPT_REG_TEMPLFUNC(GetEntityByName, "sEntityName");
 	SCRIPT_REG_TEMPLFUNC(GetEntityIdByName, "sEntityName");
-
 	SCRIPT_REG_FUNC(DeformTerrain);
 	SCRIPT_REG_FUNC(DeformTerrainUsingMat);
 	SCRIPT_REG_FUNC(ScreenToTexture);
@@ -81,54 +78,33 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(DrawAABB, "x, y, z, x2, y2, z2, r, g, b, a");
 	SCRIPT_REG_TEMPLFUNC(DrawOBB, "x, y, z, w, h, d, rx, ry, rz");
 	SCRIPT_REG_FUNC(SetGammaDelta);
-
 	SCRIPT_REG_FUNC(ShowConsole);
-
-	SCRIPT_REG_FUNC(GetConfigSpec);
 	SCRIPT_REG_FUNC(IsMultiplayer);
-
 	SCRIPT_REG_FUNC(SetPostProcessFxParam);
 	SCRIPT_REG_FUNC(GetPostProcessFxParam);
-
 	SCRIPT_REG_FUNC(SetScreenFx);
 	SCRIPT_REG_FUNC(GetScreenFx);
-
 	SCRIPT_REG_FUNC(SetCVar);
 	SCRIPT_REG_FUNC(GetCVar);
 	SCRIPT_REG_FUNC(AddCCommand);
-
 	SCRIPT_REG_FUNC(SetScissor);
-
-	SCRIPT_REG_FUNC(GetSystemMem);
 	SCRIPT_REG_FUNC(IsHDRSupported);
-
-	SCRIPT_REG_FUNC(SetBudget);
-	SCRIPT_REG_FUNC(SetVolumetricFogModifiers);
-
 	SCRIPT_REG_FUNC(SetWind);
 	SCRIPT_REG_FUNC(GetWind);
-
 	SCRIPT_REG_TEMPLFUNC(GetSurfaceTypeIdByName, "surfaceName");
 	SCRIPT_REG_TEMPLFUNC(GetSurfaceTypeNameById, "surfaceId");
-
 	SCRIPT_REG_TEMPLFUNC(RemoveEntity, "entityId");
 	SCRIPT_REG_TEMPLFUNC(SpawnEntity, "params");
-	SCRIPT_REG_FUNC(SetWaterVolumeOffset);
 	SCRIPT_REG_FUNC(IsValidMapPos);
 	SCRIPT_REG_FUNC(EnableOceanRendering);
 	SCRIPT_REG_FUNC(ScanDirectory);
-	SCRIPT_REG_FUNC(DebugStats);
-	SCRIPT_REG_FUNC(ViewDistanceSet);
 	SCRIPT_REG_FUNC(ViewDistanceGet);
 	SCRIPT_REG_FUNC(ApplyForceToEnvironment);
 	SCRIPT_REG_FUNC(GetOutdoorAmbientColor);
 	SCRIPT_REG_FUNC(GetTerrainElevation);
 	SCRIPT_REG_FUNC(ActivatePortal);
-	SCRIPT_REG_FUNC(DumpMMStats);
 	SCRIPT_REG_FUNC(IsPointIndoors);
 	SCRIPT_REG_TEMPLFUNC(ProjectToScreen, "point");
-	SCRIPT_REG_FUNC(DumpMemStats);
-	SCRIPT_REG_FUNC(DumpWinHeaps);
 	SCRIPT_REG_FUNC(Break);
 	SCRIPT_REG_TEMPLFUNC(SetViewCameraFov, "fov");
 	SCRIPT_REG_TEMPLFUNC(GetViewCameraFov, "");
@@ -141,36 +117,14 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_FUNC(SaveConfiguration);
 	SCRIPT_REG_FUNC(Quit);
 	SCRIPT_REG_FUNC(ClearKeyState);
-
 	SCRIPT_REG_TEMPLFUNC(SetSunColor, "vSunColor");
 	SCRIPT_REG_TEMPLFUNC(GetSunColor, "");
 	SCRIPT_REG_TEMPLFUNC(SetSkyColor, "vSkyColor");
 	SCRIPT_REG_TEMPLFUNC(GetSkyColor, "");
-
 	SCRIPT_REG_TEMPLFUNC(SetSkyHighlight, "tableSkyHighlightParams");
 	SCRIPT_REG_TEMPLFUNC(GetSkyHighlight, "");
-
 	SCRIPT_REG_TEMPLFUNC(LoadLocalizationXml, "filename");
-
 	SCRIPT_REG_FUNC(GetFrameID);
-}
-
-int ScriptBind_System::DumpMemStats(IFunctionHandler *pH)
-{
-	bool bUseKB = false;
-	if (pH->GetParamCount() > 0)
-		pH->GetParam(1, bUseKB);
-
-	gEnv->pSystem->DumpMemoryUsageStatistics(bUseKB);
-
-	return pH->EndFunction();
-}
-
-int ScriptBind_System::DumpWinHeaps(IFunctionHandler *pH)
-{
-	gEnv->pSystem->DumpWinHeaps();
-
-	return pH->EndFunction();
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -359,17 +313,6 @@ int ScriptBind_System::ShowConsole(IFunctionHandler *pH)
 	gEnv->pConsole->ShowConsole(show != 0);
 
 	return pH->EndFunction();
-}
-
-int ScriptBind_System::GetConfigSpec(IFunctionHandler *pH)
-{
-	int obj_quality = CONFIG_VERYHIGH_SPEC;
-
-	ICVar *e_obj_quality = gEnv->pConsole->GetCVar("e_ObjQuality");
-	if (e_obj_quality)
-		obj_quality = e_obj_quality->GetIVal();
-
-	return pH->EndFunction(obj_quality);
 }
 
 int ScriptBind_System::IsMultiplayer(IFunctionHandler *pH)
@@ -689,7 +632,6 @@ int ScriptBind_System::GetPhysicalEntitiesInBox(IFunctionHandler *pH, Vec3 cente
 	return pH->EndFunction();
 }
 
-/////////////////////////////////////////////////////////////////////////////////
 int ScriptBind_System::GetPhysicalEntitiesInBoxByClass(IFunctionHandler *pH, Vec3 center, float radius, const char *className)
 {
 	IEntityClass *pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(className);
@@ -734,7 +676,6 @@ int ScriptBind_System::GetPhysicalEntitiesInBoxByClass(IFunctionHandler *pH, Vec
 	return pH->EndFunction();
 }
 
-/////////////////////////////////////////////////////////////////////////////////
 int ScriptBind_System::GetNearestEntityByClass(IFunctionHandler *pH, Vec3 center, float radius, const char *className)
 {
 	IEntityClass *pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(className);
@@ -1239,34 +1180,6 @@ int ScriptBind_System::IsValidMapPos(IFunctionHandler *pH)
 	return pH->EndFunction(isValid);
 }
 
-int ScriptBind_System::DebugStats(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(1);
-
-	bool cp;
-	pH->GetParam(1, cp);
-
-	gEnv->pSystem->DebugStats(cp, false);
-
-	return pH->EndFunction();
-}
-
-int ScriptBind_System::ViewDistanceSet(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(1);
-
-	float fViewDist;
-	pH->GetParam(1, fViewDist);
-
-	if (fViewDist < 20)
-		fViewDist = 20;
-
-	// TODO
-	//gEnv->p3DEngine->SetMaxViewDistance(fViewDist);
-
-	return pH->EndFunction();
-}
-
 int ScriptBind_System::ViewDistanceGet(IFunctionHandler *pH)
 {
 	SCRIPT_CHECK_PARAMETERS(0);
@@ -1399,17 +1312,6 @@ int ScriptBind_System::ActivatePortal(IFunctionHandler *pH)
 	return pH->EndFunction();
 }
 
-int ScriptBind_System::DumpMMStats(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(0);
-
-	gEnv->pSystem->DumpMMStats(true);
-	//m_pSS->GetMemoryStatistics(NULL);
-	gEnv->pLog->Log("***SCRIPT GC COUNT [%d kb]", m_pSS->GetCGCount());
-
-	return pH->EndFunction();
-}
-
 int ScriptBind_System::IsPointIndoors(IFunctionHandler *pH)
 {
 	SCRIPT_CHECK_PARAMETERS(1);
@@ -1461,15 +1363,6 @@ int ScriptBind_System::EnableOceanRendering(IFunctionHandler *pH)
 int ScriptBind_System::Break(IFunctionHandler *pH)
 {
 	gEnv->pSystem->Error("ScriptBind_System:Break");
-
-	return pH->EndFunction();
-}
-
-int ScriptBind_System::SetWaterVolumeOffset(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(4);
-
-	// TODO
 
 	return pH->EndFunction();
 }
@@ -1533,58 +1426,6 @@ int ScriptBind_System::IsHDRSupported(IFunctionHandler *pH)
 	SCRIPT_CHECK_PARAMETERS(0);
 
 	return pH->EndFunction(gEnv->pRenderer->GetFeatures() & RFT_HW_HDR);
-}
-
-int ScriptBind_System::SetBudget(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(7);
-
-	int sysMemLimitInMB = 512;
-	pH->GetParam(1, sysMemLimitInMB);
-
-	int videoMemLimitInMB = 256;
-	pH->GetParam(2, videoMemLimitInMB);
-
-	float frameTimeLimitInMS = 50.0f;
-	pH->GetParam(3, frameTimeLimitInMS);
-
-	int soundChannelsPlayingLimit = 64;
-	pH->GetParam(4, soundChannelsPlayingLimit);
-
-	int soundMemLimitInMB = 64;
-	pH->GetParam(5, soundMemLimitInMB);
-
-	int soundCPULimitInPercent = 5;
-	pH->GetParam(6, soundCPULimitInPercent);
-
-	int numDrawCallsLimit = 2000;
-	pH->GetParam(7, numDrawCallsLimit);
-
-	gEnv->pSystem->GetIBudgetingSystem()->SetBudget(
-		sysMemLimitInMB,
-		videoMemLimitInMB,
-		frameTimeLimitInMS,
-		soundChannelsPlayingLimit,
-		soundMemLimitInMB,
-		numDrawCallsLimit
-	);
-
-	return pH->EndFunction();
-}
-
-int ScriptBind_System::SetVolumetricFogModifiers(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(2);
-
-	float gobalDensityModifier(0);
-	pH->GetParam(1, gobalDensityModifier);
-
-	float atmosphereHeightModifier(0);
-	pH->GetParam(2, atmosphereHeightModifier);
-
-	CryLogWarning("System.SetVolumetricFogModifiers: Setting fog modifiers via fog entity not implemented!");
-
-	return pH->EndFunction();
 }
 
 int ScriptBind_System::SetWind(IFunctionHandler *pH)
@@ -1829,16 +1670,6 @@ int ScriptBind_System::SaveConfiguration(IFunctionHandler *pH)
 	gEnv->pSystem->SaveConfiguration();
 
 	return pH->EndFunction();
-}
-
-int ScriptBind_System::GetSystemMem(IFunctionHandler *pH)
-{
-	SCRIPT_CHECK_PARAMETERS(0);
-
-	// TODO
-	int iSysMemInMB = 0;
-
-	return pH->EndFunction(iSysMemInMB);
 }
 
 int ScriptBind_System::Quit(IFunctionHandler *pH)

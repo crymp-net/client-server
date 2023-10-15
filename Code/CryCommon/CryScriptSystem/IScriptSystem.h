@@ -586,7 +586,7 @@ struct IScriptTable
 
 	//! @param szPath e.g. "cnt.table1.table2", "", "mytable", max 255 characters
 	//! @return true=path was valid, false otherwise
-	//virtual bool GetValueRecursive( const char *szPath, IScriptTable *pObj ) = 0;
+	virtual bool GetValueRecursive( const char *szPath, IScriptTable *pObj ) = 0;
 };
 
 
