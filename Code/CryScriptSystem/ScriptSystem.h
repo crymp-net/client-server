@@ -14,7 +14,7 @@ struct IConsoleCmdArgs;
 class ScriptSystem : public IScriptSystem
 {
 	lua_State *m_L = nullptr;
-	int m_funcParamCount = 0;
+	int m_funcParamCount = -1;
 	int m_errorHandlerRef = 0;
 
 	ScriptTimerManager m_timers;
