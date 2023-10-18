@@ -82,6 +82,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	void SetRandomCDKey();
 
 	static void OnConnectCmd(IConsoleCmdArgs *pArgs);
+	static void OnReconnectCmd(IConsoleCmdArgs *pArgs);
 	static void OnDisconnectCmd(IConsoleCmdArgs* pArgs);
 	static void OnKeyBindCmd(IConsoleCmdArgs* pArgs);
 	static void OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs);

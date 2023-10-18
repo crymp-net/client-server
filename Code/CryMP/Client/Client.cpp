@@ -131,6 +131,11 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	gClient->GetServerConnector()->Connect(server);
 }
 
+void Client::OnReconnectCmd(IConsoleCmdArgs *pArgs)
+{
+	gClient->GetServerConnector()->Reconnect();
+}
+
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 {
 	gClient->GetServerConnector()->Disconnect();
@@ -237,6 +242,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->RemoveCommand("disconnect");
 	pConsole->RemoveCommand("bind");
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
+	pConsole->AddCommand("reconnect", OnReconnectCmd, VF_RESTRICTEDMODE, "Usage: reconnect");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 	pConsole->AddCommand("bind", OnKeyBindCmd, VF_NOT_NET_SYNCED, "Usage: bind key command");
 	pConsole->AddCommand("dumpbinds", OnDumpKeyBindsCmd, VF_RESTRICTEDMODE, "Usage: dumpbinds");
