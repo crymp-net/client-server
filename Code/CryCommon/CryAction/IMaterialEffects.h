@@ -17,9 +17,12 @@
 #define __IMATERIALEFFECTS_H__
 #pragma once
 
+#include "CryCommon/CryCore/platform.h"
+#include "CryCommon/CryCore/smartptr.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 
 struct IEntityClass;
+struct IRenderNode;
 struct ISurfaceType;
 
 //////////////////////////////////////////////////////////////////////////

@@ -12,7 +12,7 @@ History:
 *************************************************************************/
 #include "CryCommon/CrySystem/ISystem.h"
 #include "SingleTG.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/HUD/HUD.h"

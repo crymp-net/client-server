@@ -18,9 +18,7 @@
 # pragma once
 #endif
 
-#if defined __GNUC__
-# include <vector>
-#endif
+#include <vector>
 
 #include "Cry_Geo.h"
 

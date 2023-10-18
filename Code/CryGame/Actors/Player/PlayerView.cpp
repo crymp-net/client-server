@@ -40,7 +40,7 @@ History:
 
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 
 #include "CryGame/HUD/HUD.h"
 

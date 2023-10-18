@@ -11,6 +11,7 @@
 
 #include <cstdint>
 
+#include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryCore/TypeInfo.h"
 
 class CTimeValue

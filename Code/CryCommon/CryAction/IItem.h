@@ -16,6 +16,7 @@ History:
 
 #pragma once
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
 
 struct IWeapon;
 

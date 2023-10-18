@@ -17,6 +17,9 @@
 #define __IDIALOGSYSTEM_H__
 #pragma once
 
+#include "CryCommon/CryCore/platform.h"
+#include "CryCommon/CryCore/smartptr.h"
+
 struct IDialogScriptIterator
 {
 	struct SDialogScript

@@ -18,6 +18,11 @@
 # pragma once
 #endif
 
+#include <cstdint>
+#include <vector>
+
+#include "CryCommon/CryCore/platform.h"
+
 struct ILevelRotationFile;
 struct IConsoleCmdArgs;
 
@@ -89,11 +94,11 @@ struct ILevelSystem :
 	public ILevelSystemListener
 {
 	virtual void Rescan(const char *levelsFolder = 0) = 0;
-  virtual void LoadRotation() = 0;
+	virtual void LoadRotation() = 0;
 	virtual int GetLevelCount() = 0;
 	virtual ILevelInfo *GetLevelInfo(int level) = 0;
 	virtual ILevelInfo *GetLevelInfo(const char *levelName) = 0;
-	virtual uint64 CalcLevelChecksum(const char *levelName) = 0;
+	virtual std::uint64_t CalcLevelChecksum(const char *levelName) = 0;
 
 	virtual void AddListener(ILevelSystemListener *pListener) = 0;
 	virtual void RemoveListener(ILevelSystemListener *pListener) = 0;

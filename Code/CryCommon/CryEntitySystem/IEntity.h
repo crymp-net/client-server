@@ -17,6 +17,8 @@
 #define __IEntity_h__
 #pragma once
 
+#include <cstdint>
+
 //////////////////////////////////////////////////////////////////////////
 // forward declarations.
 //////////////////////////////////////////////////////////////////////////
@@ -52,7 +54,7 @@ struct IMaterial;
 //////////////////////////////////////////////////////////////////////////
 // Unique Entity identifier, only used for saved entities.
 //////////////////////////////////////////////////////////////////////////
-typedef uint64 EntityGUID;
+typedef std::uint64_t EntityGUID;
 
 enum EPartIds 
 {
@@ -90,7 +92,7 @@ struct SEntitySpawnParams
 	const char*   sName;
 
 	// Entity Flags.
-	uint32        nFlags;				// e.g. ENTITY_FLAG_CASTSHADOW
+	std::uint32_t        nFlags;				// e.g. ENTITY_FLAG_CASTSHADOW
 	// spawn lock
 	bool					bIgnoreLock;
 	// to support save games compatible with patched levels (patched levels might use more EntityIDs and save game might conflict with dynamic ones)
@@ -482,25 +484,25 @@ struct IEntity
 	//     Set entity flags, completly replaces all flags which are already set in the entity.
 	// Arguments:
 	//     flags - flag values which are defined in EEntityFlags
-	virtual void SetFlags( uint32 flags ) = 0;
+	virtual void SetFlags( std::uint32_t flags ) = 0;
 	// Description:
 	//     Get current entity flags.
-	virtual uint32 GetFlags() const = 0;
+	virtual std::uint32_t GetFlags() const = 0;
 	// Description:
 	//     Adds flag/s to the current set of entity flags (logical OR).
 	// Arguments:
 	//     flagsToAdd - Combination of bit flags to add.
-	virtual void AddFlags( uint32 flagsToAdd ) = 0;
+	virtual void AddFlags( std::uint32_t flagsToAdd ) = 0;
 	// Description:
 	//     Removes flag/s from the current set of entity flags (logical AND NOT).
 	// Arguments:
 	//     flagsToClear - Combination of bit flags to remove.
-	virtual void ClearFlags( uint32 flagsToClear ) = 0;
+	virtual void ClearFlags( std::uint32_t flagsToClear ) = 0;
 	// Description:
 	//     Check if the specified entity flag is set.
 	// Arguments:
 	//     flagsToCheck - Combination of bit flags to check.
-	virtual bool CheckFlags( uint32 flagsToCheck ) const = 0;
+	virtual bool CheckFlags( std::uint32_t flagsToCheck ) const = 0;
 
 	// Description:
 	//     Check if this entity was marked for deletion.
@@ -880,7 +882,7 @@ struct IEntity
 	// Arguments:
 	//     nSlot - Index of the slot, if -1 apply to all existing slots.
 	//     nFlags - Flags to set.
-	virtual void SetSlotFlags( int nSlot,uint32 nFlags ) = 0;
+	virtual void SetSlotFlags( int nSlot,std::uint32_t nFlags ) = 0;
 
 	// Description:
 	//     Retrieves the flags of the specified slot.
@@ -888,7 +890,7 @@ struct IEntity
 	//     nSlot - Index of the slot.
 	// Return:
 	//     The slot flags, or 0 if specified slot is not valid.
-	virtual uint32 GetSlotFlags( int nSlot ) const = 0;
+	virtual std::uint32_t GetSlotFlags( int nSlot ) const = 0;
 
 
 	// Description:

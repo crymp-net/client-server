@@ -13,6 +13,8 @@
 
 struct IPlayerProfile;
 struct IActionMap;
+struct ILoadGame;
+struct ISaveGame;
 
 struct ISaveGameThumbnail
 {

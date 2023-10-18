@@ -18,6 +18,8 @@
 # pragma once
 #endif
 
+#include <map>
+
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CryCore/CryName.h"  // CCryName
 #include "CryCommon/CryCore/smartptr.h"

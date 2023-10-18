@@ -11,10 +11,12 @@
 #pragma once
 #endif
 
+#ifdef _MSC_VER
 #include <io.h>  // _finddata_t
+#endif
 
+#include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryCore/smartptr.h"
-#include <vector>					// STL vector<>
 
 struct IResourceList; 
 
