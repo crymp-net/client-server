@@ -743,6 +743,39 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 
 ################################################################################
 
+add_library(mimalloc STATIC
+	ThirdParty/mimalloc/src/alloc.c
+	ThirdParty/mimalloc/src/alloc-aligned.c
+	ThirdParty/mimalloc/src/alloc-posix.c
+	ThirdParty/mimalloc/src/arena.c
+	ThirdParty/mimalloc/src/bitmap.c
+	ThirdParty/mimalloc/src/heap.c
+	ThirdParty/mimalloc/src/init.c
+	ThirdParty/mimalloc/src/options.c
+	ThirdParty/mimalloc/src/os.c
+	ThirdParty/mimalloc/src/page.c
+	ThirdParty/mimalloc/src/random.c
+	ThirdParty/mimalloc/src/segment.c
+	ThirdParty/mimalloc/src/segment-map.c
+	ThirdParty/mimalloc/src/stats.c
+	ThirdParty/mimalloc/src/prim/prim.c
+)
+
+set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
+set_property(TARGET mimalloc PROPERTY CXX_STANDARD 17)
+
+target_compile_definitions(mimalloc PRIVATE
+	MI_SECURE=4
+	MI_DEBUG=1
+	MI_SHOW_ERRORS=1
+)
+
+target_compile_options(mimalloc PRIVATE /W3)
+
+target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
+
+################################################################################
+
 set(CRYMP_CLIENT_RESOURCES
 	${PROJECT_SOURCE_DIR}/Resources/CursorAmber.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorBlue.cur
@@ -784,7 +817,7 @@ target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
 
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc dbghelp ws2_32 winhttp)
 
 # prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
 target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)
