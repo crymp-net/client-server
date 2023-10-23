@@ -489,7 +489,7 @@ bool CHUD::Init(IActor* pActor)
 	m_pHUDTweakMenu = new CHUDTweakMenu(pScriptSystem);
 	m_pHUDCrosshair = new CHUDCrosshair(this);
 	m_pHUDTagNames = new CHUDTagNames(this);
-	m_pHUDSilhouettes = new CHUDSilhouettes;
+	m_pHUDSilhouettes = new CHUDSilhouettes(this);
 
 	if (gEnv->bMultiplayer)
 	{
@@ -3034,6 +3034,8 @@ void CHUD::OnPostUpdate(float frameTime)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
+	m_nameTagsNeedFix = false;
+
 	if (m_bStopCutsceneNextUpdate)
 	{
 #ifdef USER_alexl
@@ -3475,17 +3477,16 @@ void CHUD::OnPostUpdate(float frameTime)
 			AutoSnap();
 
 		// Non flash stuff
-
-		for (THUDObjectsList::iterator iter = m_hudObjectsList.begin(); iter != m_hudObjectsList.end(); ++iter)
+		for (const auto &obj : m_hudObjectsList)
 		{
-			(*iter)->PreUpdate();
+			obj->PreUpdate();
 		}
 
 		m_pUIDraw->PreRender();
 
-		for (THUDObjectsList::iterator iter = m_hudObjectsList.begin(); iter != m_hudObjectsList.end(); ++iter)
+		for (const auto& obj : m_hudObjectsList)
 		{
-			(*iter)->Update(frameTime);
+			obj->Update(frameTime);
 		}
 
 		if (m_bShowGODMode && strcmp(m_strGODMode, ""))
@@ -3568,9 +3569,9 @@ void CHUD::OnPostUpdate(float frameTime)
 	if (!m_bInMenu && !m_externalHUDObjectList.empty())
 	{
 		m_pUIDraw->PreRender();
-		for (THUDObjectsList::iterator iter = m_externalHUDObjectList.begin(); iter != m_externalHUDObjectList.end(); ++iter)
+		for (const auto& obj : m_externalHUDObjectList)
 		{
-			(*iter)->Update(frameTime);
+			obj->Update(frameTime);
 		}
 		m_pUIDraw->PostRender();
 	}

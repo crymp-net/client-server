@@ -1269,9 +1269,7 @@ void CHUDRadar::UpdateScanner(float frameTime)
 			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_scannerObjectID);
 			if (pEntity)
 			{
-				float r = 0.8f;
-				float g = 0.8f;
-				float b = 1.0f;
+				ColorF color = ColorF(0.8f, 0.8f, 1.0f, 0.5f);
 				//CryMP: Custom colors for tagging objects with binoculars
 				//Neutral: White
 				//Team: Blue
@@ -1281,18 +1279,14 @@ void CHUDRadar::UpdateScanner(float frameTime)
 					if (m_pGameRules->IsHostile(m_scannerObjectID, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_scannerObjectID))
 					{
 						//ColorF V(0.8f, 0.498039f, 0.196078f);
-						r = 1.0f;
-						g = 0.1f;
-						b = 0.0f;
+						color = ColorF(1.0f, 0.1f, 0.0f, 0.5f);
 					}
 					else if (m_pGameRules->IsSameTeam(m_scannerObjectID, m_pClientActor->GetEntityId()))
 					{
-						r = 0.137255f;
-						g = 0.137255f;
-						b = 0.556863f;
+						color = ColorF(0.137255f, 0.137255f, 0.556863f, 0.5f);
 					}
 				}
-				m_pHUD->GetSilhouettes()->SetSilhouette(pEntity, r, g, b, 0.5f, -1.0f);
+				m_pHUD->GetSilhouettes()->SetSilhouette(pEntity, color, -1.0f);
 			}
 		}
 	}
@@ -1760,8 +1754,6 @@ void CHUDRadar::RenderMapOverlay()
 
 	//the local player
 	CActor* pActor = static_cast<CActor*>(m_pClientActor);
-	if (!pActor || !m_pGameRules)
-		return;
 
 	EntityId iOnScreenObjective = m_pHUD->GetOnScreenObjective();
 	if (iOnScreenObjective)
@@ -1794,17 +1786,15 @@ void CHUDRadar::RenderMapOverlay()
 		}
 	}
 
-	bool isMultiplayer = gEnv->bMultiplayer;
-
-	int team = m_pGameRules->GetTeam(pActor->GetEntityId());
+	const bool isMultiplayer = gEnv->bMultiplayer;
+	const int team = m_pGameRules->GetTeam(pActor->GetEntityId());
 
 	//draw buildings first
-	for (int i = 0; i < m_buildingsOnRadar.size(); ++i)
+	for (const auto &bulding : m_buildingsOnRadar)
 	{
-		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_buildingsOnRadar[i].m_id);
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(bulding.m_id);
 		if (GetPosOnMap(pEntity, fX, fY))
 		{
-
 			int friendly = FriendOrFoe(isMultiplayer, team, pEntity, m_pGameRules);
 			bool addBuilding = true;
 			if (friendly == 2)
@@ -1839,7 +1829,8 @@ void CHUDRadar::RenderMapOverlay()
 					underAttack = m_pHUD->IsUnderAttack(pEntity) && friendly == EFriend;
 				}
 				m_possibleOnScreenObjectives.push_back(pEntity->GetId());
-				numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), type, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == m_buildingsOnRadar[i].m_id, iCurrentSpawnPoint == m_buildingsOnRadar[i].m_id, underAttack);
+				numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), 
+					type, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == bulding.m_id, iCurrentSpawnPoint == bulding.m_id, underAttack);
 			}
 		}
 	}
@@ -1850,12 +1841,10 @@ void CHUDRadar::RenderMapOverlay()
 	if (isMultiplayer)
 	{
 		//special units
-		const std::vector<CGameRules::SMinimapEntity> synchEntities = m_pGameRules->GetMinimapEntities();
-		for (int m = 0; m < synchEntities.size(); ++m)
+		for (const auto &mEntity : m_pGameRules->GetMinimapEntities())
 		{
-			CGameRules::SMinimapEntity mEntity = synchEntities[m];
 			FlashRadarType type = GetSynchedEntityType(mEntity.type);
-			IEntity* pEntity = NULL;
+			IEntity* pEntity = nullptr;
 			if (type == ENuclearWeapon || type == ETechCharger)	//might be a gun
 			{
 				if (IItem* pWeapon = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(mEntity.entityId))
@@ -1923,30 +1912,12 @@ void CHUDRadar::RenderMapOverlay()
 	}
 
 	//draw temporarily tagged units
+	for (const auto& tempEntity : m_tempEntitiesOnRadar)
 	{
-		for (int e = 0; e < m_tempEntitiesOnRadar.size(); ++e)
+		const EntityId id = tempEntity.m_id;
+		if (pTempActor = m_pActorSystem->GetActor(id))
 		{
-			EntityId id = m_tempEntitiesOnRadar[e].m_id;
-			if (pTempActor = m_pActorSystem->GetActor(id))
-			{
-				if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
-				{
-					if (!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
-					{
-						GetPosOnMap(pVehicle->GetEntity(), fX, fY);
-						numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity(), false), fX, fY,
-							270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), FriendOrFoe(isMultiplayer, team, pVehicle->GetEntity(), m_pGameRules), 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
-						drawnVehicles[pVehicle->GetEntityId()] = true;
-					}
-				}
-				else
-				{
-					GetPosOnMap(pTempActor->GetEntity(), fX, fY);
-					numOfValues += FillUpDoubleArray(&entityValues, pActor->GetEntity()->GetId(), ChooseType(pTempActor->GetEntity(), false), fX, fY,
-						270.0f - RAD2DEG(pTempActor->GetEntity()->GetWorldAngles().z), FriendOrFoe(isMultiplayer, team, pTempActor->GetEntity(), m_pGameRules), 100, 100, iOnScreenObjective == pTempActor->GetEntity()->GetId(), iCurrentSpawnPoint == pTempActor->GetEntity()->GetId());
-				}
-			}
-			else if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(id))
+			if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
 			{
 				if (!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
 				{
@@ -1956,63 +1927,73 @@ void CHUDRadar::RenderMapOverlay()
 					drawnVehicles[pVehicle->GetEntityId()] = true;
 				}
 			}
-		}
-	}
-
-	//draw story entities (icons with text)
-	{
-		for (int e = 0; e < m_storyEntitiesOnRadar.size(); ++e)
-		{
-			EntityId id = m_storyEntitiesOnRadar[e].m_id;
-			if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id))
+			else
 			{
-				GetPosOnMap(pEntity, fX, fY);
-				numOfValues += FillUpDoubleArray(&entityValues, id, m_storyEntitiesOnRadar[e].m_type, fX, fY,
-					270.0f - RAD2DEG(pEntity->GetWorldAngles().z), ENeutral, 100, 100, iOnScreenObjective == id, iCurrentSpawnPoint == id);
-				if (!m_storyEntitiesOnRadar[e].m_text.empty())
-					textOnMap[id] = m_storyEntitiesOnRadar[e].m_text;
+				GetPosOnMap(pTempActor->GetEntity(), fX, fY);
+				numOfValues += FillUpDoubleArray(&entityValues, pActor->GetEntity()->GetId(), ChooseType(pTempActor->GetEntity(), false), fX, fY,
+					270.0f - RAD2DEG(pTempActor->GetEntity()->GetWorldAngles().z), FriendOrFoe(isMultiplayer, team, pTempActor->GetEntity(), m_pGameRules), 100, 100, iOnScreenObjective == pTempActor->GetEntity()->GetId(), iCurrentSpawnPoint == pTempActor->GetEntity()->GetId());
+			}
+		}
+		else if (IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(id))
+		{
+			if (!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
+			{
+				GetPosOnMap(pVehicle->GetEntity(), fX, fY);
+				numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity(), false), fX, fY,
+					270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), FriendOrFoe(isMultiplayer, team, pVehicle->GetEntity(), m_pGameRules), 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
+				drawnVehicles[pVehicle->GetEntityId()] = true;
 			}
 		}
 	}
 
-	//draw position of teammates ...
+	//draw story entities (icons with text)
+	for (const auto &storyEntity : m_storyEntitiesOnRadar)
 	{
-		std::vector<EntityId>::const_iterator it = m_teamMates.begin();
-		std::vector<EntityId>::const_iterator end = m_teamMates.end();
-		for (;it != end; ++it)
+		EntityId id = storyEntity.m_id;
+		if (IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id))
 		{
-			pTempActor = m_pActorSystem->GetActor(*it);
-			if (pTempActor && pTempActor != pActor)
+			GetPosOnMap(pEntity, fX, fY);
+			numOfValues += FillUpDoubleArray(&entityValues, id, storyEntity.m_type, fX, fY,
+				270.0f - RAD2DEG(pEntity->GetWorldAngles().z), ENeutral, 100, 100, iOnScreenObjective == id, iCurrentSpawnPoint == id);
+			if (!storyEntity.m_text.empty())
+				textOnMap[id] = storyEntity.m_text;
+		}
+	}
+
+	//draw position of teammates ...
+	for (const EntityId id : m_teamMates)
+	{
+		pTempActor = m_pActorSystem->GetActor(id);
+		if (pTempActor && pTempActor != pActor)
+		{
+			if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
 			{
-				if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
+				if (!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
 				{
-					if (!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
-					{
-						GetPosOnMap(pVehicle->GetEntity(), fX, fY);
-						numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity()), fX, fY, 270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), EFriend, 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
-						drawnVehicles[pVehicle->GetEntityId()] = true;
-					}
+					GetPosOnMap(pVehicle->GetEntity(), fX, fY);
+					numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity()), fX, fY, 270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), EFriend, 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
+					drawnVehicles[pVehicle->GetEntityId()] = true;
 				}
-				else
+			}
+			else
+			{
+				bool spectating = false;
+				if (isMultiplayer)
+					spectating = (static_cast<CActor*>(pTempActor)->GetSpectatorMode() != CActor::eASM_None);
+				if (!spectating)
 				{
-					bool spectating = false;
-					if (isMultiplayer)
-						spectating = (static_cast<CActor*>(pTempActor)->GetSpectatorMode() != CActor::eASM_None);
-					if (!spectating)
+					GetPosOnMap(pTempActor->GetEntity(), fX, fY);
+					numOfValues += FillUpDoubleArray(&entityValues, pTempActor->GetEntity()->GetId(), EPlayer, fX, fY, 270.0f - RAD2DEG(pTempActor->GetEntity()->GetWorldAngles().z), EFriend, 100, 100, iOnScreenObjective == pTempActor->GetEntity()->GetId(), iCurrentSpawnPoint == pTempActor->GetEntity()->GetId());
+					//draw teammate name if selected
+					if (gEnv->bMultiplayer)
 					{
-						GetPosOnMap(pTempActor->GetEntity(), fX, fY);
-						numOfValues += FillUpDoubleArray(&entityValues, pTempActor->GetEntity()->GetId(), EPlayer, fX, fY, 270.0f - RAD2DEG(pTempActor->GetEntity()->GetWorldAngles().z), EFriend, 100, 100, iOnScreenObjective == pTempActor->GetEntity()->GetId(), iCurrentSpawnPoint == pTempActor->GetEntity()->GetId());
-						//draw teammate name if selected
-						if (gEnv->bMultiplayer)
+						EntityId id = pTempActor->GetEntityId();
+						for (int i = 0; i < m_selectedTeamMates.size(); ++i)
 						{
-							EntityId id = pTempActor->GetEntityId();
-							for (int i = 0; i < m_selectedTeamMates.size(); ++i)
+							if (m_selectedTeamMates[i] == id)
 							{
-								if (m_selectedTeamMates[i] == id)
-								{
-									textOnMap[id] = pTempActor->GetEntity()->GetName();
-									break;
-								}
+								textOnMap[id] = pTempActor->GetEntity()->GetName();
+								break;
 							}
 						}
 					}
@@ -2023,9 +2004,9 @@ void CHUDRadar::RenderMapOverlay()
 
 	//draw radar entities on the map (scanned enemies and vehicles) 
 	//scanned vehicles have to be drawn last to find the "neutral" ones correctly
-	for (int i = 0; i < m_entitiesOnRadar.size(); ++i)
+	for (const auto &entity : m_entitiesOnRadar)
 	{
-		EntityId uiEntityId = m_entitiesOnRadar[i].m_id;
+		const EntityId uiEntityId = entity.m_id;
 		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(uiEntityId);
 		if (!pEntity || pEntity->IsHidden())
 		{
@@ -2072,53 +2053,38 @@ void CHUDRadar::RenderMapOverlay()
 		}
 	}
 
-	//draw player VEHICLE position
-	if (pActor)
-	{
-		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
-		{
-			//if(!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
-			//{
-			GetPosOnMap(pVehicle->GetEntity(), fX, fY);
-			vPlayerPos.x = fX;
-			vPlayerPos.y = fY;
-			numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity()), fX, fY, 270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), ESelf, 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
-			drawnVehicles[pVehicle->GetEntityId()] = true;
-			//}
-		}
-	}
-
 	if (isMultiplayer)
 	{
 		//now spawn points
 		std::vector<EntityId> locations;
 		m_pGameRules->GetSpawnGroups(locations);
-		for (int i = 0; i < locations.size(); ++i)
+		for (const EntityId id : locations)
 		{
-			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(locations[i]);
+			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id);
 			if (!pEntity)
 				continue;
+
 			if (pEntity)
 			{
-				IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(pEntity->GetId());
-				bool isVehicle = (pVehicle) ? true : false;
+				IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(id);
+				const bool isVehicle = (pVehicle) ? true : false;
 				if (GetPosOnMap(pEntity, fX, fY))
 				{
-					int friendly = FriendOrFoe(isMultiplayer, team, pEntity, m_pGameRules);
+					const int friendly = FriendOrFoe(isMultiplayer, team, pEntity, m_pGameRules);
 					if (isVehicle /*&& !stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false)*/)
 					{
 						if (friendly == EFriend)
 						{
-							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnTruck, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i]);
+							numOfValues += FillUpDoubleArray(&entityValues, id, ESpawnTruck, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == id, iCurrentSpawnPoint == id);
 							drawnVehicles[pVehicle->GetEntityId()] = true;
 						}
 					}
 					else
 					{
-						bool underAttack = m_pHUD->IsUnderAttack(pEntity) && friendly == EFriend;
+						const bool underAttack = m_pHUD->IsUnderAttack(pEntity) && friendly == EFriend;
 						if (friendly != 2)
 						{
-							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
+							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == id, iCurrentSpawnPoint == id, underAttack);
 							m_possibleOnScreenObjectives.push_back(pEntity->GetId());
 						}
 						else
@@ -2129,7 +2095,7 @@ void CHUDRadar::RenderMapOverlay()
 								int capturable = 0;
 								if (props->GetValue("bCapturable", capturable) && capturable)
 								{
-									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
+									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == id, iCurrentSpawnPoint == id, underAttack);
 									m_possibleOnScreenObjectives.push_back(pEntity->GetId());
 								}
 							}
@@ -2140,36 +2106,42 @@ void CHUDRadar::RenderMapOverlay()
 		}
 	}
 
-	//draw player position
-	if (pActor)
+	//draw player VEHICLE position
+	if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 	{
-		if (!pActor->GetLinkedVehicle())
-		{
-			GetPosOnMap(pActor->GetEntity(), fX, fY);
-			vPlayerPos.x = fX;
-			vPlayerPos.y = fY;
-			string name(pActor->GetEntity()->GetName());
-			numOfValues += FillUpDoubleArray(&entityValues, pActor->GetEntity()->GetId(), (name.find("Quarantine", 0) != string::npos) ? ENuclearWeapon : EPlayer, fX, fY, 270.0f - RAD2DEG(pActor->GetEntity()->GetWorldAngles().z), ESelf, 100, 100, iOnScreenObjective == pActor->GetEntity()->GetId(), iCurrentSpawnPoint == pActor->GetEntity()->GetId());
-		}
+		//if(!stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false))
+		//{
+		GetPosOnMap(pVehicle->GetEntity(), fX, fY);
+		vPlayerPos.x = fX;
+		vPlayerPos.y = fY;
+		numOfValues += FillUpDoubleArray(&entityValues, pVehicle->GetEntity()->GetId(), ChooseType(pVehicle->GetEntity()), fX, fY, 270.0f - RAD2DEG(pVehicle->GetEntity()->GetWorldAngles().z), ESelf, 100, 100, iOnScreenObjective == pVehicle->GetEntity()->GetId(), iCurrentSpawnPoint == pVehicle->GetEntity()->GetId());
+		drawnVehicles[pVehicle->GetEntityId()] = true;
+		//}
+	}
+	//draw player position
+	else
+	{
+		GetPosOnMap(pActor->GetEntity(), fX, fY);
+		vPlayerPos.x = fX;
+		vPlayerPos.y = fY;
+		string name(pActor->GetEntity()->GetName());
+		numOfValues += FillUpDoubleArray(&entityValues, pActor->GetEntity()->GetId(), (name.find("Quarantine", 0) != string::npos) ? ENuclearWeapon : EPlayer, fX, fY, 270.0f - RAD2DEG(pActor->GetEntity()->GetWorldAngles().z), ESelf, 100, 100, iOnScreenObjective == pActor->GetEntity()->GetId(), iCurrentSpawnPoint == pActor->GetEntity()->GetId());
 	}
 
 	//.. and mission objectives
 	if (!gEnv->bMultiplayer)
 	{
-		std::map<EntityId, RadarObjective>::const_iterator it = m_missionObjectives.begin();
-		std::map<EntityId, RadarObjective>::const_iterator end = m_missionObjectives.end();
-
-		for (; it != end; ++it)
+		for (const auto &it : m_missionObjectives)
 		{
-			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(it->first);
+			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(it.first);
 			if (GetPosOnMap(pEntity, fX, fY))
 			{
-				numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), (it->second.secondaryObjective) ? ESecondaryObjective : EWayPoint, fX, fY, 180.0f, ENeutral, 100, 100, iOnScreenObjective == it->first, iCurrentSpawnPoint == it->first);
-				textOnMap[pEntity->GetId()] = it->second.text;
+				numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), 
+					(it.second.secondaryObjective) ? ESecondaryObjective : EWayPoint, fX, fY, 180.0f, ENeutral, 100, 100, iOnScreenObjective == it.first, iCurrentSpawnPoint == it.first);
+				textOnMap[pEntity->GetId()] = it.second.text;
 			}
 		}
 	}
-
 
 	ComputePositioning(vPlayerPos, &entityValues);
 
@@ -2177,12 +2149,13 @@ void CHUDRadar::RenderMapOverlay()
 	//m_flashMap->Invoke("updateObjects", "");
 	if (entityValues.size())
 		m_flashMap->GetFlashPlayer()->SetVariableArray(FVAT_Double, "Root.PDAArea.Map_M.MapArea.m_allValues", 0, &entityValues[0], numOfValues);
+	
 	m_flashMap->Invoke("Root.PDAArea.Map_M.MapArea.setObjectArray");
+	
 	//render text strings
-	std::map<EntityId, string>::const_iterator itText = textOnMap.begin();
-	for (; itText != textOnMap.end(); ++itText)
+	for (const auto &itText : textOnMap)
 	{
-		SFlashVarValue args[2] = { itText->first, itText->second.c_str() };
+		SFlashVarValue args[2] = { itText.first, itText.second.c_str() };
 		m_flashMap->Invoke("Root.PDAArea.Map_M.MapArea.setText", args, 2);
 	}
 }

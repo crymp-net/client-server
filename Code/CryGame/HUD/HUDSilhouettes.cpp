@@ -20,11 +20,13 @@ History:
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "HUDSilhouettes.h"
 #include "CryGame/Items/Item.h"
+#include "HUD.h"
 
 //-----------------------------------------------------------------------------------------------------
 
-CHUDSilhouettes::CHUDSilhouettes()
+CHUDSilhouettes::CHUDSilhouettes(CHUD *pHUD)
 {
+	m_pHUD = pHUD;
 	m_silhouettesVector.resize(256);
 }
 
@@ -36,7 +38,7 @@ CHUDSilhouettes::~CHUDSilhouettes()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetVisionParams(EntityId uiEntityId,float r,float g,float b,float a)
+void CHUDSilhouettes::SetVisionParams(EntityId uiEntityId,ColorF color)
 {
 	// When quick loading, entities may have been already destroyed when we do a ShowBinoculars(false)
 	IEntity *pEntity = gEnv->pEntitySystem->GetEntity(uiEntityId);
@@ -48,12 +50,34 @@ void CHUDSilhouettes::SetVisionParams(EntityId uiEntityId,float r,float g,float 
 	if(!pEntityRenderProxy)
 		return;
 
-	pEntityRenderProxy->SetVisionParams(r,g,b,a);
+	if (pEntityRenderProxy->GetRenderNode()->GetDrawFrame() != gEnv->pRenderer->GetFrameID()) //CryMP: only set visionparams on entities that are drawn
+		return;
+
+	pEntityRenderProxy->SetVisionParams(color.r, color.g, color.b, color.a);
+	
+	//CryMP: 
+	//Some silhouette has been drawn this frame, we need to trigger fix in HUDTagNames
+	m_pHUD->m_nameTagsNeedFix = true;
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetFlowGraphSilhouette(IEntity *pEntity,float r,float g,float b,float a,float fDuration)
+void CHUDSilhouettes::ResetVisionParams(EntityId uiEntityId)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(uiEntityId);
+	if (!pEntity)
+		return;
+
+	IEntityRenderProxy* pEntityRenderProxy = static_cast<IEntityRenderProxy*>(pEntity->GetProxy(ENTITY_PROXY_RENDER));
+	if (!pEntityRenderProxy)
+		return;
+
+	pEntityRenderProxy->SetVisionParams(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUDSilhouettes::SetFlowGraphSilhouette(IEntity *pEntity,ColorF color,float fDuration)
 {
 	if(!pEntity)
 		return;
@@ -61,8 +85,8 @@ void CHUDSilhouettes::SetFlowGraphSilhouette(IEntity *pEntity,float r,float g,fl
 	if(GetFGSilhouette(pEntity->GetId()) != m_silhouettesFGVector.end())
 		return;
 
-	SetSilhouette(pEntity, r, g, b ,a, fDuration);
-	m_silhouettesFGVector[pEntity->GetId()] = Vec3(r,g,b);
+	SetSilhouette(pEntity, color, fDuration);
+	m_silhouettesFGVector[pEntity->GetId()] = Vec3(color.r,color.g,color.b);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -80,20 +104,19 @@ void CHUDSilhouettes::ResetFlowGraphSilhouette(EntityId uiEntityId)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetSilhouette(IEntity *pEntity,float r,float g,float b,float a,float fDuration)
+void CHUDSilhouettes::SetSilhouette(IEntity *pEntity,ColorF color,float fDuration)
 {
 	if(!pEntity)
 		return;
 
-	SSilhouette *pSilhouette = NULL;
+	SSilhouette *pSilhouette = nullptr;
 
 	// First pass: is that Id already in a slot?
-	for(TSilhouettesVector::iterator iter=m_silhouettesVector.begin(); iter!=m_silhouettesVector.end(); ++iter)
+	for (SSilhouette &pSil : m_silhouettesVector)
 	{
-		SSilhouette *pSil = &(*iter);
-		if(pEntity->GetId() == pSil->uiEntityId)
+		if(pEntity->GetId() == pSil.uiEntityId)
 		{
-			pSilhouette = pSil;
+			pSilhouette = &pSil;
 			break;
 		}
 	}
@@ -101,12 +124,11 @@ void CHUDSilhouettes::SetSilhouette(IEntity *pEntity,float r,float g,float b,flo
 	if(!pSilhouette)
 	{
 		// Second pass: try to find a free slot
-		for(TSilhouettesVector::iterator iter=m_silhouettesVector.begin(); iter!=m_silhouettesVector.end(); ++iter)
+		for (SSilhouette &pSil : m_silhouettesVector)
 		{
-			SSilhouette *pSil = &(*iter);
-			if(!pSil->bValid)
+			if(!pSil.bValid)
 			{
-				pSilhouette = pSil;
+				pSilhouette = &pSil;
 				break;
 			}
 		}
@@ -119,79 +141,77 @@ void CHUDSilhouettes::SetSilhouette(IEntity *pEntity,float r,float g,float b,flo
 		pSilhouette->uiEntityId	= pEntity->GetId();
 		pSilhouette->fTime = fDuration;
 		pSilhouette->bValid			= true;
-		pSilhouette->r = r;
-		pSilhouette->g = g;
-		pSilhouette->b = b;
-		pSilhouette->a = a;
+		pSilhouette->r = color.r;
+		pSilhouette->g = color.g;
+		pSilhouette->b = color.b;
+		pSilhouette->a = color.a;
 
-		SetVisionParams(pEntity->GetId(),r,g,b,a);
+		SetVisionParams(pEntity->GetId(),color);
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetSilhouette(IActor *pActor,float r,float g,float b,float a,float fDuration,bool bHighlightCurrentItem,bool bHighlightAccessories)
+void CHUDSilhouettes::SetSilhouette(IActor *pActor,ColorF color,float fDuration,bool bHighlightCurrentItem,bool bHighlightAccessories)
 {
 	if(!pActor)
 		return;
 
-	SetSilhouette(pActor->GetEntity(),r,g,b,a,fDuration);
+	SetSilhouette(pActor->GetEntity(),color,fDuration);
 
 	if(bHighlightCurrentItem)
 	{
-		SetSilhouette(pActor->GetCurrentItem(),r,g,b,a,fDuration,bHighlightAccessories);
+		SetSilhouette(pActor->GetCurrentItem(),color,fDuration,bHighlightAccessories);
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetSilhouette(IItem *pItem,float r,float g,float b,float a,float fDuration,bool bHighlightAccessories)
+void CHUDSilhouettes::SetSilhouette(IItem *pItem,ColorF color,float fDuration,bool bHighlightAccessories)
 {
 	if(!pItem)
 		return;
 
-	SetSilhouette(pItem->GetEntity(),r,g,b,a,fDuration);
+	SetSilhouette(pItem->GetEntity(),color,fDuration);
 
 	if(bHighlightAccessories)
 	{
 		const CItem::TAccessoryMap *pAccessoryMap = static_cast<CItem *>(pItem)->GetAttachedAccessories();
 		for(CItem::TAccessoryMap::const_iterator iter=pAccessoryMap->begin(); iter!=pAccessoryMap->end(); ++iter)
 		{
-			SetSilhouette(gEnv->pEntitySystem->GetEntity((*iter).second),r,g,b,a,fDuration);
+			SetSilhouette(gEnv->pEntitySystem->GetEntity((*iter).second),color,fDuration);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDSilhouettes::SetSilhouette(IVehicle *pVehicle,float r,float g,float b,float a,float fDuration)
+void CHUDSilhouettes::SetSilhouette(IVehicle *pVehicle,ColorF color,float fDuration)
 {
 	if(!pVehicle)
 		return;
 
-	SetSilhouette(pVehicle->GetEntity(),r,g,b,a,fDuration);
+	SetSilhouette(pVehicle->GetEntity(),color,fDuration);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void CHUDSilhouettes::ResetSilhouette(EntityId uiEntityId)
 {
-	for(TSilhouettesVector::iterator iter=m_silhouettesVector.begin(); iter!=m_silhouettesVector.end(); ++iter)
+	for (SSilhouette &pSilhouette : m_silhouettesVector)
 	{
-		SSilhouette *pSilhouette = &(*iter);
-
-		if(pSilhouette->uiEntityId == uiEntityId && pSilhouette->bValid)
+		if (pSilhouette.uiEntityId == uiEntityId && pSilhouette.bValid)
 		{
-			std::map<EntityId, Vec3>::iterator it = GetFGSilhouette(pSilhouette->uiEntityId);
+			std::map<EntityId, Vec3>::iterator it = GetFGSilhouette(pSilhouette.uiEntityId);
 			if(it != m_silhouettesFGVector.end())
 			{
 				Vec3 color = it->second;
-				SetVisionParams(uiEntityId, color.x, color.y, color.z, 1.0f);
+				SetVisionParams(uiEntityId, ColorF(color.x, color.y, color.z, 1.0f));
 			}
 			else
 			{
-				SetVisionParams(pSilhouette->uiEntityId,0,0,0,0);
-				pSilhouette->bValid = false;
+				ResetVisionParams(pSilhouette.uiEntityId);
+				pSilhouette.bValid = false;
 			}
 
 			return;
@@ -204,24 +224,22 @@ void CHUDSilhouettes::ResetSilhouette(EntityId uiEntityId)
 void CHUDSilhouettes::SetType(int iType)
 {
 	// Exit of binoculars: we need to reset all silhouettes
-	if(0 == iType)
+	if (!iType)
 	{
-		for(TSilhouettesVector::iterator iter=m_silhouettesVector.begin(); iter!=m_silhouettesVector.end(); ++iter)
+		for (SSilhouette& pSilhouette : m_silhouettesVector)
 		{
-			SSilhouette *pSilhouette = &(*iter);
-
-			if(pSilhouette->bValid)
+			if (pSilhouette.bValid)
 			{
-				std::map<EntityId, Vec3>::iterator it = GetFGSilhouette(pSilhouette->uiEntityId);
+				std::map<EntityId, Vec3>::iterator it = GetFGSilhouette(pSilhouette.uiEntityId);
 				if(it != m_silhouettesFGVector.end())
 				{
 					Vec3 color = it->second;
-					SetVisionParams(pSilhouette->uiEntityId, color.x, color.y, color.z, 1.0f);
+					SetVisionParams(pSilhouette.uiEntityId, ColorF(color.x, color.y, color.z, 1.0f));
 				}
 				else
 				{
-					SetVisionParams(pSilhouette->uiEntityId,0,0,0,0);
-					pSilhouette->bValid = false;
+					ResetVisionParams(pSilhouette.uiEntityId);
+					pSilhouette.bValid = false;
 				}
 			}
 
@@ -235,25 +253,23 @@ void CHUDSilhouettes::SetType(int iType)
 
 void CHUDSilhouettes::Update(float frameTime)
 {
-	for(TSilhouettesVector::iterator iter=m_silhouettesVector.begin(); iter!=m_silhouettesVector.end(); ++iter)
+	for (SSilhouette &pSilhouette : m_silhouettesVector)
 	{
-		SSilhouette *pSilhouette = &(*iter);
-
-		if(pSilhouette->bValid && pSilhouette->fTime != -1)
+		if(pSilhouette.bValid && pSilhouette.fTime != -1)
 		{
-			pSilhouette->fTime -= frameTime;
-			if(pSilhouette->fTime < 0.0f)
+			pSilhouette.fTime -= frameTime;
+			if(pSilhouette.fTime < 0.0f)
 			{
-				SetVisionParams(pSilhouette->uiEntityId,0,0,0,0);
-				pSilhouette->bValid = false;
-				pSilhouette->fTime = 0.0f;
+				ResetVisionParams(pSilhouette.uiEntityId);
+				pSilhouette.bValid = false;
+				pSilhouette.fTime = 0.0f;
 			}
-			else if (pSilhouette->fTime < 1.0f)
+			else if (pSilhouette.fTime < 1.0f)
 			{
 				// fade out for the last second
-				float scale = pSilhouette->fTime ;
+				float scale = pSilhouette.fTime ;
 				scale *= scale;
-				SetVisionParams(pSilhouette->uiEntityId,pSilhouette->r*scale,pSilhouette->g*scale,pSilhouette->b*scale,pSilhouette->a*scale);
+				SetVisionParams(pSilhouette.uiEntityId,ColorF(pSilhouette.r*scale,pSilhouette.g*scale,pSilhouette.b*scale,pSilhouette.a*scale));
 			}
 		}
 	}
@@ -295,7 +311,7 @@ void CHUDSilhouettes::Serialize(TSerialize &ser)
 				ser.Value("color", color);
 				ser.EndGroup();
 				if(IEntity *pEntity = gEnv->pEntitySystem->GetEntity(id))
-					SetFlowGraphSilhouette(pEntity, color.x, color.y, color.z, 1.0f, -1.0f);
+					SetFlowGraphSilhouette(pEntity, ColorF(color.x, color.y, color.z, 1.0f), -1.0f);
 			}
 		}
 	}

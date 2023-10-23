@@ -88,15 +88,15 @@ void CHUDScopes::SetSilhouette(IActor* pActor, IAIObject* pAIObject)
 		const float g = ((ct >> 8) & 0xFF) / 255.0f;
 		const float b = ((ct >> 0) & 0xFF) / 255.0f;
 
-		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, r, g, b, 1.0f, -1);
+		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, ColorF(r, g, b), -1);
 	}
 	else if (1 == iAlertnessState)
 	{
-		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, 0.86274f, 0.7f, 0.4745f, 1.0f, -1);
+		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, ColorF(0.86274f, 0.7f, 0.4745f), -1);
 	}
 	else
 	{
-		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, 0.5f, 0.19215f, 0.17647f, 1.0f, -1);
+		g_pHUD->m_pHUDSilhouettes->SetSilhouette(pActor, ColorF(0.5f, 0.19215f, 0.17647f), -1);
 	}
 }
 

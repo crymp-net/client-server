@@ -866,7 +866,7 @@ public:
 						if (bActivate)
 						{
 							const Vec3& color = GetPortVec3(pActInfo, EIP_Color);
-							pSil->SetFlowGraphSilhouette(pEntity, color.x, color.y, color.z, 1.0f, -1.0f);
+							pSil->SetFlowGraphSilhouette(pEntity, ColorF(color.x, color.y, color.z, 1.0f), -1.0f);
 						}
 					}
 				}

@@ -879,6 +879,7 @@ public:
 	}
 
 	bool m_bWeaponModifyOpen = false;
+	bool m_nameTagsNeedFix = false;
 };
 
 //-----------------------------------------------------------------------------------------------------

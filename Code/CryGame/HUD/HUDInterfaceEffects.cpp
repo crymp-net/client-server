@@ -668,9 +668,9 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 				// It should be useless to test if pEntity is an enemy (it's already done by caller func)
 				IActor *pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
 				if(pActor)
-					m_pHUDSilhouettes->SetSilhouette(pActor,r,g,b,1.0f,5.0f,true);
+					m_pHUDSilhouettes->SetSilhouette(pActor, ColorF(r,g,b,1.0f),5.0f,true);
 				else if(IVehicle *pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId()))
-					m_pHUDSilhouettes->SetSilhouette(pVehicle,r,g,b,1.0f,5.0f);
+					m_pHUDSilhouettes->SetSilhouette(pVehicle, ColorF(r,g,b,1.0f),5.0f);
 			}
 		}
 	}
@@ -708,7 +708,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
 			if(pEntity)
 			{
-				m_pHUDSilhouettes->SetSilhouette(pEntity, 1.0f-0.6f*fCos, 1.0f-0.4f*fCos, 1.0f-0.20f*fCos, 0.5f, -1.0f);
+				m_pHUDSilhouettes->SetSilhouette(pEntity, ColorF(1.0f-0.6f*fCos, 1.0f-0.4f*fCos, 1.0f-0.20f*fCos, 0.5f), -1.0f);
 			}
 		}
 	}
@@ -721,24 +721,18 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 		}
 		else
 		{
-			float r = 0.8f;
-			float g = 0.8f;
-			float b = 1.0f;
+			ColorF color(0.8f, 0.8f, 1.0f, 0.5f);
 			//VTOL lockons
 			//CryMP lets add different colors according to team as well, like we did for binoculars ages ago :)
 			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_entityTargetAutoaimId))
 			{
-				r = 1.0f;
-				g = 0.1f;
-				b = 0.0f;
+				color = ColorF(1.0f, 0.1f, 0.0f, 0.5f);
 			}
 			else if (m_pGameRules->IsSameTeam(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()))
 			{
-				r = 0.137255f;
-				g = 0.137255f;
-				b = 0.556863f;
+				color = ColorF(0.137255f, 0.137255f, 0.556863f, 0.5f);
 			}
-			m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, r, g, b, 0.5f, -1.0f);
+			m_pHUDSilhouettes->SetSilhouette(pEntityTargetAutoaim, color, -1.0f);
 		}
 	}
 
@@ -970,11 +964,11 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 									if (bSpectating && bEnemyExplosive)
 									{
 										//in spectator mode (team 0) we also show enemy explosives (red)
-										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), 0.9f, 0.1f, 0.1f, 1.0f, 3.0f);
+										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), ColorF(0.9f, 0.1f, 0.1f, 1.0f), 3.0f);
 									}
 									else if ((bOwnerOfExplosive) || (explosiveTeam && playerTeam == explosiveTeam))
 									{
-										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), 0.0353f, 0.6235f, 0.9137f, 1.0f, 3.0f);
+										GetSilhouettes()->SetSilhouette(pProjectile->GetEntity(), ColorF(0.0353f, 0.6235f, 0.9137f, 1.0f), 3.0f);
 									}
 								}
 							}
@@ -1324,7 +1318,7 @@ void CHUD::ShowTargettingAI(EntityId id)
 	{
 		if(pActor != g_pGame->GetIGameFramework()->GetClientActor())
 		{
-			m_pHUDSilhouettes->SetSilhouette(pActor,0.89411f,0.10588f,0.10588f,1,2);
+			m_pHUDSilhouettes->SetSilhouette(pActor,ColorF(0.89411f,0.10588f,0.10588f,1.0f),2);
 			m_pHUDRadar->AddEntityTemporarily(actorID);
 		}
 	}
@@ -1785,7 +1779,7 @@ void CHUD::ShowWeaponsOnGround()
 								//display
 //								UpdateMissionObjectiveIcon(id, 1, eOS_Bottom, true);
 
-								m_pHUDSilhouettes->SetSilhouette(pItem,0,0,1,1,-1);
+								m_pHUDSilhouettes->SetSilhouette(pItem,ColorF(0.0f,0.0f,1.0f,1.0f),-1);
 							}
 						}
 					}

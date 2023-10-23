@@ -247,7 +247,7 @@ void CHUD::DrawAirstrikeTargetMarkers()
 	for(int i = 0; i < amount; ++i)
 	{
 		IEntity *pEntity = gEnv->pEntitySystem->GetEntity(m_possibleAirStrikeTargets[i]);
-		m_pHUDSilhouettes->SetSilhouette(pEntity, 1.0f-0.6f*fCos, 1.0f-0.4f*fCos, 1.0f-0.20f*fCos, 0.5f, 1.5f);
+		m_pHUDSilhouettes->SetSilhouette(pEntity, ColorF(1.0f-0.6f*fCos, 1.0f-0.4f*fCos, 1.0f-0.20f*fCos, 0.5f), 1.5f);
 	}
 }
 

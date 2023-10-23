@@ -626,6 +626,11 @@ void CHUDTagNames::DrawTagNames()
 		float fTextX = vScreenSpace.x - vDim.x * 0.5f;
 		float fTextY = vScreenSpace.y - vDim.y * 0.5f;
 
+		if (m_pHUD->m_nameTagsNeedFix)
+		{
+			vScreenSpace.z += 0.01;
+		}
+
 		if (nameTag.drawOnTop)
 		{
 			vScreenSpace.z = 1.0f;

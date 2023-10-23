@@ -17,18 +17,20 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
+class CHUD;
+
 class CHUDSilhouettes
 {
 public:
 
-		CHUDSilhouettes();
+	explicit CHUDSilhouettes(CHUD* pHUD);
 	~	CHUDSilhouettes();
 
-	void SetSilhouette(IActor *pActor,		float r,float g,float b,float a,float fDuration,bool bHighlightCurrentItem=true,bool bHighlightAccessories=true);
-	void SetSilhouette(IItem	*pItem,			float r,float g,float b,float a,float fDuration,bool bHighlightAccessories=true);
-	void SetSilhouette(IVehicle	*pVehicle,float r,float g,float b,float a,float fDuration);
-	void SetSilhouette(IEntity *pEntity,	float r,float g,float b,float a,float fDuration);
-	void SetFlowGraphSilhouette(IEntity *pEntity,	float r,float g,float b,float a,float fDuration);
+	void SetSilhouette(IActor *pActor,ColorF color,float fDuration,bool bHighlightCurrentItem=true,bool bHighlightAccessories=true);
+	void SetSilhouette(IItem *pItem,ColorF color,float fDuration,bool bHighlightAccessories=true);
+	void SetSilhouette(IVehicle	*pVehicle,ColorF color,float fDuration);
+	void SetSilhouette(IEntity *pEntity,ColorF color,float fDuration);
+	void SetFlowGraphSilhouette(IEntity *pEntity,ColorF color,float fDuration);
 
 	void ResetSilhouette(EntityId uiEntityId);
 	void ResetFlowGraphSilhouette(EntityId uiEntityId);
@@ -41,7 +43,9 @@ public:
 
 private:
 
-	void SetVisionParams(EntityId uiEntityId,float r,float g,float b,float a);
+	void SetVisionParams(EntityId uiEntityId, ColorF color);
+
+	void ResetVisionParams(EntityId uiEntityId);
 
 	std::map<EntityId, Vec3>::iterator GetFGSilhouette(EntityId id);
 
@@ -71,6 +75,7 @@ private:
 	typedef std::vector<SSilhouette> TSilhouettesVector;
 	TSilhouettesVector m_silhouettesVector;
 	std::map<EntityId, Vec3> m_silhouettesFGVector;
+	CHUD* m_pHUD = nullptr;
 };
 
 //-----------------------------------------------------------------------------------------------------

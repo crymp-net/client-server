@@ -617,7 +617,7 @@ int CScriptBind_HUD::SetSilhouette(IFunctionHandler* pH, ScriptHandle entityId, 
 		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
 		if (pEntity && pHUD->GetSilhouettes())
 		{
-			pHUD->GetSilhouettes()->SetSilhouette(pEntity, r, g, b, a, fDuration);
+			pHUD->GetSilhouettes()->SetSilhouette(pEntity, ColorF(r, g, b, a), fDuration);
 		}
 	}
 	return pH->EndFunction();
