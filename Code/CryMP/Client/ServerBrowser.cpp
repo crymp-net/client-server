@@ -309,7 +309,7 @@ void ServerBrowser::QueryClientPublicAddress()
 
 	gClient->HttpGet(url, [this](HTTPClientResult& result)
 	{
-		this->OnPublicAddress(result);
+		m_lastRequestSucceeded = this->OnPublicAddress(result);
 	});
 }
 
@@ -352,9 +352,12 @@ void ServerBrowser::Update()
 
 			m_pendingQueryCount--;
 
+			const bool success = result.error.empty();
+			m_lastRequestSucceeded = success;
+
 			if (m_pListener)
 			{
-				if (result.error.empty())
+				if (success)
 				{
 					OnServerList(result, master);
 				}
@@ -386,9 +389,12 @@ void ServerBrowser::UpdateServerInfo(int id)
 
 	gClient->HttpGet(url, [id, this](HTTPClientResult& result)
 	{
+		const bool success = result.error.empty();
+		m_lastRequestSucceeded = success;
+
 		if (m_pListener)
 		{
-			if (result.error.empty())
+			if (success)
 			{
 				if (OnServerInfo(result, id))
 				{
