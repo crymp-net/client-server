@@ -171,6 +171,11 @@ bool ServerBrowser::OnPublicAddress(HTTPClientResult & result)
 {
 	CryLog("[CryMP] Public address (%d): %s", result.code, result.response.c_str());
 
+	if (!result.error.empty())
+	{
+		return false;
+	}
+
 	try
 	{
 		const json publicAddress = json::parse(result.response);
