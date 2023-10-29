@@ -3282,8 +3282,6 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 		m_pFlashPlayer->Render();
 	}
 
-	UpdateNetwork(fDeltaTime);
-
 	// When we quit the game for the main menu or we load a game while we are already playing, there is a
 	// few frames where there is no more ingame menu and the main menu is not yet initialized/rendered.
 	// We fix the problem by displaying a black screen during this time.
@@ -4004,22 +4002,6 @@ void CFlashMenuObject::CloseWaitingScreen()
 	m_bLoadingDone = false;
 	m_bUpdate = false;
 	m_nBlackGraceFrames = gEnv->pRenderer->GetFrameID(false) + BLACK_FRAMES;
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void CFlashMenuObject::UpdateNetwork(float fDeltaTime)
-{
-	if (!gEnv || !gEnv->pNetwork || !m_pCurrentFlashMenuScreen || !m_multiplayerMenu)
-		return;
-
-	if (!m_multiplayerMenu->IsInLobby() && !m_multiplayerMenu->IsInLogin() && !gEnv->bMultiplayer)
-		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", true);
-	else if (IsOnScreen(MENUSCREEN_FRONTENDSTART) || IsOnScreen(MENUSCREEN_FRONTENDINGAME))
-	{
-		bool bNetwork = gEnv->pNetwork->HasNetworkConnectivity();
-		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", bNetwork);
-	}
 }
 
 //-----------------------------------------------------------------------------------------------------

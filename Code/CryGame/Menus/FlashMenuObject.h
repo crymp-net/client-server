@@ -268,7 +268,6 @@ private:
 	void MP_ResetProgress	(int iProgress);
 
 	void CloseWaitingScreen();
-	void UpdateNetwork(float fDeltaTime);
 
 	enum ESound
 	{
