@@ -4016,7 +4016,7 @@ void CFlashMenuObject::UpdateNetwork(float fDeltaTime)
 		return;
 	}
 
-	if (!m_multiplayerMenu->IsInLobby() && !m_multiplayerMenu->IsInLogin())
+	if (!m_multiplayerMenu->IsInLobby() && !m_multiplayerMenu->IsInLogin() && !gEnv->bMultiplayer)
 	{
 		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", true);
 	}
