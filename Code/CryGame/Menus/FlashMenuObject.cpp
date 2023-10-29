@@ -45,6 +45,7 @@ History:
 
 #include "config.h"
 #include "CryMP/Client/Client.h"
+#include "CryMP/Client/ServerBrowser.h"
 #include "CryMP/Client/ServerConnector.h"
 #include "Library/StringTools.h"
 #include "CrySystem/LocalizationManager.h"
@@ -4011,13 +4012,17 @@ void CFlashMenuObject::CloseWaitingScreen()
 void CFlashMenuObject::UpdateNetwork(float fDeltaTime)
 {
 	if (!gEnv || !gEnv->pNetwork || !m_pCurrentFlashMenuScreen || !m_multiplayerMenu)
+	{
 		return;
+	}
 
 	if (!m_multiplayerMenu->IsInLobby() && !m_multiplayerMenu->IsInLogin() && !gEnv->bMultiplayer)
+	{
 		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", true);
+	}
 	else if (IsOnScreen(MENUSCREEN_FRONTENDSTART) || IsOnScreen(MENUSCREEN_FRONTENDINGAME))
 	{
-		bool bNetwork = gEnv->pNetwork->HasNetworkConnectivity();
+		bool bNetwork = gClient->GetServerBrowser()->LastRequestSucceeded();
 		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", bNetwork);
 	}
 }

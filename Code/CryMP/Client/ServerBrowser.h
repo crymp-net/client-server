@@ -18,6 +18,7 @@ class ServerBrowser : public IServerBrowser
 
 	unsigned int m_pendingQueryCount = 0;
 	unsigned int m_contract = 0;
+	bool m_lastRequestSucceeded = false;
 
 	bool OnPublicAddress(HTTPClientResult & result);
 	bool OnServerList(HTTPClientResult & result, const std::string & master);
@@ -28,6 +29,8 @@ public:
 	~ServerBrowser();
 
 	void QueryClientPublicAddress();
+
+	bool LastRequestSucceeded() const { return m_lastRequestSucceeded; }
 
 	// INetworkInterface
 	bool IsAvailable() const override;
