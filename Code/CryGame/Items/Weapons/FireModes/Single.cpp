@@ -471,7 +471,7 @@ bool CSingle::IsValidAutoAimTarget(IEntity* pEntity, int partId /*= 0*/)
 			//Check for teams
 			if (CGameRules* pGameRules = g_pGame->GetGameRules())
 			{
-				if (pGameRules->IsHostile(pVehicle->GetEntityId(), pGameRules->GetTeam(pOwner->GetEntityId())))
+				if (pGameRules->IsHostile(pVehicle->GetEntityId(), pOwner->GetEntityId()))
 				{
 					//CryMP
 					if (m_fireparams.autoaim_targetaironly)
@@ -505,23 +505,17 @@ bool CSingle::CheckAutoAimTolerance(const Vec3& aimPos, const Vec3& aimDir)
 
 	AABB bbox;
 	pLocked->GetWorldBounds(bbox);
-	Vec3 targetPos = bbox.GetCenter();
-	Vec3 dirToTarget = (targetPos - aimPos).normalize();
-	float dot = aimDir.Dot(dirToTarget);
-	Matrix33 mat = Matrix33::CreateRotationVDir(dirToTarget);
-	Vec3 right = mat.GetColumn(0).normalize();
+	const Vec3 targetPos = bbox.GetCenter();
+	const Vec3 dirToTarget = (targetPos - aimPos).normalize();
+	const float dot = aimDir.Dot(dirToTarget);
+	const Matrix33 mat = Matrix33::CreateRotationVDir(dirToTarget);
+	const Vec3 right = mat.GetColumn(0).normalize();
 	Vec3 maxVec = (targetPos - aimPos) + (right * m_fireparams.autoaim_tolerance);
-	float maxDot = dirToTarget.Dot(maxVec.normalize());
-
-	if (dot < maxDot)
-	{
-		return false;
-	}
-
-	Vec3 up = mat.GetColumn(2).normalize();
+	const float maxDot = dirToTarget.Dot(maxVec.normalize());
+	const Vec3 up = mat.GetColumn(2).normalize();
 	Vec3 maxVecUp = (targetPos - aimPos) + (up * m_fireparams.autoaim_tolerance);
-	float maxDot2 = dirToTarget.Dot(maxVecUp.normalize());
-	if (dot < maxDot2)
+	const float maxDot2 = dirToTarget.Dot(maxVecUp.normalize());
+	if (dot < maxDot && dot < maxDot2)
 	{
 		return false;
 	}
@@ -800,8 +794,8 @@ void CSingle::PatchParamsCryMP()
 			m_fireparams.autoaim = true;
 			m_fireparams.autoaim_targetaironly = true;
 			m_fireparams.autoaim_distance = 350.f;
-			m_fireparams.autoaim_tolerance = 30.f;
-			m_fireparams.autoaim_locktime = 0.5f;
+			m_fireparams.autoaim_tolerance = 25.f;
+			m_fireparams.autoaim_locktime = 0.2f;
 		}
 	}
 }
