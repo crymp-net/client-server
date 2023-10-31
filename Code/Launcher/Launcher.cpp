@@ -22,6 +22,38 @@
 
 #include "config.h"
 
+static void LogBytes(const char* message, std::size_t bytes)
+{
+	const char* unit = "";
+	char units[6][2] = { "K", "M", "G", "T", "P", "E" };
+
+	for (int i = 0; i < 6 && bytes >= 1024; i++)
+	{
+		unit = units[i];
+		bytes /= 1024;
+	}
+
+	CryLogAlways("%s%zu%s", message, bytes, unit);
+}
+
+static void OnD3D9Info(MemoryPatch::CryRenderD3D9::AdapterInfo* info)
+{
+	CryLogAlways("D3D9 Adapter: %s", info->description);
+	CryLogAlways("D3D9 Adapter: PCI %04x:%04x (rev %02x)", info->vendor_id, info->device_id, info->revision);
+
+	// no memory info available
+}
+
+static void OnD3D10Info(MemoryPatch::CryRenderD3D10::AdapterInfo* info)
+{
+	CryLogAlways("D3D10 Adapter: %ls", info->description);
+	CryLogAlways("D3D10 Adapter: PCI %04x:%04x (rev %02x)", info->vendor_id, info->device_id, info->revision);
+
+	LogBytes("D3D10 Adapter: Dedicated video memory = ", info->dedicated_video_memory);
+	LogBytes("D3D10 Adapter: Dedicated system memory = ", info->dedicated_system_memory);
+	LogBytes("D3D10 Adapter: Shared system memory = ", info->shared_system_memory);
+}
+
 static IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
 {
 	CryLogAlways("$3[CryMP] Initializing Script System");
@@ -485,22 +517,23 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the Cry3DEngine DLL!");
 	}
 
-	const bool isDX10 = !WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater());
-
-	if (isDX10)
+	if (!m_params.isDedicatedServer && !WinAPI::CmdLine::HasArg("-dedicated"))
 	{
-		m_dlls.pCryRenderD3D10 = WinAPI::DLL::Load("CryRenderD3D10.dll");
-		if (!m_dlls.pCryRenderD3D10)
+		if (!WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater()))
 		{
-			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D10 DLL!");
+			m_dlls.pCryRenderD3D10 = WinAPI::DLL::Load("CryRenderD3D10.dll");
+			if (!m_dlls.pCryRenderD3D10)
+			{
+				throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D10 DLL!");
+			}
 		}
-	}
-	else
-	{
-		m_dlls.pCryRenderD3D9 = WinAPI::DLL::Load("CryRenderD3D9.dll");
-		if (!m_dlls.pCryRenderD3D9)
+		else
 		{
-			throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
+			m_dlls.pCryRenderD3D9 = WinAPI::DLL::Load("CryRenderD3D9.dll");
+			if (!m_dlls.pCryRenderD3D9)
+			{
+				throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
+			}
 		}
 	}
 }
@@ -553,12 +586,14 @@ void Launcher::PatchEngine()
 	if (m_dlls.pCryRenderD3D9)
 	{
 		MemoryPatch::CryRenderD3D9::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
+		MemoryPatch::CryRenderD3D9::HookAdapterInfo(m_dlls.pCryRenderD3D9, &OnD3D9Info);
 	}
 
 	if (m_dlls.pCryRenderD3D10)
 	{
 		MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
 		MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
+		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
 	}
 }
 
