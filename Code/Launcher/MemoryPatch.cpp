@@ -228,6 +228,41 @@ void MemoryPatch::CryRenderD3D9::HookWindowNameD3D9(void* pCryRenderD3D9, const 
 #endif
 }
 
+/**
+ * Hooks D3D9 adapter information logging.
+ */
+void MemoryPatch::CryRenderD3D9::HookAdapterInfo(void* pCryRenderD3D9, void (*handler)(AdapterInfo* info))
+{
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0x8B, 0xCE,                                            // mov rcx, rsi
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x48, 0x8B, 0xAC, 0x24, 0x30, 0x05, 0x00, 0x00               // mov rbp, qword ptr ss:[rsp+0x530]
+	};
+
+	std::memcpy(&code[5], &handler, 8);
+#else
+	unsigned char code[] = {
+		0x55,                               // push ebp
+		0xB8, 0x00, 0x00, 0x00, 0x00,       // mov eax, 0x0
+		0xFF, 0xD0,                         // call eax
+		0x83, 0xC4, 0x04,                   // add esp, 0x4
+		0x8B, 0x85, 0x28, 0x04, 0x00, 0x00  // mov eax, dword ptr ss:[ebp+0x428]
+	};
+
+	std::memcpy(&code[2], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillNop(pCryRenderD3D9, 0xC909E, 0x18B);
+	FillMem(pCryRenderD3D9, 0xC909E, &code, sizeof(code));
+#else
+	FillNop(pCryRenderD3D9, 0x95F76, 0x137);
+	FillMem(pCryRenderD3D9, 0x95F76, &code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryRenderD3D10
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,6 +292,58 @@ void MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(void* pCryRenderD3D10, con
 	HookWindowName(pCryRenderD3D10, 0xC95DD, name);
 #else
 	HookWindowName(pCryRenderD3D10, 0x99C57, name);
+#endif
+}
+
+/**
+ * Hooks D3D10 adapter information logging.
+ *
+ * It also fixes crash of 64-bit DX10 renderer on nVidia driver version 545.92 and possibly others.
+ */
+void MemoryPatch::CryRenderD3D10::HookAdapterInfo(void* pCryRenderD3D10, void (*handler)(AdapterInfo* info))
+{
+#ifdef BUILD_64BIT
+	unsigned char codeA[] = {
+		0x48, 0x8B, 0xF0,                                            // mov rsi, rax
+		0x48, 0x8B, 0xC8,                                            // mov rcx, rax
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x4C, 0x8B, 0x9E, 0x18, 0x01, 0x00, 0x00,                    // mov r11, qword ptr ds:[rsi+0x118]
+		0x4C, 0x89, 0x9F, 0x78, 0x8A, 0x02, 0x00                     // mov qword ptr ds:[rdi+0x28A78], r11
+	};
+
+	// avoid using RSI register with value corrupted by nVidia driver
+	unsigned char codeB[] = {
+		0x4C, 0x8B, 0x9F, 0x78, 0x8A, 0x02, 0x00,  // mov r11, qword ptr ds:[rdi+0x28A78]
+		0x90,                                      // nop
+		0x90,                                      // nop
+		0x90,                                      // nop
+		0x90,                                      // nop
+		0x90,                                      // nop
+		0x90,                                      // nop
+		0x90                                       // nop
+	};
+
+	std::memcpy(&codeA[8], &handler, 8);
+#else
+	unsigned char code[] = {
+		0x50,                          // push eax
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		// normally, we would do "add esp, 0x4" here, but after this comes "add esp, 0xC"
+		0x83, 0xEC, 0x08               // sub esp, 0x8
+	};
+
+	std::memcpy(&code[2], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillNop(pCryRenderD3D10, 0xC71F7, 0xFF);
+	FillMem(pCryRenderD3D10, 0xC71F7, &codeA, sizeof(codeA));
+	FillMem(pCryRenderD3D10, 0xC7442, &codeB, sizeof(codeB));
+#else
+	FillNop(pCryRenderD3D10, 0x98268, 0xC8);
+	FillMem(pCryRenderD3D10, 0x98268, &code, sizeof(code));
 #endif
 }
 
