@@ -4548,6 +4548,24 @@ bool CPlayer::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			m_stats.isStandingUp = true;
 			m_stats.isRagDoll = false;
 		}
+
+		//CryMP: Fix for spectator body interfering players
+		if (gEnv->bMultiplayer)
+		{
+			if (!IsClient() && gEnv->bClient && !gEnv->bServer)
+			{
+				if (profile == eAP_Spectator)
+				{
+					GetEntity()->Hide(true);
+					//CryLogAlways("netplayer goes spectating, hiding.");
+				}
+				else
+				{
+					GetEntity()->Hide(false);
+					//CryLogAlways("netplayer goes into play, un-hiding.");
+				}
+			}
+		}
 	}
 
 	bool res = CActor::SetAspectProfile(aspect, profile);
