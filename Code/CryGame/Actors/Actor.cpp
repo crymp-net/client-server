@@ -374,7 +374,7 @@ bool CActor::Init(IGameObject* pGameObject)
 
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | (ENTITY_FLAG_ON_RADAR | ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO));
 
-	m_isPlayerClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
+	m_isPlayerClass = GetEntity()->GetClass() == gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
 
 	return true;
 }
