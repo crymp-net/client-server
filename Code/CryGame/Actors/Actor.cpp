@@ -374,6 +374,8 @@ bool CActor::Init(IGameObject* pGameObject)
 
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | (ENTITY_FLAG_ON_RADAR | ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO));
 
+	m_isPlayerClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
+
 	return true;
 }
 
@@ -437,17 +439,28 @@ void CActor::InitClient(int channelId)
 }
 
 //------------------------------------------------------------------------
+bool CActor::ShouldUseMPParams()
+{
+	return (gEnv->bMultiplayer && IsPlayerClass());
+}
+
+//------------------------------------------------------------------------
 void CActor::Revive(ReasonForRevive reason)
 {
 	ClearExtensionCache();
 
 	if (reason == ReasonForRevive::FROM_INIT)
+	{
 		g_pGame->GetGameRules()->OnRevive(this, GetEntity()->GetWorldPos(), GetEntity()->GetWorldRotation(), m_teamId);
+	}
 
 	//set the actor game parameters
-	SmartScriptTable gameParams;
-	if (GetEntity()->GetScriptTable() && GetEntity()->GetScriptTable()->GetValue("gameParams", gameParams))
-		SetParams(gameParams, true);
+	if (!(ShouldUseMPParams()))
+	{
+		SmartScriptTable gameParams;
+		if (GetEntity()->GetScriptTable() && GetEntity()->GetScriptTable()->GetValue("gameParams", gameParams))
+			SetParams(gameParams, true);
+	}
 
 	const EntityId currentItemId = GetCurrentItemId(false);
 
@@ -1794,10 +1807,10 @@ void CActor::SetChannelId(uint16 channelId)
 {
 	if (!gEnv->bServer)
 	{
-		auto* pRules = g_pGame->GetGameRules();
-		if (pRules)
+		CGameRules *pGameRules = g_pGame->GetGameRules();
+		if (pGameRules)
 		{
-			pRules->AddChannel(channelId);
+			pGameRules->AddChannel(channelId);
 		}
 	}
 }
