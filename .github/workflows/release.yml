@@ -11,7 +11,7 @@ on:
 
 jobs:
   build_32:
-    uses: crymp-net/client-server/.github/workflows/build.yml@master
+    uses: ./.github/workflows/build.yml
     with:
       bits: 32
       type: Release
@@ -20,7 +20,7 @@ jobs:
       sign_pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
   build_64:
-    uses: crymp-net/client-server/.github/workflows/build.yml@master
+    uses: ./.github/workflows/build.yml
     with:
       bits: 64
       type: Release
@@ -44,12 +44,12 @@ jobs:
           sed -n "/^## \[${{ github.ref_name }}\] /,/^## /p" "$changelog_file" | sed '1d;$d' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Download 32-bit build artifacts
+      - name: Download 32-bit build artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.build_32.outputs.artifact_name }}
 
-      - name: Download 64-bit build artifacts
+      - name: Download 64-bit build artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.build_64.outputs.artifact_name }}
@@ -82,12 +82,12 @@ jobs:
           asset_name: crymp-client-${{ github.ref_name }}-build.zip
           asset_content_type: application/zip
 
-  notify:
+  upload:
     needs:
       - build_32
       - build_64
       - release
-    uses: crymp-net/client-server/.github/workflows/notify-dispatch.yml@master
+    uses: ./.github/workflows/upload.yml
     with:
       context: release
       artifact_32: ${{ needs.build_32.outputs.artifact_name }}

@@ -11,23 +11,23 @@ on:
 
 jobs:
   build_32:
-    uses: crymp-net/client-server/.github/workflows/build.yml@master
+    uses: ./.github/workflows/build.yml
     with:
       bits: 32
       type: RelWithDebInfo
 
   build_64:
-    uses: crymp-net/client-server/.github/workflows/build.yml@master
+    uses: ./.github/workflows/build.yml
     with:
       bits: 64
       type: RelWithDebInfo
 
-  notify:
+  upload:
     if: github.ref == 'refs/heads/master'
     needs:
       - build_32
       - build_64
-    uses: crymp-net/client-server/.github/workflows/notify-dispatch.yml@master
+    uses: ./.github/workflows/upload.yml
     with:
       context: dev
       artifact_32: ${{ needs.build_32.outputs.artifact_name }}
