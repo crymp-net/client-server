@@ -1296,9 +1296,9 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 		else
 		{
 			SActorStats* pStats = pActor->GetActorStats();
-			if (pStats && pStats->inFreefall == 1)
+			if (pStats && pStats->inFreefall > 0)
 			{
-				offset = -1.0f;
+				offset = -10.0f;
 			}
 		}
 	}
