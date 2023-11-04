@@ -2388,262 +2388,136 @@ void CPlayer::SetParamsMP(bool resetFirst)
 	}
 
 	{
-		/*
-			stanceId = STANCE_STAND,
-			normalSpeed = 1.0,
-			maxSpeed = 5.0,
-			heightCollider = 1.2,
-			heightPivot = 0.0,
-			size = {x=0.4,y=0.4,z=0.2},
-			modelOffset = {x=0,y=-0.0,z=0},
-			viewOffset = {x=0,y=0.10,z=1.625},
-			weaponOffset = {x=0.2,y=0.0,z=1.35},
-			leanLeftViewOffset = {x=-0.5,y=0.10,z=1.525},
-			leanRightViewOffset = {x=0.5,y=0.10,z=1.525},
-			leanLeftWeaponOffset = {x=-0.45,y=0.0,z=1.30},
-			leanRightWeaponOffset = {x=0.65,y=0.0,z=1.30},
-			name = "combat",
-			useCapsule = 1,
-		*/
 		SStanceInfo sInfo;
-		sInfo.normalSpeed = 1.0f;
-		sInfo.maxSpeed = 5.0f;
-		sInfo.heightCollider = 1.2f;
-		sInfo.heightPivot = 0.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.2f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.10f, 1.625f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.leanLeftViewOffset = Vec3(-0.5f, 0.10f, 1.525f);
-		sInfo.leanRightViewOffset = Vec3(0.5f, 0.10f, 1.525f);
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 1.35f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.leanLeftWeaponOffset = Vec3(-0.45f, 0.0f, 1.30f);
-		sInfo.leanRightWeaponOffset = Vec3(0.65f, 0.0f, 1.30f);
-		sInfo.useCapsule = true;
+		sInfo.heightCollider = 1.200000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanRightViewOffset = Vec3(0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.450000f, 0.000000f, 1.300000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.650000f, 0.000000f, 1.300000f);
+		sInfo.maxSpeed = 4.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
 		strcpy(sInfo.name, "combat");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.300000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.150000f, 1.625000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 1.350000f);
 
 		SetupStance(EStance::STANCE_STAND, &sInfo);
 	}
-
 	{
-		/*
-			stanceId = STANCE_STEALTH,
-			normalSpeed = 0.6,
-			maxSpeed = 3.0,
-			heightCollider = 1.0,
-			heightPivot = 0.0,
-			size = {x=0.4,y=0.4,z=0.1},
-			modelOffset = {x=0.0,y=-0.0,z=0},
-			viewOffset = {x=0,y=0.3,z=1.35},
-			weaponOffset = {x=0.2,y=0.0,z=1.1},
-			name = "stealth",
-			useCapsule = 1,
-		*/
-
 		SStanceInfo sInfo;
-		sInfo.normalSpeed = 0.6f;
-		sInfo.maxSpeed = 3.0f;
-		sInfo.heightCollider = 1.0f;
-		sInfo.heightPivot = 0.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.1f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.3f, 1.35f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 1.1f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.useCapsule = true;
-		//std::string_view("stealth").copy(sInfo.name, sizeof(sInfo.name));
-		strcpy(sInfo.name, "stealth");
-
-		SetupStance(EStance::STANCE_STEALTH, &sInfo);
-	}
-
-	{
-		/*
-			stanceId = STANCE_CROUCH,
-			normalSpeed = 0.5,
-			maxSpeed = 3.0,
-			heightCollider = 0.8,
-			heightPivot = 0.0,
-			size = {x=0.4,y=0.4,z=0.1},
-			modelOffset = {x=0.0,y=0.0,z=0},
-			viewOffset = {x=0,y=0.0,z=1.1},
-			weaponOffset = {x=0.2,y=0.0,z=0.85},
-			leanLeftViewOffset = {x=-0.55,y=0.0,z=0.95},
-			leanRightViewOffset = {x=0.55,y=0.0,z=0.95},
-			leanLeftWeaponOffset = {x=-0.5,y=0.0,z=0.65},
-			leanRightWeaponOffset = {x=0.5,y=0.0,z=0.65},
-			name = "crouch",
-			useCapsule = 1,
-		*/
-
-		SStanceInfo sInfo;
-		sInfo.normalSpeed = 0.5f;
-		sInfo.maxSpeed = 3.0f;
-		sInfo.heightCollider = 0.8f;
-		sInfo.heightPivot = 0.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.1f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.0f, 1.1f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.leanLeftViewOffset = Vec3(-0.55f, 0.0f, 0.95f);
-		sInfo.leanRightViewOffset = Vec3(0.55f, 0.0f, 0.95f);
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 1.35f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.leanLeftWeaponOffset = Vec3(-0.5f, 0.0f, 0.65f);
-		sInfo.leanRightWeaponOffset = Vec3(0.5f, 0.0f, 0.65f);
-		sInfo.useCapsule = true;
-		//std::string_view("crouch").copy(sInfo.name, sizeof(sInfo.name));
+		sInfo.heightCollider = 0.900000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanRightViewOffset = Vec3(0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.500000f, 0.000000f, 0.650000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.500000f, 0.000000f, 0.650000f);
+		sInfo.maxSpeed = 1.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
 		strcpy(sInfo.name, "crouch");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.100000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.000000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 0.850000f);
 
 		SetupStance(EStance::STANCE_CROUCH, &sInfo);
 	}
-
 	{
-		/*
-			stanceId = STANCE_PRONE,
-			normalSpeed = 0.5,
-			maxSpeed = 1.0,
-			heightCollider = 0.5,
-			heightPivot = 0.0,
-			size = {x=0.4,y=0.4,z=0.01},
-			modelOffset = {x=0,y=0.0,z=0},
-			viewOffset = {x=0,y=0.5,z=0.35},
-			weaponOffset = {x=0.1,y=0.0,z=0.25},
-			name = "prone",
-			useCapsule = 1,
-		*/
 		SStanceInfo sInfo;
-		sInfo.normalSpeed = 0.5f;
-		sInfo.maxSpeed = 1.0f;
-		sInfo.heightCollider = 0.5f;
-		sInfo.heightPivot = 0.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.01f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.5f, 0.35f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.weaponOffset = Vec3(0.1f, 0.0f, 0.25f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.useCapsule = true;
-		//std::string_view("prone").copy(sInfo.name, sizeof(sInfo.name));
+		sInfo.heightCollider = 0.400000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 0.750000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
 		strcpy(sInfo.name, "prone");
+		sInfo.normalSpeed = 0.375000f;
+		sInfo.size = Vec3(0.350000f, 0.350000f, 0.001000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.weaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
 
 		SetupStance(EStance::STANCE_PRONE, &sInfo);
 	}
-
 	{
-		/*
-			stanceId = STANCE_SWIM,
-			normalSpeed = 1.0, -- this is not even used?
-			maxSpeed = 2.5, -- this is ignored, overridden by pl_swim* cvars.
-			heightCollider = 0.9,
-			heightPivot = 0.5,
-			size = {x=0.4,y=0.4,z=0.1},
-			modelOffset = {x=0,y=0,z=0.0},
-			viewOffset = {x=0,y=0.1,z=0.5},
-			weaponOffset = {x=0.2,y=0.0,z=0.3},
-			name = "swim",
-			useCapsule = 1,
-		*/
 		SStanceInfo sInfo;
-		sInfo.normalSpeed = 1.0f; //this is not even used?
-		sInfo.maxSpeed = 2.5f;	  //this is ignored, overridden by pl_swim* cvars
-		sInfo.heightCollider = 0.9f;
-		sInfo.heightPivot = 0.5f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.1f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.1f, 0.5f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 0.3f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.useCapsule = true;
-		//std::string_view("swim").copy(sInfo.name, sizeof(sInfo.name));
+		sInfo.heightCollider = 1.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 2.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
 		strcpy(sInfo.name, "swim");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.350000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
 
 		SetupStance(EStance::STANCE_SWIM, &sInfo);
 	}
-
 	{
-		/*
-			stanceId = STANCE_ZEROG,
-			normalSpeed = 1.75,
-			maxSpeed = 3.5,
-			heightCollider = 1.2,
-			heightPivot = 1.0,
-			size = {x=0.4,y=0.4,z=0.6},
-			modelOffset = {x=0,y=0,z=-1},
-			viewOffset = {x=0,y=0.15,z=0.625},
-			weaponOffset = {x=0.2,y=0.0,z=1.3},
-			name = "combat",
-			useCapsule = 1,
-		*/
 		SStanceInfo sInfo;
-		sInfo.normalSpeed = 1.75f;
-		sInfo.maxSpeed = 3.5f;
-		sInfo.heightCollider = 1.2f;
-		sInfo.heightPivot = 1.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.6f);
-		sInfo.modelOffset = Vec3(0.0f, 0.0f, -1.0f);
-		sInfo.viewOffset = Vec3(0.0f, 0.15f, 0.625f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 1.3f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
+		sInfo.heightCollider = 0.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 3.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "zerog");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.600000f, 0.600000f, 0.001000f);
 		sInfo.useCapsule = true;
-		//std::string_view("combat").copy(sInfo.name, sizeof(sInfo.name));
-		strcpy(sInfo.name, "combat");
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
 
 		SetupStance(EStance::STANCE_ZEROG, &sInfo);
 	}
-
-	{
-		/*
-			stanceId = STANCE_RELAXED,
-			normalSpeed = 1.0,
-			maxSpeed = 1.9,
-			heightCollider = 1.2,
-			heightPivot = 0.0,
-			size = {x=0.4,y=0.4,z=0.2},
-			modelOffset = {x=0,y=0,z=0},
-			viewOffset = {x=0,y=0.10,z=1.625},
-			weaponOffset = {x=0.2,y=0.0,z=1.3},
-			name = "relaxed",
-			useCapsule = 1,
-		*/
-		SStanceInfo sInfo;
-		sInfo.normalSpeed = 1.0f;
-		sInfo.maxSpeed = 1.9f;
-		sInfo.heightCollider = 1.2f;
-		sInfo.heightPivot = 0.0f;
-		sInfo.size = Vec3(0.4f, 0.4f, 0.2f);
-		sInfo.modelOffset = Vec3(ZERO);
-		sInfo.viewOffset = Vec3(0.0f, 0.10f, 1.625f);
-		sInfo.leanLeftViewOffset = sInfo.leanRightViewOffset = sInfo.viewOffset;
-		sInfo.weaponOffset = Vec3(0.2f, 0.0f, 1.3f);
-		sInfo.leanLeftWeaponOffset = sInfo.leanRightWeaponOffset = sInfo.weaponOffset;
-		sInfo.useCapsule = true;
-		//std::string_view("relaxed").copy(sInfo.name, sizeof(sInfo.name));
-		strcpy(sInfo.name, "relaxed");
-
-		SetupStance(EStance::STANCE_RELAXED, &sInfo);
-	}
-
-	m_params.sprintMultiplier = 1.5f;		//speed is multiplied by this ammount if sprint key is pressed -- 1.2 for a more counter-striky feel
-	m_params.strafeMultiplier = 1.0f;		//speed is multiplied by this ammount when strafing 
-	m_params.backwardMultiplier = 0.7f;	    //speed is multiplied by this ammount when going backward
-	m_params.grabMultiplier = 0.5f;			//speed is multiplied by this ammount when the player is carry the maximun ammount carriable
-	m_params.afterburnerMultiplier = 2.0f;	//how much the afterburner
-	m_params.inertia = 10.0f;				//the more, the faster the speed change: 1 is very slow, 10 is very fast already 
-	m_params.inertiaAccel = 11.0f;          //same as inertia, but used when the player accel
-	m_params.jumpHeight = 1.0f;				//meters
-	m_params.slopeSlowdown = 3.0f;
-	m_params.leanShift = 0.35f;				 //how much the view shift on the side when leaning
-	m_params.thrusterImpulse = 14.0f;		 //thruster power, for the moment very related to air_resistance.
-	m_params.thrusterStabilizeImpulse = 0.01f; //used from the jetpack to make the player stop slowly.
-	m_params.gravityBootsMultipler = 0.8f;   //speed is multiplied by this ammount when gravity boots are on
-
-	m_params.maxGrabMass = 70.0f;
-	m_params.maxGrabMass = 2.0f;			 //its the square volume of an 1x1x2 meters object
+	
+	m_params.afterburnerMultiplier = 2.000000f;
+	strcpy(m_params.animationAppendix, "nw");
+	m_params.backwardMultiplier = 0.700000f;
+	m_params.grabMultiplier = 0.500000f;
+	m_params.gravityBootsMultipler = 0.800000f;
+	m_params.hudAngleOffset = Ang3(0.000000f, 0.000000f, 0.000000f);
+	m_params.hudOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.inertia = 10.000000f;
+	m_params.inertiaAccel = 11.000000f;
+	m_params.jumpHeight = 1.000000f;
+	m_params.leanAngle = 15.000000f;
+	m_params.leanShift = 0.350000f;
+	m_params.maxGrabMass = 70.000000f;
+	m_params.maxGrabVolume = 2.000000f;
+	m_params.nanoSuitActive = true;
+	m_params.slopeSlowdown = 3.000000f;
+	m_params.speedMultiplier = 1.000000f;
+	m_params.sprintMultiplier = 1.500000f;
+	m_params.strafeMultiplier = 1.000000f;
+	m_params.thrusterImpulse = 14.000000f;
+	m_params.thrusterStabilizeImpulse = 0.010000f;
+	m_params.timeImpulseRecover = 0.000000f;
+	m_params.viewDistance = 0.000000f;
+	m_params.viewFoVScale = 1.000000f;
+	m_params.viewHeightOffset = 0.000000f;
+	m_params.viewPivot = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.viewSensitivity = 1.000000f;
+	m_params.vLimitDir = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.vLimitRangeH = 0.000000f;
+	m_params.vLimitRangeV = 0.000000f;
+	m_params.vLimitRangeVDown = 0.000000f;
+	m_params.vLimitRangeVUp = 0.000000f;
+	m_params.weaponBobbingMultiplier = 1.000000f;
+	m_params.weaponInertiaMultiplier = 1.000000f;
+	m_params.zoomFoV = 1.000000f;
 
 	//TODO:move to SetStats()
 	int followHead = m_stats.followCharacterHead.Value();

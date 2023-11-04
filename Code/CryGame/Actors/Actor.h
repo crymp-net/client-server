@@ -987,7 +987,9 @@ public:
 	ILINE const SStanceInfo* GetStanceInfo(EStance stance) const
 	{
 		if (stance < 0 || stance > STANCE_LAST)
+		{
 			return &m_defaultStance;
+		}
 		return &m_stances[stance];
 	}
 	virtual void	SetupStance(EStance stance, SStanceInfo* info);
