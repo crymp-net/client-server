@@ -78,7 +78,7 @@ jobs:
           & 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe' `
             sign /fd SHA256 /f bundle.pfx /p '${{ secrets.CODE_SIGNING_PFX_PASSWORD }}' `
             /tr 'http://timestamp.digicert.com' /td SHA256 `
-            (Get-Item (Join-Path $env:BUILD_DIR '*.exe').FullName
+            (Get-Item (Join-Path $env:BUILD_DIR '*.exe')).FullName
           Remove-Item bundle.*
 
       - name: Upload
