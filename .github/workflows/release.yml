@@ -12,21 +12,19 @@ on:
 jobs:
   build_32:
     uses: ./.github/workflows/build.yml
+    secrets: inherit
     with:
       bits: 32
       type: Release
       sign: true
-      sign_cert: ${{ secrets.CODE_SIGNING_PFX }}
-      sign_pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
   build_64:
     uses: ./.github/workflows/build.yml
+    secrets: inherit
     with:
       bits: 64
       type: Release
       sign: true
-      sign_cert: ${{ secrets.CODE_SIGNING_PFX }}
-      sign_pass: ${{ secrets.CODE_SIGNING_PFX_PASSWORD }}
 
   release:
     runs-on: ubuntu-latest
@@ -88,6 +86,7 @@ jobs:
       - build_64
       - release
     uses: ./.github/workflows/upload.yml
+    secrets: inherit
     with:
       context: release
       artifact_32: ${{ needs.build_32.outputs.artifact_name }}
