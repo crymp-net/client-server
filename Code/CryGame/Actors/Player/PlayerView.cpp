@@ -472,7 +472,7 @@ Vec3 CPlayerView::Project(Vec3 vector, Vec3 onNormal)
 		onNormal.z * dot / sqrMag);
 }
 
-Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, const Vec3 vector, IPhysicalEntity* pPlayerPhysics, float radius, bool pushByNormal)
+Vec3 CPlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Vec3 forward, const Vec3 vector, float radius, bool pushByNormal)
 {
 	int farEnough = 1;
 
@@ -485,12 +485,28 @@ Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, cons
 		checkDir *= -1;
 	}
 
+	IPhysicalEntity* pSkipEnts[2];
+	int nSkip = 0;
+	if (IPhysicalEntity *pActorPhysics = pActor->GetEntity()->GetPhysics())
+	{
+		pSkipEnts[nSkip++] = pActorPhysics;
+
+		if (pActor->GetHeldObjectId())
+		{
+			IEntity* pObject = gEnv->pEntitySystem->GetEntity(pActor->GetHeldObjectId());
+			if (pObject && pObject->GetPhysics())
+			{
+				pSkipEnts[nSkip++] = pObject->GetPhysics();
+			}
+		}
+	}
+
 	geom_contact* pContact = nullptr;
 	primitives::sphere sphere;
 	sphere.center = origin;
 	sphere.r = radius;
 	const float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, checkDir.normalized() * farEnough,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, 1);
 
 	if (hitDist > 0.0f && pContact)
 	{
@@ -509,7 +525,7 @@ Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, cons
 	
 	Vec3 newDir = -checkDir.normalized() * checkDir.GetLength();
 	const float hitDist2 = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, 1);
 
 	if (hitDist2 > 0.0f && pSecContact)
 	{
@@ -582,8 +598,8 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 
 	const Vec3 forward = viewParams.rotation.GetColumn1();
 
-	const Vec3 colPoint = GetCollision(transformPos, forward, origin, pPlayerPhysics, thinRadius, true);
-	const Vec3 colPointThick = GetCollision(transformPos, forward, origin, pPlayerPhysics, thickRadius, false);
+	const Vec3 colPoint = GetCollision(pActor, transformPos, forward, origin, thinRadius, true);
+	const Vec3 colPointThick = GetCollision(pActor, transformPos, forward, origin, thickRadius, false);
 
 	const Vec3 projection = Project((colPointThick - origin), occRay.normalized());
 	const Vec3 colPointThickProjectedOnRay = projection + origin;
