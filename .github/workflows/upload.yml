@@ -43,7 +43,7 @@ jobs:
           }
           get_file_info()
           {
-            echo "{\"name\": \"$(basename "$1")\", \"size\": \"$(stat -c %s "$1")\"}"
+            echo "{\"name\": \"$(basename "$1")\", \"size\": $(stat -c %s "$1")}"
           }
           BASE_URL="http://crymp.nullptr.one/api/v2_release"
           TIMESTAMP=$(date +%s)
