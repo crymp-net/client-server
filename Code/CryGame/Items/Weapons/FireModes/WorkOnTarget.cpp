@@ -267,16 +267,14 @@ void CWorkOnTarget::GetMemoryStatistics(ICrySizer * s)
 //------------------------------------------------------------------------
 IEntity *CWorkOnTarget::CanWork()
 {
-	static Vec3 pos,dir; 
-	static ICVar* pAimDebug = gEnv->pConsole->GetCVar("g_aimdebug");
-	
-	CActor *pActor=m_pWeapon->GetOwnerActor();
+	Vec3 pos, dir = Vec3(ZERO), Vec3(ZERO);
+	CActor *pActor = m_pWeapon->GetOwnerActor();
 	
 	static IPhysicalEntity* pSkipEntities[10];
-	int nSkip = CSingle::GetSkipEntities(m_pWeapon, pSkipEntities, 10);
+	const int nSkip = CSingle::GetSkipEntities(m_pWeapon, pSkipEntities, 10);
 
-	IEntity *pEntity=0;
-	float range=m_workparams.range;
+	IEntity *pEntity = nullptr;
+	const float range=m_workparams.range;
 	
 	IMovementController * pMC = pActor ? pActor->GetMovementController() : 0;
 	if (pMC)
@@ -302,49 +300,60 @@ IEntity *CWorkOnTarget::CanWork()
 			}
 		}
 	}
-	else
-	{ 
-		assert(0);
-	}
 
-	primitives::sphere sphere;
-	sphere.center = pos;
-	sphere.r = m_workparams.radius;
-	Vec3 end = pos+dir;
-
-	geom_contact *pContact=0;
-	float dst=gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, end-sphere.center, ent_all,
-		&pContact, 0, (geom_colltype_player<<rwi_colltype_bit)|rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
-
-	if (pContact && dst>=0.0f)
+	//CryMP: New code
+	static ray_hit hit;
+	if (gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir, ent_all,
+		rwi_stop_at_pierceable | rwi_ignore_back_faces, &hit, 1, pSkipEntities, nSkip))
 	{
-		IPhysicalEntity *pCollider = gEnv->pPhysicalWorld->GetPhysicalEntityById(pContact->iPrim[0]);
-
-		if(pCollider && pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
+		if (hit.pCollider && hit.pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
 		{
-			if (pEntity = static_cast<IEntity *>(pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY)))
-			{
-				if (CGameRules *pGameRules=g_pGame->GetGameRules())
-				{
-					if (IScriptTable *pScriptTable=pGameRules->GetEntity()->GetScriptTable())
-					{
-						HSCRIPTFUNCTION pfnCanWork=0;
-						if (pScriptTable->GetValueType("CanWork")==svtFunction && pScriptTable->GetValue("CanWork", pfnCanWork))
-						{
-							bool result=false;
-							Script::CallReturn(gEnv->pScriptSystem, pfnCanWork, pScriptTable, ScriptHandle(pEntity->GetId()), ScriptHandle(m_pWeapon->GetOwnerId()), m_workparams.work_type.c_str(), result);
-							gEnv->pScriptSystem->ReleaseFunc(pfnCanWork);
+			pEntity = (IEntity*)hit.pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+		}
+	}
+	
+	/* old code
+		primitives::sphere sphere;
+		sphere.center = pos;
+		sphere.r = m_workparams.radius;
+		Vec3 end = pos + dir;
 
-							if (result)
-								return pEntity;
-						}
-					}
+		geom_contact* pContact = 0;
+		float dst = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, end - sphere.center, ent_all,
+			&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
+
+		if (pContact && dst >= 0.0f)
+		{
+			IPhysicalEntity* pCollider = gEnv->pPhysicalWorld->GetPhysicalEntityById(pContact->iPrim[0]);
+
+			if (pCollider && pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
+			{
+				pEntity = static_cast<IEntity*>(pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY));
+			}
+		}
+	*/
+
+	if (pEntity)
+	{
+		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		{
+			if (IScriptTable* pScriptTable = pGameRules->GetEntity()->GetScriptTable())
+			{
+				HSCRIPTFUNCTION pfnCanWork = 0;
+				if (pScriptTable->GetValueType("CanWork") == svtFunction && pScriptTable->GetValue("CanWork", pfnCanWork))
+				{
+					bool result = false;
+					Script::CallReturn(gEnv->pScriptSystem, pfnCanWork, pScriptTable, ScriptHandle(pEntity->GetId()), ScriptHandle(m_pWeapon->GetOwnerId()), m_workparams.work_type.c_str(), result);
+					gEnv->pScriptSystem->ReleaseFunc(pfnCanWork);
+
+					if (result)
+						return pEntity;
 				}
 			}
 		}
 	}
-
-	return 0;
+			
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
