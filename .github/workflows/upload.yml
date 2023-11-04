@@ -36,7 +36,7 @@ jobs:
 
       - name: Upload to CryMP master server
         run: |
-          set -o pipefail
+          set -e -o pipefail
           hmac_sha256()
           {
             openssl sha256 -hmac '${{ secrets.MASTER_NOTIFY_KEY }}' | sed 's/^.* //'
@@ -48,12 +48,10 @@ jobs:
           BASE_URL="https://crymp.nullptr.one/api/v2_release"
           TIMESTAMP=$(date +%s)
           SIGNATURE=$(printf %s "$TIMESTAMP" | hmac_sha256)
-          X_FILE_UPLOAD="[$(get_file_info CryMP-Client32.exe), $(get_file_info CryMP-Client64.exe)]"
-          X_BODY_SIGNATURE=$(cat CryMP-Client32.exe CryMP-Client64.exe | hmac_sha256)
-          cat CryMP-Client32.exe CryMP-Client64.exe | curl --silent --show-error --fail-with-body \
+          cat CryMP-Client32.exe CryMP-Client64.exe | curl --verbose --silent --show-error --fail-with-body \
             --http1.0 --request POST --data-binary @- \
             --header "Content-Type: application/octet-stream" \
-            --header "x-body-signature: $X_BODY_SIGNATURE" \
-            --header "x-file-upload: $X_FILE_UPLOAD" \
+            --header "x-body-signature: $(cat CryMP-Client32.exe CryMP-Client64.exe | hmac_sha256)" \
+            --header "x-file-upload: [$(get_file_info CryMP-Client32.exe), $(get_file_info CryMP-Client64.exe)]" \
             "$BASE_URL?context=${{ inputs.context }}&time=$TIMESTAMP&commit=${{ github.sha }}&signature=$SIGNATURE" \
           | jq .
