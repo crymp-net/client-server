@@ -48,13 +48,17 @@ jobs:
 
       - name: Get Ninja
         run: |
-          $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+          $url = 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+          $headers = @{
+            'Authorization' = 'Bearer ${{ secrets.GITHUB_TOKEN }}'
+          }
+          $release = Invoke-RestMethod -Uri $url -Headers $headers
           $release
           $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
           $ninja_dir = Join-Path $env:BUILD_DIR 'ninja'
           $ninja_zip = Join-Path $env:BUILD_DIR 'ninja.zip'
           New-Item $ninja_dir -ItemType Directory | Out-Null
-          Invoke-WebRequest $asset.browser_download_url -OutFile $ninja_zip
+          Invoke-WebRequest -Uri $asset.browser_download_url -Headers $headers -OutFile $ninja_zip
           Expand-Archive $ninja_zip -DestinationPath $ninja_dir
           'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
 
