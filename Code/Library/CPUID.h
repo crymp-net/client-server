@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <bitset>
 #include <cstring>
 
@@ -48,30 +47,30 @@ struct CPUID
 	};
 
 	Vendor vendor = Vendor::UNKNOWN;
-	std::bitset<32> leaf_1_edx;
-	std::bitset<32> leaf_80000001_edx;
-	std::array<char, 48 + 1> brand_string = {};
-	std::array<char, 12 + 1> vendor_string = {};
+	std::bitset<32> leaf_1_edx = {};
+	std::bitset<32> leaf_80000001_edx = {};
+	char brand_string[48 + 1] = {};
+	char vendor_string[12 + 1] = {};
 
 	CPUID()
 	{
 		Query query(0x0);
 		const unsigned int maxBasicLeaf = query.eax;
 
-		*reinterpret_cast<unsigned int*>(&this->vendor_string[0]) = query.ebx;
-		*reinterpret_cast<unsigned int*>(&this->vendor_string[4]) = query.edx;
-		*reinterpret_cast<unsigned int*>(&this->vendor_string[8]) = query.ecx;
+		*reinterpret_cast<unsigned int*>(this->vendor_string + 0) = query.ebx;
+		*reinterpret_cast<unsigned int*>(this->vendor_string + 4) = query.edx;
+		*reinterpret_cast<unsigned int*>(this->vendor_string + 8) = query.ecx;
 
-		static constexpr struct { std::array<char, 12 + 1> string; Vendor id; } vendors[] = {
+		static constexpr struct { char string[12 + 1]; Vendor id; } vendors[] = {
 			{ "AuthenticAMD", Vendor::AMD },
 			{ "GenuineIntel", Vendor::INTEL },
 		};
 
-		for (const auto& vendor : vendors)
+		for (const auto& v : vendors)
 		{
-			if (this->vendor_string == vendor.string)
+			if (std::memcmp(this->vendor_string, v.string, 12) == 0)
 			{
-				this->vendor = vendor.id;
+				this->vendor = v.id;
 				break;
 			}
 		}
@@ -94,11 +93,13 @@ struct CPUID
 		if (maxExtendedLeaf >= 0x80000004)
 		{
 			query = Query(0x80000002);
-			std::memcpy(&this->brand_string[0], &query, 16);
+			std::memcpy(this->brand_string + 0, &query, 16);
 			query = Query(0x80000003);
-			std::memcpy(&this->brand_string[16], &query, 16);
+			std::memcpy(this->brand_string + 16, &query, 16);
 			query = Query(0x80000004);
-			std::memcpy(&this->brand_string[32], &query, 16);
+			std::memcpy(this->brand_string + 32, &query, 16);
+
+			TrimSpaces(this->brand_string);
 		}
 	}
 
@@ -120,6 +121,30 @@ struct CPUID
 	bool Has3DNow() const
 	{
 		return this->vendor == Vendor::AMD && this->leaf_80000001_edx[31];
+	}
+
+private:
+	static void TrimSpaces(char* s)
+	{
+		char* begin = s;
+		char* end = s;
+
+		while (*s == ' ')
+		{
+			s++;
+		}
+
+		while (*s)
+		{
+			if (*s != ' ')
+			{
+				end = s + 1;
+			}
+
+			*begin++ = *s++;
+		}
+
+		*end = '\0';
 	}
 };
 
