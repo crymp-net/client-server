@@ -698,7 +698,7 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.LogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS " " CRYMP_CLIENT_BUILD_TYPE);
 	logger.LogAlways("Compiled by " CRYMP_CLIENT_COMPILER);
 	logger.LogAlways("Copyright (C) 2001-2008 Crytek GmbH");
-	logger.LogAlways("Copyright (C) 2014-2022 CryMP Network");
+	logger.LogAlways("Copyright (C) 2014-2023 CryMP Network");
 	logger.LogAlways("");
 
 	logger.SetPrefix(logPrefix);
