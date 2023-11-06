@@ -14,7 +14,7 @@ CNetPlayerInput::CNetPlayerInput(CPlayer* pPlayer) : m_pPlayer(pPlayer)
 
 void CNetPlayerInput::PreUpdate()
 {
-	const auto pPhysEnt = m_pPlayer->GetEntity()->GetPhysics();
+	const IPhysicalEntity *pPhysEnt = m_pPlayer->GetEntity()->GetPhysics();
 	if (!pPhysEnt)
 		return;
 

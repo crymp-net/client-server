@@ -485,7 +485,7 @@ Vec3 CPlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Ve
 		checkDir *= -1;
 	}
 
-	IPhysicalEntity* pSkipEnts[2];
+	IPhysicalEntity* pSkipEnts[2] = {};
 	int nSkip = 0;
 	if (IPhysicalEntity *pActorPhysics = pActor->GetEntity()->GetPhysics())
 	{
@@ -506,7 +506,7 @@ Vec3 CPlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Ve
 	sphere.center = origin;
 	sphere.r = radius;
 	const float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, checkDir.normalized() * farEnough,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, nSkip);
 
 	if (hitDist > 0.0f && pContact)
 	{
@@ -525,7 +525,7 @@ Vec3 CPlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Ve
 	
 	Vec3 newDir = -checkDir.normalized() * checkDir.GetLength();
 	const float hitDist2 = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, nSkip);
 
 	if (hitDist2 > 0.0f && pSecContact)
 	{
