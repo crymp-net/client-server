@@ -76,6 +76,7 @@ protected:
 
 	int SetSilhouette(IFunctionHandler* pH, ScriptHandle entityId, float r, float g, float b, float a, float fDuration);
 	int ResetSilhouette(IFunctionHandler* pH, ScriptHandle entityId);
+	int ShowTutorialText(IFunctionHandler* pH, bool show);
 
 private:
 	void RegisterGlobals();

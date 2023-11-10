@@ -23,6 +23,8 @@
 #include "HUDCrosshair.h"
 #include "HUDSilhouettes.h"
 #include "CryGame/Menus/FlashMenuObject.h"
+#include "CryGame/MPTutorial.h"
+#include "Library/StringTools.h"
 
 //------------------------------------------------------------------------
 CScriptBind_HUD::CScriptBind_HUD(ISystem* pSystem, IGameFramework* pGameFramework)
@@ -105,6 +107,8 @@ void CScriptBind_HUD::RegisterMethods()
 
 	SCRIPT_REG_TEMPLFUNC(SetSilhouette, "entityId, r, g, b, duration");
 	SCRIPT_REG_TEMPLFUNC(ResetSilhouette, "entityId");
+
+	SCRIPT_REG_TEMPLFUNC(ShowTutorialText, "bShow, text");
 
 #undef SCRIPT_REG_CLASSNAME
 }
@@ -631,6 +635,40 @@ int CScriptBind_HUD::ResetSilhouette(IFunctionHandler* pH, ScriptHandle entityId
 		if (pEntity && pHUD->GetSilhouettes())
 		{
 			pHUD->GetSilhouettes()->ResetSilhouette(entityId.n);
+		}
+	}
+	return pH->EndFunction();
+}
+
+int CScriptBind_HUD::ShowTutorialText(IFunctionHandler* pH, bool show)
+{
+	CHUD* pHUD = g_pGame->GetHUD();
+	if (!pHUD)
+		return pH->EndFunction();
+
+	if (CMPTutorial* pTutorial = g_pGame->GetGameRules() ? g_pGame->GetGameRules()->GetMPTutorial() : 0)
+	{
+		if (pTutorial->IsEnabled())
+		{
+			return pH->EndFunction();
+		}
+	}
+
+	if (pH->GetParamCount() == 1)
+	{
+		pHUD->ShowTutorialText(nullptr, show);
+
+		return pH->EndFunction();
+	}
+
+	const char* text = "";
+	if (pH->GetParamType(2) == svtString)
+	{
+		if (pH->GetParam(2, text))
+		{
+			std::wstring widetext;
+			StringTools::AppendTo(widetext, text);
+			pHUD->ShowTutorialText(widetext.c_str(), true);
 		}
 	}
 	return pH->EndFunction();

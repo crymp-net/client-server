@@ -2619,6 +2619,11 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				g_pGame->GetOptions()->SaveCVarToProfile("OptionCfg.g_PSTutorial_Enabled", "0");
 			}
 		}
+		//CryMP
+		if (m_animTutorial.IsLoaded() && m_animTutorial.GetVisible())
+		{
+			m_animTutorial.Invoke("showTutorial", false);
+		}
 	}
 
 	if (m_pHUDTweakMenu)
