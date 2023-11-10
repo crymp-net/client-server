@@ -5336,13 +5336,15 @@ void CPlayer::DeployParachute(bool deploy, bool sound)
 		if (m_nParachuteSlot && !(pEnt->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)) // check if it was correctly loaded...dont wanna modify another character slot
 		{
 			m_fParachuteMorph = 0.0f;
+	
+			const int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
+			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+
 			ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
 			if (pCharacter)
 			{
 				pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
 			}
-			int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
-			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
 
 			if (sound)
 			{
