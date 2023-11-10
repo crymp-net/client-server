@@ -600,8 +600,6 @@ void CSingle::StartLocking(EntityId targetId, int partId /*=0*/)
 //------------------------------------------------------------------------
 void CSingle::UpdateAutoAim(float frameTime)
 {
-	static IGameObjectSystem* pGameObjectSystem = gEnv->pGame->GetIGameFramework()->GetIGameObjectSystem();
-
 	CActor* pOwner = m_pWeapon->GetOwnerActor();
 	if (!pOwner || !pOwner->IsPlayer())
 		return;
@@ -627,8 +625,7 @@ void CSingle::UpdateAutoAim(float frameTime)
 	const int objects = ent_all;
 	const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (8 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
 
-	int result = gEnv->pPhysicalWorld->RayWorldIntersection(aimPos, aimDir * 2.f * maxDistance,
-		objects, flags, &ray, 1, pSkipEnts, nSkipEnts);
+	int result = gEnv->pPhysicalWorld->RayWorldIntersection(aimPos, aimDir * 2.f * maxDistance, objects, flags, &ray, 1, pSkipEnts, nSkipEnts);
 
 	bool hitValidTarget = false;
 	IEntity* pEntity = 0;
@@ -643,7 +640,13 @@ void CSingle::UpdateAutoAim(float frameTime)
 	if (m_bLocked)
 		m_autoaimTimeOut -= frameTime;
 
-	if (hitValidTarget && ray.dist <= maxDistance)
+	//Fix from Furyaner 
+	if (m_bLocked && (!CheckAutoAimTolerance(aimPos, aimDir) || (pEntity && m_lockedTarget != pEntity->GetId())))
+	{
+		m_pWeapon->RequestUnlock();
+		Unlock();
+	}
+	else if (hitValidTarget && ray.dist <= maxDistance)
 	{
 		if (m_bLocked)
 		{
@@ -795,7 +798,16 @@ void CSingle::PatchParamsCryMP()
 			m_fireparams.autoaim_targetaironly = true;
 			m_fireparams.autoaim_distance = 350.f;
 			m_fireparams.autoaim_tolerance = 25.f;
-			m_fireparams.autoaim_locktime = 0.2f;
+			m_fireparams.autoaim_locktime = 0.0f;
+		}
+	}
+
+	else if (pWClass == CItem::sRocketLauncherClass)
+	{
+		if (g_pGameCVars->mp_rpgMod)
+		{
+			m_fireparams.autoaim = true;
+			m_fireparams.autoaim_targetaironly = true;
 		}
 	}
 }
