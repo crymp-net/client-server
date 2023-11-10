@@ -93,7 +93,7 @@ void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocit
 					const ENanoMode curMode = pSuit->GetMode();
 					if (curMode == NANOMODE_STRENGTH && g_pGameCVars->mp_C4StrengthThrowMult > 1.0f)
 					{
-						pSuit->PlaySound(STRENGTH_LIFT_SOUND, 0.7f);
+						pSuit->PlaySound(STRENGTH_LIFT_SOUND, 1.0f);
 					}
 				}
 			}
