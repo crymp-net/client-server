@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 ### Added
+- New third-person camera inspired by Hitman
+- Third-person view on ladder
+- Reverse view in unarmed vehicles by holding R key
+- Automatic attaching of bought accessories to current weapon (`mp_attachBoughtEquipment`)
+- Console server list from the old multiplayer client (type `0` in console)
+- Server controllable RPGMod (`mp_rpgMod`)
+- Server controllable AA missile lock-on (`mp_aaLockOn`)
+- In-game chat clipboard paste (Ctrl + V)
+- In-game chat history (up and down arrows)
+- Workaround for missing localization files in Crysis from Steam
+- `-language` command line parameter to specify game language
+- C4 throw sound and `mp_C4StrengthThrowMult`
+- New kill-log icons
+- New parachute animation and sounds
+- `reconnect` console command
+- GPU information in the log:
+```
+Renderer initialization
+D3D10 Adapter: AMD Radeon RX 480 Graphics (RADV POLARIS10)
+D3D10 Adapter: PCI 1002:67df (rev 00)
+D3D10 Adapter: Dedicated video memory = 8G
+D3D10 Adapter: Dedicated system memory = 0
+D3D10 Adapter: Shared system memory = 31G
+```
 - New Lua functions:
     - `CPPAPI.DrawText`
     - `CPPAPI.DrawImage`
@@ -20,60 +44,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     - `HUD.SetSilhouette`
     - `HUD.ResetSilhouette`
     - `Sound.GetParameterValue` and improved `Sound.SetParameterValue`
-- TP view on ladder
-- Reverse view in unarmed vehicles by holding R key
-- Automatic attaching of bought accessories to current weapon (`mp_attachBoughtEquipment`)
-- Console server list from the old multiplayer client (type `0` in console)
-- Server controllable RPGMod (`mp_rpgMod`)
-- Server controllable AA missile lock-on (`mp_aaLockOn`)
-- In-game chat clipboard paste (Ctrl + V)
-- In-game chat history (up and down arrows)
-- Workaround for missing localization files in Crysis from Steam
-- `-language` command line parameter to specify game language
-- C4 throw sound and `mp_C4StrengthThrowMult`
-- New kill-log icons
-- `reconnect` console command
-- GPU information in the log:
-```
-Renderer initialization
-D3D10 Adapter: AMD Radeon RX 480 Graphics (RADV POLARIS10)
-D3D10 Adapter: PCI 1002:67df (rev 00)
-D3D10 Adapter: Dedicated video memory = 8G
-D3D10 Adapter: Dedicated system memory = 0
-D3D10 Adapter: Shared system memory = 31G
-```
 
 ### Changed
-- Improved buymenu
-- Improved TP camera
 - [Improved project version](../../pull/94)
+- [Improved buy-menu responsiveness](../../pull/106)
 - Improved vehicle damage sounds
 - [Improved script system](../../pull/109)
 - [Improved no connection detection in multiplayer lobby](../../pull/111)
-- Improved TP and spectator camera in freefall
-- Improved repair kit and lockpick kit
+- Improved third-person and spectator camera in freefall
+- Improved repair-kit and lockpick-kit
+- Improved anti-cheat
 - Key bindings created before joining a game are no longer removed upon disconnect
 - Adjusted aim smoothing (`mp_netAimLerpFactorCrymp`)
-- Team-colored VTOL lockon silhouettes
+- Team-colored weapon lock-on silhouettes
 - Smooth capture icon animation in power struggle
 - Show prestige points and battle-log while dead
 - Allow spectating of non-actor entities
-- Hardening against cheats
 - Dev builds are now signed as well
 
 ### Fixed
 - Various issues related to showing explosives
 - Various potential RMI issues
 - Various vehicle and parachute issues
+- Various weapon lock-on issues, thanks to Furyaner
 - Ladder glitch
-- Lagging VTOLs in FP view when going fast
-- Mouse actions in specator
-- Rockets colliding with host entity
+- Mouse actions in spectator
 - Connecting to local servers via internet lobby
 - Laser stuck in air when buying RPG while dead
 - Visible model on shatter
-- Binoculars in FP spectator
-- Shiten transition to thirdperson, missing legs
+- Binoculars in first-person spectator
+- Shiten transition to third-person, missing legs
 - Shotgun animation playing too fast
 - [NPC flashlights after loading a saved game](../../pull/98)
 - Missing AA tracer
