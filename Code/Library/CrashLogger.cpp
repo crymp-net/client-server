@@ -11,6 +11,8 @@
 
 #include "CrashLogger.h"
 
+#include "CrySystem/CryMemoryManager.h"
+
 #ifdef BUILD_64BIT
 #define ADDR_FMT "%016I64X"
 #else
@@ -83,6 +85,11 @@ static void DumpExceptionInfo(std::FILE* file, const EXCEPTION_RECORD* info)
 			case 1: std::fprintf(file, "Write to 0x"   ADDR_FMT " failed\n", dataAddress); break;
 			case 8: std::fprintf(file, "Execute at 0x" ADDR_FMT " failed\n", dataAddress); break;
 		}
+
+		void* pointer = reinterpret_cast<void*>(dataAddress);
+
+		std::fprintf(file, "Allocation callstack for %p:\n", pointer);
+		std::fprintf(file, "%s", CryMemoryManager::GetCallstack(pointer).c_str());
 	}
 
 	std::fflush(file);
@@ -192,6 +199,18 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			std::fprintf(file, ADDR_FMT ":", address);
 
+			IMAGEHLP_MODULE moduleInfo = {};
+			moduleInfo.SizeOfStruct = sizeof moduleInfo;
+
+			if (SymGetModuleInfo(process, address, &moduleInfo))
+			{
+				std::fprintf(file, " %s:", BaseName(moduleInfo.ImageName));
+			}
+			else
+			{
+				std::fprintf(file, " ?:");
+			}
+
 			unsigned char symbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME] = {};
 			SYMBOL_INFO& symbol = *reinterpret_cast<SYMBOL_INFO*>(symbolBuffer);
 			symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -200,7 +219,7 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			if (SymFromAddr(process, address, &symbolOffset, &symbol))
 			{
-				std::fprintf(file, " %s + 0x%I64X", symbol.Name, symbolOffset);
+				std::fprintf(file, " %s", symbol.Name);
 			}
 			else
 			{
@@ -213,23 +232,11 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			if (SymGetLineFromAddr(process, address, &lineOffset, &line))
 			{
-				std::fprintf(file, " (%s:%u)", line.FileName, line.LineNumber);
+				std::fprintf(file, " (%s:%u)\n", BaseName(line.FileName), line.LineNumber);
 			}
 			else
 			{
-				std::fprintf(file, " ()");
-			}
-
-			IMAGEHLP_MODULE moduleInfo = {};
-			moduleInfo.SizeOfStruct = sizeof moduleInfo;
-
-			if (SymGetModuleInfo(process, address, &moduleInfo))
-			{
-				std::fprintf(file, " in %s\n", BaseName(moduleInfo.ImageName));
-			}
-			else
-			{
-				std::fprintf(file, " in ?\n");
+				std::fprintf(file, " ()\n");
 			}
 		}
 
@@ -527,7 +534,7 @@ static bool IsModuleNameEqual(const UNICODE_STRING& name, const wchar_t* expecte
 	}
 }
 
-static HMODULE FindLoadedModule(const wchar_t* name)
+void* CrashLogger::FindLoadedModule(const wchar_t* name)
 {
 	const std::size_t nameLength = wcslen(name);
 
@@ -539,7 +546,7 @@ static HMODULE FindLoadedModule(const wchar_t* name)
 
 		if (IsModuleNameEqual(data->FullDllName, name, nameLength))
 		{
-			return static_cast<HMODULE>(data->DllBase);
+			return data->DllBase;
 		}
 	}
 
@@ -558,7 +565,7 @@ void CrashLogger::Enable(CrashLogger::Handler handler)
 	_set_invalid_parameter_handler(&InvalidParameterHandler);
 
 	// GetModuleHandle does not work because msvcr80.dll is stored in WinSxS
-	HMODULE msvcr80 = FindLoadedModule(L"msvcr80.dll");
+	HMODULE msvcr80 = static_cast<HMODULE>(FindLoadedModule(L"msvcr80.dll"));
 	if (msvcr80)
 	{
 		// VS2005 _set_purecall_handler is done by each engine DLL

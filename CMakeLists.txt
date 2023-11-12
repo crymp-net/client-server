@@ -53,7 +53,7 @@ set(CRYMP_CLIENT_EXE "CryMP-Client${BUILD_BITS}")
 
 message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 
-add_executable(${CRYMP_CLIENT_EXE} WIN32
+add_executable(${CRYMP_CLIENT_EXE}
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
@@ -766,7 +766,7 @@ set_property(TARGET mimalloc PROPERTY CXX_STANDARD 17)
 
 target_compile_definitions(mimalloc PRIVATE
 	MI_SECURE=4
-	MI_DEBUG=1
+	MI_DEBUG=3
 	MI_SHOW_ERRORS=1
 )
 
@@ -817,7 +817,7 @@ target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
 
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc dbghelp ws2_32 winhttp)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 
 # prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
 target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)

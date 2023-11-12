@@ -637,6 +637,7 @@ void Launcher::PatchEngine()
 	if (m_dlls.pCryRenderD3D10)
 	{
 		MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
+		MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(m_dlls.pCryRenderD3D10);
 		MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
 		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
 	}

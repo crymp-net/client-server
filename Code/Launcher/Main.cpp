@@ -27,7 +27,7 @@ static std::string RuntimeErrorToString(const std::runtime_error& error)
 	return message;
 }
 
-int __stdcall WinMain(void*, void*, char*, int)
+int main()
 {
 	Launcher launcher;
 	gLauncher = &launcher;

@@ -61,6 +61,7 @@ namespace MemoryPatch
 		};
 
 		void FixLowRefreshRateBug(void* pCryRenderD3D10);
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D10);
 		void HookWindowNameD3D10(void* pCryRenderD3D10, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D10, void (*handler)(AdapterInfo* info));
 	}
