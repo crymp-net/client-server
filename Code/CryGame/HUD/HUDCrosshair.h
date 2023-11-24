@@ -57,10 +57,8 @@ public:
 
 	void Reset();
 
-	void SetDamageIndicatorTimer(float time)
-	{
-		m_fDamageIndicatorTimer = time;
-	}
+	void ShowDamageIndicator(float seconds);
+
 	bool IsDamageIndicatorProcessing()
 	{
 		return m_fDamageIndicatorTimer > 0.0f;

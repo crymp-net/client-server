@@ -65,6 +65,14 @@ void CHUDCrosshair::Reset()
 
 //-----------------------------------------------------------------------------------------------------
 
+void CHUDCrosshair::ShowDamageIndicator(float seconds)
+{
+	m_fDamageIndicatorTimer = seconds;
+	m_pHUD->UpdateCrosshairVisibility();
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void CHUDCrosshair::Update(float fDeltaTime)
 {
 	if (m_bBroken)
@@ -640,6 +648,9 @@ void CHUD::UpdateCrosshairVisibility()
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("clearDamageDirection");
 		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->Advance(0.1f);
 
-		m_pHUDCrosshair->SetDamageIndicatorTimer(0.0f);
+		if (!bShow)
+		{
+			m_pHUDCrosshair->ShowDamageIndicator(0.0f);
+		}
 	}
 }
