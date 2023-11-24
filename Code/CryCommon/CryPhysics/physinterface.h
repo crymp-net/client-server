@@ -1442,8 +1442,6 @@ struct phys_geometry {
 	int *pMatMapping;
 	int nMats;
 	void *pForeignData;
-
-	AUTO_STRUCT_INFO
 };
 
 struct bop_newvtx {

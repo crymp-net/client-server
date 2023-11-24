@@ -23,8 +23,6 @@ enum EAnimationGraphInputType
 	eAGIT_String
 };
 
-AUTO_TYPE_INFO(EAnimationGraphInputType)
-
 enum EAnimationGraphPauser
 {
 	eAGP_FlowGraph,
@@ -56,7 +54,6 @@ enum EMovementControlMethod
 	eMCM_COUNT,
 	eMCM_FF = 0xFF
 };
-AUTO_TYPE_INFO(EMovementControlMethod)
 
 extern char* g_szMCMString[eMCM_COUNT];
 
@@ -78,8 +75,6 @@ enum EColliderMode
 	eColliderMode_FF = 0xFF
 };
 extern char* g_szColliderModeString[eColliderMode_COUNT];
-
-AUTO_TYPE_INFO(EColliderMode)
 
 enum EColliderModeLayer
 {

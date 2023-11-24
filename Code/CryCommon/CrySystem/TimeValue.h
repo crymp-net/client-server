@@ -2,16 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#ifndef _TIMEVALUE_H_
-#define _TIMEVALUE_H_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include <cstdint>
-
-#include "CryCommon/CryCore/TypeInfo.h"
 
 class CTimeValue
 {
@@ -131,8 +125,6 @@ public:
 	bool operator==( const CTimeValue &inRhs ) const { return m_lValue == inRhs.m_lValue; };
 	bool operator!=( const CTimeValue &inRhs ) const { return m_lValue != inRhs.m_lValue; };
 
-	AUTO_STRUCT_INFO
-
 private: // ----------------------------------------------------------
 
 	std::int64_t m_lValue;  // absolute or relative value in 1/TIMEVALUE_PRECISION, might be negative
@@ -141,5 +133,3 @@ private: // ----------------------------------------------------------
 
 	friend class CTimer;
 };
-
-#endif // _TIMEVALUE_H_
