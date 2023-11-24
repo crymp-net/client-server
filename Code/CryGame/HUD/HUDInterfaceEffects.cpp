@@ -558,6 +558,8 @@ void CHUD::UpdateProjectileTracker(CGameFlashAnimation &anim, IEntity *pProjecti
 
 void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 {
+	m_pHUDCrosshair->ShowDamageIndicator(2.0f);
+
 	Vec3 vlookingDirection = FORWARD_DIRECTION;
 	CGameFlashAnimation* pAnim = NULL;
 
@@ -631,8 +633,6 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 		pAnim->Invoke("setDamageDirection", 3);
 		pAnim->Invoke("setDamageDirection", 4);
 	}
-
-	m_pHUDCrosshair->SetDamageIndicatorTimer(2.0f);
 }													
 
 void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedback)
