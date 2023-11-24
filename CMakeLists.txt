@@ -137,7 +137,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/StlUtils.h
 	Code/CryCommon/CryCore/StringUtils.h
 	Code/CryCommon/CryCore/TArray.h
-	Code/CryCommon/CryCore/TypeInfo.h
 	Code/CryCommon/CryCore/Typelist.h
 	Code/CryCommon/CryCore/TypelistUtils.h
 	Code/CryCommon/CryCore/VectorMap.h

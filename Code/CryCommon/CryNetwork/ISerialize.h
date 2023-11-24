@@ -90,8 +90,6 @@ struct SNetObjectID
 	{
 		return (uint32(salt)<<16) | id;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 // this enumeration details what "kind" of serialization we are
@@ -134,8 +132,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 struct SSerializeString
 {
-	AUTO_STRUCT_INFO
-
 	SSerializeString() = default;
 	SSerializeString( const SSerializeString &src ) { m_str.assign(src.c_str()); };
 	explicit SSerializeString( const char *s ) : m_str(s) { };

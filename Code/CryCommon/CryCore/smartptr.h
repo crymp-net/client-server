@@ -115,8 +115,6 @@ public:
 	{
 		std::swap(p, other.p);
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 template <class _I>

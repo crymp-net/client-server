@@ -206,8 +206,6 @@ struct ParticleTarget
 	{
 		memset(this, 0, sizeof(*this));
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -811,7 +809,6 @@ struct SIndirectLightingHeaderVersion2
 
 	SIndirectLightingHeaderVersion2() : version(2), objectSampleCount(0), nChunkSize(0)
 	{}
-	AUTO_STRUCT_INFO
 };
 
 struct SIndirectLightingHeader
@@ -823,7 +820,6 @@ struct SIndirectLightingHeader
 
 	SIndirectLightingHeader() : version(FILEVERSION_TERRAIN_SHLIGHTING_FILE), objectSampleCount(0), nChunkSize(0)
 	{}
-	AUTO_STRUCT_INFO
 };
 
 struct STerrainInfo
@@ -834,8 +830,6 @@ struct STerrainInfo
 	int nSectorsTableSize_InSectors;
 	float fHeightmapZRatio;
 	float fOceanWaterLevel;
-
-	AUTO_STRUCT_INFO
 };
 
 #define TERRAIN_CHUNK_VERSION 22
@@ -846,8 +840,6 @@ struct STerrainChunkHeader
 	int nChunkVersion;
 	int nChunkSize;
 	STerrainInfo TerrainInfo;
-
-	AUTO_STRUCT_INFO
 };
 
 struct SVisAreaManChunkHeader
@@ -857,8 +849,6 @@ struct SVisAreaManChunkHeader
 	int nVisAreasNum;
 	int nPortalsNum;
 	int nOcclAreasNum;
-
-	AUTO_STRUCT_INFO
 };
 
 struct SOcTreeNodeChunk
@@ -867,8 +857,6 @@ struct SOcTreeNodeChunk
 		AABB	nodeBox;
 		int		nObjectsBlockSize;
 		unsigned char ucChildsMask;
-
-		AUTO_STRUCT_INFO
 };
 
 #pragma pack(pop)
@@ -2210,8 +2198,6 @@ struct SCommonFileHeader
 	char				signature[4];						// File signature, should be "CRY "
 	unsigned short			type;										// File type
 	unsigned short			version;								// File version
-
-	AUTO_STRUCT_INFO
 };
 
 // "locally higher texture resolution" following structure can be removed (as well in autotype)
@@ -2222,8 +2208,6 @@ struct STerrainTextureFileHeader_old
 	unsigned short			nLodsNum;								//
 	unsigned short			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
 	unsigned short			nReserved;
-
-  AUTO_STRUCT_INFO
 };
 
 #define TTFHF_AO_DATA_IS_VALID 1
@@ -2234,8 +2218,6 @@ struct STerrainTextureFileHeader
 	unsigned short			nLayerCount;						// STerrainTextureLayerFileHeader count following (also defines how may layers are interleaved) 1/2
 	unsigned short			dwFlags;
 	float				m_fSunShadowIntensity;	// 0=no shadow..1=full shadow
-
-  AUTO_STRUCT_INFO
 };
 
 // layer header for terrain texture file (for each layer)
@@ -2245,8 +2227,6 @@ struct STerrainTextureLayerFileHeader
 	unsigned short			nReserved;					// ensure padding and for later usage
 	int eTexFormat;					// typically eTF_DXT1, eTF_A4R4G4B4 or eTF_R5G6B5
 	uint32			nSectorSizeBytes;		// redundant information for more convenient loading code
-
-  AUTO_STRUCT_INFO
 };
 
 #pragma pack(pop)

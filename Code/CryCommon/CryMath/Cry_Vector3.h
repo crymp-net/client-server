@@ -465,8 +465,6 @@ template <typename F> struct Vec3_tpl
 		else 
 			return Vec3_tpl(0,0,1);
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -701,8 +699,6 @@ template <typename F> struct Vec4_tpl
 		if (!NumberValid(w)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 } 
 
 
@@ -941,8 +937,6 @@ template <typename F> struct Ang3_tpl
 		if (!NumberValid(z)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef Ang3_tpl<f32>		Ang3;
@@ -1156,8 +1150,6 @@ template<typename F> struct Plane_tpl
 
 	Vec3_tpl<F> MirrorVector(const Vec3_tpl<F>& i)   {	return n*(2* (n|i))-i;	}
 	Vec3_tpl<F> MirrorPosition(const Vec3_tpl<F>& i) {  return n*(2* ((n|i)-d))-i;	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef Plane_tpl<f32>	Plane;

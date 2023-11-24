@@ -59,7 +59,6 @@ enum EGeomForm
 	GeomForm_Surface,
 	GeomForm_Volume
 };
-AUTO_TYPE_INFO(EGeomForm)
 
 enum EGeomType
 {
@@ -68,7 +67,6 @@ enum EGeomType
 	GeomType_Physics,
 	GeomType_Render,
 };
-AUTO_TYPE_INFO(EGeomType)
 
 struct RandomPos
 {
@@ -506,8 +504,6 @@ struct AABB {
 	template<typename F>
 	ILINE static AABB CreateAABBfromOBB( const Vec3& wpos, const OBB_tpl<F>& obb, f32 scaling=1.0f) 
 		{ AABB taabb; taabb.SetAABBfromOBB(wpos,obb,scaling); return taabb; 	}
-
-  AUTO_STRUCT_INFO
 };
 
 ILINE bool IsEquivalent( const AABB& a, const AABB& b, float epsilon=VEC_EPSILON )

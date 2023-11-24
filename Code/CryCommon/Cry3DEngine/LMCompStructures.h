@@ -132,7 +132,6 @@ struct LMFalseLightFileHeader
 
 	uint8 iVersion;
 	unsigned int iNumObjects;
-	AUTO_STRUCT_INFO
 };
 
 struct sFalseLightSerializationStructure
@@ -140,7 +139,6 @@ struct sFalseLightSerializationStructure
 	int32						m_nObjectID;
 	int32						m_nLightNumber;
 	EntityId				m_Lights[32];
-	AUTO_STRUCT_INFO
 };
 
 struct TexCoord2Comp
@@ -149,7 +147,6 @@ struct TexCoord2Comp
 	TexCoord2Comp() : s(0.f), t(0.f){};
 	float s;
 	float t;
-	AUTO_STRUCT_INFO
 };
 
 //! \brief Callback interface for compiler output
