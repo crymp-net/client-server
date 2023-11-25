@@ -1630,46 +1630,38 @@ bool CFlashMenuObject::IsOnScreen(EMENUSCREEN screen)
 
 void CFlashMenuObject::OnHardwareMouseEvent(int x, int y, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
+	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
-		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
-		{
-			SFlashVarValue args[2] = { x,y };
+		SFlashVarValue args[2] = { x,y };
+		m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
+		m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
 
-			m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
-			m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
-		
-			//CryMP
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(SFlashCursorEvent::eCursorPressed, x, y));
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
-
-		}
+		//CryMP:
+		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}
-	else
+	else if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
 	{
-		SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
-		if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
-		{
-			eCursorState = SFlashCursorEvent::eCursorPressed;
-		}
-		else if (HARDWAREMOUSEEVENT_LBUTTONUP == eHardwareMouseEvent)
-		{
-			eCursorState = SFlashCursorEvent::eCursorReleased;
-		}
-
-		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
-		{
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
-			UpdateButtonSnap(Vec2(x, y));
-		}
-
-		if (m_pFlashPlayer)
-		{
-			m_pFlashPlayer->ScreenToClient(x, y);
-			m_pFlashPlayer->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
-		}
+		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}
+	else if (HARDWAREMOUSEEVENT_LBUTTONUP == eHardwareMouseEvent)
+	{
+		eCursorState = SFlashCursorEvent::eCursorReleased;
+	}
+
+	if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
+	{
+		m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
+		m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
+		UpdateButtonSnap(Vec2(x, y));
+	}
+
+	if (m_pFlashPlayer)
+	{
+		m_pFlashPlayer->ScreenToClient(x, y);
+		m_pFlashPlayer->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
+	}
+
 }
 
 //-----------------------------------------------------------------------------------------------------
