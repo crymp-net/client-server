@@ -205,4 +205,7 @@ namespace StringTools
 
 	std::system_error SysErrorFormat(const char* format, ...);
 	std::system_error SysErrorFormatV(const char* format, va_list args);
+
+	std::system_error SysErrorErrnoFormat(const char* format, ...);
+	std::system_error SysErrorErrnoFormatV(const char* format, va_list args);
 }

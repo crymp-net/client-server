@@ -1,3 +1,4 @@
+#include <cerrno>
 #include <cstdio>
 
 #include "StringTools.h"
@@ -218,4 +219,26 @@ std::system_error StringTools::SysErrorFormatV(const char* format, va_list args)
 	message += std::to_string(code);
 
 	return std::system_error(GetSysErrorCodeWithCategory(code), message);
+}
+
+std::system_error StringTools::SysErrorErrnoFormat(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	std::system_error error = SysErrorErrnoFormatV(format, args);
+	va_end(args);
+
+	return error;
+}
+
+std::system_error StringTools::SysErrorErrnoFormatV(const char* format, va_list args)
+{
+	const int code = errno;
+
+	std::string message = FormatV(format, args);
+
+	message += ": Error code ";
+	message += std::to_string(code);
+
+	return std::system_error(code, std::generic_category(), message);
 }
