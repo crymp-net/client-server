@@ -2,7 +2,79 @@
 
 #include "StringTools.h"
 
-extern "C" __declspec(dllimport) unsigned long __stdcall GetLastError();
+////////////////////////////////////////////////////////////////////////////////
+// windows.h
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef _INC_WINDOWS
+typedef unsigned long DWORD;
+typedef void* HMODULE;
+#endif
+
+extern "C" __declspec(dllimport) DWORD __stdcall GetLastError();
+extern "C" __declspec(dllimport) DWORD __stdcall FormatMessageA(
+	DWORD flags,
+	const void* source,
+	DWORD message,
+	DWORD language,
+	char* buffer,
+	DWORD bufferSize,
+	va_list* args
+);
+
+extern "C" __declspec(dllimport) HMODULE __stdcall GetModuleHandleA(const char* name);
+
+////////////////////////////////////////////////////////////////////////////////
+
+class WinHttpErrorCategory : public std::error_category
+{
+public:
+	const char* name() const noexcept override
+	{
+		return "winhttp";
+	}
+
+	std::string message(int code) const override
+	{
+		HMODULE winhttp = ::GetModuleHandleA("winhttp.dll");
+		if (!winhttp)
+		{
+			return {};
+		}
+
+		// FORMAT_MESSAGE_IGNORE_INSERTS
+		// FORMAT_MESSAGE_FROM_HMODULE
+		// FORMAT_MESSAGE_FROM_SYSTEM
+		const DWORD flags = 0x200 | 0x800 | 0x1000;
+
+		const DWORD message = static_cast<DWORD>(code);
+		const DWORD language = 0;
+
+		char buffer[256];
+		DWORD length = ::FormatMessageA(flags, winhttp, message, language, buffer, sizeof(buffer), nullptr);
+
+		return std::string(buffer, length);
+	}
+};
+
+static const WinHttpErrorCategory g_winhttp_error_category;
+
+static const std::error_category& GetSysErrorCategory(DWORD code)
+{
+	if (code >= 12000 && code <= 12999)
+	{
+		return g_winhttp_error_category;
+	}
+	else
+	{
+		return std::system_category();
+	}
+}
+
+static std::error_code GetSysErrorCodeWithCategory(DWORD code)
+{
+	return std::error_code(static_cast<int>(code), GetSysErrorCategory(code));
+}
 
 std::string StringTools::Format(const char* format, ...)
 {
@@ -138,12 +210,12 @@ std::system_error StringTools::SysErrorFormat(const char* format, ...)
 
 std::system_error StringTools::SysErrorFormatV(const char* format, va_list args)
 {
-	const unsigned long code = ::GetLastError();
+	const DWORD code = ::GetLastError();
 
 	std::string message = FormatV(format, args);
 
 	message += ": Error code ";
 	message += std::to_string(code);
 
-	return std::system_error(static_cast<int>(code), std::system_category(), message);
+	return std::system_error(GetSysErrorCodeWithCategory(code), message);
 }
