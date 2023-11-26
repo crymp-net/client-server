@@ -315,10 +315,10 @@ void CHUDCrosshair::SetCrosshair(int iCrosshair)
 	iCrosshair = MAX(0, iCrosshair);
 	iCrosshair = MIN(13, iCrosshair);
 
-	if (m_iCrosshair != iCrosshair)
+	if (m_iCrosshair != iCrosshair && GetFlashAnim()->GetVisible())
 	{
 		m_iCrosshair = iCrosshair;
-		m_animCrossHair.Invoke("setCrossHair", iCrosshair);
+		m_animCrossHair.Invoke("setCrossHair", iCrosshair); //Setting these has no effect if flash anim not visible..
 		m_animCrossHair.Invoke("setUsable", m_bUsable);
 	}
 }
