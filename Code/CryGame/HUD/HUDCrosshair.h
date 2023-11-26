@@ -83,6 +83,7 @@ private:
 	int m_iFriendlyTarget = 0;
 	// crosshair type cache value
 	int m_iCrosshair = -1;
+	bool m_setCrosshairInFlash = false;
 	// maps usability strings to icons
 	std::map<string, int> m_useIcons;
 	//hide the use icon in special cases

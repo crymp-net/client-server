@@ -178,6 +178,13 @@ void CHUDCrosshair::Update(float fDeltaTime)
 				m_animCrossHair.GetFlashPlayer()->Advance(fDeltaTime);
 				m_animCrossHair.GetFlashPlayer()->Render();
 
+				if (m_setCrosshairInFlash)
+				{
+					m_animCrossHair.Invoke("setCrossHair", m_iCrosshair); //Setting these has no effect if flash anim not visible..
+					m_animCrossHair.Invoke("setUsable", m_bUsable);
+					m_setCrosshairInFlash = false;
+				}
+
 				/*f32 fColor[4] = { 1,1,0,1 };
 				f32 g_YLine = 130.0f;
 				gEnv->pRenderer->Draw2dLabel(1, g_YLine, 1.3f, fColor, false, "Rendering crosshair: %s", m_animCrossHair.GetVisible() ? "visible" : "invisible");
@@ -315,11 +322,10 @@ void CHUDCrosshair::SetCrosshair(int iCrosshair)
 	iCrosshair = MAX(0, iCrosshair);
 	iCrosshair = MIN(13, iCrosshair);
 
-	if (m_iCrosshair != iCrosshair && GetFlashAnim()->GetVisible())
+	if (m_iCrosshair != iCrosshair)
 	{
 		m_iCrosshair = iCrosshair;
-		m_animCrossHair.Invoke("setCrossHair", iCrosshair); //Setting these has no effect if flash anim not visible..
-		m_animCrossHair.Invoke("setUsable", m_bUsable);
+		m_setCrosshairInFlash = true;
 	}
 }
 
