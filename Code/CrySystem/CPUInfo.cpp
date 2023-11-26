@@ -57,6 +57,7 @@ void CPUInfo::Detect(CPUInfo* self)
 	self->coreCountAvailable = coreCount;
 	self->coreCountPhysical = coreCount;
 	self->cores[0].flags = features;
+	self->cores[0].physical = true;
 
 	CryLogAlways("%s [Count: %u] [Features:%s%s%s%s]",
 		g_cpuid.brand_string,

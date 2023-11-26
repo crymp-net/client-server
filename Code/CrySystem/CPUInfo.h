@@ -32,10 +32,14 @@ struct CPUInfo
 	{
 		unsigned int reserved1[2];
 		unsigned int flags;
-		unsigned int reserved2[65];
+		unsigned int reserved2[60];
+		bool physical;
+		unsigned int reserved3[4];
 	};
 
 	Core cores[MAX_CORE_COUNT];
 
 	static void Detect(CPUInfo* self);
 };
+
+static_assert(sizeof(CPUInfo) == 8720);
