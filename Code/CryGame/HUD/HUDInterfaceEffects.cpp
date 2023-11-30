@@ -28,6 +28,7 @@
 #include "HUDCrosshair.h"
 #include "CryGame/Items/Weapons/OffHand.h"
 #include "CryGame/GameActions.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 void CHUD::QuickMenuSnapToMode(ENanoMode mode)
 {
@@ -1553,38 +1554,66 @@ void CHUD::SetSubtitleMode(HUDSubtitleMode mode)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 */, int posY /* = 0 */, const char *text, bool topText, bool lockingBar)
+void CHUD::UpdateProgressBar(float deltaTime)
+{
+	if (m_progressBarType == ProgressBarType::DEFAULT_SMOOTHED)
+	{
+		Interpolate(m_progressBarSmoothed, m_iProgressBar, 5.0f, deltaTime);
+
+		m_animProgress.Invoke("setProgressBar", ceil(m_progressBarSmoothed));
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 */, int posY /* = 0 */, std::string_view text, bool topText, bool lockingBar)
 {
 	CGameFlashAnimation *pAnim = &m_animProgress;
-	if(m_bProgressLocking)
-		pAnim = &m_animProgressLocking;
-
-	if(init)
+	if (m_progressBarType == ProgressBarType::LOCKING)
 	{
-		if(lockingBar)
+		pAnim = &m_animProgressLocking;
+	}
+
+	if (init)
+	{
+		if (lockingBar)
 		{
-			if(m_animProgress.IsLoaded())
+			if (m_animProgress.IsLoaded())
 				m_animProgress.Unload();
 		}
 		else
 		{
-			if(m_animProgressLocking.IsLoaded())
+			if (m_animProgressLocking.IsLoaded())
 				m_animProgressLocking.Unload();
 		}
 
-		m_bProgressLocking = lockingBar;
+		m_progressBarType = lockingBar ? ProgressBarType::LOCKING : ProgressBarType::DEFAULT;
 
-		if(!pAnim->IsLoaded())
+		//Smoothing for these
+		if (gEnv->bMultiplayer && !gEnv->bServer)
+		{
+			if (!lockingBar && (text == "@ui_work_repair" || text == "@ui_work_disarm" || text == "@ui_work_lockpick"))
+			{
+				m_progressBarType = ProgressBarType::DEFAULT_SMOOTHED;
+			}
+		}
+
+		if (lockingBar)
+			m_bProgressLocking = true;
+
+		if (!pAnim->IsLoaded())
 		{
 			if(lockingBar)
 				m_animProgressLocking.Load("Libs/UI/HUD_TAC_Locking.gfx", eFD_Center, eFAF_Visible);
 			else
 				m_animProgress.Load("Libs/UI/HUD_ProgressBar.gfx", eFD_Center, eFAF_Default);
+			
 			m_iProgressBar = 0;
+			m_progressBarSmoothed = -1.0f;
 		}
 
 		pAnim->Invoke("showProgressBar", true);
-		const wchar_t* localizedText = (text)?LocalizeWithParams(text, true):L"";
+		const wchar_t* localizedText = text.empty() ? L"" : LocalizeWithParams(text.data(), true);
 
 		SFlashVarValue args[2] = {localizedText, topText ? 1 : 2};
 		pAnim->Invoke("setText", args, 2);
@@ -1593,7 +1622,7 @@ void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 *
 
 		m_iProgressBarX = posX;
 		m_iProgressBarY = posY;
-		m_sProgressBarText = string(text);
+		m_sProgressBarText = text;
 		m_bProgressBarTextPos = topText;
 	}
 	else if(progress < 0 && pAnim->IsLoaded())
@@ -1601,12 +1630,23 @@ void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 *
 		pAnim->Invoke("showProgressBar", false); // for sound callback
 		pAnim->Unload();
 		m_iProgressBar = 0;
+
+		m_progressBarSmoothed = -1.0f;
+		m_progressBarType = ProgressBarType::NONE;
 	}
 
-	if(pAnim->IsLoaded() && (m_iProgressBar != progress || init))
+	if (pAnim->IsLoaded() && (m_iProgressBar != progress || init))
 	{
-		pAnim->Invoke("setProgressBar", progress);
+		if (m_progressBarType != ProgressBarType::DEFAULT_SMOOTHED)
+		{
+			pAnim->Invoke("setProgressBar", progress);
+		}
 		m_iProgressBar = progress;
+
+		if (m_iProgressBar > 0 && m_progressBarSmoothed < 0.0f)
+		{
+			m_progressBarSmoothed = (float)m_iProgressBar;
+		}
 	}
 }
 

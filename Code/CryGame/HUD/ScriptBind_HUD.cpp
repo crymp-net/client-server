@@ -577,7 +577,10 @@ int CScriptBind_HUD::SetProgressBar(IFunctionHandler* pH, bool show, int progres
 	if (CHUD* pHUD = g_pGame->GetHUD())
 	{
 		if (show)
-			pHUD->ShowProgress(CLAMP(progress, 0, 100), true, 400, 200, text);
+		{
+			const bool init = progress == 0; //CryMP: Call init code only by progress 0
+			pHUD->ShowProgress(CLAMP(progress, 0, 100), init, 400, 200, text);
+		}
 		else
 			pHUD->ShowProgress();
 	}
