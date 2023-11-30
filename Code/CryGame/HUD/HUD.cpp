@@ -3318,6 +3318,8 @@ void CHUD::OnPostUpdate(float frameTime)
 
 		UpdateCrosshairVisibility();
 
+		UpdateProgressBar(frameTime);
+
 		// Target autoaim and locking
 		Targetting(0, false);
 

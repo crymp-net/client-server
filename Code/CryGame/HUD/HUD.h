@@ -247,6 +247,8 @@ public:
 	// enable/disable subtitles
 	void SetSubtitleMode(HUDSubtitleMode mode);
 
+	void UpdateProgressBar(float deltaTime);
+
 	//memory optimization
 	void UnloadVehicleHUD(bool bShow);
 	void UnloadSimpleHUDElements(bool unload);
@@ -421,7 +423,7 @@ public:
 	void UpdateHitIndicator();
 	void ShowKillAreaWarning(bool active, int timer);
 	void ShowTargettingAI(EntityId id);
-	void ShowProgress(int progress = -1, bool init = false, int posX = 0, int posY = 0, const char* text = NULL, bool topText = true, bool lockingBar = false);
+	void ShowProgress(int progress = -1, bool init = false, int posX = 0, int posY = 0, std::string_view text = "", bool topText = true, bool lockingBar = false);
 	void FakeDeath(bool revive = false);
 	ILINE bool IsFakeDead() { return (m_fPlayerRespawnTimer)?true:false; }
 	void ShowDataUpload(bool active);
@@ -630,11 +632,23 @@ private:
 	int m_bigOverlayTextY; // serialized
 
 	bool m_bNoMiniMap;
-	int m_iProgressBar;
+	int m_iProgressBar = 0;
+	float m_progressBarSmoothed = 0.0f;
+	bool m_bProgressLocking = false;
+
 	int m_iProgressBarX, m_iProgressBarY;
 	string m_sProgressBarText;
 	bool m_bProgressBarTextPos;
-	bool m_bProgressLocking;
+
+	enum class ProgressBarType
+	{
+		NONE,
+		DEFAULT,
+		DEFAULT_SMOOTHED,
+		LOCKING
+	};
+
+	ProgressBarType m_progressBarType = ProgressBarType::NONE;
 
 	//airstrike
 	bool m_bAirStrikeAvailable;
