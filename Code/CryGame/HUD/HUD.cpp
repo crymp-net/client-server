@@ -1092,7 +1092,7 @@ void CHUD::ResetPostSerElements()
 	}
 
 	if (m_iProgressBar)
-		ShowProgress(m_iProgressBar, true, m_iProgressBarX, m_iProgressBarY, m_sProgressBarText.c_str(), m_bProgressBarTextPos, m_bProgressLocking);
+		ShowProgress(m_iProgressBar, true, m_iProgressBarX, m_iProgressBarY, m_sProgressBarText, m_bProgressBarTextPos, m_bProgressLocking);
 	else
 	{
 		m_animProgress.Unload();
