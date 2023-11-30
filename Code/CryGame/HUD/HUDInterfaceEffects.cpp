@@ -1613,7 +1613,7 @@ void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 *
 		}
 
 		pAnim->Invoke("showProgressBar", true);
-		const wchar_t* localizedText = (text.data() ? LocalizeWithParams(text.data(), true) : L"");
+		const wchar_t* localizedText = text.empty() ? L"" : LocalizeWithParams(text.data(), true);
 
 		SFlashVarValue args[2] = {localizedText, topText ? 1 : 2};
 		pAnim->Invoke("setText", args, 2);
