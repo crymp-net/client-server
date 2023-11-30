@@ -637,7 +637,7 @@ private:
 	bool m_bProgressLocking = false;
 
 	int m_iProgressBarX, m_iProgressBarY;
-	string m_sProgressBarText;
+	std::string m_sProgressBarText;
 	bool m_bProgressBarTextPos;
 
 	enum class ProgressBarType

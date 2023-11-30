@@ -17,6 +17,7 @@
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
+#include <string>
 #include <vector>
 #include <list>
 #include <set>
@@ -152,6 +153,11 @@ struct SSerializeString
 		m_str.assign( s.begin(),s.size() );
 	}
 
+	void set_string(const std::string& s)
+	{
+		m_str.assign(s.c_str(), s.length());
+	}
+
 private:
 	string m_str;
 };
@@ -272,6 +278,29 @@ public:
 	{
 		Value(szName, value, 0);
 	}
+
+	void Value(const char* name, std::string& value, int policy = 0)
+	{
+		if (IsWriting())
+		{
+			SSerializeString& buffer = this->GetSharedSerializeString();
+			buffer.set_string(value);
+			m_pSerialize->WriteStringValue(name, buffer, policy);
+		}
+		else
+		{
+			if (this->GetSerializationTarget() != eST_Script)
+			{
+				value.clear();
+			}
+
+			SSerializeString& buffer = this->GetSharedSerializeString();
+			buffer.set_string(value);
+			m_pSerialize->ReadStringValue(name, buffer, policy);
+			value.assign(buffer.c_str(), buffer.length());
+		}
+	}
+
 	void Value( const char * szName, const string& value, int policy )
 	{
 		if (IsWriting())

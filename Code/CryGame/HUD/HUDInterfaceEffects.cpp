@@ -1622,10 +1622,7 @@ void CHUD::ShowProgress(int progress, bool init /* = false */, int posX /* = 0 *
 
 		m_iProgressBarX = posX;
 		m_iProgressBarY = posY;
-		if (text.data())
-		{
-			m_sProgressBarText = (string)text.data();
-		}
+		m_sProgressBarText = text;
 		m_bProgressBarTextPos = topText;
 	}
 	else if(progress < 0 && pAnim->IsLoaded())
