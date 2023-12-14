@@ -3131,7 +3131,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			highLatency = pNetChannel->IsSufferingHighLatency(gEnv->pTimer->GetAsyncTime());
 		}
 
-		if (noConnectivity || highLatency || g_pGameCVars->cl_bob > 5.9f)
+		if (noConnectivity || highLatency)
 		{
 			if (!m_animNetworkConnection.GetVisible())
 			{
