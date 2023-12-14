@@ -1210,6 +1210,11 @@ void CVehicleMovementBase::StopSound(EVehicleMovementSound eSID)
 		m_pEntitySoundsProxy->StopSound(m_soundStats.sounds[eSID]);
 		m_soundStats.sounds[eSID] = INVALID_SOUNDID;
 	}
+
+	if (eSID == eSID_Damage)
+	{
+		m_lastSoundDamage = -1; //Trigger update next time
+	}
 }
 
 //------------------------------------------------------------------------
