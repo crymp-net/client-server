@@ -2043,7 +2043,7 @@ void CVehicleMovementBase::SetSoundParam(EVehicleMovementSound eSID, const char*
 {
 	if (ISound* pSound = GetSound(eSID))
 	{
-		pSound->SetParam(param, value, true);
+		pSound->SetParam(param, value, false);
 	}
 }
 
