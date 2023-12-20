@@ -96,6 +96,26 @@ namespace StringTools
 		return result;
 	}
 
+	inline std::string SafeString(const char* value)
+	{
+		return std::string(value ? value : "");
+	}
+
+	inline std::wstring SafeWString(const wchar_t* value)
+	{
+		return std::wstring(value ? value : L"");
+	}
+
+	inline std::string_view SafeView(const char* value)
+	{
+		return std::string_view(value ? value : "");
+	}
+
+	inline std::wstring_view SafeWView(const wchar_t* value)
+	{
+		return std::wstring_view(value ? value : L"");
+	}
+
 	namespace Detail
 	{
 		inline std::size_t RawUTF8ToWide(
