@@ -9,6 +9,7 @@
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CPUInfo.h"
 #include "CrySystem/CryMemoryManager.h"
+#include "CrySystem/CryPak.h"
 #include "CrySystem/GameWindow.h"
 #include "CrySystem/HardwareMouse.h"
 #include "CrySystem/LocalizationManager.h"
@@ -55,6 +56,73 @@ static void OnD3D10Info(MemoryPatch::CryRenderD3D10::AdapterInfo* info)
 	LogBytes("D3D10 Adapter: Shared system memory = ", info->shared_system_memory);
 }
 
+struct CryPakConfig
+{
+};
+
+static ICryPak* CreateNewCryPak(ISystem* pSystem, CryPakConfig* config, bool lvlRes, bool gameFolderWritable)
+{
+	// earlier than Launcher::OnInit
+	gEnv = pSystem->GetGlobalEnvironment();
+
+	// dropped because neither log file nor console are available at this point
+	CryLogAlways("$3[CryMP] Initializing CryPak");
+
+	CryPak* pCryPak = new CryPak();
+	// TODO: config
+	// TODO: lvlRes
+	// TODO: gameFolderWritable
+
+	return pCryPak;
+}
+
+static void ReplaceCryPak(void* pCrySystem)
+{
+	void* pFactory = CreateNewCryPak;
+
+#ifdef BUILD_64BIT
+	const std::size_t codeOffset = 0x446A8;
+	const std::size_t codeMaxSize = 0x7E;
+
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x48, 0x8B, 0xCB,                                            // mov rcx, rbx
+		0x48, 0x8D, 0x93, 0x18, 0x0C, 0x00, 0x00,                    // lea rdx, qword ptr ds:[rbx+0xC18]
+		0x44, 0x0F, 0xB6, 0xC7,                                      // movzx r8d, dil
+		0x44, 0x0F, 0xB6, 0x8B, 0x0B, 0x06, 0x00, 0x00,              // movzx r9d, byte ptr ds:[rbx+0x60B]
+		0xFF, 0xD0,                                                  // call rax
+		0x4C, 0x8B, 0xF8,                                            // mov r15, rax
+		0x48, 0x89, 0x83, 0x90, 0x00, 0x00, 0x00,                    // mov qword ptr ds:[rbx+0x90], rax
+	};
+
+	std::memcpy(&code[2], &pFactory, 8);
+#else
+	const std::size_t codeOffset = 0x57AE5;
+	const std::size_t codeMaxSize = 0x4C;
+
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,              // mov eax, 0x0
+		0x53,                                      // push ebx
+		0x0F, 0xB6, 0x96, 0x4B, 0x05, 0x00, 0x00,  // movzx edx, byte ptr ds:[esi+0x54B]
+		0x52,                                      // push edx
+		0x8D, 0x96, 0xD8, 0x09, 0x00, 0x00,        // lea edx, dword ptr ds:[esi+0x9D8]
+		0x52,                                      // push edx
+		0x56,                                      // push esi
+		0xFF, 0xD0,                                // call eax
+		0x83, 0xC4, 0x10,                          // add esp, 0x10
+		0x89, 0x44, 0x24, 0x14,                    // mov dword ptr ss:[esp+0x14], eax
+		0x89, 0x46, 0x48,                          // mov dword ptr ds:[esi+0x48], eax
+	};
+
+	std::memcpy(&code[1], &pFactory, 4);
+#endif
+
+	static_assert(sizeof(code) <= codeMaxSize);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof(code)), codeMaxSize - sizeof(code));
+}
+
 static IScriptSystem* CreateNewScriptSystem(ISystem* pSystem, bool)
 {
 	CryLogAlways("$3[CryMP] Initializing Script System");
@@ -70,8 +138,8 @@ static void ReplaceScriptSystem(void* pCrySystem)
 	void* pNewFunc = CreateNewScriptSystem;
 
 #ifdef BUILD_64BIT
-	const size_t codeOffset = 0x445A2;
-	const size_t codeSize = 0x4E;
+	const std::size_t codeOffset = 0x445A2;
+	const std::size_t codeMaxSize = 0x4E;
 
 	unsigned char code[] = {
 		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
@@ -80,8 +148,8 @@ static void ReplaceScriptSystem(void* pCrySystem)
 
 	std::memcpy(&code[2], &pNewFunc, 8);
 #else
-	const size_t codeOffset = 0x56409;
-	const size_t codeSize = 0x3C;
+	const std::size_t codeOffset = 0x56409;
+	const std::size_t codeMaxSize = 0x3C;
 
 	unsigned char code[] = {
 		0xB8, 0x00, 0x00, 0x00, 0x00  // mov eax, 0x0
@@ -90,8 +158,10 @@ static void ReplaceScriptSystem(void* pCrySystem)
 	std::memcpy(&code[1], &pNewFunc, 4);
 #endif
 
-	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof code);
-	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+	static_assert(sizeof(code) <= codeMaxSize);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof(code)), codeMaxSize - sizeof(code));
 }
 
 static IHardwareMouse* CreateNewHardwareMouse()
@@ -110,7 +180,7 @@ static void ReplaceHardwareMouse(void* pCrySystem)
 
 #ifdef BUILD_64BIT
 	const std::size_t codeOffset = 0x469A0;
-	const std::size_t codeSize = 0x5C;
+	const std::size_t codeMaxSize = 0x5C;
 
 	unsigned char code[] = {
 		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
@@ -120,7 +190,7 @@ static void ReplaceHardwareMouse(void* pCrySystem)
 	std::memcpy(&code[2], &pNewFunc, 8);
 #else
 	const std::size_t codeOffset = 0x59F2D;
-	const std::size_t codeSize = 0x22;
+	const std::size_t codeMaxSize = 0x22;
 
 	unsigned char code[] = {
 		0x83, 0xC4, 0x04,              // add esp, 0x4
@@ -131,8 +201,10 @@ static void ReplaceHardwareMouse(void* pCrySystem)
 	std::memcpy(&code[4], &pNewFunc, 4);
 #endif
 
+	static_assert(sizeof(code) <= codeMaxSize);
+
 	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
-	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof(code)), codeSize - sizeof(code));
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof(code)), codeMaxSize - sizeof(code));
 }
 
 static bool LanguagePakExists(std::string_view language)
@@ -270,7 +342,7 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 	std::memcpy(&code[2], &pNewFunc, 8);
 
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x453A7), 0x1A8);
-	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof code);
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x453A7), code, sizeof(code));
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x50A5C), 0x28);
 #else
 	const std::size_t vtableOffset = 0x1BC5F8;
@@ -285,7 +357,7 @@ static void ReplaceLocalizationManager(void* pCrySystem)
 	std::memcpy(&code[1], &pNewFunc, 4);
 
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x56B1D), 0xA4);
-	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof code);
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, 0x56B1D), code, sizeof(code));
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, 0x624E1), 0x23);
 #endif
 	void** vtable = static_cast<void**>(WinAPI::RVA(pCrySystem, vtableOffset));
@@ -344,9 +416,9 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 	std::memcpy(&dtorCode[2], &dtorFunc, 8);
 	std::memcpy(&getHDRMultiplierCode[2], &getHDRMultiplierFunc, 8);
 
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof ctorCode);
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof dtorCode);
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof(ctorCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof(dtorCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof(getHDRMultiplierCode));
 #else
 	unsigned char ctorCode[] = {
 		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
@@ -378,9 +450,9 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 	std::memcpy(&dtorCode[1], &dtorFunc, 4);
 	std::memcpy(&getHDRMultiplierCode[1], &getHDRMultiplierFunc, 4);
 
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof ctorCode);
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof dtorCode);
-	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof getHDRMultiplierCode);
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof(ctorCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof(dtorCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof(getHDRMultiplierCode));
 #endif
 }
 
@@ -417,7 +489,7 @@ void Launcher::SetCmdLine()
 {
 	const std::string_view cmdLine = WinAPI::CmdLine::GetFull();
 
-	if (cmdLine.length() >= sizeof m_params.cmdLine)
+	if (cmdLine.length() >= sizeof(m_params.cmdLine))
 	{
 		throw StringTools::ErrorFormat("Command line is too long!");
 	}
@@ -613,6 +685,7 @@ void Launcher::PatchEngine()
 			ReplaceScriptSystem(m_dlls.pCrySystem);
 		}
 
+		ReplaceCryPak(m_dlls.pCrySystem);
 		ReplaceHardwareMouse(m_dlls.pCrySystem);
 		ReplaceLocalizationManager(m_dlls.pCrySystem);
 	}
@@ -676,7 +749,7 @@ void Launcher::StartEngine()
 
 Launcher::Launcher()
 {
-	std::memset(&m_params, 0, sizeof m_params);
+	std::memset(&m_params, 0, sizeof(m_params));
 }
 
 Launcher::~Launcher()

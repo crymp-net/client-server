@@ -650,6 +650,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CrySystem/CryLog.h
 	Code/CrySystem/CryMemoryManager.cpp
 	Code/CrySystem/CryMemoryManager.h
+	Code/CrySystem/CryPak.cpp
+	Code/CrySystem/CryPak.h
 	Code/CrySystem/GameWindow.cpp
 	Code/CrySystem/GameWindow.h
 	Code/CrySystem/HardwareMouse.cpp

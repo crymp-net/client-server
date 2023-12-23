@@ -102,6 +102,30 @@ namespace StringTools
 		return result;
 	}
 
+	template<typename T, typename U>
+	bool IsEqualNoCase(const T& stringA, const U& stringB)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t lengthA = Length(stringA);
+		const std::size_t lengthB = Length(stringB);
+
+		if (lengthA != lengthB)
+		{
+			return false;
+		}
+
+		for (std::size_t i = 0; i < lengthA; i++)
+		{
+			if (ToLowerChar(stringA[i]) != ToLowerChar(stringB[i]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	inline std::string SafeString(const char* value)
 	{
 		return std::string(value ? value : "");
