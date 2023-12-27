@@ -559,6 +559,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CrySystem::AllowDX9VeryHighSpec(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::AllowMultipleInstances(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::DisableIOErrorLog(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::FixCPUInfoOverflow(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
 		MemoryPatch::CrySystem::HookError(m_dlls.pCrySystem, &CrashLogger::OnEngineError);
 		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);

@@ -69,6 +69,7 @@ namespace MemoryPatch
 		void AllowDX9VeryHighSpec(void* pCrySystem);
 		void AllowMultipleInstances(void* pCrySystem);
 		void DisableIOErrorLog(void* pCrySystem);
+		void FixCPUInfoOverflow(void* pCrySystem);
 		void HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info));
 		void HookError(void* pCrySystem, void (*handler)(const char* format, va_list args));
 		void MakeDX9Default(void* pCrySystem);
