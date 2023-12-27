@@ -465,6 +465,31 @@ template <typename F> struct Vec3_tpl
 		else 
 			return Vec3_tpl(0,0,1);
 	}
+
+	//vector subtraction
+	template<class F1>
+	ILINE Vec3_tpl<F1> sub(const Vec3_tpl<F1>& v) const
+	{
+		return Vec3_tpl<F1>(x - v.x, y - v.y, z - v.z);
+	}
+	//vector dot product
+	template<class F1>
+	ILINE F1 dot(const Vec3_tpl<F1>& v) const
+	{
+		return (F1)(x * v.x + y * v.y + z * v.z);
+	}
+	//vector scale
+	template<class F1>
+	ILINE Vec3_tpl<F1> scale(const F1 k)
+	{
+		return Vec3_tpl<F>(x * k, y * k, z * k);
+	}
+	//vector cross product
+	template<class F1>
+	ILINE Vec3_tpl<F1> cross(const Vec3_tpl<F1>& v) const
+	{
+		return Vec3_tpl<F1>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
