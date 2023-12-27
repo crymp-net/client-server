@@ -411,6 +411,18 @@ void MemoryPatch::CrySystem::DisableIOErrorLog(void* pCrySystem)
 }
 
 /**
+ * Prevents out-of-bounds access of the CPUInfo::cores array.
+ */
+void MemoryPatch::CrySystem::FixCPUInfoOverflow(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0x3801D, 0x1A);
+#else
+	FillNop(pCrySystem, 0x4B4A0, 0x9);
+#endif
+}
+
+/**
  * Hooks CryEngine CPU detection.
  */
 void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info))

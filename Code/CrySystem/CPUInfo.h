@@ -32,9 +32,7 @@ struct CPUInfo
 	{
 		unsigned int reserved1[2];
 		unsigned int flags;
-		unsigned int reserved2[60];
-		bool physical;
-		unsigned int reserved3[4];
+		unsigned int reserved2[65];
 	};
 
 	Core cores[MAX_CORE_COUNT];
