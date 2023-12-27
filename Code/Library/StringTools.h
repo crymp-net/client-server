@@ -55,14 +55,23 @@ namespace StringTools
 	}
 
 	template<typename T>
+	T ToLowerChar(T ch)
+	{
+		return ch |= (ch >= 'A' && ch <= 'Z') << 5;
+	}
+
+	template<typename T>
+	T ToUpperChar(T ch)
+	{
+		return ch &= ~((ch >= 'a' && ch <= 'z') << 5);
+	}
+
+	template<typename T>
 	void ToLowerInPlace(T& string)
 	{
 		for (auto& ch : string)
 		{
-			if (ch >= 'A' && ch <= 'Z')
-			{
-				ch += ('a' - 'A');
-			}
+			ch = ToLowerChar(ch);
 		}
 	}
 
@@ -71,10 +80,7 @@ namespace StringTools
 	{
 		for (auto& ch : string)
 		{
-			if (ch >= 'a' && ch <= 'z')
-			{
-				ch -= ('a' - 'A');
-			}
+			ch = ToUpperChar(ch);
 		}
 	}
 
