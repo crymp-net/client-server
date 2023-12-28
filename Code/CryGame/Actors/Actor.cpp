@@ -626,15 +626,15 @@ void CActor::Physicalize(EStance stance)
 
 		// Player Dynamics.
 
-		playerDyn.kInertia = -NAN;
+		//playerDyn.kInertia = -NAN; //CryMP: Let engine take care of this, not used in lua params
 		playerDyn.kAirControl = 0.899999976f;
-		playerDyn.kInertiaAccel = -NAN;
+		//playerDyn.kInertiaAccel = -NAN; 
 		playerDyn.kAirResistance = 0.5f;
 		playerDyn.gravity.z = 9.81000042f;
 		playerDyn.mass = 80.f;
 		playerDyn.minSlideAngle = 45.f;
 		playerDyn.maxClimbAngle = 50.f;
-		playerDyn.maxJumpAngle = -NAN;
+		//playerDyn.maxJumpAngle = -NAN;
 		playerDyn.minFallAngle = 50.f;
 		// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
 		playerDyn.maxVelGround = 200.f;
