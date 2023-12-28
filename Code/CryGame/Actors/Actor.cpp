@@ -640,8 +640,6 @@ void CActor::Physicalize(EStance stance)
 		playerDyn.maxVelGround = 200.f;
 		playerDyn.timeImpulseRecover = 1.0f;
 
-		SActorParams* params = GetActorParams();
-
 		if (!is_unused(playerDyn.timeImpulseRecover))
 			m_timeImpulseRecover = playerDyn.timeImpulseRecover;
 		else
@@ -665,7 +663,6 @@ void CActor::Physicalize(EStance stance)
 		// 
 		//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
 		IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
-		assert(pScriptTable);
 		if (!pScriptTable)
 			return;
 
@@ -689,7 +686,6 @@ void CActor::Physicalize(EStance stance)
 			physicsParams->GetValue("flags", pp.nFlagsOR);
 			physicsParams->GetValue("partid", pp.nAttachToPart);
 			physicsParams->GetValue("stiffness_scale", pp.fStiffnessScale);
-
 
 			SmartScriptTable props;
 			if (GetEntity()->GetScriptTable()->GetValue("Properties", props))
@@ -741,9 +737,6 @@ void CActor::Physicalize(EStance stance)
 				// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
 				if (gEnv->bMultiplayer)
 					playerDyn.maxVelGround = 200.0f;
-
-				SActorParams* params = GetActorParams();
-
 
 				if (!is_unused(playerDyn.timeImpulseRecover))
 					m_timeImpulseRecover = playerDyn.timeImpulseRecover;
