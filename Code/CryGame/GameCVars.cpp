@@ -31,6 +31,7 @@
 
 #include "Menus/FlashMenuObject.h"
 #include "Menus/MPHub.h"
+#include "CrySystem/LocalizationManager.h"
 
 static void OnChangeThirdPerson(ICVar* pCVar)
 {
@@ -66,6 +67,18 @@ static void BroadcastChangeSafeMode(ICVar*)
 			if (IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEnt->GetId()))
 				pActor->HandleEvent(event);
 	}
+}
+
+static void CmdReloadFlash(IConsoleCmdArgs* cmdArgs)
+{
+	g_pGame->ReloadFlash();
+
+}
+
+static void CmdDumpPakInfo(IConsoleCmdArgs* cmdArgs)
+{
+	g_pGame->DumpPAKInfo();
+
 }
 
 static void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
@@ -110,6 +123,17 @@ SCVars::~SCVars()
 {
 	this->ReleaseCVars();
 }
+
+/// Used by console auto completion.
+struct SLanguageAutoComplete : public IConsoleArgumentAutoComplete
+{
+	std::vector<std::string> languages;
+	virtual int         GetCount() const { return languages.size(); };
+	virtual const char* GetValue(int nIndex) const { return languages[nIndex].c_str(); };
+};
+// definition and declaration must be separated for devirtualization
+
+static SLanguageAutoComplete LanguageAutoComplete;
 
 // game related cvars must start with an g_
 // game server related cvars must start with sv_
@@ -627,6 +651,22 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_netAimLerpFactor", &mp_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients (1-50, 0:off)");
 	pConsole->Register("mp_netAimLerpFactorCrymp", &mp_netAimLerpFactorCrymp, 42.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients when mp_crymp 1 (1-50, 0:off)");
 	pConsole->Register("mp_explosiveSilhouettes", &mp_explosiveSilhouettes, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives");
+	mp_language = pConsole->RegisterString("mp_language", "", VF_NOT_NET_SYNCED, "set game language", LocalizationManager::OnLanguageCVarChanged);
+	pConsole->RegisterAutoComplete("mp_language", &LanguageAutoComplete);
+
+	//TODO: only add available ones
+	LanguageAutoComplete.languages.push_back("Czech");
+	LanguageAutoComplete.languages.push_back("English");
+	LanguageAutoComplete.languages.push_back("French");
+	LanguageAutoComplete.languages.push_back("German");
+	LanguageAutoComplete.languages.push_back("Hungarian");
+	LanguageAutoComplete.languages.push_back("Italian");
+	LanguageAutoComplete.languages.push_back("Japanese");
+	LanguageAutoComplete.languages.push_back("Korean");
+	LanguageAutoComplete.languages.push_back("Polish");
+	LanguageAutoComplete.languages.push_back("Russian");
+	LanguageAutoComplete.languages.push_back("Spanish");
+	LanguageAutoComplete.languages.push_back("Turkish");
 }
 
 //------------------------------------------------------------------------
@@ -1004,6 +1044,9 @@ void CGame::RegisterConsoleCommands()
 
 	m_pConsole->AddCommand("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
 	m_pConsole->AddCommand("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
+
+	m_pConsole->AddCommand("reloadflash", CmdReloadFlash, 0, "Reload HUD");
+	m_pConsole->AddCommand("pakinfo", CmdDumpPakInfo, 0, "Dump loaded paks");
 }
 
 //------------------------------------------------------------------------

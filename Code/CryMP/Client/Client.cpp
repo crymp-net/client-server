@@ -291,6 +291,14 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pGame->Init(pGameFramework);
 }
 
+void Client::ReloadLocalizationLua()
+{
+	if (gEnv->pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua"))
+	{
+		CryLogAlways("$3[CryMP] Reloaded Localization.lua successfully");
+	}
+}
+
 void Client::UpdateLoop()
 {
 	gEnv->pConsole->ExecuteString("exec autoexec.cfg");

@@ -70,6 +70,46 @@ int OnImpulse(const EventPhys* pEvent)
 }
 
 //
+void CGame::ReloadFlash()
+{
+	if (GetMenu())
+	{ 
+		if (GetMenu()->IsOnScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART))
+		{
+			GetMenu()->DestroyStartMenu();
+			GetMenu()->InitStartMenu();
+
+			CryLogAlways("$3[CryMP] Reloaded start-menu successfully");
+		}
+		if (GetMenu()->IsOnScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME))
+		{
+			GetMenu()->DestroyIngameMenu();
+			GetMenu()->InitIngameMenu();
+
+			CryLogAlways("$3[CryMP] Reloaded in-game menu successfully");
+		}
+	}
+	if (m_pHUD && m_pFramework->GetClientActor())
+	{
+		SAFE_DELETE(m_pHUD);
+		g_pGame->InitHUD(m_pFramework->GetClientActor());
+
+		CryLogAlways("$3[CryMP] Reloaded HUD successfully");
+	}
+}
+
+void CGame::DumpPAKInfo()
+{
+	ICryPak::PakInfo* pPakInfo = gEnv->pCryPak->GetPakInfo();
+
+	for (uint32 pak = 0; pak < pPakInfo->numOpenPaks; pak++)
+	{
+		const auto pPak = pPakInfo->arrPaks[pak];
+		CryLogAlways("Pak %2i - %5d mem - %20s | Root: %s", pak, pPak.nUsedMem, pPak.szFilePath, pPak.szBindRoot);
+	}
+
+	gEnv->pCryPak->FreePakInfo(pPakInfo);
+}
 
 // Needed for the Game02 specific flow node
 CG2AutoRegFlowNodeBase* CG2AutoRegFlowNodeBase::m_pFirst = 0;

@@ -10,6 +10,10 @@
 #include "Library/WinAPI.h"
 
 #include "LocalizationManager.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryGame/Game.h"
+#include "CryMP/Client/Client.h"
 
 LocalizationManager LocalizationManager::s_globalInstance;
 
@@ -314,6 +318,91 @@ static void ExpandNewlineInPlace(String& text)
 	}
 
 	text.resize(text.length() - (srcIt - dstIt));
+}
+
+void LocalizationManager::GetLocalizedPath(const char* sLanguage, std::string& sLocalizedPath, int index)
+{
+	if (index)
+		sLocalizedPath = StringTools::Format("Game/Localized/%s%d.pak", sLanguage, index);
+	else
+		sLocalizedPath = StringTools::Format("Game/Localized/%s.pak", sLanguage);
+}
+
+void LocalizationManager::OpenLanguagePak(const char* sLanguage)
+{
+	const int nPakFlags = 0;
+	for (int i = 0; i < 7; ++i)
+	{
+		std::string sLocalizedPath;
+		GetLocalizedPath(sLanguage, sLocalizedPath, i);
+		if (!gEnv->pCryPak->OpenPacks("", sLocalizedPath.c_str(), nPakFlags))
+		{
+			// make sure the localized language is found - not really necessary, for TC		
+			//CryLogAlways("Localized language content(%s) not available or modified from the original installation.", sLanguage);
+		}
+	}
+}
+
+void LocalizationManager::CloseLanguagePak(const char* sLanguage)
+{
+	for (int i = 0; i < 7; ++i)
+	{
+		std::string sLocalizedPath;
+		GetLocalizedPath(sLanguage, sLocalizedPath, i);
+		gEnv->pCryPak->ClosePacks(sLocalizedPath.c_str());
+	}
+}
+
+void LocalizationManager::OnLanguageCVarChanged(ICVar* language)
+{
+	if (language && language->GetType() == CVAR_STRING)
+	{
+		LocalizationManager& pLocMan = LocalizationManager::GetInstance();
+		const char* lang = language->GetString();
+		if (lang && strlen(lang) > 0)
+		{
+			std::string currentLang = StringTools::SafeString(lang);
+			std::string newLang = StringTools::SafeString(pLocMan.GetLanguage());
+
+			if (StringTools::ToLower(currentLang) == StringTools::ToLower(newLang))
+			{
+				CryLogAlways("$4[CryMP] In-game language is already set to %s", lang);
+				return;
+			}
+
+			pLocMan.CloseLanguagePak(pLocMan.GetLanguage());
+			pLocMan.OpenLanguagePak(lang);
+
+			pLocMan.FreeData();
+			pLocMan.SetLanguage(lang);
+
+			//are these all?
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/dialog_recording_list.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/ai_dialog_recording_list.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/ui_dialog_recording_list.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/ui_text_messages.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/mp_text_messages.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/game_text_messages.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/game_controls.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/ps_basic_tutorial_subtitles.xml");
+			pLocMan.LoadExcelXmlSpreadsheet("Languages/ui_credit_list.xml");
+
+			if (g_pGame)
+			{
+				g_pGame->ReloadFlash();
+			}
+
+			if (gClient)
+			{
+				gClient->ReloadLocalizationLua();
+			}
+
+			//Not all voices are changed to the new language sometimes, however reloading sound system seems to fix this :)
+			gEnv->pSoundSystem->Silence(false, true);
+
+			CryLogAlways("$3[CryMP] Changed in-game language to %s", lang);
+		}
+	}
 }
 
 LocalizationManager::LocalizationManager()

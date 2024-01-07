@@ -113,6 +113,9 @@ public:
 	CGame();
 	virtual ~CGame();
 
+	void ReloadFlash();
+	void DumpPAKInfo();
+
 	// IGame
 	virtual bool  Init(IGameFramework *pFramework);
 	virtual bool  CompleteInit();

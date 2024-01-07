@@ -6,6 +6,8 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 
+struct ICVar;
+
 class LocalizationManager final : public ILocalizationManager
 {
 public:
@@ -46,6 +48,12 @@ private:
 public:
 	LocalizationManager();
 	~LocalizationManager();
+
+	static void OnLanguageCVarChanged(ICVar* language);
+
+	void CloseLanguagePak(const char* sLanguage);
+	void GetLocalizedPath(const char* sLanguage, std::string& sLocalizedPath, int index);
+	void OpenLanguagePak(const char* sLanguage);
 
 	// to be removed once we have our own CrySystem
 	static LocalizationManager& GetInstance()

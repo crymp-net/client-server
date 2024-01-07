@@ -93,6 +93,8 @@ public:
 
 	void Init(IGameFramework *pGameFramework);
 
+	void ReloadLocalizationLua();
+
 	void UpdateLoop();
 
 	void HttpGet(const std::string_view& url, std::function<void(HTTPClientResult&)> callback);
