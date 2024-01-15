@@ -1586,8 +1586,8 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	if (!m_pAnimatedCharacter)
 		return;
 
-	if (!IsThirdPerson() && !IsFpSpectatorTarget())
-		return;
+	//if (!IsThirdPerson() && !IsFpSpectatorTarget()) //Needed for shadows in FP
+	//	return;
 
 	IAnimationGraphState* pGraph = m_pAnimatedCharacter ? m_pAnimatedCharacter->GetAnimationGraphState() : NULL;
 	if (!pGraph)
