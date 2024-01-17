@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [v21] - 2023-01-17
 - [Fix damage indicator not showing when laser enabled](https://github.com/crymp-net/client-server/pull/119)
 - [Remove TypeInfo](https://github.com/crymp-net/client-server/pull/120)
 - [Fix projectile lag on spawn](https://github.com/crymp-net/client-server/pull/121)
