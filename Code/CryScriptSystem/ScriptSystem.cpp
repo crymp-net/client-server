@@ -574,7 +574,7 @@ int ScriptSystem::BeginCall(HSCRIPTFUNCTION func)
 	lua_getref(m_L, funcHandle);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%d): Not a function", funcHandle);
+		CryLogWarning("ScriptSystem::BeginCall(%d): Not a function", funcHandle);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -591,7 +591,7 @@ int ScriptSystem::BeginCall(const char *funcName)
 	lua_getglobal(m_L, funcName);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s): Not a function", funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -608,7 +608,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s.%s): Not a table", tableName, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -618,7 +618,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s.%s): Not a function", tableName, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s.%s): Not a function", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -639,7 +639,7 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(0x%p, %s): Not a function", pTable, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(0x%p, %s): Not a function", pTable, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -669,7 +669,7 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *funcName)
 	lua_getglobal(m_L, funcName);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s): Not a function", funcName);
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
@@ -685,7 +685,7 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s.%s): Not a table", tableName, funcName);
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
@@ -694,7 +694,7 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *
 	lua_gettable(m_L, -2);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::GetFunctionPtr(%s.%s): Not a function", tableName, funcName);
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s.%s): Not a function", tableName, funcName);
 		lua_pop(m_L, 2);
 		return nullptr;
 	}
@@ -729,7 +729,7 @@ void ScriptSystem::SetGlobalAny(const char *key, const ScriptAnyValue & any)
 	char key_buffer[256];
 	if (key_length >= sizeof(key_buffer))
 	{
-		CryLogErrorAlways("ScriptSystem::SetGlobalAny(%s): Too long key", key);
+		CryLogError("ScriptSystem::SetGlobalAny(%s): Too long key", key);
 		return;
 	}
 
@@ -758,7 +758,7 @@ void ScriptSystem::SetGlobalAny(const char *key, const ScriptAnyValue & any)
 
 		if (!success || nested_any.type != ANY_TTABLE)
 		{
-			CryLogWarningAlways("ScriptSystem::SetGlobalAny(%s): %s is not a table", key, current_key);
+			CryLogWarning("ScriptSystem::SetGlobalAny(%s): %s is not a table", key, current_key);
 			return;
 		}
 	}
@@ -781,7 +781,7 @@ bool ScriptSystem::GetGlobalAny(const char *key, ScriptAnyValue & any)
 	char key_buffer[256];
 	if (key_length >= sizeof(key_buffer))
 	{
-		CryLogErrorAlways("ScriptSystem::GetGlobalAny(%s): Too long key", key);
+		CryLogError("ScriptSystem::GetGlobalAny(%s): Too long key", key);
 		return false;
 	}
 
@@ -810,7 +810,7 @@ bool ScriptSystem::GetGlobalAny(const char *key, ScriptAnyValue & any)
 
 		if (!success || nested_any.type != ANY_TTABLE)
 		{
-			CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): %s is not a table", key, current_key);
+			CryLogWarning("ScriptSystem::GetGlobalAny(%s): %s is not a table", key, current_key);
 			return false;
 		}
 	}
@@ -827,11 +827,11 @@ bool ScriptSystem::GetGlobalAny(const char *key, ScriptAnyValue & any)
 
 	if (!success)
 	{
-		CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): Failed", key);
+		CryLogWarning("ScriptSystem::GetGlobalAny(%s): Failed", key);
 	}
 	else if (any.type == ANY_TNIL)
 	{
-		CryLogWarningAlways("ScriptSystem::GetGlobalAny(%s): Nil value", key);
+		CryLogWarning("ScriptSystem::GetGlobalAny(%s): Nil value", key);
 	}
 
 	return success;
