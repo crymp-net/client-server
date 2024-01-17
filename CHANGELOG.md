@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+- [Fix damage indicator not showing when laser enabled](https://github.com/crymp-net/client-server/pull/119)
+- [Remove TypeInfo](https://github.com/crymp-net/client-server/pull/120)
+- [Fix projectile lag on spawn](https://github.com/crymp-net/client-server/pull/121)
+- [Fix double click bug in menu on certain resolutions](https://github.com/crymp-net/client-server/pull/122)
+- [Fix WinHTTP error messages](https://github.com/crymp-net/client-server/pull/123)
+- [Add repair smoothing](https://github.com/crymp-net/client-server/pull/124)
+- Fix some minor vehicle sound issues
+- [Fix out-of-bounds access of the CPUInfo::cores array](https://github.com/crymp-net/client-server/pull/125)
+- [Fix CPUID::TrimSpaces](https://github.com/crymp-net/client-server/pull/126)
+- [Fix movement bug occuring after unfreeze](https://github.com/crymp-net/client-server/pull/127)
+- Fix shadow direction in first person
+- [Fix severity of unimportant warnings in Script System](https://github.com/crymp-net/client-server/pull/128)
+
 ## [v20] - 2023-11-11
 ### Added
 - New third-person camera inspired by Hitman
