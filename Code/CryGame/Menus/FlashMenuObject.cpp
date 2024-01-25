@@ -2755,6 +2755,8 @@ void CFlashMenuObject::InitStartMenu()
 	SetAntiAliasingModes();
 
 	SetProfile();
+
+	g_pGame->ConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2774,6 +2776,8 @@ void CFlashMenuObject::DestroyStartMenu()
 
 	m_bIgnoreEsc = false;
 	m_bDestroyStartMenuPending = false;
+
+	g_pGame->ConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2791,6 +2795,8 @@ void CFlashMenuObject::InitIngameMenu()
 	if (!m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 	{
 		g_pGame->ShowMousePointer(true);
+
+		g_pGame->ConfineCursor(false);
 
 #ifdef CRYSIS_BETA
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Load("Libs/UI/Menus_IngameMenu_Beta.gfx");
@@ -2871,6 +2877,8 @@ void CFlashMenuObject::DestroyIngameMenu()
 	}
 	if (g_pGame->GetIGameFramework()->IsGameStarted())
 		ReloadHUDMovies();
+
+	g_pGame->ConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------

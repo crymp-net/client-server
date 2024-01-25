@@ -19,6 +19,16 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 {
 	switch (msg)
 	{
+		case WM_PAINT:
+		{
+			if (g_pGame)
+			{
+				//Fixes cursor moving outside window (after you alt tab to another window
+				//and click on show desktop, then open crysis window)
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
+			break;
+		}
 		case WM_MOVE:  // 0x3
 		{
 			int x = GET_X_LPARAM(lParam);
@@ -34,6 +44,11 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 			int h = GET_Y_LPARAM(lParam);
 
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, w, h);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
 
 			break;
 		}
@@ -184,7 +199,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_EXITMENULOOP:  // 0x212
 		case WM_EXITSIZEMOVE:  // 0x232
 		{
-			if (g_pGame && !g_pGame->GetMenu())
+			if (g_pGame && !g_pGame->IsMenuActive())
 			{
 				g_pGame->ShowMousePointer(false);
 			}
@@ -197,12 +212,23 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		}
 		case EVENT_SYSTEM_MENUPOPUPSTART:
 		{
-			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+			//gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(false);
+			}
+
 			break;
 		}
 		case EVENT_SYSTEM_MENUPOPUPEND:
 		{
-			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
+			//gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
 			break;
 		}
 		default:
