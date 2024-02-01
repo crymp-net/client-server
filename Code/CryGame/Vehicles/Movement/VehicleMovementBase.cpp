@@ -772,6 +772,13 @@ bool CVehicleMovementBase::StartEngine(EntityId driverId)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::StopEngine()
 {
+	//CryMP
+	//Block CryAction StopEngine request 
+	if (!m_isEngineDisabled && m_pVehicle->GetDriver() && !m_pVehicle->IsDestroyed())
+	{
+		return;
+	}
+
 	m_actorId = 0;
 
 	if (m_isEngineGoingOff || !m_isEngineStarting && !m_isEnginePowered)
