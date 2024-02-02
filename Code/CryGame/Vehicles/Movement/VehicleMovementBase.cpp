@@ -2284,8 +2284,8 @@ void CVehicleMovementBase::DumpInfo()
 	CryLogAlways("$9m_isEnginePowered:	   $1%d", m_isEnginePowered);
 	CryLogAlways("$9m_isEngineGoingOff:	   $1%d", m_isEngineGoingOff);
 	CryLogAlways("$9m_isReducedPower:	   $1%d", m_isReducedPower);
-	CryLogAlways("$9Last enginestart:      $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStart);
-	CryLogAlways("$9Last enginestop:       $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStop);
+	//CryLogAlways("$9Last enginestart:      $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStart);
+	//CryLogAlways("$9Last enginestop:       $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStop);
 	CryLogAlways("$9----------------------------------------------------------------------------");
 }
 
