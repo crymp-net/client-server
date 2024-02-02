@@ -772,6 +772,13 @@ bool CVehicleMovementBase::StartEngine(EntityId driverId)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::StopEngine()
 {
+	//CryMP
+	//Block CryAction StopEngine request 
+	if (!m_isEngineDisabled && m_pVehicle->GetDriver() && !m_pVehicle->IsDestroyed())
+	{
+		return;
+	}
+
 	m_actorId = 0;
 
 	if (m_isEngineGoingOff || !m_isEngineStarting && !m_isEnginePowered)
@@ -2260,6 +2267,26 @@ void CVehicleMovementBase::PostSerialize()
 //------------------------------------------------------------------------
 void CVehicleMovementBase::ProcessEvent(SEntityEvent& event)
 {
+}
+
+//------------------------------------------------------------------------
+void CVehicleMovementBase::DumpInfo()
+{
+	CryLogAlways("$9----------------------------------------------------------------------------");
+	CryLogAlways("$9Vehicle:               $1%s", m_pVehicle->GetEntity()->GetName());
+	CryLogAlways("$9Driver:                $7%s", m_pVehicle->GetDriver() ? m_pVehicle->GetDriver()->GetEntity()->GetName() : "no driver");
+	CryLogAlways("$9m_engineIgnitionTime:  $1%f", m_engineIgnitionTime);
+	CryLogAlways("$9m_engineStartup:	   $1%f", m_engineStartup);
+	CryLogAlways("$9m_rpmScale:			   $1%f", m_rpmScale);
+	CryLogAlways("$9m_runSoundDelay:	   $1%f", m_runSoundDelay);
+	CryLogAlways("$9m_isEngineStarting:	   $1%d", m_isEngineStarting);
+	CryLogAlways("$9m_isEngineDisabled:	   $1%d", m_isEngineDisabled);
+	CryLogAlways("$9m_isEnginePowered:	   $1%d", m_isEnginePowered);
+	CryLogAlways("$9m_isEngineGoingOff:	   $1%d", m_isEngineGoingOff);
+	CryLogAlways("$9m_isReducedPower:	   $1%d", m_isReducedPower);
+	//CryLogAlways("$9Last enginestart:      $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStart);
+	//CryLogAlways("$9Last enginestop:       $3%f sec ago", gEnv->pTimer->GetCurrTime() - m_debugLastEngineStop);
+	CryLogAlways("$9----------------------------------------------------------------------------");
 }
 
 DEFINE_VEHICLEOBJECT(CVehicleMovementBase)

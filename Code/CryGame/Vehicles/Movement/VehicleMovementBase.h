@@ -468,6 +468,7 @@ protected:
 
 	std::mutex m_lock;
 	int m_lastSoundDamage = 0;
+	void DumpInfo();
 };
 
 struct SPID
