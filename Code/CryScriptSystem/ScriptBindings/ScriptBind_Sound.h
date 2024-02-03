@@ -55,4 +55,5 @@ public:
 	int SetMenuMusic(IFunctionHandler *pH, bool playMenuMusic, const char *theme, const char *mood);
 	int SetMusicMood(IFunctionHandler *pH, const char *mood);
 	int SetMusicTheme(IFunctionHandler *pH, const char *theme);
+	int ReloadAudioDevice(IFunctionHandler* pH);
 };
