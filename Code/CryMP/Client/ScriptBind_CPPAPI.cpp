@@ -587,8 +587,15 @@ int ScriptBind_CPPAPI::DrawImage(IFunctionHandler* pH, float posX, float posY, f
 	ITexture* pTexture = gEnv->pRenderer->EF_LoadTexture(texturePath, FT_FROMIMAGE, eTT_2D);
 	if (!pTexture)
 	{
-		CryLogWarningAlways("[DrawImage] Failed to load texture '%s'", texturePath);
+		CryLogWarningAlways("[DrawImage] Failed to open texture '%s'", texturePath);
 		return pH->EndFunction(-1);
+	}
+	if (!pTexture->IsTextureLoaded())
+	{
+		CryLogWarningAlways("[DrawImage] Failed to load texture '%s'", pTexture->GetName());
+		gEnv->pRenderer->RemoveTexture(pTexture->GetTextureID());
+
+		return pH->EndFunction(-2);
 	}
 
 	DrawTools::Image m;
