@@ -447,7 +447,7 @@ struct SCVars
 	int			mp_ragdollUnrestricted;
 	int			mp_killMessages;
 	int			mp_rpgMod;
-	int			mp_scoreLimit;
+	int			mp_scoreLimitTia;
 	int			mp_aaLockOn;
 	float		mp_C4StrengthThrowMult;
 	int			mp_newSpectator;

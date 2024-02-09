@@ -2173,7 +2173,7 @@ int CScriptBind_GameRules::GetFragLead(IFunctionHandler* pH)
 //------------------------------------------------------------------------
 int CScriptBind_GameRules::GetScoreLimit(IFunctionHandler* pH)
 {
-	return pH->EndFunction(g_pGameCVars->mp_scoreLimit);
+	return pH->EndFunction(g_pGameCVars->mp_scoreLimitTia);
 }
 
 //------------------------------------------------------------------------

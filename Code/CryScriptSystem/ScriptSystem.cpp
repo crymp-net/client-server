@@ -457,11 +457,11 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 	{
 		CCryFile file;
 
-		if (scriptName == "scripts/gamerules/teaminstantaction.lua")
+		if (std::string(fileName) == "scripts/gamerules/teaminstantaction.lua")
 		{
 			const std::string_view content = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_TIA_GAMERULES);
 
-			success = this->ExecuteBuffer(content.data(), content.length(), scriptName.c_str());
+			success = this->ExecuteBuffer(content.data(), content.length(), fileName);
 		}
 		// try to load and execute the script file
 		else if (file.Open(fileName, "rb"))

@@ -103,7 +103,7 @@ void CHUDTeamInstantAction::UpdateStats()
 	}
 
 	roundTime = floor(pGameRules->GetRemainingGameTime());
-	scoreLimit = g_pGameCVars->mp_scoreLimit;
+	scoreLimit = g_pGameCVars->mp_scoreLimitTia;
 
 	if(	ownTeamScore!=m_ownTeamScore ||
 			enemyTeamScore!=m_enemyTeamScore ||

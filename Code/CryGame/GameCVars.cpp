@@ -607,7 +607,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_rpgMod", &mp_rpgMod, 0, OPTIONAL_SYNC);
-	pConsole->Register("mp_scoreLimit", &mp_scoreLimit, 300, OPTIONAL_SYNC, "Score before a round restarts. Default is 300, 0 means no score-limit.");
+	pConsole->Register("mp_scoreLimitTia", &mp_scoreLimitTia, 300, OPTIONAL_SYNC, "Score before a round restarts. Default is 300, 0 means no score-limit.");
 	pConsole->Register("mp_aaLockOn", &mp_aaLockOn, 0, OPTIONAL_SYNC, "enables lockon air for AARocketLauncher");
 	pConsole->Register("mp_C4StrengthThrowMult", &mp_C4StrengthThrowMult, 1.0f, OPTIONAL_SYNC, "Strength throw mult for C4s");
 
