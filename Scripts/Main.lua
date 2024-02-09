@@ -114,7 +114,9 @@ function InitializeClient()
 	end
 
 	local function RemoveFlaws()
-		io = nil
+		for i, v in pairs(io) do
+			io[i] = nil
+		end
 		for i, v in pairs(os) do
 			if not (i == "clock" or i == "time") then
 				os[i] = nil

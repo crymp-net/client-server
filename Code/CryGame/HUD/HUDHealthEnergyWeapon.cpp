@@ -162,8 +162,10 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 		if (m_pHUDCrosshair->GetCrosshairType() != 0)
 			m_pHUDCrosshair->SetCrosshair(0);
 	}
-	else if (m_pHUDCrosshair->GetCrosshairType() == 0 && g_pGameCVars->g_difficultyLevel < 4)
+	else if (m_pHUDCrosshair->GetCrosshairType() == 0 && (g_pGameCVars->g_difficultyLevel < 4 || gEnv->bMultiplayer))
+	{
 		m_pHUDCrosshair->SelectCrosshair(pItem);
+	}
 
 	if (iFireMode == 6)
 	{

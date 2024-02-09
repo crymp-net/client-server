@@ -65,6 +65,14 @@ void CHUDCrosshair::Reset()
 
 //-----------------------------------------------------------------------------------------------------
 
+void CHUDCrosshair::ShowDamageIndicator(float seconds)
+{
+	m_fDamageIndicatorTimer = seconds;
+	m_pHUD->UpdateCrosshairVisibility();
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void CHUDCrosshair::Update(float fDeltaTime)
 {
 	if (m_bBroken)
@@ -169,6 +177,13 @@ void CHUDCrosshair::Update(float fDeltaTime)
 			{
 				m_animCrossHair.GetFlashPlayer()->Advance(fDeltaTime);
 				m_animCrossHair.GetFlashPlayer()->Render();
+
+				if (m_setCrosshairInFlash)
+				{
+					m_animCrossHair.Invoke("setCrossHair", m_iCrosshair); //Setting these has no effect if flash anim not visible..
+					m_animCrossHair.Invoke("setUsable", m_bUsable);
+					m_setCrosshairInFlash = false;
+				}
 
 				/*f32 fColor[4] = { 1,1,0,1 };
 				f32 g_YLine = 130.0f;
@@ -310,8 +325,7 @@ void CHUDCrosshair::SetCrosshair(int iCrosshair)
 	if (m_iCrosshair != iCrosshair)
 	{
 		m_iCrosshair = iCrosshair;
-		m_animCrossHair.Invoke("setCrossHair", iCrosshair);
-		m_animCrossHair.Invoke("setUsable", m_bUsable);
+		m_setCrosshairInFlash = true;
 	}
 }
 
@@ -640,6 +654,9 @@ void CHUD::UpdateCrosshairVisibility()
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("clearDamageDirection");
 		m_pHUDCrosshair->GetFlashAnim()->GetFlashPlayer()->Advance(0.1f);
 
-		m_pHUDCrosshair->SetDamageIndicatorTimer(0.0f);
+		if (!bShow)
+		{
+			m_pHUDCrosshair->ShowDamageIndicator(0.0f);
+		}
 	}
 }

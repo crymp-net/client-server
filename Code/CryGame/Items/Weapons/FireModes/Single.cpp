@@ -436,48 +436,59 @@ void CSingle::UpdateFPView(float frameTime)
 //------------------------------------------------------------------------
 bool CSingle::IsValidAutoAimTarget(IEntity* pEntity, int partId /*= 0*/)
 {
-	IActor* pActor = 0;
-	IVehicle* pVehicle = 0;
-
 	if (pEntity->IsHidden())
 		return false;
 
 	AABB box;
 	pEntity->GetLocalBounds(box);
-	float vol = box.GetVolume();
+	const float vol = box.GetVolume();
 
-	if (vol < m_fireparams.autoaim_minvolume || vol > m_fireparams.autoaim_maxvolume)
+	if (!m_fireparams.autoaim_targetaironly)
 	{
-		//CryLogAlways("volume check failed: %f", vol);
-		return false;
-	}
-
-	CActor* pPlayer = m_pWeapon->GetOwnerActor();
-
-	if (!pPlayer)
-		return false;
-
-	pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
-	if (pActor && pActor->GetHealth() > 0.f &&
-		pActor->GetEntity()->GetAI() && pActor->GetEntity()->GetAI()->IsHostile(pPlayer->GetEntity()->GetAI(), false))
-		return true;
-
-	pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId());
-	if (gEnv->bMultiplayer && pVehicle && pVehicle->GetStatus().health > 0.f)
-	{
-		//Check for teams
-		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		if (vol < m_fireparams.autoaim_minvolume || vol > m_fireparams.autoaim_maxvolume)
 		{
-			if (pGameRules->GetTeam(pVehicle->GetEntityId()) != pGameRules->GetTeam(pPlayer->GetEntityId()))
-				return true;
+			return false;
 		}
-		return false;
 	}
 
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
+	if (!pOwner)
+		return false;
 
-	if (pVehicle && pVehicle->GetStatus().health > 0.f &&
-		pVehicle->GetEntity()->GetAI() && pVehicle->GetEntity()->GetAI()->IsHostile(pPlayer->GetEntity()->GetAI(), false))
-		return true;
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
+	if (pActor)
+	{
+		if (pActor->GetHealth() > 0.f &&
+			pActor->GetEntity()->GetAI() && pActor->GetEntity()->GetAI()->IsHostile(pOwner->GetEntity()->GetAI(), false))
+			return true;
+	} 
+
+	IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId());
+	if (pVehicle)
+	{
+		if (gEnv->bMultiplayer && pVehicle->GetStatus().health > 0.f)
+		{
+			//Check for teams
+			if (CGameRules* pGameRules = g_pGame->GetGameRules())
+			{
+				if (pGameRules->IsHostile(pVehicle->GetEntityId(), pOwner->GetEntityId()))
+				{
+					//CryMP
+					if (m_fireparams.autoaim_targetaironly)
+					{
+						return pVehicle->GetMovement() && pVehicle->GetMovement()->GetMovementType() == IVehicleMovement::EVehicleMovementType::eVMT_Air;
+					}
+
+					return true;
+				}
+			}
+			return false;
+		}
+
+		if (pVehicle->GetStatus().health > 0.f &&
+			pVehicle->GetEntity()->GetAI() && pVehicle->GetEntity()->GetAI()->IsHostile(pOwner->GetEntity()->GetAI(), false))
+			return true;
+	}
 
 	return false;
 }
@@ -488,19 +499,28 @@ bool CSingle::CheckAutoAimTolerance(const Vec3& aimPos, const Vec3& aimDir)
 	// todo: this check is probably not sufficient
 	IEntity* pLocked = gEnv->pEntitySystem->GetEntity(m_lockedTarget);
 	if (!pLocked)
+	{
 		return false;
+	}
 
 	AABB bbox;
 	pLocked->GetWorldBounds(bbox);
-	Vec3 targetPos = bbox.GetCenter();
-	Vec3 dirToTarget = (targetPos - aimPos).normalize();
-	float dot = aimDir.Dot(dirToTarget);
-	Matrix33 mat = Matrix33::CreateRotationVDir(dirToTarget);
-	Vec3 right = mat.GetColumn(0).normalize();
+	const Vec3 targetPos = bbox.GetCenter();
+	const Vec3 dirToTarget = (targetPos - aimPos).normalize();
+	const float dot = aimDir.Dot(dirToTarget);
+	const Matrix33 mat = Matrix33::CreateRotationVDir(dirToTarget);
+	const Vec3 right = mat.GetColumn(0).normalize();
 	Vec3 maxVec = (targetPos - aimPos) + (right * m_fireparams.autoaim_tolerance);
-	float maxDot = dirToTarget.Dot(maxVec.normalize());
+	const float maxDot = dirToTarget.Dot(maxVec.normalize());
+	const Vec3 up = mat.GetColumn(2).normalize();
+	Vec3 maxVecUp = (targetPos - aimPos) + (up * m_fireparams.autoaim_tolerance);
+	const float maxDot2 = dirToTarget.Dot(maxVecUp.normalize());
+	if (dot < maxDot && dot < maxDot2)
+	{
+		return false;
+	}
 
-	return (dot >= maxDot);
+	return true;
 }
 
 void CSingle::Lock(EntityId targetId, int partId /*=0*/)
@@ -580,8 +600,6 @@ void CSingle::StartLocking(EntityId targetId, int partId /*=0*/)
 //------------------------------------------------------------------------
 void CSingle::UpdateAutoAim(float frameTime)
 {
-	static IGameObjectSystem* pGameObjectSystem = gEnv->pGame->GetIGameFramework()->GetIGameObjectSystem();
-
 	CActor* pOwner = m_pWeapon->GetOwnerActor();
 	if (!pOwner || !pOwner->IsPlayer())
 		return;
@@ -607,8 +625,7 @@ void CSingle::UpdateAutoAim(float frameTime)
 	const int objects = ent_all;
 	const int flags = (geom_colltype_ray << rwi_colltype_bit) | rwi_colltype_any | (8 & rwi_pierceability_mask) | (geom_colltype14 << rwi_colltype_bit);
 
-	int result = gEnv->pPhysicalWorld->RayWorldIntersection(aimPos, aimDir * 2.f * maxDistance,
-		objects, flags, &ray, 1, pSkipEnts, nSkipEnts);
+	int result = gEnv->pPhysicalWorld->RayWorldIntersection(aimPos, aimDir * 2.f * maxDistance, objects, flags, &ray, 1, pSkipEnts, nSkipEnts);
 
 	bool hitValidTarget = false;
 	IEntity* pEntity = 0;
@@ -623,7 +640,13 @@ void CSingle::UpdateAutoAim(float frameTime)
 	if (m_bLocked)
 		m_autoaimTimeOut -= frameTime;
 
-	if (hitValidTarget && ray.dist <= maxDistance)
+	//Fix from Furyaner 
+	if (m_bLocked && (!CheckAutoAimTolerance(aimPos, aimDir) || (pEntity && m_lockedTarget != pEntity->GetId())))
+	{
+		m_pWeapon->RequestUnlock();
+		Unlock();
+	}
+	else if (hitValidTarget && ray.dist <= maxDistance)
 	{
 		if (m_bLocked)
 		{
@@ -710,6 +733,8 @@ void CSingle::ResetParams(const IItemParamsNode* params)
 	m_dustparams.Reset(dust);
 
 	BackUpOriginalSpreadRecoil();
+
+	PatchParamsCryMP();
 }
 
 //------------------------------------------------------------------------
@@ -746,6 +771,45 @@ void CSingle::PatchParams(const IItemParamsNode* patch)
 	BackUpOriginalSpreadRecoil();
 
 	Activate(true);
+
+	PatchParamsCryMP();
+}
+
+void CSingle::PatchParamsCryMP()
+{
+	//CryMP hack: enable tracers on AAA.. TOOD: move to CryAction params
+	const IEntityClass* pWClass = m_pWeapon->GetEntity()->GetClass();
+	if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AACannon"))
+	{
+		m_tracerparams.effectFP = "";
+		m_tracerparams.effect = "";
+		m_tracerparams.geometryFP = "objects/effects/tracer_standard_red_new.cgf";
+		m_tracerparams.geometry = "objects/effects/tracer_standard_red_new.cgf";
+		m_tracerparams.frequency = 1;
+		m_tracerparams.speed = 230;
+		m_tracerparams.speedFP = 300;
+	}
+	//CryMP hack: enable lockon missiles.. TOOD: move to CryAction params
+	else if (pWClass == gEnv->pEntitySystem->GetClassRegistry()->FindClass("AARocketLauncher"))
+	{
+		if (g_pGameCVars->mp_aaLockOn)
+		{
+			m_fireparams.autoaim = true;
+			m_fireparams.autoaim_targetaironly = true;
+			m_fireparams.autoaim_distance = 350.f;
+			m_fireparams.autoaim_tolerance = 25.f;
+			m_fireparams.autoaim_locktime = 0.0f;
+		}
+	}
+
+	else if (pWClass == CItem::sRocketLauncherClass)
+	{
+		if (g_pGameCVars->mp_rpgMod)
+		{
+			m_fireparams.autoaim = true;
+			m_fireparams.autoaim_targetaironly = true;
+		}
+	}
 }
 
 //------------------------------------------------------------------------

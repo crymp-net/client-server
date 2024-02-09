@@ -987,7 +987,9 @@ public:
 	ILINE const SStanceInfo* GetStanceInfo(EStance stance) const
 	{
 		if (stance < 0 || stance > STANCE_LAST)
+		{
 			return &m_defaultStance;
+		}
 		return &m_stances[stance];
 	}
 	virtual void	SetupStance(EStance stance, SStanceInfo* info);
@@ -1277,6 +1279,13 @@ public:
 //////////////////////////////////////////////////////////////////////////////////
 public:
 
+	bool IsPlayerClass() const
+	{
+		return m_isPlayerClass;
+	}
+
+	bool ShouldUseMPParams();
+
 	//First Person Spectators
 	virtual bool IsFpSpectator() const { return false; }
 	virtual bool IsFpSpectatorTarget() const { return false; }
@@ -1315,6 +1324,7 @@ public:
 private:
 
 	std::string m_playerNameClean = "";
+	bool m_isPlayerClass = false;
 };
 
 #endif //__Actor_H__

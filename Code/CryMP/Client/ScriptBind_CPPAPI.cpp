@@ -16,6 +16,7 @@
 #include "ScriptCallbacks.h"
 #include "DrawTools.h"
 #include "CryGame/GameActions.h"
+#include "CryGame/Actors/Actor.h"
 
 ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 {
@@ -74,6 +75,9 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_FUNC(RemoveTextOrImageAll);
 
 	SCRIPT_REG_TEMPLFUNC(GetLoadingScreenMapPicturePath, "");
+
+	//Effects
+	SCRIPT_REG_TEMPLFUNC(FOVEffect, "");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -587,8 +591,15 @@ int ScriptBind_CPPAPI::DrawImage(IFunctionHandler* pH, float posX, float posY, f
 	ITexture* pTexture = gEnv->pRenderer->EF_LoadTexture(texturePath, FT_FROMIMAGE, eTT_2D);
 	if (!pTexture)
 	{
-		CryLogWarningAlways("[DrawImage] Failed to load texture '%s'", texturePath);
+		CryLogWarningAlways("[DrawImage] Failed to open texture '%s'", texturePath);
 		return pH->EndFunction(-1);
+	}
+	if (!pTexture->IsTextureLoaded())
+	{
+		CryLogWarningAlways("[DrawImage] Failed to load texture '%s'", pTexture->GetName());
+		gEnv->pRenderer->RemoveTexture(pTexture->GetTextureID());
+
+		return pH->EndFunction(-2);
 	}
 
 	DrawTools::Image m;
@@ -696,4 +707,28 @@ int ScriptBind_CPPAPI::GetLoadingScreenMapPicturePath(IFunctionHandler* pH, cons
 	sImg.append(screenArray[iUse]);
 
 	return pH->EndFunction(sImg.c_str());
+}
+
+int ScriptBind_CPPAPI::FOVEffect(IFunctionHandler* pH, float goalFOV, float speed)
+{
+	CActor* pClientActor = static_cast<CActor*>(gClient->GetGameFramework()->GetClientActor());
+	if (pClientActor)
+	{
+		CScreenEffects* pScreenEffects = pClientActor->GetScreenEffects();
+		if (pScreenEffects)
+		{
+			pScreenEffects->ClearBlendGroup(pClientActor->m_hitReactionID);
+
+			if (goalFOV <= 0.0f)
+			{
+				return pH->EndFunction();
+			}
+
+			CFOVEffect* zOut = new CFOVEffect(pClientActor->GetEntityId(), goalFOV);
+			CLinearBlend* blend = new CLinearBlend(1);
+
+			pScreenEffects->StartBlend(zOut, blend, speed, pClientActor->m_hitReactionID);
+		}
+	}
+	return pH->EndFunction();
 }

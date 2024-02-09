@@ -27,6 +27,7 @@ public:
 	~ServerConnector();
 
 	void Connect(const ServerInfo& server);
+	void Reconnect();
 	void Disconnect();
 
 	const ServerInfo& GetLastServer() const

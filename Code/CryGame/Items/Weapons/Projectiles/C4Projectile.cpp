@@ -17,6 +17,7 @@ History:
 #include "CryGame/GameRules.h"
 #include "Bullet.h"
 #include "CryGame/HUD/HUD.h"
+#include "CryGame/GameCVars.h"
 
 CC4Projectile::CC4Projectile() :
 	m_stuck(false),
@@ -65,16 +66,41 @@ void CC4Projectile::HandleEvent(const SGameObjectEvent& event)
 //-------------------------------------------
 void CC4Projectile::Launch(const Vec3& pos, const Vec3& dir, const Vec3& velocity, float speedScale)
 {
-	CProjectile::Launch(pos, dir, velocity, speedScale);
-
-	if (gEnv->bMultiplayer && gEnv->bServer)
+	if (gEnv->bMultiplayer)
 	{
-		CActor* pOwner = GetWeapon()->GetOwnerActor();
-		if (pOwner && pOwner->IsPlayer())
+		CWeapon* pWeapon = this->GetWeapon();
+		CPlayer* pOwner = pWeapon ? CPlayer::FromActor(pWeapon->GetOwnerActor()) : nullptr;
+		if (pOwner)
 		{
-			((CPlayer*)pOwner)->RecordExplosivePlaced(GetEntityId(), 2);
+			if (gEnv->bServer)
+			{
+				if (pOwner->IsPlayer())
+				{
+					pOwner->RecordExplosivePlaced(GetEntityId(), 2);
+				}
+
+				// CryMP: Here is server handler
+				if (g_pGameCVars->mp_C4StrengthThrowMult > 1.0f)
+				{
+					speedScale *= g_pGameCVars->mp_C4StrengthThrowMult;
+				}
+			}
+
+			if (gEnv->bClient)
+			{
+				if (CNanoSuit* pSuit = pOwner->GetNanoSuit())
+				{
+					const ENanoMode curMode = pSuit->GetMode();
+					if (curMode == NANOMODE_STRENGTH && g_pGameCVars->mp_C4StrengthThrowMult > 1.0f)
+					{
+						pSuit->PlaySound(STRENGTH_LIFT_SOUND, 1.0f);
+					}
+				}
+			}
 		}
 	}
+
+	CProjectile::Launch(pos, dir, velocity, speedScale);
 
 	if (gEnv->bClient)
 	{

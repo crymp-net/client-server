@@ -45,6 +45,7 @@ History:
 
 #include "config.h"
 #include "CryMP/Client/Client.h"
+#include "CryMP/Client/ServerBrowser.h"
 #include "CryMP/Client/ServerConnector.h"
 #include "Library/StringTools.h"
 #include "CrySystem/LocalizationManager.h"
@@ -1627,50 +1628,40 @@ bool CFlashMenuObject::IsOnScreen(EMENUSCREEN screen)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CFlashMenuObject::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
+void CFlashMenuObject::OnHardwareMouseEvent(int x, int y, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
+	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
-		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
-		{
-			int x(iX), y(iY);
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
-			SFlashVarValue args[2] = { x,y };
-			m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
-			m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
-		}
+		SFlashVarValue args[2] = { x,y };
+		m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
+		m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
+
+		//CryMP:
+		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}
-	else
+	else if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
 	{
-		SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
-		if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
-		{
-			eCursorState = SFlashCursorEvent::eCursorPressed;
-		}
-		else if (HARDWAREMOUSEEVENT_LBUTTONUP == eHardwareMouseEvent)
-		{
-			eCursorState = SFlashCursorEvent::eCursorReleased;
-
-
-
-
-		}
-
-		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
-		{
-			int x(iX), y(iY);
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
-			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
-			UpdateButtonSnap(Vec2(x, y));
-		}
-
-		if (m_pFlashPlayer)
-		{
-			int x(iX), y(iY);
-			m_pFlashPlayer->ScreenToClient(x, y);
-			m_pFlashPlayer->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
-		}
+		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}
+	else if (HARDWAREMOUSEEVENT_LBUTTONUP == eHardwareMouseEvent)
+	{
+		eCursorState = SFlashCursorEvent::eCursorReleased;
+	}
+
+	if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
+	{
+		m_pCurrentFlashMenuScreen->GetFlashPlayer()->ScreenToClient(x, y);
+		m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
+		UpdateButtonSnap(Vec2(x, y));
+	}
+
+	if (m_pFlashPlayer)
+	{
+		m_pFlashPlayer->ScreenToClient(x, y);
+		m_pFlashPlayer->SendCursorEvent(SFlashCursorEvent(eCursorState, x, y));
+	}
+
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2331,7 +2322,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 	}
 	else if (!strcmp(szCommand, "Click"))
 	{
-		PlaySound(ESound_Click1);
+		PlaySound(ESound_Click1); //not used 
 	}
 	else if (!strcmp(szCommand, "ScreenChange"))
 	{
@@ -2764,6 +2755,8 @@ void CFlashMenuObject::InitStartMenu()
 	SetAntiAliasingModes();
 
 	SetProfile();
+
+	g_pGame->ConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2783,6 +2776,8 @@ void CFlashMenuObject::DestroyStartMenu()
 
 	m_bIgnoreEsc = false;
 	m_bDestroyStartMenuPending = false;
+
+	g_pGame->ConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2800,6 +2795,8 @@ void CFlashMenuObject::InitIngameMenu()
 	if (!m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 	{
 		g_pGame->ShowMousePointer(true);
+
+		g_pGame->ConfineCursor(false);
 
 #ifdef CRYSIS_BETA
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Load("Libs/UI/Menus_IngameMenu_Beta.gfx");
@@ -2880,6 +2877,8 @@ void CFlashMenuObject::DestroyIngameMenu()
 	}
 	if (g_pGame->GetIGameFramework()->IsGameStarted())
 		ReloadHUDMovies();
+
+	g_pGame->ConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -3410,10 +3409,18 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 						pLS->Invoke("setServerInfo2", args, 2);
 					}
 					ICVar* pCVar3 = gEnv->pConsole->GetCVar("mp_circleJump");
-					if (pCVar3 && pCVar3->GetIVal())
+					if (pCVar3 && pCVar3->GetFVal() > 0.0f)
 					{
-						SFlashVarValue args[2] = { "@ui_circle_jump", "@ui_menu_ON" };
-						pLS->Invoke("setServerInfo3", args, 2);
+						if (pCVar3->GetFVal() == 1.f)
+						{
+							SFlashVarValue args[2] = { "@ui_circle_jump", "@ui_menu_ON" };
+							pLS->Invoke("setServerInfo3", args, 2);
+						} 
+						else
+						{
+							SFlashVarValue args[2] = { "@ui_circle_jump", pCVar3->GetFVal() };
+							pLS->Invoke("setServerInfo3", args, 2);
+						}
 					}
 					ICVar* pCVar4 = gEnv->pConsole->GetCVar("mp_crymp");
 					if (pCVar4 && pCVar4->GetIVal() > 0)
@@ -4005,13 +4012,17 @@ void CFlashMenuObject::CloseWaitingScreen()
 void CFlashMenuObject::UpdateNetwork(float fDeltaTime)
 {
 	if (!gEnv || !gEnv->pNetwork || !m_pCurrentFlashMenuScreen || !m_multiplayerMenu)
+	{
 		return;
+	}
 
 	if (!m_multiplayerMenu->IsInLobby() && !m_multiplayerMenu->IsInLogin() && !gEnv->bMultiplayer)
+	{
 		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", true);
+	}
 	else if (IsOnScreen(MENUSCREEN_FRONTENDSTART) || IsOnScreen(MENUSCREEN_FRONTENDINGAME))
 	{
-		bool bNetwork = gEnv->pNetwork->HasNetworkConnectivity();
+		bool bNetwork = gClient->GetServerBrowser()->LastRequestSucceeded();
 		m_pCurrentFlashMenuScreen->CheckedInvoke("setNetwork", bNetwork);
 	}
 }

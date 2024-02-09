@@ -20,13 +20,6 @@ on:
         required: false
         default: false
         type: boolean
-    secrets:
-      sign_cert:
-        description: Base64-encoded PFX file
-        required: false
-      sign_pass:
-        description: Password for the PFX file
-        required: false
     outputs:
       artifact_name:
         description: Name of the resulting artifact
@@ -48,13 +41,17 @@ jobs:
 
       - name: Get Ninja
         run: |
-          $release = Invoke-RestMethod 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+          $url = 'https://api.github.com/repos/ninja-build/ninja/releases/latest'
+          $headers = @{
+            'Authorization' = 'Bearer ${{ secrets.GITHUB_TOKEN }}'
+          }
+          $release = Invoke-RestMethod -Uri $url -Headers $headers
           $release
           $asset = $release.assets | where { $_.name -eq 'ninja-win.zip' }
           $ninja_dir = Join-Path $env:BUILD_DIR 'ninja'
           $ninja_zip = Join-Path $env:BUILD_DIR 'ninja.zip'
           New-Item $ninja_dir -ItemType Directory | Out-Null
-          Invoke-WebRequest $asset.browser_download_url -OutFile $ninja_zip
+          Invoke-WebRequest -Uri $asset.browser_download_url -Headers $headers -OutFile $ninja_zip
           Expand-Archive $ninja_zip -DestinationPath $ninja_dir
           'NINJA_DIR=' + $ninja_dir >> $env:GITHUB_ENV
 
@@ -76,12 +73,12 @@ jobs:
       - name: Sign
         if: inputs.sign
         run: |
-          Set-Content -Path bundle.txt -Value '${{ secrets.sign_cert }}'
+          Set-Content -Path bundle.txt -Value '${{ secrets.CODE_SIGNING_PFX }}'
           certutil -decode bundle.txt bundle.pfx
           & 'C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe' `
-            sign /fd SHA256 /f bundle.pfx /p '${{ secrets.sign_pass }}' `
+            sign /fd SHA256 /f bundle.pfx /p '${{ secrets.CODE_SIGNING_PFX_PASSWORD }}' `
             /tr 'http://timestamp.digicert.com' /td SHA256 `
-            (Get-Item (Join-Path $env:BUILD_DIR '*.exe').FullName
+            (Get-Item (Join-Path $env:BUILD_DIR '*.exe')).FullName
           Remove-Item bundle.*
 
       - name: Upload

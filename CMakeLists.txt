@@ -137,7 +137,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/StlUtils.h
 	Code/CryCommon/CryCore/StringUtils.h
 	Code/CryCommon/CryCore/TArray.h
-	Code/CryCommon/CryCore/TypeInfo.h
 	Code/CryCommon/CryCore/Typelist.h
 	Code/CryCommon/CryCore/TypelistUtils.h
 	Code/CryCommon/CryCore/VectorMap.h
@@ -756,6 +755,7 @@ set(CRYMP_CLIENT_RESOURCES
 	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_Spectate.gfx
 	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_MP_Radio_Buttons.gfx
 	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem_HR.gfx
+	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_KillLog.gfx
 	${PROJECT_SOURCE_DIR}/Resources/Icon.ico
 	${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
 	${PROJECT_SOURCE_DIR}/Scripts/Localization.lua

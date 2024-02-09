@@ -374,6 +374,8 @@ bool CActor::Init(IGameObject* pGameObject)
 
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | (ENTITY_FLAG_ON_RADAR | ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO));
 
+	m_isPlayerClass = GetEntity()->GetClass() == gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
+
 	return true;
 }
 
@@ -437,17 +439,28 @@ void CActor::InitClient(int channelId)
 }
 
 //------------------------------------------------------------------------
+bool CActor::ShouldUseMPParams()
+{
+	return (gEnv->bMultiplayer && IsPlayerClass());
+}
+
+//------------------------------------------------------------------------
 void CActor::Revive(ReasonForRevive reason)
 {
 	ClearExtensionCache();
 
 	if (reason == ReasonForRevive::FROM_INIT)
+	{
 		g_pGame->GetGameRules()->OnRevive(this, GetEntity()->GetWorldPos(), GetEntity()->GetWorldRotation(), m_teamId);
+	}
 
 	//set the actor game parameters
-	SmartScriptTable gameParams;
-	if (GetEntity()->GetScriptTable() && GetEntity()->GetScriptTable()->GetValue("gameParams", gameParams))
-		SetParams(gameParams, true);
+	if (!(ShouldUseMPParams()))
+	{
+		SmartScriptTable gameParams;
+		if (GetEntity()->GetScriptTable() && GetEntity()->GetScriptTable()->GetValue("gameParams", gameParams))
+			SetParams(gameParams, true);
+	}
 
 	const EntityId currentItemId = GetCurrentItemId(false);
 
@@ -613,21 +626,19 @@ void CActor::Physicalize(EStance stance)
 
 		// Player Dynamics.
 
-		playerDyn.kInertia = -NAN;
+		//playerDyn.kInertia = -NAN; //CryMP: Let engine take care of this, not used in lua params
 		playerDyn.kAirControl = 0.899999976f;
-		playerDyn.kInertiaAccel = -NAN;
+		//playerDyn.kInertiaAccel = -NAN; 
 		playerDyn.kAirResistance = 0.5f;
 		playerDyn.gravity.z = 9.81000042f;
 		playerDyn.mass = 80.f;
 		playerDyn.minSlideAngle = 45.f;
 		playerDyn.maxClimbAngle = 50.f;
-		playerDyn.maxJumpAngle = -NAN;
+		//playerDyn.maxJumpAngle = -NAN;
 		playerDyn.minFallAngle = 50.f;
 		// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
 		playerDyn.maxVelGround = 200.f;
 		playerDyn.timeImpulseRecover = 1.0f;
-
-		SActorParams* params = GetActorParams();
 
 		if (!is_unused(playerDyn.timeImpulseRecover))
 			m_timeImpulseRecover = playerDyn.timeImpulseRecover;
@@ -652,7 +663,6 @@ void CActor::Physicalize(EStance stance)
 		// 
 		//FIXME:this code is duplicated from scriptBind_Entity.cpp, there should be a function that fill a SEntityPhysicalizeParams struct from a script table.
 		IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
-		assert(pScriptTable);
 		if (!pScriptTable)
 			return;
 
@@ -676,7 +686,6 @@ void CActor::Physicalize(EStance stance)
 			physicsParams->GetValue("flags", pp.nFlagsOR);
 			physicsParams->GetValue("partid", pp.nAttachToPart);
 			physicsParams->GetValue("stiffness_scale", pp.fStiffnessScale);
-
 
 			SmartScriptTable props;
 			if (GetEntity()->GetScriptTable()->GetValue("Properties", props))
@@ -728,9 +737,6 @@ void CActor::Physicalize(EStance stance)
 				// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
 				if (gEnv->bMultiplayer)
 					playerDyn.maxVelGround = 200.0f;
-
-				SActorParams* params = GetActorParams();
-
 
 				if (!is_unused(playerDyn.timeImpulseRecover))
 					m_timeImpulseRecover = playerDyn.timeImpulseRecover;
@@ -1327,6 +1333,17 @@ void CActor::Update(SEntityUpdateContext& ctx, int slot)
 	if (GetEntity()->IsHidden() && !(GetEntity()->GetFlags() & ENTITY_FLAG_UPDATE_HIDDEN))
 		return;
 
+	if (!IsClient() && GetPhysicsProfile() == eAP_Ragdoll)
+	{
+		IPhysicalEntity* pPhysics = GetEntity()->GetPhysics();
+		if (pPhysics)
+		{
+			pe_action_awake actionAwake;
+			actionAwake.bAwake = 1;
+			pPhysics->Action(&actionAwake);
+		}
+	}
+
 	if (m_sleepTimer > 0.0f && gEnv->bServer)
 	{
 		pe_status_dynamics dynStat;
@@ -1794,10 +1811,10 @@ void CActor::SetChannelId(uint16 channelId)
 {
 	if (!gEnv->bServer)
 	{
-		auto* pRules = g_pGame->GetGameRules();
-		if (pRules)
+		CGameRules *pGameRules = g_pGame->GetGameRules();
+		if (pGameRules)
 		{
-			pRules->AddChannel(channelId);
+			pGameRules->AddChannel(channelId);
 		}
 	}
 }
@@ -3935,42 +3952,51 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 	if (pInventory)
 	{
 		IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(params.ammo.c_str());
-		assert(pClass);
+		if (!pClass)
+			return true;
 
-		int capacity = pInventory->GetAmmoCapacity(pClass);
-		int current = pInventory->GetAmmoCount(pClass);
+		const int capacity = pInventory->GetAmmoCapacity(pClass);
+		const int current = pInventory->GetAmmoCount(pClass);
 		if ((!gEnv->pSystem->IsEditor()) && (params.count > capacity))
 		{
 			//If still there's some place, full inventory to maximum...
 			if (current < capacity)
 			{
 				pInventory->SetAmmoCount(pClass, capacity);
-				if (IsClient() && g_pGame->GetHUD() && capacity - current > 0)
+
+				if (IsClient() && capacity - current > 0)
 				{
-					//char buffer[5];
-					//_itoa(capacity - current, buffer, 10);
-					//g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);
-					if (g_pGame->GetHUD())
-						g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
+					/*char buffer[5];
+					_itoa(capacity - current, buffer, 10);
+					SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@") + pClass->GetName()).c_str(), buffer));*/
+
+					SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), capacity - current));
 				}
 			}
 			else
 			{
-				if (IsClient() && g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str());
+				if (IsClient())
+				{
+					SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
+				}
 			}
 		}
 		else
 		{
 			pInventory->SetAmmoCount(pClass, params.count);
-			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
+
+			if (IsClient() && params.count - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(params.count - current, buffer, 10);
-				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
+				SAFE_HUD_FUNC(DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@") + pClass->GetName()).c_str(), buffer));*/
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), params.count - current));
 			}
+		}
+
+		if (IsClient())
+		{
+			SAFE_HUD_FUNC(OnAmmoChanged(this));
 		}
 	}
 
@@ -3984,37 +4010,45 @@ IMPLEMENT_RMI(CActor, ClAddAmmo)
 	if (pInventory)
 	{
 		IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(params.ammo.c_str());
-		assert(pClass);
+		if (!pClass)
+			return true;
 
-		int capacity = pInventory->GetAmmoCapacity(pClass);
-		int current = pInventory->GetAmmoCount(pClass);
+		const int capacity = pInventory->GetAmmoCapacity(pClass);
+		const int current = pInventory->GetAmmoCount(pClass);
 		if ((!gEnv->pSystem->IsEditor()) && (pInventory->GetAmmoCount(pClass) + params.count > capacity))
 		{
-			if (IsClient() && g_pGame->GetHUD())
-				g_pGame->GetHUD()->DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str());
+			if (IsClient())
+			{
+				SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
+			}
 
 			//If still there's some place, full inventory to maximum...
 			pInventory->SetAmmoCount(pClass, capacity);
-			if (capacity != current && IsClient() && g_pGame->GetHUD() && capacity - current > 0)
+
+			if (capacity != current && IsClient() && capacity - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(capacity - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), capacity - current);
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), capacity - current));
 			}
 		}
 		else
 		{
 			pInventory->SetAmmoCount(pClass, pInventory->GetAmmoCount(pClass) + params.count);
-			if (IsClient() && g_pGame->GetHUD() && params.count - current > 0)
+
+			if (IsClient() && params.count - current > 0)
 			{
 				/*char buffer[5];
 				_itoa(params.count - current, buffer, 10);
 				g_pGame->GetHUD()->DisplayFlashMessage("@grab_ammo", 3, Col_Wheat, true, (string("@")+pClass->GetName()).c_str(), buffer);*/
-				if (g_pGame->GetHUD())
-					g_pGame->GetHUD()->DisplayAmmoPickup(pClass->GetName(), params.count - current);
+				SAFE_HUD_FUNC(DisplayAmmoPickup(pClass->GetName(), params.count - current));
 			}
+		}
+
+		if (IsClient())
+		{
+			SAFE_HUD_FUNC(OnAmmoChanged(this));
 		}
 	}
 

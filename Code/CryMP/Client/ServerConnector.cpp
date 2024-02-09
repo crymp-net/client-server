@@ -271,9 +271,14 @@ ServerConnector::~ServerConnector()
 
 void ServerConnector::Connect(const ServerInfo& server)
 {
-	Disconnect();
-
 	m_server = server;
+
+	Reconnect();
+}
+
+void ServerConnector::Reconnect()
+{
+	Disconnect();
 
 	CMPHub* pMPHub = SAFE_MENU_FUNC_RET(GetMPHub());
 	if (pMPHub)

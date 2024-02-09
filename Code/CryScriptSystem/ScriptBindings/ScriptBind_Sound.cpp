@@ -118,6 +118,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	pSS->SetGlobalValue("SOUNDSCALE_UNDERWATER", SOUNDSCALE_UNDERWATER);
 	pSS->SetGlobalValue("SOUNDSCALE_MISSIONHINT", SOUNDSCALE_MISSIONHINT);
 
+	pSS->SetGlobalValue("SOUND_VOLUMESCALEMISSIONHINT", 0.45f);
+
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NONE", eSoundSemantic_None);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_ONLYVOICE", eSoundSemantic_OnlyVoice);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NOVOICE", eSoundSemantic_NoVoice);
@@ -195,6 +197,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(SetMenuMusic, "playMenuMusic, theme, mood");
 	SCRIPT_REG_TEMPLFUNC(SetMusicMood, "mood");
 	SCRIPT_REG_TEMPLFUNC(SetMusicTheme, "theme");
+
+	SCRIPT_REG_FUNC(ReloadAudioDevice);
 }
 
 int ScriptBind_Sound::AddToScaleGroup(IFunctionHandler *pH)
@@ -972,6 +976,14 @@ int ScriptBind_Sound::SetMusicTheme(IFunctionHandler *pH, const char *theme)
 
 	if (!result)
 		CryLogError("Unable to set music theme '%s'", theme);
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::ReloadAudioDevice(IFunctionHandler* pH)
+{
+	gEnv->pSoundSystem->DeactivateAudioDevice();
+	const bool result = gEnv->pSoundSystem->ActivateAudioDevice();
 
 	return pH->EndFunction(result);
 }

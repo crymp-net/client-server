@@ -140,7 +140,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	//CryMP: enable improved TP camera (might remove some of these later)
 	pConsole->Register("goc_tpcrosshair", &goc_tpcrosshair, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "keep crosshair in third person");
 	pConsole->Register("goc_targetx", &goc_targetx, 0.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
-	pConsole->Register("goc_targety", &goc_targety, -2.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
+	pConsole->Register("goc_targety", &goc_targety, -3.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 	pConsole->Register("goc_targetz", &goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera");
 
 	pConsole->Register("cl_leanAmount", &cl_leanAmount, 0.25f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set amount of lean");
@@ -608,6 +608,8 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_rpgMod", &mp_rpgMod, 0, OPTIONAL_SYNC);
 	pConsole->Register("mp_scoreLimit", &mp_scoreLimit, 300, OPTIONAL_SYNC, "Score before a round restarts. Default is 300, 0 means no score-limit.");
+	pConsole->Register("mp_aaLockOn", &mp_aaLockOn, 0, OPTIONAL_SYNC, "enables lockon air for AARocketLauncher");
+	pConsole->Register("mp_C4StrengthThrowMult", &mp_C4StrengthThrowMult, 1.0f, OPTIONAL_SYNC, "Strength throw mult for C4s");
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("mp_newSpectator", &mp_newSpectator, 1, VF_NOT_NET_SYNCED, "");
@@ -625,7 +627,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_attachBoughtEquipment", &mp_attachBoughtEquipment, 0, VF_NOT_NET_SYNCED, "Automatically attach bought weapon attachments");
 	pConsole->Register("mp_netAimLerpFactor", &mp_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients (1-50, 0:off)");
 	pConsole->Register("mp_netAimLerpFactorCrymp", &mp_netAimLerpFactorCrymp, 42.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients when mp_crymp 1 (1-50, 0:off)");
-	pConsole->Register("mp_explosiveSilhouettes", &mp_explosiveSilhouettes, 1, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives");
+	pConsole->Register("mp_explosiveSilhouettes", &mp_explosiveSilhouettes, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives");
 }
 
 //------------------------------------------------------------------------

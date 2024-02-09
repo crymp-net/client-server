@@ -148,7 +148,7 @@ protected:
 
 	void ViewFirstThirdSharedPre(SViewParams &viewParams);
 	void ViewFirstThirdSharedPost(SViewParams &viewParams);
-	Vec3 GetCollision(const Vec3 transformPosition, const Vec3 forward, const Vec3 vector, IPhysicalEntity* pPlayerPhysics, float radius, bool pushByNormal);
+	Vec3 GetCollision(CActor* pActor, const Vec3 transformPosition, const Vec3 forward, const Vec3 vector, float radius, bool pushByNormal);
 	void ViewThirdPerson(SViewParams &viewParams);
 	Vec3 Project(Vec3 vector, Vec3 onNormal);
 	void ViewFirstPerson(SViewParams &viewParams);

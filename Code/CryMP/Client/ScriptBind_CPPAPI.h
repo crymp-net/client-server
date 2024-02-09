@@ -55,4 +55,5 @@ public:
 	int RemoveTextOrImageById(IFunctionHandler* pH, int id);
 	int RemoveTextOrImageAll(IFunctionHandler* pH);
 	int GetLoadingScreenMapPicturePath(IFunctionHandler* pH, const char* level);
+	int FOVEffect(IFunctionHandler* pH, float goalFOV, float speed);
 };

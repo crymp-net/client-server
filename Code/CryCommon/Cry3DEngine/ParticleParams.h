@@ -200,8 +200,6 @@ public:
 		}
 	}
 
-	AUTO_STRUCT_INFO_LOCAL
-
 protected:
 	float	m_fVarRandom;				// $<Min=0> $<Max=1>
 	bool	m_bRandomHue;
@@ -406,9 +404,6 @@ public:
 			return 0;
 	}
 
-	// TypeInfo explicitly implemented in ParticleParamsTypeInfo.cpp.
-	STRUCT_INFO
-
 protected:
 
 	void CleanUp()
@@ -492,8 +487,6 @@ public:
 		return m_Base * (1.f-(float)m_VarRandom);
 	}
 
-	AUTO_STRUCT_INFO_LOCAL
-
 protected:
 	// Base value.
 	T						m_Base;									
@@ -564,8 +557,6 @@ public:
 			* m_VarEmitterLife.GetMinValue();
 	}
 
-	AUTO_STRUCT_INFO_LOCAL
-
 protected:
 	TCurve<T>		m_VarEmitterLife;
 
@@ -609,8 +600,6 @@ public:
 		return TVarEParam<T>::GetMinValue()
 			* m_VarParticleLife.GetMinValue();
 	}
-
-	AUTO_STRUCT_INFO_LOCAL
 
 protected:
 	TCurve<T>		m_VarParticleLife;
@@ -656,8 +645,6 @@ struct STextureTiling
 		nAnimFramesCount = max(nAnimFramesCount, 1U);
 		nVariantCount = max(nVariantCount, 1U);
 	}
-
-	AUTO_STRUCT_INFO_LOCAL
 };
 
 struct Vec3_Zero: Vec3
@@ -794,8 +781,6 @@ struct ParticleParams
 		memset(this, 0, sizeof(*this));
 		new(this) ParticleParams(true);
 	}
-
-	AUTO_STRUCT_INFO_LOCAL
 
 protected:
 

@@ -39,3 +39,5 @@ struct CPUInfo
 
 	static void Detect(CPUInfo* self);
 };
+
+static_assert(sizeof(CPUInfo) == 8720);

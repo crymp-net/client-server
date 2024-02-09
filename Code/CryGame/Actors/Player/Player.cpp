@@ -1586,8 +1586,8 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	if (!m_pAnimatedCharacter)
 		return;
 
-	if (!IsThirdPerson() && !IsFpSpectatorTarget())
-		return;
+	//if (!IsThirdPerson() && !IsFpSpectatorTarget()) //Needed for shadows in FP
+	//	return;
 
 	IAnimationGraphState* pGraph = m_pAnimatedCharacter ? m_pAnimatedCharacter->GetAnimationGraphState() : NULL;
 	if (!pGraph)
@@ -2308,9 +2308,23 @@ void CPlayer::SetParams(SmartScriptTable& rTable, bool resetFirst)
 		m_params = SPlayerParams();
 	}
 
+	CScriptSetGetChain params(rTable);
+	if (ShouldUseMPParams())
+	{
+		params.GetValue("speedMultiplier", m_params.speedMultiplier);
+		SmartScriptTable nanoTable;
+		if (m_pNanoSuit && params.GetValue("nanoSuit", nanoTable))
+		{
+			m_pNanoSuit->SetParams(nanoTable, resetFirst);
+		}
+		int followHead = m_stats.followCharacterHead.Value();
+		params.GetValue("followCharacterHead", followHead);
+		m_stats.followCharacterHead = followHead;
+		return;
+	}
+
 	CActor::SetParams(rTable, resetFirst);
 
-	CScriptSetGetChain params(rTable);
 	params.GetValue("sprintMultiplier", m_params.sprintMultiplier);
 	params.GetValue("strafeMultiplier", m_params.strafeMultiplier);
 	params.GetValue("backwardMultiplier", m_params.backwardMultiplier);
@@ -2363,6 +2377,152 @@ void CPlayer::SetParams(SmartScriptTable& rTable, bool resetFirst)
 	{
 		m_pNanoSuit->SetParams(nanoTable, resetFirst);
 	}
+}
+
+void CPlayer::SetParamsMP(bool resetFirst)
+{
+	//not sure about this
+	if (resetFirst)
+	{
+		m_params = SPlayerParams();
+	}
+
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 1.200000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanRightViewOffset = Vec3(0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.450000f, 0.000000f, 1.300000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.650000f, 0.000000f, 1.300000f);
+		sInfo.maxSpeed = 4.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "combat");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.300000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.150000f, 1.625000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 1.350000f);
+
+		SetupStance(EStance::STANCE_STAND, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.900000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanRightViewOffset = Vec3(0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.500000f, 0.000000f, 0.650000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.500000f, 0.000000f, 0.650000f);
+		sInfo.maxSpeed = 1.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "crouch");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.100000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.000000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 0.850000f);
+
+		SetupStance(EStance::STANCE_CROUCH, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.400000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 0.750000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "prone");
+		sInfo.normalSpeed = 0.375000f;
+		sInfo.size = Vec3(0.350000f, 0.350000f, 0.001000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.weaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_PRONE, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 1.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 2.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "swim");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.350000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_SWIM, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 3.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "zerog");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.600000f, 0.600000f, 0.001000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_ZEROG, &sInfo);
+	}
+	
+	m_params.afterburnerMultiplier = 2.000000f;
+	strcpy(m_params.animationAppendix, "nw");
+	m_params.backwardMultiplier = 0.700000f;
+	m_params.grabMultiplier = 0.500000f;
+	m_params.gravityBootsMultipler = 0.800000f;
+	m_params.hudAngleOffset = Ang3(0.000000f, 0.000000f, 0.000000f);
+	m_params.hudOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.inertia = 10.000000f;
+	m_params.inertiaAccel = 11.000000f;
+	m_params.jumpHeight = 1.000000f;
+	m_params.leanAngle = 15.000000f;
+	m_params.leanShift = 0.350000f;
+	m_params.maxGrabMass = 70.000000f;
+	m_params.maxGrabVolume = 2.000000f;
+	m_params.nanoSuitActive = true;
+	m_params.slopeSlowdown = 3.000000f;
+	m_params.speedMultiplier = 1.000000f;
+	m_params.sprintMultiplier = 1.500000f;
+	m_params.strafeMultiplier = 1.000000f;
+	m_params.thrusterImpulse = 14.000000f;
+	m_params.thrusterStabilizeImpulse = 0.010000f;
+	m_params.timeImpulseRecover = 0.000000f;
+	m_params.viewDistance = 0.000000f;
+	m_params.viewFoVScale = 1.000000f;
+	m_params.viewHeightOffset = 0.000000f;
+	m_params.viewPivot = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.viewSensitivity = 1.000000f;
+	m_params.vLimitDir = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.vLimitRangeH = 0.000000f;
+	m_params.vLimitRangeV = 0.000000f;
+	m_params.vLimitRangeVDown = 0.000000f;
+	m_params.vLimitRangeVUp = 0.000000f;
+	m_params.weaponBobbingMultiplier = 1.000000f;
+	m_params.weaponInertiaMultiplier = 1.000000f;
+	m_params.zoomFoV = 1.000000f;
+
+	//TODO:move to SetStats()
+	int followHead = m_stats.followCharacterHead.Value();
+	//params.GetValue("followCharacterHead", followHead);
+	m_stats.followCharacterHead = followHead;
 }
 
 //fill the status table for the scripts
@@ -3543,6 +3703,11 @@ bool CPlayer::IsThirdPerson() const
 
 void CPlayer::Revive(ReasonForRevive reason)
 {
+	if (ShouldUseMPParams())
+	{
+		SetParamsMP(true);
+	}
+
 	CActor::Revive(reason);
 
 	ResetScreenFX();
@@ -4548,6 +4713,24 @@ bool CPlayer::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			m_stats.isStandingUp = true;
 			m_stats.isRagDoll = false;
 		}
+
+		//CryMP: Fix for spectator body interfering players
+		if (gEnv->bMultiplayer)
+		{
+			if (!IsClient() && gEnv->bClient && !gEnv->bServer)
+			{
+				if (profile == eAP_Spectator)
+				{
+					GetEntity()->Hide(true);
+					//CryLogAlways("netplayer goes spectating, hiding.");
+				}
+				else
+				{
+					GetEntity()->Hide(false);
+					//CryLogAlways("netplayer goes into play, un-hiding.");
+				}
+			}
+		}
 	}
 
 	bool res = CActor::SetAspectProfile(aspect, profile);
@@ -5153,13 +5336,15 @@ void CPlayer::DeployParachute(bool deploy, bool sound)
 		if (m_nParachuteSlot && !(pEnt->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)) // check if it was correctly loaded...dont wanna modify another character slot
 		{
 			m_fParachuteMorph = 0.0f;
+	
+			const int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
+			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+
 			ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
 			if (pCharacter)
 			{
 				pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
 			}
-			int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
-			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
 
 			if (sound)
 			{

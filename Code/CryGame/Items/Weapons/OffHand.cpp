@@ -2003,6 +2003,13 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 			}
 		}
 
+		const EntityId lookAtId = pEntity->GetId();
+		if (lookAtId != m_lastLookAtEntityId)
+		{
+			OnLookAtEntityChanged(pEntity);
+
+			m_lastLookAtEntityId = lookAtId;
+		}
 	}
 
 	if (lenSqr < m_range * m_range)
@@ -2220,6 +2227,24 @@ int COffHand::CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity 
 		}
 	}
 	return CheckItemsInProximity(info.eyePosition, info.eyeDirection, getEntityInfo);
+}
+
+//========================================================================================
+void COffHand::OnLookAtEntityChanged(IEntity* pEntity)
+{
+	if (pEntity && m_pVehicleSystem->GetVehicle(pEntity->GetId()))
+	{
+		//CryMP: Fix missing Enter vehicle HUD display
+		//Usually a punch solves it, the following awake code fixes it
+		//The bugged vehicles have submergedFraction 1.0
+		IPhysicalEntity* pPhysics = pEntity->GetPhysics();
+		if (pPhysics)
+		{
+			pe_action_awake actionAwake;
+			actionAwake.bAwake = 1;
+			pPhysics->Action(&actionAwake);
+		}
+	}
 }
 
 //========================================================================================

@@ -35,9 +35,9 @@ int ScriptBind_Script::LoadScript(IFunctionHandler *pH)
 	if (pH->GetParamCount() >= 3)
 		pH->GetParam(3, raiseError);
 
-	bool reload = false;
+	bool forceReload = false;
 	if (pH->GetParamCount() >= 2)
-		pH->GetParam(2, reload);
+		pH->GetParam(2, forceReload);
 
 	const char *scriptFile = nullptr;
 	pH->GetParam(1, scriptFile);
@@ -46,7 +46,7 @@ int ScriptBind_Script::LoadScript(IFunctionHandler *pH)
 
 	if (scriptFile)
 	{
-		status = m_pSS->ExecuteFile(scriptFile, raiseError, reload);
+		status = m_pSS->ExecuteFile(scriptFile, raiseError, forceReload);
 	}
 
 	return pH->EndFunction(status);
@@ -59,7 +59,7 @@ int ScriptBind_Script::ReloadScript(IFunctionHandler *pH)
 		return pH->EndFunction();
 
 	const bool raiseError = true;
-	const bool forceReload = gEnv->bEditor;
+	const bool forceReload = false;
 
 	m_pSS->ExecuteFile(fileName, raiseError, forceReload);
 

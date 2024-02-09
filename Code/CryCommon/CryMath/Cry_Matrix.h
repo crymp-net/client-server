@@ -773,8 +773,6 @@ template<typename F> struct Matrix33_tpl
 	// - parity (left handed or right handed) remains from input
 	// - degenerated matrix input (point,line,plane) results in degenerated output
 	template<class F1, class F2> ILINE void Orthogonalization_GramSchmidt();
-
-	AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1490,8 +1488,6 @@ template <typename F> struct Matrix34_tpl
 		if (!NumberValid(m20)) return false;	if (!NumberValid(m21)) return false;	if (!NumberValid(m22)) return false;	if (!NumberValid(m23)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2049,8 +2045,6 @@ template<typename F> struct Matrix44_tpl
 		if (!NumberValid(m30)) return false;	if (!NumberValid(m31)) return false;	if (!NumberValid(m32)) return false;	if (!NumberValid(m33)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////

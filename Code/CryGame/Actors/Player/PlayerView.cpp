@@ -472,7 +472,7 @@ Vec3 CPlayerView::Project(Vec3 vector, Vec3 onNormal)
 		onNormal.z * dot / sqrMag);
 }
 
-Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, const Vec3 vector, IPhysicalEntity* pPlayerPhysics, float radius, bool pushByNormal)
+Vec3 CPlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Vec3 forward, const Vec3 vector, float radius, bool pushByNormal)
 {
 	int farEnough = 1;
 
@@ -485,12 +485,28 @@ Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, cons
 		checkDir *= -1;
 	}
 
+	IPhysicalEntity* pSkipEnts[2] = {};
+	int nSkip = 0;
+	if (IPhysicalEntity *pActorPhysics = pActor->GetEntity()->GetPhysics())
+	{
+		pSkipEnts[nSkip++] = pActorPhysics;
+
+		if (pActor->GetHeldObjectId())
+		{
+			IEntity* pObject = gEnv->pEntitySystem->GetEntity(pActor->GetHeldObjectId());
+			if (pObject && pObject->GetPhysics())
+			{
+				pSkipEnts[nSkip++] = pObject->GetPhysics();
+			}
+		}
+	}
+
 	geom_contact* pContact = nullptr;
 	primitives::sphere sphere;
 	sphere.center = origin;
 	sphere.r = radius;
 	const float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, checkDir.normalized() * farEnough,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, nSkip);
 
 	if (hitDist > 0.0f && pContact)
 	{
@@ -509,7 +525,7 @@ Vec3 CPlayerView::GetCollision(const Vec3 transformPos, const Vec3 forward, cons
 	
 	Vec3 newDir = -checkDir.normalized() * checkDir.GetLength();
 	const float hitDist2 = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, newDir,
-		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, &pPlayerPhysics, 1);
+		ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid /* |ent_living*/, &pSecContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, nSkip);
 
 	if (hitDist2 > 0.0f && pSecContact)
 	{
@@ -542,13 +558,17 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 	//const bool parachute = pPlayer->GetPlayerStats() ? pPlayer->GetPlayerStats()->inFreefall == 2 : false;
 	const bool inFreeFalllOrPara = pPlayer->GetPlayerStats() ? (pPlayer->GetPlayerStats()->inFreefall > 0 || pPlayer->IsParachuteMorphActive()) : false;
 
-	const float distanceOffsetPara = -12.f;
+	float distanceOffsetPara = -8.f;
 
 	if (inFreeFalllOrPara)
 	{
 		viewOffset.x = 0.0f;
 		viewOffset.y = distanceOffsetPara;
-		viewOffset.z = 3.0f;
+		viewOffset.z = 1.0f;
+	}
+	else if (m_in.stats_isRagDoll)
+	{
+		viewOffset.x = 0.0f;
 	}
 
 	CWeapon* pWeapon = pActor->GetCurrentWeapon(false);
@@ -578,8 +598,8 @@ void CPlayerView::ViewThirdPerson(SViewParams& viewParams)
 
 	const Vec3 forward = viewParams.rotation.GetColumn1();
 
-	const Vec3 colPoint = GetCollision(transformPos, forward, origin, pPlayerPhysics, thinRadius, true);
-	const Vec3 colPointThick = GetCollision(transformPos, forward, origin, pPlayerPhysics, thickRadius, false);
+	const Vec3 colPoint = GetCollision(pActor, transformPos, forward, origin, thinRadius, true);
+	const Vec3 colPointThick = GetCollision(pActor, transformPos, forward, origin, thickRadius, false);
 
 	const Vec3 projection = Project((colPointThick - origin), occRay.normalized());
 	const Vec3 colPointThickProjectedOnRay = projection + origin;
@@ -1229,11 +1249,12 @@ void CPlayerView::ViewSpectatorTarget(SViewParams& viewParams)
 
 void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 {
-	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget);
-	if (!pTarget)
+	CActor* pActor = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_in.stats_spectatorTarget));
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(m_in.stats_spectatorTarget);
+	if (!pEntity)
 		return;
 
-	Matrix34 worldTM = pTarget->GetEntity()->GetWorldTM();
+	Matrix34 worldTM = pEntity->GetWorldTM();
 
 	Vec3 worldPos = worldTM.GetTranslation();
 	worldPos.z += 1.5f;
@@ -1242,11 +1263,14 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	float rot = worldAngles.z;// + m_rot;
 	float distance = 3;//(m_defaultDistance != 0) ? m_defaultDistance : m_distance;
 
-	if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
+	if (pActor)
 	{
-		AABB vehicleBox;
-		pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
-		distance = 2.0f * vehicleBox.GetRadius();
+		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+		{
+			AABB vehicleBox;
+			pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
+			distance = 2.0f * vehicleBox.GetRadius();
+		}
 	}
 
 	//Zooming ability
@@ -1261,21 +1285,24 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	goal.y = distance * zoom * sinf(rot - gf_PI / 2.0f) + worldPos.y;
 
 	AABB targetBounds;
-	pTarget->GetEntity()->GetLocalBounds(targetBounds);
+	pEntity->GetLocalBounds(targetBounds);
 	goal.z = targetBounds.max.z;
 	static float defaultOffset = 0.75f;
 	float offset = defaultOffset;
-	if (pTarget->GetLinkedVehicle())
-		offset = 2.0f;
-	else
+	if (pActor)
 	{
-		SActorStats* pStats = pTarget->GetActorStats();
-		if (pStats && pStats->inFreefall == 1)
+		if (pActor->GetLinkedVehicle())
+			offset = 2.0f;
+		else
 		{
-			offset = -1.0f;
+			SActorStats* pStats = pActor->GetActorStats();
+			if (pStats && pStats->inFreefall > 0)
+			{
+				offset = -10.0f;
+			}
 		}
 	}
-	goal.z += pTarget->GetEntity()->GetWorldPos().z + offset;
+	goal.z += pEntity->GetWorldPos().z + offset;
 
 	// store / interpolate the offset, not the world pos (reduces percieved jitter in vehicles)
 	static Vec3 viewOffset(goal - worldPos);
@@ -1287,17 +1314,20 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	static ray_hit hit;
 	IPhysicalEntity* pSkipEntities[10];
 	int nSkip = 0;
-	IItem* pItem = pTarget->GetCurrentItem();
-	if (pItem)
+	if (pActor)
 	{
-		CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-		if (pWeapon)
-			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
-	}
-	else if (IVehicle* pVehicle = pTarget->GetLinkedVehicle())
-	{
-		// vehicle drivers don't seem to have current items, so need to add the vehicle itself here
-		nSkip = pVehicle->GetSkipEntities(pSkipEntities, 10);
+		IItem* pItem = pActor->GetCurrentItem();
+		if (pItem)
+		{
+			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
+			if (pWeapon)
+				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+		}
+		else if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
+		{
+			// vehicle drivers don't seem to have current items, so need to add the vehicle itself here
+			nSkip = pVehicle->GetSkipEntities(pSkipEntities, 10);
+		}
 	}
 
 	const float wallSafeDistance = 0.2f; // how far to keep camera from walls
@@ -1360,7 +1390,7 @@ void CPlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 		lastSpectatorTarget = m_in.stats_spectatorTarget;
 	}
 	frameNo = thisFrameId;
-	if (pTarget->GetLinkedVehicle())
+	if (pActor && pActor->GetLinkedVehicle())
 	{
 		Interpolate(viewOffset, goal - worldPos, 5.0f, viewParams.frameTime);
 		entPos = worldPos;

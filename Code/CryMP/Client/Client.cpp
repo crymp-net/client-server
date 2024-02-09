@@ -131,6 +131,11 @@ void Client::OnConnectCmd(IConsoleCmdArgs *pArgs)
 	gClient->GetServerConnector()->Connect(server);
 }
 
+void Client::OnReconnectCmd(IConsoleCmdArgs *pArgs)
+{
+	gClient->GetServerConnector()->Reconnect();
+}
+
 void Client::OnDisconnectCmd(IConsoleCmdArgs *pArgs)
 {
 	gClient->GetServerConnector()->Disconnect();
@@ -171,36 +176,6 @@ void Client::OnDumpKeyBindsCmd(IConsoleCmdArgs* pArgs)
 	{
 		CryLogAlways("%10s : %s", bind.key.c_str(), bind.command.c_str());
 	}
-}
-
-int Client::Entity_Hook::LoadParticleEmitter(int slot, IParticleEffect* pEffect, const SpawnParams* params, bool prime, bool serialize)
-{
-	CryLog("[Client::Entity_Hook::LoadParticleEmitter] %s", (pEffect) ? pEffect->GetName() : "?");
-
-	return (this->*(gClient->s_originalEntityLoadParticleEmitter))(slot, pEffect, params, prime, serialize);
-}
-
-void Client::HackEntity()
-{
-#ifdef BUILD_64BIT
-	void *pCryEntitySystem = WinAPI::DLL::Get("CryEntitySystem.dll");
-	if (!pCryEntitySystem)
-	{
-		CryLogErrorAlways("[Client::HackEntity] CryEntitySystem DLL is not loaded!");
-		return;
-	}
-
-	void **EntityVTable = reinterpret_cast<void**>(static_cast<unsigned char*>(pCryEntitySystem) + 0xB4C38);
-
-	constexpr int LOAD_PARTICLE_EMITTER_INDEX = 84;
-	s_originalEntityLoadParticleEmitter = reinterpret_cast<TEntityLoadParticleEmitter&>(EntityVTable[LOAD_PARTICLE_EMITTER_INDEX]);
-
-	// vtable hook
-	TEntityLoadParticleEmitter newLoadParticleEmitter = &Entity_Hook::LoadParticleEmitter;
-	WinAPI::FillMem(&EntityVTable[LOAD_PARTICLE_EMITTER_INDEX], &reinterpret_cast<void*&>(newLoadParticleEmitter), sizeof (void*));
-
-	CryLogAlways("[Client::HackEntity] Done");
-#endif
 }
 
 Client::Client()
@@ -257,6 +232,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	AddFlashFileHook("Libs/UI/HUD_ChatSystem_HR.gfx", RESOURCE_HUD_CHAT_SYSTEM_HR_GFX);
 	AddFlashFileHook("Libs/UI/HUD_MultiplayerScoreboard_TDM.gfx", RESOURCE_HUD_MP_SCOREBOARD_TDM_GFX);
 	AddFlashFileHook("Libs/UI/HUD_TIAScore.gfx", RESOURCE_HUD_TIA_SCORE_GFX);
+	AddFlashFileHook("Libs/UI/HUD_KillLog.gfx", RESOURCE_HUD_KILL_LOG_GFX);
 
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
@@ -268,6 +244,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	pConsole->RemoveCommand("disconnect");
 	pConsole->RemoveCommand("bind");
 	pConsole->AddCommand("connect", OnConnectCmd, VF_RESTRICTEDMODE, "Usage: connect [HOST] [PORT]");
+	pConsole->AddCommand("reconnect", OnReconnectCmd, VF_RESTRICTEDMODE, "Usage: reconnect");
 	pConsole->AddCommand("disconnect", OnDisconnectCmd, VF_RESTRICTEDMODE, "Usage: disconnect");
 	pConsole->AddCommand("bind", OnKeyBindCmd, VF_NOT_NET_SYNCED, "Usage: bind key command");
 	pConsole->AddCommand("dumpbinds", OnDumpKeyBindsCmd, VF_RESTRICTEDMODE, "Usage: dumpbinds");
@@ -309,11 +286,6 @@ void Client::Init(IGameFramework *pGameFramework)
 		}
 
 		m_pGame = entry(pGameFramework);
-	}
-
-	if (!s_originalEntityLoadParticleEmitter)
-	{
-		HackEntity();
 	}
 
 	// initialize the game

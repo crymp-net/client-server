@@ -92,7 +92,7 @@ public:
 	void UpdateLastPurchase();
 	void UpdateBuyZone(bool trespassing, EntityId zone);
 	void UpdateServiceZone(bool trespassing, EntityId zone);
-	void UpdateBuyList(const char *page = NULL);
+	void UpdateBuyList(const char *page = nullptr, bool clearEntities = true);
 	void Scroll(int direction);
 
 	//	Swing-O-Meter interface
@@ -149,7 +149,7 @@ private:
 	bool WeaponUseAmmo(CWeapon *pWeapon, IEntityClass* pAmmoType);
 	bool CanUseAmmo(IEntityClass* pAmmoType);
 	void GetItemList(BuyMenuPage itemType, std::vector<SItem> &itemList, bool buyMenu = true );
-	void PopulateBuyList();
+	void PopulateBuyList(bool clearEntitites = true);
 	void UpdateEnergyBuyList(int energy_before, int energy_after);
 	void UpdatePackageItemList(const char *page);
 	BuyMenuPage ConvertToBuyList(const char *page);
@@ -209,6 +209,8 @@ private:
 
 	bool m_capturing;
 	float m_captureProgress;
+	float m_captureProgressSmooth = 0.0f;
+	bool m_updateCaptureProgress = false;
 
 	bool m_constructing;
 	bool m_constructionQueued;

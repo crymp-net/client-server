@@ -89,7 +89,7 @@ void CHUD::HandleFSCommandPDA(const char *strCommand,const char *strArgs)
 	{
 		if(m_pHUDPowerStruggle)
 		{
-			m_pHUDPowerStruggle->UpdateBuyList(strArgs);
+			m_pHUDPowerStruggle->UpdateBuyList(strArgs, true);
 			HUD_CALL_LISTENERS(OnShowBuyMenuPage(m_pHUDPowerStruggle->m_eCurBuyMenuPage));
 		}
 	}

@@ -519,6 +519,7 @@ public:
 	virtual void UpdateUWBreathing(float frameTime, Vec3 worldBreathPos);
 	virtual void UpdateWeaponRaising();
 	virtual void SetParams(SmartScriptTable& rTable, bool resetFirst);
+	void SetParamsMP(bool resetFirst);
 	virtual bool GetParams(SmartScriptTable& rTable);
 
 	virtual float CalculatePseudoSpeed(bool wantSprint) const;

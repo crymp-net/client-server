@@ -1188,6 +1188,32 @@ protected:
 	// need this to mark all the used spawn-points to fix issue on restarting level
 	// when players are placed at the same location, some may end up underground
 	std::map< EntityId, float > m_SpawnPointUseTime;
+	public:
+		enum class HitType
+		{
+			None,
+			Normal,
+			Repair,
+			Lockpick,
+			Bullet,
+			Gaussbullet,
+			Frost,
+			Fire,
+			Radiation,
+			Melee,
+			Tac,
+			Frag,
+			Fall,
+			Collision,
+			Event,
+			Punish,
+			Avmine,
+			Moacbullet,
+			Trooper_melee,
+			Scout_moac,
+			Aacannon,
+			Emp,
+		};
 };
 
 #endif //__GAMERULES_H__

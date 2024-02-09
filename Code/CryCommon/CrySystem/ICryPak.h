@@ -4,17 +4,16 @@
 // -------------------------------------------------------------------------
 // Interface to the crytek pack files management
 
-#ifndef _ICRY_PAK_HDR_
-#define _ICRY_PAK_HDR_
-
-#if _MSC_VER > 1000
 #pragma once
+
+#ifdef _MSC_VER
+#include <io.h>  // _finddata_t
 #endif
 
-#include <io.h>  // _finddata_t
+#include <cstdint>
+#include <vector>  // for smartptr.h
 
 #include "CryCommon/CryCore/smartptr.h"
-#include <vector>					// STL vector<>
 
 struct IResourceList; 
 
@@ -106,7 +105,7 @@ struct ICryArchive: public _reference_target_t
 
 	// Summary:
 	//   needed to update CRC if UpdateFileContinuousSegment() was used with nOverwriteSeekPos
-	virtual int UpdateFileCRC( const char* szRelativePath, const uint32 dwCRC ) = 0;
+	virtual int UpdateFileCRC( const char* szRelativePath, const std::uint32_t dwCRC ) = 0;
 
 	// Summary:
 	//   Deletes the file from the archive.
@@ -197,7 +196,7 @@ enum {_A_IN_CRYPAK = 0x80000000};
 //   CryPak
 struct ICryPak
 {
-	typedef uint64 FileTime;
+	typedef std::uint64_t FileTime;
 	// Flags used in file path resolution rules
 	enum EPathResolutionRules
 	{
@@ -260,12 +259,12 @@ struct ICryPak
 	// returns the pointer to the constructed path (can be either szSourcePath, or szDestPath, or NULL in case of error
 	virtual const char* AdjustFileName (const char *src, char dst[g_nMaxPath], unsigned nFlags,bool *bFoundInPak=NULL) = 0;
 
-  virtual bool Init (const char *szBasePath)=0;
-  virtual void Release()=0;
+	virtual bool Init (const char *szBasePath)=0;
+	virtual void Release()=0;
 	// after this call, the pak file will be searched for files when they aren't on the OS file system
 	// Arguments:
 	//   pName - must not be 0
-  virtual bool OpenPack(const char *pName, unsigned nFlags = FLAGS_PATH_REAL)=0;
+	virtual bool OpenPack(const char *pName, unsigned nFlags = FLAGS_PATH_REAL)=0;
 	// after this call, the pak file will be searched for files when they aren't on the OS file system
 	virtual bool OpenPack(const char* pBindingRoot, const char *pName, unsigned nFlags = FLAGS_PATH_REAL)=0;
 	// after this call, the file will be unlocked and closed, and its contents won't be used to search for files
@@ -313,7 +312,7 @@ struct ICryPak
 	// mode x is a direct access mode, when used file reads will go directly into the low level file system without any internal data caching.
 	// Text mode is not supported for files in PAKs.
 	// for nFlags @see ICryPak::EFOpenFlags
-  virtual FILE *FOpen(const char *pName, const char *mode, unsigned nFlags = 0)=0;
+	virtual FILE *FOpen(const char *pName, const char *mode, unsigned nFlags = 0)=0;
 	virtual FILE *FOpen(const char *pName, const char *mode,char *szFileGamePath,int nLen)=0;
 	
 	// Read raw data from file, no endian conversion.
@@ -330,13 +329,13 @@ struct ICryPak
 
 	// Write file data, cannot be used for writing into the PAK.
 	// Use ICryArchive interface for writing into the pak files.
-  virtual size_t FWrite(const void *data, size_t length, size_t elems, FILE *handle)=0;
+	virtual size_t FWrite(const void *data, size_t length, size_t elems, FILE *handle)=0;
 
-  //virtual int FScanf(FILE *, const char *, ...) SCANF_PARAMS(2, 3) =0;
-  virtual int FPrintf(FILE *handle, const char *format, ...) PRINTF_PARAMS(3, 4)=0;
-  virtual char *FGets(char *, int, FILE *)=0;
-  virtual int Getc(FILE *)=0;
-  virtual size_t FGetSize(FILE* f)=0;
+	//virtual int FScanf(FILE *, const char *, ...) SCANF_PARAMS(2, 3) =0;
+	virtual int FPrintf(FILE *handle, const char *format, ...) PRINTF_PARAMS(3, 4)=0;
+	virtual char *FGets(char *, int, FILE *)=0;
+	virtual int Getc(FILE *)=0;
+	virtual size_t FGetSize(FILE* f)=0;
 	virtual int Ungetc(int c, FILE *)=0;
 	virtual bool IsInPak(FILE *handle)=0;
 	virtual bool RemoveFile(const char* pName) = 0; // remove file from FS (if supported)
@@ -356,7 +355,7 @@ struct ICryPak
 	virtual void PoolFree(void * p) = 0;
 	// Type-safe endian conversion read.
 	template<class T>
-  size_t FRead(T *data, size_t elems, FILE *handle, bool bSwap = true)
+	size_t FRead(T *data, size_t elems, FILE *handle, bool bSwap = true)
 	{
 		size_t count = FReadRaw(data, sizeof(T), elems, handle);
 		if (bSwap)
@@ -372,10 +371,10 @@ struct ICryPak
 
 	// Arguments:
 	//   nFlags is a combination of EPathResolutionRules flags.
-  virtual intptr_t FindFirst( const char *pDir,struct _finddata_t *fd,unsigned int nFlags=0 )=0;
-  virtual int FindNext(intptr_t handle, struct _finddata_t *fd)=0;
-  virtual int FindClose(intptr_t handle)=0;
-//	virtual bool IsOutOfDate(const char * szCompiledName, const char * szMasterFile)=0;
+	virtual intptr_t FindFirst( const char *pDir,struct _finddata_t *fd,unsigned int nFlags=0 )=0;
+	virtual int FindNext(intptr_t handle, struct _finddata_t *fd)=0;
+	virtual int FindClose(intptr_t handle)=0;
+	//virtual bool IsOutOfDate(const char * szCompiledName, const char * szMasterFile)=0;
 	//returns file modification time
 	virtual FileTime GetModificationTime(FILE*f)=0;
 
@@ -436,7 +435,7 @@ struct ICryPak
 	//   szPath - must not be 0
 	// Returns:
 	//   error code
-	virtual uint32 ComputeCRC( const char* szPath )=0;
+	virtual std::uint32_t ComputeCRC( const char* szPath )=0;
 
 	// computes MD5 checksum for a file
 	// good for big files - low memory overhead (1MB)
@@ -507,41 +506,6 @@ struct IResourceList : public _reference_target_t
 
 //////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //! Everybody should use fxopen instead of fopen
 //! so it will work both on PC and XBox
 inline FILE * fxopen(const char *file, const char *mode)
@@ -553,23 +517,6 @@ inline FILE * fxopen(const char *file, const char *mode)
 	//		fprintf(pFile,"%s\n",file);
 	//		fclose(pFile);
 	//	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #if defined(LINUX)
 	char adjustedName[MAX_PATH];
@@ -592,11 +539,10 @@ inline FILE * fxopen(const char *file, const char *mode)
 		return fopen(szAdjustedPath,mode);
 	}
 	else
+	{
 		return 0;
-#endif //LINUX
-
-
-}
-//////////////////////////////////////////////////////////////////////////
-
+	}
 #endif
+}
+
+//////////////////////////////////////////////////////////////////////////

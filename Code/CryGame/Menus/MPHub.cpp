@@ -761,7 +761,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 		else
 		{
 			//CryMP: Attempt to download map and reconnect to server
-			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame("connect");
+			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame("reconnect");
 		}
 		break;
 	}

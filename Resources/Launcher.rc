@@ -19,6 +19,7 @@ RESOURCE_HUD_HIT_INDICATOR_GFX      RCDATA "Game/Libs/UI/HUD_HitIndicator.gfx"
 RESOURCE_HUD_SPECTATE_GFX           RCDATA "Game/Libs/UI/HUD_Spectate.gfx"
 RESOURCE_HUD_MP_RADIO_BUTTONS_GFX   RCDATA "Game/Libs/UI/HUD_MP_Radio_Buttons.gfx"
 RESOURCE_HUD_CHAT_SYSTEM_HR_GFX     RCDATA "Game/Libs/UI/HUD_ChatSystem_HR.gfx"
+RESOURCE_HUD_KILL_LOG_GFX           RCDATA "Game/Libs/UI/HUD_KillLog.gfx"
 RESOURCE_HUD_MP_SCOREBOARD_TDM_GFX  RCDATA "Game/Libs/UI/HUD_MultiplayerScoreboard_TDM.gfx"
 RESOURCE_HUD_TIA_SCORE_GFX          RCDATA "Game/Libs/UI/HUD_TIAScore.gfx"
 
@@ -41,7 +42,7 @@ BEGIN
 		BLOCK "040904E4"
 		BEGIN
 			VALUE "CompanyName",      "CryMP Network"
-			VALUE "LegalCopyright",   "(C) 2022 CryMP Network"
+			VALUE "LegalCopyright",   "(C) 2023 CryMP Network"
 			VALUE "ProductName",      "CryMP Client"
 			VALUE "ProductVersion",   CRYMP_CLIENT_VERSION_STRING
 			VALUE "FileVersion",      CRYMP_CLIENT_VERSION_STRING

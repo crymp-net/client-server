@@ -880,18 +880,16 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	if (targetId == shooterId)
 		bSuicide = true;
 
+	const char* iconName = weaponClassName;
+	const IEntityClass* pWeaponClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(weaponClassName);
+	
 	if(!_stricmp(weaponClassName, "AutoTurret") || !_stricmp(weaponClassName, "AutoTurretAA") || !_stricmp(weaponClassName, "AlienTurret"))
 	{
 		bTurret = true;
 	}
-
-	// code below is checking if hits are melee and headshot...
-	// TODO: Jan N: use these bools
-	bool melee=false;
-	if (hit_type>0)
+	else if (pWeaponClass == gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass())
 	{
-		const char *hittypename=m_pGameRules->GetHitType(hit_type);
-		melee=strstr(hittypename?hittypename:"", "melee") != 0;
+		iconName = "Chicken";
 	}
 
 	bool headshot=false;
@@ -906,6 +904,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 
 	const char *targetName = m_pGameRules->GetActorNameByEntityId(targetId);
 	const char *shooterName = m_pGameRules->GetActorNameByEntityId(shooterId);
+
 	wstring entity;
 
 	SUIWideString shooter(shooterName);
@@ -915,7 +914,6 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	int targetFriendly = 0;
 
 	const EntityId pClientActorId = m_pClientActor->GetEntityId();
-
 
 	if (m_pGameRules->GetTeamCount() > 1)
 	{
@@ -959,11 +957,6 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 		}
 	}
 
-
-	bool processed = false;
-
-	const IEntityClass* pWeaponClass =gEnv->pEntitySystem->GetClassRegistry()->FindClass(weaponClassName);
-
 	if (pWeaponClass == CItem::sSOCOMClass)
 	{
 		CActor *pShooter = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId));
@@ -971,70 +964,69 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 		{
 			if (pShooter->GetCurrentItem() && pShooter->GetCurrentItem()->IsDualWield())
 			{
-				pLM->LocalizeString("doubleSOCOM", entity, true);
-				processed = true;
+				iconName = "DualSOCOM";
 			}
 		}
-	}
-
-	if (!processed)
-	{
-		if(pWeaponClass)
-			pLM->LocalizeString(pWeaponClass->GetName(),entity, true);
-		else
-			pLM->LocalizeString(weaponClassName, entity, true);
 	}
 
 	// if there is no shooter, use the suicide icon
 	if ((!shooterName || !shooterName[0]) && !g_pGame->GetIGameFramework()->GetIItemSystem()->IsItemClass(weaponClassName))
 		bSuicide=true;
 
-	//CryMP: For throwing objects, always show "RunOver" icon instead of random guns
-	const bool bHitTypeCollision = hit_type == 13;
+	const auto type = static_cast<CGameRules::HitType>(hit_type);
+	const bool hitTypeCollision = type == CGameRules::HitType::Collision;
+	const bool melee = type == CGameRules::HitType::Melee;
+	const bool fire = type == CGameRules::HitType::Fire;
+	const bool falling = type == CGameRules::HitType::Fall;
 
-	if(bSuicide)
+	CActor* pTarget = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(targetId));
+
+	const bool freezeKill = pTarget && pTarget->GetActorStats() && pTarget->GetActorStats()->isShattered;
+	const bool isVehicleClass = g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName);
+	bool skipShooter = false;
+
+	if (bSuicide)
 	{
-		SFlashVarValue args[6] = {"", "Suicide", target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
+		skipShooter = true;
+		iconName = fire ? "Fire" : (falling ? "Fall" : "Suicide");
+	}
+	else if(freezeKill)
+	{
+		iconName = "Freeze";
 	}
 	else if(bTurret)
 	{
-		SFlashVarValue args[6] = {"", "AutoTurret", target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
+		skipShooter = true;
+		iconName = "AutoTurret";
 	}
-	else if (bHitTypeCollision || g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName))
+	else if (hitTypeCollision || isVehicleClass)
 	{
-		SFlashVarValue args[6] = {shooter.c_str(), "RunOver", target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
-	}
-	else if(bMounted)
-	{
-		SFlashVarValue args[6] = {shooter.c_str(), "Mounted", target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
+		iconName = isVehicleClass ? "RunOver" : "ThrowObject";
+
+		//CryMP: special case
+		//Server need to send hit_type 14
+		if (g_pGameCVars->mp_pickupObjects && type == CGameRules::HitType::Event)
+		{
+			iconName = "ThrowVehicle";
+		}
 	}
 	else if(melee)
 	{
-		SFlashVarValue args[6] = {shooter.c_str(), "Melee", target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
+		iconName = "Melee";
+	}
+
+	//CryLogAlways("$9[$3KillLog$9] %s killed by %s with `%s' [icon: %s] (mat: $1%d$9, type: $2%d$9$5%s$9) freefall %d",
+	//	targetName, shooterName, weaponClassName, iconName.c_str(), material, hit_type, falling ? " ,Falling" : "", pTarget->GetActorStats()->inFreefall);
+	
+	if (skipShooter)
+	{
+		SFlashVarValue args[6] = { "", iconName, target.c_str(), headshot, shooterFriendly, targetFriendly };
+		m_animKillLog.Invoke("addLog", args, 6);
 	}
 	else
 	{
-		//CryMP: 
-		if (!_stricmp(weaponClassName, "tacprojectile") || !_stricmp(weaponClassName, "TACCannon"))
-		{
-			SFlashVarValue args[6] = { shooter.c_str(), "Nuclear", target.c_str(), headshot, shooterFriendly, targetFriendly };
-			m_animKillLog.Invoke("addLog", args, 6);
-			return;
-		}
-		else if (!_stricmp(weaponClassName, "Default"))
-		{
-			SFlashVarValue args[6] = { shooter.c_str(), "New", target.c_str(), headshot, shooterFriendly, targetFriendly };
-			m_animKillLog.Invoke("addLog", args, 6);
-			return;
-		}
-
-		SFlashVarValue args[6] = {shooter.c_str(), entity.c_str(), target.c_str(), headshot, shooterFriendly, targetFriendly};
-		m_animKillLog.Invoke("addLog",args,6);
+		SFlashVarValue args[6] = { shooter.c_str(), iconName, target.c_str(), headshot, shooterFriendly, targetFriendly };
+		m_animKillLog.Invoke("addLog", args, 6);
 	}
 }
 

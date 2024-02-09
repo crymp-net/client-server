@@ -24,6 +24,7 @@ History:
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "HUDVehicleInterface.h"
 #include "CryGame/Menus/OptionsManager.h"
+#include "CryCommon/CryGame/GameUtils.h"
 
 #define HUD_CALL_LISTENERS_PS(func) \
 { \
@@ -109,14 +110,17 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 	if (m_animSwingOMeter.IsLoaded() && m_pGameRules->GetTeamCount() > 1)
 	{
 		int pp = GetPlayerPP();
+		const bool buymenu = g_pHUD->m_pModalHUD == &g_pHUD->m_animBuyMenu;
 		if (g_pHUD->m_lastPlayerPPSet != pp)
 		{
 			g_pHUD->m_animPlayerPP.Invoke("setPPoints", pp);
 			g_pHUD->m_lastPlayerPPSet = pp;
 		}
 
-		if (g_pHUD->m_pModalHUD == &g_pHUD->m_animBuyMenu)
+		if (buymenu)
+		{
 			g_pHUD->m_animBuyMenu.Invoke("setPP", pp);
+		}
 
 		int teamId = m_pGameRules->GetTeam(g_pHUD->m_pClientActor->GetEntityId());
 
@@ -271,7 +275,15 @@ void CHUDPowerStruggle::Update(float fDeltaTime)
 		static char text[32];
 		if (m_capturing)
 		{
-			int icap = (int)(m_captureProgress * 100.0f);
+			if (m_updateCaptureProgress)
+			{
+				m_captureProgressSmooth = m_captureProgress;
+				m_updateCaptureProgress = false;
+			}
+
+			Interpolate(m_captureProgressSmooth, m_captureProgress, 15.f, fDeltaTime);
+
+			int icap = (int)(m_captureProgressSmooth * 100.0f);
 			//sprintf(text, "%d%%", icap);
 			//DrawBar(16.0f, 80.0f, 72.0f, 14.0f, 2.0f, m_captureProgress, Col_DarkGray, Col_LightGray, text, Col_White, fabsf(cry_sinf(gEnv->pTimer->GetCurrTime()*2.5f)));
 			if (icap != m_lastBuildingTime)
@@ -402,7 +414,8 @@ void CHUDPowerStruggle::Buy(const char* item, bool reload)
 	{
 		InitEquipmentPacks();
 		UpdatePackageList();
-		UpdateBuyList();
+
+		UpdateBuyList(nullptr, false);
 	}
 }
 
@@ -743,6 +756,11 @@ void CHUDPowerStruggle::ShowCaptureProgress(bool show)
 	if (m_capturing != show)
 	{
 		m_captureProgress = -1.0f;
+
+		if (show)
+		{
+			m_updateCaptureProgress = true;
+		}
 	}
 
 	if (show)
@@ -1193,6 +1211,7 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 		else if (m_eCurBuyMenuPage == BUY_PAGE_LOADOUT)
 			page = 6;
 		g_pBuyMenu->Invoke("Root.TabBar.gotoTab", (int)page);
+		
 		PopulateBuyList();
 	}
 
@@ -1200,7 +1219,7 @@ void CHUDPowerStruggle::DetermineCurrentBuyZone(bool sendToFlash)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDPowerStruggle::UpdateBuyList(const char* page)
+void CHUDPowerStruggle::UpdateBuyList(const char* page, bool clearEntities)
 {
 	if (page && page[0])
 	{
@@ -1211,7 +1230,7 @@ void CHUDPowerStruggle::UpdateBuyList(const char* page)
 	{
 		m_eCurBuyMenuPage = ConvertToBuyList(page);
 	}
-	PopulateBuyList();
+	PopulateBuyList(clearEntities);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -1233,7 +1252,7 @@ CHUDPowerStruggle::BuyMenuPage CHUDPowerStruggle::ConvertToBuyList(const char* p
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDPowerStruggle::PopulateBuyList()
+void CHUDPowerStruggle::PopulateBuyList(bool clearEntitites)
 {
 	if (!g_pBuyMenu)
 		return;
@@ -1247,52 +1266,38 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 	std::vector<SItem> itemList;
 
-	pFlashPlayer->Invoke0("clearAllEntities");
+	if (clearEntitites)
+	{
+		pFlashPlayer->Invoke0("clearAllEntities");
+	}
 
 	GetItemList(itemType, itemList);
 
 	IEntity* pFirstVehicleFactory = NULL;
+	IEntity* pFactory = NULL;
 
 	const EntityId uiPlayerID = g_pHUD->m_pClientActor->GetEntityId();
-	int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
+	const int playerTeam = m_pGameRules->GetTeam(uiPlayerID);
 	bool bInvalidBuyZone = true;
 	float CurBuyZoneLevel = 0.0f;
+	bool servicezone = false;
+	bool buyzone = false;
+	
+	if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
 	{
-		if (g_pHUD->GetVehicleInterface()->IsAbleToBuy())
+		for (const EntityId id : m_currentServiceZones)
 		{
-			std::vector<EntityId>::const_iterator it = m_currentServiceZones.begin();
-			for (; it != m_currentServiceZones.end(); ++it)
+			if (m_pGameRules->GetTeam(id) == playerTeam)
 			{
-				if (m_pGameRules->GetTeam(*it) == playerTeam)
-				{
-					IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
-					if (IsFactoryType(*it, itemType))
-					{
-						float level = g_pHUD->CallScriptFunction(pEntity, "GetPowerLevel");
-						if (level > CurBuyZoneLevel)
-							CurBuyZoneLevel = level;
-						bInvalidBuyZone = false;
-						if (itemType == BUY_PAGE_VEHICLES || itemType == BUY_PAGE_PROTOTYPES)
-						{
-							pFirstVehicleFactory = pEntity;
-						}
-					}
-				}
-			}
-		}
-		std::vector<EntityId>::const_iterator it = m_currentBuyZones.begin();
-		for (; it != m_currentBuyZones.end(); ++it)
-		{
-			if (m_pGameRules->GetTeam(*it) == playerTeam)
-			{
-				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(*it);
-				if (IsFactoryType(*it, itemType))
+				IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id);
+				if (IsFactoryType(id, itemType))
 				{
 					float level = g_pHUD->CallScriptFunction(pEntity, "GetPowerLevel");
 					if (level > CurBuyZoneLevel)
 						CurBuyZoneLevel = level;
 					bInvalidBuyZone = false;
-					if (itemType == BUY_PAGE_VEHICLES || itemType == BUY_PAGE_PROTOTYPES)
+					servicezone = true;
+					if (itemType == BuyMenuPage::BUY_PAGE_VEHICLES || itemType == BuyMenuPage::BUY_PAGE_PROTOTYPES)
 					{
 						pFirstVehicleFactory = pEntity;
 					}
@@ -1300,18 +1305,43 @@ void CHUDPowerStruggle::PopulateBuyList()
 			}
 		}
 	}
-
+	for (const EntityId id : m_currentBuyZones)
+	{
+		if (m_pGameRules->GetTeam(id) == playerTeam)
+		{
+			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id);
+			if (IsFactoryType(id, itemType))
+			{
+				const float level = g_pHUD->CallScriptFunction(pEntity, "GetPowerLevel");
+				if (level > CurBuyZoneLevel)
+					CurBuyZoneLevel = level;
+				bInvalidBuyZone = false;
+				buyzone = true;
+				if (itemType == BuyMenuPage::BUY_PAGE_VEHICLES || itemType == BUY_PAGE_PROTOTYPES)
+				{
+					pFirstVehicleFactory = pEntity;
+				}
+				pFactory = pEntity;
+			}
+		}
+	}
+	
 	bool isDead = m_pGameRules->IsDead(uiPlayerID);
 
 	//std::sort(itemList.begin(),itemList.end(),SortByPrice);
 	std::vector<string> itemArray;
 
-	char tempBuf[256];
+	char tempBuf[256]{};
 
-	for (std::vector<SItem>::iterator iter = itemList.begin(); iter != itemList.end(); ++iter)
+	for (SItem &item : itemList)
 	{
-		SItem item = (*iter);
 		const char* sReason = "ready";
+
+		if (servicezone && !buyzone) //show only ammo, no addons
+		{
+			if (!strcmp(item.strCategory.c_str(), "@mp_catAddons"))
+				continue;
+		}
 
 		if (bInvalidBuyZone && !isDead)
 		{
@@ -1330,6 +1360,10 @@ void CHUDPowerStruggle::PopulateBuyList()
 				}
 			}
 		}
+		//if (!CanBuy(pFactory, item.strName.c_str()))
+		//{
+		//	continue;
+		//}
 		if (!item.isWeapon)
 		{
 			if (item.iInventoryID > 0 && item.isUnique != 0)
@@ -1390,10 +1424,11 @@ void CHUDPowerStruggle::PopulateBuyList()
 	ActivateBuyMenuTabs();
 
 	char buffer[10];
-	_itoa(m_lastPurchase.iPrice, buffer, 10);
+	itoa(m_lastPurchase.iPrice, buffer, 10);
 
 	wstring localized;
 	localized = g_pHUD->LocalizeWithParams("@ui_buy_REPEATLASTBUY", true, buffer);
+
 	g_pBuyMenu->Invoke("setLastPurchase", SFlashVarValue(localized.c_str()));
 
 	int size = itemArray.size();
@@ -1408,7 +1443,7 @@ void CHUDPowerStruggle::PopulateBuyList()
 
 		pFlashPlayer->SetVariableArray(FVAT_ConstStrPtr, "m_allValues", 0, &pushArray[0], size);
 	}
-
+	
 	pFlashPlayer->Invoke0("updateList");
 }
 
@@ -1532,17 +1567,16 @@ void CHUDPowerStruggle::UpdateModifyPackage(int index)
 {
 	SEquipmentPack pack = m_EquipmentPacks[index];
 	std::vector<string>itemList;
-	std::vector<SItem>::const_iterator it = pack.itemArray.begin();
-	for (; it != pack.itemArray.end(); ++it)
+	for (const SItem &item : pack.itemArray)
 	{
-		const SItem* item = &*it;
-		itemList.push_back(item->strName);
-		itemList.push_back(item->strDesc);
+		itemList.push_back(item.strName);
+		itemList.push_back(item.strDesc);
 		char strArg2[16];
-		sprintf(strArg2, "%d", item->iPrice);
+		sprintf(strArg2, "%d", item.iPrice);
 		itemList.push_back(strArg2);
 	}
-	int size = itemList.size();
+
+	const int size = itemList.size();
 
 	if (size)
 	{
@@ -1581,9 +1615,8 @@ void CHUDPowerStruggle::UpdatePackageItemList(const char* page)
 
 	//std::sort(itemList.begin(),itemList.end(),SortByPrice);
 
-	for (std::vector<SItem>::iterator iter = itemList.begin(); iter != itemList.end(); ++iter)
+	for (const SItem &item : itemList)
 	{
-		SItem item = (*iter);
 		if (item.iPrice == 0) continue;
 		if (item.loadout == false) continue;
 

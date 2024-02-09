@@ -26,7 +26,6 @@ struct SMeshTexCoord
 {
 	float s,t;
 	bool operator==( const SMeshTexCoord &other ) { return s == other.s && t == other.t; }
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -34,7 +33,6 @@ struct SMeshTexCoord
 struct SMeshColor
 {
 	uint8 r,g,b,a;
-	AUTO_STRUCT_INFO
 };
 
 
@@ -46,7 +44,6 @@ struct SMeshFace
 	unsigned short t[3]; // indices to texcoords array
 	unsigned char nSubset; // index to mesh subsets array.
 	unsigned char dwFlags;
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -55,7 +52,6 @@ struct SMeshTangents
 {
 	Vec4sf Tangent;
 	Vec4sf Binormal;
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -64,7 +60,6 @@ struct SMeshBoneMapping
 {
 	ColorB boneIDs;		//boneIDs per render-batch
 	ColorB weights;   //weights for every bone (four in16)
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -74,7 +69,6 @@ struct SMeshShapeDeformation
 	Vec3 thin;
 	Vec3 fat;
 	ColorB index;		//boneIDs per render-batch
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -83,7 +77,6 @@ struct SMeshShapeDeformation
 struct SMeshSHCoeffs
 {
 	unsigned char coeffs[8];
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -95,7 +88,6 @@ struct SSHDecompressionMat
 	float offset1[4];
 	float scale0[4];
 	float scale1[4];
-	AUTO_STRUCT_INFO
 };
 
 struct SSHInfo

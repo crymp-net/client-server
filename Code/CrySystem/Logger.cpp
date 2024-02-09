@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cerrno>
 #include <cstring>
 
 #include "CryCommon/CrySystem/CryColorCode.h"
@@ -95,9 +94,7 @@ void Logger::OpenFile(const std::filesystem::path& filePath)
 	FileHandle file(std::fopen(filePathString.c_str(), "w"));
 	if (!file)
 	{
-		const int code = errno;
-		throw std::system_error(code, std::generic_category(),
-			"Failed to open log file: " + filePathString + ": Error code " + std::to_string(code));
+		throw StringTools::SysErrorErrnoFormat("Failed to open log file: %s", filePathString.c_str());
 	}
 
 	m_file = std::move(file);
