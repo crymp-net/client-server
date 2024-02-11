@@ -1633,9 +1633,12 @@ void CFlashMenuObject::OnHardwareMouseEvent(int x, int y, EHARDWAREMOUSEEVENT eH
 	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
-		SFlashVarValue args[2] = { x,y };
-		m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
-		m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
+		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
+		{
+			SFlashVarValue args[2] = { x,y };
+			m_pCurrentFlashMenuScreen->CheckedInvoke("_root.Root.MainMenu.MultiPlayer.DoubleClick", args, 2);
+			m_pCurrentFlashMenuScreen->CheckedInvoke("DoubleClick", args, 2);
+		}
 
 		//CryMP:
 		eCursorState = SFlashCursorEvent::eCursorPressed;
