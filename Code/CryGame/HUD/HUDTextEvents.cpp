@@ -990,6 +990,10 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 		skipShooter = true;
 		iconName = fire ? "Fire" : (falling ? "Fall" : "Suicide");
 	}
+	else if (fire)
+	{
+		iconName = "Fire";
+	}
 	else if(freezeKill)
 	{
 		iconName = "Freeze";
