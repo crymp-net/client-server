@@ -20,7 +20,7 @@ History:
 #include "CryCommon/CryInput/IInput.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
 
 //-----------------------------------------------------------------------------------------------------

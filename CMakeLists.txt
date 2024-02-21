@@ -159,7 +159,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryGame/IGameRef.h
 	Code/CryCommon/CryGame/IGameStartup.h
 	Code/CryCommon/CryGame/IGameTokens.h
-	Code/CryCommon/CryInput/IHardwareMouse.h
 	Code/CryCommon/CryInput/IInput.h
 	Code/CryCommon/CryMath/AABBSV.h
 	Code/CryCommon/CryMath/Cry_Camera.h
@@ -216,6 +215,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CrySystem/IDataProbe.h
 	Code/CryCommon/CrySystem/IFlashPlayer.h
 	Code/CryCommon/CrySystem/IGlobalTaskScheduler.h
+	Code/CryCommon/CrySystem/IHardwareMouse.h
 	Code/CryCommon/CrySystem/ILog.h
 	Code/CryCommon/CrySystem/IProcess.h
 	Code/CryCommon/CrySystem/IReadWriteXMLSink.h

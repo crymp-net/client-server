@@ -3,8 +3,8 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
 #include "CryCommon/CryInput/IInput.h"
 #include "CryGame/Game.h"
 #include "CryGame/Menus/OptionsManager.h"
