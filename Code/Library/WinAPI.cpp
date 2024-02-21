@@ -949,3 +949,80 @@ std::string WinAPI::GetClipboardText(std::size_t maxLength)
 
 	return { data, (dataLength <= maxLength) ? dataLength : maxLength };
 }
+
+////////////
+// Cursor //
+////////////
+
+void WinAPI::Cursor::GetPos(long& x, long& y)
+{
+	POINT point = {};
+	GetCursorPos(&point);
+
+	x = point.x;
+	y = point.y;
+}
+
+void WinAPI::Cursor::SetPos(long x, long y)
+{
+	SetCursorPos(x, y);
+}
+
+void WinAPI::Cursor::Show(bool show)
+{
+	ShowCursor(show ? TRUE : FALSE);
+}
+
+void WinAPI::Cursor::Clip(void* window)
+{
+	if (window)
+	{
+		RECT rect = {};
+		GetClientRect(static_cast<HWND>(window), &rect);
+		ClientToScreen(static_cast<HWND>(window), reinterpret_cast<POINT*>(&rect.left));
+		ClientToScreen(static_cast<HWND>(window), reinterpret_cast<POINT*>(&rect.right));
+		ClipCursor(&rect);
+	}
+	else
+	{
+		ClipCursor(nullptr);
+	}
+}
+
+////////////
+// Window //
+////////////
+
+void WinAPI::Window::ConvertPosToWindow(void* window, long& x, long& y)
+{
+	POINT point;
+	point.x = x;
+	point.y = y;
+
+	ScreenToClient(static_cast<HWND>(window), &point);
+
+	x = point.x;
+	y = point.y;
+}
+
+void WinAPI::Window::ConvertPosToScreen(void* window, long& x, long& y)
+{
+	POINT point;
+	point.x = x;
+	point.y = y;
+
+	ClientToScreen(static_cast<HWND>(window), &point);
+
+	x = point.x;
+	y = point.y;
+}
+
+bool WinAPI::Window::IsFocused(void* window)
+{
+	return GetFocus() == static_cast<HWND>(window);
+}
+
+bool WinAPI::Window::IsForeground(void* window)
+{
+	return GetForegroundWindow() == static_cast<HWND>(window);
+}

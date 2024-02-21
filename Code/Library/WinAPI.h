@@ -276,4 +276,31 @@ namespace WinAPI
 	///////////////
 
 	std::string GetClipboardText(std::size_t maxLength = std::size_t(-1));
+
+	////////////
+	// Cursor //
+	////////////
+
+	namespace Cursor
+	{
+		void GetPos(long& x, long& y);
+		void SetPos(long x, long y);
+
+		void Show(bool show);
+
+		void Clip(void* window);
+	}
+
+	////////////
+	// Window //
+	////////////
+
+	namespace Window
+	{
+		void ConvertPosToWindow(void* window, long& x, long& y);
+		void ConvertPosToScreen(void* window, long& x, long& y);
+
+		bool IsFocused(void* window);
+		bool IsForeground(void* window);
+	}
 }

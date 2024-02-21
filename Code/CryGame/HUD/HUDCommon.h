@@ -23,7 +23,7 @@ History:
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "GameFlashAnimation.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
 
 //-----------------------------------------------------------------------------------------------------

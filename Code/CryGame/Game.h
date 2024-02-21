@@ -27,7 +27,7 @@
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 
 #define GAME_NAME				"Crysis"
 #define GAME_LONGNAME		"Crysis"

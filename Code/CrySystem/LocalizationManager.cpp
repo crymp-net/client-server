@@ -824,7 +824,7 @@ bool LocalizationManager::LocalizeControlCode(NameStringView name, ResultString&
 
 	SInputEvent event;
 	event.deviceId = eDI_Keyboard;
-	event.keyName.key = keyName.c_str();
+	event.keyName = keyName.c_str();
 
 	const char* localizedKeyName = pInput->GetKeyName(event, true);
 

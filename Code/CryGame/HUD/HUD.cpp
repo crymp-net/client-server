@@ -1979,7 +1979,7 @@ bool CHUD::OnInputEvent(const SInputEvent& rInputEvent)
 	if (!gEnv->bMultiplayer)
 		return false;
 
-	const char* sKey = rInputEvent.keyName.c_str();
+	const char* sKey = rInputEvent.keyName;
 	// nasty check, but fastest early out
 	if (sKey && sKey[0] && !sKey[1])
 	{
