@@ -8,13 +8,14 @@
 
 class HardwareMouse : public IHardwareMouse, public ISystemEventListener, public IInputEventListener
 {
-	int m_counter = 0;              // +0x30
-	float m_cursorX = 0;            // +0x34
-	float m_cursorY = 0;            // +0x38
-	float m_somethingX = 0;         // +0x3c
-	float m_somethingY = 0;         // +0x40
-	bool m_hasFocus = true;         // +0x44
-	bool m_cursorReleased = false;  // +0x45
+	int m_counter = 0;
+	float m_positionX = 0;
+	float m_positionY = 0;
+	float m_incrementX = 0;
+	float m_incrementY = 0;
+	float m_acceleration = 1;
+	bool m_hasFocus = true;
+	bool m_cursorReleased = false;
 
 	std::vector<IHardwareMouseEventListener*> m_listeners;
 

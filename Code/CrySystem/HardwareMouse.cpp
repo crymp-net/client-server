@@ -4,6 +4,7 @@
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ITimer.h"
 
 #include "HardwareMouse.h"
 
@@ -15,7 +16,7 @@ HardwareMouse HardwareMouse::s_globalInstance;
 
 void HardwareMouse::Init()
 {
-	this->GetHardwareMousePosition(&m_cursorX, &m_cursorY);
+	this->GetHardwareMousePosition(&m_positionX, &m_positionY);
 
 	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 }
@@ -156,9 +157,10 @@ void HardwareMouse::SetHardwareMouseClientPosition(float x, float y)
 void HardwareMouse::Reset(bool visibleByDefault)
 {
 	m_counter = visibleByDefault ? 1 : 0;
-	this->GetHardwareMousePosition(&m_cursorX, &m_cursorY);
-	m_somethingX = 0;
-	m_somethingY = 0;
+	this->GetHardwareMousePosition(&m_positionX, &m_positionY);
+	m_incrementX = 0;
+	m_incrementY = 0;
+	m_acceleration = 1;
 	m_hasFocus = true;
 	m_cursorReleased = false;
 
@@ -253,7 +255,44 @@ void HardwareMouse::OnSystemEvent(ESystemEvent event, UINT_PTR wParam, UINT_PTR 
 
 bool HardwareMouse::OnInputEvent(const SInputEvent& event)
 {
-	// TODO
+	if (m_counter == 0)
+	{
+		return false;
+	}
+
+	if (event.deviceId == eDI_XI)
+	{
+		if (_stricmp(event.keyName, "xi_thumbrx") == 0)
+		{
+			m_incrementX = event.value;
+		}
+		else if (_stricmp(event.keyName, "xi_thumbry") == 0)
+		{
+			m_incrementY = -event.value;
+		}
+	}
+	else if (event.keyId == eKI_SYS_Commit)
+	{
+		if (-0.3 <= m_incrementX && m_incrementX <= 0.3 && -0.3 <= m_incrementY && m_incrementY <= 0.3)
+		{
+			this->GetHardwareMousePosition(&m_positionX, &m_positionY);
+			m_acceleration = 1;
+		}
+		else
+		{
+			const float frameTime = gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);
+
+			if (m_acceleration < 10)
+			{
+				m_acceleration += frameTime * 5;
+			}
+
+			m_positionX += m_incrementX * m_acceleration * frameTime * 100.0;
+			m_positionY += m_incrementY * m_acceleration * frameTime * 100.0;
+
+			this->SetHardwareMousePosition(m_positionX, m_positionY);
+		}
+	}
 
 	return false;
 }
@@ -269,13 +308,13 @@ void HardwareMouse::ShowCursor(bool show)
 {
 	if (show)
 	{
-		this->SetHardwareMousePosition(m_cursorX, m_cursorY);
+		this->SetHardwareMousePosition(m_positionX, m_positionY);
 
 		::ShowCursor(TRUE);
 	}
 	else
 	{
-		this->GetHardwareMousePosition(&m_cursorX, &m_cursorY);
+		this->GetHardwareMousePosition(&m_positionX, &m_positionY);
 
 		::ShowCursor(FALSE);
 	}
