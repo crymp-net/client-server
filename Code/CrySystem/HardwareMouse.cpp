@@ -5,12 +5,9 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
+#include "Library/WinAPI.h"
 
 #include "HardwareMouse.h"
-
-// TODO: remove this evil include and use Library/WinAPI.h
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 HardwareMouse HardwareMouse::s_globalInstance;
 
@@ -109,21 +106,22 @@ void HardwareMouse::DecrementCounter()
 
 void HardwareMouse::GetHardwareMousePosition(float* x, float* y)
 {
-	POINT point;
-	::GetCursorPos(&point);
+	long lx;
+	long ly;
+	WinAPI::Cursor::GetPos(lx, ly);
 
-	*x = static_cast<float>(point.x);
-	*y = static_cast<float>(point.y);
+	*x = static_cast<float>(lx);
+	*y = static_cast<float>(ly);
 }
 
 void HardwareMouse::SetHardwareMousePosition(float x, float y)
 {
-	::SetCursorPos(static_cast<int>(x), static_cast<int>(y));
+	WinAPI::Cursor::SetPos(static_cast<long>(x), static_cast<long>(y));
 }
 
 void HardwareMouse::GetHardwareMouseClientPosition(float* x, float* y)
 {
-	HWND window = static_cast<HWND>(gEnv->pRenderer->GetHWND());
+	void* window = gEnv->pRenderer->GetHWND();
 	if (!window)
 	{
 		*x = 0;
@@ -131,27 +129,27 @@ void HardwareMouse::GetHardwareMouseClientPosition(float* x, float* y)
 		return;
 	}
 
-	POINT point;
-	::GetCursorPos(&point);
-	::ScreenToClient(window, &point);
+	long lx;
+	long ly;
+	WinAPI::Cursor::GetPos(lx, ly);
+	WinAPI::Window::ConvertPosToWindow(window, lx, ly);
 
-	*x = static_cast<float>(point.x);
-	*y = static_cast<float>(point.y);
+	*x = static_cast<float>(lx);
+	*y = static_cast<float>(ly);
 }
 
 void HardwareMouse::SetHardwareMouseClientPosition(float x, float y)
 {
-	HWND window = static_cast<HWND>(gEnv->pRenderer->GetHWND());
+	void* window = gEnv->pRenderer->GetHWND();
 	if (!window)
 	{
 		return;
 	}
 
-	POINT point;
-	point.x = static_cast<long>(x);
-	point.y = static_cast<long>(y);
-	::ClientToScreen(window, &point);
-	::SetCursorPos(point.x, point.y);
+	long lx = static_cast<long>(x);
+	long ly = static_cast<long>(y);
+	WinAPI::Window::ConvertPosToScreen(window, lx, ly);
+	WinAPI::Cursor::SetPos(lx, ly);
 }
 
 void HardwareMouse::Reset(bool visibleByDefault)
@@ -174,26 +172,22 @@ void HardwareMouse::ConfineCursor(bool confine)
 {
 	const bool isEditor = gEnv->pSystem->IsEditor();
 
-	HWND window = static_cast<HWND>(isEditor ? gEnv->pRenderer->GetCurrentContextHWND() : gEnv->pRenderer->GetHWND());
+	void* window = isEditor ? gEnv->pRenderer->GetCurrentContextHWND() : gEnv->pRenderer->GetHWND();
 	if (!window)
 	{
 		return;
 	}
 
-	const bool hasFocus = ::GetFocus() == window;
-	const bool isForeground = ::GetForegroundWindow() == window || isEditor;
+	const bool hasFocus = WinAPI::Window::IsFocused(window);
+	const bool isForeground = WinAPI::Window::IsForeground(window) || isEditor;
 
 	if (confine && hasFocus && isForeground && !gEnv->pSystem->IsEditorMode())
 	{
-		RECT rect;
-		::GetClientRect(window, &rect);
-		::ClientToScreen(window, reinterpret_cast<POINT*>(&rect.left));
-		::ClientToScreen(window, reinterpret_cast<POINT*>(&rect.right));
-		::ClipCursor(&rect);
+		WinAPI::Cursor::Clip(window);
 	}
 	else
 	{
-		::ClipCursor(nullptr);
+		WinAPI::Cursor::Clip(nullptr);
 	}
 }
 
@@ -309,15 +303,13 @@ void HardwareMouse::ShowCursor(bool show)
 	if (show)
 	{
 		this->SetHardwareMousePosition(m_positionX, m_positionY);
-
-		::ShowCursor(TRUE);
 	}
 	else
 	{
 		this->GetHardwareMousePosition(&m_positionX, &m_positionY);
-
-		::ShowCursor(FALSE);
 	}
+
+	WinAPI::Cursor::Show(show);
 
 	this->ConfineCursor(!show || this->IsFullscreen() || !gEnv->pSystem->IsDevMode());
 
