@@ -333,7 +333,7 @@ private:
 	void GetButtonClientPos(ButtonPosMap::iterator button, Vec2 &pos);
 	void HighlightButton(ButtonPosMap::iterator button);
 	void PushButton(ButtonPosMap::iterator button, bool press, bool force);
-	ButtonPosMap::iterator FindButton(const TKeyName &shortcut);
+	ButtonPosMap::iterator FindButton(const char* shortcut);
 
 	bool ShouldIgnoreInGameEvent();
 

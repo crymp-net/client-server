@@ -71,24 +71,6 @@ enum EInputDeviceType
 	eIDT_Gamepad,
 };
 
-struct TKeyName
-{
-	const char *key;
-
-	TKeyName() { key = ""; }
-	TKeyName( const char *_key ) { key = _key; };
-	operator const char*() const { return key; };
-	bool operator<( const TKeyName &n ) const { return _stricmp(key,n.key) < 0; }
-	bool operator>( const TKeyName &n ) const { return _stricmp(key,n.key) > 0; }
-	bool operator==( const TKeyName &n ) const { return _stricmp(key,n.key) == 0; }
-	bool operator!=( const TKeyName &n ) const { return _stricmp(key,n.key) != 0; }
-	bool operator<( const char *str ) const { return _stricmp(key,str) < 0; }
-	bool operator>( const char *str ) const { return _stricmp(key,str) > 0; }
-	bool operator==( const char *str ) const { return _stricmp(key,str) == 0; }
-	bool operator!=( const char *str ) const { return _stricmp(key,str) != 0; }
-	const char *c_str() const { return key; }
-};
-
 #define KI_KEYBOARD_BASE	0
 #define KI_MOUSE_BASE			256
 #define KI_XINPUT_BASE		512
@@ -301,7 +283,7 @@ struct SInputEvent
 {
 	EDeviceId		deviceId;		// which device did the event originate from
 	EInputState	state;			// type of input event
-	TKeyName		keyName;		// human readable name of the event
+	const char*		keyName;		// human readable name of the event
 	EKeyId			keyId;			// device-specific id corresponding to the event
 	uint32			timestamp;	// timestamp of the event, (GetTickCount compatible)
 	int					modifiers;	// key modifiers enabled at the time of this event
@@ -354,7 +336,7 @@ struct SInputSymbol
 		Trigger,	// state == change -- value = 0.0 to 1.0
 	};
 
-	SInputSymbol(uint32 devSpecId_, EKeyId keyId_, const TKeyName& name_, EType type_, uint32 user_ = 0)
+	SInputSymbol(uint32 devSpecId_, EKeyId keyId_, const char* name_, EType type_, uint32 user_ = 0)
 		: devSpecId(devSpecId_)
 		,	keyId(keyId_), name(name_)
 		, state(eIS_Unknown)
@@ -394,7 +376,7 @@ struct SInputSymbol
 	}
 
 	const EKeyId		keyId;	// external id for fast comparison
-	const TKeyName	name;		// human readable name of the event
+	const char*	name;		// human readable name of the event
 	const uint32		devSpecId;	// device internal id of this symbol (we will use it to look it up)
 	EInputState			state;	// current state
 	const EType			type;		// type of this symbol
@@ -459,7 +441,7 @@ struct IInput
 	virtual void	SetExclusiveMode(EDeviceId deviceId, bool exclusive,void *hwnd=0) = 0;
 
 	//! @see IInputDevice::InputState
-	virtual bool	InputState(const TKeyName& key, EInputState state) = 0;
+	virtual bool	InputState(const char* const& key, EInputState state) = 0;
 
 	//! Convert an input event to the key name. Should internally dispatch to all managed input devices and
 	//! return the first recognized event.

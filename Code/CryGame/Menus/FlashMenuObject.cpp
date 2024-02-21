@@ -560,7 +560,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 	{
 		if (eIS_Pressed == rInputEvent.state)
 		{
-			const char* key = rInputEvent.keyName.c_str();
+			const char* key = rInputEvent.keyName;
 
 			const bool bGamePad = false;
 			if (rInputEvent.deviceId == eDI_Keyboard || rInputEvent.deviceId == eDI_Mouse)
@@ -687,7 +687,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 			}
 
 			//CryMP: KeyBinds
-			gClient->OnKeyPress(rInputEvent.keyName.c_str());
+			gClient->OnKeyPress(rInputEvent.keyName);
 		}
 
 		if (m_bUpdate && (eIS_Pressed == rInputEvent.state || eIS_Released == rInputEvent.state))
@@ -709,7 +709,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 			if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
 			{
 				if (eIS_Pressed == rInputEvent.state)
-					m_pCurrentFlashMenuScreen->CheckedInvoke("onPressedKey", rInputEvent.keyName.c_str());
+					m_pCurrentFlashMenuScreen->CheckedInvoke("onPressedKey", rInputEvent.keyName);
 				m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendKeyEvent(keyEvent);
 			}
 
@@ -853,7 +853,7 @@ bool CFlashMenuObject::OnInputEventUI(const SInputEvent& rInputEvent)
 		if (m_pCurrentFlashMenuScreen && m_pCurrentFlashMenuScreen->GetFlashPlayer())
 		{
 			//if(eIS_Pressed == rInputEvent.state)
-			//	m_pCurrentFlashMenuScreen->CheckedInvoke("onPressedKey", rInputEvent.keyName.c_str());
+			//	m_pCurrentFlashMenuScreen->CheckedInvoke("onPressedKey", rInputEvent.keyName);
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendKeyEvent(keyEvent);
 			keyEvent.m_state = SFlashKeyEvent::eKeyUp;
 			m_pCurrentFlashMenuScreen->GetFlashPlayer()->SendKeyEvent(keyEvent);
@@ -1941,20 +1941,20 @@ void CFlashMenuObject::PushButton(ButtonPosMap::iterator button, bool press, boo
 
 //-----------------------------------------------------------------------------------------------------
 
-CFlashMenuObject::ButtonPosMap::iterator CFlashMenuObject::FindButton(const TKeyName& shortcut)
+CFlashMenuObject::ButtonPosMap::iterator CFlashMenuObject::FindButton(const char* shortcut)
 {
 	if (m_currentButtons.empty())
 		return m_currentButtons.end();
 
 	// FIXME: Try to find a more elgant way to identify shortcuts
 	string sc;
-	if (shortcut == "xi_a")
+	if (_stricmp(shortcut, "xi_a") == 0)
 		sc = "_a";
-	else if (shortcut == "xi_b")
+	else if (_stricmp(shortcut, "xi_b") == 0)
 		sc = "_b";
-	else if (shortcut == "xi_x")
+	else if (_stricmp(shortcut, "xi_x") == 0)
 		sc = "_x";
-	else if (shortcut == "xi_y")
+	else if (_stricmp(shortcut, "xi_y") == 0)
 		sc = "_y";
 	else
 		return m_currentButtons.end();
