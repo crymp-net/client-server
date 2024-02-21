@@ -8,7 +8,7 @@
 
 class HardwareMouse : public IHardwareMouse, public ISystemEventListener, public IInputEventListener
 {
-	int m_counter = 0;
+	int m_counter = 1;
 	float m_positionX = 0;
 	float m_positionY = 0;
 	float m_incrementX = 0;
