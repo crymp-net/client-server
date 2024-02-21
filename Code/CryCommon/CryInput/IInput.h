@@ -12,9 +12,8 @@
 #endif
 
 #include "CryCommon/CryCore/platform.h"
-#include "CryCommon/CryCore/CryName.h"
-#include <vector>
-#include <map>
+
+struct ISystem;
 
 enum EModifierMask
 {
