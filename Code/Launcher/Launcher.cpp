@@ -10,6 +10,7 @@
 #include "CrySystem/CPUInfo.h"
 #include "CrySystem/CryMemoryManager.h"
 #include "CrySystem/GameWindow.h"
+#include "CrySystem/HardwareMouse.h"
 #include "CrySystem/LocalizationManager.h"
 #include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
@@ -91,6 +92,47 @@ static void ReplaceScriptSystem(void* pCrySystem)
 
 	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof code);
 	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof code), codeSize - sizeof code);
+}
+
+static IHardwareMouse* CreateNewHardwareMouse()
+{
+	CryLogAlways("$3[CryMP] Initializing Hardware Mouse");
+
+	HardwareMouse* pHardwareMouse = &HardwareMouse::GetInstance();
+	pHardwareMouse->Init();
+
+	return pHardwareMouse;
+}
+
+static void ReplaceHardwareMouse(void* pCrySystem)
+{
+	void* pNewFunc = CreateNewHardwareMouse;
+
+#ifdef BUILD_64BIT
+	const std::size_t codeOffset = 0x469A0;
+	const std::size_t codeSize = 0x5C;
+
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0                                                   // call rax
+	};
+
+	std::memcpy(&code[2], &pNewFunc, 8);
+#else
+	const std::size_t codeOffset = 0x59F2D;
+	const std::size_t codeSize = 0x22;
+
+	unsigned char code[] = {
+		0x83, 0xC4, 0x04,              // add esp, 0x4
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+	};
+
+	std::memcpy(&code[4], &pNewFunc, 4);
+#endif
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
+	WinAPI::FillNOP(WinAPI::RVA(pCrySystem, codeOffset + sizeof(code)), codeSize - sizeof(code));
 }
 
 static bool LanguagePakExists(std::string_view language)
@@ -571,6 +613,7 @@ void Launcher::PatchEngine()
 			ReplaceScriptSystem(m_dlls.pCrySystem);
 		}
 
+		ReplaceHardwareMouse(m_dlls.pCrySystem);
 		ReplaceLocalizationManager(m_dlls.pCrySystem);
 	}
 
