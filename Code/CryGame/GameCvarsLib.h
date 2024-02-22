@@ -30,11 +30,6 @@
 	#define COMMAND( name, ConsoleCommandFunc_OR_scriptFunc, flags, help ) m_pConsole->AddCommand( name, ConsoleCommandFunc_OR_scriptFunc, flags, help )
 #endif
 
-#ifdef UNREGISTER_COMMAND
-	#undef COMMAND
-	#define COMMAND( name, ConsoleCommandFunc_OR_scriptFunc, flags, help ) m_pConsole->RemoveCommand( name )
-#endif
-
 
 /*************************************************************************
 -------------------------------- CVARS -----------------------------------
@@ -565,8 +560,6 @@ COMMAND("startNextMapVoting", CmdStartNextMapVoting, VF_RESTRICTEDMODE, "Initiat
 
 COMMAND("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
 
-// TODO: Also for unregister?
-#ifdef COMMAND_REGISTERLIST
 COMMAND("lastinv", CmdLastInv, 0, "Selects last inventory item used.");
 COMMAND("gotoe", "local e=System.GetEntityByName(%1); if (e) then g_localActor:SetWorldPos(e:GetWorldPos()); end", VF_CHEAT, "Sets current player position.");
 
@@ -576,7 +569,6 @@ COMMAND("join_game", CmdJoinGame, VF_RESTRICTEDMODE, "Enter the current ongoing 
 
 COMMAND("dumpnt", CmdDumpItemNameTable, 0, "Dump ItemString table.");
 COMMAND("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
-#endif
 
 #undef GAMECVAR
 #undef INT_GAMECVAR

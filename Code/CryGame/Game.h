@@ -211,7 +211,6 @@ protected:
 	// These funcs live in GameCVars.cpp
 	virtual void RegisterConsoleVars();
 	virtual void RegisterConsoleCommands();
-	virtual void UnregisterConsoleCommands();
 
 	virtual void RegisterGameObjectEvents();
 

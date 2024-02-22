@@ -210,19 +210,6 @@ void CGame::RegisterConsoleCommands()
 }
 
 //------------------------------------------------------------------------
-void CGame::UnregisterConsoleCommands()
-{
-	assert(m_pConsole);
-
-	#define UNREGISTER_COMMAND
-		#include "GameCvarsLib.h"
-	#undef UNREGISTER_COMMAND
-
-	// variables from CHUDCommon
-	m_pConsole->RemoveCommand("ShowGODMode");
-}
-
-//------------------------------------------------------------------------
 void CGame::CmdLastInv(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
