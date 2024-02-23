@@ -368,7 +368,7 @@ void CWeapon::OnEnterThirdPerson()
 		}
 		else if (CScan* pScan = dynamic_cast<CScan*>(pFM))
 		{
-			pScan->OnEnterFirstPerson();
+			pScan->OnEnterThirdPerson();
 		}
 	}
 }
