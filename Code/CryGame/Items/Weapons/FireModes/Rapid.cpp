@@ -19,7 +19,6 @@ History:
 #include "CryGame/GameCVars.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 
-
 //------------------------------------------------------------------------
 CRapid::CRapid()
 {
@@ -82,13 +81,17 @@ void CRapid::Activate(bool activate)
 	m_acceleration = 0.0f;
 
 	// initialize rotation xforms
-	UpdateRotation(0.0f);
+	const auto slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+	UpdateRotation(slot, 0.0f);
 
 	m_soundId = INVALID_SOUNDID;
 	m_spinUpSoundId = INVALID_SOUNDID;
 
 	Firing(false);
 	m_startedToFire = false;
+
+	m_hasBarrelAttachment = !m_rapidparams.barrel_attachment.empty();
+	m_hasEngineAttachment = !m_rapidparams.engine_attachment.empty();
 }
 
 //------------------------------------------------------------------------
@@ -168,7 +171,9 @@ void CRapid::Update(float frameTime, unsigned int frameId)
 	if ((m_speed < m_rapidparams.min_speed) && (m_acceleration < 0.0f) && (!m_decelerating))
 		Accelerate(m_rapidparams.deceleration);
 
-	UpdateRotation(frameTime);
+	const auto slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+	UpdateRotation(slot, frameTime);
+
 	UpdateSound(frameTime);
 }
 
@@ -302,6 +307,35 @@ float CRapid::GetSpinDownTime() const
 }
 
 //------------------------------------------------------------------------
+void CRapid::OnEnterFirstPerson()
+{
+	UpdateRotation(CItem::eIGS_FirstPerson, 0.0f);
+
+	if (m_speed >= 0.00001f && m_soundId != INVALID_SOUNDID)
+	{
+		m_pWeapon->StopSound(m_soundId);
+
+		//CryMP: We might not be first person untill next frame, so need to force it with flag
+		m_soundId = m_pWeapon->PlayAction(m_rapidactions.rapid_fire, 0, true,
+			CItem::eIPAF_ForceFirstPerson | (CItem::eIPAF_Default & (~CItem::eIPAF_Animation)));
+	}
+}
+
+//------------------------------------------------------------------------
+void CRapid::OnEnterThirdPerson()
+{
+	UpdateRotation(CItem::eIGS_ThirdPerson, 0.0f);
+
+	if (m_speed >= 0.00001f && m_soundId != INVALID_SOUNDID)
+	{
+		m_pWeapon->StopSound(m_soundId);
+
+		m_soundId = m_pWeapon->PlayAction(m_rapidactions.rapid_fire, 0, true, 
+			CItem::eIPAF_ForceThirdPerson | (CItem::eIPAF_Default & (~CItem::eIPAF_Animation)));
+	}
+}
+
+//------------------------------------------------------------------------
 void CRapid::Accelerate(float acc)
 {
 	m_acceleration = acc;
@@ -369,16 +403,19 @@ void CRapid::Firing(bool firing)
 }
 
 //------------------------------------------------------------------------
-void CRapid::UpdateRotation(float frameTime)
+void CRapid::UpdateRotation(CItem::eGeometrySlot slot, float frameTime)
 {
+	if (!m_hasBarrelAttachment && !m_hasEngineAttachment)
+		return;
+
 	m_rotation_angle -= m_speed * frameTime * 2.0f * 3.141592f;
 	Ang3 angles(0, m_rotation_angle, 0);
 
-	int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
 	Matrix34 tm = Matrix33::CreateRotationXYZ(angles);
-	if (!m_rapidparams.barrel_attachment.empty())
+	if (m_hasBarrelAttachment)
 		m_pWeapon->SetCharacterAttachmentLocalTM(slot, m_rapidparams.barrel_attachment.c_str(), tm);
-	if (!m_rapidparams.engine_attachment.empty())
+
+	if (m_hasEngineAttachment)
 		m_pWeapon->SetCharacterAttachmentLocalTM(slot, m_rapidparams.engine_attachment.c_str(), tm);
 }
 

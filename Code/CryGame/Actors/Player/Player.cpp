@@ -5078,6 +5078,11 @@ void CPlayer::PlayAction(const char* action, const char* extension, bool looping
 	if (!m_pAnimatedCharacter)
 		return;
 
+	if (strcmp(action, "use_lockpick") && !strcmp(extension, "lockpick")) //CryMP: A bit hacky, but use lockpick pose only when actually using it
+	{
+		extension = "claymore";
+	}
+
 	if (extension == NULL || strcmp(extension, "ignore") != 0)
 	{
 		if (extension && extension[0])

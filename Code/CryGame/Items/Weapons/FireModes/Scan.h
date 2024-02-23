@@ -124,7 +124,9 @@ public:
 	virtual void Lock(EntityId targetId, int partId) {};
 	virtual void Unlock() {};
 
-
+	//CryMP ------------------------------------------------------
+	void OnEnterFirstPerson();
+	void OnEnterThirdPerson();
 
 protected:
 	struct SScanParams

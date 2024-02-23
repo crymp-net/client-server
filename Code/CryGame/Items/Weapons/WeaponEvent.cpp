@@ -21,6 +21,10 @@ History:
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAISystem/IAISystem.h"
 #include "CryCommon/CryAISystem/IAgent.h"
+#include "FireModes/WorkOnTarget.h"
+#include "FireModes/Rapid.h"
+#include "FireModes/FreezingBeam.h"
+#include "FireModes/Scan.h"
 
 CWeapon::TEventListenerVector * CWeapon::m_listenerCache = 0;
 bool CWeapon::m_listenerCacheInUse = false;
@@ -319,10 +323,52 @@ void CWeapon::OnSelected(bool selected)
 void CWeapon::OnEnterFirstPerson()
 {
 	CItem::OnEnterFirstPerson();
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		if (CRapid* pRapid = dynamic_cast<CRapid*>(pFM))
+		{
+			pRapid->OnEnterFirstPerson();
+		}
+		else if (CWorkOnTarget* pWork = dynamic_cast<CWorkOnTarget*>(pFM))
+		{
+			pWork->OnEnterFirstPerson();
+		}
+		else if (CFreezingBeam* pFreezingBeam = dynamic_cast<CFreezingBeam*>(pFM))
+		{
+			pFreezingBeam->OnEnterFirstPerson();
+		}
+		else if (CScan* pScan = dynamic_cast<CScan*>(pFM))
+		{
+			pScan->OnEnterFirstPerson();
+		}
+	}
 }
 
 //------------------------------------------------------
 void CWeapon::OnEnterThirdPerson()
 {
 	CItem::OnEnterThirdPerson();
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		if (CRapid* pRapid = dynamic_cast<CRapid*>(pFM))
+		{
+			pRapid->OnEnterThirdPerson();
+		}
+		else if (CWorkOnTarget* pWork = dynamic_cast<CWorkOnTarget*>(pFM))
+		{
+			pWork->OnEnterThirdPerson();
+		}
+		else if (CFreezingBeam* pFreezingBeam = dynamic_cast<CFreezingBeam*>(pFM))
+		{
+			pFreezingBeam->OnEnterThirdPerson();
+		}
+		else if (CScan* pScan = dynamic_cast<CScan*>(pFM))
+		{
+			pScan->OnEnterFirstPerson();
+		}
+	}
 }
