@@ -2,9 +2,6 @@
 #define __GAMECVARSLIB_H__
 
 #define GAMECVAR( varType, name, pValue, defaultValue, flags, help, pChangeFunc ) 
-#define INT_GAMECVAR( name, value, flags, help, pChangeFunc ) 
-#define FLOAT_GAMECVAR( name, value, flags, help, pChangeFunc ) 
-#define COMMAND( name, ConsoleCommandFunc_OR_scriptFunc, flags, help ) 
 
 #ifdef STRUCT_GAMECVAR
 	#undef GAMECVAR
@@ -13,27 +10,8 @@
 
 #ifdef GAMECVAR_REGISTERLIST
 	#undef GAMECVAR
-	#undef INT_GAMECVAR
-	#undef FLOAT_GAMECVAR
-	#define GAMECVAR( varType, name, pValue, defaultValue, flags, help, pChangeFunc ) pConsole->Register( name, & pValue, defaultValue, flags, help, pChangeFunc )
-	#define INT_GAMECVAR( name, value, flags, help, pChangeFunc ) pConsole->RegisterInt( name, value, flags, help, pChangeFunc )
-	#define FLOAT_GAMECVAR( name, value, flags, help, pChangeFunc ) pConsole->RegisterFloat( name, value, flags, help, pChangeFunc )
+	#define GAMECVAR( varType, name, pValue, defaultValue, flags, help, pChangeFunc ) ICVar* p_##pValue = pConsole->Register( name, & pValue, defaultValue, flags, help, pChangeFunc )
 #endif
-
-#ifdef UNREGISTER_GAMECVAR
-	#undef GAMECVAR
-	#define GAMECVAR( varType, name, pValue, defaultValue, flags, help, pChangeFunc ) pConsole->UnregisterVariable( name, true )
-#endif
-
-#ifdef COMMAND_REGISTERLIST
-	#undef COMMAND
-	#define COMMAND( name, ConsoleCommandFunc_OR_scriptFunc, flags, help ) m_pConsole->AddCommand( name, ConsoleCommandFunc_OR_scriptFunc, flags, help )
-#endif
-
-
-/*************************************************************************
--------------------------------- CVARS -----------------------------------
-*************************************************************************/
 
 //client cvars
 GAMECVAR(int, "cl_hud", cl_hud, 1, 0, "Show/Hide the HUD", CHUDCommon::HUD);
@@ -62,9 +40,10 @@ GAMECVAR(float, "goc_targety", goc_targety, -3.5f, VF_NOT_NET_SYNCED/*VF_CHEAT*/
 GAMECVAR(float, "goc_targetz", goc_targetz, 0.2f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "target position of camera", NULL);
 
 GAMECVAR(float, "cl_leanAmount", cl_leanAmount, 0.25f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set amount of lean", NULL);
+
 /*
 GAMECVAR(int, "goc_enable", goc_enable, 0, VF_CHEAT, "gears of crysis", NULL);
-COMMAND("GOCMode", CmdGOCMode, VF_CHEAT, "Enable GOC mode");
+pConsole->AddCommand("GOCMode", CmdGOCMode, VF_CHEAT, "Enable GOC mode");
 
 // BulletTime
 GAMECVAR(int, "bt_speed", bt_speed, 0, VF_CHEAT, "bullet-time when in speed mode", NULL);
@@ -77,7 +56,7 @@ GAMECVAR(float, "bt_pitch", bt_pitch, -0.4f, VF_CHEAT, "sound pitch shift for bu
 GAMECVAR(float, "bt_energy_max", bt_energy_max, 1.0f, VF_CHEAT, "maximum bullet-time energy", NULL);
 GAMECVAR(float, "bt_energy_decay", bt_energy_decay, 2.5f, VF_CHEAT, "bullet time energy decay rate", NULL);
 GAMECVAR(float, "bt_energy_regen", bt_energy_regen, 0.5f, VF_CHEAT, "bullet time energy regeneration rate", NULL);
-COMMAND("bulletTimeMode", CmdBulletTimeMode, VF_CHEAT, "Enable bullet time mode", NULL );
+pConsole->AddCommand("bulletTimeMode", CmdBulletTimeMode, VF_CHEAT, "Enable bullet time mode");
 */
 
 GAMECVAR(int, "dt_enable", dt_enable, 0, 0, "suit actions activated by double-tapping", NULL);
@@ -97,15 +76,6 @@ GAMECVAR(int, "i_iceeffects", i_iceeffects, 0, VF_CHEAT, "Enable/Disable specifi
 
 GAMECVAR(int, "i_lighteffectShadows", i_lighteffectsShadows, 0, VF_DUMPTODISK, "Enable/Disable shadow casting on weapon lights. 1 - Player only, 2 - Other players/AI, 3 - All (require i_lighteffects enabled).", NULL);
 
-// marcok TODO: seem to be only used on script side ... 
-FLOAT_GAMECVAR("cl_motionBlur", 2, 0, "motion blur type (0=off, 1=accumulation-based, 2=velocity-based)", NULL);
-FLOAT_GAMECVAR("cl_sprintBlur", 0.6f, 0, "sprint blur", NULL);
-FLOAT_GAMECVAR("cl_hitShake", 1.25f, 0, "hit shake", NULL);
-FLOAT_GAMECVAR("cl_hitBlur", 0.25f, 0, "blur on hit", NULL);
-
-INT_GAMECVAR("cl_righthand", 1, 0, "Select right-handed weapon!", NULL);
-INT_GAMECVAR("cl_screeneffects", 1, 0, "Enable player screen effects (depth-of-field, motion blur, ...).", NULL);
-
 GAMECVAR(int, "cl_debugSwimming", cl_debugSwimming, 0, VF_CHEAT, "enable swimming debugging", NULL);
 
 GAMECVAR(float, "pl_curvingSlowdownSpeedScale", pl_curvingSlowdownSpeedScale, 0.5f, VF_CHEAT, "Player only slowdown speedscale when curving/leaning extremely.", NULL);
@@ -116,11 +86,10 @@ GAMECVAR(float, "cl_shallowWaterSpeedMulAI", cl_shallowWaterSpeedMulAI, 0.8f, VF
 GAMECVAR(float, "cl_shallowWaterDepthLo", cl_shallowWaterDepthLo, 0.3f, VF_CHEAT, "Shallow water depth low (below has zero slowdown)", NULL);
 GAMECVAR(float, "cl_shallowWaterDepthHi", cl_shallowWaterDepthHi, 1.0f, VF_CHEAT, "Shallow water depth high (above has full slowdown)", NULL);
 
-INT_GAMECVAR("g_grabLog", 0, 0, "verbosity for grab logging (0-2)", NULL);
 
 GAMECVAR(float, "pl_inputAccel", pl_inputAccel, 30.0f, 0, "Movement input acceleration", NULL);
 
-INT_GAMECVAR("cl_actorsafemode", 0, VF_CHEAT, "Enable/disable actor safe mode", BroadcastChangeSafeMode);
+
 GAMECVAR(int, "h_useIK", h_useIK, 1, 0, "Hunter uses always IK", NULL);
 GAMECVAR(int, "h_drawSlippers", h_drawSlippers, 0, 0, "Red ball when tentacle is lifted, green when on ground", NULL);
 GAMECVAR(float, "g_tentacle_joint_limit", g_tentacle_joint_limit, -1.0f, 0, "forces specific tentacle limits; used for tweaking", NULL);
@@ -131,7 +100,6 @@ GAMECVAR(float, "int_zoomInTime", int_zoomInTime, 5.0f, VF_CHEAT, "Number of sec
 GAMECVAR(float, "int_moveZoomTime", int_moveZoomTime, 0.1f, VF_CHEAT, "Number of seconds it takes to zoom out when moving. Default = 0.2", NULL);
 GAMECVAR(float, "int_zoomOutTime", int_zoomOutTime, 0.1f, VF_CHEAT, "Number of seconds it takes to zoom out when you stop firing. Default = 0.5", NULL);
 
-FLOAT_GAMECVAR("aa_maxDist", 10.0f, VF_CHEAT, "max lock distance", NULL);
 
 GAMECVAR(float, "hr_rotateFactor", hr_rotateFactor, -.1f, VF_CHEAT, "rotate factor", NULL);
 GAMECVAR(float, "hr_rotateTime", hr_rotateTime, .07f, VF_CHEAT, "rotate time", NULL);
@@ -302,8 +270,8 @@ GAMECVAR(int, "hud_voicemode", hud_voicemode, 1, 0, "Usage of the voice when swi
 GAMECVAR(int, "hud_enableAlienInterference", hud_enableAlienInterference, 1, VF_SAVEGAME, "Switched the alien interference effect.", NULL);
 GAMECVAR(float, "hud_alienInterferenceStrength", hud_alienInterferenceStrength, 0.8f, VF_SAVEGAME, "Scales alien interference effect strength.", NULL);
 GAMECVAR(int, "hud_godFadeTime", hud_godFadeTime, 3, VF_CHEAT, "sets the fade time of the god mode message", NULL);
-GAMECVAR(int, "hud_crosshair_enable", hud_crosshair_enable, 1, 0, "Toggles singleplayer crosshair visibility.", CHUD::OnCrosshairCVarChangeD);
-GAMECVAR(int, "hud_crosshair", hud_crosshair, 1, 0, "Select the crosshair (1-8)", CHUD::OnCrosshairCVarChangeD);
+GAMECVAR(int, "hud_crosshair_enable", hud_crosshair_enable, 1, 0, "Toggles singleplayer crosshair visibility.", CHUD::OnCrosshairCVarChanged);
+GAMECVAR(int, "hud_crosshair", hud_crosshair, 1, 0, "Select the crosshair (1-8)", CHUD::OnCrosshairCVarChanged);
 
 //new crosshair spread code (Julien)
 GAMECVAR(int, "hud_alternateCrosshairSpread", hud_iAlternateCrosshairSpread, 0, 0, "Switch new crosshair spread code on/off.", NULL);
@@ -312,8 +280,8 @@ GAMECVAR(float, "hud_alternateCrosshairSpreadNeutral", hud_fAlternateCrosshairSp
 
 GAMECVAR(float, "hud_chDamageIndicator", hud_chDamageIndicator, 1, 0, "Switch crosshair-damage indicator... (1 on, 0 off)", NULL);
 GAMECVAR(int, "hud_showAllObjectives", hud_showAllObjectives, 0, 0, "Show all on screen objectives, not only the active one.", NULL);
-GAMECVAR(int, "hud_panoramicHeight", hud_panoramicHeight, 10, 0, "Set screen border for 'cinematic view' in percent.", CHUD::OnSubtitlePanoramicHeightCVarChangeD);
-GAMECVAR(int, "hud_subtitles", hud_subtitles, 0, 0, "Subtitle mode. 0==Off, 1=All, 2=CutscenesOnly", CHUD::OnSubtitleCVarChangeD);
+GAMECVAR(int, "hud_panoramicHeight", hud_panoramicHeight, 10, 0, "Set screen border for 'cinematic view' in percent.", CHUD::OnSubtitlePanoramicHeightCVarChanged);
+GAMECVAR(int, "hud_subtitles", hud_subtitles, 0, 0, "Subtitle mode. 0==Off, 1=All, 2=CutscenesOnly", CHUD::OnSubtitleCVarChanged);
 GAMECVAR(int, "hud_subtitlesDebug", hud_subtitlesDebug, 0, 0, "Debug subtitles", NULL);
 GAMECVAR(int, "hud_subtitlesRenderMode", hud_subtitlesRenderMode, 0, 0, "Subtitle RenderMode. 0==Flash, 1=3DEngine", NULL);
 GAMECVAR(int, "hud_subtitlesFontSize", hud_subtitlesFontSize, 16, 0, "FontSize for Subtitles.", NULL);
@@ -462,8 +430,6 @@ GAMECVAR(int, "g_quickGame_debug", g_quickGame_debug, 0, VF_CHEAT, "QuickGame op
 GAMECVAR(int, "g_displayIgnoreList", g_displayIgnoreList, 1, VF_DUMPTODISK, "Display ignore list in chat tab.", NULL);
 GAMECVAR(int, "g_buddyMessagesIngame", g_buddyMessagesIngame, 1, VF_DUMPTODISK, "Output incoming buddy messages in chat while playing game.", NULL);
 
-INT_GAMECVAR("g_showIdleStats", 0, 0, "", NULL);
-
 // battledust
 GAMECVAR(int, "g_battleDust_enable", g_battleDust_enable, 1, 0, "Enable/Disable battledust", NULL);
 GAMECVAR(int, "g_battleDust_debug", g_battleDust_debug, 0, 0, "0: off, 1: text, 2: text+gfx", NULL);
@@ -504,9 +470,9 @@ GAMECVAR(int, "mp_pickupVehicles", mp_pickupVehicles, 0, OPTIONAL_SYNC, "Allow p
 GAMECVAR(int, "mp_weaponsOnBack", mp_weaponsOnBack, 0, OPTIONAL_SYNC, "Attach weapons to back as in SP", NULL);
 GAMECVAR(int, "mp_thirdPerson", mp_thirdPerson, 1, OPTIONAL_SYNC, "Allow ThirdPerson mode (F1)", OnChangeThirdPerson);
 GAMECVAR(int, "mp_animationGrenadeSwitch", mp_animationGrenadeSwitch, 0, OPTIONAL_SYNC, "Enable FP animations for grenade switching", NULL);
-GAMECVAR(int, "mp_ragdollUnrestricted", mp_ragdollUnrestricted, 1, OPTIONAL_SYND, "", NULL);
-GAMECVAR(int, "mp_killMessages", mp_killMessages, 1, OPTIONAL_SYND, "", NULL);
-GAMECVAR(int, "mp_rpgMod", mp_rpgMod, 0, OPTIONAL_SYND, "", NULL);
+GAMECVAR(int, "mp_ragdollUnrestricted", mp_ragdollUnrestricted, 1, OPTIONAL_SYNC, "", NULL);
+GAMECVAR(int, "mp_killMessages", mp_killMessages, 1, OPTIONAL_SYNC, "", NULL);
+GAMECVAR(int, "mp_rpgMod", mp_rpgMod, 0, OPTIONAL_SYNC, "", NULL);
 GAMECVAR(int, "mp_aaLockOn", mp_aaLockOn, 0, OPTIONAL_SYNC, "enables lockon air for AARocketLauncher", NULL);
 GAMECVAR(float, "mp_C4StrengthThrowMult", mp_C4StrengthThrowMult, 1.0f, OPTIONAL_SYNC, "Strength throw mult for C4s", NULL);
 
@@ -529,50 +495,6 @@ GAMECVAR(float, "mp_netAimLerpFactorCrymp", mp_netAimLerpFactorCrymp, 42.f, VF_N
 GAMECVAR(int, "mp_explosiveSilhouettes", mp_explosiveSilhouettes, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives", NULL);
 
 
-/*************************************************************************
--------------------------- CONSOLE COMMANDS ------------------------------
-*************************************************************************/
-COMMAND("quit", "System.Quit()", VF_RESTRICTEDMODE, "Quits the game");
-COMMAND("goto", "g_localActor:SetWorldPos({x=%1, y=%2, z=%3})", VF_CHEAT, "Sets current player position.");
-COMMAND("freeze", "g_gameRules:SetFrozenAmount(g_localActor,1)", 0, "Freezes player");
-
-COMMAND("loadactionmap", CmdLoadActionmap, 0, "Loads a key configuration file");
-COMMAND("restartgame", CmdRestartGame, 0, "Restarts Crysis completely.");
-
-COMMAND("name", CmdName, VF_RESTRICTEDMODE, "Sets player name.");
-COMMAND("team", CmdTeam, VF_RESTRICTEDMODE, "Sets player team.");
-COMMAND("kill", CmdKill, VF_RESTRICTEDMODE, "Kills the player.");
-COMMAND("v_kill", CmdVehicleKill, VF_CHEAT, "Kills the players vehicle.");
-COMMAND("sv_restart", CmdRestart, 0, "Restarts the round.");
-COMMAND("sv_say", CmdSay, 0, "Broadcasts a message to all clients.");
-COMMAND("i_reload", CmdReloadItems, 0, "Reloads item scripts.");
-COMMAND("dumpss", CmdDumpSS, 0, "test synched storage.");
-
-COMMAND("g_reloadGameRules", CmdReloadGameRules, 0, "Reload GameRules script");
-COMMAND("g_quickGame", CmdQuickGame, 0, "Quick connect to good server.");
-COMMAND("g_quickGameStop", CmdQuickGameStop, 0, "Cancel quick game search.");
-COMMAND("g_nextlevel", CmdNextLevel, 0, "Switch to next level in rotation or restart current one.");
-
-COMMAND("vote", CmdVote, VF_RESTRICTEDMODE, "Vote on current topic.");
-COMMAND("startKickVoting", CmdStartKickVoting, VF_RESTRICTEDMODE, "Initiate voting.");
-COMMAND("listplayers", CmdListPlayers, VF_RESTRICTEDMODE, "Initiate voting.");
-COMMAND("startNextMapVoting", CmdStartNextMapVoting, VF_RESTRICTEDMODE, "Initiate voting.");
-
-COMMAND("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
-
-COMMAND("lastinv", CmdLastInv, 0, "Selects last inventory item used.");
-COMMAND("gotoe", "local e=System.GetEntityByName(%1); if (e) then g_localActor:SetWorldPos(e:GetWorldPos()); end", VF_CHEAT, "Sets current player position.");
-
-COMMAND("loadLastSave", CmdLoadLastSave, 0, "Loads the last savegame if available.");
-COMMAND("spectator", CmdSpectator, 0, "Sets the player as a spectator.");
-COMMAND("join_game", CmdJoinGame, VF_RESTRICTEDMODE, "Enter the current ongoing game.");
-
-COMMAND("dumpnt", CmdDumpItemNameTable, 0, "Dump ItemString table.");
-COMMAND("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
-
 #undef GAMECVAR
-#undef INT_GAMECVAR
-#undef FLOAT_GAMECVAR
-#undef COMMAND
 
 #endif //__GAMECVARSLIB_H__

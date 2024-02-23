@@ -142,8 +142,6 @@ bool CGame::Init(IGameFramework* pFramework)
 
 	m_pConsole = gEnv->pConsole;
 
-	RegisterConsoleVars();
-	RegisterConsoleCommands();
 	RegisterGameObjectEvents();
 
 	// Initialize static item strings

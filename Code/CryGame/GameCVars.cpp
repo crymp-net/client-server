@@ -101,96 +101,102 @@ static void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
 	}
 }
 
-SCVars::SCVars()
-{
-	std::memset(this, 0, sizeof(SCVars));
-}
-
-SCVars::~SCVars()
-{
-	this->ReleaseCVars();
-}
 
 // game related cvars must start with an g_
 // game server related cvars must start with sv_
 // game client related cvars must start with cl_
 // no other types of cvars are allowed to be defined here!
-void SCVars::InitCVars(IConsole* pConsole)
+SCVars::SCVars()
 {
 	const int OPTIONAL_SYNC = 0;
 
-	#define GAMECVAR_REGISTERLIST
-		#include "GameCVarsLib.h"
-	#undef GAMECVAR_REGISTERLIST
+	std::memset(this, 0, sizeof(SCVars));
 
-	ca_GameControlledStrafingPtr = pConsole->GetCVar("ca_GameControlledStrafing");
-	pl_debug_filter = pConsole->RegisterString("pl_debug_filter", "", VF_CHEAT);
+	ICVar*	ca_GameControlledStrafingPtr = pConsole->GetCVar("ca_GameControlledStrafing");
+	ICVar*	pl_debug_filter = pConsole->RegisterString("pl_debug_filter", "", VF_CHEAT);
+	ICVar*	aln_debug_filter = pConsole->RegisterString("aln_debug_filter", "", VF_CHEAT);
+	ICVar*	pAltitudeLimitCVar = pConsole->Register("v_altitudeLimit", &v_altitudeLimit, v_altitudeLimitDefault(), VF_CHEAT, "Used to restrict the helicopter and VTOL movement from going higher than a set altitude. If set to zero, the altitude limit is disabled.");
+	ICVar*	pAltitudeLimitLowerOffsetCVar = pConsole->Register("v_altitudeLimitLowerOffset", &v_altitudeLimitLowerOffset, 0.1f, VF_CHEAT, "Used in conjunction with v_altitudeLimit to set the zone when gaining altitude start to be more difficult.");
+	ICVar*	pVehicleQuality = pConsole->GetCVar("v_vehicle_quality"); // assert(pVehicleQuality);
 
-	aln_debug_filter = pConsole->RegisterString("aln_debug_filter", "", VF_CHEAT);
-
-	pAltitudeLimitCVar = pConsole->Register("v_altitudeLimit", &v_altitudeLimit, v_altitudeLimitDefault(), VF_CHEAT, "Used to restrict the helicopter and VTOL movement from going higher than a set altitude. If set to zero, the altitude limit is disabled.");
-	pAltitudeLimitLowerOffsetCVar = pConsole->Register("v_altitudeLimitLowerOffset", &v_altitudeLimitLowerOffset, 0.1f, VF_CHEAT, "Used in conjunction with v_altitudeLimit to set the zone when gaining altitude start to be more difficult.");
-	
 	// weapon system
-	i_debuggun_1 = pConsole->RegisterString("i_debuggun_1", "ai_statsTarget", VF_DUMPTODISK, "Command to execute on primary DebugGun fire");
-	i_debuggun_2 = pConsole->RegisterString("i_debuggun_2", "ag_debug", VF_DUMPTODISK, "Command to execute on secondary DebugGun fire");
+	ICVar*	i_debuggun_1 = pConsole->RegisterString("i_debuggun_1", "ai_statsTarget", VF_DUMPTODISK, "Command to execute on primary DebugGun fire");
+	ICVar*	i_debuggun_2 = pConsole->RegisterString("i_debuggun_2", "ag_debug", VF_DUMPTODISK, "Command to execute on secondary DebugGun fire");
 
 	// quick game
+	ICVar*	g_quickGame_map = pConsole->RegisterString("g_quickGame_map", "", VF_DUMPTODISK, "QuickGame option");
+	ICVar*	g_quickGame_mode = pConsole->RegisterString("g_quickGame_mode", "PowerStruggle", VF_DUMPTODISK, "QuickGame option");
 
-	g_quickGame_map = pConsole->RegisterString("g_quickGame_map", "", VF_DUMPTODISK, "QuickGame option");
-	g_quickGame_mode = pConsole->RegisterString("g_quickGame_mode", "PowerStruggle", VF_DUMPTODISK, "QuickGame option");
-	
 	// battledust
-	g_battleDust_effect = pConsole->RegisterString("g_battleDust_effect", "misc.battledust.light", 0, "Sets the effect to use for battledust");
+	ICVar*	g_battleDust_effect = pConsole->RegisterString("g_battleDust_effect", "misc.battledust.light", 0, "Sets the effect to use for battledust");
 
-	pVehicleQuality = pConsole->GetCVar("v_vehicle_quality");		assert(pVehicleQuality);
+	// marcok TODO: seem to be only used on script side ... 
+	ICVar*	p_cl_motionBlur = pConsole->RegisterFloat("cl_motionBlur", 2, 0, "motion blur type (0=off, 1=accumulation-based, 2=velocity-based)");
+	ICVar*	p_cl_sprintBlur = pConsole->RegisterFloat("cl_sprintBlur", 0.6f, 0, "sprint blur");
+	ICVar*	p_cl_hitShake = pConsole->RegisterFloat("cl_hitShake", 1.25f, 0, "hit shake");
+	ICVar*	p_cl_hitBlur = pConsole->RegisterFloat("cl_hitBlur", 0.25f, 0, "blur on hit");
+
+	ICVar*	p_cl_righthand = pConsole->RegisterInt("cl_righthand", 1, 0, "Select right-handed weapon!");
+	ICVar*	p_cl_screeneffects = pConsole->RegisterInt("cl_screeneffects", 1, 0, "Enable player screen effects (depth-of-field, motion blur, ...).");
+
+	ICVar*	p_g_grabLog = pConsole->RegisterInt("g_grabLog", 0, 0, "verbosity for grab logging (0-2)");
+	ICVar*	p_cl_actorsafemode = pConsole->RegisterInt("cl_actorsafemode", 0, VF_CHEAT, "Enable/disable actor safe mode", BroadcastChangeSafeMode);
+	ICVar*	p_aa_maxDist = pConsole->RegisterFloat("aa_maxDist", 10.0f, VF_CHEAT, "max lock distance");
+	ICVar*	p_g_showIdleStats = pConsole->RegisterInt("g_showIdleStats", 0, 0, "");
+
+	#define GAMECVAR_REGISTERLIST
+		#include "GameCvarsLib.h"
+	#undef GAMECVAR_REGISTERLIST
 
 	NetInputChainInitCVars();
+
+	pConsole->AddCommand("quit", "System.Quit()", VF_RESTRICTEDMODE, "Quits the game");
+	pConsole->AddCommand("goto", "g_localActor:SetWorldPos({x=%1, y=%2, z=%3})", VF_CHEAT, "Sets current player position.");
+	pConsole->AddCommand("freeze", "g_gameRules:SetFrozenAmount(g_localActor,1)", 0, "Freezes player");
+
+	pConsole->AddCommand("loadactionmap", g_pGame->CmdLoadActionmap, 0, "Loads a key configuration file");
+	pConsole->AddCommand("restartgame", CmdRestartGame, 0, "Restarts Crysis completely.");
+
+	pConsole->AddCommand("name", CmdName, VF_RESTRICTEDMODE, "Sets player name.");
+	pConsole->AddCommand("team", CmdTeam, VF_RESTRICTEDMODE, "Sets player team.");
+	pConsole->AddCommand("kill", CmdKill, VF_RESTRICTEDMODE, "Kills the player.");
+	pConsole->AddCommand("v_kill", CmdVehicleKill, VF_CHEAT, "Kills the players vehicle.");
+	pConsole->AddCommand("sv_restart", CmdRestart, 0, "Restarts the round.");
+	pConsole->AddCommand("sv_say", CmdSay, 0, "Broadcasts a message to all clients.");
+	pConsole->AddCommand("i_reload", CmdReloadItems, 0, "Reloads item scripts.");
+	pConsole->AddCommand("dumpss", CmdDumpSS, 0, "test synched storage.");
+
+	pConsole->AddCommand("g_reloadGameRules", CmdReloadGameRules, 0, "Reload GameRules script");
+	pConsole->AddCommand("g_quickGame", CmdQuickGame, 0, "Quick connect to good server.");
+	pConsole->AddCommand("g_quickGameStop", CmdQuickGameStop, 0, "Cancel quick game search.");
+	pConsole->AddCommand("g_nextlevel", CmdNextLevel, 0, "Switch to next level in rotation or restart current one.");
+
+	pConsole->AddCommand("vote", CmdVote, VF_RESTRICTEDMODE, "Vote on current topic.");
+	pConsole->AddCommand("startKickVoting", CmdStartKickVoting, VF_RESTRICTEDMODE, "Initiate voting.");
+	pConsole->AddCommand("listplayers", CmdListPlayers, VF_RESTRICTEDMODE, "Initiate voting.");
+	pConsole->AddCommand("startNextMapVoting", CmdStartNextMapVoting, VF_RESTRICTEDMODE, "Initiate voting.");
+
+	pConsole->AddCommand("g_battleDust_reload", CmdBattleDustReload, 0, "Reload the battle dust parameters xml");
+
+	pConsole->AddCommand("lastinv", CmdLastInv, 0, "Selects last inventory item used.");
+	pConsole->AddCommand("gotoe", "local e=System.GetEntityByName(%1); if (e) then g_localActor:SetWorldPos(e:GetWorldPos()); end", VF_CHEAT, "Sets current player position.");
+
+	pConsole->AddCommand("loadLastSave", CmdLoadLastSave, 0, "Loads the last savegame if available.");
+	pConsole->AddCommand("spectator", CmdSpectator, 0, "Sets the player as a spectator.");
+	pConsole->AddCommand("join_game", CmdJoinGame, VF_RESTRICTEDMODE, "Enter the current ongoing game.");
+
+	pConsole->AddCommand("dumpnt", CmdDumpItemNameTable, 0, "Dump ItemString table.");
+	pConsole->AddCommand("preloadforstats", "PreloadForStats()", VF_CHEAT, "Preload multiplayer assets for memory statistics.");
 }
+#undef GAMECVAR
+
+SCVars::~SCVars() {}
 
 //------------------------------------------------------------------------
-void SCVars::ReleaseCVars()
-{
-	IConsole* pConsole = gEnv->pConsole;
-
-	pConsole->UnregisterVariable("pl_debug_filter", true);
-	pConsole->UnregisterVariable("v_altitudeLimit", true);
-	pConsole->UnregisterVariable("v_altitudeLimitLowerOffset", true);
-
-	// weapon system
-	pConsole->UnregisterVariable("i_debuggun_1", true);
-	pConsole->UnregisterVariable("i_debuggun_2", true);
-
-	pConsole->UnregisterVariable("g_quickGame_map", true);
-	pConsole->UnregisterVariable("g_quickGame_mode", true);
-
-	pConsole->UnregisterVariable("g_battleDust_effect", true);
-
-	// alien debugging
-	pConsole->UnregisterVariable("aln_debug_movement", true);
-	pConsole->UnregisterVariable("aln_debug_filter", true);
-
-	#define UNREGISTER_GAMECVAR
-		#include "GameCvarsLib.h"
-	#undef UNREGISTER_GAMECVAR
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdDumpSS(IConsoleCmdArgs* pArgs)
+void CmdDumpSS(IConsoleCmdArgs* pArgs)
 {
 	if (g_pGame->GetSynchedStorage())
 		g_pGame->GetSynchedStorage()->Dump();
-}
-
-//------------------------------------------------------------------------
-void CGame::RegisterConsoleVars()
-{
-	assert(m_pConsole);
-
-	if (m_pCVars)
-	{
-		m_pCVars->InitCVars(m_pConsole);
-	}
 }
 
 //------------------------------------------------------------------------
@@ -200,17 +206,7 @@ void CmdDumpItemNameTable(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::RegisterConsoleCommands()
-{
-	assert(m_pConsole);
-
-	#define COMMAND_REGISTERLIST
-		#include "GameCvarsLib.h"
-	#undef COMMAND_REGISTERLIST
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdLastInv(IConsoleCmdArgs* pArgs)
+void CmdLastInv(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -220,7 +216,7 @@ void CGame::CmdLastInv(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdName(IConsoleCmdArgs* pArgs)
+void CmdName(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -235,7 +231,7 @@ void CGame::CmdName(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdTeam(IConsoleCmdArgs* pArgs)
+void CmdTeam(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -250,7 +246,7 @@ void CGame::CmdTeam(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdLoadLastSave(IConsoleCmdArgs* pArgs)
+void CmdLoadLastSave(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient || gEnv->bMultiplayer)
 		return;
@@ -275,7 +271,7 @@ void CGame::CmdLoadLastSave(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdSpectator(IConsoleCmdArgs* pArgs)
+void CmdSpectator(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -295,7 +291,7 @@ void CGame::CmdSpectator(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdJoinGame(IConsoleCmdArgs* pArgs)
+void CmdJoinGame(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -313,7 +309,7 @@ void CGame::CmdJoinGame(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdKill(IConsoleCmdArgs* pArgs)
+void CmdKill(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -334,7 +330,7 @@ void CGame::CmdKill(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdVehicleKill(IConsoleCmdArgs* pArgs)
+void CmdVehicleKill(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -359,14 +355,14 @@ void CGame::CmdVehicleKill(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdRestart(IConsoleCmdArgs* pArgs)
+void CmdRestart(IConsoleCmdArgs* pArgs)
 {
 	if (g_pGame && g_pGame->GetGameRules())
 		g_pGame->GetGameRules()->Restart();
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdSay(IConsoleCmdArgs* pArgs)
+void CmdSay(IConsoleCmdArgs* pArgs)
 {
 	if (pArgs->GetArgCount() > 1 && gEnv->bServer)
 	{
@@ -386,14 +382,14 @@ void CGame::CmdLoadActionmap(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdRestartGame(IConsoleCmdArgs* pArgs)
+void CmdRestartGame(IConsoleCmdArgs* pArgs)
 {
 	GetISystem()->Relaunch(true);
 	GetISystem()->Quit();
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdReloadItems(IConsoleCmdArgs* pArgs)
+void CmdReloadItems(IConsoleCmdArgs* pArgs)
 {
 	g_pGame->GetItemSharedParamsList()->Reset();
 	g_pGame->GetIGameFramework()->GetIItemSystem()->Reload();
@@ -401,7 +397,7 @@ void CGame::CmdReloadItems(IConsoleCmdArgs* pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdReloadGameRules(IConsoleCmdArgs* pArgs)
+void CmdReloadGameRules(IConsoleCmdArgs* pArgs)
 {
 	if (gEnv->bMultiplayer)
 		return;
@@ -431,14 +427,14 @@ void CGame::CmdReloadGameRules(IConsoleCmdArgs* pArgs)
 	}
 }
 
-void CGame::CmdNextLevel(IConsoleCmdArgs* pArgs)
+void CmdNextLevel(IConsoleCmdArgs* pArgs)
 {
 	ILevelRotation* pLevelRotation = g_pGame->GetIGameFramework()->GetILevelSystem()->GetLevelRotation();
 	if (pLevelRotation->GetLength())
 		pLevelRotation->ChangeLevel(pArgs);
 }
 
-void CGame::CmdStartKickVoting(IConsoleCmdArgs* pArgs)
+void CmdStartKickVoting(IConsoleCmdArgs* pArgs)
 {	
 	if (!gEnv->bClient)
 		return;
@@ -462,7 +458,7 @@ void CGame::CmdStartKickVoting(IConsoleCmdArgs* pArgs)
 	}
 }
 
-void CGame::CmdStartNextMapVoting(IConsoleCmdArgs* pArgs)
+void CmdStartNextMapVoting(IConsoleCmdArgs* pArgs)
 {
 	if (!gEnv->bClient)
 		return;
@@ -476,7 +472,7 @@ void CGame::CmdStartNextMapVoting(IConsoleCmdArgs* pArgs)
 }
 
 
-void CGame::CmdVote(IConsoleCmdArgs* pArgs)
+void CmdVote(IConsoleCmdArgs* pArgs)
 {	
 	if (!gEnv->bClient)
 		return;
@@ -489,7 +485,7 @@ void CGame::CmdVote(IConsoleCmdArgs* pArgs)
 		pGameRules->Vote(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), true);
 }
 
-void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
+void CmdListPlayers(IConsoleCmdArgs* pArgs)
 {
 	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
 	if (!pClientActor)
@@ -570,17 +566,17 @@ void CGame::CmdListPlayers(IConsoleCmdArgs* pArgs)
 	}
 }
 
-void CGame::CmdQuickGame(IConsoleCmdArgs* pArgs)
+void CmdQuickGame(IConsoleCmdArgs* pArgs)
 {
 	g_pGame->GetMenu()->GetMPHub()->OnQuickGame();
 }
 
-void CGame::CmdQuickGameStop(IConsoleCmdArgs* pArgs)
+void CmdQuickGameStop(IConsoleCmdArgs* pArgs)
 {
 
 }
 
-void CGame::CmdBattleDustReload(IConsoleCmdArgs* pArgs)
+void CmdBattleDustReload(IConsoleCmdArgs* pArgs)
 {
 	if (CBattleDust* pBD = g_pGame->GetGameRules()->GetBattleDust())
 	{

@@ -9,12 +9,13 @@ struct IConsole;
 struct ICVar;
 
 struct SCVars
-{	
+{
+	IConsole* pConsole = gEnv->pConsole;
+
 	static const float v_altitudeLimitDefault()
 	{
 		return 600.0f;
 	}
-
 	ICVar*	ca_GameControlledStrafingPtr;
 	ICVar*	pl_debug_filter;
 	ICVar*	aln_debug_filter;
@@ -43,14 +44,11 @@ struct SCVars
 	float	bt_energy_regen;
 
 	#define STRUCT_GAMECVAR
-		#include "GameCVarsLib.h"
+		#include "GameCvarsLib.h"
 	#undef STRUCT_GAMECVAR
 
 	SCVars();
 	~SCVars();
-
-	void InitCVars(IConsole *pConsole);
-	void ReleaseCVars();
 };
 
 extern struct SCVars *g_pGameCVars;
