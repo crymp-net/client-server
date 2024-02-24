@@ -60,8 +60,11 @@ public:
 
 	bool Add(Label&& label, bool keepExisting = false);
 
-	std::string Localize(const std::string_view& text) const;
-	std::string LocalizeEnglish(const std::string_view& text) const;
+	const Label* FindLabel(std::string_view name) const;
+	const Label* FindLabel(std::wstring_view name) const;
+
+	std::string Localize(std::string_view text) const;
+	std::string LocalizeEnglish(std::string_view text) const;
 
 	static std::string_view GetLanguageFromSystem();
 
@@ -111,8 +114,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
-	template<typename NameStringView>
-	const Label* FindLabel(NameStringView name) const;
+	const Label* FindLabelImpl(std::string_view loweredName) const;
 
 	template<typename NameStringView, typename ResultString>
 	bool LocalizeControlCode(NameStringView name, ResultString& result) const;

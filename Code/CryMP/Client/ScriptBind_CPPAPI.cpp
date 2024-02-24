@@ -519,6 +519,12 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 
 	label.name = name;
 
+	const LocalizationManager::Label* existingLabel = localization.FindLabel(label.name);
+	if (existingLabel)
+	{
+		label = *existingLabel;
+	}
+
 	if (params)
 	{
 		CScriptSetGetChain rootChain(params);
