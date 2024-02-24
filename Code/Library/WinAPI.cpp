@@ -719,6 +719,7 @@ bool WinAPI::IsVistaOrLater()
 {
 	OSVERSIONINFOW info = {};
 	info.dwOSVersionInfoSize = sizeof info;
+	__pragma(warning(suppress:4996))
 	GetVersionExW(&info);
 
 	return info.dwMajorVersion >= 6;
