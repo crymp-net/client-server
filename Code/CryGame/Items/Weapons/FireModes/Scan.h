@@ -125,8 +125,8 @@ public:
 	virtual void Unlock() {};
 
 	//CryMP ------------------------------------------------------
-	void OnEnterFirstPerson();
-	void OnEnterThirdPerson();
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
 
 protected:
 	struct SScanParams

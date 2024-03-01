@@ -114,8 +114,8 @@ public:
 	// ~CSingle
 
 	//CryMP ------------------------------------------------------
-	void OnEnterFirstPerson();
-	void OnEnterThirdPerson();
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
 
 protected:
 	virtual void Accelerate(float acc);

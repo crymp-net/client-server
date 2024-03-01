@@ -179,8 +179,8 @@ public:
 	virtual void NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, const Vec3 &hit, float extra, int predictionHandle){};
 
 	//CryMP ------------------------------------------------------
-	void OnEnterFirstPerson();
-	void OnEnterThirdPerson();
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
 
 protected:
 	SBeamParams				m_beamparams;

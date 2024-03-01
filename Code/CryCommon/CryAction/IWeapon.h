@@ -113,6 +113,14 @@ struct IFireMode
 	virtual void StartLocking(EntityId targetId, int partId) = 0;
 	virtual void Lock(EntityId targetId, int partId) = 0;
 	virtual void Unlock() = 0;
+
+	//CryMP
+	virtual void OnEnterFirstPerson() 
+	{
+	}
+	virtual void OnEnterThirdPerson()
+	{
+	}
 };
 
 

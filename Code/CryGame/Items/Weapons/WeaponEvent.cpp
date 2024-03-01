@@ -327,22 +327,7 @@ void CWeapon::OnEnterFirstPerson()
 	IFireMode* pFM = GetActiveFireMode();
 	if (pFM)
 	{
-		if (CRapid* pRapid = dynamic_cast<CRapid*>(pFM))
-		{
-			pRapid->OnEnterFirstPerson();
-		}
-		else if (CWorkOnTarget* pWork = dynamic_cast<CWorkOnTarget*>(pFM))
-		{
-			pWork->OnEnterFirstPerson();
-		}
-		else if (CFreezingBeam* pFreezingBeam = dynamic_cast<CFreezingBeam*>(pFM))
-		{
-			pFreezingBeam->OnEnterFirstPerson();
-		}
-		else if (CScan* pScan = dynamic_cast<CScan*>(pFM))
-		{
-			pScan->OnEnterFirstPerson();
-		}
+		pFM->OnEnterFirstPerson();
 	}
 }
 
@@ -354,21 +339,6 @@ void CWeapon::OnEnterThirdPerson()
 	IFireMode* pFM = GetActiveFireMode();
 	if (pFM)
 	{
-		if (CRapid* pRapid = dynamic_cast<CRapid*>(pFM))
-		{
-			pRapid->OnEnterThirdPerson();
-		}
-		else if (CWorkOnTarget* pWork = dynamic_cast<CWorkOnTarget*>(pFM))
-		{
-			pWork->OnEnterThirdPerson();
-		}
-		else if (CFreezingBeam* pFreezingBeam = dynamic_cast<CFreezingBeam*>(pFM))
-		{
-			pFreezingBeam->OnEnterThirdPerson();
-		}
-		else if (CScan* pScan = dynamic_cast<CScan*>(pFM))
-		{
-			pScan->OnEnterThirdPerson();
-		}
+		pFM->OnEnterThirdPerson();
 	}
 }

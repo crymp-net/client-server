@@ -182,8 +182,8 @@ public:
 	//~IFireMode
 
 	//CryMP ------------------------------------------------------
-	void OnEnterFirstPerson();
-	void OnEnterThirdPerson();
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
 
 protected:
 	IEntity			*CanWork();
