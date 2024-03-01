@@ -93,7 +93,7 @@ void CScan::Activate(bool activate)
 //------------------------------------------------------------------------
 void CScan::Update(float frameTime, unsigned int frameId)
 {
-	auto* pOwner = m_pWeapon->GetOwnerActor();
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
 	if (m_scanning && m_pWeapon->IsClient() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
 	{
 		if (m_delayTimer > 0.0f)
@@ -240,7 +240,7 @@ void CScan::NetStartFire()
 	if (!m_pWeapon->IsClient())
 		return;
 
-	auto* pOwner = m_pWeapon->GetOwnerActor();
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
 	if (pOwner)
 	{
 		m_scanning = true;
@@ -278,7 +278,7 @@ void CScan::NetStopFire()
 
 	m_scanning = false;
 
-	auto* pOwner = m_pWeapon->GetOwnerActor();
+	CActor* pOwner = m_pWeapon->GetOwnerActor();
 	if (pOwner)
 	{
 		if (pOwner && pOwner->IsFpSpectatorTarget()) //CryMP: Fp spec support
@@ -347,6 +347,51 @@ bool CScan::IsClientScanning() const
 		}
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+void CScan::OnEnterFirstPerson()
+{
+	if (!m_scanning) //Only if scanning active...
+		return;
+
+	ShowFlashAnimation(true);
+
+	if (m_scanLoopId != INVALID_SOUNDID)
+	{
+		m_pWeapon->StopSound(m_scanLoopId);
+		m_scanLoopId = INVALID_SOUNDID;
+	}
+
+	//CryMP: We might not be First person untill next frame, so need to force FP with flag
+	m_scanLoopId = m_pWeapon->PlayAction(m_scanactions.scan, 0, true, 
+		CItem::eIPAF_ForceFirstPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+	ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
+	if (pSound)
+		pSound->SetLoopMode(true);
+}
+
+//------------------------------------------------------------------------
+void CScan::OnEnterThirdPerson()
+{
+	if (!m_scanning) //Only if scanning active...
+		return;
+
+	ShowFlashAnimation(false);
+
+	if (m_scanLoopId != INVALID_SOUNDID)
+	{
+		m_pWeapon->StopSound(m_scanLoopId);
+		m_scanLoopId = INVALID_SOUNDID;
+	}
+
+	m_scanLoopId = m_pWeapon->PlayAction(m_scanactions.scan, 0, true, 
+		CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+	ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
+	if (pSound)
+		pSound->SetLoopMode(true);
 }
 
 //------------------------------------------------------------------------

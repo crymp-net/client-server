@@ -181,6 +181,10 @@ public:
 	virtual void Unlock() {};
 	//~IFireMode
 
+	//CryMP ------------------------------------------------------
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
+
 protected:
 	IEntity			*CanWork();
 	void				StartWork(IEntity *pEntity);

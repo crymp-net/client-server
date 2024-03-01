@@ -79,8 +79,10 @@ void CWorkOnTarget::Update(float frameTime, unsigned int frameId)
 				{
 					if (ISound *pSound=m_pWeapon->GetISound(m_soundId))
 					{
-						pSound->SetLoopMode(true);
-						pSound->SetPaused(false);
+						if (pSound->GetPaused())
+						{
+							pSound->SetPaused(false);
+						}
 					}
 				}
 			}
@@ -184,8 +186,16 @@ void CWorkOnTarget::StartFire()
 
 	const ItemString workAction(m_workactions.work.c_str());
 
-	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true,
+		CItem::eIPAF_Default|CItem::eIPAF_CleanBlending/*|CItem::eIPAF_SoundStartPaused*/);
+
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
+
+	if (ISound* pSound = m_pWeapon->GetISound(m_soundId))
+	{
+		pSound->SetLoopMode(true);
+		pSound->SetPaused(true); //CryMP: Need to pause manually as eIPAF_SoundStartPaused ain't working
+	}
 
 	m_pWeapon->EnableUpdate(true, eIUS_FireMode);	
 	m_delayTimer=m_workparams.delay;
@@ -262,6 +272,56 @@ void CWorkOnTarget::GetMemoryStatistics(ICrySizer * s)
 	s->Add(m_name);
 	m_workparams.GetMemoryStatistics(s);
 	m_workactions.GetMemoryStatistics(s);
+}
+
+//------------------------------------------------------------------------
+void CWorkOnTarget::OnEnterFirstPerson()
+{
+	if (m_effectId)
+	{
+		int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
+		m_effectId = 0;
+
+		if (m_firing && m_soundId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_soundId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			const ItemString workAction(m_workactions.work.c_str());
+			m_soundId = m_pWeapon->PlayAction(workAction, 0, true, 
+				CItem::eIPAF_ForceFirstPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_soundId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CWorkOnTarget::OnEnterThirdPerson()
+{
+	if (m_effectId)
+	{
+		int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
+		m_effectId = 0;
+
+		if (m_firing && m_soundId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_soundId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			const ItemString workAction(m_workactions.work.c_str());
+			m_soundId = m_pWeapon->PlayAction(workAction, 0, true,
+				CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_soundId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -381,8 +441,11 @@ void CWorkOnTarget::StopWork()
 
 	const ItemString idleAction(m_workactions.idle.c_str());
 
-	m_pWeapon->PlayAction(idleAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
-	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idleAction);
+	if (m_pWeapon->IsSelected()) //ClStopWork might come later so we need to check this
+	{
+		m_pWeapon->PlayAction(idleAction, 0, true, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+		m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idleAction);
+	}
 
 	if (m_effectId)
 	{

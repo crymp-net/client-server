@@ -38,8 +38,7 @@ CBeam::CBeam()
 	: m_effectId(0),
 	m_fireLoopId(INVALID_SOUNDID),
 	m_hitSoundId(INVALID_SOUNDID),
-	m_remote(false),
-	m_viewFP(true)
+	m_remote(false)
 {
 }
 
@@ -156,19 +155,9 @@ void CBeam::Update(float frameTime, unsigned int frameId)
 
 		if (m_effectId)
 		{
-			int id = m_pWeapon->GetStats().fp ? 0 : 1;
-
 			bool currentView = m_pWeapon->IsOwnerFP();
-			//Check view changes and re-attach effect if needed (for vehicles)
-			if (m_viewFP != currentView)
-			{
-				m_viewFP = currentView;
-				m_pWeapon->AttachEffect(m_viewFP ? CItem::eIGS_ThirdPerson : CItem::eIGS_FirstPerson, m_effectId, false);
-				m_effectId = m_pWeapon->AttachEffect(m_viewFP ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson,
-					0, true, m_effectparams.effect[id].c_str(), m_effectparams.helper[id].c_str());
-				if (m_viewFP)
-					m_pWeapon->PlayAction(g_pItemStrings->fire, 0, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
-			}
+
+			const int id = currentView ? 0 : 1;
 
 			Vec3 epos(m_pWeapon->GetEffectWorldTM(m_effectId).GetTranslation());
 
@@ -368,7 +357,8 @@ void CBeam::Activate(bool activate)
 
 	if (m_effectId)
 	{
-		m_pWeapon->AttachEffect(0, m_effectId, false);
+		const int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
 		m_effectId = 0;
 	}
 
@@ -415,8 +405,6 @@ void CBeam::StartFire()
 	m_pWeapon->RequireUpdate(eIUS_FireMode);
 
 	m_pWeapon->RequestStartFire();
-
-	m_viewFP = m_pWeapon->IsOwnerFP();
 }
 
 //------------------------------------------------------------------------
@@ -433,7 +421,8 @@ void CBeam::StopFire()
 
 	if (m_effectId)
 	{
-		m_pWeapon->AttachEffect(0, m_effectId, false);
+		const int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
 		m_effectId = 0;
 	}
 
@@ -481,7 +470,8 @@ void CBeam::NetStopFire()
 
 	if (m_effectId)
 	{
-		m_pWeapon->AttachEffect(CItem::eIGS_FirstPerson, m_effectId, false);
+		const int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
 		m_effectId = 0;
 	}
 
@@ -621,6 +611,60 @@ void CBeam::TickDamage(ray_hit& hit, const Vec3& dir, uint16 seq)
 		info.damage = m_fireparams.damage;
 
 		pGameRules->ClientHit(info);
+	}
+}
+
+//------------------------------------------------------------------------
+void CBeam::OnEnterFirstPerson()
+{
+	if (m_effectId)
+	{
+		m_pWeapon->AttachEffect(CItem::eIGS_ThirdPerson, m_effectId, false);
+
+		const auto id = CItem::eIGS_FirstPerson;
+
+		m_effectId = m_pWeapon->AttachEffect(id,
+			0, true, m_effectparams.effect[id].c_str(), m_effectparams.helper[id].c_str());
+
+		if (m_firing && m_fireLoopId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_fireLoopId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			m_fireLoopId = m_pWeapon->PlayAction(m_actions.fire, 0, true, 
+				CItem::eIPAF_ForceFirstPerson | CItem::eIPAF_Default);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_fireLoopId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CBeam::OnEnterThirdPerson()
+{
+	if (m_effectId)
+	{
+		m_pWeapon->AttachEffect(CItem::eIGS_FirstPerson, m_effectId, false);
+
+		const auto id = CItem::eIGS_ThirdPerson;
+
+		m_effectId = m_pWeapon->AttachEffect(id,
+			0, true, m_effectparams.effect[id].c_str(), m_effectparams.helper[id].c_str());
+
+		if (m_firing && m_fireLoopId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_fireLoopId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			m_fireLoopId = m_pWeapon->PlayAction(m_actions.fire, 0, true,
+				CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_Default);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_fireLoopId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
 	}
 }
 
