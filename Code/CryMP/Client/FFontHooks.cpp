@@ -38,6 +38,14 @@ struct CFFont {
 		MultiByteToWideChar(65001, 0, szMsg, std::strlen(szMsg), buffer, 1023);
 		return reinterpret_cast<IFFont*>(this)->GetTextSizeW(buffer, bASCIIMultiLine);
 	}
+
+	int GetTextLength(const char* szMsg, const bool bASCIIMultiLine = true) {
+		if (!szMsg) return 0;
+		wchar_t buffer[1024];
+		memset(buffer, 0, sizeof(buffer));
+		MultiByteToWideChar(65001, 0, szMsg, std::strlen(szMsg), buffer, 1023);
+		return reinterpret_cast<IFFont*>(this)->GetTextLengthW(buffer, bASCIIMultiLine);
+	}
 };
 
 void PatchCryFont() {
@@ -51,7 +59,9 @@ void PatchCryFont() {
 	auto drawString1 = &CFFont::DrawString1;
 	auto drawString2 = &CFFont::DrawString2;
 	auto getTextSize = &CFFont::GetTextSize;
+	auto getTextLength = &CFFont::GetTextLength;
 	WinAPI::FillMem(&CryFontVTable[20], &reinterpret_cast<void*&>(drawString1), sizeof(void*));
 	WinAPI::FillMem(&CryFontVTable[19], &reinterpret_cast<void*&>(drawString2), sizeof(void*));
 	WinAPI::FillMem(&CryFontVTable[21], &reinterpret_cast<void*&>(getTextSize), sizeof(void*));
+	WinAPI::FillMem(&CryFontVTable[27], &reinterpret_cast<void*&>(getTextLength), sizeof(void*));
 }
