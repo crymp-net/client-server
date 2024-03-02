@@ -145,11 +145,11 @@ struct IFFont
 
 	//! Draw a formated string
 	//! \param bASCIIMultiLine true='\','n' is a valid return, false=it's not
-	virtual void DrawString(float x, float y, const char* szMsg, const bool bASCIIMultiLine = true) = 0;
+	virtual void DrawString( float x, float y, const char *szMsg, const bool bASCIIMultiLine=true ) = 0;
 
 	//! Draw a formated string, taking z into account
 	//! \param bASCIIMultiLine true='\','n' is a valid return, false=it's not
-	virtual void DrawString(float x, float y, float z, const char* szMsg, const bool bASCIIMultiLine = true) = 0;
+	virtual void DrawString( float x, float y, float z, const char *szMsg, const bool bASCIIMultiLine=true ) = 0;
 
 	//! Compute the text size
 	//! \param bASCIIMultiLine true='\','n' is a valid return, false=it's not
