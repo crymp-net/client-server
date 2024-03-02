@@ -1,12 +1,9 @@
-#pragma once
 #include <CryCommon/CryFont/IFont.h>
-#include <Windows.h>
-#include "CryCommon/CrySystem/gEnv.h"
+#include <CryCommon/CrySystem/gEnv.h>
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 struct CFFont {
-
 	// Vtable[20]
 	//! Draw a formated string
 	//! \param bASCIIMultiLine true='\','n' is a valid return, false=it's not
