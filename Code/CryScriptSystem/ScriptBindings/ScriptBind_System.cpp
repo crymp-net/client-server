@@ -898,7 +898,7 @@ int ScriptBind_System::DrawText(IFunctionHandler *pH)
 
 	pFont->SetColor(ColorF(r, g, b, a));
 	pFont->SetSize(Vec2(size, size));
-	pFont->DrawString1(x, y, text, true);
+	pFont->DrawString(x, y, text, true);
 
 	return pH->EndFunction();
 }
