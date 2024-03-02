@@ -579,6 +579,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryMP/Client/DrawTools.h
 	Code/CryMP/Client/EngineCache.cpp
 	Code/CryMP/Client/EngineCache.h
+	Code/CryMP/Client/FFontHooks.cpp
+	Code/CryMP/Client/FFontHooks.h
 	Code/CryMP/Client/FileCache.cpp
 	Code/CryMP/Client/FileCache.h
 	Code/CryMP/Client/FileDownloader.cpp
