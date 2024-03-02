@@ -1,4 +1,4 @@
-﻿#include <cstdlib>
+#include <cstdlib>
 #include <cstring>
 
 #include "Cry3DEngine/TimeOfDay.h"
@@ -557,12 +557,6 @@ void Launcher::LoadEngine()
 	if (!m_dlls.pCry3DEngine)
 	{
 		throw StringTools::SysErrorFormat("Failed to load the Cry3DEngine DLL!");
-	}
-
-	m_dlls.pCryFont = WinAPI::DLL::Load("CryFont.dll");
-	if (!m_dlls.pCryFont)
-	{
-		throw StringTools::SysErrorFormat("Failed to load the CryFont DLL!");
 	}
 
 	if (!m_params.isDedicatedServer && !WinAPI::CmdLine::HasArg("-dedicated"))

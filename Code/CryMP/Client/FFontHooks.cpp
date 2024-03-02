@@ -1,5 +1,7 @@
-#include <CryCommon/CryFont/IFont.h>
-#include <CryCommon/CrySystem/gEnv.h>
+#include <cstring>
+
+#include "CryCommon/CryFont/IFont.h"
+#include "CryCommon/CrySystem/gEnv.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
@@ -11,8 +13,8 @@ struct CFFont {
 		if (!szMsg) return;
 		wchar_t buffer[1024];
 		memset(buffer, 0, sizeof(buffer));
-		MultiByteToWideChar(65001, 0, szMsg, strlen(szMsg), buffer, 1023);
-		((IFFont*)this)->DrawStringW(x, y, buffer, bASCIIMultiLine);
+		MultiByteToWideChar(65001, 0, szMsg, std::strlen(szMsg), buffer, 1023);
+		reinterpret_cast<IFFont*>(this)->DrawStringW(x, y, buffer, bASCIIMultiLine);
 	}
 
 	// Vtable[19]
@@ -22,22 +24,19 @@ struct CFFont {
 		if (!szMsg) return;
 		wchar_t buffer[1024];
 		memset(buffer, 0, sizeof(buffer));
-		MultiByteToWideChar(65001, 0, szMsg, strlen(szMsg), buffer, 1023);
-		((IFFont*)this)->DrawStringW(x, y, z, buffer, bASCIIMultiLine);
+		MultiByteToWideChar(65001, 0, szMsg, std::strlen(szMsg), buffer, 1023);
+		reinterpret_cast<IFFont*>(this)->DrawStringW(x, y, z, buffer, bASCIIMultiLine);
 	}
 
 	// Vtable[21]
 	//! Compute the text size
 	//! \param bASCIIMultiLine true='\','n' is a valid return, false=it's not
 	vector2f GetTextSize(const char* szMsg, const bool bASCIIMultiLine = true) {
-		if (!szMsg)
-		{
-			return vector2f(0.0f, 0.0f);
-		}
+		if (!szMsg) return vector2f(0.0f, 0.0f);
 		wchar_t buffer[1024];
 		memset(buffer, 0, sizeof(buffer));
-		MultiByteToWideChar(65001, 0, szMsg, strlen(szMsg), buffer, 1023);
-		return ((IFFont*)this)->GetTextSizeW(buffer, bASCIIMultiLine);
+		MultiByteToWideChar(65001, 0, szMsg, std::strlen(szMsg), buffer, 1023);
+		return reinterpret_cast<IFFont*>(this)->GetTextSizeW(buffer, bASCIIMultiLine);
 	}
 };
 
