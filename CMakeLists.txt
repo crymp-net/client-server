@@ -737,7 +737,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	ThirdParty/picosha2.h
 	${PROJECT_BINARY_DIR}/config.h
 	${PROJECT_BINARY_DIR}/version.h
-)
+ "Code/CryMP/Client/FFontHooks.h" "Code/CryMP/Client/FFontHooks.cpp")
 
 ################################################################################
 
