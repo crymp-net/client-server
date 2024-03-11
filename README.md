@@ -1,6 +1,6 @@
 # CryMP
 
-Improved [Crysis (2007)](https://en.wikipedia.org/wiki/Crysis_(video_game)) with [CryMP](https://crymp.net) community
+Improved [Crysis (2007)](https://en.wikipedia.org/wiki/Crysis_(video_game)) with [CryMP](https://crymp.org) community
 multiplayer. Singleplayer is supported as well.
 
 The official multiplayer no longer works due to [GameSpy shutdown](https://en.wikipedia.org/wiki/GameSpy#Shutdown).
@@ -39,7 +39,7 @@ The latest official version 1.2.1 (6156) is needed. If you have Crysis from DVD,
 
 #### Option A: Using the launcher (recommended)
 
-- Go to [CryMP](https://crymp.net) website and get the launcher by clicking on Play now.
+- Go to [CryMP](https://crymp.org) website and get the launcher by clicking on Play now.
 - Run the launcher and click on Install. If the Install button is disabled, first click on the Crysis directory path
 and choose where Crysis is installed. The launcher will copy itself there, download the latest CryMP client and create
 a desktop shortcut called Crysis Multiplayer.
