@@ -34,7 +34,7 @@ jobs:
       artifact_name: ${{ steps.build.outputs.artifact_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # for version generator
           fetch-depth: 0
@@ -82,9 +82,9 @@ jobs:
           Remove-Item bundle.*
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: |
-            ${{ env.BUILD_DIR }}\*.exe
-            ${{ env.BUILD_DIR }}\*.pdb
+            ${{ env.BUILD_DIR }}/*.exe
+            ${{ env.BUILD_DIR }}/*.pdb
