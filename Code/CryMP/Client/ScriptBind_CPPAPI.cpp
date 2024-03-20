@@ -59,6 +59,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetLastSeenTime, "entityId");
 	SCRIPT_REG_FUNC(GetLP);
 	SCRIPT_REG_FUNC(GetNumVars);
+	SCRIPT_REG_FUNC(GetVars);
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -458,6 +459,21 @@ int ScriptBind_CPPAPI::GetLP(IFunctionHandler* pH)
 int ScriptBind_CPPAPI::GetNumVars(IFunctionHandler* pH)
 {
 	return pH->EndFunction(gEnv->pConsole->GetNumVars());
+}
+
+int ScriptBind_CPPAPI::GetVars(IFunctionHandler* pH)
+{
+	std::vector<const char*> cmds;
+
+	cmds.resize(gEnv->pConsole->GetNumVars());
+	gEnv->pConsole->GetSortedVars(&cmds[0], cmds.size());
+
+	SmartScriptTable vars(m_pSS);
+	for (const char* vName : cmds)
+	{
+		vars->PushBack(vName);
+	}
+	return pH->EndFunction(vars);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

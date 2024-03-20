@@ -32,6 +32,7 @@ public:
 	int GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity);
 	int GetLP(IFunctionHandler* pH);
 	int GetNumVars(IFunctionHandler* pH);
+	int GetVars(IFunctionHandler* pH);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization
