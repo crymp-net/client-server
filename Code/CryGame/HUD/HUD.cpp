@@ -564,12 +564,18 @@ bool CHUD::Init(IActor* pActor)
 	m_animWeaponAccessories.Load("Libs/UI/HUD_WeaponAccessories.gfx", eFD_Center, eFAF_ThisHandler);
 	if (loadEverything)
 	{
-		m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Load("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 	else
 	{
-		m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Init("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 
