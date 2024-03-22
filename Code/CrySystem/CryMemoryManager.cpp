@@ -1,6 +1,9 @@
-#include <cstdlib>
 #include <cstring>
-#include <malloc.h>  // _msize
+#include <mimalloc.h>
+#include <mimalloc-new-delete.h>
+
+// TODO: remove all malloc calls
+// TODO: hook msvcr80.malloc
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/WinAPI.h"
@@ -11,23 +14,18 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
 	void* result = nullptr;
 
-	const auto doCryMalloc = [&]()
-	{
-		result = std::calloc(1, size);
-
-		allocatedSize = _msize(result);
-	};
-
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		doCryMalloc();
+		result = mi_zalloc(size);
 	}
 	else
 	{
-		doCryMalloc();
+		result = mi_zalloc(size);
 	}
+
+	allocatedSize = size;
 
 	return result;
 }
@@ -36,33 +34,18 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 {
 	void* result = nullptr;
 
-	const auto doCryRealloc = [&]()
-	{
-		if (mem)
-		{
-			const std::size_t oldSize = _msize(mem);
-
-			result = CryMalloc_hook(size, allocatedSize);
-
-			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
-			std::free(mem);
-		}
-		else
-		{
-			result = CryMalloc_hook(size, allocatedSize);
-		}
-	};
-
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		doCryRealloc();
+		result = mi_rezalloc(mem, size);
 	}
 	else
 	{
-		doCryRealloc();
+		result = mi_rezalloc(mem, size);
 	}
+
+	allocatedSize = size;
 
 	return result;
 }
@@ -73,11 +56,11 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		return _msize(mem);
+		return mi_usable_size(mem);
 	}
 	else
 	{
-		return _msize(mem);
+		return mi_usable_size(mem);
 	}
 }
 
@@ -85,22 +68,17 @@ static std::size_t CryFree_hook(void* mem)
 {
 	std::size_t result = 0;
 
-	const auto doCryFree = [&]()
-	{
-		result = _msize(mem);
-
-		std::free(mem);
-	};
-
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		doCryFree();
+		result = mi_usable_size(mem);
+		mi_free(mem);
 	}
 	else
 	{
-		doCryFree();
+		result = mi_usable_size(mem);
+		mi_free(mem);
 	}
 
 	return result;
@@ -112,11 +90,11 @@ static void* CrySystemCrtMalloc_hook(std::size_t size)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		return std::calloc(1, size);
+		return mi_zalloc(size);
 	}
 	else
 	{
-		return std::calloc(1, size);
+		return mi_zalloc(size);
 	}
 }
 
@@ -126,11 +104,11 @@ static void CrySystemCrtFree_hook(void* mem)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		std::free(mem);
+		mi_free(mem);
 	}
 	else
 	{
-		std::free(mem);
+		mi_free(mem);
 	}
 }
 
