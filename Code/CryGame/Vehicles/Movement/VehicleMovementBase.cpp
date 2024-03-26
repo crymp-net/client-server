@@ -645,7 +645,7 @@ bool CVehicleMovementBase::IsSubmerged()
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateDamage(const float deltaTime)
 {
-	if (IsSubmerged())
+	if (IsSubmerged() && IsEngineAffectedBySubmerge())
 	{
 		if (m_damage < 1.f)
 		{

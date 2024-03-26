@@ -2034,12 +2034,6 @@ bool CVehicleMovementStdWheeled::DoGearSound()
   return true;
 }
 
-//------------------------------------------------------------------------
-bool CVehicleMovementStdWheeled::IsSubmerged()
-{
-    return CVehicleMovementBase::IsSubmerged();
-}
-
 void CVehicleMovementStdWheeled::GetMemoryStatistics(ICrySizer * s)
 {
 	s->Add(*this);

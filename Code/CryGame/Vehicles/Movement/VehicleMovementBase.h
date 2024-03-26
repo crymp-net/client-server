@@ -308,9 +308,14 @@ public:
   virtual void ProcessEvent(SEntityEvent& event);
   virtual void SetSoundMasterVolume(float vol);
 
-  virtual bool IsSubmerged();
+  virtual bool IsEngineAffectedBySubmerge()
+  {
+	  return true;
+  }
 
 protected:
+
+  bool IsSubmerged();
 
   ILINE IPhysicalEntity* GetPhysics() const { return m_pVehicle->GetEntity()->GetPhysics(); }
   bool IsProfilingMovement();

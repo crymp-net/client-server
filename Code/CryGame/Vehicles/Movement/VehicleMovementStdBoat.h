@@ -77,7 +77,10 @@ virtual void OnAction(const TVehicleActionId actionId, int activationMode, float
 	virtual void Serialize(TSerialize ser, unsigned aspects);
   virtual void SetAuthority( bool auth ) { m_netActionSync.CancelReceived(); }
 
-  virtual bool IsSubmerged() override;
+  virtual bool IsEngineAffectedBySubmerge() override
+  {
+	  return false; //CryMP: Boats shouldn't trigger engine stop if submerged
+  }
 
   virtual void GetMemoryStatistics(ICrySizer * s);
   // ~IVehicleMovement

@@ -131,8 +131,6 @@ public:
   // IVehicleObject
   virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
 
-  virtual bool IsSubmerged() override;
-
 protected:
 
 	virtual bool InitPhysics(const SmartScriptTable &table);
