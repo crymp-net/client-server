@@ -2028,7 +2028,6 @@ void CVehicleMovementStdWheeled::OnValuesTweaked()
   }
 }
 
-
 //------------------------------------------------------------------------
 bool CVehicleMovementStdWheeled::DoGearSound()
 {

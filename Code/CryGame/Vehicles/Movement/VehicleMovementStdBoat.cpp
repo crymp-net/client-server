@@ -1038,6 +1038,7 @@ void CVehicleMovementStdBoat::Serialize(TSerialize ser, unsigned aspects)
   }
 };
 
+//------------------------------------------------------------------------
 void CVehicleMovementStdBoat::GetMemoryStatistics(ICrySizer * s)
 {
 	s->Add(*this);

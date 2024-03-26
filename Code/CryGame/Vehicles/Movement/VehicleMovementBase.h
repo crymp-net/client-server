@@ -308,7 +308,14 @@ public:
   virtual void ProcessEvent(SEntityEvent& event);
   virtual void SetSoundMasterVolume(float vol);
 
+  virtual bool IsEngineAffectedBySubmerge()
+  {
+	  return true;
+  }
+
 protected:
+
+  bool IsSubmerged();
 
   ILINE IPhysicalEntity* GetPhysics() const { return m_pVehicle->GetEntity()->GetPhysics(); }
   bool IsProfilingMovement();
@@ -338,7 +345,6 @@ protected:
   virtual bool CanUpdateDamageSound();
 
   virtual void UpdateGameTokens(const float deltaTime);
-  bool IsSubmerged();
   virtual void UpdateRunSound(const float deltaTime);
   bool IsSoundWithinReach(EVehicleMovementSound soundId);
   void UpdateDamageSound();

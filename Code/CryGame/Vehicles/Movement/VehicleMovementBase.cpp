@@ -580,7 +580,7 @@ void CVehicleMovementBase::UpdateDamageSound()
 
 	const float damage = GetSoundDamage();
 
-	if (damage > 0.1f)
+	if (damage > 0.1f && !m_pVehicle->IsDestroyed())
 	{
 		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
 		{
@@ -645,7 +645,7 @@ bool CVehicleMovementBase::IsSubmerged()
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateDamage(const float deltaTime)
 {
-	if (IsSubmerged())
+	if (IsSubmerged() && IsEngineAffectedBySubmerge())
 	{
 		if (m_damage < 1.f)
 		{
