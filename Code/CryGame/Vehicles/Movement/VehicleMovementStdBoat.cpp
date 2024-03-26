@@ -1038,6 +1038,13 @@ void CVehicleMovementStdBoat::Serialize(TSerialize ser, unsigned aspects)
   }
 };
 
+//------------------------------------------------------------------------
+bool CVehicleMovementStdBoat::IsSubmerged()
+{
+    return false; //CryMP: Boats shouldn't trigger engine stop if submerged
+}
+
+//------------------------------------------------------------------------
 void CVehicleMovementStdBoat::GetMemoryStatistics(ICrySizer * s)
 {
 	s->Add(*this);

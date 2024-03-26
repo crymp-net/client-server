@@ -580,7 +580,7 @@ void CVehicleMovementBase::UpdateDamageSound()
 
 	const float damage = GetSoundDamage();
 
-	if (damage > 0.1f)
+	if (damage > 0.1f && !m_pVehicle->IsDestroyed())
 	{
 		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
 		{

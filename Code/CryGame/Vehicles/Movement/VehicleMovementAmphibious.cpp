@@ -190,8 +190,14 @@ void CVehicleMovementAmphibious::Boost(bool enable)
   m_boat.Boost(enable);
 }
 
-
+//------------------------------------------------------------------------
 void CVehicleMovementAmphibious::GetMemoryStatistics(ICrySizer * s)
 {
   s->Add(*this);
+}
+
+//------------------------------------------------------------------------
+bool CVehicleMovementAmphibious::IsSubmerged()
+{
+    return false; //CryMP: Amphibious shouldn't trigger engine stop if submerged
 }

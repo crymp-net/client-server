@@ -51,6 +51,8 @@ public:
 
   virtual void GetMemoryStatistics(ICrySizer * s);
 
+  virtual bool IsSubmerged() override;
+
 protected:
 
   ILINE bool Submerged() { return m_statusDyn.submergedFraction > 0.01f; }

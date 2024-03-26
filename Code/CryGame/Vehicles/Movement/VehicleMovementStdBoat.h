@@ -77,7 +77,9 @@ virtual void OnAction(const TVehicleActionId actionId, int activationMode, float
 	virtual void Serialize(TSerialize ser, unsigned aspects);
   virtual void SetAuthority( bool auth ) { m_netActionSync.CancelReceived(); }
 
-	virtual void GetMemoryStatistics(ICrySizer * s);
+  virtual bool IsSubmerged() override;
+
+  virtual void GetMemoryStatistics(ICrySizer * s);
   // ~IVehicleMovement
 
   friend class CNetworkMovementStdBoat;
