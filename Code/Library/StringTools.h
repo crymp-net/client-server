@@ -102,6 +102,125 @@ namespace StringTools
 		return result;
 	}
 
+	template<typename T, typename U>
+	bool IsEqualNoCase(const T& stringA, const U& stringB)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t lengthA = Length(stringA);
+		const std::size_t lengthB = Length(stringB);
+
+		if (lengthA != lengthB)
+		{
+			return false;
+		}
+
+		for (std::size_t i = 0; i < lengthA; i++)
+		{
+			if (ToLowerChar(stringA[i]) != ToLowerChar(stringB[i]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template<typename T, typename U>
+	bool IsLessNoCase(const T& stringA, const U& stringB)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t lengthA = Length(stringA);
+		const std::size_t lengthB = Length(stringB);
+
+		const std::size_t minLength = (lengthA <= lengthB) ? lengthA : lengthB;
+
+		for (std::size_t i = 0; i < minLength; i++)
+		{
+			const char chA = ToLowerChar(stringA[i]);
+			const char chB = ToLowerChar(stringB[i]);
+
+			if (chA != chB)
+			{
+				return chA < chB;
+			}
+		}
+
+		if (lengthA != lengthB)
+		{
+			return lengthA < lengthB;
+		}
+
+		return false;
+	}
+
+	template<typename T, typename U>
+	bool StartsWithNoCase(const T& string, const U& prefix)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t stringLength = Length(string);
+		const std::size_t prefixLength = Length(prefix);
+
+		if (stringLength < prefixLength)
+		{
+			return false;
+		}
+
+		return IsEqualNoCase(std::basic_string_view<Char<T>>(CStr(string), prefixLength), prefix);
+	}
+
+	struct Comparator
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			return a < b;
+		}
+	};
+
+	struct ComparatorNoCase
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			return IsLessNoCase(a, b);
+		}
+	};
+
+	struct PathComparator
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			const auto fixSlash = [](char ch) -> char { return (ch == '\\') ? '/' : ch; };
+
+			const std::size_t minLength = (a.length() <= b.length()) ? a.length() : b.length();
+
+			for (std::size_t i = 0; i < minLength; i++)
+			{
+				const char chA = fixSlash(ToLowerChar(a[i]));
+				const char chB = fixSlash(ToLowerChar(b[i]));
+
+				if (chA != chB)
+				{
+					return chA < chB;
+				}
+			}
+
+			if (a.length() != b.length())
+			{
+				return a.length() < b.length();
+			}
+
+			return false;
+		}
+	};
+
 	inline std::string SafeString(const char* value)
 	{
 		return std::string(value ? value : "");

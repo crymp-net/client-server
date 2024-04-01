@@ -17,6 +17,8 @@ std::string MapExtractor::GetFileName(unsigned int index)
 		throw StringTools::ErrorFormat("ZIP get filename: %s", GetErrorString());
 	}
 
+	// TODO: normalize the path
+
 	return buffer;
 }
 

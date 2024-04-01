@@ -11,7 +11,6 @@
 #endif
 
 #include <cstdint>
-#include <vector>  // for smartptr.h
 
 #include "CryCommon/CryCore/platform.h"  // PRINTF_PARAMS
 #include "CryCommon/CryCore/smartptr.h"

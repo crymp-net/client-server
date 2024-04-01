@@ -33,8 +33,6 @@
 #include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CrySystem/ITimer.h"
 
-#include <vector>				// STL vector<>
-
 #define SERVER_DEFAULT_PORT 64087
 #define SERVER_DEFAULT_PORT_STRING "64087"
 
