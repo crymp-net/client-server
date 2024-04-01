@@ -1,4 +1,5 @@
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"

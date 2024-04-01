@@ -33,10 +33,12 @@
 #include "CryEngineDecalInfo.h" 
 #include "IStatObj.h"
 #include "CryCommon/CrySystem/IProcess.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "IMaterial.h"
 #include "ISurfaceType.h"
 #include "CryCommon/CryEntitySystem/IEntityRenderState.h"
 #include "CryCommon/CryCore/CryArray.h"
+#include "CryCommon/CryCore/smartptr.h"
 // !!! Do not add any headers here !!!
 
 struct ISystem;

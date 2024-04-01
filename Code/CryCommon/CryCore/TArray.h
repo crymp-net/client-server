@@ -5,8 +5,6 @@
 #ifndef __TARRAY_H__
 #define __TARRAY_H__
 
-#include "CryCommon/CrySystem/ICryPak.h"  // impl of fxopen
-
 #ifndef CLAMP
 #define CLAMP(X, mn, mx) ((X)<(mn) ? (mn) : ((X)<(mx) ? (X) : (mx)))
 #endif
@@ -443,26 +441,6 @@ public:
   {
 //    memset(&m_pElements[n],0,sizeof(T));
     _Remove(n, 1);
-  }
-
-  void Load(const char * file_name)
-  {
-    Clear();
-    FILE * f = fxopen(file_name, "rb");
-    if(!f)
-      return;
-    
-    int size = 0;
-    fread(&size, 4, 1, f);
-    
-    while(!feof(f) && sizeof(T)==size)
-    {
-      T tmp;
-      if(fread(&tmp, 1, sizeof(T), f) == sizeof(T))
-        AddElem(tmp);
-    }
-    
-    fclose(f);
   }
 
 

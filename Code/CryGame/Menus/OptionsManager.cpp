@@ -15,11 +15,13 @@ History:
 #include <cstring>
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "OptionsManager.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
 #include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
 #include "CryGame/HUD/HUD.h"
 #include "CrySystem/GameWindow.h"
 
@@ -47,8 +49,6 @@ COptionsManager::COptionsManager() : m_pPlayerProfileManager(NULL)
 
 	m_pbEnabled = false;
 	m_firstStart = false;
-
-	InitOpFuncMap();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ bool COptionsManager::IgnoreProfile()
 }
 
 
-ILINE bool IsOption(const char* attribName, const char*& cVarName, bool& bWriteToCfg)
+static bool IsOption(const char* attribName, const char*& cVarName, bool& bWriteToCfg)
 {
 	const char optionPrefix[] = "Option.";
 	const char optionPrefixConfig[] = "OptionCfg.";
@@ -188,8 +188,10 @@ void COptionsManager::InitProfileOptions(bool switchProfiles)
 
 		if (bIsOption)
 		{
-			SOptionEntry entry(attrib.name, bWriteToCfg);
-			m_profileOptions[attribCVar] = entry;
+			SOptionEntry& entry = m_profileOptions[attribCVar];
+			entry.name = attrib.name;
+			entry.writeToConfig = bWriteToCfg;
+
 			if (!bWriteToCfg || switchProfiles)
 			{
 				string value;
@@ -323,9 +325,6 @@ void COptionsManager::ResetDefaults(const char* option)
 
 void COptionsManager::UpdateFlashOptions()
 {
-	std::map<string, SOptionEntry>::const_iterator it = m_profileOptions.begin();
-	std::map<string, SOptionEntry>::const_iterator end = m_profileOptions.end();
-
 	CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
 	CFlashMenuScreen* pInGameMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
 
@@ -337,14 +336,14 @@ void COptionsManager::UpdateFlashOptions()
 
 	if (!pCurrentMenu) return;
 
-	for (;it != end;++it)
+	for (const auto& [cvar, entry] : m_profileOptions)
 	{
-		if (!strcmp(it->first.c_str(), "pb_client"))
+		if (cvar == "pb_client")
 		{
 			SFlashVarValue option[3] = { "pb_client", m_pbEnabled, true };
 			pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
 		}
-		else if (!_stricmp(it->first.c_str(), "fsaa_mode"))
+		else if (cvar == "fsaa_mode")
 		{
 			if (g_pGame->GetMenu())
 			{
@@ -364,7 +363,7 @@ void COptionsManager::UpdateFlashOptions()
 		}
 		else
 		{
-			ICVar* pCVar = gEnv->pConsole->GetCVar(it->first.c_str());
+			ICVar* pCVar = gEnv->pConsole->GetCVar(cvar.c_str());
 			if (pCVar)
 			{
 				const char* name = pCVar->GetName();
@@ -392,17 +391,13 @@ void COptionsManager::UpdateFlashOptions()
 
 void COptionsManager::UpdateToProfile()
 {
-	std::map<string, SOptionEntry>::const_iterator it = m_profileOptions.begin();
-	std::map<string, SOptionEntry>::const_iterator end = m_profileOptions.end();
-
-	for (;it != end;++it)
+	for (const auto& [cvar, entry] : m_profileOptions)
 	{
-		const SOptionEntry& entry = it->second;
-		if (!strcmp(it->first.c_str(), "pb_client"))
+		if (cvar == "pb_client")
 		{
 			SaveValueToProfile(entry.name.c_str(), m_pbEnabled ? 1 : 0);
 		}
-		else if (!strcmp(it->first.c_str(), "fsaa_mode"))
+		else if (cvar == "fsaa_mode")
 		{
 			string value("");
 			if (g_pGame->GetMenu())
@@ -418,10 +413,10 @@ void COptionsManager::UpdateToProfile()
 		}
 		else
 		{
-			ICVar* pCVAR = gEnv->pConsole->GetCVar(it->first.c_str());
-			if (pCVAR)
+			ICVar* pCVar = gEnv->pConsole->GetCVar(cvar.c_str());
+			if (pCVar)
 			{
-				string value(pCVAR->GetString());
+				string value(pCVar->GetString());
 				SaveValueToProfile(entry.name.c_str(), value);
 			}
 		}
@@ -482,35 +477,19 @@ bool COptionsManager::HandleFSCommand(const char* szCommand, const char* szArgs)
 		}
 	}
 
-	std::map<string, SOptionEntry>::iterator it = m_profileOptions.find(szCommand);
-	if (it != m_profileOptions.end())
+	if (m_profileOptions.contains(szCommand))
 	{
-		ICVar* pCVAR = gEnv->pConsole->GetCVar(szCommand);
-		if (pCVAR)
+		ICVar* pCVar = gEnv->pConsole->GetCVar(szCommand);
+		if (pCVar)
 		{
-			if (pCVAR->GetType() == 1)	//int
-			{
-				int value = atoi(szArgs);
-				pCVAR->Set(value);
-			}
-			else if (pCVAR->GetType() == 2)	//float
-			{
-				float value = atof(szArgs);
-				pCVAR->Set(value);
-			}
-			else if (pCVAR->GetType() == 3)	//string
-				pCVAR->Set(szArgs);
-			return true; // it's a CVAR, we are done!
-		}
-	}
-	//else //does this map to an options function? even if it is inside m_profileOptions, but not a console variable (e.g. pb_client), we want to see if it's a registered command
-	{
-		TOpFuncMapIt iter = m_opFuncMap.find(szCommand);
-		if (iter != m_opFuncMap.end())
-		{
-			(this->*(iter->second))(szArgs);
+			pCVar->Set(szArgs);
 			return true;
 		}
+	}
+
+	if (this->HandleSpecialCommand(szCommand, szArgs))
+	{
+		return true;
 	}
 
 	return false;
@@ -672,35 +651,6 @@ void COptionsManager::SaveProfile()
 	m_pPlayerProfileManager->SaveProfile(m_pPlayerProfileManager->GetCurrentUser(), result);
 	WriteGameCfg();
 }
-//-----------------------------------------------------------------------------------------------------
-
-void COptionsManager::OnElementFound(ICVar* pCVar)
-{
-	if (pCVar)
-	{
-		CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
-		CFlashMenuScreen* pInGameMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDINGAME));
-
-		CFlashMenuScreen* pCurrentMenu = NULL;
-		if (pMainMenu && pMainMenu->IsLoaded())
-			pCurrentMenu = pMainMenu;
-		else if (pInGameMenu && pInGameMenu->IsLoaded())
-			pCurrentMenu = pInGameMenu;
-		else
-			return;
-
-		const char* name = pCVar->GetName();
-		const char* value = pCVar->GetString();
-
-		bool bIsValid = true;
-
-		if (pCVar)
-			bIsValid = pCVar->GetIVal() == pCVar->GetRealIVal();
-
-		SFlashVarValue option[3] = { name, value, bIsValid };
-		pCurrentMenu->Invoke("Root.MainMenu.Options.SetOption", option, 3);
-	}
-}
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -804,18 +754,6 @@ void COptionsManager::PBClient(const char* params)
 
 //-----------------------------------------------------------------------------------------------------
 
-void COptionsManager::InitOpFuncMap()
-{
-	//set-up function pointer for complex options
-	m_opFuncMap["SetVideoMode"] = &COptionsManager::SetVideoMode;
-	m_opFuncMap["SetAntiAliasingMode"] = &COptionsManager::SetAntiAliasingMode;
-	m_opFuncMap["AutoDetectHardware"] = &COptionsManager::AutoDetectHardware;
-	m_opFuncMap["g_difficultyLevel"] = &COptionsManager::SetDifficulty;
-	m_opFuncMap["pb_client"] = &COptionsManager::PBClient;
-}
-
-//-----------------------------------------------------------------------------------------------------
-
 void COptionsManager::SystemConfigChanged(bool silent)
 {
 	//gEnv->pConsole->ExecuteString("sys_SaveCVars 1");
@@ -847,6 +785,39 @@ void COptionsManager::SystemConfigChanged(bool silent)
 
 //-----------------------------------------------------------------------------------------------------
 
+bool COptionsManager::HandleSpecialCommand(std::string_view command, const char* args)
+{
+	if (command == "SetVideoMode")
+	{
+		this->SetVideoMode(args);
+		return true;
+	}
+	else if (command == "SetAntiAliasingMode")
+	{
+		this->SetAntiAliasingMode(args);
+		return true;
+	}
+	else if (command == "AutoDetectHardware")
+	{
+		this->AutoDetectHardware(args);
+		return true;
+	}
+	else if (command == "g_difficultyLevel")
+	{
+		this->SetDifficulty(args);
+		return true;
+	}
+	else if (command == "pb_client")
+	{
+		this->PBClient(args);
+		return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 CFlashMenuScreen* COptionsManager::GetCurrentMenu()
 {
 	CFlashMenuScreen* pMainMenu = SAFE_MENU_FUNC_RET(GetMenuScreen(CFlashMenuObject::MENUSCREEN_FRONTENDSTART));
@@ -863,76 +834,65 @@ CFlashMenuScreen* COptionsManager::GetCurrentMenu()
 
 //-----------------------------------------------------------------------------------------------------
 
+static void EscapeChar(std::string& text, char ch)
+{
+	for (auto it = text.begin(); it != text.end(); ++it)
+	{
+		if (*it == ch)
+		{
+			it = text.insert(it, '\\');
+			++it;
+		}
+	}
+}
+
 bool COptionsManager::WriteGameCfg()
 {
-	FILE* pFile = fxopen("%USER%/game.cfg", "wb");
-	if (pFile == 0)
+	CCryFile file;
+	if (!file.Open("%USER%/game.cfg", "w"))
+	{
+		CryLogErrorAlways("Failed to open %USER%/game.cfg for writing!");
 		return false;
+	}
 
-	fputs("-- [Game-Configuration]\r\n", pFile);
-	fputs("-- Attention: This file is re-generated by the system! Editing is not recommended! \r\n\r\n", pFile);
+	file.Puts("-- [Game-Configuration]");
+	file.Puts("-- Attention: This file is re-generated by the system! Editing is not recommended!");
+	file.Puts("");
 
-	CCVarSink sink(this, pFile);
+	CCVarSink sink(this, file);
 	gEnv->pConsole->DumpCVars(&sink);
 
-	fclose(pFile);
 	return true;
 }
 
 void COptionsManager::CCVarSink::OnElementFound(ICVar* pCVar)
 {
-	if (pCVar == 0)
-		return;
-
-	std::string szLine = pCVar->GetName();
-	std::string szValue = pCVar->GetString();
-
-	// only save if we have an option to it
-	std::map<string, SOptionEntry>::const_iterator iter = m_pOptionsManager->m_profileOptions.find(CONST_TEMP_STRING(pCVar->GetName()));
-	if (iter == m_pOptionsManager->m_profileOptions.end())
-		return;
-	const SOptionEntry& entry = iter->second;
-	if (entry.bWriteToConfig == false)
-		return;
-
-	size_t pos;
-
-	// replace \ with \\ a
-
-	pos = 1;
-	for (;;)
+	if (!pCVar)
 	{
-		pos = szValue.find_first_of("\\", pos);
-
-		if (pos == std::string::npos)
-		{
-			break;
-		}
-
-		szValue.replace(pos, 1, "\\\\", 2);
-		pos += 2;
+		return;
 	}
 
-
-	// replace " with \"
-	pos = 1;
-	for (;;)
+	auto it = this->self->m_profileOptions.find(pCVar->GetName());
+	if (it == this->self->m_profileOptions.end())
 	{
-		pos = szValue.find_first_of("\"", pos);
-
-		if (pos == std::string::npos)
-		{
-			break;
-		}
-
-		szValue.replace(pos, 1, "\\\"", 2);
-		pos += 2;
+		return;
 	}
+
+	if (!it->second.writeToConfig)
+	{
+		return;
+	}
+
+	std::string value = pCVar->GetString();
+	EscapeChar(value, '\\');
+	EscapeChar(value, '"');
 
 	if (pCVar->GetType() == CVAR_STRING)
-		szLine += " = \"" + szValue + "\"\r\n";
+	{
+		this->file.FPrintf("%s = \"%s\"\n", pCVar->GetName(), value.c_str());
+	}
 	else
-		szLine += " = " + szValue + "\r\n";
-
-	fputs(szLine.c_str(), m_pFile);
+	{
+		this->file.FPrintf("%s = %s\n", pCVar->GetName(), value.c_str());
+	}
 }
