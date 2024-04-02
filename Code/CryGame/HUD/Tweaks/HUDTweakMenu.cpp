@@ -11,7 +11,7 @@ History:
 - 28:02:2006  : Created by Matthew Jack
 
 *************************************************************************/
-
+#include <string>
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
@@ -325,28 +325,33 @@ SmartScriptTable CHUDTweakMenu::FetchSaveTable( void ) {
 
 //-----------------------------------------------------------------------------------------------------
 
+static std::string DumpLuaTable(IScriptTable* table)
+{
+	IScriptSystem* pScriptSystem = gEnv->pScriptSystem;
+	SmartScriptFunction func(pScriptSystem, pScriptSystem->GetFunctionPtr("DumpTableAsLuaString"));
+	const char* result = nullptr;
+	Script::CallReturn(pScriptSystem, func, table, "Tweaks.TweaksSave", result);
+	return std::string(result ? result : "");
+}
 
-void CHUDTweakMenu::WriteChanges( void ) {
-
+void CHUDTweakMenu::WriteChanges(void)
+{
 	SmartScriptTable saveTable = FetchSaveTable();
-	if (! saveTable.GetPtr()) return;
-
-	m_menu->StoreChanges( saveTable.GetPtr() );
-
-
-	//FILE *file=gEnv->pCryPak->GetAlias("Game\\Scripts",true);
-	const char *szFolder=gEnv->pCryPak->GetAlias("Scripts",true);
-	char szScriptFolder[512];
-	_snprintf(szScriptFolder,512,"Game\\%s\\TweaksSave.lua",szFolder);
-	FILE *file=fxopen(szScriptFolder,"wt");
-	if (file) {
-		string luaText;
-		DumpLuaTable(saveTable.GetPtr(), file, luaText);
-		fprintf(file, "%s", luaText.c_str());
-		fclose(file);
-	} else {
-		CryLogWarning("No save - failed to open Tweak save file");
+	if (!saveTable)
+	{
+		return;
 	}
+
+	m_menu->StoreChanges(saveTable);
+
+	CCryFile file;
+	if (!file.Open("Scripts/TweaksSave.lua", "w"))
+	{
+		CryLogWarningAlways("No save - failed to open Tweak save file");
+		return;
+	}
+
+	file.FPrintf("%s", DumpLuaTable(saveTable).c_str());
 }
 
 //-----------------------------------------------------------------------------------------------------
