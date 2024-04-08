@@ -242,8 +242,15 @@ void CWorkOnTarget::NetStartFire()
 
 	const ItemString workAction(m_workactions.work.c_str());
 
-	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, 
+		CItem::eIPAF_Default|CItem::eIPAF_CleanBlending/*|CItem::eIPAF_SoundStartPaused*/);
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
+
+	if (ISound* pSound = m_pWeapon->GetISound(m_soundId))
+	{
+		pSound->SetLoopMode(true);
+		pSound->SetPaused(true); //CryMP: Need to pause manually as eIPAF_SoundStartPaused ain't working
+	}
 
 	m_delayTimer=m_workparams.delay;
 	m_firing=true;
