@@ -627,6 +627,11 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_netAimLerpFactor", &mp_netAimLerpFactor, 20.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients (1-50, 0:off)");
 	pConsole->Register("mp_netAimLerpFactorCrymp", &mp_netAimLerpFactorCrymp, 42.f, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "set aim smoothing for other clients when mp_crymp 1 (1-50, 0:off)");
 	pConsole->Register("mp_explosiveSilhouettes", &mp_explosiveSilhouettes, 0, VF_NOT_NET_SYNCED/*VF_CHEAT*/, "enables new indicators for explosives");
+
+	pConsole->Register("pl_netAimLerpFactor", &pl_netAimLerpFactor, 0.5f, VF_NOT_NET_SYNCED, "Factor to lerp the remote aim directions by");
+	pConsole->Register("pl_netSerialiseMaxSpeed", &pl_netSerialiseMaxSpeed, 9.0f, VF_NOT_NET_SYNCED, "Maximum char speed, used by interpolation");
+	pConsole->Register("pl_debugInterpolation", &pl_debugInterpolation, 0, VF_NOT_NET_SYNCED, "Debug interpolation");
+	pConsole->Register("pl_serialisePhysVel", &pl_serialisePhysVel, 0, VF_NOT_NET_SYNCED, "Debug interpolation");
 }
 
 //------------------------------------------------------------------------

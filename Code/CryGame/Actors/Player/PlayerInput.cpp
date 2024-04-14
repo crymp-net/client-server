@@ -987,10 +987,83 @@ void CPlayerInput::Update()
 
 void CPlayerInput::PostUpdate()
 {
+	/////////////////////////////////////////////////////////////////////////////////
+	// Have we changed what entity we are standing on?
+	EntityId standingOn = 0;
+	IPhysicalEntity* pEnt = m_pPlayer->GetEntity()->GetPhysics();
+	pe_status_living psl;
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+	if (pGameRules && pEnt && pEnt->GetStatus(&psl) && psl.pGroundCollider)
+	{
+		IEntity* pGroundEntity = gEnv->pEntitySystem->GetEntityFromPhysics(psl.pGroundCollider);
+		if (pGroundEntity)
+		{
+			standingOn = pGroundEntity->GetId();
+		}
+	}
+	if (standingOn != m_standingOn)
+	{
+		m_pPlayer->GetGameObject()->ChangedNetworkState(INPUT_ASPECT);
+		m_standingOn = standingOn;
+	}
+	/////////////////////////////////////////////////////////////////////////////////
+
 	if (m_actions != m_lastActions)
 		m_pPlayer->GetGameObject()->ChangedNetworkState(INPUT_ASPECT);
 
 	m_actions &= ~(ACTION_LEANLEFT | ACTION_LEANRIGHT);
+}
+
+void CPlayerInput::PatchParams(IEntity* standingOnEntity)
+{
+	if (standingOnEntity && g_pGameCVars->mp_buyPageKeepTime != 5)
+	{
+		pe_player_dynamics playerDynamics;
+		IPhysicalEntity* pPhysics = m_pPlayer->GetEntity()->GetPhysics();
+		if (pPhysics && pPhysics->GetParams(&playerDynamics))
+		{
+			float currentMaxVelGround = playerDynamics.maxVelGround;
+
+			pe_player_dynamics newPlayerDynamics;
+			newPlayerDynamics.maxVelGround = 20000.f;
+			newPlayerDynamics.kAirControl = 0.0f;
+			newPlayerDynamics.minFallAngle = 180.f;
+			newPlayerDynamics.minSlideAngle = 180.f;
+			newPlayerDynamics.kAirControl = 0.0f;
+			newPlayerDynamics.maxClimbAngle = 0.0f;
+			newPlayerDynamics.gravity = Vec3(ZERO);
+			pPhysics->SetParams(&newPlayerDynamics);
+
+			CryLogAlways("$3Patched params");
+		}
+	}
+	else
+	{
+		pe_player_dynamics playerDynamics;
+		IPhysicalEntity* pPhysics = m_pPlayer->GetEntity()->GetPhysics();
+		if (pPhysics && pPhysics->GetParams(&playerDynamics))
+		{
+			float currentMaxVelGround = playerDynamics.maxVelGround;
+
+			pe_player_dynamics playerDyn;
+			//playerDyn.kInertia = -NAN; //CryMP: Let engine take care of this, not used in lua params
+			playerDyn.kAirControl = 0.899999976f;
+			//playerDyn.kInertiaAccel = -NAN; 
+			playerDyn.kAirResistance = 0.5f;
+			playerDyn.gravity.z = 9.81000042f;
+			playerDyn.mass = 80.f;
+			playerDyn.minSlideAngle = 45.f;
+			playerDyn.maxClimbAngle = 50.f;
+			//playerDyn.maxJumpAngle = -NAN;
+			playerDyn.minFallAngle = 50.f;
+			// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
+			playerDyn.maxVelGround = 2000.f;
+			playerDyn.timeImpulseRecover = 1.0f;
+			pPhysics->SetParams(&playerDyn);
+
+			CryLogAlways("$8Reset params");
+		}
+	}
 }
 
 void CPlayerInput::GetState(SSerializedPlayerInput& input)
@@ -1013,6 +1086,33 @@ void CPlayerInput::GetState(SSerializedPlayerInput& input)
 	m_lookDir = input.lookDirection;
 
 	m_lastPos = movementState.pos;
+
+	input.inAir = false; // m_pPlayer->IsInAir();
+
+	if (g_pGameCVars->pl_serialisePhysVel)
+	{
+		//--- Serialise the physics vel instead, velocity over the NET_SERIALISE_PLAYER_MAX_SPEED will be clamped by the network so no guards here
+		input.standingOn = m_standingOn;
+		input.deltaMovement.zero();
+		IPhysicalEntity* pEnt = m_pPlayer->GetEntity()->GetPhysics();
+		pe_status_living psl;
+		if (pEnt && pEnt->GetStatus(&psl))
+		{
+			// Remove the ground velocity
+			input.deltaMovement = (psl.vel - psl.velGround) / g_pGameCVars->pl_netSerialiseMaxSpeed;
+			//input.deltaMovement.z = 0.0f;
+		}
+	}
+	input.sprint = m_pPlayer->IsSprinting();
+
+	input.aiming = true;
+	input.usinglookik = true;
+	input.allowStrafing = true;
+
+	float pseudoSpeed = 0.0f;
+	if (input.deltaMovement.len2() > 0.0f)
+		pseudoSpeed = m_pPlayer->CalculatePseudoSpeed(input.sprint);
+	input.pseudoSpeed = pseudoSpeed;
 }
 
 void CPlayerInput::SetState(const SSerializedPlayerInput& input)
@@ -1801,3 +1901,5 @@ float CPlayerInput::MapControllerValue(float value, float scale, float curve, bo
 	float res = scale * powf(fabs(value), curve);
 	return (value >= 0.0f ? (inverse ? -1.0f : 1.0f) : (inverse ? 1.0f : -1.0f)) * res;
 }
+
+

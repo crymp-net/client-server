@@ -15,10 +15,10 @@ if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
-if(MSVC_IDE)
+##if(MSVC_IDE)
 	# enable Edit and Continue
 	add_compile_options(/ZI)
-endif()
+##endif()
 
 ################################################################################
 
@@ -249,6 +249,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Actors/Player/IPlayerInput.h
 	Code/CryGame/Actors/Player/NanoSuit.cpp
 	Code/CryGame/Actors/Player/NanoSuit.h
+	Code/CryGame/Actors/Player/NetEnhancedPlayerInput.cpp
+	Code/CryGame/Actors/Player/NetEnhancedPlayerInput.h
 	Code/CryGame/Actors/Player/NetPlayerInput.cpp
 	Code/CryGame/Actors/Player/NetPlayerInput.h
 	Code/CryGame/Actors/Player/Player.cpp

@@ -36,6 +36,7 @@ public:
 	virtual void PreUpdate();
 	virtual void Update();
 	virtual void PostUpdate();
+	void PatchParams(IEntity* standingOnEntity);
 	// ~IPlayerInput
 
 	// IActionListener
@@ -154,6 +155,9 @@ private:
 	bool m_doubleJumped;
 
 	static TActionHandler<CPlayerInput>	s_actionHandler;
+
+	EntityId m_standingOn = 0;
+	float m_recheck = 0.0f;
 };
 
 #endif

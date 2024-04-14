@@ -70,6 +70,7 @@ History:
 
 #include "CryGame/Items/Weapons/Binocular.h"
 #include "CryGame/SoundMoods.h"
+#include "NetEnhancedPlayerInput.h"
 
 // enable this to check nan's on position updates... useful for debugging some weird crashes
 #define ENABLE_NAN_CHECK
@@ -967,7 +968,10 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 			}
 			else
 			{
-				m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
+				if (g_pGameCVars->mp_crymp == 2)
+					m_pPlayerInput = std::make_unique<CNetEnhancedPlayerInput>(this);
+				else
+					m_pPlayerInput = std::make_unique<CNetPlayerInput>(this);
 			}
 		}
 		else if (IsDemoPlayback())
@@ -4751,6 +4755,8 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 	if (!CActor::NetSerialize(ser, aspect, profile, flags))
 		return false;
 
+	const bool reading = ser.IsReading();
+
 	if (aspect == ASPECT_HEALTH)
 	{
 		ser.Value("health", m_health, 'hlth');
@@ -4760,7 +4766,6 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 	}
 	if (aspect == ASPECT_CURRENT_ITEM)
 	{
-		bool reading = ser.IsReading();
 		bool hasWeapon = false;
 		if (!reading)
 			hasWeapon = NetGetCurrentItem() != 0;
@@ -4779,11 +4784,20 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 	{
 		SSerializedPlayerInput serializedInput;
 		if (m_pPlayerInput && ser.IsWriting())
+		{
 			m_pPlayerInput->GetState(serializedInput);
 
+			if (IsClient() && !reading)
+			{
+				serializedInput.position = GetEntity()->GetPos();
+				//serializedInput.physCounter = GetNetPhysCounter();
+			}
+		}
 		//CryMP: improved serialization accuracy for clients with CryMP mod
 		//Smoother weapon dir changes (Server enables it with mp_crymp 1, else default serialization)
-		if (g_pGameCVars->mp_crymp == 1)
+		if (g_pGameCVars->mp_crymp == 2)
+			serializedInput.Serialize_CryMP_2(ser);
+		else if (g_pGameCVars->mp_crymp == 1)
 			serializedInput.Serialize_CryMP(ser);
 		else
 			serializedInput.Serialize_Default(ser);
@@ -4793,7 +4807,10 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 			m_pPlayerInput->SetState(serializedInput);
 		}
 
-		ser.Value("VehicleViewRotation", m_vehicleViewDir, 'dir0');
+		if (g_pGameCVars->mp_crymp == 2)
+			ser.Value("VehicleViewRotation", m_vehicleViewDir, 'dir3');
+		else
+			ser.Value("VehicleViewRotation", m_vehicleViewDir, 'dir0');
 	}
 	return true;
 }

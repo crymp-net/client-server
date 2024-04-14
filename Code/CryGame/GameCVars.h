@@ -465,6 +465,10 @@ struct SCVars
 	float		mp_netAimLerpFactor;
 	float		mp_netAimLerpFactorCrymp;
 	int         mp_explosiveSilhouettes;
+	float		pl_netAimLerpFactor;
+	float		pl_netSerialiseMaxSpeed;
+	int			pl_debugInterpolation;
+	int			pl_serialisePhysVel;
 
 	SCVars();
 	~SCVars();

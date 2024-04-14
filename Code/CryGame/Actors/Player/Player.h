@@ -805,9 +805,6 @@ protected:
 
 	std::unique_ptr<IPlayerInput> m_pPlayerInput;
 
-	// compatibility with old code: which actions are set
-	int m_actions;
-
 	// TODO: wish i could figure out a way of removing this
 	// was the rotation forced this frame?
 	bool m_forcedRotation;
@@ -879,7 +876,8 @@ public:
 	IDebugHistoryManager* m_pDebugHistoryManager;
 	void DebugGraph_AddValue(const char* id, float value) const;
 
-
+	// compatibility with old code: which actions are set
+	int m_actions;
 //////////////////////////////////////////////////////////////////////////////////
 //CryMP 
 //////////////////////////////////////////////////////////////////////////////////
@@ -889,8 +887,6 @@ protected:
 	float m_tpLeanOffset = 0.0f;
 	float m_tpProneOffset = 0.0f;
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
-	Vec3 m_netAimDir = Vec3(ZERO);
-	Vec3 m_netAimDirSmooth = Vec3(ZERO);
 	int m_currentSeatId = -1;
 	bool m_bSlowCamera = false;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
@@ -917,6 +913,9 @@ public:
 	{
 		return m_fParachuteMorph > 0.0f;
 	}
+
+	Vec3 m_netAimDir = Vec3(ZERO);
+	Vec3 m_netAimDirSmooth = Vec3(ZERO);
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }
 	Vec3 GetNetAimDir() const { return m_netAimDir; }

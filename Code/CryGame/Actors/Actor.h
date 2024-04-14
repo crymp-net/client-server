@@ -1321,10 +1321,13 @@ public:
 		return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActorByChannelId(actorId));
 	}
 
+	ILINE uint8 GetNetPhysCounter() { return m_netPhysCounter; }
+
 private:
 
 	std::string m_playerNameClean = "";
 	bool m_isPlayerClass = false;
+	uint8 m_netPhysCounter = 0;	//	Physics counter, to enable us to throw away old updates
 };
 
 #endif //__Actor_H__

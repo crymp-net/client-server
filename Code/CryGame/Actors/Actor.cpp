@@ -43,6 +43,8 @@
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
 
+#define PHYSICS_COUNTER_MAX		4
+
 IItemSystem* CActor::m_pItemSystem = 0;
 IGameFramework* CActor::m_pGameFramework = 0;
 IGameplayRecorder* CActor::m_pGameplayRecorder = 0;
@@ -637,7 +639,7 @@ void CActor::Physicalize(EStance stance)
 		//playerDyn.maxJumpAngle = -NAN;
 		playerDyn.minFallAngle = 50.f;
 		// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
-		playerDyn.maxVelGround = 200.f;
+		playerDyn.maxVelGround = 2000.f;
 		playerDyn.timeImpulseRecover = 1.0f;
 
 		if (!is_unused(playerDyn.timeImpulseRecover))
@@ -736,7 +738,7 @@ void CActor::Physicalize(EStance stance)
 
 				// for MP allow players to stand on fast moving surfaces (specifically moving vehicles, but will apply to everything)
 				if (gEnv->bMultiplayer)
-					playerDyn.maxVelGround = 200.0f;
+					playerDyn.maxVelGround = 2000.0f;
 
 				if (!is_unused(playerDyn.timeImpulseRecover))
 					m_timeImpulseRecover = playerDyn.timeImpulseRecover;
@@ -3496,6 +3498,11 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 		SupressViewBlending(); // no view bleding when respawning // CActor::Revive resets it.
 		if (g_pGame->GetHUD())
 			g_pGame->GetHUD()->GetRadar()->Reset();
+	}
+
+	if (gEnv->bServer)
+	{
+		m_netPhysCounter = (m_netPhysCounter + 1) & (PHYSICS_COUNTER_MAX - 1);
 	}
 }
 
