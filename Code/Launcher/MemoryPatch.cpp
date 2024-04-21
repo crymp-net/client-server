@@ -161,6 +161,28 @@ void MemoryPatch::CryNetwork::FixInternetConnect(void* pCryNetwork)
 #endif
 }
 
+/**
+ * Fixes LAN server browser unable to find any servers when GameSpy is only used for LAN lobby.
+ */
+void MemoryPatch::CryNetwork::FixLanServerBrowser(void* pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0x40, 0x3A, 0xF8,  // cmp dil, al
+	};
+#else
+	const unsigned char code[] = {
+		0x38, 0x5D, 0x08,  // cmp byte ptr ss:[ebp+0x8], bl
+	};
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryNetwork, 0x110D8A, &code, sizeof(code));
+#else
+	FillMem(pCryNetwork, 0x53936, &code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryRenderD3D9
 ////////////////////////////////////////////////////////////////////////////////

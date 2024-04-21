@@ -594,6 +594,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryNetwork::EnablePreordered(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::FixLanServerBrowser(m_dlls.pCryNetwork);
 	}
 
 	if (m_dlls.pCrySystem)
