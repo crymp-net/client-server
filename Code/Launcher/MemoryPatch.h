@@ -19,6 +19,7 @@ namespace MemoryPatch
 		void EnablePreordered(void* pCryNetwork);
 		void FixFileCheckCrash(void* pCryNetwork);
 		void FixInternetConnect(void* pCryNetwork);
+		void FixLanServerBrowser(void* pCryNetwork);
 	}
 
 	namespace CryRenderD3D9
