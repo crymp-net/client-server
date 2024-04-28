@@ -53,6 +53,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetKeyName, "action");
 	SCRIPT_REG_TEMPLFUNC(IsKeyUsed, "key");
 	SCRIPT_REG_TEMPLFUNC(CreateKeyBind, "key, command");
+	SCRIPT_REG_TEMPLFUNC(CreateKeyFunction, "key, function");
 	SCRIPT_REG_FUNC(ClearKeyBinds);
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
@@ -354,6 +355,13 @@ int ScriptBind_CPPAPI::IsKeyUsed(IFunctionHandler* pH, const char* key)
 int ScriptBind_CPPAPI::CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action)
 {
 	gClient->AddKeyBind(key, action);
+
+	return pH->EndFunction(true);
+}
+
+int ScriptBind_CPPAPI::CreateKeyFunction(IFunctionHandler* pH, const char* key, HSCRIPTFUNCTION function)
+{
+	gClient->AddKeyBind(key, function);
 
 	return pH->EndFunction(true);
 }

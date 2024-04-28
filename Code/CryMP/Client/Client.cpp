@@ -382,13 +382,69 @@ void Client::AddKeyBind(const std::string_view& key, const std::string_view& com
 	}
 }
 
+void Client::AddKeyBind(const std::string_view& key, HSCRIPTFUNCTION function)
+{
+	for (KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			if (bind.function)
+			{
+				gEnv->pScriptSystem->ReleaseFunc(bind.function);
+			}
+			bind.function = function;
+			return;
+		}
+	}
+
+	KeyBind& bind = m_keyBinds.emplace_back();
+	bind.key = key;
+	bind.function = function;
+
+	if (m_pGameFramework->GetClientActor())
+	{
+		bind.createdInGame = true;
+	}
+}
+
 void Client::OnKeyPress(const std::string_view& key)
 {
 	for (const KeyBind& bind : m_keyBinds)
 	{
 		if (bind.key == key)
 		{
-			gEnv->pConsole->ExecuteString(bind.command.c_str());
+			if (!bind.command.empty())
+			{
+				gEnv->pConsole->ExecuteString(bind.command.c_str());
+			}
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(1); //press
+					pSS->EndCall();
+				}
+			}
+		}
+	}
+}
+
+void Client::OnKeyRelease(const std::string_view& key)
+{
+	for (const KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(2); //release
+					pSS->EndCall();
+				}
+			}
 		}
 	}
 }
@@ -397,6 +453,10 @@ void Client::ClearKeyBinds()
 {
 	const auto createdInGame = [](KeyBind& bind) -> bool
 	{
+		if (bind.function && bind.createdInGame)
+		{
+			gEnv->pScriptSystem->ReleaseFunc(bind.function);
+		}
 		return bind.createdInGame;
 	};
 
