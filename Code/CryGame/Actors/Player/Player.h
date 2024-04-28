@@ -649,6 +649,8 @@ public:
 	void RegisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
 	void UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
 
+	void ResetOpacity();
+
 	ILINE bool GravityBootsOn() const
 	{
 		return false; //(m_actions & ACTION_GRAVITYBOOTS && InZeroG() )?true:false;

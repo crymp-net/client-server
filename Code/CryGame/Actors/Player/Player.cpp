@@ -1966,6 +1966,16 @@ void CPlayer::UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventLi
 	stl::find_and_erase(m_playerEventListeners, pPlayerEventListener);
 }
 
+void CPlayer::ResetOpacity()
+{
+	//CryMP: reset opacity (just incase)
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+	if (pRenderProxy)
+	{
+		pRenderProxy->SetOpacity(1.0f);
+	}
+}
+
 IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 {
 	IEntity* pLinkedEntity = CActor::LinkToVehicle(vehicleId);
@@ -1991,12 +2001,7 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		{
 			SupressViewBlending();
 
-			//CryMP: reset opacity (just incase)
-			IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
-			if (pRenderProxy)
-			{
-				pRenderProxy->SetOpacity(1.0f);
-			}
+			ResetOpacity();
 
 		}
 	}
@@ -3922,6 +3927,11 @@ void CPlayer::Kill()
 {
 	//CryMP
 	NotifyObjectGrabbed(false, 0, false);
+
+	if (IsClient())
+	{
+		ResetOpacity();
+	}
 
 	if (CNanoSuit* pSuit = GetNanoSuit())
 		pSuit->Death();
