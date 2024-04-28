@@ -67,7 +67,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	{
 		std::string key;
 		std::string command;
-		HSCRIPTFUNCTION function = nullptr;
+		SmartScriptFunction function;
 		bool createdInGame = false;
 	};
 

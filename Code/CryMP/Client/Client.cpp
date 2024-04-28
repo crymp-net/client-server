@@ -388,18 +388,14 @@ void Client::AddKeyBind(const std::string_view& key, HSCRIPTFUNCTION function)
 	{
 		if (bind.key == key)
 		{
-			if (bind.function)
-			{
-				gEnv->pScriptSystem->ReleaseFunc(bind.function);
-			}
-			bind.function = function;
+			bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
 			return;
 		}
 	}
 
 	KeyBind& bind = m_keyBinds.emplace_back();
 	bind.key = key;
-	bind.function = function;
+	bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
 
 	if (m_pGameFramework->GetClientActor())
 	{
@@ -453,10 +449,6 @@ void Client::ClearKeyBinds()
 {
 	const auto createdInGame = [](KeyBind& bind) -> bool
 	{
-		if (bind.function && bind.createdInGame)
-		{
-			gEnv->pScriptSystem->ReleaseFunc(bind.function);
-		}
 		return bind.createdInGame;
 	};
 
