@@ -672,12 +672,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 
 	if (eDI_Keyboard == rInputEvent.deviceId)
 	{
-		if (gEnv->pConsole->GetStatus())
-		{
-			m_repeatEvent.keyId = eKI_Unknown;
-			return false;
-		}
-		else if (eIS_Pressed == rInputEvent.state)
+		if (eIS_Pressed == rInputEvent.state)
 		{
 			//CryMP: F5 for refreshing serverlist
 			if (rInputEvent.keyId == eKI_F5)
@@ -688,6 +683,17 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 
 			//CryMP: KeyBinds
 			gClient->OnKeyPress(rInputEvent.keyName);
+		}
+		else if (eIS_Released == rInputEvent.state)
+		{
+			//CryMP
+			gClient->OnKeyRelease(rInputEvent.keyName);
+		}
+
+		if (gEnv->pConsole->GetStatus())
+		{
+			m_repeatEvent.keyId = eKI_Unknown;
+			return false;
 		}
 
 		if (m_bUpdate && (eIS_Pressed == rInputEvent.state || eIS_Released == rInputEvent.state))
