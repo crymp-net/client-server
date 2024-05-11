@@ -11,6 +11,8 @@
   - 17:8:2005        : Modified - NickH: Factory registration moved to GameFactory.cpp
 
 *************************************************************************/
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Game.h"
 #include "GameCVars.h"
@@ -353,6 +355,8 @@ bool CGame::CompleteInit()
 
 int CGame::Update(bool haveFocus, unsigned int updateFlags)
 {
+	ZoneScoped;
+
 	bool bRun = m_pFramework->PreUpdate(true, updateFlags);
 	float frameTime = gEnv->pTimer->GetFrameTime();
 

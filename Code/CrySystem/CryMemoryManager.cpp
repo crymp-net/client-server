@@ -11,6 +11,8 @@
 //#include <mimalloc.h>
 //#include <mimalloc-new-delete.h>
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
@@ -331,6 +333,19 @@ extern "C" void free(void* p)
 }
 */
 
+void* operator new(std::size_t count)
+{
+	void* ptr = std::malloc(count);
+	TracyAllocN(ptr, count, "global_new_delete");
+	return ptr;
+}
+
+void operator delete(void* ptr) noexcept
+{
+	TracyFreeN(ptr, "global_new_delete");
+	std::free(ptr);
+}
+
 static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
 	void* result = nullptr;
@@ -340,6 +355,7 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 		if (g_STLport_Allocator && size == STLport_Allocator::BLOCK_SIZE)
 		{
 			result = g_STLport_Allocator->Allocate();
+			TracyAllocN(result, size, "STLport");
 
 			allocatedSize = size;
 		}
@@ -347,6 +363,7 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 		{
 			//result = std::calloc(1, size);
 			result = g_allocator.Allocate(size);
+			TracyAllocN(result, size, "CryMalloc");
 
 			//allocatedSize = _msize(result);
 			allocatedSize = size;
@@ -384,10 +401,12 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 
 			if (isBlock)
 			{
+				TracyFreeN(mem, "STLport");
 				g_STLport_Allocator->Deallocate(mem);
 			}
 			else
 			{
+				TracyFreeN(mem, "CryMalloc");
 				//std::free(mem);
 				g_allocator.Deallocate(mem);
 			}
@@ -446,12 +465,14 @@ static std::size_t CryFree_hook(void* mem)
 		{
 			result = STLport_Allocator::BLOCK_SIZE;
 
+			TracyFreeN(mem, "STLport");
 			g_STLport_Allocator->Deallocate(mem);
 		}
 		else
 		{
 			//result = _msize(mem);
 
+			TracyFreeN(mem, "CryMalloc");
 			//std::free(mem);
 			result = g_allocator.Deallocate(mem);
 		}

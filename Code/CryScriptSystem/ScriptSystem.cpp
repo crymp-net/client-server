@@ -9,6 +9,8 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -60,6 +62,7 @@ void *ScriptSystem::Allocate(size_t size)
 
 	// TODO: optimized memory allocator
 	void *block = malloc(size);
+	TracyAllocN(block, size, "ScriptSystem");
 
 	// we never fail
 	if (!block)
@@ -75,6 +78,7 @@ void ScriptSystem::Deallocate(void *block)
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
+	TracyFreeN(block, "ScriptSystem");
 	free(block);
 }
 
