@@ -187,22 +187,64 @@ void MemoryPatch::CryNetwork::FixLanServerBrowser(void* pCryNetwork)
 // CryRenderD3D9
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Fixes use-after-free bug in shader parser.
+ *
+ * The original code first destroys a string and then calls atof on it. The fix simply changes the order.
+ */
+void MemoryPatch::CryRenderD3D9::FixUseAfterFreeInShaderParser(void* pCryRenderD3D9)
+{
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0x48, 0x8B, 0x30,                    // mov rsi, qword ptr ds:[rax]
+		// call atof and store the resulting value
+		0x48, 0x8B, 0xCE,                    // mov rcx, rsi
+		0xFF, 0x15, 0xAD, 0x44, 0x0D, 0x00,  // call qword ptr ds:[<&atof>]
+		0xF2, 0x0F, 0x5A, 0xC8,              // cvtsd2ss xmm1, xmm0
+		0xF3, 0x0F, 0x11, 0x4F, 0x10,        // movss dword ptr ds:[rdi+0x10], xmm1
+		// CryString destructor
+		0x48, 0x8B, 0x4C, 0x24, 0x78,        // mov rcx, qword ptr ss:[rsp+0x78]
+		0x8B, 0x41, 0xF4,                    // mov eax, dword ptr ds:[rcx-0xC]
+		0x48, 0x83, 0xC1, 0xF4,              // add rcx, 0xFFFFFFFFFFFFFFF4
+		0x85, 0xC0,                          // test eax, eax
+		0x78, 0x1C,                          // js cryrenderd3d9.38192FE8 -----------+
+		0x83, 0xC0, 0xFF,                    // add eax, 0xFFFFFFFF                  |
+		0x85, 0xC0,                          // test eax, eax                        |
+		0x89, 0x01,                          // mov dword ptr ds:[rcx], eax          |
+		0x7F, 0x13,                          // jg cryrenderd3d9.38192FE8 -----------+
+		0xB8, 0xF3, 0xFF, 0xFF, 0xFF,        // mov eax, 0xFFFFFFF3                  |
+		0x2B, 0x41, 0x08,                    // sub eax, dword ptr ds:[rcx+0x8]      |
+		0x01, 0x05, 0x65, 0x16, 0x18, 0x00,  // add dword ptr ds:[0x38314648], eax   |
+		0xE8, 0xC8, 0x09, 0xF5, 0xFF,        // call <cryrenderd3d9.sub_380E39B0>    |
+	};                                           //                                   <--+
+#else
+	// TODO: 32-bit
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryRenderD3D9, 0x192FA7, &code, sizeof(code));
+#else
+	// TODO: 32-bit
+#endif
+}
+
+static void SetWindowName(char* buffer, const char* name)
+{
+	constexpr std::size_t BUFFER_SIZE = 80;
+
+	std::size_t length = std::strlen(name);
+	if (length >= BUFFER_SIZE)
+	{
+		length = BUFFER_SIZE - 1;
+	}
+
+	std::memcpy(buffer, name, length);
+	buffer[length] = '\0';
+}
+
 static void HookWindowName(void* pCryRender, std::size_t offset, const char* name)
 {
-	using SetFunc = void (*)(char* buffer, const char* name);
-
-	const SetFunc pSetFunc = [](char* buffer, const char* name)
-	{
-		constexpr std::size_t BUFFER_SIZE = 80;
-
-		std::size_t length = std::strlen(name);
-		if (length >= BUFFER_SIZE)
-		{
-			length = BUFFER_SIZE - 1;
-		}
-
-		std::memcpy(buffer, name, length + 1);
-	};
+	void* pSetFunc = &SetWindowName;
 
 #ifdef BUILD_64BIT
 	unsigned char code[] = {
@@ -304,17 +346,21 @@ void MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(void* pCryRenderD3D10)
 }
 
 /**
- * TODO: description
+ * Fixes use-after-free bug in shader parser.
+ *
+ * The original code first destroys a string and then calls atof on it. The fix simply changes the order.
  */
 void MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(void* pCryRenderD3D10)
 {
 #ifdef BUILD_64BIT
 	const unsigned char code[] = {
 		0x48, 0x8B, 0x30,                    // mov rsi, qword ptr ds:[rax]
+		// call atof and store the resulting value
 		0x48, 0x8B, 0xCE,                    // mov rcx, rsi
 		0xFF, 0x15, 0x2D, 0x34, 0x0C, 0x00,  // call qword ptr ds:[<&atof>]
 		0xF2, 0x0F, 0x5A, 0xC8,              // cvtsd2ss xmm1, xmm0
 		0xF3, 0x0F, 0x11, 0x4F, 0x10,        // movss dword ptr ds:[rdi+0x10], xmm1
+		// CryString destructor
 		0x48, 0x8B, 0x4C, 0x24, 0x78,        // mov rcx, qword ptr ss:[rsp+0x78]
 		0x8B, 0x41, 0xF4,                    // mov eax, dword ptr ds:[rcx-0xC]
 		0x48, 0x83, 0xC1, 0xF4,              // add rcx, 0xFFFFFFFFFFFFFFF4

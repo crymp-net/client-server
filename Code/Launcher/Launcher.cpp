@@ -695,6 +695,7 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCryRenderD3D9)
 	{
+		MemoryPatch::CryRenderD3D9::FixUseAfterFreeInShaderParser(m_dlls.pCryRenderD3D9);
 		MemoryPatch::CryRenderD3D9::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
 		MemoryPatch::CryRenderD3D9::HookAdapterInfo(m_dlls.pCryRenderD3D9, &OnD3D9Info);
 	}

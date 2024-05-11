@@ -39,6 +39,7 @@ namespace MemoryPatch
 			// ...
 		};
 
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D9);
 		void HookWindowNameD3D9(void* pCryRenderD3D9, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D9, void (*handler)(AdapterInfo* info));
 	}
