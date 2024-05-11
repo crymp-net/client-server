@@ -345,6 +345,66 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 	return true;
 }
 
+bool WinAPI::HookIATByName(void *pDLL, const char *name, const char *funcName, void *pNewFunc)
+{
+	const IMAGE_DATA_DIRECTORY* importData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IMPORT);
+	if (!importData)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return false;
+	}
+
+	bool found = false;
+
+	const IMAGE_IMPORT_DESCRIPTOR* importDescriptor =
+		static_cast<const IMAGE_IMPORT_DESCRIPTOR*>(RVA(pDLL, importData->VirtualAddress));
+
+	for (; importDescriptor->Name && importDescriptor->FirstThunk; ++importDescriptor)
+	{
+		const char* dllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
+		if (_stricmp(dllName, name) != 0)
+		{
+			continue;
+		}
+
+		const IMAGE_THUNK_DATA* thunks =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->OriginalFirstThunk));
+
+		const IMAGE_THUNK_DATA* pIAT =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->FirstThunk));
+
+		for (size_t i = 0; thunks[i].u1.Ordinal; ++i)
+		{
+			if (IMAGE_SNAP_BY_ORDINAL(thunks[i].u1.Ordinal))
+			{
+				continue;
+			}
+
+			const IMAGE_IMPORT_BY_NAME* thunkData =
+				static_cast<const IMAGE_IMPORT_BY_NAME*>(RVA(pDLL, thunks[i].u1.AddressOfData));
+
+			const char* thunkName = reinterpret_cast<const char*>(thunkData->Name);
+			if (strcmp(thunkName, funcName) != 0)
+			{
+				continue;
+			}
+
+			found = true;
+
+			// hook the function
+			FillMem(const_cast<IMAGE_THUNK_DATA*>(&pIAT[i]), &pNewFunc, sizeof(void*));
+		}
+	}
+
+	if (!found)
+	{
+		SetLastError(ERROR_PROC_NOT_FOUND);
+		return false;
+	}
+
+	return true;
+}
+
 ///////////
 // Files //
 ///////////

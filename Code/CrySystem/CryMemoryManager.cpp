@@ -480,6 +480,32 @@ static void CrySystemCrtFree_hook(void* mem)
 	CryFree_hook(mem);
 }
 
+static void* calloc_hook(std::size_t count, std::size_t size)
+{
+	return CrySystemCrtMalloc_hook(count * size);
+}
+
+static void* realloc_hook(void* ptr, std::size_t size)
+{
+	std::size_t allocatedSize = 0;
+	return CryRealloc_hook(ptr, size, allocatedSize);
+}
+
+static char* strdup_hook(const char* str)
+{
+	const std::size_t length = std::strlen(str);
+
+	void* newstr = CrySystemCrtMalloc_hook(length + 1);
+	if (!newstr)
+	{
+		return nullptr;
+	}
+
+	std::memcpy(newstr, str, length + 1);
+
+	return static_cast<char*>(newstr);
+}
+
 static void Hook(void* pFunc, void* pNewFunc)
 {
 	if (!pFunc)
@@ -552,4 +578,16 @@ void CryMemoryManager::Init(void* pCrySystem)
 std::string CryMemoryManager::GetCallstack(void* address)
 {
 	return g_allocator.GetCallstack(address);
+}
+
+void CryMemoryManager::RedirectMalloc(void* pDLL)
+{
+	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "malloc", CrySystemCrtMalloc_hook);
+	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "calloc", calloc_hook);
+	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "realloc", realloc_hook);
+	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "free", CrySystemCrtFree_hook);
+	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "strdup", strdup_hook);
+
+	// TODO: operator new
+	// TODO: operator delete
 }
