@@ -5,15 +5,11 @@
 #include <cstring>
 #include <mutex>
 #include <unordered_map>
-#include <vector>
 //#include <mimalloc.h>
 //#include <mimalloc-new-delete.h>
 
-// TODO: hook msvcr80.malloc
-
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/StringTools.h"
-#include "Library/CrashLogger.h"  // CrashLogger::FindLoadedModule
 #include "Library/WinAPI.h"
 
 #include "CryMemoryManager.h"
@@ -30,7 +26,7 @@ static void Log(const char* format, ...)
 	std::fflush(stream);
 }
 
-std::string CaptureCallstack()
+static std::string CaptureCallstack()
 {
 	constexpr unsigned int MAX_COUNT = 60;
 
@@ -46,61 +42,6 @@ std::string CaptureCallstack()
 
 	return result;
 }
-
-struct PoolAllocator
-{
-	std::vector<void*> free_chunks;
-	void* mem_begin = nullptr;
-	void* mem_end = nullptr;
-
-	bool Init(std::size_t chunk_size, std::size_t chunk_count)
-	{
-		const std::size_t total_size = chunk_size * chunk_count;
-
-		this->mem_begin = VirtualAlloc(nullptr, total_size, MEM_COMMIT, PAGE_READWRITE);
-		if (!this->mem_begin)
-		{
-			return false;
-		}
-
-		this->mem_end = static_cast<unsigned char*>(this->mem_begin) + total_size;
-
-		this->free_chunks.resize(chunk_count);
-
-		for (std::size_t i = 0; i < chunk_count; i++)
-		{
-			this->free_chunks[i] = static_cast<unsigned char*>(this->mem_begin) + (i * chunk_size);
-		}
-
-		return true;
-	}
-
-	void* Allocate()
-	{
-		if (this->free_chunks.empty())
-		{
-			WinAPI::ErrorBox("PoolAllocator::Allocate: No free chunks!");
-			return nullptr;
-		}
-
-		void* chunk = this->free_chunks.back();
-		this->free_chunks.pop_back();
-
-		return chunk;
-	}
-
-	bool Deallocate(void* chunk)
-	{
-		if (chunk < this->mem_begin || chunk >= this->mem_end)
-		{
-			return false;
-		}
-
-		this->free_chunks.push_back(chunk);
-
-		return true;
-	}
-};
 
 struct DebugAllocator
 {
@@ -264,7 +205,6 @@ struct DebugAllocator
 	}
 };
 
-PoolAllocator g_pool_allocator;
 DebugAllocator g_allocator;
 
 /*
@@ -291,13 +231,6 @@ extern "C" void free(void* p)
 
 static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
-	if (size == 0x80000)
-	{
-		void* chunk = g_pool_allocator.Allocate();
-		allocatedSize = (chunk) ? 0x80000 : 0;
-		return chunk;
-	}
-
 	void* result = nullptr;
 
 	if (gEnv)
@@ -384,11 +317,6 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 
 static std::size_t CryFree_hook(void* mem)
 {
-	if (g_pool_allocator.Deallocate(mem))
-	{
-		return 0x80000;
-	}
-
 	std::size_t result = 0;
 
 	if (gEnv)
@@ -483,32 +411,12 @@ static void FixHeapUnderflow(void* pCrySystem)
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
-	g_pool_allocator.Init(0x80000, 256);
-
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
-
-/*
-	// WinAPI::DLL::Get does not work because msvcr80.dll is stored in WinSxS
-	void* msvcr80 = CrashLogger::FindLoadedModule(L"msvcr80.dll");
-	if (msvcr80)
-	{
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "malloc"), mi_zalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_malloc_crt"), mi_zalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "calloc"), mi_zalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_calloc_crt"), mi_zalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "realloc"), mi_rezalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_realloc_crt"), mi_rezalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_recalloc"), mi_rezalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_recalloc_crt"), mi_rezalloc);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "_msize"), mi_usable_size);
-		Hook(WinAPI::DLL::GetSymbol(msvcr80, "free"), mi_free);
-	}
-*/
 
 	FixHeapUnderflow(pCrySystem);
 
