@@ -393,7 +393,7 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 		if (mem)
 		{
 			const bool isBlock = g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem);
-			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : _msize(mem);
+			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : g_allocator.GetSize(mem);
 
 			result = CryMalloc_hook(size, allocatedSize);
 
