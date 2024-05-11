@@ -1,8 +1,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <array>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <malloc.h>  // _msize
 #include <mutex>
 #include <unordered_map>
 //#include <mimalloc.h>
@@ -205,7 +208,106 @@ struct DebugAllocator
 	}
 };
 
+struct STLport_Allocator
+{
+	static constexpr std::size_t BLOCK_SIZE = 0x80000;
+	static constexpr std::size_t BLOCK_COUNT = 2048;
+
+	static_assert(BLOCK_SIZE >= sizeof(void*));
+	static_assert(BLOCK_COUNT > 0);
+
+	void* freeList = nullptr;
+	void* freeListLast = nullptr;
+	std::mutex mutex;
+	std::array<void*, BLOCK_COUNT> blocks = {};
+
+	STLport_Allocator()
+	{
+		for (std::size_t i = 0; i < BLOCK_COUNT; i++)
+		{
+			void* block = VirtualAlloc(nullptr, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (!block)
+			{
+				WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: VirtualAlloc failed!");
+				return;
+			}
+
+			if (!this->freeList)
+			{
+				this->freeList = block;
+				this->freeListLast = block;
+			}
+			else
+			{
+				*static_cast<void**>(this->freeListLast) = block;
+				this->freeListLast = block;
+			}
+
+			blocks[i] = block;
+
+			if ((reinterpret_cast<std::size_t>(block) + BLOCK_SIZE) > 0x100000000UL)
+			{
+				WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: End beyond 4 GiB boundary!");
+			}
+		}
+	}
+
+	void* Allocate()
+	{
+		std::lock_guard lock(this->mutex);
+
+		void* block = this->freeList;
+
+		if (this->freeList == this->freeListLast)
+		{
+			this->freeList = nullptr;
+			this->freeListLast = nullptr;
+		}
+		else
+		{
+			this->freeList = *static_cast<void**>(this->freeList);
+		}
+
+		if (!block)
+		{
+			WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: Out of memory!");
+			return nullptr;
+		}
+
+		return block;
+	}
+
+	void Deallocate(void* block)
+	{
+		std::lock_guard lock(this->mutex);
+
+		if (!this->freeList)
+		{
+			this->freeList = block;
+			this->freeListLast = block;
+		}
+		else
+		{
+			*static_cast<void**>(this->freeListLast) = block;
+			this->freeListLast = block;
+		}
+	}
+
+	bool IsBlock(void* x)
+	{
+		bool result = false;
+
+		for (void* block : this->blocks)
+		{
+			result |= (block == x);
+		}
+
+		return result;
+	}
+};
+
 DebugAllocator g_allocator;
+STLport_Allocator* g_STLport_Allocator = nullptr;
 
 /*
 extern "C" void* malloc(std::size_t size)
@@ -233,85 +335,104 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
 	void* result = nullptr;
 
+	const auto doCryMalloc = [&]()
+	{
+		if (g_STLport_Allocator && size == STLport_Allocator::BLOCK_SIZE)
+		{
+			result = g_STLport_Allocator->Allocate();
+
+			allocatedSize = size;
+		}
+		else
+		{
+			//result = std::calloc(1, size);
+			result = g_allocator.Allocate(size);
+
+			//allocatedSize = _msize(result);
+			allocatedSize = size;
+		}
+	};
+
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		result = g_allocator.Allocate(size);
+		doCryMalloc();
 	}
 	else
 	{
-		result = g_allocator.Allocate(size);
+		doCryMalloc();
 	}
-
-	allocatedSize = size;
 
 	return result;
 }
 
 static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocatedSize)
 {
-	const auto do_realloc = [](void* mem, std::size_t newsize) -> void*
+	void* result = nullptr;
+
+	const auto doCryRealloc = [&]()
 	{
-		void* result = nullptr;
-
-		if (newsize == 0)
+		if (mem)
 		{
-			g_allocator.Deallocate(mem);
-		}
-		else
-		{
-			const std::size_t oldsize = g_allocator.GetSize(mem);
+			const bool isBlock = g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem);
+			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : _msize(mem);
 
-			if (newsize > oldsize)
+			result = CryMalloc_hook(size, allocatedSize);
+
+			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
+
+			if (isBlock)
 			{
-				result = g_allocator.Allocate(newsize);
-
-				if (result)
-				{
-					std::memcpy(result, mem, oldsize);
-				}
-
-				g_allocator.Deallocate(mem);
+				g_STLport_Allocator->Deallocate(mem);
 			}
 			else
 			{
-				result = mem;
+				//std::free(mem);
+				g_allocator.Deallocate(mem);
 			}
 		}
-
-		return result;
+		else
+		{
+			result = CryMalloc_hook(size, allocatedSize);
+		}
 	};
-
-	void* result = nullptr;
-
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-
-		result = do_realloc(mem, size);
+		doCryRealloc();
 	}
 	else
 	{
-		result = do_realloc(mem, size);
+		doCryRealloc();
 	}
-
-	allocatedSize = size;
-
 	return result;
 }
 
 static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 {
+	const auto getMemSize = [](void* mem) -> std::size_t
+	{
+		if (g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem))
+		{
+			return STLport_Allocator::BLOCK_SIZE;
+		}
+		else
+		{
+			//return _msize(mem);
+			return g_allocator.GetSize(mem);
+		}
+	};
+
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		return g_allocator.GetSize(mem);
+		return getMemSize(mem);
 	}
 	else
 	{
-		return g_allocator.GetSize(mem);
+		return getMemSize(mem);
 	}
 }
 
@@ -319,46 +440,44 @@ static std::size_t CryFree_hook(void* mem)
 {
 	std::size_t result = 0;
 
+	const auto doCryFree = [&]()
+	{
+		if (g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem))
+		{
+			result = STLport_Allocator::BLOCK_SIZE;
+
+			g_STLport_Allocator->Deallocate(mem);
+		}
+		else
+		{
+			//result = _msize(mem);
+
+			//std::free(mem);
+			result = g_allocator.Deallocate(mem);
+		}
+	};
+
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-
-		result = g_allocator.Deallocate(mem);
+		doCryFree();
 	}
 	else
 	{
-		result = g_allocator.Deallocate(mem);
+		doCryFree();
 	}
-
 	return result;
 }
 
 static void* CrySystemCrtMalloc_hook(std::size_t size)
 {
-	if (gEnv)
-	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-
-		return g_allocator.Allocate(size);
-	}
-	else
-	{
-		return g_allocator.Allocate(size);
-	}
+	std::size_t allocatedSize = 0;
+	return CryMalloc_hook(size, allocatedSize);
 }
 
 static void CrySystemCrtFree_hook(void* mem)
 {
-	if (gEnv)
-	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-
-		g_allocator.Deallocate(mem);
-	}
-	else
-	{
-		g_allocator.Deallocate(mem);
-	}
+	CryFree_hook(mem);
 }
 
 static void Hook(void* pFunc, void* pNewFunc)
@@ -411,6 +530,8 @@ static void FixHeapUnderflow(void* pCrySystem)
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
+	g_STLport_Allocator = new STLport_Allocator;
+
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
