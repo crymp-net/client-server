@@ -737,6 +737,7 @@ add_executable(${CRYMP_CLIENT_EXE}
 	ThirdParty/nlohmann/json.hpp
 	ThirdParty/nlohmann/json_fwd.hpp
 	ThirdParty/picosha2.h
+	ThirdParty/tracy/public/TracyClient.cpp
 	${PROJECT_BINARY_DIR}/config.h
 	${PROJECT_BINARY_DIR}/version.h
 )
@@ -810,12 +811,17 @@ if(BUILD_BITS EQUAL 64)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
-target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
+target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS TRACY_ENABLE)
 
 target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
-target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
+target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE
+	ThirdParty
+	ThirdParty/Lua/src
+	ThirdParty/miniz
+	ThirdParty/tracy/public
+)
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 
