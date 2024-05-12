@@ -233,11 +233,11 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			if (SymGetLineFromAddr(process, address, &lineOffset, &line))
 			{
-				std::fprintf(file, " (%s:%u)\n", BaseName(line.FileName), line.LineNumber);
+				std::fprintf(file, " [%s:%u]\n", BaseName(line.FileName), line.LineNumber);
 			}
 			else
 			{
-				std::fprintf(file, " ()\n");
+				std::fprintf(file, " []\n");
 			}
 		}
 
