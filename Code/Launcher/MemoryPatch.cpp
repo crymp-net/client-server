@@ -4,21 +4,16 @@
 
 #include "MemoryPatch.h"
 
-static void* ByteOffset(void* base, std::size_t offset)
-{
-	return static_cast<unsigned char*>(base) + offset;
-}
-
 static void FillNop(void* base, std::size_t offset, std::size_t size)
 {
-	void* address = ByteOffset(base, offset);
+	void* address = static_cast<unsigned char*>(base) + offset;
 
 	WinAPI::FillNOP(address, size);
 }
 
 static void FillMem(void* base, std::size_t offset, const void* data, std::size_t dataSize)
 {
-	void* address = ByteOffset(base, offset);
+	void* address = static_cast<unsigned char*>(base) + offset;
 
 	WinAPI::FillMem(address, data, dataSize);
 }
@@ -187,42 +182,77 @@ void MemoryPatch::CryNetwork::FixLanServerBrowser(void* pCryNetwork)
 // CryRenderD3D9
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef BUILD_64BIT
+static void DoFixUseAfterFreeInShaderParser(void* pCryRender, std::size_t codeOffset,
+	std::size_t secondMovOffset,
+	std::size_t secondMovSize,
+	std::size_t atofRegionOffset,
+	std::size_t atofRegionSize)
+{
+	const std::size_t firstMovOffset = 0x0;
+	const std::size_t firstMovSize = secondMovOffset;
+	const std::size_t stringDtorRegionOffset = secondMovOffset + secondMovSize;
+	const std::size_t stringDtorRegionSize = atofRegionOffset - stringDtorRegionOffset;
+
+	const unsigned char* oldCode = static_cast<unsigned char*>(pCryRender) + codeOffset;
+	unsigned char newCode[256];
+
+	// copy and reorder old code
+	std::size_t newCodeSize = 0;
+	std::memcpy(newCode + newCodeSize, oldCode + secondMovOffset, secondMovSize);
+	newCodeSize += secondMovSize;
+	std::memcpy(newCode + newCodeSize, oldCode + atofRegionOffset, atofRegionSize);
+	newCodeSize += atofRegionSize;
+	std::memcpy(newCode + newCodeSize, oldCode + firstMovOffset, firstMovSize);
+	newCodeSize += firstMovSize;
+	std::memcpy(newCode + newCodeSize, oldCode + stringDtorRegionOffset, stringDtorRegionSize);
+	newCodeSize += stringDtorRegionSize;
+
+	const std::size_t newAtofRegionOffset = secondMovSize;
+
+	// patch offsets relative to instruction pointer
+	int offset;
+
+	std::memcpy(&offset, newCode + newAtofRegionOffset + 5, 4);
+	offset += static_cast<int>(firstMovSize + stringDtorRegionSize);
+	std::memcpy(newCode + newAtofRegionOffset + 5, &offset, 4);
+
+	std::memcpy(&offset, newCode + (newCodeSize - 4), 4);
+	offset -= static_cast<int>(atofRegionSize);
+	std::memcpy(newCode + (newCodeSize - 4), &offset, 4);
+
+	std::memcpy(&offset, newCode + (newCodeSize - 9), 4);
+	offset -= static_cast<int>(atofRegionSize);
+	std::memcpy(newCode + (newCodeSize - 9), &offset, 4);
+
+	// inject new code
+	FillMem(pCryRender, codeOffset, newCode, newCodeSize);
+}
+#endif
+
 /**
- * Fixes use-after-free bug in shader parser.
+ * Fixes use-after-free bugs in shader parser.
  *
- * The original code first destroys a string and then calls atof on it. The fix simply changes the order.
+ * The original code first destroys a string and then calls atof on it. This patch simply changes the order.
  */
 void MemoryPatch::CryRenderD3D9::FixUseAfterFreeInShaderParser(void* pCryRenderD3D9)
 {
 #ifdef BUILD_64BIT
-	const unsigned char code[] = {
-		0x48, 0x8B, 0x30,                    // mov rsi, qword ptr ds:[rax]
-		// call atof and store the resulting value
-		0x48, 0x8B, 0xCE,                    // mov rcx, rsi
-		0xFF, 0x15, 0xAD, 0x44, 0x0D, 0x00,  // call qword ptr ds:[<&atof>]
-		0xF2, 0x0F, 0x5A, 0xC8,              // cvtsd2ss xmm1, xmm0
-		0xF3, 0x0F, 0x11, 0x4F, 0x10,        // movss dword ptr ds:[rdi+0x10], xmm1
-		// CryString destructor
-		0x48, 0x8B, 0x4C, 0x24, 0x78,        // mov rcx, qword ptr ss:[rsp+0x78]
-		0x8B, 0x41, 0xF4,                    // mov eax, dword ptr ds:[rcx-0xC]
-		0x48, 0x83, 0xC1, 0xF4,              // add rcx, 0xFFFFFFFFFFFFFFF4
-		0x85, 0xC0,                          // test eax, eax
-		0x78, 0x1C,                          // js cryrenderd3d9.38192FE8 -----------+
-		0x83, 0xC0, 0xFF,                    // add eax, 0xFFFFFFFF                  |
-		0x85, 0xC0,                          // test eax, eax                        |
-		0x89, 0x01,                          // mov dword ptr ds:[rcx], eax          |
-		0x7F, 0x13,                          // jg cryrenderd3d9.38192FE8 -----------+
-		0xB8, 0xF3, 0xFF, 0xFF, 0xFF,        // mov eax, 0xFFFFFFF3                  |
-		0x2B, 0x41, 0x08,                    // sub eax, dword ptr ds:[rcx+0x8]      |
-		0x01, 0x05, 0x65, 0x16, 0x18, 0x00,  // add dword ptr ds:[0x38314648], eax   |
-		0xE8, 0xC8, 0x09, 0xF5, 0xFF,        // call <cryrenderd3d9.sub_380E39B0>    |
-	};                                           //                                   <--+
-#else
-	// TODO: 32-bit
-#endif
-
-#ifdef BUILD_64BIT
-	FillMem(pCryRenderD3D9, 0x192FA7, &code, sizeof(code));
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x127C87, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x127D0D, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12B4D7, 0x5, 0x3, 0x2C, 0xD);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C05F, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C128, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C182, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C1DF, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C23C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C296, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C2F0, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C34A, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C3A4, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C3FB, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x19280C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x192FA7, 0x5, 0x3, 0x2F, 0x12);
 #else
 	// TODO: 32-bit
 #endif
@@ -346,9 +376,9 @@ void MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(void* pCryRenderD3D10)
 }
 
 /**
- * Fixes use-after-free bug in shader parser.
+ * Fixes use-after-free bugs in shader parser.
  *
- * The original code first destroys a string and then calls atof on it. The fix simply changes the order.
+ * The original code first destroys a string and then calls atof on it. This patch simply changes the order.
  */
 void MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(void* pCryRenderD3D10)
 {
@@ -375,6 +405,8 @@ void MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(void* pCryRender
 		0x01, 0x05, 0xE9, 0x93, 0x14, 0x00,  // add dword ptr ds:[0x382D244C], eax    |
 		0xE8, 0x78, 0x22, 0xF5, 0xFF,        // call <cryrenderd3d10.sub_380DB2E0>    |
 	};                                           //                                    <--+
+
+	// TODO: DoFixUseAfterFreeInShaderParser
 #else
 	// TODO: 32-bit
 #endif
