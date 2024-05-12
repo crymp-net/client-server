@@ -172,7 +172,7 @@ struct DebugAllocator
 			return reinterpret_cast<void*>(reinterpret_cast<std::size_t>(address) & 0xFFFFFFFFU);
 		};
 
-		const void* address_32bit = to_32bit(address);
+		const void* address_32bit = (address == to_32bit(address)) ? to_32bit(address) : nullptr;
 
 		std::string callstack;
 
