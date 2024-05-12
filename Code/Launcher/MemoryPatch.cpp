@@ -641,3 +641,26 @@ void MemoryPatch::CrySystem::UnhandledExceptions(void* pCrySystem)
 	FillNop(pCrySystem, 0x59DF8, 0x13);
 #endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// FMODEx
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Fixes truncation of 64-bit heap buffer addresses inside FMOD.
+ */
+void MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(void* pFMODEx)
+{
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0x48, 0x8D, 0x40, 0x0F,              // lea rax, qword ptr ds:[rax+0xF]
+		0x48, 0x83, 0xE0, 0xF0,              // and rax, 0xFFFFFFFFFFFFFFF0
+		0x90,                                // nop
+		0x90,                                // nop
+		0x90,                                // nop
+		0x41, 0xB9, 0x3C, 0x00, 0x00, 0x00,  // mov r9d, 0x3C
+	};
+
+	FillMem(pFMODEx, 0x486B7, &code, sizeof(code));
+#endif
+}

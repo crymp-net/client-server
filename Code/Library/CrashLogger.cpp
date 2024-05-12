@@ -11,6 +11,7 @@
 
 #include "CrashLogger.h"
 
+// TODO: remove this dependency
 #include "CrySystem/CryMemoryManager.h"
 
 #ifdef BUILD_64BIT

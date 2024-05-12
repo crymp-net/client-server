@@ -707,6 +707,11 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
 		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
 	}
+
+	if (m_dlls.pFmodEx)
+	{
+		MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(m_dlls.pFmodEx);
+	}
 }
 
 void Launcher::StartEngine()

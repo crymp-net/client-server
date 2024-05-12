@@ -79,4 +79,9 @@ namespace MemoryPatch
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
 	}
+
+	namespace FMODEx
+	{
+		void Fix64BitHeapAddressTruncation(void* pFMODEx);
+	}
 }
