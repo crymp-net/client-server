@@ -19,6 +19,7 @@
 
 #include "CryMemoryManager.h"
 
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
 static void Log(const char* format, ...)
 {
 	FILE* stream = stdout;
@@ -101,7 +102,9 @@ struct DebugAllocator
 
 		const std::size_t remaining_size = size % this->page_size;
 		const std::size_t alignment = (remaining_size > 0) ? this->page_size - remaining_size : 0;
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW
 		pointer = static_cast<uint8_t*>(pointer) + alignment;
+#endif
 
 		Block& block = this->blocks[pointer];
 		block.begin = begin;
@@ -209,6 +212,7 @@ struct DebugAllocator
 		return callstack;
 	}
 };
+#endif
 
 struct STLport_Allocator
 {
@@ -308,7 +312,10 @@ struct STLport_Allocator
 	}
 };
 
-DebugAllocator g_allocator;
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+DebugAllocator g_debugAllocator;
+#endif
+
 STLport_Allocator* g_STLport_Allocator = nullptr;
 
 /*
@@ -361,12 +368,18 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 		}
 		else
 		{
-			//result = std::calloc(1, size);
-			result = g_allocator.Allocate(size);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+			result = g_debugAllocator.Allocate(size);
+#else
+			result = std::calloc(1, size);
+#endif
 			TracyAllocN(result, size, "CryMalloc");
 
-			//allocatedSize = _msize(result);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
 			allocatedSize = size;
+#else
+			allocatedSize = _msize(result);
+#endif
 		}
 	};
 
@@ -393,7 +406,11 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 		if (mem)
 		{
 			const bool isBlock = g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem);
-			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : g_allocator.GetSize(mem);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : g_debugAllocator.GetSize(mem);
+#else
+			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : _msize(mem);
+#endif
 
 			result = CryMalloc_hook(size, allocatedSize);
 
@@ -407,8 +424,11 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 			else
 			{
 				TracyFreeN(mem, "CryMalloc");
-				//std::free(mem);
-				g_allocator.Deallocate(mem);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+				g_debugAllocator.Deallocate(mem);
+#else
+				std::free(mem);
+#endif
 			}
 		}
 		else
@@ -438,8 +458,11 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 		}
 		else
 		{
-			//return _msize(mem);
-			return g_allocator.GetSize(mem);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+			return g_debugAllocator.GetSize(mem);
+#else
+			return _msize(mem);
+#endif
 		}
 	};
 
@@ -470,11 +493,14 @@ static std::size_t CryFree_hook(void* mem)
 		}
 		else
 		{
-			//result = _msize(mem);
 
 			TracyFreeN(mem, "CryMalloc");
-			//std::free(mem);
-			result = g_allocator.Deallocate(mem);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+			result = g_debugAllocator.Deallocate(mem);
+#else
+			result = _msize(mem);
+			std::free(mem);
+#endif
 		}
 	};
 
@@ -553,6 +579,7 @@ static void Hook(void* pFunc, void* pNewFunc)
 	WinAPI::FillMem(pFunc, code, sizeof code);
 }
 
+// TODO: move this to MemoryPatch
 static void FixHeapUnderflow(void* pCrySystem)
 {
 #ifdef BUILD_64BIT
@@ -571,7 +598,7 @@ static void FixHeapUnderflow(void* pCrySystem)
 	WinAPI::FillMem(static_cast<unsigned char*>(pCrySystem) + 0xDEE82, &codeA, sizeof(codeA));
 	WinAPI::FillMem(static_cast<unsigned char*>(pCrySystem) + 0xDEF0F, &codeB, sizeof(codeB));
 #else
-	// TODO
+	// TODO: 32-bit
 #endif
 }
 
@@ -587,18 +614,15 @@ void CryMemoryManager::Init(void* pCrySystem)
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
 
 	FixHeapUnderflow(pCrySystem);
-
-#ifdef BUILD_64BIT
-	WinAPI::FillNOP(static_cast<unsigned char*>(pCrySystem) + 0x30C3, 0x2);
-	WinAPI::FillNOP(static_cast<unsigned char*>(pCrySystem) + 0x31A0, 0x2);
-#else
-	// TODO
-#endif
 }
 
 std::string CryMemoryManager::GetCallstack(void* address)
 {
-	return g_allocator.GetCallstack(address);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+	return g_debugAllocator.GetCallstack(address);
+#else
+	return {};
+#endif
 }
 
 void CryMemoryManager::RedirectMalloc(void* pDLL)

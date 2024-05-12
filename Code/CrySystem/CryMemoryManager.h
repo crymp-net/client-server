@@ -2,6 +2,9 @@
 
 #include <string>
 
+#define CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+#define CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW
+
 namespace CryMemoryManager
 {
 	void Init(void* pCrySystem);
