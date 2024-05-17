@@ -105,13 +105,13 @@ std::size_t StringTools::FormatTo(std::string& result, const char* format, ...)
 	return length;
 }
 
-std::size_t StringTools::FormatToV(std::string& result, const char* format, va_list args)
+static std::size_t FormatToGenericStringV(auto& result, const char* format, va_list args)
 {
 	va_list argsCopy;
 	va_copy(argsCopy, args);
 
 	char buffer[512];
-	std::size_t length = FormatToV(buffer, sizeof buffer, format, args);
+	std::size_t length = StringTools::FormatToV(buffer, sizeof buffer, format, args);
 
 	// make sure the resulting string is not truncated
 	if (length < sizeof buffer)
@@ -126,7 +126,7 @@ std::size_t StringTools::FormatToV(std::string& result, const char* format, va_l
 		result.resize(existingLength + length);
 
 		// format string again with proper buffer size
-		length = FormatToV(result.data() + existingLength, length + 1, format, argsCopy);
+		length = StringTools::FormatToV(result.data() + existingLength, length + 1, format, argsCopy);
 
 		if (result.length() > length)
 		{
@@ -137,6 +137,26 @@ std::size_t StringTools::FormatToV(std::string& result, const char* format, va_l
 	va_end(argsCopy);
 
 	return length;
+}
+
+std::size_t StringTools::FormatToV(std::string& result, const char* format, va_list args)
+{
+	return FormatToGenericStringV(result, format, args);
+}
+
+std::size_t StringTools::FormatTo(std::pmr::string& result, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	std::size_t length = FormatToV(result, format, args);
+	va_end(args);
+
+	return length;
+}
+
+std::size_t StringTools::FormatToV(std::pmr::string& result, const char* format, va_list args)
+{
+	return FormatToGenericStringV(result, format, args);
 }
 
 std::size_t StringTools::FormatTo(char* buffer, std::size_t bufferSize, const char* format, ...)

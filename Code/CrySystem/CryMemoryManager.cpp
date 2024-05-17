@@ -2,10 +2,12 @@
 #include <windows.h>
 
 #include <array>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <malloc.h>  // _msize
+#include <memory_resource>
 #include <mutex>
 #include <unordered_map>
 //#include <mimalloc.h>
@@ -32,22 +34,67 @@ static void Log(const char* format, ...)
 	std::fflush(stream);
 }
 
-static std::string CaptureCallstack()
+static std::pmr::string CaptureCallstack(std::pmr::memory_resource* memory)
 {
-	constexpr unsigned int MAX_COUNT = 60;
+	constexpr unsigned int MAX_DEPTH = 32;
 
-	void* buffer[MAX_COUNT];
-	const unsigned int count = RtlCaptureStackBackTrace(0, MAX_COUNT, buffer, nullptr);
+	void* callstack[MAX_DEPTH];
+	const unsigned int count = RtlCaptureStackBackTrace(0, MAX_DEPTH, callstack, nullptr);
 
-	std::string result;
+	const unsigned int resultLength = count * ((sizeof(void*) * 2) + 1);
+
+	std::pmr::string result(memory);
+	result.resize(resultLength);
+	auto it = result.begin();
 
 	for (unsigned int i = 0; i < count; i++)
 	{
-		StringTools::FormatTo(result, "%p\n", buffer[i]);
+		for (int j = (sizeof(void*) * 8) - 4; j >= 0; j -= 4)
+		{
+			*it++ = "0123456789ABCDEF"[(reinterpret_cast<std::uintptr_t>(callstack[i]) >> j) & 0xf];
+		}
+
+		*it++ = '\n';
 	}
 
 	return result;
 }
+
+struct CustomHeap final : public std::pmr::memory_resource
+{
+	HANDLE heap = nullptr;
+
+	CustomHeap()
+	{
+		this->heap = HeapCreate(0, 0, 0);
+		if (!this->heap)
+		{
+			WinAPI::ErrorBox("CustomHeap: HeapCreate failed!");
+			*reinterpret_cast<int*>(0) = 666;
+		}
+	}
+
+	void* do_allocate(std::size_t bytes, std::size_t alignment) override
+	{
+		return HeapAlloc(this->heap, 0, bytes);
+	}
+
+	void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
+	{
+		HeapFree(this->heap, 0, p);
+	}
+
+	bool do_is_equal(const std::pmr::memory_resource& other) const noexcept override
+	{
+		const CustomHeap* otherSameType = dynamic_cast<const CustomHeap*>(&other);
+		if (!otherSameType)
+		{
+			return false;
+		}
+
+		return this->heap == otherSameType->heap;
+	}
+};
 
 struct DebugAllocator
 {
@@ -57,11 +104,14 @@ struct DebugAllocator
 		bool is_allocated = false;
 		std::size_t requested_size = 0;
 		std::size_t total_size = 0;
-		std::string callstack;
+		std::pmr::string callstack;
+
+		explicit Block(std::pmr::memory_resource* memory) : callstack(memory) {}
 	};
 
-	std::unordered_map<void*, Block> blocks;
-	std::mutex mutex;
+	CustomHeap heap;
+	std::pmr::unordered_map<void*, Block> blocks{&heap};
+	std::recursive_mutex mutex;
 	std::size_t page_size = 0;
 	std::size_t alloc_granularity = 0;
 	std::size_t last_address = 0x20000000000;
@@ -77,7 +127,7 @@ struct DebugAllocator
 
 	void* Allocate(std::size_t size)
 	{
-		std::string callstack = CaptureCallstack();
+		std::pmr::string callstack = CaptureCallstack(&this->heap);
 
 		const std::size_t block_page_count = (size + this->page_size - 1) / this->page_size;
 		const std::size_t total_size = (2 + block_page_count) * this->page_size;
@@ -106,12 +156,12 @@ struct DebugAllocator
 		pointer = static_cast<uint8_t*>(pointer) + alignment;
 #endif
 
-		Block& block = this->blocks[pointer];
-		block.begin = begin;
-		block.is_allocated = true;
-		block.callstack = std::move(callstack);
-		block.requested_size = size;
-		block.total_size = total_size;
+		auto [it, added] = this->blocks.emplace(pointer, &this->heap);
+		it->second.begin = begin;
+		it->second.is_allocated = true;
+		it->second.callstack = std::move(callstack);
+		it->second.requested_size = size;
+		it->second.total_size = total_size;
 
 		Log("%04x: Allocate(%zu) -> %p\n", GetCurrentThreadId(), size, pointer);
 
@@ -166,7 +216,7 @@ struct DebugAllocator
 		return 0;
 	}
 
-	std::string GetCallstack(void* address)
+	std::pmr::string GetCallstack(void* address)
 	{
 		std::lock_guard lock(this->mutex);
 
@@ -177,7 +227,7 @@ struct DebugAllocator
 
 		const void* address_32bit = (address == to_32bit(address)) ? to_32bit(address) : nullptr;
 
-		std::string callstack;
+		std::pmr::string callstack;
 
 		for (const auto& [pointer, block] : this->blocks)
 		{
@@ -185,7 +235,7 @@ struct DebugAllocator
 
 			if (address >= block.begin && address < end)
 			{
-				callstack += StringTools::Format(
+				StringTools::FormatTo(callstack,
 					"match: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n%s",
 					block.begin,
 					end,
@@ -197,7 +247,7 @@ struct DebugAllocator
 			}
 			else if (address_32bit && address_32bit >= to_32bit(block.begin) && address_32bit < to_32bit(end))
 			{
-				callstack += StringTools::Format(
+				StringTools::FormatTo(callstack,
 					"possible match: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n%s",
 					block.begin,
 					end,
@@ -212,6 +262,12 @@ struct DebugAllocator
 		return callstack;
 	}
 };
+
+static DebugAllocator& GetDebugAlloc()
+{
+	static DebugAllocator instance;
+	return instance;
+}
 #endif
 
 struct STLport_Allocator
@@ -312,46 +368,90 @@ struct STLport_Allocator
 	}
 };
 
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-DebugAllocator g_debugAllocator;
-#endif
-
 STLport_Allocator* g_STLport_Allocator = nullptr;
 
-/*
 extern "C" void* malloc(std::size_t size)
 {
-	return mi_malloc(size);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+	void* ptr = GetDebugAlloc().Allocate(size);
+#else
+	void* ptr = mi_malloc(size);
+#endif
+	TracyAllocN(ptr, size, "crymp_malloc");
+	return ptr;
 }
 
 extern "C" void* calloc(std::size_t count, std::size_t size)
 {
-	return mi_calloc(count, size);
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+	void* ptr = GetDebugAlloc().Allocate(count * size);
+#else
+	void* ptr = mi_calloc(count, size);
+#endif
+	TracyAllocN(ptr, count * size, "crymp_malloc");
+	return ptr;
 }
 
-extern "C" void* realloc(void* p, std::size_t newsize)
+extern "C" void* realloc(void* ptr, std::size_t newsize)
 {
-	return mi_realloc(p, newsize);
+	if (ptr)
+	{
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+		std::size_t size = GetDebugAlloc().GetSize(ptr);
+		void* newptr = GetDebugAlloc().Allocate(newsize);
+#else
+		std::size_t size = mi_good_size(ptr);
+		void* newptr = mi_malloc(newsize);
+#endif
+		TracyAllocN(newptr, newsize, "crymp_malloc");
+
+		std::memcpy(newptr, ptr, (size < newsize) ? size : newsize);
+
+		TracyFreeN(ptr, "crymp_malloc");
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+		GetDebugAlloc().Deallocate(ptr);
+#else
+		mi_free(ptr);
+#endif
+
+		return newptr;
+	}
+	else
+	{
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+		void* ptr = GetDebugAlloc().Allocate(newsize);
+#else
+		void* ptr = mi_malloc(newsize);
+#endif
+		TracyAllocN(ptr, newsize, "crymp_malloc");
+		return ptr;
+	}
 }
 
-extern "C" void free(void* p)
+extern "C" void free(void* ptr)
 {
-	return mi_free(p);
+	TracyFreeN(ptr, "crymp_malloc");
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+	GetDebugAlloc().Deallocate(ptr);
+#else
+	return mi_free(ptr);
+#endif
 }
-*/
 
-void* operator new(std::size_t count)
+/*
+void* operator new(std::size_t size)
 {
-	void* ptr = std::malloc(count);
-	TracyAllocN(ptr, count, "global_new_delete");
+	void* ptr = std::malloc(size);
+	TracyAllocN(ptr, size, "crymp_new_delete");
 	return ptr;
 }
 
 void operator delete(void* ptr) noexcept
 {
-	TracyFreeN(ptr, "global_new_delete");
+	TracyFreeN(ptr, "crymp_new_delete");
 	std::free(ptr);
 }
+*/
 
 static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
@@ -369,7 +469,7 @@ static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 		else
 		{
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			result = g_debugAllocator.Allocate(size);
+			result = GetDebugAlloc().Allocate(size);
 #else
 			result = std::calloc(1, size);
 #endif
@@ -407,7 +507,7 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 		{
 			const bool isBlock = g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem);
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : g_debugAllocator.GetSize(mem);
+			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : GetDebugAlloc().GetSize(mem);
 #else
 			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : _msize(mem);
 #endif
@@ -425,7 +525,7 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 			{
 				TracyFreeN(mem, "CryMalloc");
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-				g_debugAllocator.Deallocate(mem);
+				GetDebugAlloc().Deallocate(mem);
 #else
 				std::free(mem);
 #endif
@@ -459,7 +559,7 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 		else
 		{
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			return g_debugAllocator.GetSize(mem);
+			return GetDebugAlloc().GetSize(mem);
 #else
 			return _msize(mem);
 #endif
@@ -496,7 +596,7 @@ static std::size_t CryFree_hook(void* mem)
 
 			TracyFreeN(mem, "CryMalloc");
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			result = g_debugAllocator.Deallocate(mem);
+			result = GetDebugAlloc().Deallocate(mem);
 #else
 			result = _msize(mem);
 			std::free(mem);
@@ -616,10 +716,10 @@ void CryMemoryManager::Init(void* pCrySystem)
 	FixHeapUnderflow(pCrySystem);
 }
 
-std::string CryMemoryManager::GetCallstack(void* address)
+std::pmr::string CryMemoryManager::GetCallstack(void* address)
 {
 #ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-	return g_debugAllocator.GetCallstack(address);
+	return GetDebugAlloc().GetCallstack(address);
 #else
 	return {};
 #endif
