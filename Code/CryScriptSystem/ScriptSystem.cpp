@@ -1070,33 +1070,15 @@ int ScriptSystem::PanicHandler(lua_State *L)
 	return 0;
 }
 
-void *ScriptSystem::LuaAllocator(void *userData, void *originalBlock, size_t originalSize, size_t newSize)
+void* ScriptSystem::LuaAllocator(void* userData, void* originalBlock, size_t originalSize, size_t newSize)
 {
-	ScriptSystem *self = static_cast<ScriptSystem*>(userData);
-
 	if (newSize)
 	{
-		if (newSize <= originalSize)
-		{
-			return originalBlock;
-		}
-		else
-		{
-			// always succeeds
-			void *newBlock = self->Allocate(newSize);
-
-			if (originalSize > 0)
-			{
-				memcpy(newBlock, originalBlock, originalSize);
-			}
-
-			return newBlock;
-		}
+		return realloc(originalBlock, newSize);
 	}
 	else
 	{
-		self->Deallocate(originalBlock);
-
+		free(originalBlock);
 		return nullptr;
 	}
 }
