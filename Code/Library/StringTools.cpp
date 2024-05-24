@@ -111,10 +111,10 @@ static std::size_t FormatToGenericStringV(auto& result, const char* format, va_l
 	va_copy(argsCopy, args);
 
 	char buffer[512];
-	std::size_t length = StringTools::FormatToV(buffer, sizeof buffer, format, args);
+	std::size_t length = StringTools::FormatToV(buffer, sizeof(buffer), format, args);
 
 	// make sure the resulting string is not truncated
-	if (length < sizeof buffer)
+	if (length < sizeof(buffer))
 	{
 		// do not overwrite the existing content
 		result.append(buffer, length);
@@ -128,9 +128,9 @@ static std::size_t FormatToGenericStringV(auto& result, const char* format, va_l
 		// format string again with proper buffer size
 		length = StringTools::FormatToV(result.data() + existingLength, length + 1, format, argsCopy);
 
-		if (result.length() > length)
+		if (result.length() > (existingLength + length))
 		{
-			result.resize(length);
+			result.resize(existingLength + length);
 		}
 	}
 
