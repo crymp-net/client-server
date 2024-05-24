@@ -77,11 +77,14 @@ struct CustomHeap final : public std::pmr::memory_resource
 
 	void* do_allocate(std::size_t bytes, std::size_t alignment) override
 	{
-		return HeapAlloc(this->heap, 0, bytes);
+		void *p = HeapAlloc(this->heap, 0, bytes);
+		TracyAllocN(p, bytes, "DebugAllocatorMetadata");
+		return p;
 	}
 
 	void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
 	{
+		TracyFreeN(p, "DebugAllocatorMetadata");
 		HeapFree(this->heap, 0, p);
 	}
 
@@ -133,9 +136,17 @@ struct DebugAllocator
 		const std::size_t block_page_count = (size + this->page_size - 1) / this->page_size;
 		const std::size_t total_size = (2 + block_page_count) * this->page_size;
 
+		const DWORD allocType = MEM_COMMIT | MEM_RESERVE;
+
+#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_DETECT_READS
+		const DWORD protect = PAGE_NOACCESS;
+#else
+		const DWORD protect = PAGE_READONLY;
+#endif
+
 		std::lock_guard lock(this->mutex);
 
-		void* begin = VirtualAlloc(reinterpret_cast<void*>(last_address), total_size, MEM_COMMIT | MEM_RESERVE, PAGE_NOACCESS);
+		void* begin = VirtualAlloc(reinterpret_cast<void*>(last_address), total_size, allocType, protect);
 		if (!begin)
 		{
 			WinAPI::ErrorBox("Allocate: VirtualAlloc failed!");
@@ -164,6 +175,8 @@ struct DebugAllocator
 		it->second.requested_size = size;
 		it->second.total_size = total_size;
 
+		TracyAllocN(begin, total_size, "DebugAllocator");
+
 		Log("%04x: Allocate(%zu) -> %p\n", GetCurrentThreadId(), size, pointer);
 
 		return pointer;
@@ -176,6 +189,15 @@ struct DebugAllocator
 		const auto it = this->blocks.find(block);
 		if (it != this->blocks.end())
 		{
+			if (!it->second.is_allocated)
+			{
+				WinAPI::ErrorBox("Deallocate: double free!");
+				*reinterpret_cast<int*>(0) = 666;
+				return 0;
+			}
+
+			TracyFreeN(it->second.begin, "DebugAllocator");
+
 			const std::size_t size = it->second.requested_size;
 
 			VirtualFree(it->second.begin, 0, MEM_RELEASE);

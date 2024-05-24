@@ -192,29 +192,3 @@ void CTweakMetadataLUA::Init(void) {
 }
 
 //-------------------------------------------------------------------------
-
-
-/*
-// Now check what actually provides the value
-if (result.type == ANY_TSTRING) {
-
-// If this looks like a path to a function, try to convert 
-if (strpbrk(result.str,".")) {
-
-// Divide into path and possible contents of brackets
-char * tokenStream = strdup(result.str);
-char * token = strtok(tokenStream,"()");
-ScriptAnyValue fun;
-
-// Try to fetch the first part
-if (GetLuaVarRecursive(token, fun) && fun.type == ANY_TFUNCTION) {
-
-// Try to recognise the second part
-token = strtok(NULL,"()");
-if (token && strcmp(token,"self")) 
-
-}
-free(tokenStream);
-}
-}
-*/
