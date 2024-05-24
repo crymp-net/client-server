@@ -108,9 +108,11 @@ struct DebugAllocator
 		bool is_allocated = false;
 		std::size_t requested_size = 0;
 		std::size_t total_size = 0;
-		std::pmr::string callstack;
+		std::pmr::string callstack_allocate;
+		std::pmr::string callstack_deallocate;
 
-		explicit Block(std::pmr::memory_resource* memory) : callstack(memory) {}
+		explicit Block(std::pmr::memory_resource* memory)
+		: callstack_allocate(memory), callstack_deallocate(memory) {}
 	};
 
 	CustomHeap heap;
@@ -171,7 +173,7 @@ struct DebugAllocator
 		auto [it, added] = this->blocks.emplace(pointer, &this->heap);
 		it->second.begin = begin;
 		it->second.is_allocated = true;
-		it->second.callstack = std::move(callstack);
+		it->second.callstack_allocate = std::move(callstack);
 		it->second.requested_size = size;
 		it->second.total_size = total_size;
 
@@ -184,6 +186,8 @@ struct DebugAllocator
 
 	std::size_t Deallocate(void* block)
 	{
+		std::pmr::string callstack = CaptureCallstack(&this->heap);
+
 		std::lock_guard lock(this->mutex);
 
 		const auto it = this->blocks.find(block);
@@ -202,6 +206,7 @@ struct DebugAllocator
 
 			VirtualFree(it->second.begin, 0, MEM_RELEASE);
 			it->second.is_allocated = false;
+			it->second.callstack_deallocate = std::move(callstack);
 
 			Log("%04x: Deallocate(%p) -> %zu\n", GetCurrentThreadId(), block, size);
 
@@ -255,31 +260,27 @@ struct DebugAllocator
 		for (const auto& [pointer, block] : this->blocks)
 		{
 			const void* end = static_cast<const uint8_t*>(block.begin) + block.total_size;
+			const bool match_32bit = address_32bit
+				&& address_32bit >= to_32bit(block.begin) && address_32bit < to_32bit(end);
 
-			if (address >= block.begin && address < end)
+			if ((address < block.begin || address >= end) && !match_32bit)
 			{
-				StringTools::FormatTo(callstack,
-					"match: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n%s",
-					block.begin,
-					end,
-					static_cast<int>(block.is_allocated),
-					block.requested_size,
-					block.total_size,
-					block.callstack.c_str()
-				);
+				continue;
 			}
-			else if (address_32bit && address_32bit >= to_32bit(block.begin) && address_32bit < to_32bit(end))
-			{
-				StringTools::FormatTo(callstack,
-					"possible match: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n%s",
-					block.begin,
-					end,
-					static_cast<int>(block.is_allocated),
-					block.requested_size,
-					block.total_size,
-					block.callstack.c_str()
-				);
-			}
+
+			StringTools::FormatTo(callstack,
+				"%smatch: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n"
+				"allocation:\n%s"
+				"deallocation:\n%s",
+				match_32bit ? "possible " : "",
+				block.begin,
+				end,
+				static_cast<int>(block.is_allocated),
+				block.requested_size,
+				block.total_size,
+				block.callstack_allocate.c_str(),
+				block.callstack_deallocate.c_str()
+			);
 		}
 
 		return callstack;
