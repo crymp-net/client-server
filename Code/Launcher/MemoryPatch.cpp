@@ -693,6 +693,7 @@ void MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(void* pFMODEx)
 		0x41, 0xB9, 0x3C, 0x00, 0x00, 0x00,  // mov r9d, 0x3C
 	};
 
+	FillMem(pFMODEx, 0x482DA, &code, sizeof(code) - 6);
 	FillMem(pFMODEx, 0x486B7, &code, sizeof(code));
 #endif
 }
