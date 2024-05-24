@@ -204,6 +204,7 @@ add_executable(${CRYMP_CLIENT_EXE}
 	Code/CryCommon/CrySoundSystem/ISoundMoodManager.h
 	Code/CryCommon/CrySystem/CryColorCode.h
 	Code/CryCommon/CrySystem/CryFile.h
+	Code/CryCommon/CrySystem/CryMalloc.h
 	Code/CryCommon/CrySystem/CryPath.h
 	Code/CryCommon/CrySystem/CryVersion.h
 	Code/CryCommon/CrySystem/FrameProfiler.h
