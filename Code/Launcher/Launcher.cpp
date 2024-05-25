@@ -413,6 +413,11 @@ static void EnableHiddenProfilerSubsystems(ISystem* pSystem)
 	subsystems[PROFILE_SCRIPT].name = "Script";
 }
 
+static std::FILE* ProvideLogFile()
+{
+	return Logger::GetInstance().GetFileHandle();
+}
+
 void Launcher::SetCmdLine()
 {
 	const std::string_view cmdLine = WinAPI::CmdLine::GetFull();
@@ -794,7 +799,7 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.SetVerbosity(verbosity);
 	logger.OpenFile((rootDirPath.empty() ? userDirPath : rootDirPath) / logFileName);
 
-	CrashLogger::Enable([]() -> std::FILE* { return Logger::GetInstance().GetFileHandle(); });
+	CrashLogger::Enable(&ProvideLogFile, &CryMemoryManager::ProvideHeapInfo);
 
 	logger.LogAlways("Log begins at %s", Logger::FormatPrefix("%F %T%z").c_str());
 

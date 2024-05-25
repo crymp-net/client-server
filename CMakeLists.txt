@@ -22,6 +22,17 @@ endif()
 
 ################################################################################
 
+option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
+
+option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT "Log each allocation and deallocation to standard output." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overflows instead of underflows." ON)
+option(CRYMP_DEBUG_ALLOCATOR_CHECK_READS "Check for both invalid reads and writes." OFF)
+
+option(CRYMP_TRACY_ENABLED "Enable Tracy profiler." OFF)
+
+################################################################################
+
 math(EXPR BUILD_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -745,36 +756,39 @@ add_executable(${CRYMP_CLIENT_EXE}
 
 ################################################################################
 
-add_library(mimalloc STATIC
-	ThirdParty/mimalloc/src/alloc.c
-	ThirdParty/mimalloc/src/alloc-aligned.c
-	ThirdParty/mimalloc/src/alloc-posix.c
-	ThirdParty/mimalloc/src/arena.c
-	ThirdParty/mimalloc/src/bitmap.c
-	ThirdParty/mimalloc/src/heap.c
-	ThirdParty/mimalloc/src/init.c
-	ThirdParty/mimalloc/src/options.c
-	ThirdParty/mimalloc/src/os.c
-	ThirdParty/mimalloc/src/page.c
-	ThirdParty/mimalloc/src/random.c
-	ThirdParty/mimalloc/src/segment.c
-	ThirdParty/mimalloc/src/segment-map.c
-	ThirdParty/mimalloc/src/stats.c
-	ThirdParty/mimalloc/src/prim/prim.c
-)
+if(CRYMP_USE_MIMALLOC)
+	add_library(mimalloc STATIC
+		ThirdParty/mimalloc/src/alloc.c
+		ThirdParty/mimalloc/src/alloc-aligned.c
+		ThirdParty/mimalloc/src/alloc-posix.c
+		ThirdParty/mimalloc/src/arena.c
+		ThirdParty/mimalloc/src/bitmap.c
+		ThirdParty/mimalloc/src/heap.c
+		ThirdParty/mimalloc/src/init.c
+		ThirdParty/mimalloc/src/options.c
+		ThirdParty/mimalloc/src/os.c
+		ThirdParty/mimalloc/src/page.c
+		ThirdParty/mimalloc/src/random.c
+		ThirdParty/mimalloc/src/segment.c
+		ThirdParty/mimalloc/src/segment-map.c
+		ThirdParty/mimalloc/src/stats.c
+		ThirdParty/mimalloc/src/prim/prim.c
+	)
 
-set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
-set_property(TARGET mimalloc PROPERTY CXX_STANDARD 17)
+	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
+	set_property(TARGET mimalloc PROPERTY CXX_STANDARD 17)
 
-target_compile_definitions(mimalloc PRIVATE
-	MI_SECURE=4
-	MI_DEBUG=3
-	MI_SHOW_ERRORS=1
-)
+	target_compile_definitions(mimalloc PUBLIC
+		MI_SECURE=4
+		MI_DEBUG=3
+		MI_SHOW_ERRORS=1
+	)
 
-target_compile_options(mimalloc PRIVATE /W3)
+	target_compile_options(mimalloc PRIVATE /W3)
+	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
 
-target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
+	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
+endif()
 
 ################################################################################
 
@@ -812,7 +826,11 @@ if(BUILD_BITS EQUAL 64)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
-target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS TRACY_ENABLE)
+if(CRYMP_TRACY_ENABLED)
+	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE TRACY_ENABLE)
+endif()
+
+target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 

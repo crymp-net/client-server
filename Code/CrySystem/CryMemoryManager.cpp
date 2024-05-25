@@ -1,30 +1,58 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <malloc.h>  // _msize
 #include <memory_resource>
 #include <mutex>
 #include <unordered_map>
-//#include <mimalloc.h>
-//#include <mimalloc-new-delete.h>
+
+#include "config.h"
+
+#ifdef CRYMP_USE_MIMALLOC
+#include <mimalloc.h>
+#include <mimalloc-new-delete.h>
+#endif
 
 #include <tracy/Tracy.hpp>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <intrin.h>
+
 #include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/CrySystem/ISystem.h"
-#include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
 #include "CryMemoryManager.h"
 
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
+static char g_fault_message[256];
+
+[[noreturn]] static void Die(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	std::vsnprintf(g_fault_message, sizeof(g_fault_message), format, args);
+	va_end(args);
+
+#ifdef CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT
+	std::fprintf(stdout, "%s\n", g_fault_message);
+	std::fflush(stdout);
+#endif
+
+	// summon crash logger to pickup our message and log the callstack etc.
+	__debugbreak();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Debug allocator
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef CRYMP_DEBUG_ALLOCATOR_ENABLED
+
 static void Log(const char* format, ...)
 {
+#ifdef CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT
 	FILE* stream = stdout;
 
 	va_list args;
@@ -33,6 +61,7 @@ static void Log(const char* format, ...)
 	va_end(args);
 
 	std::fflush(stream);
+#endif
 }
 
 static std::pmr::string CaptureCallstack(std::pmr::memory_resource* memory)
@@ -61,42 +90,51 @@ static std::pmr::string CaptureCallstack(std::pmr::memory_resource* memory)
 	return result;
 }
 
-struct CustomHeap final : public std::pmr::memory_resource
+struct DebugAllocatorMetadataHeap final : public std::pmr::memory_resource
 {
-	HANDLE heap = nullptr;
+	HANDLE heap = {};
 
-	CustomHeap()
+	DebugAllocatorMetadataHeap()
 	{
 		this->heap = HeapCreate(0, 0, 0);
 		if (!this->heap)
 		{
-			WinAPI::ErrorBox("CustomHeap: HeapCreate failed!");
-			*reinterpret_cast<int*>(0) = 666;
+			Die("%s: HeapCreate failed with error code %u", __FUNCTION__, GetLastError());
 		}
 	}
 
 	void* do_allocate(std::size_t bytes, std::size_t alignment) override
 	{
 		void *p = HeapAlloc(this->heap, 0, bytes);
+		if (!p)
+		{
+			Die("%s: HeapAlloc failed", __FUNCTION__);
+		}
+
 		TracyAllocN(p, bytes, "DebugAllocatorMetadata");
+
 		return p;
 	}
 
 	void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
 	{
 		TracyFreeN(p, "DebugAllocatorMetadata");
-		HeapFree(this->heap, 0, p);
+
+		if (!HeapFree(this->heap, 0, p))
+		{
+			Die("%s: HeapFree failed with error code %u", __FUNCTION__, GetLastError());
+		}
 	}
 
 	bool do_is_equal(const std::pmr::memory_resource& other) const noexcept override
 	{
-		const CustomHeap* otherSameType = dynamic_cast<const CustomHeap*>(&other);
-		if (!otherSameType)
+		auto otherHeap = dynamic_cast<const DebugAllocatorMetadataHeap*>(&other);
+		if (!otherHeap)
 		{
 			return false;
 		}
 
-		return this->heap == otherSameType->heap;
+		return this->heap == otherHeap->heap;
 	}
 };
 
@@ -115,12 +153,12 @@ struct DebugAllocator
 		: callstack_allocate(memory), callstack_deallocate(memory) {}
 	};
 
-	CustomHeap heap;
-	std::pmr::unordered_map<void*, Block> blocks{&heap};
+	DebugAllocatorMetadataHeap metadata_heap;
+	std::pmr::unordered_map<void*, Block> blocks{&metadata_heap};
 	std::recursive_mutex mutex;
 	std::size_t page_size = 0;
 	std::size_t alloc_granularity = 0;
-	std::size_t last_address = 0x20000000000;
+	std::size_t next_address = 0x20000000000;
 
 	DebugAllocator()
 	{
@@ -133,131 +171,140 @@ struct DebugAllocator
 
 	void* Allocate(std::size_t size)
 	{
-		std::pmr::string callstack = CaptureCallstack(&this->heap);
+		std::pmr::string callstack = CaptureCallstack(&this->metadata_heap);
 
-		const std::size_t block_page_count = (size + this->page_size - 1) / this->page_size;
-		const std::size_t total_size = (2 + block_page_count) * this->page_size;
+		std::lock_guard lock(this->mutex);
 
-		const DWORD allocType = MEM_COMMIT | MEM_RESERVE;
+		void* address = reinterpret_cast<void*>(next_address);
 
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_DETECT_READS
+		const std::size_t page_count = (size + this->page_size - 1) / this->page_size;
+		const std::size_t total_size = (2 + page_count) * this->page_size;
+
+		const DWORD allocation_type = MEM_COMMIT | MEM_RESERVE;
+
+#ifdef CRYMP_DEBUG_ALLOCATOR_CHECK_READS
 		const DWORD protect = PAGE_NOACCESS;
 #else
 		const DWORD protect = PAGE_READONLY;
 #endif
 
-		std::lock_guard lock(this->mutex);
-
-		void* begin = VirtualAlloc(reinterpret_cast<void*>(last_address), total_size, allocType, protect);
-		if (!begin)
+		void* block_begin = VirtualAlloc(address, total_size, allocation_type, protect);
+		if (!block_begin)
 		{
-			WinAPI::ErrorBox("Allocate: VirtualAlloc failed!");
-			return nullptr;
+			Die("%s: VirtualAlloc failed with error code %u", __FUNCTION__, GetLastError());
 		}
 
-		last_address += (total_size + alloc_granularity - 1) & (~(alloc_granularity - 1));
+		this->next_address += (total_size + this->alloc_granularity - 1) & (~(this->alloc_granularity - 1));
 
-		void* pointer = static_cast<uint8_t*>(begin) + this->page_size;
+		void* ptr = static_cast<unsigned char*>(block_begin) + this->page_size;
 
-		DWORD old_protection;
-		VirtualProtect(pointer, size, PAGE_READWRITE, &old_protection);
+		DWORD old_protect;
+		if (!VirtualProtect(ptr, size, PAGE_READWRITE, &old_protect))
+		{
+			Die("%s: VirtualProtect failed with error code %u", __FUNCTION__, GetLastError());
+		}
 
-		std::memset(pointer, 0, block_page_count * this->page_size);
+		std::memset(ptr, 0, page_count * this->page_size);
 
+#ifdef CRYMP_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW
 		const std::size_t remaining_size = size % this->page_size;
 		const std::size_t alignment = (remaining_size > 0) ? this->page_size - remaining_size : 0;
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW
-		pointer = static_cast<uint8_t*>(pointer) + alignment;
+
+		ptr = static_cast<unsigned char*>(ptr) + alignment;
 #endif
 
-		auto [it, added] = this->blocks.emplace(pointer, &this->heap);
-		it->second.begin = begin;
+		auto [it, added] = this->blocks.emplace(ptr, &this->metadata_heap);
+		it->second.begin = block_begin;
 		it->second.is_allocated = true;
 		it->second.callstack_allocate = std::move(callstack);
 		it->second.requested_size = size;
 		it->second.total_size = total_size;
 
-		TracyAllocN(begin, total_size, "DebugAllocator");
+		TracyAllocN(block_begin, total_size, "DebugAllocator");
 
-		Log("%04x: Allocate(%zu) -> %p\n", GetCurrentThreadId(), size, pointer);
+		Log("%04x: Allocate(%zu) -> %p\n", GetCurrentThreadId(), size, ptr);
 
-		return pointer;
+		return ptr;
 	}
 
-	std::size_t Deallocate(void* block)
+	std::size_t Deallocate(void* ptr)
 	{
-		std::pmr::string callstack = CaptureCallstack(&this->heap);
+		std::pmr::string callstack = CaptureCallstack(&this->metadata_heap);
 
 		std::lock_guard lock(this->mutex);
 
-		const auto it = this->blocks.find(block);
-		if (it != this->blocks.end())
+		const auto it = this->blocks.find(ptr);
+		if (it == this->blocks.end())
 		{
-			if (!it->second.is_allocated)
-			{
-				WinAPI::ErrorBox("Deallocate: double free!");
-				*reinterpret_cast<int*>(0) = 666;
-				return 0;
-			}
-
-			TracyFreeN(it->second.begin, "DebugAllocator");
-
-			const std::size_t size = it->second.requested_size;
-
-			VirtualFree(it->second.begin, 0, MEM_RELEASE);
-			it->second.is_allocated = false;
-			it->second.callstack_deallocate = std::move(callstack);
-
-			Log("%04x: Deallocate(%p) -> %zu\n", GetCurrentThreadId(), block, size);
-
-			return size;
+			Die("%s: Invalid pointer (%p)", __FUNCTION__, ptr);
 		}
 
-		WinAPI::ErrorBox("Deallocate: unknown block!");
-		*reinterpret_cast<int*>(0) = 666;
-		return 0;
+		if (!it->second.is_allocated)
+		{
+			Die("%s: Detected double-free (%p)", __FUNCTION__, ptr);
+		}
+
+		const std::size_t size = it->second.requested_size;
+
+		TracyFreeN(it->second.begin, "DebugAllocator");
+
+		if (!VirtualFree(it->second.begin, 0, MEM_RELEASE))
+		{
+			Die("%s: VirtualFree failed with error code %u", __FUNCTION__, GetLastError());
+		}
+
+		it->second.is_allocated = false;
+		it->second.callstack_deallocate = std::move(callstack);
+
+		Log("%04x: Deallocate(%p) -> %zu\n", GetCurrentThreadId(), ptr, size);
+
+		return size;
 	}
 
-	std::size_t GetSize(void* block)
+	std::size_t GetSize(void* ptr)
 	{
 		std::lock_guard lock(this->mutex);
 
-		const auto it = this->blocks.find(block);
-		if (it != this->blocks.end())
+		const auto it = this->blocks.find(ptr);
+		if (it == this->blocks.end())
 		{
-			if (!it->second.is_allocated)
-			{
-				WinAPI::ErrorBox("GetSize: use after free!");
-				*reinterpret_cast<int*>(0) = 666;
-				return 0;
-			}
-
-			const std::size_t size = it->second.requested_size;
-
-			Log("%04x: GetSize(%p) -> %zu\n", GetCurrentThreadId(), block, size);
-
-			return size;
+			Die("%s: Invalid pointer (%p)", __FUNCTION__, ptr);
 		}
 
-		WinAPI::ErrorBox("GetSize: unknown block!");
-		*reinterpret_cast<int*>(0) = 666;
-		return 0;
+		if (!it->second.is_allocated)
+		{
+			Die("%s: Detected use-after-free (%p)", __FUNCTION__, ptr);
+		}
+
+		const std::size_t size = it->second.requested_size;
+
+		Log("%04x: GetSize(%p) -> %zu\n", GetCurrentThreadId(), ptr, size);
+
+		return size;
 	}
 
-	std::pmr::string GetCallstack(void* address)
+	void ProvideHeapInfo(std::FILE* file, void* address)
 	{
+		if (g_fault_message[0])
+		{
+			std::fprintf(file, "%s\n", g_fault_message);
+		}
+
+		if (!address)
+		{
+			return;
+		}
+
 		std::lock_guard lock(this->mutex);
 
 		const auto to_32bit = [](const void* address) -> const void*
 		{
-			return reinterpret_cast<void*>(reinterpret_cast<std::size_t>(address) & 0xFFFFFFFFU);
+			return reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(address) & 0xFFFFFFFFU);
 		};
 
 		const void* address_32bit = (address == to_32bit(address)) ? to_32bit(address) : nullptr;
 
-		std::pmr::string callstack;
-
-		for (const auto& [pointer, block] : this->blocks)
+		for (const auto& [ptr, block] : this->blocks)
 		{
 			const void* end = static_cast<const uint8_t*>(block.begin) + block.total_size;
 			const bool match_32bit = address_32bit
@@ -268,7 +315,7 @@ struct DebugAllocator
 				continue;
 			}
 
-			StringTools::FormatTo(callstack,
+			std::fprintf(file,
 				"%smatch: begin=%p, end=%p, is_allocated=%d, requested_size=%zu, total_size=%zu\n"
 				"allocation:\n%s"
 				"deallocation:\n%s",
@@ -282,8 +329,6 @@ struct DebugAllocator
 				block.callstack_deallocate.c_str()
 			);
 		}
-
-		return callstack;
 	}
 };
 
@@ -292,7 +337,14 @@ static DebugAllocator& GetDebugAlloc()
 	static DebugAllocator instance;
 	return instance;
 }
+
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Workaround for pointer truncation in 64-bit STLport allocator
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef BUILD_64BIT
 
 struct STLport_Allocator
 {
@@ -314,8 +366,7 @@ struct STLport_Allocator
 			void* block = VirtualAlloc(nullptr, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 			if (!block)
 			{
-				WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: VirtualAlloc failed!");
-				return;
+				Die("%s: VirtualAlloc failed with error code %u", __FUNCTION__, GetLastError());
 			}
 
 			if (!this->freeList)
@@ -331,9 +382,9 @@ struct STLport_Allocator
 
 			blocks[i] = block;
 
-			if ((reinterpret_cast<std::size_t>(block) + BLOCK_SIZE) > 0x100000000UL)
+			if ((reinterpret_cast<std::uintptr_t>(block) + BLOCK_SIZE) > 0x100000000UL)
 			{
-				WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: End beyond 4 GiB boundary!");
+				Die("%s: End of %p beyond 4 GiB boundary", __FUNCTION__, block);
 			}
 		}
 	}
@@ -356,8 +407,7 @@ struct STLport_Allocator
 
 		if (!block)
 		{
-			WinAPI::ErrorBox("[CryMemoryManager] STLport_Allocator: Out of memory!");
-			return nullptr;
+			Die("%s: Out of memory", __FUNCTION__);
 		}
 
 		return block;
@@ -379,13 +429,13 @@ struct STLport_Allocator
 		}
 	}
 
-	bool IsBlock(void* x)
+	bool Contains(void* ptr) const
 	{
 		bool result = false;
 
 		for (void* block : this->blocks)
 		{
-			result |= (block == x);
+			result |= (block == ptr);
 		}
 
 		return result;
@@ -394,167 +444,207 @@ struct STLport_Allocator
 
 STLport_Allocator* g_STLport_Allocator = nullptr;
 
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// CryMemoryManager
+////////////////////////////////////////////////////////////////////////////////
+
+static void* CryMalloc_hook_internal(std::size_t size, std::size_t& allocatedSize)
+{
+	allocatedSize = 0;
+
+#ifdef BUILD_64BIT
+	if (g_STLport_Allocator && size == STLport_Allocator::BLOCK_SIZE)
+	{
+		void* ptr = g_STLport_Allocator->Allocate();
+
+		if (ptr)
+		{
+			TracyAllocN(ptr, size, "STLport");
+			allocatedSize = size;
+		}
+
+		return ptr;
+	}
+#endif
+
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+	void* ptr = GetDebugAlloc().Allocate(size);
+#elif defined(CRYMP_USE_MIMALLOC)
+	void* ptr = mi_zalloc(size);
+#else
+	void* ptr = std::calloc(1, size);
+#endif
+
+	if (ptr)
+	{
+		TracyAllocN(ptr, size, "CryMalloc");
+		allocatedSize = size;
+	}
+
+	return ptr;
+}
+
 static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
-	void* result = nullptr;
-
-	const auto doCryMalloc = [&]()
-	{
-		if (g_STLport_Allocator && size == STLport_Allocator::BLOCK_SIZE)
-		{
-			result = g_STLport_Allocator->Allocate();
-			TracyAllocN(result, size, "STLport");
-
-			allocatedSize = size;
-		}
-		else
-		{
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			result = GetDebugAlloc().Allocate(size);
-#else
-			result = std::calloc(1, size);
-#endif
-			TracyAllocN(result, size, "CryMalloc");
-
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			allocatedSize = size;
-#else
-			allocatedSize = _msize(result);
-#endif
-		}
-	};
-
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		doCryMalloc();
+		return CryMalloc_hook_internal(size, allocatedSize);
 	}
 	else
 	{
-		doCryMalloc();
-	}
-
-	return result;
-}
-
-static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocatedSize)
-{
-	void* result = nullptr;
-
-	const auto doCryRealloc = [&]()
-	{
-		if (mem)
-		{
-			const bool isBlock = g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem);
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : GetDebugAlloc().GetSize(mem);
-#else
-			const std::size_t oldSize = isBlock ? STLport_Allocator::BLOCK_SIZE : _msize(mem);
-#endif
-
-			result = CryMalloc_hook(size, allocatedSize);
-
-			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
-
-			if (isBlock)
-			{
-				TracyFreeN(mem, "STLport");
-				g_STLport_Allocator->Deallocate(mem);
-			}
-			else
-			{
-				TracyFreeN(mem, "CryMalloc");
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-				GetDebugAlloc().Deallocate(mem);
-#else
-				std::free(mem);
-#endif
-			}
-		}
-		else
-		{
-			result = CryMalloc_hook(size, allocatedSize);
-		}
-	};
-	if (gEnv)
-	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-		doCryRealloc();
-	}
-	else
-	{
-		doCryRealloc();
-	}
-	return result;
-}
-
-static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
-{
-	const auto getMemSize = [](void* mem) -> std::size_t
-	{
-		if (g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem))
-		{
-			return STLport_Allocator::BLOCK_SIZE;
-		}
-		else
-		{
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			return GetDebugAlloc().GetSize(mem);
-#else
-			return _msize(mem);
-#endif
-		}
-	};
-
-	if (gEnv)
-	{
-		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-
-		return getMemSize(mem);
-	}
-	else
-	{
-		return getMemSize(mem);
+		return CryMalloc_hook_internal(size, allocatedSize);
 	}
 }
 
-static std::size_t CryFree_hook(void* mem)
+static void* CryRealloc_hook_internal(void* oldPtr, std::size_t newSize, std::size_t& allocatedSize)
 {
-	std::size_t result = 0;
-
-	const auto doCryFree = [&]()
+	if (!oldPtr)
 	{
-		if (g_STLport_Allocator && g_STLport_Allocator->IsBlock(mem))
-		{
-			result = STLport_Allocator::BLOCK_SIZE;
+		return CryMalloc_hook_internal(newSize, allocatedSize);
+	}
 
-			TracyFreeN(mem, "STLport");
-			g_STLport_Allocator->Deallocate(mem);
-		}
-		else
-		{
+	std::size_t oldSize = 0;
 
-			TracyFreeN(mem, "CryMalloc");
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-			result = GetDebugAlloc().Deallocate(mem);
-#else
-			result = _msize(mem);
-			std::free(mem);
+#ifdef BUILD_64BIT
+	const bool isSTLport = g_STLport_Allocator && g_STLport_Allocator->Contains(oldPtr);
+
+	if (isSTLport)
+	{
+		oldSize = STLport_Allocator::BLOCK_SIZE;
+	}
+	else
 #endif
-		}
-	};
+	{
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+		oldSize = GetDebugAlloc().GetSize(oldPtr);
+#elif defined(CRYMP_USE_MIMALLOC)
+		oldSize = mi_usable_size(oldPtr);
+#else
+		oldSize = _msize(oldPtr);
+#endif
+	}
 
+	void* newPtr = CryMalloc_hook_internal(newSize, allocatedSize);
+
+	std::memcpy(newPtr, oldPtr, (oldSize <= newSize) ? oldSize : newSize);
+
+#ifdef BUILD_64BIT
+	if (isSTLport)
+	{
+		TracyFreeN(oldPtr, "STLport");
+		g_STLport_Allocator->Deallocate(oldPtr);
+	}
+	else
+#endif
+	{
+		TracyFreeN(oldPtr, "CryMalloc");
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+		GetDebugAlloc().Deallocate(oldPtr);
+#elif defined(CRYMP_USE_MIMALLOC)
+		mi_free(oldPtr);
+#else
+		std::free(oldPtr);
+#endif
+	}
+
+	return newPtr;
+}
+
+static void* CryRealloc_hook(void* oldPtr, std::size_t newSize, std::size_t& allocatedSize)
+{
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
-		doCryFree();
+
+		return CryRealloc_hook_internal(oldPtr, newSize, allocatedSize);
 	}
 	else
 	{
-		doCryFree();
+		return CryRealloc_hook_internal(oldPtr, newSize, allocatedSize);
 	}
-	return result;
+}
+
+static std::size_t CryGetMemSize_hook_internal(void* ptr)
+{
+#ifdef BUILD_64BIT
+	if (g_STLport_Allocator && g_STLport_Allocator->Contains(ptr))
+	{
+		return STLport_Allocator::BLOCK_SIZE;
+	}
+#endif
+
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+	return GetDebugAlloc().GetSize(ptr);
+#elif defined(CRYMP_USE_MIMALLOC)
+	return mi_usable_size(ptr);
+#else
+	return _msize(ptr);
+#endif
+}
+
+static std::size_t CryGetMemSize_hook(void* ptr, std::size_t)
+{
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
+
+		return CryGetMemSize_hook_internal(ptr);
+	}
+	else
+	{
+		return CryGetMemSize_hook_internal(ptr);
+	}
+}
+
+static std::size_t CryFree_hook_internal(void* ptr)
+{
+	if (!ptr)
+	{
+		return 0;
+	}
+
+#ifdef BUILD_64BIT
+	if (g_STLport_Allocator && g_STLport_Allocator->Contains(ptr))
+	{
+		TracyFreeN(ptr, "STLport");
+		g_STLport_Allocator->Deallocate(ptr);
+
+		return STLport_Allocator::BLOCK_SIZE;
+	}
+#endif
+
+	std::size_t size = 0;
+
+	TracyFreeN(ptr, "CryMalloc");
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+	size = GetDebugAlloc().Deallocate(ptr);
+#elif defined(CRYMP_USE_MIMALLOC)
+	size = mi_usable_size(ptr);
+	mi_free(ptr);
+#else
+	size = _msize(ptr);
+	std::free(ptr);
+#endif
+
+	return size;
+}
+
+static std::size_t CryFree_hook(void* ptr)
+{
+	if (gEnv)
+	{
+		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
+
+		return CryFree_hook_internal(ptr);
+	}
+	else
+	{
+		return CryFree_hook_internal(ptr);
+	}
 }
 
 static void* CrySystemCrtMalloc_hook(std::size_t size)
@@ -563,9 +653,9 @@ static void* CrySystemCrtMalloc_hook(std::size_t size)
 	return CryMalloc_hook(size, allocatedSize);
 }
 
-static void CrySystemCrtFree_hook(void* mem)
+static void CrySystemCrtFree_hook(void* ptr)
 {
-	CryFree_hook(mem);
+	CryFree_hook(ptr);
 }
 
 static void* calloc_hook(std::size_t count, std::size_t size)
@@ -645,7 +735,9 @@ static void FixHeapUnderflow(void* pCrySystem)
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
+#ifdef BUILD_64BIT
 	g_STLport_Allocator = new STLport_Allocator;
+#endif
 
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
@@ -657,12 +749,10 @@ void CryMemoryManager::Init(void* pCrySystem)
 	FixHeapUnderflow(pCrySystem);
 }
 
-std::pmr::string CryMemoryManager::GetCallstack(void* address)
+void CryMemoryManager::ProvideHeapInfo(std::FILE* file, void* address)
 {
-#ifdef CRY_MEMORY_MANAGER_DEBUG_ALLOCATOR_ENABLED
-	return GetDebugAlloc().GetCallstack(address);
-#else
-	return {};
+#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+	GetDebugAlloc().ProvideHeapInfo(file, address);
 #endif
 }
 

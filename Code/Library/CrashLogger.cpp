@@ -11,14 +11,15 @@
 
 #include "CrashLogger.h"
 
-// TODO: remove this dependency
-#include "CrySystem/CryMemoryManager.h"
-
 #ifdef BUILD_64BIT
 #define ADDR_FMT "%016I64X"
 #else
 #define ADDR_FMT "%08X"
 #endif
+
+static std::mutex g_mutex;
+static CrashLogger::LogFileProvider g_logFileProvider;
+static CrashLogger::HeapInfoProvider g_heapInfoProvider;
 
 static void* ByteOffset(void* base, std::size_t offset)
 {
@@ -87,10 +88,15 @@ static void DumpExceptionInfo(std::FILE* file, const EXCEPTION_RECORD* info)
 			case 8: std::fprintf(file, "Execute at 0x" ADDR_FMT " failed\n", dataAddress); break;
 		}
 
-		void* pointer = reinterpret_cast<void*>(dataAddress);
-
-		std::fprintf(file, "Allocation callstack for %p:\n", pointer);
-		std::fprintf(file, "%s", CryMemoryManager::GetCallstack(pointer).c_str());
+		if (g_heapInfoProvider)
+		{
+			g_heapInfoProvider(file, reinterpret_cast<void*>(dataAddress));
+		}
+	}
+	else if (g_heapInfoProvider)
+	{
+		// let debug allocator log its error message
+		g_heapInfoProvider(file, nullptr);
 	}
 
 	std::fflush(file);
@@ -418,19 +424,16 @@ static void WriteEngineErrorDump(std::FILE* file, CONTEXT* context, const char* 
 	WriteDumpFooter(file);
 }
 
-static std::mutex g_mutex;
-static CrashLogger::Handler g_handler;
-
 static LONG __stdcall CrashHandler(EXCEPTION_POINTERS* exception)
 {
 	// avoid recursive calls
 	SetUnhandledExceptionFilter(NULL);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -448,11 +451,11 @@ static void PureCallHandler()
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -470,11 +473,11 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -492,11 +495,11 @@ void CrashLogger::OnEngineError(const char* format, va_list args)
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -535,7 +538,7 @@ static bool IsModuleNameEqual(const UNICODE_STRING& name, const wchar_t* expecte
 	}
 }
 
-void* CrashLogger::FindLoadedModule(const wchar_t* name)
+static HMODULE FindLoadedModule(const wchar_t* name)
 {
 	const std::size_t nameLength = wcslen(name);
 
@@ -547,16 +550,17 @@ void* CrashLogger::FindLoadedModule(const wchar_t* name)
 
 		if (IsModuleNameEqual(data->FullDllName, name, nameLength))
 		{
-			return data->DllBase;
+			return static_cast<HMODULE>(data->DllBase);
 		}
 	}
 
 	return NULL;
 }
 
-void CrashLogger::Enable(CrashLogger::Handler handler)
+void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapInfoProvider)
 {
-	g_handler = handler;
+	g_logFileProvider = logFileProvider;
+	g_heapInfoProvider = heapInfoProvider;
 
 	SetUnhandledExceptionFilter(&CrashHandler);
 
@@ -566,7 +570,7 @@ void CrashLogger::Enable(CrashLogger::Handler handler)
 	_set_invalid_parameter_handler(&InvalidParameterHandler);
 
 	// GetModuleHandle does not work because msvcr80.dll is stored in WinSxS
-	HMODULE msvcr80 = static_cast<HMODULE>(FindLoadedModule(L"msvcr80.dll"));
+	HMODULE msvcr80 = FindLoadedModule(L"msvcr80.dll");
 	if (msvcr80)
 	{
 		// VS2005 _set_purecall_handler is done by each engine DLL

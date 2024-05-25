@@ -4,11 +4,10 @@
 
 namespace CrashLogger
 {
-	using Handler = std::FILE* (*)();
+	using LogFileProvider = std::FILE* (*)();
+	using HeapInfoProvider = void (*)(std::FILE* file, void* address);
 
 	void OnEngineError(const char* format, va_list args);
 
-	void* FindLoadedModule(const wchar_t* name);
-
-	void Enable(Handler handler);
+	void Enable(LogFileProvider logFileProvider, HeapInfoProvider heapInfoProvider);
 }
