@@ -11,6 +11,7 @@ extern "C"
 
 #include <tracy/Tracy.hpp>
 
+#include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -61,7 +62,7 @@ void *ScriptSystem::Allocate(size_t size)
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	// TODO: optimized memory allocator
-	void *block = malloc(size);
+	void *block = CryMalloc(size);
 	TracyAllocN(block, size, "ScriptSystem");
 
 	// we never fail
@@ -79,7 +80,7 @@ void ScriptSystem::Deallocate(void *block)
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	TracyFreeN(block, "ScriptSystem");
-	free(block);
+	CryFree(block);
 }
 
 void ScriptSystem::PushAny(const ScriptAnyValue & any)

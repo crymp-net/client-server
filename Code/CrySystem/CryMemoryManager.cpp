@@ -15,7 +15,7 @@
 
 #include <tracy/Tracy.hpp>
 
-#include "CryCommon/CrySystem/CryMalloc.h"
+#include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
@@ -679,7 +679,7 @@ void CryMemoryManager::RedirectMalloc(void* pDLL)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CryCommon/CrySystem/CryMalloc.h
+// CryCommon/CryCore/CryMalloc.h
 ////////////////////////////////////////////////////////////////////////////////
 
 void* CryMalloc(std::size_t size)
@@ -688,7 +688,13 @@ void* CryMalloc(std::size_t size)
 	return CryMalloc_hook(size, allocatedSize);
 }
 
-void CryFree(void* p)
+void* CryRealloc(void* oldPtr, std::size_t newSize)
 {
-	CryFree_hook(p);
+	std::size_t allocatedSize = 0;
+	return CryRealloc_hook(oldPtr, newSize, allocatedSize);
+}
+
+void CryFree(void* ptr)
+{
+	CryFree_hook(ptr);
 }

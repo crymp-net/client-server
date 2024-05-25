@@ -24,7 +24,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 
-#include "CryCommon/CrySystem/CryMalloc.h"
+#include "CryMalloc.h"
 
 #define CRY_STRING
 
