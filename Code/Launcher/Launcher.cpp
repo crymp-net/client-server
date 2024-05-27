@@ -599,20 +599,20 @@ void Launcher::LoadEngine()
 				throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
 			}
 		}
-	}
 
 #ifdef BUILD_64BIT
-	m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex64.dll");
+		m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex64.dll");
 #else
-	m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex.dll");
+		m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex.dll");
 #endif
-	if (!m_dlls.pFmodEx)
-	{
+		if (!m_dlls.pFmodEx)
+		{
 #ifdef BUILD_64BIT
-		throw StringTools::SysErrorFormat("Failed to load the fmodex64 DLL!");
+			throw StringTools::SysErrorFormat("Failed to load the fmodex64 DLL!");
 #else
-		throw StringTools::SysErrorFormat("Failed to load the fmodex DLL!");
+			throw StringTools::SysErrorFormat("Failed to load the fmodex DLL!");
 #endif
+		}
 	}
 }
 
