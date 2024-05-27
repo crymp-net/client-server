@@ -470,6 +470,23 @@ void Launcher::InitWorkingDirectory()
 
 void Launcher::LoadEngine()
 {
+	void* msvcr80 = WinAPI::DLL::Load("msvcr80.dll");
+	if (!msvcr80)
+	{
+		if (WinAPI::GetCurrentErrorCode() == 126)  // ERROR_MOD_NOT_FOUND
+		{
+			throw StringTools::ErrorFormat("Failed to load the MSVCR80 DLL!\n\n"
+				"Crysis requires the following to be installed:\n\n"
+				"- Microsoft Visual C++ 2005 Service Pack 1 Redistributable\n"
+				"- DirectX End-User Runtime\n"
+			);
+		}
+		else
+		{
+			throw StringTools::SysErrorFormat("Failed to load the MSVCR80 DLL!");
+		}
+	}
+
 	m_dlls.pCrySystem = WinAPI::DLL::Load("CrySystem.dll");
 	if (!m_dlls.pCrySystem)
 	{

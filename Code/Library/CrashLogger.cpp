@@ -512,51 +512,6 @@ void CrashLogger::OnEngineError(const char* format, va_list args)
 	std::abort();
 }
 
-static bool IsModuleNameEqual(const UNICODE_STRING& name, const wchar_t* expectedName, std::size_t expectedNameLength)
-{
-	const std::size_t fullNameLength = name.Length / sizeof(wchar_t);
-
-	const wchar_t* baseName = name.Buffer;
-	std::size_t baseNameLength = fullNameLength;
-
-	for (std::size_t i = 0; i < fullNameLength; i++)
-	{
-		if (name.Buffer[i] == L'/' || name.Buffer[i] == L'\\')
-		{
-			baseName = name.Buffer + (i + 1);
-			baseNameLength = fullNameLength - (i + 1);
-		}
-	}
-
-	if (baseNameLength != expectedNameLength)
-	{
-		return false;
-	}
-	else
-	{
-		return _wcsnicmp(baseName, expectedName, expectedNameLength) == 0;
-	}
-}
-
-static HMODULE FindLoadedModule(const wchar_t* name)
-{
-	const std::size_t nameLength = wcslen(name);
-
-	LIST_ENTRY* list = &NtCurrentTeb()->ProcessEnvironmentBlock->Ldr->InMemoryOrderModuleList;
-
-	for (LIST_ENTRY* entry = list->Flink; entry != list; entry = entry->Flink)
-	{
-		LDR_DATA_TABLE_ENTRY* data = CONTAINING_RECORD(entry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-
-		if (IsModuleNameEqual(data->FullDllName, name, nameLength))
-		{
-			return static_cast<HMODULE>(data->DllBase);
-		}
-	}
-
-	return NULL;
-}
-
 void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapInfoProvider)
 {
 	g_logFileProvider = logFileProvider;
@@ -569,8 +524,7 @@ void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapI
 	_set_purecall_handler(&PureCallHandler);
 	_set_invalid_parameter_handler(&InvalidParameterHandler);
 
-	// GetModuleHandle does not work because msvcr80.dll is stored in WinSxS
-	HMODULE msvcr80 = FindLoadedModule(L"msvcr80.dll");
+	HMODULE msvcr80 = GetModuleHandleA("msvcr80.dll");
 	if (msvcr80)
 	{
 		// VS2005 _set_purecall_handler is done by each engine DLL
