@@ -684,44 +684,18 @@ static char* strdup_hook(const char* str)
 	return static_cast<char*>(newstr);
 }
 
-static void Hook(void* pFunc, void* pNewFunc)
-{
-	if (!pFunc)
-	{
-		return;
-	}
-
-#ifdef BUILD_64BIT
-	unsigned char code[] = {
-		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
-		0xFF, 0xE0                                                   // jmp rax
-	};
-
-	std::memcpy(&code[2], &pNewFunc, 8);
-#else
-	unsigned char code[] = {
-		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
-		0xFF, 0xE0                     // jmp eax
-	};
-
-	std::memcpy(&code[1], &pNewFunc, 4);
-#endif
-
-	WinAPI::FillMem(pFunc, code, sizeof code);
-}
-
 void CryMemoryManager::Init(void* pCrySystem)
 {
 #ifdef BUILD_64BIT
 	g_STLport_Allocator = new STLport_Allocator;
 #endif
 
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
-	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), &CryMalloc_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), &CryRealloc_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), &CryGetMemSize_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryFree"), &CryFree_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtMalloc"), &CrySystemCrtMalloc_hook);
+	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), &CrySystemCrtFree_hook);
 }
 
 void CryMemoryManager::ProvideHeapInfo(std::FILE* file, void* address)

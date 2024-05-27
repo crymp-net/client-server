@@ -91,8 +91,10 @@ namespace WinAPI
 	void FillNOP(void *address, size_t length);
 	void FillMem(void *address, const void *data, size_t length);
 
+	void HookWithJump(void* address, void* pNewFunc);
+
 	bool HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc);
-	bool HookIATByName(void *pDLL, const char *name, const char *funcName, void *pNewFunc);
+	bool HookIATByName(void *pDLL, const char *dllName, const char *funcName, void *pNewFunc);
 
 	///////////
 	// Files //

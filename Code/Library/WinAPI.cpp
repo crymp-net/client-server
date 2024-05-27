@@ -308,6 +308,32 @@ void WinAPI::FillMem(void *address, const void *data, size_t length)
 	}
 }
 
+void WinAPI::HookWithJump(void* address, void* pNewFunc)
+{
+	if (!address)
+	{
+		return;
+	}
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xE0                                                   // jmp rax
+	};
+
+	std::memcpy(&code[2], &pNewFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xE0                     // jmp eax
+	};
+
+	std::memcpy(&code[1], &pNewFunc, 4);
+#endif
+
+	FillMem(address, &code, sizeof(code));
+}
+
 bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 {
 	const IMAGE_DATA_DIRECTORY *pIATData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IAT);
@@ -345,7 +371,7 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 	return true;
 }
 
-bool WinAPI::HookIATByName(void *pDLL, const char *name, const char *funcName, void *pNewFunc)
+bool WinAPI::HookIATByName(void *pDLL, const char *dllName, const char *funcName, void *pNewFunc)
 {
 	const IMAGE_DATA_DIRECTORY* importData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IMPORT);
 	if (!importData)
@@ -362,7 +388,7 @@ bool WinAPI::HookIATByName(void *pDLL, const char *name, const char *funcName, v
 	for (; importDescriptor->Name && importDescriptor->FirstThunk; ++importDescriptor)
 	{
 		const char* dllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
-		if (_stricmp(dllName, name) != 0)
+		if (_stricmp(dllName, dllName) != 0)
 		{
 			continue;
 		}
