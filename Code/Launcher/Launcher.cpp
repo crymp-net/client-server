@@ -562,7 +562,6 @@ void Launcher::LoadEngine()
 	}
 
 	CryMemoryManager::Init(m_dlls.pCrySystem);
-	CryMemoryManager::RedirectMalloc(m_dlls.pCrySystem);
 
 	m_dlls.pCryAction = WinAPI::DLL::Load("CryAction.dll");
 	if (!m_dlls.pCryAction)
@@ -614,56 +613,6 @@ void Launcher::LoadEngine()
 #else
 		throw StringTools::SysErrorFormat("Failed to load the fmodex DLL!");
 #endif
-	}
-
-#ifdef BUILD_64BIT
-	m_dlls.pFmodEvent = WinAPI::DLL::Load("fmod_event64.dll");
-#else
-	m_dlls.pFmodEvent = WinAPI::DLL::Load("fmod_event.dll");
-#endif
-	if (!m_dlls.pFmodEvent)
-	{
-#ifdef BUILD_64BIT
-		throw StringTools::SysErrorFormat("Failed to load the fmod_event64 DLL!");
-#else
-		throw StringTools::SysErrorFormat("Failed to load the fmod_event DLL!");
-#endif
-	}
-
-#ifdef BUILD_64BIT
-	m_dlls.pFmodEventNet = WinAPI::DLL::Load("fmod_event_net64.dll");
-#else
-	m_dlls.pFmodEventNet = WinAPI::DLL::Load("fmod_event_net.dll");
-#endif
-	if (!m_dlls.pFmodEventNet)
-	{
-#ifdef BUILD_64BIT
-		throw StringTools::SysErrorFormat("Failed to load the fmod_event_net64 DLL!");
-#else
-		throw StringTools::SysErrorFormat("Failed to load the fmod_event_net DLL!");
-#endif
-	}
-
-	m_dlls.pCrySoundSystem = WinAPI::DLL::Load("CrySoundSystem.dll");
-	if (!m_dlls.pCrySoundSystem)
-	{
-		throw StringTools::SysErrorFormat("Failed to load the CrySoundSystem DLL!");
-	}
-
-	CryMemoryManager::RedirectMalloc(m_dlls.pCryNetwork);
-	CryMemoryManager::RedirectMalloc(m_dlls.pCrySoundSystem);
-	CryMemoryManager::RedirectMalloc(m_dlls.pFmodEx);
-	CryMemoryManager::RedirectMalloc(m_dlls.pFmodEvent);
-	CryMemoryManager::RedirectMalloc(m_dlls.pFmodEventNet);
-
-	if (m_dlls.pCryRenderD3D9)
-	{
-		CryMemoryManager::RedirectMalloc(m_dlls.pCryRenderD3D9);
-	}
-
-	if (m_dlls.pCryRenderD3D10)
-	{
-		CryMemoryManager::RedirectMalloc(m_dlls.pCryRenderD3D10);
 	}
 }
 

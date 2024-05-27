@@ -447,7 +447,7 @@ STLport_Allocator* g_STLport_Allocator = nullptr;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// CryMemoryManager
+// Hooked functions
 ////////////////////////////////////////////////////////////////////////////////
 
 static void* CryMalloc_hook_internal(std::size_t size, std::size_t& allocatedSize)
@@ -658,31 +658,9 @@ static void CrySystemCrtFree_hook(void* ptr)
 	CryFree_hook(ptr);
 }
 
-static void* calloc_hook(std::size_t count, std::size_t size)
-{
-	return CrySystemCrtMalloc_hook(count * size);
-}
-
-static void* realloc_hook(void* ptr, std::size_t size)
-{
-	std::size_t allocatedSize = 0;
-	return CryRealloc_hook(ptr, size, allocatedSize);
-}
-
-static char* strdup_hook(const char* str)
-{
-	const std::size_t length = std::strlen(str);
-
-	void* newstr = CrySystemCrtMalloc_hook(length + 1);
-	if (!newstr)
-	{
-		return nullptr;
-	}
-
-	std::memcpy(newstr, str, length + 1);
-
-	return static_cast<char*>(newstr);
-}
+////////////////////////////////////////////////////////////////////////////////
+// CryMemoryManager
+////////////////////////////////////////////////////////////////////////////////
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
@@ -703,18 +681,6 @@ void CryMemoryManager::ProvideHeapInfo(std::FILE* file, void* address)
 #if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
 	GetDebugAlloc().ProvideHeapInfo(file, address);
 #endif
-}
-
-void CryMemoryManager::RedirectMalloc(void* pDLL)
-{
-	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "malloc", CrySystemCrtMalloc_hook);
-	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "calloc", calloc_hook);
-	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "realloc", realloc_hook);
-	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "free", CrySystemCrtFree_hook);
-	WinAPI::HookIATByName(pDLL, "msvcr80.dll", "strdup", strdup_hook);
-
-	// TODO: operator new
-	// TODO: operator delete
 }
 
 ////////////////////////////////////////////////////////////////////////////////

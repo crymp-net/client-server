@@ -16,10 +16,7 @@ public:
 		void* pCrySystem = nullptr;
 		void* pCryRenderD3D9 = nullptr;
 		void* pCryRenderD3D10 = nullptr;
-		void* pCrySoundSystem = nullptr;
 		void* pFmodEx = nullptr;
-		void* pFmodEvent = nullptr;
-		void* pFmodEventNet = nullptr;
 	};
 
 private:

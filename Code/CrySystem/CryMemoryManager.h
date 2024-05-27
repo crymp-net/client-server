@@ -7,6 +7,4 @@ namespace CryMemoryManager
 	void Init(void* pCrySystem);
 
 	void ProvideHeapInfo(std::FILE* file, void* address);
-
-	void RedirectMalloc(void* pDLL);
 }
