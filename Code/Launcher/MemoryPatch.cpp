@@ -560,6 +560,21 @@ void MemoryPatch::CrySystem::FixCPUInfoOverflow(void* pCrySystem)
 }
 
 /**
+ * Prevents Flash memory allocator from causing buffer underflow.
+ *
+ * This is normally harmless as it's read-only buffer underflow, but it annoys debug allocator.
+ */
+void MemoryPatch::CrySystem::FixFlashAllocatorUnderflow(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0xDEE82, 0x10);
+	FillNop(pCrySystem, 0xDEF0F, 0x10);
+#else
+	// TODO: 32-bit
+#endif
+}
+
+/**
  * Hooks CryEngine CPU detection.
  */
 void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info))

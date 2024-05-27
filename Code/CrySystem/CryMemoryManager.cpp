@@ -710,29 +710,6 @@ static void Hook(void* pFunc, void* pNewFunc)
 	WinAPI::FillMem(pFunc, code, sizeof code);
 }
 
-// TODO: move this to MemoryPatch
-static void FixHeapUnderflow(void* pCrySystem)
-{
-#ifdef BUILD_64BIT
-	const unsigned char codeA[] = {
-		0x33, 0xC0,  // xor eax, eax
-		0x90,        // nop
-		0x90,        // nop
-	};
-
-	const unsigned char codeB[] = {
-		0x33, 0xC9,  // xor ecx, ecx
-		0x90,        // nop
-		0x90,        // nop
-	};
-
-	WinAPI::FillMem(static_cast<unsigned char*>(pCrySystem) + 0xDEE82, &codeA, sizeof(codeA));
-	WinAPI::FillMem(static_cast<unsigned char*>(pCrySystem) + 0xDEF0F, &codeB, sizeof(codeB));
-#else
-	// TODO: 32-bit
-#endif
-}
-
 void CryMemoryManager::Init(void* pCrySystem)
 {
 #ifdef BUILD_64BIT
@@ -745,8 +722,6 @@ void CryMemoryManager::Init(void* pCrySystem)
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryFree"), CryFree_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtMalloc"), CrySystemCrtMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CrySystemCrtFree"), CrySystemCrtFree_hook);
-
-	FixHeapUnderflow(pCrySystem);
 }
 
 void CryMemoryManager::ProvideHeapInfo(std::FILE* file, void* address)
