@@ -52,7 +52,7 @@ static char g_fault_message[256];
 
 static void Log(const char* format, ...)
 {
-#ifdef CRYMP_DEBUG_ALLOCATOR_VERBOSE
+#ifdef CRYMP_CONSOLE_APP
 	FILE* stream = stdout;
 
 	va_list args;
@@ -222,7 +222,9 @@ struct DebugAllocator
 
 		TracyAllocN(block_begin, total_size, "DebugAllocator");
 
+#ifdef CRYMP_DEBUG_ALLOCATOR_VERBOSE
 		Log("%04x: Allocate(%zu) -> %p\n", GetCurrentThreadId(), size, ptr);
+#endif
 
 		return ptr;
 	}
@@ -256,7 +258,9 @@ struct DebugAllocator
 		it->second.is_allocated = false;
 		it->second.callstack_deallocate = std::move(callstack);
 
+#ifdef CRYMP_DEBUG_ALLOCATOR_VERBOSE
 		Log("%04x: Deallocate(%p) -> %zu\n", GetCurrentThreadId(), ptr, size);
+#endif
 
 		return size;
 	}
@@ -278,7 +282,9 @@ struct DebugAllocator
 
 		const std::size_t size = it->second.requested_size;
 
+#ifdef CRYMP_DEBUG_ALLOCATOR_VERBOSE
 		Log("%04x: GetSize(%p) -> %zu\n", GetCurrentThreadId(), ptr, size);
+#endif
 
 		return size;
 	}

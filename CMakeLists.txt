@@ -22,6 +22,8 @@ endif()
 
 ################################################################################
 
+option(CRYMP_CONSOLE_APP "Enable console window with standard output." OFF)
+
 option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." ON)
 
 option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
@@ -30,10 +32,6 @@ option(CRYMP_DEBUG_ALLOCATOR_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overfl
 option(CRYMP_DEBUG_ALLOCATOR_CHECK_READS "Check for both invalid reads and writes." OFF)
 
 option(CRYMP_TRACY_ENABLED "Enable Tracy profiler." OFF)
-
-if(CRYMP_DEBUG_ALLOCATOR_ENABLED OR CRYMP_TRACY_ENABLED)
-	set(CRYMP_CONSOLE_APP TRUE)
-endif()
 
 ################################################################################
 
