@@ -5,6 +5,8 @@
 
 #include "Launcher.h"
 
+#include "config.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // Request fast graphics card
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +29,11 @@ static std::string RuntimeErrorToString(const std::runtime_error& error)
 	return message;
 }
 
+#ifdef CRYMP_CONSOLE_APP
 int main()
+#else
+int __stdcall WinMain(void*, void*, char*, int)
+#endif
 {
 	Launcher launcher;
 	gLauncher = &launcher;

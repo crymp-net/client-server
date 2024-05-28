@@ -35,7 +35,7 @@ static char g_fault_message[256];
 	std::vsnprintf(g_fault_message, sizeof(g_fault_message), format, args);
 	va_end(args);
 
-#ifdef CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT
+#ifdef CRYMP_CONSOLE_APP
 	std::fprintf(stdout, "%s\n", g_fault_message);
 	std::fflush(stdout);
 #endif
@@ -52,7 +52,7 @@ static char g_fault_message[256];
 
 static void Log(const char* format, ...)
 {
-#ifdef CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT
+#ifdef CRYMP_DEBUG_ALLOCATOR_VERBOSE
 	FILE* stream = stdout;
 
 	va_list args;
@@ -206,7 +206,7 @@ struct DebugAllocator
 
 		std::memset(ptr, 0, page_count * this->page_size);
 
-#ifdef CRYMP_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW
+#ifdef CRYMP_DEBUG_ALLOCATOR_OVERFLOW_INSTEAD_OF_UNDERFLOW
 		const std::size_t remaining_size = size % this->page_size;
 		const std::size_t alignment = (remaining_size > 0) ? this->page_size - remaining_size : 0;
 

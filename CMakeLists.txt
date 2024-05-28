@@ -25,11 +25,15 @@ endif()
 option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
 
 option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
-option(CRYMP_DEBUG_ALLOCATOR_LOG_TO_STDOUT "Log each allocation and deallocation to standard output." OFF)
-option(CRYMP_DEBUG_ALLOCATOR_DETECT_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overflows instead of underflows." ON)
+option(CRYMP_DEBUG_ALLOCATOR_VERBOSE "Log each allocation and deallocation to standard output." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overflows instead of underflows." OFF)
 option(CRYMP_DEBUG_ALLOCATOR_CHECK_READS "Check for both invalid reads and writes." OFF)
 
 option(CRYMP_TRACY_ENABLED "Enable Tracy profiler." OFF)
+
+if(CRYMP_DEBUG_ALLOCATOR_ENABLED OR CRYMP_TRACY_ENABLED)
+	set(CRYMP_CONSOLE_APP TRUE)
+endif()
 
 ################################################################################
 
@@ -64,7 +68,7 @@ set(CRYMP_CLIENT_EXE "CryMP-Client${BUILD_BITS}")
 
 message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 
-add_executable(${CRYMP_CLIENT_EXE}
+add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
@@ -828,6 +832,10 @@ endif()
 
 if(CRYMP_TRACY_ENABLED)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE TRACY_ENABLE)
+endif()
+
+if(CRYMP_CONSOLE_APP)
+	set_target_properties(${CRYMP_CLIENT_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
 target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
