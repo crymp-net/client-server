@@ -1,4 +1,4 @@
-#include <cstdlib>
+#include <csignal>
 #include <cstring>
 #include <mutex>
 
@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <winternl.h>
 #include <dbghelp.h>
+#include <intrin.h>
 
 #include "config.h"
 
@@ -465,7 +466,7 @@ static void PureCallHandler()
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
@@ -487,7 +488,29 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
+}
+
+static void AbortHandler(int)
+{
+	CONTEXT context = {};
+	RtlCaptureContext(&context);
+
+	if (g_logFileProvider)
+	{
+		std::lock_guard lock(g_mutex);
+
+		std::FILE* file = g_logFileProvider();
+
+		if (file)
+		{
+			WriteGenericErrorDump(file, &context, "Aborted");
+
+			std::fclose(file);
+		}
+	}
+
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 void CrashLogger::OnEngineError(const char* format, va_list args)
@@ -509,7 +532,7 @@ void CrashLogger::OnEngineError(const char* format, va_list args)
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapInfoProvider)
@@ -518,6 +541,8 @@ void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapI
 	g_heapInfoProvider = heapInfoProvider;
 
 	SetUnhandledExceptionFilter(&CrashHandler);
+
+	signal(SIGABRT, &AbortHandler);
 
 	// set error handlers for our MSVC runtime
 	// note that engine uses VS2005 MSVC runtime, which has its own error handlers
