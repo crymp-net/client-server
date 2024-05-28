@@ -36,7 +36,7 @@ static char g_fault_message[256];
 	va_end(args);
 
 #ifdef CRYMP_CONSOLE_APP
-	std::fprintf(stdout, "%s\n", g_fault_message);
+	std::printf("%s\n", g_fault_message);
 	std::fflush(stdout);
 #endif
 
@@ -53,14 +53,12 @@ static char g_fault_message[256];
 static void Log(const char* format, ...)
 {
 #ifdef CRYMP_CONSOLE_APP
-	FILE* stream = stdout;
-
 	va_list args;
 	va_start(args, format);
-	std::vfprintf(stream, format, args);
+	std::vprintf(format, args);
 	va_end(args);
 
-	std::fflush(stream);
+	std::fflush(stdout);
 #endif
 }
 
@@ -671,7 +669,12 @@ static void CrySystemCrtFree_hook(void* ptr)
 #ifdef CRYMP_USE_MIMALLOC
 static void mimalloc_message_sink(const char* message, void*)
 {
-	CryLogAlways("mimalloc: %s", message);
+	CryLogAlways("[mimalloc] %s", message);
+}
+
+static void mimalloc_error_sink(int error, void*)
+{
+	CryLogError("[mimalloc] error=%d", error);
 }
 #endif
 
@@ -683,6 +686,9 @@ void CryMemoryManager::Init(void* pCrySystem)
 
 #ifdef CRYMP_USE_MIMALLOC
 	mi_register_output(&mimalloc_message_sink, nullptr);
+	mi_register_error(&mimalloc_error_sink, nullptr);
+	mi_option_enable(mi_option_show_errors);
+	mi_option_enable(mi_option_verbose);
 #endif
 
 	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), &CryMalloc_hook);
@@ -695,7 +701,11 @@ void CryMemoryManager::Init(void* pCrySystem)
 
 void CryMemoryManager::ProvideHeapInfo(std::FILE* file, void* address)
 {
-#if defined(CRYMP_DEBUG_ALLOCATOR_ENABLED)
+#ifdef CRYMP_USE_MIMALLOC
+	std::fprintf(file, "[mimalloc] version=%d\n", mi_version());
+#endif
+
+#ifdef CRYMP_DEBUG_ALLOCATOR_ENABLED
 	GetDebugAlloc().ProvideHeapInfo(file, address);
 #endif
 }
