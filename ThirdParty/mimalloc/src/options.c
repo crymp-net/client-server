@@ -53,10 +53,10 @@ static mi_option_desc_t options[_mi_option_last] =
   #if MI_DEBUG || defined(MI_SHOW_ERRORS)
   { 1, UNINIT, MI_OPTION(show_errors) },
   #else
-  { 1, UNINIT, MI_OPTION(show_errors) },
+  { 0, UNINIT, MI_OPTION(show_errors) },
   #endif
-  { 1, UNINIT, MI_OPTION(show_stats) },
-  { 1, UNINIT, MI_OPTION(verbose) },
+  { 0, UNINIT, MI_OPTION(show_stats) },
+  { 0, UNINIT, MI_OPTION(verbose) },
 
   // the following options are experimental and not all combinations make sense.
   { 1, UNINIT, MI_OPTION(eager_commit) },               // commit per segment directly (4MiB)  (but see also `eager_commit_delay`)

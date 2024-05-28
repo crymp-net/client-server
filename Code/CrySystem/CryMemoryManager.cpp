@@ -662,10 +662,21 @@ static void CrySystemCrtFree_hook(void* ptr)
 // CryMemoryManager
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef CRYMP_USE_MIMALLOC
+static void mimalloc_message_sink(const char* message, void*)
+{
+	CryLogAlways("mimalloc: %s", message);
+}
+#endif
+
 void CryMemoryManager::Init(void* pCrySystem)
 {
 #ifdef BUILD_64BIT
 	g_STLport_Allocator = new STLport_Allocator;
+#endif
+
+#ifdef CRYMP_USE_MIMALLOC
+	mi_register_output(&mimalloc_message_sink, nullptr);
 #endif
 
 	WinAPI::HookWithJump(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), &CryMalloc_hook);

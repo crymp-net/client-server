@@ -22,7 +22,7 @@ endif()
 
 ################################################################################
 
-option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
+option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." ON)
 
 option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
 option(CRYMP_DEBUG_ALLOCATOR_VERBOSE "Log each allocation and deallocation to standard output." OFF)
@@ -780,15 +780,7 @@ if(CRYMP_USE_MIMALLOC)
 	)
 
 	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
-	set_property(TARGET mimalloc PROPERTY CXX_STANDARD 17)
-
-	target_compile_definitions(mimalloc PUBLIC
-		MI_SECURE=4
-		MI_DEBUG=3
-		MI_SHOW_ERRORS=1
-	)
-
-	target_compile_options(mimalloc PRIVATE /W3)
+	target_compile_definitions(mimalloc PUBLIC MI_SECURE=4)
 	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
 
 	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
