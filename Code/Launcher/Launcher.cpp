@@ -1,8 +1,11 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <tracy/Tracy.hpp>
+
 #include "Cry3DEngine/TimeOfDay.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CrySystem/FrameProfiler.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryMP/Client/Client.h"
@@ -413,6 +416,37 @@ static void EnableHiddenProfilerSubsystems(ISystem* pSystem)
 	subsystems[PROFILE_SCRIPT].name = "Script";
 }
 
+#ifdef CRYMP_TRACY_ENABLED
+static void TracyProfilerStartSection(CFrameProfilerSection* section)
+{
+	using namespace tracy;
+
+	const char* name = section->m_pFrameProfiler->m_name;
+
+	TracyQueuePrepare(QueueType::ZoneBeginAllocSrcLoc);
+	const auto srcloc = Profiler::AllocSourceLocation(0, nullptr, 0, nullptr, 0, name, std::strlen(name));
+	MemWrite(&item->zoneBegin.time, Profiler::GetTime());
+	MemWrite(&item->zoneBegin.srcloc, srcloc);
+	TracyQueueCommit(zoneBeginThread);
+}
+
+static void TracyProfilerEndSection(CFrameProfilerSection* section)
+{
+	using namespace tracy;
+
+	TracyQueuePrepare(QueueType::ZoneEnd);
+	MemWrite(&item->zoneEnd.time, Profiler::GetTime());
+	TracyQueueCommit(zoneEndThread);
+}
+
+static void TracyHookEngineProfiler()
+{
+	gEnv->callbackStartSection = &TracyProfilerStartSection;
+	gEnv->callbackEndSection = &TracyProfilerEndSection;
+	gEnv->bProfilerEnabled = true;
+}
+#endif
+
 static std::FILE* ProvideLogFile()
 {
 	return Logger::GetInstance().GetFileHandle();
@@ -708,6 +742,10 @@ void Launcher::StartEngine()
 	{
 		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
 	}
+
+#ifdef CRYMP_TRACY_ENABLED
+	TracyHookEngineProfiler();
+#endif
 
 	gClient->Init(pGameFramework);
 
