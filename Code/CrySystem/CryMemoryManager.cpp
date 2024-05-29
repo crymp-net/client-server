@@ -350,6 +350,7 @@ static DebugAllocator& GetDebugAlloc()
 
 #ifdef BUILD_64BIT
 
+// TODO: fix and remove
 struct STLport_Allocator
 {
 	static constexpr std::size_t BLOCK_SIZE = 0x80000;
@@ -674,7 +675,7 @@ static void mimalloc_message_sink(const char* message, void*)
 
 static void mimalloc_error_sink(int error, void*)
 {
-	CryLogError("[mimalloc] error=%d", error);
+	CryLogAlways("[mimalloc] error=%d", error);
 }
 #endif
 

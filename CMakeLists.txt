@@ -778,7 +778,6 @@ if(CRYMP_USE_MIMALLOC)
 	)
 
 	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
-	target_compile_definitions(mimalloc PUBLIC MI_SECURE=4)
 	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
 
 	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
