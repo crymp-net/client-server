@@ -383,36 +383,21 @@ void MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(void* pCryRenderD3D10)
 void MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(void* pCryRenderD3D10)
 {
 #ifdef BUILD_64BIT
-	const unsigned char code[] = {
-		0x48, 0x8B, 0x30,                    // mov rsi, qword ptr ds:[rax]
-		// call atof and store the resulting value
-		0x48, 0x8B, 0xCE,                    // mov rcx, rsi
-		0xFF, 0x15, 0x2D, 0x34, 0x0C, 0x00,  // call qword ptr ds:[<&atof>]
-		0xF2, 0x0F, 0x5A, 0xC8,              // cvtsd2ss xmm1, xmm0
-		0xF3, 0x0F, 0x11, 0x4F, 0x10,        // movss dword ptr ds:[rdi+0x10], xmm1
-		// CryString destructor
-		0x48, 0x8B, 0x4C, 0x24, 0x78,        // mov rcx, qword ptr ss:[rsp+0x78]
-		0x8B, 0x41, 0xF4,                    // mov eax, dword ptr ds:[rcx-0xC]
-		0x48, 0x83, 0xC1, 0xF4,              // add rcx, 0xFFFFFFFFFFFFFFF4
-		0x85, 0xC0,                          // test eax, eax
-		0x78, 0x1C,                          // js cryrenderd3d10.38189068 -----------+
-		0x83, 0xC0, 0xFF,                    // add eax, 0xFFFFFFFF                   |
-		0x85, 0xC0,                          // test eax, eax                         |
-		0x89, 0x01,                          // mov dword ptr ds:[rcx], eax           |
-		0x7F, 0x13,                          // jg cryrenderd3d10.38189068 -----------+
-		0xB8, 0xF3, 0xFF, 0xFF, 0xFF,        // mov eax, 0xFFFFFFF3                   |
-		0x2B, 0x41, 0x08,                    // sub eax, dword ptr ds:[rcx+0x8]       |
-		0x01, 0x05, 0xE9, 0x93, 0x14, 0x00,  // add dword ptr ds:[0x382D244C], eax    |
-		0xE8, 0x78, 0x22, 0xF5, 0xFF,        // call <cryrenderd3d10.sub_380DB2E0>    |
-	};                                           //                                    <--+
-
-	// TODO: DoFixUseAfterFreeInShaderParser
-#else
-	// TODO: 32-bit
-#endif
-
-#ifdef BUILD_64BIT
-	FillMem(pCryRenderD3D10, 0x189027, &code, sizeof(code));
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x11D787, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x11D80D, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x120FD7, 0x5, 0x3, 0x2C, 0xD);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121BAF, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121C78, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121CD2, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121D2F, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121D8C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121DE6, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121E40, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121E9A, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121EF4, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121F4B, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x18888C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x189027, 0x5, 0x3, 0x2F, 0x12);
 #else
 	// TODO: 32-bit
 #endif
