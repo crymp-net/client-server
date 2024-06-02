@@ -24,7 +24,7 @@ endif()
 
 option(CRYMP_CONSOLE_APP "Enable console window with standard output." OFF)
 
-option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." ON)
+option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
 
 option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
 option(CRYMP_DEBUG_ALLOCATOR_VERBOSE "Log each allocation and deallocation to standard output." OFF)
