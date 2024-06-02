@@ -701,6 +701,10 @@ void Launcher::OnInitProgress(const char* message)
 {
 }
 
+// extern std::map<size_t, size_t> g_allocs;
+extern size_t g_mem_cached, g_mem_misses;
+extern std::vector<unsigned> g_pages;
+
 void Launcher::OnInit(ISystem* pSystem)
 {
 	gEnv = pSystem->GetGlobalEnvironment();
@@ -747,6 +751,33 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.LogAlways("");
 
 	logger.SetPrefix(logPrefix);
+
+	gEnv->pConsole->AddCommand("g_allocs", [](IConsoleCmdArgs* args) -> void {
+		struct p {
+			size_t k, v;
+			bool operator<(const p& a) {
+				return v < a.v;
+			}
+		};
+		std::vector<p> pairs;
+		size_t allocs = 0;
+		/*for (auto& [k, v] : g_allocs) {
+			pairs.push_back(p{ k, v });
+			allocs += v;
+		}*/
+		std::sort(pairs.rbegin(), pairs.rend());
+		char buff[400];
+		sprintf(buff, "Total allocated objects: %zu, free pages: %zu\n", allocs, g_pages.size());
+		gEnv->pConsole->PrintLine(buff);
+
+		sprintf(buff, "Cache hits: %zu, misses: %zu, efficiency: %.3f percent\n", g_mem_cached, g_mem_misses, 100.0f * g_mem_cached / (g_mem_cached + g_mem_misses));
+		gEnv->pConsole->PrintLine(buff);
+
+		for (size_t i = 0; i < pairs.size() && i < 20; i++) {
+			sprintf(buff, "Size: %zu, Allocations: %zu, Share: %.3f percent)\n", pairs[i].k, pairs[i].v, 100.0 * pairs[i].v / allocs);
+			gEnv->pConsole->PrintLine(buff);
+		}
+	});
 
 	EnableHiddenProfilerSubsystems(pSystem);
 }

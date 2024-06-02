@@ -29,6 +29,8 @@
 // forward declaration of CryStackString
 template<class T,size_t S> class CryStackStringT;
 
+std::size_t CryFree_hook(void* mem);
+
 
 class CConstCharWrapper;	//forward declaration for special const char * without memory allocations
 
@@ -647,7 +649,7 @@ inline void CryStringT<T>::_FreeData( StrHeader* pData )
 			int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			_usedMemory( -allocLen ); // For statistics.
 
-			free(pData);
+			CryFree_hook(pData);
 			//int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			//string_alloc::deallocate( (value_type*)pData,allocLen );
 		}

@@ -7,15 +7,86 @@
 
 #include "CryMemoryManager.h"
 
+#include <CryCommon/CrySystem/IConsole.h>
+#include <stack>
+
+
+const void* g_mem = NULL;
+const void* g_mem_end = NULL;
+
+size_t g_mem_cached = 0, g_mem_misses = 0;
+std::vector<unsigned> g_pages;
+std::mutex mtx;
+
+struct chunk {
+	size_t size;
+	char mem[256];
+};
+
+#define MEM_CACHE
+
+#ifdef MEM_CACHE
+void MemoryFree(void* mem) {
+	if (mem >= g_mem && mem <= g_mem_end) {
+		chunk* ch = (chunk*)((const char*)mem - sizeof(chunk::size));
+		unsigned page = ((uintptr_t)ch - (uintptr_t)g_mem) / sizeof(chunk);
+		mtx.lock();
+		g_pages.push_back(page);
+		mtx.unlock();
+	} else {
+		std::free(mem);
+	}
+}
+
+size_t GetAllocatedSize(void* mem) {
+	if (mem >= g_mem && mem <= g_mem_end) {
+		chunk* ch = (chunk*)((const char*)mem - sizeof(chunk::size));
+		return ch->size;
+	} else {
+		return _msize(mem);
+	}
+}
+
+void* MemoryAllocate(size_t size) {
+	if (size <= sizeof(chunk::mem) && g_pages.size() > 0) {
+		g_mem_cached++;
+		mtx.lock();
+		auto freePage = g_pages.back();
+		g_pages.pop_back();
+		mtx.unlock();
+		chunk* ch = ((chunk*)g_mem) + freePage;
+		ch->size = size;
+		return &ch->mem;
+	} else {
+		g_mem_misses++;
+		return std::calloc(1, size);
+	}
+}
+
+#else
+
+void MemoryFree(void* mem) {
+	std::free(mem);
+}
+
+size_t GetAllocatedSize(void* mem) {
+	return _msize(mem);
+}
+
+void* MemoryAllocate(size_t size) {
+	return std::calloc(1, size);
+}
+#endif
+
 static void* CryMalloc_hook(std::size_t size, std::size_t& allocatedSize)
 {
 	void* result = nullptr;
 
 	const auto doCryMalloc = [&]()
 	{
-		result = std::calloc(1, size);
+		result = MemoryAllocate(size);
 
-		allocatedSize = _msize(result);
+		allocatedSize = GetAllocatedSize(result);
 	};
 
 	if (gEnv)
@@ -40,12 +111,12 @@ static void* CryRealloc_hook(void* mem, std::size_t size, std::size_t& allocated
 	{
 		if (mem)
 		{
-			const std::size_t oldSize = _msize(mem);
+			const std::size_t oldSize = GetAllocatedSize(mem);
 
 			result = CryMalloc_hook(size, allocatedSize);
 
 			std::memcpy(result, mem, (oldSize < size) ? oldSize : size);
-			std::free(mem);
+			MemoryFree(mem);
 		}
 		else
 		{
@@ -73,23 +144,23 @@ static std::size_t CryGetMemSize_hook(void* mem, std::size_t)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		return _msize(mem);
+		return GetAllocatedSize(mem);
 	}
 	else
 	{
-		return _msize(mem);
+		return GetAllocatedSize(mem);
 	}
 }
 
-static std::size_t CryFree_hook(void* mem)
+std::size_t CryFree_hook(void* mem)
 {
 	std::size_t result = 0;
 
 	const auto doCryFree = [&]()
 	{
-		result = _msize(mem);
+		result = GetAllocatedSize(mem);
 
-		std::free(mem);
+		MemoryFree(mem);
 	};
 
 	if (gEnv)
@@ -112,25 +183,26 @@ static void* CrySystemCrtMalloc_hook(std::size_t size)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		return std::calloc(1, size);
+		return MemoryAllocate(size);
 	}
 	else
 	{
-		return std::calloc(1, size);
+		return MemoryAllocate(size);
 	}
 }
 
 static void CrySystemCrtFree_hook(void* mem)
 {
+	size_t result = GetAllocatedSize(mem);
 	if (gEnv)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SYSTEM);
 
-		std::free(mem);
+		MemoryFree(mem);
 	}
 	else
 	{
-		std::free(mem);
+		MemoryFree(mem);
 	}
 }
 
@@ -162,6 +234,16 @@ static void Hook(void* pFunc, void* pNewFunc)
 
 void CryMemoryManager::Init(void* pCrySystem)
 {
+#ifdef MEM_CACHE
+	size_t no_pages = 2000000;
+	g_mem = malloc(sizeof(chunk) * no_pages);
+	g_mem_end = ((const char*)g_mem) + sizeof(chunk) * no_pages;
+	g_pages.reserve(no_pages);
+	for (size_t i = 0; i < no_pages; i++) {
+		g_pages.push_back(i);
+	}
+#endif
+
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryMalloc"), CryMalloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryRealloc"), CryRealloc_hook);
 	Hook(WinAPI::DLL::GetSymbol(pCrySystem, "CryGetMemSize"), CryGetMemSize_hook);
