@@ -1,8 +1,11 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <tracy/Tracy.hpp>
+
 #include "Cry3DEngine/TimeOfDay.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CrySystem/FrameProfiler.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryMP/Client/Client.h"
@@ -413,6 +416,42 @@ static void EnableHiddenProfilerSubsystems(ISystem* pSystem)
 	subsystems[PROFILE_SCRIPT].name = "Script";
 }
 
+#ifdef CRYMP_TRACY_ENABLED
+static void TracyProfilerStartSection(CFrameProfilerSection* section)
+{
+	using namespace tracy;
+
+	const char* name = section->m_pFrameProfiler->m_name;
+
+	TracyQueuePrepare(QueueType::ZoneBeginAllocSrcLoc);
+	const auto srcloc = Profiler::AllocSourceLocation(0, nullptr, 0, nullptr, 0, name, std::strlen(name));
+	MemWrite(&item->zoneBegin.time, Profiler::GetTime());
+	MemWrite(&item->zoneBegin.srcloc, srcloc);
+	TracyQueueCommit(zoneBeginThread);
+}
+
+static void TracyProfilerEndSection(CFrameProfilerSection* section)
+{
+	using namespace tracy;
+
+	TracyQueuePrepare(QueueType::ZoneEnd);
+	MemWrite(&item->zoneEnd.time, Profiler::GetTime());
+	TracyQueueCommit(zoneEndThread);
+}
+
+static void TracyHookEngineProfiler()
+{
+	gEnv->callbackStartSection = &TracyProfilerStartSection;
+	gEnv->callbackEndSection = &TracyProfilerEndSection;
+	gEnv->bProfilerEnabled = true;
+}
+#endif
+
+static std::FILE* ProvideLogFile()
+{
+	return Logger::GetInstance().GetFileHandle();
+}
+
 void Launcher::SetCmdLine()
 {
 	const std::string_view cmdLine = WinAPI::CmdLine::GetFull();
@@ -465,6 +504,23 @@ void Launcher::InitWorkingDirectory()
 
 void Launcher::LoadEngine()
 {
+	void* msvcr80 = WinAPI::DLL::Load("msvcr80.dll");
+	if (!msvcr80)
+	{
+		if (WinAPI::GetCurrentErrorCode() == 126)  // ERROR_MOD_NOT_FOUND
+		{
+			throw StringTools::ErrorFormat("Failed to load the MSVCR80 DLL!\n\n"
+				"Crysis requires the following to be installed:\n\n"
+				"- Microsoft Visual C++ 2005 Service Pack 1 Redistributable\n"
+				"- DirectX End-User Runtime\n"
+			);
+		}
+		else
+		{
+			throw StringTools::SysErrorFormat("Failed to load the MSVCR80 DLL!");
+		}
+	}
+
 	m_dlls.pCrySystem = WinAPI::DLL::Load("CrySystem.dll");
 	if (!m_dlls.pCrySystem)
 	{
@@ -489,8 +545,6 @@ void Launcher::LoadEngine()
 	{
 		throw StringTools::SysErrorFormat("Failed to get the game version!");
 	}
-
-	CryMemoryManager::Init(m_dlls.pCrySystem);
 
 	switch (gameVersion)
 	{
@@ -541,6 +595,8 @@ void Launcher::LoadEngine()
 		}
 	}
 
+	CryMemoryManager::Init(m_dlls.pCrySystem);
+
 	m_dlls.pCryAction = WinAPI::DLL::Load("CryAction.dll");
 	if (!m_dlls.pCryAction)
 	{
@@ -577,6 +633,20 @@ void Launcher::LoadEngine()
 				throw StringTools::SysErrorFormat("Failed to load the CryRenderD3D9 DLL!");
 			}
 		}
+
+#ifdef BUILD_64BIT
+		m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex64.dll");
+#else
+		m_dlls.pFmodEx = WinAPI::DLL::Load("fmodex.dll");
+#endif
+		if (!m_dlls.pFmodEx)
+		{
+#ifdef BUILD_64BIT
+			throw StringTools::SysErrorFormat("Failed to load the fmodex64 DLL!");
+#else
+			throw StringTools::SysErrorFormat("Failed to load the fmodex DLL!");
+#endif
+		}
 	}
 }
 
@@ -603,6 +673,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CrySystem::AllowMultipleInstances(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::DisableIOErrorLog(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::FixCPUInfoOverflow(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::FixFlashAllocatorUnderflow(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);
 		MemoryPatch::CrySystem::HookError(m_dlls.pCrySystem, &CrashLogger::OnEngineError);
 		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);
@@ -630,6 +701,7 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCryRenderD3D9)
 	{
+		MemoryPatch::CryRenderD3D9::FixUseAfterFreeInShaderParser(m_dlls.pCryRenderD3D9);
 		MemoryPatch::CryRenderD3D9::HookWindowNameD3D9(m_dlls.pCryRenderD3D9, GAME_WINDOW_NAME);
 		MemoryPatch::CryRenderD3D9::HookAdapterInfo(m_dlls.pCryRenderD3D9, &OnD3D9Info);
 	}
@@ -637,8 +709,14 @@ void Launcher::PatchEngine()
 	if (m_dlls.pCryRenderD3D10)
 	{
 		MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(m_dlls.pCryRenderD3D10);
+		MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(m_dlls.pCryRenderD3D10);
 		MemoryPatch::CryRenderD3D10::HookWindowNameD3D10(m_dlls.pCryRenderD3D10, GAME_WINDOW_NAME);
 		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
+	}
+
+	if (m_dlls.pFmodEx)
+	{
+		MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(m_dlls.pFmodEx);
 	}
 }
 
@@ -664,6 +742,10 @@ void Launcher::StartEngine()
 	{
 		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
 	}
+
+#ifdef CRYMP_TRACY_ENABLED
+	TracyHookEngineProfiler();
+#endif
 
 	gClient->Init(pGameFramework);
 
@@ -722,7 +804,7 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.SetVerbosity(verbosity);
 	logger.OpenFile((rootDirPath.empty() ? userDirPath : rootDirPath) / logFileName);
 
-	CrashLogger::Enable([]() -> std::FILE* { return Logger::GetInstance().GetFileHandle(); });
+	CrashLogger::Enable(&ProvideLogFile, &CryMemoryManager::ProvideHeapInfo);
 
 	logger.LogAlways("Log begins at %s", Logger::FormatPrefix("%F %T%z").c_str());
 

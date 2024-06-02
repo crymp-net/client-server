@@ -19,13 +19,12 @@ class HardwareMouse : public IHardwareMouse, public ISystemEventListener, public
 
 	std::vector<IHardwareMouseEventListener*> m_listeners;
 
-	static HardwareMouse s_globalInstance;
-
 public:
 	// to be removed once we have our own CrySystem
 	static HardwareMouse& GetInstance()
 	{
-		return s_globalInstance;
+		static HardwareMouse instance;
+		return instance;
 	}
 
 	// and this too

@@ -26,6 +26,8 @@
 #include <ctype.h>
 #include <wctype.h>
 
+#include "CryMalloc.h"
+
 #ifndef CRY_STRING_DEBUG
 #define CRY_STRING_DEBUG(s)
 #endif
@@ -595,7 +597,7 @@ inline void CryStackStringT<T,S>::_AllocData( size_type nLen )
 		value_type* pData = m_strBuf;
 		if (allocLen > MAX_SIZE)
 		{
-			pData = (value_type*) malloc(allocLen);
+			pData = (value_type*) CryMalloc(allocLen);
 			_usedMemory( allocLen ); // For statistics.
 			m_nAllocSize = nLen;
 		}
@@ -625,7 +627,7 @@ inline void CryStackStringT<T,S>::_FreeData(value_type* pData)
 	{
 		int allocLen = (m_nAllocSize+1)*sizeof(value_type);
 		_usedMemory( -allocLen ); // For statistics.
-		free(pData);
+		CryFree(pData);
 	}
 }
 

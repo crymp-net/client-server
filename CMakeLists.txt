@@ -22,6 +22,19 @@ endif()
 
 ################################################################################
 
+option(CRYMP_CONSOLE_APP "Enable console window with standard output." OFF)
+
+option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
+
+option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_VERBOSE "Log each allocation and deallocation to standard output." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overflows instead of underflows." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_CHECK_READS "Check for both invalid reads and writes." OFF)
+
+option(CRYMP_TRACY_ENABLED "Enable Tracy profiler." OFF)
+
+################################################################################
+
 math(EXPR BUILD_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -124,6 +137,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/ConfigurableVariant.h
 	Code/CryCommon/CryCore/CryArray.h
 	Code/CryCommon/CryCore/CryFixedString.h
+	Code/CryCommon/CryCore/CryMalloc.h
 	Code/CryCommon/CryCore/CryName.h
 	Code/CryCommon/CryCore/CryPodArray.h
 	Code/CryCommon/CryCore/CrySizer.h
@@ -737,9 +751,37 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	ThirdParty/nlohmann/json.hpp
 	ThirdParty/nlohmann/json_fwd.hpp
 	ThirdParty/picosha2.h
+	ThirdParty/tracy/public/TracyClient.cpp
 	${PROJECT_BINARY_DIR}/config.h
 	${PROJECT_BINARY_DIR}/version.h
 )
+
+################################################################################
+
+if(CRYMP_USE_MIMALLOC)
+	add_library(mimalloc STATIC
+		ThirdParty/mimalloc/src/alloc.c
+		ThirdParty/mimalloc/src/alloc-aligned.c
+		ThirdParty/mimalloc/src/alloc-posix.c
+		ThirdParty/mimalloc/src/arena.c
+		ThirdParty/mimalloc/src/bitmap.c
+		ThirdParty/mimalloc/src/heap.c
+		ThirdParty/mimalloc/src/init.c
+		ThirdParty/mimalloc/src/options.c
+		ThirdParty/mimalloc/src/os.c
+		ThirdParty/mimalloc/src/page.c
+		ThirdParty/mimalloc/src/random.c
+		ThirdParty/mimalloc/src/segment.c
+		ThirdParty/mimalloc/src/segment-map.c
+		ThirdParty/mimalloc/src/stats.c
+		ThirdParty/mimalloc/src/prim/prim.c
+	)
+
+	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
+	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
+
+	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
+endif()
 
 ################################################################################
 
@@ -777,12 +819,25 @@ if(BUILD_BITS EQUAL 64)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
+if(CRYMP_TRACY_ENABLED)
+	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE TRACY_ENABLE)
+endif()
+
+if(CRYMP_CONSOLE_APP)
+	set_target_properties(${CRYMP_CLIENT_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
+endif()
+
 target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
-target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
+target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE
+	ThirdParty
+	ThirdParty/Lua/src
+	ThirdParty/miniz
+	ThirdParty/tracy/public
+)
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 

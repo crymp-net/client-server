@@ -16,6 +16,8 @@
 #define __CRY_POD_ARRAY_H__
 #pragma once
 
+#include "CryMalloc.h"
+
 //////////////////////////////////////////////////////////////////////////
 // POD Array
 // vector like class (random access O(1)) without construction/destructor/copy constructor/assignment handling
@@ -66,7 +68,7 @@ public:
 	void Free()
   {    
     if(m_pElements)
-      free (m_pElements); 
+      CryFree(m_pElements);
     m_pElements=0;
     m_nCount=0; 
     m_nAllocatedCount= 0; 
@@ -107,7 +109,7 @@ public:
     {
       assert(&p<m_pElements || &p>=(m_pElements+m_nAllocatedCount));
       m_nAllocatedCount = m_nCount*2 + 8;
-      m_pElements = (T*)realloc(m_pElements,m_nAllocatedCount*sizeof(T));
+      m_pElements = (T*)CryRealloc(m_pElements,m_nAllocatedCount*sizeof(T));
       assert(m_pElements);
     }
 
@@ -129,12 +131,12 @@ public:
     {
       m_nAllocatedCount = elem_count;
 
-      T * new_elements = (T*)malloc(m_nAllocatedCount*sizeof(T));
+      T * new_elements = (T*)CryMalloc(m_nAllocatedCount*sizeof(T));
       assert(new_elements);
       memset(new_elements, 0, sizeof(T)*m_nAllocatedCount);
       memcpy(new_elements, m_pElements, sizeof(T)*m_nCount);
       if(m_pElements)
-        free (m_pElements);
+        CryFree(m_pElements);
       m_pElements = new_elements;
     }
     

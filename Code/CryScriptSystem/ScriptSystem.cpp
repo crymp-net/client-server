@@ -9,6 +9,9 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <tracy/Tracy.hpp>
+
+#include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -59,7 +62,8 @@ void *ScriptSystem::Allocate(size_t size)
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	// TODO: optimized memory allocator
-	void *block = malloc(size);
+	void *block = CryMalloc(size);
+	TracyAllocN(block, size, "ScriptSystem");
 
 	// we never fail
 	if (!block)
@@ -75,7 +79,8 @@ void ScriptSystem::Deallocate(void *block)
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
-	free(block);
+	TracyFreeN(block, "ScriptSystem");
+	CryFree(block);
 }
 
 void ScriptSystem::PushAny(const ScriptAnyValue & any)
@@ -1072,15 +1077,27 @@ int ScriptSystem::PanicHandler(lua_State *L)
 
 void* ScriptSystem::LuaAllocator(void* userData, void* originalBlock, size_t originalSize, size_t newSize)
 {
-	if (newSize)
+	ScriptSystem *self = static_cast<ScriptSystem*>(userData);
+
+	if (!newSize)
 	{
-		return realloc(originalBlock, newSize);
-	}
-	else
-	{
-		free(originalBlock);
+		self->Deallocate(originalBlock);
 		return nullptr;
 	}
+
+	if (newSize <= originalSize)
+	{
+		return originalBlock;
+	}
+
+	// always succeeds
+	void *newBlock = self->Allocate(newSize);
+
+	memcpy(newBlock, originalBlock, originalSize);
+
+	self->Deallocate(originalBlock);
+
+	return newBlock;
 }
 
 void ScriptSystem::OnDumpStateCmd(IConsoleCmdArgs *pArgs)

@@ -1,5 +1,7 @@
 #include <stdlib.h>  // atoi
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
@@ -303,6 +305,7 @@ void Client::UpdateLoop()
 
 	while (GameWindow::GetInstance().OnUpdate() && m_pGame->Update(haveFocus, updateFlags))
 	{
+		FrameMark;
 	}
 
 	GameWindow::GetInstance().OnQuit();
