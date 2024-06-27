@@ -15,9 +15,6 @@ History:
 
 *************************************************************************/
 
-#ifndef __PLAYERVIEW_H__
-#define __PLAYERVIEW_H__
-
 #if _MSC_VER > 1000
 # pragma once
 #endif
@@ -28,11 +25,15 @@ History:
 class CPlayerView
 {
 public:
-	CPlayerView(const CPlayer &rPlayer,SViewParams &viewParams);
 
-	void Process(SViewParams &viewParams);
+	explicit CPlayerView(CPlayer& player);
+	~CPlayerView();
+	
+	void Update(SViewParams &viewParams);
 
-	void Commit(CPlayer &rPlayer,SViewParams &viewParams);
+private:
+	
+	CPlayer& m_player;
 
 protected:
 	struct SViewStateIn
@@ -162,17 +163,15 @@ protected:
 	void ViewSpectatorTarget_CryMP(SViewParams& viewParams);
 	void ViewDeathCamTarget(SViewParams &viewParams);
 
-	void ViewExternalControlPostProcess(CPlayer &rPlayer,SViewParams &viewParams);
+	void ViewExternalControlPostProcess(SViewParams &viewParams);
 	public:
-	void FirstPersonWeaponPostProcess(CPlayer &rPlayer,SViewParams &viewParams);
+	void FirstPersonWeaponPostProcess(SViewParams &viewParams);
 	protected:
-	void ViewShakePostProcess(CPlayer &rPlayer,SViewParams &viewParams);
-	void HudPostProcess(CPlayer &rPlayer,SViewParams &viewParams);
-	void HandsPostProcess(CPlayer &rPlayer,SViewParams &viewParams);
+	void ViewShakePostProcess(SViewParams &viewParams);
+	void HandsPostProcess(SViewParams &viewParams);
 
 	void ViewProcess(SViewParams &viewParams);
-	void ViewPreProcess(const CPlayer &rPlayer,SViewParams &viewParams,SViewStateIn & m_viewStateIn);
-	void ViewPostProcess(CPlayer &rPlayer,SViewParams &viewParams);
+	void ViewPreProcess(SViewParams &viewParams,SViewStateIn & m_viewStateIn);
+	void ViewPostProcess(SViewParams &viewParams);
 };
 
-#endif

@@ -900,6 +900,8 @@ protected:
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
+	std::unique_ptr<CPlayerView> m_pPlayerView;
+
 public:
 
 	//First Person Spectator

@@ -272,6 +272,8 @@ bool CPlayer::Init(IGameObject* pGameObject)
 	if (GetEntityId() == LOCAL_PLAYER_ENTITY_ID && !m_pNanoSuit) //client player always has a nanosuit (else the HUD doesn't work)
 		m_pNanoSuit = new CNanoSuit();
 
+	m_pPlayerView = std::make_unique<CPlayerView>(*this);
+
 	return true;
 }
 
@@ -1800,15 +1802,16 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			{
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
+
+			if (pTarget->m_pPlayerView.get())
+			{
+				//CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
+				pTarget->m_pPlayerView->Update(m_FirstPersonSpectatorParams);
+			}
 		}
 
 		//Hide TP model or not
 		pTarget->m_stats.isHidden = pVehicle ? false : true;
-
-		//Run target view as First Person
-		CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
-		playerView.Process(m_FirstPersonSpectatorParams);
-		playerView.Commit(*pTarget, m_FirstPersonSpectatorParams);
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -1884,9 +1887,11 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	CPlayerView playerView(*this, viewParams);
-	playerView.Process(viewParams);
-	playerView.Commit(*this, viewParams);
+	//CPlayerView playerView(*this, viewParams);
+	if (m_pPlayerView.get())
+	{
+		m_pPlayerView->Update(viewParams);
+	}
 
 	if (!IsThirdPerson())
 	{
