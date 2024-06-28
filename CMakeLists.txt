@@ -357,20 +357,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/HUD/HUDWeaponAccessories.cpp
 	Code/CryGame/HUD/ScriptBind_HUD.cpp
 	Code/CryGame/HUD/ScriptBind_HUD.h
-	Code/CryGame/HUD/Tweaks/HUDTweakMenu.cpp
-	Code/CryGame/HUD/Tweaks/HUDTweakMenu.h
-	Code/CryGame/HUD/Tweaks/TweakCommon.cpp
-	Code/CryGame/HUD/Tweaks/TweakCommon.h
-	Code/CryGame/HUD/Tweaks/TweakMenu.cpp
-	Code/CryGame/HUD/Tweaks/TweakMenu.h
-	Code/CryGame/HUD/Tweaks/TweakMetadata.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadata.h
-	Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.h
-	Code/CryGame/HUD/Tweaks/TweakMetadataLUA.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadataLUA.h
-	Code/CryGame/HUD/Tweaks/TweakTraverser.cpp
-	Code/CryGame/HUD/Tweaks/TweakTraverser.h
 	Code/CryGame/Items/FlowItemAnimation.cpp
 	Code/CryGame/Items/FlowItemAnimation.h
 	Code/CryGame/Items/Item.cpp
