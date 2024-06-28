@@ -244,8 +244,12 @@ CPlayer::~CPlayer()
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (pCharacter)
 		pCharacter->GetISkeletonPose()->SetPostProcessCallback0(0, 0);
+
 	if (m_pNanoSuit)
 		delete m_pNanoSuit;
+
+	if (m_pPlayerView)
+		delete m_pPlayerView;
 
 	if (m_pVehicleClient)
 	{
@@ -272,7 +276,7 @@ bool CPlayer::Init(IGameObject* pGameObject)
 	if (GetEntityId() == LOCAL_PLAYER_ENTITY_ID && !m_pNanoSuit) //client player always has a nanosuit (else the HUD doesn't work)
 		m_pNanoSuit = new CNanoSuit();
 
-	m_pPlayerView = std::make_unique<CPlayerView>(*this);
+	m_pPlayerView = new PlayerView(*this);
 
 	return true;
 }
@@ -1803,9 +1807,8 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
 
-			if (pTarget->m_pPlayerView.get())
+			if (pTarget->m_pPlayerView)
 			{
-				//CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
 				pTarget->m_pPlayerView->Update(m_FirstPersonSpectatorParams);
 			}
 		}
@@ -1887,8 +1890,8 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	//CPlayerView playerView(*this, viewParams);
-	if (m_pPlayerView.get())
+	//PlayerView playerView(*this, viewParams);
+	if (m_pPlayerView)
 	{
 		m_pPlayerView->Update(viewParams);
 	}

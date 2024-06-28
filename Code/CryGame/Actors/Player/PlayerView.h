@@ -22,130 +22,60 @@ History:
 #include "Player.h"
 
 
-class CPlayerView
+class PlayerView
 {
 public:
 
-	explicit CPlayerView(CPlayer& player);
-	~CPlayerView();
+	explicit PlayerView(CPlayer& player);
+	~PlayerView();
 	
 	void Update(SViewParams &viewParams);
 
 private:
 	
 	CPlayer& m_player;
+	EntityId m_playerId = 0;
+
+	Vec3 m_lastPos = Vec3(ZERO);
+	Quat m_lastQuat = Quat(IDENTITY);
+	float m_defaultFov = 0.0f;
+	float m_frameTime = 0.0f;
+	float m_health = 0.0f;
+	float m_smoothViewZ = 0.0f;
+	float m_smoothZType = 0.0f;
+	bool m_bIsGrabbing = false;
+	bool m_bUsePivot = false;
+	bool m_landed = false;
+	bool m_jumped = false;
+	bool m_vehicleReverseView = false;
+	float m_bobMul = 0.0f;
+	float m_bobCycle = 0.0f;
+	float m_standSpeed = 0.0f;
+	float m_standSpeedMax = 0.0f;
+	Quat m_viewQuatForWeapon = Quat(IDENTITY);
+	Vec3 m_eyeOffsetViewGoal = Vec3(ZERO);
+	Ang3 m_wAngles = Ang3(ZERO);
+	//Vec3 m_m_lastPos; (Commented out)
+	Quat m_viewQuatFinal = Quat(IDENTITY);
+	Quat m_viewQuat = Quat(IDENTITY);
+	Quat m_baseQuat = Quat(IDENTITY);
+	//SViewShake m_viewShake; (Commented out)
+	Vec3 m_eyeOffsetView = Vec3(ZERO);
+	Vec3 m_localEyePos = Vec3(ZERO);
+	Vec3 m_worldEyePos = Vec3(ZERO);
+	Vec3 m_entityWorldPos = Vec3(ZERO);
+	Ang3 m_vFPWeaponAngleOffset = Ang3(ZERO);
+	Vec3 m_vFPWeaponLastDirVec = Vec3(ZERO);
+	Vec3 m_vFPWeaponOffset = Vec3(ZERO);
+	Vec3 m_bobOffset = Vec3(ZERO);
+	Ang3 m_angleOffset = Ang3(ZERO);
+	Ang3 m_viewAngleOffset = Ang3(ZERO);
+	Matrix34 m_entityWorldMatrix = Matrix34(IDENTITY);
+	Matrix33 m_headMtxLocal = Matrix33(IDENTITY);
+	IVehicle *m_pVehicle = nullptr;
+	ICharacterInstance *m_pCharacter = nullptr;
 
 protected:
-	struct SViewStateIn
-	{
-		Vec3 lastPos;				// previous view position
-		Quat lastQuat;			// previous view rotation
-		float defaultFov;
-
-		float frameTime;
-
-		ICharacterInstance *pCharacter;
-		IVehicle *pVehicle;
-		//CryMP
-		bool isFirstPersonSpectating = false; 
-		bool isFirstPersonSpecTarget = false;
-		bool bIsVehicleReverseView = false;
-
-		bool bIsGrabbing;
-		bool stats_isRagDoll;							// ViewFollowCharacterFirstPerson (Primarily: Dead or TrackView) uses to add a small z offset to the view
-		bool stats_isFrozen;
-		bool stats_isStandingUp;
-		bool stats_isShattered;
-		uint8 stats_followCharacterHead;		// Part of selection criteria for ViewFollowCharacterFirstPerson. Also forces an update to baseMtx, viewMtx,viewMtxFinal (update the player rotation if view control is taken from somewhere else)
-		float stats_flatSpeed;
-		float stats_leanAmount;
-		float stats_inAir;
-		float stats_inWater;
-		bool  stats_headUnderWater;
-		int stats_firstPersonBody;
-		float stats_onGround;
-		Vec3 stats_velocity;
-		uint8 stats_flyMode;
-		uint8 stats_spectatorMode;
-		EntityId stats_spectatorTarget;
-		EntityId stats_deathCamTarget;
-		bool  stats_onLadder;
-		
-		float params_viewFoVScale;
-		Vec3 params_viewPivot;
-		float params_viewDistance;
-		float params_weaponInertiaMultiplier;
-		Ang3 params_hudAngleOffset;
-		Vec3 params_hudOffset;
-		float params_viewHeightOffset;
-		float params_weaponBobbingMultiplier;
-
-		bool bIsThirdPerson;
-		Vec3 vEntityWorldPos;
-		EntityId entityId;
-		Matrix34 entityWorldMatrix;
-		Vec3 localEyePos;
-		Vec3 worldEyePos;
-		Matrix33 headMtxLocal;
-		float thirdPersonDistance;
-		float thirdPersonYaw;
-		float stand_MaxSpeed;
-		float deathTime;
-
-		int32 health;
-
-		EStance stance;
-		float shake;
-		float standSpeed;
-		bool bSprinting;
-		bool bLookingAtFriendlyAI;
-		bool bIsGrabbed;
-	};
-
-	struct SViewStateInOut
-	{
-		//--- temporaries - FirstThird shared
-		bool bUsePivot;
-		float bobMul;
-		Quat viewQuatForWeapon;	// First Person view matrix before bobbing has been applied
-		Vec3 eyeOffsetViewGoal;
-		//--- temporaries - view shared
-		Ang3 wAngles;
-		//--- I/O
-		//--- Used by Pre-process only (in from game?)
-		//Vec3 m_lastPos;	// Tested in pre-process stage, and used to calc m_blendViewOffset. cleared at this point
-
-		Vec3 stats_HUDPos;		// Ouput only in Post-Process
-		Quat viewQuatFinal;	// ProcessRotation: m_viewMtxFinal = m_viewMtx * Matrix33::CreateRotationXYZ(m_viewAnglesOffset);
-		Quat viewQuat;
-		Quat baseQuat;				// Output IF: in vehicle or following the character head (ViewFollowCharacterFirstPerson)
-
-		Ang3 stats_FPWeaponAngles;
-		Vec3 stats_FPWeaponPos;
-		Ang3 stats_FPSecWeaponAngles;
-		Vec3 stats_FPSecWeaponPos;
-		//SViewShake viewShake;
-		Vec3 eyeOffsetView;
-		float stats_bobCycle;
-		float stats_smoothViewZ;
-		uint8 stats_smoothZType;
-
-		Ang3 vFPWeaponAngleOffset;
-		Vec3 vFPWeaponLastDirVec;
-		Vec3 vFPWeaponOffset;
-		Vec3 bobOffset;
-		Ang3 angleOffset;
-		Ang3 viewAngleOffset;
-		bool stats_landed;
-		bool stats_jumped;
-
-		int8 stats_inFreefall;
-	};
-
-	SViewStateIn m_viewStateIn_private;	// only write-able from pre-process (Should move into a base class to enforce this)
-
-	const SViewStateIn &m_in;
-	SViewStateInOut m_io;
 
 	void ViewFirstThirdSharedPre(SViewParams &viewParams);
 	void ViewFirstThirdSharedPost(SViewParams &viewParams);
@@ -171,7 +101,7 @@ protected:
 	void HandsPostProcess(SViewParams &viewParams);
 
 	void ViewProcess(SViewParams &viewParams);
-	void ViewPreProcess(SViewParams &viewParams,SViewStateIn & m_viewStateIn);
+	void ViewPreProcess(SViewParams &viewParams);
 	void ViewPostProcess(SViewParams &viewParams);
 };
 

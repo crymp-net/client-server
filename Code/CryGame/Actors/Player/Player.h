@@ -281,7 +281,7 @@ struct IPlayerEventListener
 	virtual void OnObjectGrabbed(IActor* pActor, bool bIsGrab, EntityId objectId, bool bIsNPC, bool bIsTwoHanded) {};
 };
 
-class CPlayerView;
+class PlayerView;
 
 class CPlayer :
 	public CActor, public ISoundSystemEventListener
@@ -289,7 +289,7 @@ class CPlayer :
 	friend class CPlayerMovement;
 	friend class CPlayerRotation;
 	friend class CPlayerInput;
-	friend class CPlayerView;
+	friend class PlayerView;
 	friend class CNetPlayerInput;
 
 public:
@@ -781,7 +781,7 @@ protected:
 	Vec3		m_eyeOffset;	// View system - used to interpolate to goal eye offset
 												//the offset from the entity origin to eyes, its not the real offset vector but its referenced to player view direction.
 
-	Vec3		m_eyeOffsetView; //this is exclusive for CPlayerView to use, do not touch it outside CPlayerView
+	Vec3		m_eyeOffsetView; //this is exclusive for PlayerView to use, do not touch it outside PlayerView
 
 	Vec3		m_weaponOffset;
 
@@ -900,7 +900,7 @@ protected:
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
-	std::unique_ptr<CPlayerView> m_pPlayerView;
+	PlayerView *m_pPlayerView;
 
 public:
 
