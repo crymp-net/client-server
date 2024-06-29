@@ -22,6 +22,7 @@
 #include "NanoSuit.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
+#include "PlayerView.h"
 
 
 class CPlayerMovement;
@@ -900,10 +901,14 @@ protected:
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
-	PlayerView *m_pPlayerView;
+	PlayerView m_PlayerView = PlayerView(*this);
 
 public:
 
+	PlayerView GetPlayerView() const
+	{
+		return m_PlayerView;
+	}
 	//First Person Spectator
 	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
 	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }

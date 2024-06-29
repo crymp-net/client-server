@@ -248,9 +248,6 @@ CPlayer::~CPlayer()
 	if (m_pNanoSuit)
 		delete m_pNanoSuit;
 
-	if (m_pPlayerView)
-		delete m_pPlayerView;
-
 	if (m_pVehicleClient)
 	{
 		g_pGame->GetIGameFramework()->GetIVehicleSystem()->RegisterVehicleClient(0);
@@ -275,8 +272,6 @@ bool CPlayer::Init(IGameObject* pGameObject)
 
 	if (GetEntityId() == LOCAL_PLAYER_ENTITY_ID && !m_pNanoSuit) //client player always has a nanosuit (else the HUD doesn't work)
 		m_pNanoSuit = new CNanoSuit();
-
-	m_pPlayerView = new PlayerView(*this);
 
 	return true;
 }
@@ -1807,10 +1802,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
 
-			if (pTarget->m_pPlayerView)
-			{
-				pTarget->m_pPlayerView->Update(m_FirstPersonSpectatorParams);
-			}
+			pTarget->GetPlayerView().Update(m_FirstPersonSpectatorParams);
 		}
 
 		//Hide TP model or not
@@ -1890,11 +1882,7 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	//PlayerView playerView(*this, viewParams);
-	if (m_pPlayerView)
-	{
-		m_pPlayerView->Update(viewParams);
-	}
+	GetPlayerView().Update(viewParams);
 
 	if (!IsThirdPerson())
 	{

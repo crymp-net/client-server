@@ -795,7 +795,7 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 	if (stats.inWaterTimer > 0.0f)
 		weaponOffset -= m_viewQuat.GetColumn2() * 0.15f;
 
-	if (stats.inWaterTimer > 0.1f && !stats.headUnderWaterTimer > 0.0f)
+	if (stats.inWaterTimer > 0.1f && !(stats.headUnderWaterTimer > 0.0f))
 	{
 		Ang3 offset(m_viewQuatFinal);
 		offset.z = 0;
