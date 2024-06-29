@@ -9,7 +9,7 @@ const char* MapExtractor::GetErrorString()
 	return mz_zip_get_error_string(mz_zip_peek_last_error(&m_zip));
 }
 
-std::string MapExtractor::GetFileName(unsigned int index)
+std::filesystem::path MapExtractor::GetFilePath(unsigned int index)
 {
 	char buffer[512];
 	if (!mz_zip_reader_get_filename(&m_zip, index, buffer, sizeof buffer))
@@ -17,14 +17,12 @@ std::string MapExtractor::GetFileName(unsigned int index)
 		throw StringTools::ErrorFormat("ZIP get filename: %s", GetErrorString());
 	}
 
-	// TODO: normalize the path
-
-	return buffer;
+	return std::filesystem::path(buffer).lexically_normal();
 }
 
 void MapExtractor::ExtractFile(unsigned int index)
 {
-	std::filesystem::path filePath = GetFileName(index);
+	std::filesystem::path filePath = GetFilePath(index);
 
 	// skip files outside "levels/multiplayer/ps/mymap/"
 	if (!Util::PathStartsWith(filePath, m_mapPath))
