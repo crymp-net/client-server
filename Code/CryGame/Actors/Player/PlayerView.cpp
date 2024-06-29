@@ -62,6 +62,11 @@ void PlayerView::Update(SViewParams& viewParams)
 	ViewPostProcess(viewParams);
 }
 
+void PlayerView::OnExitVehicle()
+{
+	m_lastSeatId = -1;
+}
+
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
@@ -534,18 +539,18 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 
 	currentColDist = LERP(currentColDistThick, currentColDist, thin2ThickDistNorm);
 
-	const auto previous = m_player.m_ColDistance;
+	const auto previous = m_ColDistance;
 
 	const float deltaTime = gEnv->pTimer->GetFrameTime();
 	if (currentColDist < previous)
-		Interpolate(m_player.m_ColDistance, currentColDist, 15.0f, deltaTime);
+		Interpolate(m_ColDistance, currentColDist, 15.0f, deltaTime);
 	else
-		Interpolate(m_player.m_ColDistance, currentColDist, 8.0f, deltaTime);
+		Interpolate(m_ColDistance, currentColDist, 8.0f, deltaTime);
 
 	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 	if (pRenderProxy)
 	{
-		m_player.m_targetOpacity = std::min(1.0f, m_player.m_ColDistance-0.2f);
+		m_player.m_targetOpacity = std::min(1.0f, m_ColDistance-0.2f);
 		Interpolate(m_player.m_smoothedOpacity, m_player.m_targetOpacity, 5.f, deltaTime);
 
 		pRenderProxy->SetOpacity(m_player.m_targetOpacity);
@@ -570,9 +575,9 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	const float minDistance = 0.2f;
 	const float maxDistance = inFreeFalllOrPara ? std::fabs(distanceOffsetPara) : 4.0f;
 
-	m_player.m_ColDistance = std::max(minDistance, std::min(m_player.m_ColDistance, maxDistance));
+	m_ColDistance = std::max(minDistance, std::min(m_ColDistance, maxDistance));
 
-	viewParams.position = customOrigin + ray.normalized() * (m_player.m_ColDistance - safeBuffer);
+	viewParams.position = customOrigin + ray.normalized() * (m_ColDistance - safeBuffer);
 }
 
 // jump/land spring effect. Adjust the eye and weapon pos as required.
@@ -628,20 +633,16 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 
 	bool crawling(m_player.GetStance() == STANCE_PRONE /*&& stats.speedFlat>0.1f*/ && stats.onGround > 0.1f);
 	bool weaponZoomed = false;
-	bool weaponZomming = false;
+	bool weaponZooming = false;
 
 	//Not crawling while in zoom mode
-	IItem* pItem = m_player.GetCurrentItem();
-	if (pItem)
+	CWeapon* pWeapon = m_player.GetCurrentWeapon(false);
+	if (pWeapon)
 	{
-		CWeapon* pWeapon = static_cast<CWeapon*>(pItem->GetIWeapon());
-		if (pWeapon)
-		{
-			weaponZoomed = pWeapon->IsZoomed();
-			weaponZomming = pWeapon->IsZooming();
-			if (weaponZoomed || weaponZomming || pWeapon->IsModifying())
-				crawling = false;
-		}
+		weaponZoomed = pWeapon->IsZoomed();
+		weaponZooming = pWeapon->IsZooming();
+		if (weaponZoomed || weaponZooming || pWeapon->IsModifying())
+			crawling = false;
 	}
 	
 	// On the ground.
@@ -741,12 +742,12 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 			angOffset.y += cry_sinf(m_bobCycle * gf_PI * 2.0f) * 1.0f * speedMul;
 			angOffset.z -= cry_sinf(m_bobCycle * gf_PI * 2.0f) * 2.25f * speedMul;
 		}
-		else if (m_player.GetStance() == STANCE_CROUCH && !weaponZoomed && !weaponZomming)
+		else if (m_player.GetStance() == STANCE_CROUCH && !weaponZoomed && !weaponZooming)
 		{
 			weaponOffset.z += 0.035f;
 			weaponOffset.y -= m_viewQuatFinal.GetColumn1().y * 0.03f;
 		}
-		else if (m_player.GetStance() == STANCE_CROUCH && weaponZomming)
+		else if (m_player.GetStance() == STANCE_CROUCH && weaponZooming)
 		{
 			weaponOffset.z -= 0.07f;
 			weaponOffset.y += m_viewQuatFinal.GetColumn1().y * 0.06f;
@@ -851,7 +852,7 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 		weaponAngleOffset += Ang3(-20.0f, 0, 10.0f);
 		weaponOffset += m_viewQuatFinal * Vec3(0.0f, -.01f, .1f);
 	}
-	else if (stats.bLookingAtFriendlyAI && !weaponZomming && !weaponZoomed)
+	else if (stats.bLookingAtFriendlyAI && !weaponZooming && !weaponZoomed)
 	{
 		weaponAngleOffset += Ang3(-15.0f, 0, 8.0f);
 		weaponOffset += m_viewQuatFinal * Vec3(0.0f, -.01f, .05f);
@@ -877,7 +878,7 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 	Interpolate(m_vFPWeaponLastDirVec, m_viewQuatFinal.GetColumn1(), 5.0f * bobSpeedMult, m_frameTime);
 
 	Interpolate(m_angleOffset, angOffset, 10.0f, m_frameTime, 0.002f);
-	if (weaponZomming)
+	if (weaponZooming)
 	{
 		m_vFPWeaponLastDirVec = m_viewQuatFinal.GetColumn1();
 		m_vFPWeaponOffset.Set(0.0f, 0.0f, 0.0f);
@@ -914,7 +915,7 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 				const int currSeatViewId = 1;
 
 				//CryMP: Check if player is switching seat
-				if (m_player.m_currentSeatId != pSeat->GetSeatId())
+				if (m_lastSeatId != pSeat->GetSeatId())
 				{
 					IVehicleView* pNewView = pSeat->GetView(currSeatViewId);
 					if (pNewView)
@@ -928,7 +929,7 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 						pMovement->OnEvent(IVehicleMovement::eVME_PlayerSwitchView, params);
 					}
 
-					m_player.m_currentSeatId = pSeat->GetSeatId();
+					m_lastSeatId = pSeat->GetSeatId();
 				}
 				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
 				{
@@ -972,7 +973,7 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 void PlayerView::ViewSpectatorTarget(SViewParams& viewParams)
 {
 	const SPlayerStats& stats = m_player.m_stats;
-	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(stats.spectatorTarget);
+	CActor* pTarget = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(stats.spectatorTarget));
 	if (!pTarget)
 		return;
 

@@ -2017,10 +2017,8 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		// don't interpolate back from vehicle camera (otherwise you see your own legs)
 		if (IsClient())
 			SupressViewBlending();
-		else
-		{
-			m_currentSeatId = -1;
-		}
+
+		GetPlayerView().OnExitVehicle();
 	}
 
 	return pLinkedEntity;

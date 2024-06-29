@@ -30,6 +30,7 @@ public:
 	~PlayerView();
 	
 	void Update(SViewParams &viewParams);
+	void OnExitVehicle();
 
 private:
 	
@@ -38,6 +39,8 @@ private:
 
 	Vec3 m_lastPos = Vec3(ZERO);
 	Quat m_lastQuat = Quat(IDENTITY);
+	uint8 m_lastSeatId = 0;
+	float m_ColDistance = 0.0f;
 	float m_defaultFov = 0.0f;
 	float m_frameTime = 0.0f;
 	float m_health = 0.0f;
@@ -55,11 +58,9 @@ private:
 	Quat m_viewQuatForWeapon = Quat(IDENTITY);
 	Vec3 m_eyeOffsetViewGoal = Vec3(ZERO);
 	Ang3 m_wAngles = Ang3(ZERO);
-	//Vec3 m_m_lastPos; (Commented out)
 	Quat m_viewQuatFinal = Quat(IDENTITY);
 	Quat m_viewQuat = Quat(IDENTITY);
 	Quat m_baseQuat = Quat(IDENTITY);
-	//SViewShake m_viewShake; (Commented out)
 	Vec3 m_eyeOffsetView = Vec3(ZERO);
 	Vec3 m_localEyePos = Vec3(ZERO);
 	Vec3 m_worldEyePos = Vec3(ZERO);

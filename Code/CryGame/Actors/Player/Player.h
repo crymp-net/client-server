@@ -894,7 +894,6 @@ protected:
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
-	int m_currentSeatId = -1;
 	bool m_bSlowCamera = false;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
@@ -918,7 +917,6 @@ public:
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
-	float m_ColDistance = 2.0f;
 	float m_targetOpacity = 1.0f;
 	float m_smoothedOpacity = 1.0f;
 
