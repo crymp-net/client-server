@@ -67,10 +67,6 @@ void PlayerView::OnExitVehicle()
 	m_lastSeatId = -1;
 }
 
-//-----------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------
-
 //--------------------------------------------------------------------------
 //--- ViewPreProcess
 //--------------------------------------------------------------------------
@@ -140,10 +136,6 @@ void PlayerView::ViewPreProcess(SViewParams& viewParams)
 
 	m_health = m_player.GetHealth();
 
-	// *****
-	viewParams.fov = m_defaultFov * m_player.m_params.viewFoVScale * (gf_PI / 180.0f);
-	viewParams.nearplane = 0.0f;
-
 	m_eyeOffsetViewGoal = m_player.GetStanceViewOffset(m_player.m_stance);
 	m_eyeOffsetView = m_player.m_eyeOffsetView;
 
@@ -151,12 +143,6 @@ void PlayerView::ViewPreProcess(SViewParams& viewParams)
 	m_viewQuat = m_player.m_viewQuat;
 
 	m_vFPWeaponOffset = m_player.m_FPWeaponOffset;
-
-	//m_io.stats_FPSecWeaponAngles = m_player.m_stats.FPSecWeaponAngles;
-	//m_io.stats_FPSecWeaponPos = m_player.m_stats.FPSecWeaponPos;
-
-	//m_io.viewShake=m_player.m_viewShake;
-
 	m_baseQuat = m_player.m_baseQuat;
 
 	m_vFPWeaponAngleOffset = m_player.m_FPWeaponAngleOffset;
@@ -169,7 +155,9 @@ void PlayerView::ViewPreProcess(SViewParams& viewParams)
 	m_smoothViewZ = m_player.m_stats.smoothViewZ;
 	m_smoothZType = m_player.m_stats.smoothZType;
 
-	//-- Any individual PreProcess handlers should be called here
+	// *****
+	viewParams.fov = m_defaultFov * m_player.m_params.viewFoVScale * (gf_PI / 180.0f);
+	viewParams.nearplane = 0.0f;
 }
 
 //--------------------------------------------------------------------------
@@ -246,7 +234,6 @@ void PlayerView::ViewPostProcess(SViewParams& viewParams)
 		viewParams.rotation = Quat(pLinked->GetWorldTM()) * viewParams.rotation;
 	}*/
 
-
 	// update the player rotation if view control is taken from somewhere else (e.g. animation or vehicle)
 	ViewExternalControlPostProcess(viewParams);
 
@@ -254,16 +241,6 @@ void PlayerView::ViewPostProcess(SViewParams& viewParams)
 	FirstPersonWeaponPostProcess(viewParams);
 
 	ViewShakePostProcess(viewParams);
-
-
-	//--------------------------
-	// Output changed temporaries - debugging.
-	//--------------------------
-
-	//--------------------------
-	// Output changed state.
-	//--------------------------
-	//m_player.m_lastPos=m_io.m_lastPos;
 
 	m_player.m_viewQuat = m_viewQuat;
 	//FIXME:updating the baseMatrix due being in a vehicle or having a first person animations playing has to be moved somewhere else
@@ -323,8 +300,8 @@ void PlayerView::ViewFirstThirdSharedPre(SViewParams& viewParams)
 void PlayerView::ViewFirstThirdSharedPost(SViewParams& viewParams)
 {
 	const SPlayerStats& stats = m_player.m_stats;
-	//--- Update the eye offset and apply 
 
+	//--- Update the eye offset and apply 
 	// Blend towards the goal eye offset
 	float stanceTransitionSpeed = g_pGameCVars->g_stanceTransitionSpeed;
 	if ((m_player.GetStance() == STANCE_PRONE) ||
@@ -363,12 +340,11 @@ void PlayerView::ViewFirstThirdSharedPost(SViewParams& viewParams)
 	//FIXME: this should be done in the player update anyway.
 	//And all the view position update. (because the game may need to know other players eyepos and such)
 	//update first person weapon model position/angles
-	{
-		Quat wQuat(m_viewQuatForWeapon * Quat::CreateRotationXYZ(m_vFPWeaponAngleOffset * gf_PI / 180.0f));
-		//wQuat *= Quat::CreateSlerp(viewParams.shakeQuat,IDENTITY,0.5f);
-		wQuat *= Quat::CreateSlerp(viewParams.currentShakeQuat, IDENTITY, 0.5f);
-		wQuat.Normalize();
-	}
+	
+	Quat wQuat(m_viewQuatForWeapon * Quat::CreateRotationXYZ(m_vFPWeaponAngleOffset * gf_PI / 180.0f));
+	//wQuat *= Quat::CreateSlerp(viewParams.shakeQuat,IDENTITY,0.5f);
+	wQuat *= Quat::CreateSlerp(viewParams.currentShakeQuat, IDENTITY, 0.5f);
+	wQuat.Normalize();
 
 	//smooth out the view elevation		
 	if (stats.inAir < 0.1f && !stats.flyMode && !stats.spectatorMode && !m_bUsePivot)
@@ -393,7 +369,6 @@ void PlayerView::ViewFirstThirdSharedPost(SViewParams& viewParams)
 		Interpolate(m_smoothViewZ, 0.0f, 15.0f, m_frameTime);
 		viewParams.position.z += m_smoothViewZ;
 	}
-
 }
 
 Vec3 PlayerView::Project(Vec3 vector, Vec3 onNormal)
@@ -472,10 +447,6 @@ Vec3 PlayerView::GetCollision(CActor *pActor, const Vec3 transformPos, const Vec
 
 void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 {
-	IPhysicalEntity* pPlayerPhysics = m_player.GetEntity()->GetPhysics();
-	if (!pPlayerPhysics)
-		return;
-
 	Vec3 viewOffset(g_pGameCVars->goc_targetx, g_pGameCVars->goc_targety, g_pGameCVars->goc_targetz);
 	const SPlayerStats& stats = m_player.m_stats;
 	const EStance stance = m_player.GetStance();
@@ -831,7 +802,7 @@ void PlayerView::ViewFirstPerson(SViewParams& viewParams)
 		float lookDown(m_viewQuatFinal.GetColumn1() * m_baseQuat.GetColumn2());
 		weaponOffset += m_baseQuat * Vec3(0, -0.5f * max(-lookDown, 0.0f), -0.05f);
 
-		float scale = 0.5f;;
+		float scale = 0.5f;
 		if (weaponAngleOffset.x > 0.0f)
 		{
 			scale = min(0.5f, weaponAngleOffset.x / 15.0f);
@@ -1227,12 +1198,10 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	int nSkip = 0;
 	if (pActor)
 	{
-		IItem* pItem = pActor->GetCurrentItem();
-		if (pItem)
+		CWeapon* pWeapon = pActor->GetCurrentWeapon(false);
+		if (pWeapon)
 		{
-			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-			if (pWeapon)
-				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+			nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
 		}
 		else if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 		{
@@ -1333,7 +1302,7 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 void PlayerView::ViewDeathCamTarget(SViewParams& viewParams)
 {
 	const SPlayerStats& stats = m_player.m_stats;
-	CActor* pTarget = (CActor*)g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(stats.deathCamTarget);
+	CActor* pTarget = static_cast<CActor*>(g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(stats.deathCamTarget));
 	if (!pTarget)
 		return;
 
@@ -1398,30 +1367,26 @@ void PlayerView::ViewDeathCamTarget(SViewParams& viewParams)
 	dir.z = 0.0f;
 
 	// quick ray check to make sure there's not a wall in the way...
-	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_playerId);
-	if (pActor)
-	{
-		static ray_hit hit;
-		IPhysicalEntity* pSkipEntities[10];
-		int nSkip = 0;
-		IItem* pItem = pActor->GetCurrentItem();
-		if (pItem)
-		{
-			CWeapon* pWeapon = (CWeapon*)pItem->GetIWeapon();
-			if (pWeapon)
-				nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
-		}
 
-		if (gEnv->pPhysicalWorld->RayWorldIntersection(viewParams.position, -dir, ent_static | ent_terrain | ent_rigid,
-			rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
-		{
-			dir.zero();
-		}
+	static ray_hit hit;
+	IPhysicalEntity* pSkipEntities[10];
+	int nSkip = 0;
+
+	CWeapon* pWeapon = m_player.GetCurrentWeapon(false);
+	if (pWeapon)
+	{
+		nSkip = CSingle::GetSkipEntities(pWeapon, pSkipEntities, 10);
+	}
+
+	if (gEnv->pPhysicalWorld->RayWorldIntersection(viewParams.position, -dir, ent_static | ent_terrain | ent_rigid,
+		rwi_ignore_noncolliding | rwi_stop_at_pierceable, &hit, 1, pSkipEntities, nSkip))
+	{
+		dir.zero();
 	}
 
 	viewParams.position -= dir;
 
-	viewParams.fov = m_defaultFov * oldFOVScale * (gf_PI / 180.0f);;
+	viewParams.fov = m_defaultFov * oldFOVScale * (gf_PI / 180.0f);
 	viewParams.rotation = GetQuatFromMat33(rotation);
 	m_bUsePivot = true;
 	m_bobCycle = 0.0;
@@ -1476,7 +1441,6 @@ void PlayerView::ViewFirstPersonOnLadder(SViewParams& viewParams)
 	if (g_pGameCVars->pl_debug_ladders != 0)
 		viewParams.position = m_entityWorldMatrix * (m_localEyePos + Vec3(0.1f, -g_pGameCVars->cl_tpvDist, -0.3f));
 
-
 	m_viewQuat = m_viewQuatFinal = viewParams.rotation;
 
 	if (g_pGameCVars->g_detachCamera != 0)
@@ -1484,7 +1448,6 @@ void PlayerView::ViewFirstPersonOnLadder(SViewParams& viewParams)
 		viewParams.position = m_lastPos;
 		viewParams.rotation = m_lastQuat;
 	}
-
 }
 
 void PlayerView::ViewThirdPersonOnLadder(SViewParams& viewParams)
