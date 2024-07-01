@@ -532,11 +532,11 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	{
 		if (stance == EStance::STANCE_CROUCH || stance == EStance::STANCE_PRONE)
 		{
-			customOrigin.z -= 0.6;
+			customOrigin.z -= 0.6f;
 		}
 		else
 		{
-			customOrigin.z -= 1.6;
+			customOrigin.z -= 1.6f;
 		}
 	}
 
