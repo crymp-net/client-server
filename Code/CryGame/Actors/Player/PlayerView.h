@@ -40,8 +40,7 @@ private:
 	Vec3 m_lastPos = Vec3(ZERO);
 	Quat m_lastQuat = Quat(IDENTITY);
 	uint8 m_lastSeatId = 0;
-	float distance = 0.0f;
-	float &m_ColDistance = distance; 
+	float m_ColDistance = 0.0f; 
 	float m_defaultFov = 0.0f;
 	float m_frameTime = 0.0f;
 	float m_health = 0.0f;

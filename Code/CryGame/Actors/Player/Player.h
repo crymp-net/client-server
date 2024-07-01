@@ -904,10 +904,6 @@ protected:
 
 public:
 
-	PlayerView GetPlayerView() const
-	{
-		return m_PlayerView;
-	}
 	//First Person Spectator
 	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
 	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }

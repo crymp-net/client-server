@@ -1802,7 +1802,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
 
-			pTarget->GetPlayerView().Update(m_FirstPersonSpectatorParams);
+			pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 		}
 
 		//Hide TP model or not
@@ -1882,7 +1882,7 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	GetPlayerView().Update(viewParams);
+	m_PlayerView.Update(viewParams);
 
 	if (!IsThirdPerson())
 	{
@@ -2018,7 +2018,7 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		if (IsClient())
 			SupressViewBlending();
 
-		GetPlayerView().OnExitVehicle();
+		m_PlayerView.OnExitVehicle();
 	}
 
 	return pLinkedEntity;
