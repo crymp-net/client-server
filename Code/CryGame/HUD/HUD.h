@@ -51,7 +51,6 @@ class CHUDScore;
 class CHUDTextChat;
 class CHUDObituary;
 class CHUDTextArea;
-class CHUDTweakMenu;
 class CHUDVehicleInterface;
 class CHUDPowerStruggle;
 class CHUDScopes;
@@ -546,7 +545,6 @@ private:
 	CHUDTextChat					*m_pHUDTextChat;
 	CHUDObituary					*m_pHUDObituary;
 	CHUDTextArea					*m_pHUDTextArea;
-	CHUDTweakMenu					*m_pHUDTweakMenu;
 	CHUDVehicleInterface	*m_pHUDVehicleInterface;
 	CHUDPowerStruggle			*m_pHUDPowerStruggle;
 	CHUDScopes						*m_pHUDScopes;
