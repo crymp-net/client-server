@@ -244,6 +244,7 @@ CPlayer::~CPlayer()
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (pCharacter)
 		pCharacter->GetISkeletonPose()->SetPostProcessCallback0(0, 0);
+
 	if (m_pNanoSuit)
 		delete m_pNanoSuit;
 
@@ -1800,15 +1801,12 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			{
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
+
+			pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 		}
 
 		//Hide TP model or not
 		pTarget->m_stats.isHidden = pVehicle ? false : true;
-
-		//Run target view as First Person
-		CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
-		playerView.Process(m_FirstPersonSpectatorParams);
-		playerView.Commit(*pTarget, m_FirstPersonSpectatorParams);
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -1884,9 +1882,7 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	CPlayerView playerView(*this, viewParams);
-	playerView.Process(viewParams);
-	playerView.Commit(*this, viewParams);
+	m_PlayerView.Update(viewParams);
 
 	if (!IsThirdPerson())
 	{
@@ -2021,10 +2017,8 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		// don't interpolate back from vehicle camera (otherwise you see your own legs)
 		if (IsClient())
 			SupressViewBlending();
-		else
-		{
-			m_currentSeatId = -1;
-		}
+
+		m_PlayerView.OnExitVehicle();
 	}
 
 	return pLinkedEntity;

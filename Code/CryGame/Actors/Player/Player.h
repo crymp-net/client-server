@@ -22,6 +22,7 @@
 #include "NanoSuit.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
+#include "PlayerView.h"
 
 
 class CPlayerMovement;
@@ -281,7 +282,7 @@ struct IPlayerEventListener
 	virtual void OnObjectGrabbed(IActor* pActor, bool bIsGrab, EntityId objectId, bool bIsNPC, bool bIsTwoHanded) {};
 };
 
-class CPlayerView;
+class PlayerView;
 
 class CPlayer :
 	public CActor, public ISoundSystemEventListener
@@ -289,7 +290,7 @@ class CPlayer :
 	friend class CPlayerMovement;
 	friend class CPlayerRotation;
 	friend class CPlayerInput;
-	friend class CPlayerView;
+	friend class PlayerView;
 	friend class CNetPlayerInput;
 
 public:
@@ -781,7 +782,7 @@ protected:
 	Vec3		m_eyeOffset;	// View system - used to interpolate to goal eye offset
 												//the offset from the entity origin to eyes, its not the real offset vector but its referenced to player view direction.
 
-	Vec3		m_eyeOffsetView; //this is exclusive for CPlayerView to use, do not touch it outside CPlayerView
+	Vec3		m_eyeOffsetView; //this is exclusive for PlayerView to use, do not touch it outside PlayerView
 
 	Vec3		m_weaponOffset;
 
@@ -893,12 +894,13 @@ protected:
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
-	int m_currentSeatId = -1;
 	bool m_bSlowCamera = false;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
+
+	PlayerView m_PlayerView = PlayerView(*this);
 
 public:
 
@@ -911,7 +913,6 @@ public:
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
-	float m_ColDistance = 2.0f;
 	float m_targetOpacity = 1.0f;
 	float m_smoothedOpacity = 1.0f;
 
