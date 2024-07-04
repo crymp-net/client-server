@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/IHardwareMouse.h"
@@ -277,6 +279,8 @@ void GameWindow::Init()
 
 bool GameWindow::OnUpdate()
 {
+	ZoneScoped;
+
 	MSG msg;
 
 	if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))

@@ -25,6 +25,7 @@ public:
 	int GetKeyName(IFunctionHandler* pH, const char* action);
 	int IsKeyUsed(IFunctionHandler* pH, const char* key);
 	int CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action);
+	int CreateKeyFunction(IFunctionHandler* pH, const char* key, HSCRIPTFUNCTION function);
 	int ClearKeyBinds(IFunctionHandler* pH);
 	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
 	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
@@ -32,6 +33,7 @@ public:
 	int GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity);
 	int GetLP(IFunctionHandler* pH);
 	int GetNumVars(IFunctionHandler* pH);
+	int GetVars(IFunctionHandler* pH);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization

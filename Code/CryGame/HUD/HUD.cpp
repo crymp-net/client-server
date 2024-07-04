@@ -55,8 +55,6 @@ History:
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "CryGame/Items/Weapons/OffHand.h"
 
-#include "Tweaks/HUDTweakMenu.h"
-
 #include "HUDVehicleInterface.h"
 #include "HUDPowerStruggle.h"
 #include "HUDScopes.h"
@@ -119,7 +117,6 @@ CHUD::CHUD()
 	CFlashMenuObject::GetFlashMenuObject()->SetColorChanged();
 	// CHUDCommon constructor runs first
 	m_pHUDRadar = NULL;
-	m_pHUDTweakMenu = NULL;
 	m_pHUDScore = NULL;
 	m_pHUDTextChat = NULL;
 	m_pRenderer = NULL;
@@ -486,7 +483,6 @@ bool CHUD::Init(IActor* pActor)
 	m_pHUDTextArea->SetFadeTime(2.0f);
 	m_pHUDTextArea->SetPos(Vec2(200.0f, 450.0f));
 
-	m_pHUDTweakMenu = new CHUDTweakMenu(pScriptSystem);
 	m_pHUDCrosshair = new CHUDCrosshair(this);
 	m_pHUDTagNames = new CHUDTagNames(this);
 	m_pHUDSilhouettes = new CHUDSilhouettes;
@@ -502,7 +498,6 @@ bool CHUD::Init(IActor* pActor)
 	m_hudObjectsList.push_back(m_pHUDRadar);
 	m_hudObjectsList.push_back(m_pHUDObituary);
 	m_hudObjectsList.push_back(m_pHUDTextArea);
-	m_hudObjectsList.push_back(m_pHUDTweakMenu);
 	m_hudObjectsList.push_back(m_pHUDCrosshair);
 
 	if (gEnv->bMultiplayer || loadEverything)
@@ -564,12 +559,18 @@ bool CHUD::Init(IActor* pActor)
 	m_animWeaponAccessories.Load("Libs/UI/HUD_WeaponAccessories.gfx", eFD_Center, eFAF_ThisHandler);
 	if (loadEverything)
 	{
-		m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Load("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 	else
 	{
-		m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Init("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 
@@ -2626,9 +2627,6 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 	}
 
-	if (m_pHUDTweakMenu)
-		m_pHUDTweakMenu->OnActionTweak(action.c_str(), activationMode, value);
-
 	return filterOut;
 }
 
@@ -4645,7 +4643,6 @@ void CHUD::GetMemoryStatistics(ICrySizer* s)
 	//CHILD_STATISTICS(m_pHUDTextChat);
 	CHILD_STATISTICS(m_pHUDObituary);
 	CHILD_STATISTICS(m_pHUDTextArea);
-	CHILD_STATISTICS(m_pHUDTweakMenu);
 
 	TGameFlashAnimationsList::const_iterator iter = m_gameFlashAnimationsList.begin();
 	TGameFlashAnimationsList::const_iterator end = m_gameFlashAnimationsList.end();

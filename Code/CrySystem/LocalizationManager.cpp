@@ -377,7 +377,25 @@ bool LocalizationManager::Add(Label&& label, bool keepExisting)
 	}
 }
 
-std::string LocalizationManager::Localize(const std::string_view& text) const
+const LocalizationManager::Label* LocalizationManager::FindLabel(std::string_view name) const
+{
+	std::string loweredName;
+	StringTools::AppendTo(loweredName, name);
+	StringTools::ToLowerInPlace(loweredName);
+
+	return this->FindLabelImpl(loweredName);
+}
+
+const LocalizationManager::Label* LocalizationManager::FindLabel(std::wstring_view name) const
+{
+	std::string loweredName;
+	StringTools::AppendTo(loweredName, name);
+	StringTools::ToLowerInPlace(loweredName);
+
+	return this->FindLabelImpl(loweredName);
+}
+
+std::string LocalizationManager::Localize(std::string_view text) const
 {
 	const bool english = false;
 
@@ -387,7 +405,7 @@ std::string LocalizationManager::Localize(const std::string_view& text) const
 	return result;
 }
 
-std::string LocalizationManager::LocalizeEnglish(const std::string_view& text) const
+std::string LocalizationManager::LocalizeEnglish(std::string_view text) const
 {
 	const bool english = true;
 
@@ -762,23 +780,18 @@ void LocalizationManager::LocalizeDuration(int seconds, wstring& result)
 	LocalizeString(buffer, result);
 }
 
-template<typename NameStringView>
-const LocalizationManager::Label* LocalizationManager::FindLabel(NameStringView name) const
+const LocalizationManager::Label* LocalizationManager::FindLabelImpl(std::string_view loweredName) const
 {
-	if (name.length() > 0 && name[0] == '@')
+	if (loweredName.length() > 0 && loweredName[0] == '@')
 	{
-		name.remove_prefix(1);
+		loweredName.remove_prefix(1);
 	}
-
-	std::string loweredName;
-	StringTools::AppendTo(loweredName, name);
-	StringTools::ToLowerInPlace(loweredName);
 
 	// binary search
 	const auto it = std::lower_bound(m_language.labels.begin(), m_language.labels.end(), loweredName,
-		[](const Label& label, const std::string& name)
+		[](const Label& label, const std::string_view& loweredName)
 		{
-			return label.name < name;
+			return label.name < loweredName;
 		}
 	);
 

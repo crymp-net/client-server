@@ -24,6 +24,8 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+#include "CryMalloc.h"
+
 #define CRY_STRING
 
 // forward declaration of CryStackString
@@ -612,7 +614,7 @@ inline void CryStringT<T>::_AllocData( size_type nLen )
 	else
 	{
 		size_type allocLen = sizeof(StrHeader) + (nLen+1)*sizeof(value_type);
-		StrHeader* pData = (StrHeader*) malloc(allocLen);
+		StrHeader* pData = (StrHeader*) CryMalloc(allocLen);
 
 		_usedMemory( allocLen ); // For statistics.
 
@@ -647,7 +649,7 @@ inline void CryStringT<T>::_FreeData( StrHeader* pData )
 			int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			_usedMemory( -allocLen ); // For statistics.
 
-			free(pData);
+			CryFree(pData);
 			//int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
 			//string_alloc::deallocate( (value_type*)pData,allocLen );
 		}

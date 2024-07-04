@@ -12,6 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
@@ -22,6 +23,7 @@ History:
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryGame/Game.h"
+#include "CryGame/GameCVars.h"
 #include "OptionsManager.h"
 #include <time.h>
 

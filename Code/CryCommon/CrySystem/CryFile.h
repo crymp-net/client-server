@@ -17,7 +17,7 @@
 #define __cryfile_h__
 #pragma once
 
-#include "ISystem.h"
+#include "gEnv.h"
 #include "ICryPak.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,19 +103,30 @@ public:
 	virtual size_t ReadRaw( void *lpBuf, size_t nSize );
 	//! Template version, for automatic size support.
 	template<class T>
-		inline size_t ReadTypeRaw( T *pDest, size_t nCount = 1 )
-		{
-			return ReadRaw( pDest, sizeof(T)*nCount );
-		}
+	size_t ReadTypeRaw( T *pDest, size_t nCount = 1 )
+	{
+		return ReadRaw( pDest, sizeof(T)*nCount );
+	}
 
 	//! Automatic endian-swapping version.
 	template<class T>
-		inline size_t ReadType( T *pDest, size_t nCount = 1 )
-		{
-			size_t nRead = ReadRaw( pDest, sizeof(T)*nCount );
-			SwapEndian(pDest, nCount);
-			return nRead;
-		}
+	size_t ReadType( T *pDest, size_t nCount = 1 )
+	{
+		size_t nRead = ReadRaw( pDest, sizeof(T)*nCount );
+		SwapEndian(pDest, nCount);
+		return nRead;
+	}
+
+	void Puts(const char* line)
+	{
+		m_pIPak->FPrintf(m_file, "%s\n", line);
+	}
+
+	template<class... Args>
+	int FPrintf(const char* format, Args... args)
+	{
+		return m_pIPak->FPrintf(m_file, format, args...);
+	}
 
 	//! Retrieves the length of the file.
 	virtual size_t GetLength();
@@ -232,21 +243,12 @@ inline size_t CCryFile::GetLength()
 	return size;
 }
 
-#ifdef WIN64
-#pragma warning( push )									//AMD Port
-#pragma warning( disable : 4267 )
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 inline size_t CCryFile::Seek( size_t seek, int mode )
 {
 	assert( m_file );
-	return m_pIPak->FSeek( m_file,seek,mode );
+	return m_pIPak->FSeek( m_file,static_cast<long>(seek),mode );
 }
-
-#ifdef WIN64
-#pragma warning( pop )									//AMD Port
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 inline void CCryFile::SeekToBegin()

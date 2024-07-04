@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <vector>  // for smartptr.h
 
+#include "CryCommon/CryCore/platform.h"  // PRINTF_PARAMS
 #include "CryCommon/CryCore/smartptr.h"
 
 struct IResourceList; 
@@ -503,46 +504,3 @@ struct IResourceList : public _reference_target_t
 //////////////////////////////////////////////////////////////////////////
 #include "CryPath.h"
 #include "CryFile.h"
-
-//////////////////////////////////////////////////////////////////////
-
-//! Everybody should use fxopen instead of fopen
-//! so it will work both on PC and XBox
-inline FILE * fxopen(const char *file, const char *mode)
-{
-	//SetFileAttributes(file,FILE_ATTRIBUTE_ARCHIVE);
-	//	FILE *pFile = fopen("C:/MasterCD/usedfiles.txt","a");
-	//	if (pFile)
-	//	{
-	//		fprintf(pFile,"%s\n",file);
-	//		fclose(pFile);
-	//	}
-
-#if defined(LINUX)
-	char adjustedName[MAX_PATH];
-	bool createFlag = false;
-	if (strchr(mode, 'w') || strchr(mode, 'a'))
-		createFlag = true;
-	GetFilenameNoCase(file, adjustedName, createFlag);
-	return fopen(adjustedName, mode);
-#else
-	// This is on windows.
-	if (gEnv && gEnv->pCryPak)
-	{
-		bool bWriteAccess = false;
-		for (const char *s = mode; *s; s++) { if (*s == 'w' || *s == 'W' || *s == 'a' || *s == 'A' || *s == '+') { bWriteAccess = true; break; }; }
-		int nAdjustFlags = ICryPak::FLAGS_NO_MASTER_FOLDER_MAPPING;
-		if (bWriteAccess)
-			nAdjustFlags |= ICryPak::FLAGS_FOR_WRITING;
-		char path[_MAX_PATH];
-		const char* szAdjustedPath = gEnv->pCryPak->AdjustFileName(file,path,nAdjustFlags);
-		return fopen(szAdjustedPath,mode);
-	}
-	else
-	{
-		return 0;
-	}
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////

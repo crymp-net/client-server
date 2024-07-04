@@ -1,5 +1,7 @@
 #include <stdlib.h>  // atoi
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
@@ -30,6 +32,7 @@
 #include "ParticleManager.h"
 #include "FlashFileHooks.h"
 #include "DrawTools.h"
+#include "FFontHooks.h"
 
 #include "config.h"
 
@@ -63,7 +66,7 @@ void Client::InitMasters()
 
 	if (m_masters.empty())
 	{
-		m_masters.emplace_back("crymp.nullptr.one");
+		m_masters.emplace_back("crymp.org");
 	}
 
 	m_pScriptCallbacks->OnMasterResolved();
@@ -232,6 +235,8 @@ void Client::Init(IGameFramework *pGameFramework)
 	AddFlashFileHook("Libs/UI/HUD_ChatSystem_HR.gfx", RESOURCE_HUD_CHAT_SYSTEM_HR_GFX);
 	AddFlashFileHook("Libs/UI/HUD_KillLog.gfx", RESOURCE_HUD_KILL_LOG_GFX);
 
+	PatchCryFont();
+
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
 	pGameFramework->GetILevelSystem()->AddListener(this);
@@ -300,6 +305,7 @@ void Client::UpdateLoop()
 
 	while (GameWindow::GetInstance().OnUpdate() && m_pGame->Update(haveFocus, updateFlags))
 	{
+		FrameMark;
 	}
 
 	GameWindow::GetInstance().OnQuit();
@@ -379,13 +385,65 @@ void Client::AddKeyBind(const std::string_view& key, const std::string_view& com
 	}
 }
 
+void Client::AddKeyBind(const std::string_view& key, HSCRIPTFUNCTION function)
+{
+	for (KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
+			return;
+		}
+	}
+
+	KeyBind& bind = m_keyBinds.emplace_back();
+	bind.key = key;
+	bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
+
+	if (m_pGameFramework->GetClientActor())
+	{
+		bind.createdInGame = true;
+	}
+}
+
 void Client::OnKeyPress(const std::string_view& key)
 {
 	for (const KeyBind& bind : m_keyBinds)
 	{
 		if (bind.key == key)
 		{
-			gEnv->pConsole->ExecuteString(bind.command.c_str());
+			if (!bind.command.empty())
+			{
+				gEnv->pConsole->ExecuteString(bind.command.c_str());
+			}
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(1); //press
+					pSS->EndCall();
+				}
+			}
+		}
+	}
+}
+
+void Client::OnKeyRelease(const std::string_view& key)
+{
+	for (const KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(2); //release
+					pSS->EndCall();
+				}
+			}
 		}
 	}
 }

@@ -19,6 +19,7 @@ namespace MemoryPatch
 		void EnablePreordered(void* pCryNetwork);
 		void FixFileCheckCrash(void* pCryNetwork);
 		void FixInternetConnect(void* pCryNetwork);
+		void FixLanServerBrowser(void* pCryNetwork);
 	}
 
 	namespace CryRenderD3D9
@@ -38,6 +39,7 @@ namespace MemoryPatch
 			// ...
 		};
 
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D9);
 		void HookWindowNameD3D9(void* pCryRenderD3D9, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D9, void (*handler)(AdapterInfo* info));
 	}
@@ -60,6 +62,7 @@ namespace MemoryPatch
 		};
 
 		void FixLowRefreshRateBug(void* pCryRenderD3D10);
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D10);
 		void HookWindowNameD3D10(void* pCryRenderD3D10, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D10, void (*handler)(AdapterInfo* info));
 	}
@@ -70,10 +73,16 @@ namespace MemoryPatch
 		void AllowMultipleInstances(void* pCrySystem);
 		void DisableIOErrorLog(void* pCrySystem);
 		void FixCPUInfoOverflow(void* pCrySystem);
+		void FixFlashAllocatorUnderflow(void* pCrySystem);
 		void HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info));
 		void HookError(void* pCrySystem, void (*handler)(const char* format, va_list args));
 		void MakeDX9Default(void* pCrySystem);
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
+	}
+
+	namespace FMODEx
+	{
+		void Fix64BitHeapAddressTruncation(void* pFMODEx);
 	}
 }

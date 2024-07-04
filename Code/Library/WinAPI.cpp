@@ -308,6 +308,32 @@ void WinAPI::FillMem(void *address, const void *data, size_t length)
 	}
 }
 
+void WinAPI::HookWithJump(void* address, void* pNewFunc)
+{
+	if (!address)
+	{
+		return;
+	}
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xE0                                                   // jmp rax
+	};
+
+	std::memcpy(&code[2], &pNewFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xE0                     // jmp eax
+	};
+
+	std::memcpy(&code[1], &pNewFunc, 4);
+#endif
+
+	FillMem(address, &code, sizeof(code));
+}
+
 bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 {
 	const IMAGE_DATA_DIRECTORY *pIATData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IAT);
@@ -333,6 +359,66 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 
 			// hook the function
 			FillMem(&pIAT[i], &pNewFunc, sizeof (void*));
+		}
+	}
+
+	if (!found)
+	{
+		SetLastError(ERROR_PROC_NOT_FOUND);
+		return false;
+	}
+
+	return true;
+}
+
+bool WinAPI::HookIATByName(void *pDLL, const char *dllName, const char *funcName, void *pNewFunc)
+{
+	const IMAGE_DATA_DIRECTORY* importData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IMPORT);
+	if (!importData)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return false;
+	}
+
+	bool found = false;
+
+	const IMAGE_IMPORT_DESCRIPTOR* importDescriptor =
+		static_cast<const IMAGE_IMPORT_DESCRIPTOR*>(RVA(pDLL, importData->VirtualAddress));
+
+	for (; importDescriptor->Name && importDescriptor->FirstThunk; ++importDescriptor)
+	{
+		const char* dllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
+		if (_stricmp(dllName, dllName) != 0)
+		{
+			continue;
+		}
+
+		const IMAGE_THUNK_DATA* thunks =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->OriginalFirstThunk));
+
+		const IMAGE_THUNK_DATA* pIAT =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->FirstThunk));
+
+		for (size_t i = 0; thunks[i].u1.Ordinal; ++i)
+		{
+			if (IMAGE_SNAP_BY_ORDINAL(thunks[i].u1.Ordinal))
+			{
+				continue;
+			}
+
+			const IMAGE_IMPORT_BY_NAME* thunkData =
+				static_cast<const IMAGE_IMPORT_BY_NAME*>(RVA(pDLL, thunks[i].u1.AddressOfData));
+
+			const char* thunkName = reinterpret_cast<const char*>(thunkData->Name);
+			if (strcmp(thunkName, funcName) != 0)
+			{
+				continue;
+			}
+
+			found = true;
+
+			// hook the function
+			FillMem(const_cast<IMAGE_THUNK_DATA*>(&pIAT[i]), &pNewFunc, sizeof(void*));
 		}
 	}
 
@@ -719,6 +805,7 @@ bool WinAPI::IsVistaOrLater()
 {
 	OSVERSIONINFOW info = {};
 	info.dwOSVersionInfoSize = sizeof info;
+	__pragma(warning(suppress:4996))
 	GetVersionExW(&info);
 
 	return info.dwMajorVersion >= 6;

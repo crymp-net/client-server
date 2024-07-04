@@ -468,8 +468,8 @@ void CItem::PatchInitialSetup()
 		while (string::npos != pos || string::npos != lastPos)
 		{
 			//Add to initial setup
-			const char* name = m_properties.initialSetup.substr(lastPos, pos - lastPos).c_str();
-			m_initialSetup.push_back(ItemString(name));
+			const string name = m_properties.initialSetup.substr(lastPos, pos - lastPos);
+			m_initialSetup.push_back(ItemString(name.c_str()));
 
 			lastPos = m_properties.initialSetup.find_first_not_of(",", pos);
 			pos = m_properties.initialSetup.find_first_of(",", lastPos);

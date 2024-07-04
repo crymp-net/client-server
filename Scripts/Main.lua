@@ -16,7 +16,7 @@ function InitializeClient()
 	local MASK_WET = 2
 	local MASK_CLOAK = 4
 	local MASK_DYNFROZEN = 8
-	local DEFAULT_MASTER = "crymp.nullptr.one"
+	local DEFAULT_MASTER = "crymp.org"
 
 	local pendingMasterResolves = {}
 	local activeProfile = {
@@ -466,9 +466,10 @@ function InitializeClient()
 
 	local function GetValidateCommand(profile)
 		local id = profile.id
-		if profile.master ~= DEFAULT_MASTER then
-			id = id .. "@" .. profile.master
-		end
+		-- FIXME: Disable this for now as no server implements multimaster !validate
+		--if profile.master ~= DEFAULT_MASTER then
+		--	id = id .. "@" .. profile.master
+		--end
 		local command = string.format("!validate %s %s %s", id, profile.token, profile.display or "Nomad")
 		return command
 	end

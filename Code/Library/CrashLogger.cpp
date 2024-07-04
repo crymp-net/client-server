@@ -1,4 +1,4 @@
-#include <cstdlib>
+#include <csignal>
 #include <cstring>
 #include <mutex>
 
@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <winternl.h>
 #include <dbghelp.h>
+#include <intrin.h>
 
 #include "config.h"
 
@@ -16,6 +17,10 @@
 #else
 #define ADDR_FMT "%08X"
 #endif
+
+static std::mutex g_mutex;
+static CrashLogger::LogFileProvider g_logFileProvider;
+static CrashLogger::HeapInfoProvider g_heapInfoProvider;
 
 static void* ByteOffset(void* base, std::size_t offset)
 {
@@ -83,6 +88,16 @@ static void DumpExceptionInfo(std::FILE* file, const EXCEPTION_RECORD* info)
 			case 1: std::fprintf(file, "Write to 0x"   ADDR_FMT " failed\n", dataAddress); break;
 			case 8: std::fprintf(file, "Execute at 0x" ADDR_FMT " failed\n", dataAddress); break;
 		}
+
+		if (g_heapInfoProvider)
+		{
+			g_heapInfoProvider(file, reinterpret_cast<void*>(dataAddress));
+		}
+	}
+	else if (g_heapInfoProvider)
+	{
+		// let debug allocator log its error message
+		g_heapInfoProvider(file, nullptr);
 	}
 
 	std::fflush(file);
@@ -192,6 +207,18 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			std::fprintf(file, ADDR_FMT ":", address);
 
+			IMAGEHLP_MODULE moduleInfo = {};
+			moduleInfo.SizeOfStruct = sizeof moduleInfo;
+
+			if (SymGetModuleInfo(process, address, &moduleInfo))
+			{
+				std::fprintf(file, " %s:", BaseName(moduleInfo.ImageName));
+			}
+			else
+			{
+				std::fprintf(file, " ?:");
+			}
+
 			unsigned char symbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME] = {};
 			SYMBOL_INFO& symbol = *reinterpret_cast<SYMBOL_INFO*>(symbolBuffer);
 			symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -200,7 +227,7 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			if (SymFromAddr(process, address, &symbolOffset, &symbol))
 			{
-				std::fprintf(file, " %s + 0x%I64X", symbol.Name, symbolOffset);
+				std::fprintf(file, " %s", symbol.Name);
 			}
 			else
 			{
@@ -213,23 +240,11 @@ static void DumpCallStack(std::FILE* file, const CONTEXT* context)
 
 			if (SymGetLineFromAddr(process, address, &lineOffset, &line))
 			{
-				std::fprintf(file, " (%s:%u)", line.FileName, line.LineNumber);
+				std::fprintf(file, " [%s:%u]\n", BaseName(line.FileName), line.LineNumber);
 			}
 			else
 			{
-				std::fprintf(file, " ()");
-			}
-
-			IMAGEHLP_MODULE moduleInfo = {};
-			moduleInfo.SizeOfStruct = sizeof moduleInfo;
-
-			if (SymGetModuleInfo(process, address, &moduleInfo))
-			{
-				std::fprintf(file, " in %s\n", BaseName(moduleInfo.ImageName));
-			}
-			else
-			{
-				std::fprintf(file, " in ?\n");
+				std::fprintf(file, " []\n");
 			}
 		}
 
@@ -410,19 +425,16 @@ static void WriteEngineErrorDump(std::FILE* file, CONTEXT* context, const char* 
 	WriteDumpFooter(file);
 }
 
-static std::mutex g_mutex;
-static CrashLogger::Handler g_handler;
-
 static LONG __stdcall CrashHandler(EXCEPTION_POINTERS* exception)
 {
 	// avoid recursive calls
 	SetUnhandledExceptionFilter(NULL);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -440,11 +452,11 @@ static void PureCallHandler()
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -454,7 +466,7 @@ static void PureCallHandler()
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
@@ -462,11 +474,11 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -476,7 +488,29 @@ static void InvalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
+}
+
+static void AbortHandler(int)
+{
+	CONTEXT context = {};
+	RtlCaptureContext(&context);
+
+	if (g_logFileProvider)
+	{
+		std::lock_guard lock(g_mutex);
+
+		std::FILE* file = g_logFileProvider();
+
+		if (file)
+		{
+			WriteGenericErrorDump(file, &context, "Aborted");
+
+			std::fclose(file);
+		}
+	}
+
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 void CrashLogger::OnEngineError(const char* format, va_list args)
@@ -484,11 +518,11 @@ void CrashLogger::OnEngineError(const char* format, va_list args)
 	CONTEXT context = {};
 	RtlCaptureContext(&context);
 
-	if (g_handler)
+	if (g_logFileProvider)
 	{
 		std::lock_guard lock(g_mutex);
 
-		std::FILE* file = g_handler();
+		std::FILE* file = g_logFileProvider();
 
 		if (file)
 		{
@@ -498,67 +532,24 @@ void CrashLogger::OnEngineError(const char* format, va_list args)
 		}
 	}
 
-	std::abort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
-static bool IsModuleNameEqual(const UNICODE_STRING& name, const wchar_t* expectedName, std::size_t expectedNameLength)
+void CrashLogger::Enable(LogFileProvider logFileProvider, HeapInfoProvider heapInfoProvider)
 {
-	const std::size_t fullNameLength = name.Length / sizeof(wchar_t);
-
-	const wchar_t* baseName = name.Buffer;
-	std::size_t baseNameLength = fullNameLength;
-
-	for (std::size_t i = 0; i < fullNameLength; i++)
-	{
-		if (name.Buffer[i] == L'/' || name.Buffer[i] == L'\\')
-		{
-			baseName = name.Buffer + (i + 1);
-			baseNameLength = fullNameLength - (i + 1);
-		}
-	}
-
-	if (baseNameLength != expectedNameLength)
-	{
-		return false;
-	}
-	else
-	{
-		return _wcsnicmp(baseName, expectedName, expectedNameLength) == 0;
-	}
-}
-
-static HMODULE FindLoadedModule(const wchar_t* name)
-{
-	const std::size_t nameLength = wcslen(name);
-
-	LIST_ENTRY* list = &NtCurrentTeb()->ProcessEnvironmentBlock->Ldr->InMemoryOrderModuleList;
-
-	for (LIST_ENTRY* entry = list->Flink; entry != list; entry = entry->Flink)
-	{
-		LDR_DATA_TABLE_ENTRY* data = CONTAINING_RECORD(entry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-
-		if (IsModuleNameEqual(data->FullDllName, name, nameLength))
-		{
-			return static_cast<HMODULE>(data->DllBase);
-		}
-	}
-
-	return NULL;
-}
-
-void CrashLogger::Enable(CrashLogger::Handler handler)
-{
-	g_handler = handler;
+	g_logFileProvider = logFileProvider;
+	g_heapInfoProvider = heapInfoProvider;
 
 	SetUnhandledExceptionFilter(&CrashHandler);
+
+	signal(SIGABRT, &AbortHandler);
 
 	// set error handlers for our MSVC runtime
 	// note that engine uses VS2005 MSVC runtime, which has its own error handlers
 	_set_purecall_handler(&PureCallHandler);
 	_set_invalid_parameter_handler(&InvalidParameterHandler);
 
-	// GetModuleHandle does not work because msvcr80.dll is stored in WinSxS
-	HMODULE msvcr80 = FindLoadedModule(L"msvcr80.dll");
+	HMODULE msvcr80 = GetModuleHandleA("msvcr80.dll");
 	if (msvcr80)
 	{
 		// VS2005 _set_purecall_handler is done by each engine DLL

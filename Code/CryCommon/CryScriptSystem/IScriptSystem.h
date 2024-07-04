@@ -1130,12 +1130,24 @@ public:
 
 	SmartScriptFunction & operator=(const SmartScriptFunction &) = delete;
 
-	SmartScriptFunction & operator=(HSCRIPTFUNCTION hFunc)
+	SmartScriptFunction(SmartScriptFunction&& other) : m_hFunc(other.m_hFunc), m_pSS(other.m_pSS)
+	{
+		other.m_hFunc = nullptr;
+		other.m_pSS = nullptr;
+	}
+
+	SmartScriptFunction& operator=(SmartScriptFunction&& other)
 	{
 		if (m_hFunc)
+		{
 			m_pSS->ReleaseFunc(m_hFunc);
 
-		m_hFunc = hFunc;
+			m_hFunc = nullptr;
+			m_pSS = nullptr;
+		}
+
+		std::swap(m_hFunc, other.m_hFunc);
+		std::swap(m_pSS, other.m_pSS);
 
 		return *this;
 	}
@@ -1144,15 +1156,6 @@ public:
 	{
 		if (m_hFunc)
 			m_pSS->ReleaseFunc(m_hFunc);
-	}
-
-	void Init(IScriptSystem *pSS, HSCRIPTFUNCTION hFunc)
-	{
-		if (m_hFunc)
-			m_pSS->ReleaseFunc(m_hFunc);
-
-		m_pSS = pSS;
-		m_hFunc = hFunc;
 	}
 
 	operator HSCRIPTFUNCTION() const

@@ -1,4 +1,5 @@
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
@@ -52,6 +53,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetKeyName, "action");
 	SCRIPT_REG_TEMPLFUNC(IsKeyUsed, "key");
 	SCRIPT_REG_TEMPLFUNC(CreateKeyBind, "key, command");
+	SCRIPT_REG_TEMPLFUNC(CreateKeyFunction, "key, function");
 	SCRIPT_REG_FUNC(ClearKeyBinds);
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
@@ -59,6 +61,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetLastSeenTime, "entityId");
 	SCRIPT_REG_FUNC(GetLP);
 	SCRIPT_REG_FUNC(GetNumVars);
+	SCRIPT_REG_FUNC(GetVars);
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -362,6 +365,13 @@ int ScriptBind_CPPAPI::CreateKeyBind(IFunctionHandler* pH, const char* key, cons
 	return pH->EndFunction(true);
 }
 
+int ScriptBind_CPPAPI::CreateKeyFunction(IFunctionHandler* pH, const char* key, HSCRIPTFUNCTION function)
+{
+	gClient->AddKeyBind(key, function);
+
+	return pH->EndFunction(true);
+}
+
 int ScriptBind_CPPAPI::ClearKeyBinds(IFunctionHandler* pH)
 {
 	gClient->ClearKeyBinds();
@@ -466,6 +476,21 @@ int ScriptBind_CPPAPI::GetNumVars(IFunctionHandler* pH)
 	return pH->EndFunction(gEnv->pConsole->GetNumVars());
 }
 
+int ScriptBind_CPPAPI::GetVars(IFunctionHandler* pH)
+{
+	std::vector<const char*> cmds;
+
+	cmds.resize(gEnv->pConsole->GetNumVars());
+	gEnv->pConsole->GetSortedVars(&cmds[0], cmds.size());
+
+	SmartScriptTable vars(m_pSS);
+	for (const char* vName : cmds)
+	{
+		vars->PushBack(vName);
+	}
+	return pH->EndFunction(vars);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Localization
 ////////////////////////////////////////////////////////////////////////////////
@@ -524,6 +549,12 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 	};
 
 	label.name = name;
+
+	const LocalizationManager::Label* existingLabel = localization.FindLabel(label.name);
+	if (existingLabel)
+	{
+		label = *existingLabel;
+	}
 
 	if (params)
 	{

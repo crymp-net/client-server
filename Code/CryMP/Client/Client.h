@@ -67,6 +67,7 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	{
 		std::string key;
 		std::string command;
+		SmartScriptFunction function;
 		bool createdInGame = false;
 	};
 
@@ -102,7 +103,9 @@ public:
 	std::string GetHWID(const std::string_view & salt);
 
 	void AddKeyBind(const std::string_view& key, const std::string_view& command);
+	void AddKeyBind(const std::string_view& key, HSCRIPTFUNCTION function);
 	void OnKeyPress(const std::string_view& key);
+	void OnKeyRelease(const std::string_view& key);
 	void ClearKeyBinds();
 
 	// IGameFrameworkListener

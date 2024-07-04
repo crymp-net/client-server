@@ -9,8 +9,6 @@
 
 #include "HardwareMouse.h"
 
-HardwareMouse HardwareMouse::s_globalInstance;
-
 void HardwareMouse::Init()
 {
 	this->GetHardwareMousePosition(&m_positionX, &m_positionY);

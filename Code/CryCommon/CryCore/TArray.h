@@ -5,7 +5,7 @@
 #ifndef __TARRAY_H__
 #define __TARRAY_H__
 
-#include "CryCommon/CrySystem/ICryPak.h"  // impl of fxopen
+#include "CryMalloc.h"
 
 #ifndef CLAMP
 #define CLAMP(X, mn, mx) ((X)<(mn) ? (mn) : ((X)<(mx) ? (X) : (mx)))
@@ -92,12 +92,7 @@ public:
 	// puts the pointer to the actually allocated block before the aligned memory block
 	pointer allocate (size_type _Count)
 	{
-		pointer p;
-#if defined(_DEBUG) && defined(_INC_CRTDBG) && !defined(WIN64)
-		p = (pointer)_malloc_dbg (0x10+_Count * sizeof(T), _NORMAL_BLOCK, m_szParentObject, m_nParentIndex);
-#else
-		p = (pointer)malloc (0x10+_Count*sizeof(T));
-#endif
+		pointer p = (pointer)CryMalloc(0x10+_Count*sizeof(T));
 		pointer pResult = (pointer)(((UINT_PTR)p+0x10)&~0xF);
 		// save the offset to the actual allocated address behind the useable aligned address
 		reinterpret_cast<int*>(pResult)[-1] = (char*)p - (char*)pResult;
@@ -116,11 +111,7 @@ public:
 			return;
 		int nOffset = ((int*)_Ptr)[-1];
 		assert (nOffset >= -16 && nOffset <= -4);
-#if defined(_DEBUG) && defined(_INC_CRTDBG) && !defined(WIN64)
-		_free_dbg (((char*)_Ptr)+nOffset, _NORMAL_BLOCK);
-#else
-		free (((char*)_Ptr)+nOffset);
-#endif
+		CryFree(((char*)_Ptr)+nOffset);
 	}
 
 	void deallocate(pointer _Ptr,size_type _Count) {}
@@ -191,7 +182,7 @@ public:
   {
     if (m_nAllocatedCount)
     {
-      free(m_pElements);
+      CryFree(m_pElements);
     }
     m_pElements = NULL;
     m_nCount = m_nAllocatedCount = 0;
@@ -233,7 +224,7 @@ public:
 			m_pElements = NULL;
 		else
 		{
-			m_pElements = (T *)realloc(m_pElements, m_nAllocatedCount*sizeof(T));
+			m_pElements = (T *)CryRealloc(m_pElements, m_nAllocatedCount*sizeof(T));
 			assert (m_pElements);
 		}
   }
@@ -443,26 +434,6 @@ public:
   {
 //    memset(&m_pElements[n],0,sizeof(T));
     _Remove(n, 1);
-  }
-
-  void Load(const char * file_name)
-  {
-    Clear();
-    FILE * f = fxopen(file_name, "rb");
-    if(!f)
-      return;
-    
-    int size = 0;
-    fread(&size, 4, 1, f);
-    
-    while(!feof(f) && sizeof(T)==size)
-    {
-      T tmp;
-      if(fread(&tmp, 1, sizeof(T), f) == sizeof(T))
-        AddElem(tmp);
-    }
-    
-    fclose(f);
   }
 
 

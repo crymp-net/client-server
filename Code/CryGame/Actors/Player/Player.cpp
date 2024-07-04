@@ -244,6 +244,7 @@ CPlayer::~CPlayer()
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (pCharacter)
 		pCharacter->GetISkeletonPose()->SetPostProcessCallback0(0, 0);
+
 	if (m_pNanoSuit)
 		delete m_pNanoSuit;
 
@@ -1800,15 +1801,12 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			{
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
+
+			pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 		}
 
 		//Hide TP model or not
 		pTarget->m_stats.isHidden = pVehicle ? false : true;
-
-		//Run target view as First Person
-		CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
-		playerView.Process(m_FirstPersonSpectatorParams);
-		playerView.Commit(*pTarget, m_FirstPersonSpectatorParams);
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -1884,9 +1882,7 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	CPlayerView playerView(*this, viewParams);
-	playerView.Process(viewParams);
-	playerView.Commit(*this, viewParams);
+	m_PlayerView.Update(viewParams);
 
 	if (!IsThirdPerson())
 	{
@@ -1966,6 +1962,16 @@ void CPlayer::UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventLi
 	stl::find_and_erase(m_playerEventListeners, pPlayerEventListener);
 }
 
+void CPlayer::ResetOpacity()
+{
+	//CryMP: reset opacity (just incase)
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+	if (pRenderProxy)
+	{
+		pRenderProxy->SetOpacity(1.0f);
+	}
+}
+
 IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 {
 	IEntity* pLinkedEntity = CActor::LinkToVehicle(vehicleId);
@@ -1991,12 +1997,7 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		{
 			SupressViewBlending();
 
-			//CryMP: reset opacity (just incase)
-			IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
-			if (pRenderProxy)
-			{
-				pRenderProxy->SetOpacity(1.0f);
-			}
+			ResetOpacity();
 
 		}
 	}
@@ -2016,10 +2017,8 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		// don't interpolate back from vehicle camera (otherwise you see your own legs)
 		if (IsClient())
 			SupressViewBlending();
-		else
-		{
-			m_currentSeatId = -1;
-		}
+
+		m_PlayerView.OnExitVehicle();
 	}
 
 	return pLinkedEntity;
@@ -3923,6 +3922,11 @@ void CPlayer::Kill()
 	//CryMP
 	NotifyObjectGrabbed(false, 0, false);
 
+	if (IsClient())
+	{
+		ResetOpacity();
+	}
+
 	if (CNanoSuit* pSuit = GetNanoSuit())
 		pSuit->Death();
 
@@ -5077,6 +5081,11 @@ void CPlayer::PlayAction(const char* action, const char* extension, bool looping
 {
 	if (!m_pAnimatedCharacter)
 		return;
+
+	if (strcmp(action, "use_lockpick") && !strcmp(extension, "lockpick")) //CryMP: A bit hacky, but use lockpick pose only when actually using it
+	{
+		extension = "claymore";
+	}
 
 	if (extension == NULL || strcmp(extension, "ignore") != 0)
 	{

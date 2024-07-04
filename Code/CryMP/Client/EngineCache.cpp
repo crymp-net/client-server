@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
 #include "CryCommon/CryAnimation/ICryAnimation.h"
