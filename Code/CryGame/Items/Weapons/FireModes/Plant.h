@@ -25,6 +25,7 @@ History:
 class CPlant : public IFireMode
 {
 	struct StartPlantAction;
+	struct PlantTimer;
 
 protected:
 	struct SPlantParams
@@ -232,8 +233,6 @@ protected:
 	bool		m_timing;
 	
 	float		m_time;
-
-	float		m_plantTimer;
 	float		m_tickTimer;
 
 	// pos/dir/vel are stored when the user presses fire for placed weapons
