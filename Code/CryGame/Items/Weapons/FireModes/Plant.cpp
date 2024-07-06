@@ -322,7 +322,7 @@ void CPlant::StartFire()
 	m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), 
 		CSchedulerAction<StartPlantAction>::Create(this), false);
 
-	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_plantparams.delay * 1000.f), //CryMP added
+	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32_t>(m_plantparams.delay * 1000.f), //CryMP added
 		CSchedulerAction<PlantTimer>::Create(this), false);
 }
 
