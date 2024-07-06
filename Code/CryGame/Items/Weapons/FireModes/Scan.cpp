@@ -150,7 +150,7 @@ struct CScan::DurationTimer
 };
 
 //------------------------------------------------------------------------
-void CScan::CallTimers()
+void CScan::StartTimers()
 {
 	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.tagDelay * 1000.f), 
 		CSchedulerAction<TagEntitiesDelay>::Create(this), false);
