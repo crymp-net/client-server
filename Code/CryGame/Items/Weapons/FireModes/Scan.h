@@ -46,7 +46,7 @@ public:
 
 	virtual void Activate(bool activate);
 
-	void CallTimers();
+	void StartTimers();
 
 	void ShowFlashAnimation(bool enable);
 
