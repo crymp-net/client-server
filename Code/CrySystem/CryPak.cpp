@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
-#include <stack>
-#include <tuple>
+
+#include "Library/PathTools.h"
 
 #include "CryLog.h"
 #include "CryPak.h"
@@ -11,170 +11,9 @@
 #include "ResourceList.h"
 
 // TODO: CryLog and std::string_view::data()
-
-static bool IsSlash(char ch)
-{
-	return ch == '/' || ch == '\\';
-}
-
-static bool IsAbsolutePath(std::string_view path)
-{
-	if (path.length() > 0 && IsSlash(path[0]))
-	{
-		// also handles UNC paths
-		return true;
-	}
-
-	if (path.length() > 1 && path[1] == ':')
-	{
-		const char drive = path[0];
-
-		if ((drive >= 'A' && drive <= 'Z') || (drive >= 'a' && drive <= 'z'))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-static std::string_view RemoveLeadingSlashes(std::string_view path)
-{
-	while (!path.empty() && IsSlash(path.front()))
-	{
-		path.remove_prefix(1);
-	}
-
-	return path;
-}
-
-static std::string_view RemoveTrailingSlashes(std::string_view path)
-{
-	while (!path.empty() && IsSlash(path.back()))
-	{
-		path.remove_suffix(1);
-	}
-
-	return path;
-}
-
-static std::string_view DirPath(std::string_view path)
-{
-	path = RemoveTrailingSlashes(path);
-
-	while (!path.empty() && !IsSlash(path.back()))
-	{
-		path.remove_suffix(1);
-	}
-
-	return RemoveTrailingSlashes(path);
-}
-
-static std::string_view FileName(std::string_view path)
-{
-	path = RemoveTrailingSlashes(path);
-
-	const auto pos = path.find_last_of("/\\");
-	if (pos != std::string_view::npos)
-	{
-		path.remove_prefix(pos + 1);
-	}
-
-	return path;
-}
-
-static std::tuple<std::string_view, std::string_view> SplitFirstPathComponent(std::string_view path)
-{
-	path = RemoveLeadingSlashes(path);
-
-	std::string_view remaining;
-
-	const auto pos = path.find_first_of("/\\");
-	if (pos != std::string_view::npos)
-	{
-		remaining = path;
-		remaining.remove_prefix(pos + 1);
-		path.remove_suffix(path.length() - pos);
-	}
-
-	return {path, remaining};
-}
-
-static std::tuple<std::string_view, std::string_view> SplitPathIntoDirAndFile(std::string_view path)
-{
-	std::string_view dirPath = RemoveTrailingSlashes(path);
-	std::string_view fileName = dirPath;
-
-	while (!dirPath.empty() && !IsSlash(dirPath.back()))
-	{
-		dirPath.remove_suffix(1);
-	}
-
-	fileName.remove_prefix(dirPath.length());
-
-	dirPath = RemoveTrailingSlashes(dirPath);
-
-	return {dirPath, fileName};
-}
-
-static std::string_view PathStem(std::string_view path)
-{
-	path = FileName(path);
-
-	const auto pos = path.rfind('.');
-	if (pos != std::string_view::npos && pos != 0)
-	{
-		path.remove_suffix(path.length() - pos);
-	}
-
-	return path;
-}
-
-static std::string_view PathExtension(std::string_view path)
-{
-	path = FileName(path);
-
-	const auto pos = path.rfind('.');
-	if (pos != std::string_view::npos && pos != 0)
-	{
-		path.remove_prefix(pos);
-	}
-	else
-	{
-		path.remove_prefix(path.length());
-	}
-
-	return path;
-}
-
-static std::tuple<std::string_view, std::string_view> SplitNameIntoStemAndExtension(std::string_view name)
-{
-	std::string_view stem = name;
-	std::string_view extension;
-
-	const auto pos = stem.rfind('.');
-	if (pos != std::string_view::npos && pos != 0)
-	{
-		extension = stem;
-		extension.remove_prefix(pos);
-		stem.remove_suffix(stem.length() - pos);
-	}
-
-	return {stem, extension};
-}
-
-static std::tuple<std::string_view, std::string_view> SplitPathIntoStemAndExtension(std::string_view path)
-{
-	return SplitNameIntoStemAndExtension(FileName(path));
-}
-
-static void AddTrailingSlash(std::string& path)
-{
-	if (!path.empty() && !IsSlash(path.back()))
-	{
-		path += '/';
-	}
-}
+// TODO: remove file redirectors
+// TODO: PAK priority
+// TODO: PAK in EXE
 
 class CryPakWildcardMatcher
 {
@@ -197,7 +36,7 @@ public:
 	// | `*`      | FULL      |
 	explicit CryPakWildcardMatcher(std::string_view wildcard)
 	{
-		std::tie(m_stem, m_extension) = SplitNameIntoStemAndExtension(wildcard);
+		std::tie(m_stem, m_extension) = PathTools::SplitNameIntoStemAndExtension(wildcard);
 
 		if (!m_extension.empty())
 		{
@@ -227,7 +66,7 @@ public:
 
 	bool operator()(std::string_view name) const
 	{
-		auto [stem, extension] = SplitNameIntoStemAndExtension(name);
+		auto [stem, extension] = PathTools::SplitNameIntoStemAndExtension(name);
 
 		if (!extension.empty())
 		{
@@ -263,7 +102,7 @@ public:
 
 static std::vector<std::string> ExpandWildcardFilesystemPath(std::string_view wildcardPath)
 {
-	const auto [dirPath, wildcardName] = SplitPathIntoDirAndFile(wildcardPath);
+	const auto [dirPath, wildcardName] = PathTools::SplitPathIntoDirAndFile(wildcardPath);
 	const CryPakWildcardMatcher matcher(wildcardName);
 
 	std::vector<std::string> foundPaths;
@@ -272,7 +111,7 @@ static std::vector<std::string> ExpandWildcardFilesystemPath(std::string_view wi
 	for (const auto& entry : std::filesystem::directory_iterator(dirPath, ec))
 	{
 		std::string path = entry.path().generic_string();
-		if (matcher(FileName(path)))
+		if (matcher(PathTools::FileName(path)))
 		{
 			// no need to adjust because generic_string uses forward slashes
 			foundPaths.emplace_back(std::move(path));
@@ -342,7 +181,7 @@ bool CryPak::OpenPack(const char* name, unsigned int flags)
 	std::lock_guard lock(m_mutex);
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
-	const std::string_view adjustedBindingRoot = DirPath(adjustedName);
+	const std::string_view adjustedBindingRoot = PathTools::DirPath(adjustedName);
 
 	return this->OpenPackImpl(adjustedName, adjustedBindingRoot, flags);
 }
@@ -371,7 +210,7 @@ bool CryPak::OpenPacks(const char* wildcard, unsigned int flags)
 	std::lock_guard lock(m_mutex);
 
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
-	const std::string_view adjustedBindingRoot = DirPath(adjustedWildcard);
+	const std::string_view adjustedBindingRoot = PathTools::DirPath(adjustedWildcard);
 
 	return this->OpenPacksImpl(adjustedWildcard, adjustedBindingRoot, flags);
 }
@@ -423,7 +262,11 @@ void CryPak::SetAlias(const char* name, const char* alias, bool add)
 
 	if (add)
 	{
-		const auto [it, added] = m_aliases.emplace(aliasName, "");
+#ifdef __cpp_lib_associative_heterogeneous_insertion
+		const auto [it, added] = m_aliases.try_emplace(aliasName);
+#else
+		const auto [it, added] = m_aliases.try_emplace(std::string(aliasName));
+#endif
 
 		if (added)
 		{
@@ -482,15 +325,15 @@ ICryPak::PakInfo* CryPak::GetPakInfo()
 		return res;
 	};
 
-	PakSlot* slot = m_paks.GetFirstActive();
+	PakSlot* pak = m_paks.GetFirstActive();
 
 	for (unsigned int i = 0; i < pakCount; ++i)
 	{
-		info->arrPaks[i].szFilePath = my_strdup(slot->path);
-		info->arrPaks[i].szBindRoot = my_strdup(slot->bindingRoot);
+		info->arrPaks[i].szFilePath = my_strdup(pak->path);
+		info->arrPaks[i].szBindRoot = my_strdup(pak->bindingRoot);
 		info->arrPaks[i].nUsedMem = 0;
 
-		slot = m_paks.GetNextActive(slot);
+		pak = m_paks.GetNextActive(pak);
 	}
 
 	return info;
@@ -537,18 +380,18 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 		}
 	}
 
-	TreeNode::FileInPak* fileInPak = this->FindFileInTree(adjustedName);
-	if (fileInPak)
+	FileNode* fileNode = m_tree.FindNode(adjustedName);
+	if (fileNode)
 	{
-		PakSlot* pak = m_paks.HandleToSlot(fileInPak->pakHandle);
+		PakSlot* pak = m_paks.HandleToSlot(fileNode->current.pakHandle);
 		if (!pak)
 		{
 			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Invalid pak handle", __FUNCTION__, name, mode, flags);
 			return nullptr;
 		}
 
-		std::unique_ptr<IPakFile> file = pak->impl->OpenFile(fileInPak->fileIndex, isBinary);
-		if (!file)
+		std::unique_ptr<IPakFile> fileImpl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
+		if (!fileImpl)
 		{
 			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Opening a file in a pak failed", __FUNCTION__, name, mode, flags);
 			return nullptr;
@@ -560,17 +403,17 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 			return nullptr;
 		}
 
-		FileSlot* slot = m_files.GetFreeSlot();
-		if (!slot)
+		FileSlot* file = m_files.GetFreeSlot();
+		if (!file)
 		{
 			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, name, mode, flags);
 			return nullptr;
 		}
 
-		slot->impl = std::move(file);
-		slot->pakHandle = m_paks.SlotToHandle(pak);
+		file->impl = std::move(fileImpl);
+		file->pakHandle = m_paks.SlotToHandle(pak);
 		this->IncrementPakRefCount(pak);
-		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(slot));
+		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found in pak \"%s\"", __FUNCTION__, name, mode, flags, handle, pak->path.c_str());
 		return handle;
 	}
@@ -596,19 +439,19 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): newMode=\"%s\"", __FUNCTION__, name, mode, flags, newMode.c_str());
 	}
 
-	std::FILE* file = std::fopen(adjustedName.c_str(), newMode.c_str());
-	if (file)
+	std::FILE* fileHandle = std::fopen(adjustedName.c_str(), newMode.c_str());
+	if (fileHandle)
 	{
-		FileSlot* slot = m_files.GetFreeSlot();
-		if (!slot)
+		FileSlot* file = m_files.GetFreeSlot();
+		if (!file)
 		{
 			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, name, mode, flags);
 			return nullptr;
 		}
 
-		slot->impl = std::make_unique<FileOutsidePak>(file, filePath);
-		slot->pakHandle = 0;
-		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(slot));
+		file->impl = std::make_unique<FileOutsidePak>(fileHandle, filePath);
+		file->pakHandle = 0;
+		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found outside in \"%s\"", __FUNCTION__, name, mode, flags, handle, adjustedName.c_str());
 		return handle;
 	}
@@ -796,7 +639,7 @@ bool CryPak::RemoveDir(const char* name, bool recurse)
 
 bool CryPak::IsAbsPath(const char* path)
 {
-	return IsAbsolutePath(StringTools::SafeView(path));
+	return PathTools::IsAbsolutePath(StringTools::SafeView(path));
 }
 
 size_t CryPak::FSeek(FILE* handle, long seek, int mode)
@@ -910,12 +753,12 @@ void CryPak::PoolFree(void* pool)
 	std::free(pool);
 }
 
-intptr_t CryPak::FindFirst(const char* dir, struct _finddata_t* fd, unsigned int flags)
+intptr_t CryPak::FindFirst(const char* wildcard, struct _finddata_t* fd, unsigned int flags)
 {
 	std::lock_guard lock(m_mutex);
 
-	const std::string wildcardPath = this->AdjustFileNameImpl(StringTools::SafeView(dir), flags);
-	const auto [dirPath, wildcardName] = SplitPathIntoDirAndFile(wildcardPath);
+	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
+	const auto [dirPath, wildcardName] = PathTools::SplitPathIntoDirAndFile(adjustedWildcard);
 	const CryPakWildcardMatcher matcher(wildcardName);
 
 	std::vector<DirectorySlot::Entry> entries;
@@ -933,7 +776,7 @@ intptr_t CryPak::FindFirst(const char* dir, struct _finddata_t* fd, unsigned int
 		return it != entries.end();
 	};
 
-	TreeNode::Directory* dirNode = this->FindDirectoryInTree(dirPath);
+	Tree::DirectoryNode* dirNode = m_tree.FindDirectoryNode(dirPath);
 	if (dirNode)
 	{
 		for (auto& [name, node] : *dirNode)
@@ -943,71 +786,72 @@ intptr_t CryPak::FindFirst(const char* dir, struct _finddata_t* fd, unsigned int
 				continue;
 			}
 
+			FileNode* fileNode = std::get_if<FileNode>(&node);
+
 			DirectorySlot::Entry& e = entries.emplace_back();
 			e.name = name;
 			e.isInPak = true;
-			e.isDirectory = std::holds_alternative<TreeNode::Directory>(node.content);
-			e.size = e.isDirectory ? 0 : this->GetFileSize(node);
+			e.isDirectory = (fileNode == nullptr);
+			e.size = (fileNode == nullptr) ? 0 : this->GetFileSize(*fileNode);
 		}
 	}
 
 	std::error_code ec;
-	for (const auto& entry : std::filesystem::directory_iterator(dirPath, ec))
+	for (const auto& dirEntry : std::filesystem::directory_iterator(dirPath, ec))
 	{
-		const std::string path = entry.path().generic_string();
-		const std::string_view fileName = FileName(path);
+		std::string name = dirEntry.path().filename().generic_string();
 
-		if (matcher(fileName) && !isDuplicate(fileName))
+		if (matcher(name) && !isDuplicate(name))
 		{
 			DirectorySlot::Entry& e = entries.emplace_back();
-			e.name = fileName;
+			e.name = std::move(name);
 			e.isInPak = false;
-			e.isDirectory = entry.is_directory(ec);
-			e.size = e.isDirectory ? 0 : entry.file_size(ec);
+			e.isDirectory = dirEntry.is_directory(ec);
+			e.size = e.isDirectory ? 0 : dirEntry.file_size(ec);
 		}
 	}
 
-	CryLogAlways("%s(\"%s\", 0x%x): Found %zu entries", __FUNCTION__, dir, flags, entries.size());
+	CryLogAlways("%s(\"%s\", 0x%x): Found %zu entries", __FUNCTION__, wildcard, flags, entries.size());
 
 	if (entries.empty())
 	{
 		return -1;
 	}
 
-	DirectorySlot* slot = m_directories.GetFreeSlot();
-	if (!slot)
+	DirectorySlot* directory = m_directories.GetFreeSlot();
+	if (!directory)
 	{
-		CryLogAlways("%s(\"%s\", 0x%x): Max number of slots reached", __FUNCTION__, dir, flags);
+		CryLogAlways("%s(\"%s\", 0x%x): Max number of slots reached", __FUNCTION__, wildcard, flags);
 		return -1;
 	}
 
-	slot->entries = std::move(entries);
-	slot->pos = 0;
+	directory->entries = std::move(entries);
+	directory->pos = 0;
 
-	this->FillFindData(fd, slot->entries[0]);
-	slot->pos++;
+	this->FillFindData(fd, directory->entries[0]);
+	directory->pos++;
 
-	return static_cast<intptr_t>(m_directories.SlotToHandle(slot));
+	return static_cast<intptr_t>(m_directories.SlotToHandle(directory));
 }
 
 int CryPak::FindNext(intptr_t handle, struct _finddata_t* fd)
 {
 	std::lock_guard lock(m_mutex);
 
-	DirectorySlot* slot = m_directories.HandleToSlot(static_cast<std::uint32_t>(handle));
-	if (!slot)
+	DirectorySlot* directory = m_directories.HandleToSlot(static_cast<std::uint32_t>(handle));
+	if (!directory)
 	{
 		CryLogAlways("%s(0x%p): Invalid handle", __FUNCTION__, reinterpret_cast<void*>(handle));
 		return -1;
 	}
 
-	if (slot->pos >= slot->entries.size())
+	if (directory->pos >= directory->entries.size())
 	{
 		return -1;
 	}
 
-	this->FillFindData(fd, slot->entries[slot->pos]);
-	slot->pos++;
+	this->FillFindData(fd, directory->entries[directory->pos]);
+	directory->pos++;
 
 	return 0;
 }
@@ -1016,14 +860,14 @@ int CryPak::FindClose(intptr_t handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	DirectorySlot* slot = m_directories.HandleToSlot(static_cast<std::uint32_t>(handle));
-	if (!slot)
+	DirectorySlot* directory = m_directories.HandleToSlot(static_cast<std::uint32_t>(handle));
+	if (!directory)
 	{
 		CryLogAlways("%s(0x%p): Invalid handle", __FUNCTION__, reinterpret_cast<void*>(handle));
 		return -1;
 	}
 
-	slot->clear();
+	directory->clear();
 
 	return 0;
 }
@@ -1048,8 +892,8 @@ bool CryPak::IsFileExist(const char* name)
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), 0);
 
-	TreeNode::FileInPak* fileInPak = this->FindFileInTree(adjustedName);
-	if (fileInPak)
+	FileNode* fileNode = m_tree.FindNode(adjustedName);
+	if (fileNode)
 	{
 		CryLogAlways("%s(\"%s\"): Found in a pak", __FUNCTION__, name);
 		return true;
@@ -1210,7 +1054,7 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 
 	if ((flags & FLAGS_FOR_WRITING) && !m_gameFolderWritable)
 	{
-		if (path.empty() || (path[0] != '%' && !IsAbsolutePath(path)))
+		if (path.empty() || (path[0] != '%' && !PathTools::IsAbsolutePath(path)))
 		{
 			result += "%USER%/";
 		}
@@ -1228,7 +1072,7 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 		return result;
 	}
 
-	if (!IsAbsolutePath(result))
+	if (!PathTools::IsAbsolutePath(result))
 	{
 		const bool hasDotSlash = result.starts_with("./");
 
@@ -1251,7 +1095,7 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 
 	if (flags & FLAGS_ADD_TRAILING_SLASH)
 	{
-		AddTrailingSlash(result);
+		PathTools::AddTrailingSlash(result);
 	}
 
 	return result;
@@ -1261,26 +1105,26 @@ bool CryPak::OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot
 {
 	// TODO: flags
 
-	std::unique_ptr<IPak> pak = m_loader.LoadPak(pakPath);
-	if (!pak)
+	std::unique_ptr<IPak> pakImpl = m_loader.LoadPak(pakPath);
+	if (!pakImpl)
 	{
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Failed", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
 		return false;
 	}
 
-	PakSlot* slot = m_paks.GetFreeSlot();
-	if (!slot)
+	PakSlot* pak = m_paks.GetFreeSlot();
+	if (!pak)
 	{
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
 		return false;
 	}
 
-	slot->path = pakPath;
-	slot->bindingRoot = bindingRoot;
-	slot->impl = std::move(pak);
-	slot->refCount = 1;
+	pak->path = pakPath;
+	pak->bindingRoot = bindingRoot;
+	pak->impl = std::move(pakImpl);
+	pak->refCount = 1;
 
-	this->AddPakToTree(slot);
+	this->AddPakToTree(pak);
 
 	CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Success", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
 
@@ -1338,20 +1182,20 @@ CryPak::PakSlot* CryPak::FindLoadedPakByPath(std::string_view pakPath)
 	return m_paks.Find([pakPath](const PakSlot& pak) { return StringTools::IsEqualNoCase(pak.path, pakPath); });
 }
 
-void CryPak::IncrementPakRefCount(PakSlot* slot)
+void CryPak::IncrementPakRefCount(PakSlot* pak)
 {
-	slot->refCount++;
+	pak->refCount++;
 }
 
-void CryPak::DecrementPakRefCount(PakSlot* slot)
+void CryPak::DecrementPakRefCount(PakSlot* pak)
 {
-	slot->refCount--;
+	pak->refCount--;
 
-	if (slot->refCount <= 0)
+	if (pak->refCount <= 0)
 	{
-		this->RemovePakFromTree(slot);
+		this->RemovePakFromTree(pak);
 
-		slot->clear();
+		pak->clear();
 	}
 }
 
@@ -1418,129 +1262,16 @@ void CryPak::FillFindData(struct _finddata_t* fd, const DirectorySlot::Entry& en
 	fd->name[length] = '\0';
 }
 
-CryPak::TreeNode* CryPak::AddToTree(std::string_view path, TreeNode* node)
+std::uint64_t CryPak::GetFileSize(FileNode& fileNode)
 {
-	if (!node)
-	{
-		node = &m_root;
-	}
-
-	while (!path.empty())
-	{
-		const auto [pathComponent, remainingPath] = SplitFirstPathComponent(path);
-
-		TreeNode::Directory* dirNode = std::get_if<TreeNode::Directory>(&node->content);
-		if (!dirNode)
-		{
-			return nullptr;
-		}
-
-		// a directory node is added
-#ifdef __cpp_lib_associative_heterogeneous_insertion
-		const auto [it, added] = dirNode->try_emplace(pathComponent);
-#else
-		const auto [it, added] = dirNode->try_emplace(std::string(pathComponent));
-#endif
-
-		node = &it->second;
-		path = remainingPath;
-	}
-
-	return node;
-}
-
-CryPak::TreeNode* CryPak::FindInTree(std::string_view path, TreeNode* node)
-{
-	if (!node)
-	{
-		node = &m_root;
-	}
-
-	while (!path.empty())
-	{
-		const auto [pathComponent, remainingPath] = SplitFirstPathComponent(path);
-
-		TreeNode::Directory* dirNode = std::get_if<TreeNode::Directory>(&node->content);
-		if (!dirNode)
-		{
-			return nullptr;
-		}
-
-		const auto it = dirNode->find(pathComponent);
-		if (it == dirNode->end())
-		{
-			return nullptr;
-		}
-
-		node = &it->second;
-		path = remainingPath;
-	}
-
-	return node;
-}
-
-CryPak::TreeNode::FileInPak* CryPak::FindFileInTree(std::string_view path)
-{
-	TreeNode* node = this->FindInTree(path);
-	if (!node)
-	{
-		return nullptr;
-	}
-
-	TreeNode::File* fileNode = std::get_if<TreeNode::File>(&node->content);
-	if (!fileNode)
-	{
-		return nullptr;
-	}
-
-	if (fileNode->empty())
-	{
-		return nullptr;
-	}
-
-	return &fileNode->back();
-}
-
-CryPak::TreeNode::Directory* CryPak::FindDirectoryInTree(std::string_view path)
-{
-	TreeNode* node = this->FindInTree(path);
-	if (!node)
-	{
-		return nullptr;
-	}
-
-	TreeNode::Directory* dirNode = std::get_if<TreeNode::Directory>(&node->content);
-	if (!dirNode)
-	{
-		return nullptr;
-	}
-
-	return dirNode;
-}
-
-std::uint64_t CryPak::GetFileSize(TreeNode& node)
-{
-	TreeNode::File* fileNode = std::get_if<TreeNode::File>(&node.content);
-	if (!fileNode)
-	{
-		return 0;
-	}
-
-	if (fileNode->empty())
-	{
-		return 0;
-	}
-
-	TreeNode::FileInPak& file = fileNode->back();
-
-	PakSlot* pak = m_paks.HandleToSlot(file.pakHandle);
+	PakSlot* pak = m_paks.HandleToSlot(fileNode.current.pakHandle);
 	if (!pak)
 	{
 		return 0;
 	}
 
 	std::uint64_t size = 0;
-	if (!pak->impl->GetEntrySize(file.fileIndex, size))
+	if (!pak->impl->GetEntrySize(fileNode.current.fileIndex, size))
 	{
 		return 0;
 	}
@@ -1548,128 +1279,71 @@ std::uint64_t CryPak::GetFileSize(TreeNode& node)
 	return size;
 }
 
-void CryPak::AddPakToTree(PakSlot* slot)
+void CryPak::AddPakToTree(PakSlot* pak)
 {
-	const std::uint32_t pakHandle = m_paks.SlotToHandle(slot);
+	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
 
-	TreeNode* baseNode = this->AddToTree(slot->bindingRoot);
+	bool added = false;
+	Tree::Node* baseNode = m_tree.AddDirectory(pak->bindingRoot, added);
 	if (!baseNode)
 	{
 		// binding root path points to a file
 		return;
 	}
 
-	const std::uint32_t entryCount = slot->impl->GetEntryCount();
+	const std::uint32_t entryCount = pak->impl->GetEntryCount();
 
 	std::string path;
 	for (std::uint32_t i = 0; i < entryCount; i++)
 	{
-		if (slot->impl->IsDirectoryEntry(i))
+		if (pak->impl->IsDirectoryEntry(i))
 		{
 			continue;
 		}
 
-		if (!slot->impl->GetEntryPath(i, path))
+		if (!pak->impl->GetEntryPath(i, path))
 		{
 			continue;
 		}
 
 		// TODO: normalize the path
 
-		const auto [dirPath, fileName] = SplitPathIntoDirAndFile(path);
-
-		TreeNode* node = this->AddToTree(dirPath, baseNode);
-		if (!node)
-		{
-			continue;
-		}
-
-		TreeNode::Directory* dirNode = std::get_if<TreeNode::Directory>(&node->content);
-		if (!dirNode)
-		{
-			continue;
-		}
-
-		// a directory node is added
-#ifdef __cpp_lib_associative_heterogeneous_insertion
-		const auto [it, added] = dirNode->try_emplace(fileName);
-#else
-		const auto [it, added] = dirNode->try_emplace(std::string(fileName));
-#endif
-
-		if (added)
-		{
-			it->second.content.emplace<TreeNode::File>();
-		}
-
-		TreeNode::File* fileNode = std::get_if<TreeNode::File>(&it->second.content);
+		FileNode* fileNode = m_tree.AddNode(path, added, baseNode);
 		if (!fileNode)
 		{
 			continue;
 		}
 
-		fileNode->emplace_back(TreeNode::FileInPak{.pakHandle = pakHandle, .fileIndex = i});
+		if (!added)
+		{
+			fileNode->alternatives.push_front(fileNode->current);
+		}
+
+		fileNode->current.pakHandle = pakHandle;
+		fileNode->current.fileIndex = i;
 	}
 }
 
-void CryPak::RemovePakFromTree(PakSlot* slot)
+void CryPak::RemovePakFromTree(PakSlot* pak)
 {
-	const std::uint32_t pakHandle = m_paks.SlotToHandle(slot);
+	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
 
-	struct Branch
-	{
-		TreeNode* node = nullptr;
-		bool processed = false;
-	};
+	m_tree.EraseIf([pakHandle](FileNode& fileNode) -> bool {
+		std::erase_if(fileNode.alternatives, [pakHandle](const auto& x) { return x.pakHandle == pakHandle; });
 
-	std::stack<Branch> stack;
-	stack.emplace(&m_root);
-
-	const auto isDirEntryEmpty = [](const TreeNode::Directory::value_type& entry) -> bool
-	{
-		const auto& [name, node] = entry;
-
-		return std::visit([](const auto& x) { return x.empty(); }, node.content);
-	};
-
-	const auto isToRemove = [pakHandle](const TreeNode::FileInPak& file) -> bool
-	{
-		return file.pakHandle == pakHandle;
-	};
-
-	while (!stack.empty())
-	{
-		Branch& branch = stack.top();
-
-		TreeNode::Directory* dirNode = std::get_if<TreeNode::Directory>(&branch.node->content);
-		if (!dirNode)
+		if (fileNode.current.pakHandle != pakHandle)
 		{
-			stack.pop();
-			continue;
+			return false;
 		}
 
-		if (branch.processed)
+		if (fileNode.alternatives.empty())
 		{
-			// remove empty nodes
-			std::erase_if(*dirNode, isDirEntryEmpty);
-
-			stack.pop();
-			continue;
+			return true;
 		}
 
-		for (auto& [name, node] : *dirNode)
-		{
-			TreeNode::File* fileNode = std::get_if<TreeNode::File>(&node.content);
-			if (fileNode)
-			{
-				std::erase_if(*fileNode, isToRemove);
-			}
-			else
-			{
-				stack.emplace(&node);
-			}
-		}
+		fileNode.current = fileNode.alternatives.front();
+		fileNode.alternatives.pop_front();
 
-		branch.processed = true;
-	}
+		return false;
+	});
 }

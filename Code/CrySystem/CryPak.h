@@ -1,15 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <forward_list>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
-#include <variant>
 #include <vector>
 
 #include "CryCommon/CrySystem/ICryPak.h"
+#include "Library/PathTree.h"
 #include "Library/SlotVector.h"
 #include "Library/StringTools.h"
 
@@ -19,23 +20,6 @@
 
 class CryPak final : public ICryPak
 {
-	struct TreeNode
-	{
-		struct FileInPak
-		{
-			std::uint32_t pakHandle = 0;
-			std::uint32_t fileIndex = 0;
-		};
-
-		using File = std::vector<FileInPak>;
-		using Directory = std::map<std::string, TreeNode, StringTools::ComparatorNoCase>;
-
-		// a directory node is created by default
-		std::variant<Directory, File> content;
-	};
-
-	TreeNode m_root;
-
 	struct DirectorySlot
 	{
 		struct Entry
@@ -101,6 +85,20 @@ class CryPak final : public ICryPak
 		}
 	};
 
+	struct FileNode
+	{
+		struct FileInPak
+		{
+			std::uint32_t pakHandle = 0;
+			std::uint32_t fileIndex = 0;
+		};
+
+		FileInPak current;
+		std::forward_list<FileInPak> alternatives;
+	};
+
+	using Tree = PathTree<FileNode, StringTools::ComparatorNoCase>;
+
 	bool m_gameFolderWritable = false;
 	bool m_lvlRes = false;
 
@@ -110,6 +108,7 @@ class CryPak final : public ICryPak
 	SlotVector<FileSlot> m_files;
 	SlotVector<PakSlot> m_paks;
 	PakLoader m_loader;
+	Tree m_tree;
 
 	_smart_ptr<IResourceList> m_resourceList_EngineStartup;
 	_smart_ptr<IResourceList> m_resourceList_NextLevel;
@@ -183,7 +182,7 @@ public:
 	void* PoolMalloc(size_t size) override;
 	void PoolFree(void* pool) override;
 
-	intptr_t FindFirst(const char* dir, struct _finddata_t* fd, unsigned int flags = 0) override;
+	intptr_t FindFirst(const char* wildcard, struct _finddata_t* fd, unsigned int flags = 0) override;
 	int FindNext(intptr_t handle, struct _finddata_t* fd) override;
 	int FindClose(intptr_t handle) override;
 
@@ -232,19 +231,15 @@ private:
 
 	PakSlot* FindLoadedPakByPath(std::string_view pakPath);
 
-	void IncrementPakRefCount(PakSlot* slot);
-	void DecrementPakRefCount(PakSlot* slot);
+	void IncrementPakRefCount(PakSlot* pak);
+	void DecrementPakRefCount(PakSlot* pak);
 
 	void ExpandAliases(std::string& path);
 
 	void FillFindData(struct _finddata_t* fd, const DirectorySlot::Entry& entry);
 
-	TreeNode* AddToTree(std::string_view path, TreeNode* node = nullptr);
-	TreeNode* FindInTree(std::string_view path, TreeNode* node = nullptr);
-	TreeNode::FileInPak* FindFileInTree(std::string_view path);
-	TreeNode::Directory* FindDirectoryInTree(std::string_view path);
-	std::uint64_t GetFileSize(TreeNode& node);
+	std::uint64_t GetFileSize(FileNode& fileNode);
 
-	void AddPakToTree(PakSlot* slot);
-	void RemovePakFromTree(PakSlot* slot);
+	void AddPakToTree(PakSlot* pak);
+	void RemovePakFromTree(PakSlot* pak);
 };

@@ -688,6 +688,9 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/CPUID.h
 	Code/Library/CrashLogger.cpp
 	Code/Library/CrashLogger.h
+	Code/Library/PathTools.cpp
+	Code/Library/PathTools.h
+	Code/Library/PathTree.h
 	Code/Library/SlotVector.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h
