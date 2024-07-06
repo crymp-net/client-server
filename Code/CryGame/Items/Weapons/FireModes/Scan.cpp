@@ -112,7 +112,7 @@ struct CScan::DelayTimer
 		{
 			pSound->SetLoopMode(true);
 		}
-		pScan->CallTimers();
+		pScan->StartTimers();
 	}
 };
 
