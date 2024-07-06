@@ -83,7 +83,6 @@ void CPlant::PatchParams(const struct IItemParamsNode *patch)
 //------------------------------------------------------------------------
 void CPlant::Activate(bool activate)
 {
-	m_plantTimer = 0.0f;
 	m_planting = false;
 	m_pressing = false;
 	m_holding = false;
@@ -147,43 +146,7 @@ int CPlant::GetDamage(float distance) const
 //------------------------------------------------------------------------
 void CPlant::Update(float frameTime, unsigned int frameId)
 {
-	FUNCTION_PROFILER( GetISystem(), PROFILE_GAME );
-
-	bool requireUpdate=false;
-
-	CActor *pActor=m_pWeapon->GetOwnerActor();
-
-	if (m_plantTimer>0.0f)
-	{
-		m_plantTimer -= frameTime;
-
-		if (m_plantTimer<=0.0f)
-		{
-			m_plantTimer = 0.0f;
-			
-			if (m_planting)
-			{
-				Vec3 pos;
-				Vec3 dir(FORWARD_DIRECTION);
-				Vec3 vel(0,0,0);
-
-				// placed weapons have already stored the position etc to place at.
-				if(m_plantparams.place_on_ground)
-					Plant(m_plantPos, m_plantDir, m_plantVel);
-				else if(GetPlantingParameters(pos, dir, vel))
-					Plant(pos, dir, vel);
-
-				m_plantPos.zero();
-				m_plantDir.zero();
-				m_plantVel.zero();
-
-				requireUpdate = true;
-			}
-		}
-	}
-
-	if (requireUpdate)
-		m_pWeapon->RequireUpdate(eIUS_FireMode);
+	
 }
 
 // returns true if firing is allowed
@@ -199,25 +162,28 @@ bool CPlant::GetPlantingParameters(Vec3& pos, Vec3& dir, Vec3& vel) const
 		pos = m_pWeapon->GetSlotHelperPos(CItem::eIGS_FirstPerson, m_plantparams.helper.c_str(), true);
 	else if (pMC)
 		pos = info.eyePosition+info.eyeDirection*0.25f;
-	else
+	else if (pActor)
 		pos = pActor->GetEntity()->GetWorldPos();
 
-	if (pMC)
-		dir = info.eyeDirection;
-	else
-		dir = pActor->GetEntity()->GetWorldRotation().GetColumn1();
-
-	if (IPhysicalEntity *pPE=pActor->GetEntity()->GetPhysics())
+	if (pActor)
 	{
-		pe_status_dynamics sv;
-		if (pPE->GetStatus(&sv))
+		if (pMC)
+			dir = info.eyeDirection;
+		else
+			dir = pActor->GetEntity()->GetWorldRotation().GetColumn1();
+
+		if (IPhysicalEntity* pPE = pActor->GetEntity()->GetPhysics())
 		{
-			if (sv.v.len2()>0.01f)
+			pe_status_dynamics sv;
+			if (pPE->GetStatus(&sv))
 			{
-				float dot=sv.v.GetNormalized().Dot(dir);
-				if (dot<0.0f)
-					dot=0.0f;
-				vel=sv.v*dot;
+				if (sv.v.len2() > 0.01f)
+				{
+					float dot = sv.v.GetNormalized().Dot(dir);
+					if (dot < 0.0f)
+						dot = 0.0f;
+					vel = sv.v * dot;
+				}
 			}
 		}
 	}
@@ -306,6 +272,37 @@ struct CPlant::StartPlantAction
 };
 
 //------------------------------------------------------------------------
+struct CPlant::PlantTimer
+{
+	PlantTimer(CPlant* _plant) : pPlant(_plant) {};
+	CPlant* pPlant;
+
+	void execute(CItem* _this)
+	{
+		if (pPlant->m_planting)
+		{
+			Vec3 pos;
+			Vec3 dir(FORWARD_DIRECTION);
+			Vec3 vel(0, 0, 0);
+
+			// placed weapons have already stored the position etc to place at.
+			if (pPlant->m_plantparams.place_on_ground)
+			{
+				pPlant->Plant(pPlant->m_plantPos, pPlant->m_plantDir, pPlant->m_plantVel);
+			}
+			else if (pPlant->GetPlantingParameters(pos, dir, vel))
+			{
+				pPlant->Plant(pos, dir, vel);
+			}
+
+			pPlant->m_plantPos.zero();
+			pPlant->m_plantDir.zero();
+			pPlant->m_plantVel.zero();
+		}
+	}
+};
+
+//------------------------------------------------------------------------
 void CPlant::StartFire()
 {
 	if (!CanFire(true))
@@ -314,7 +311,7 @@ void CPlant::StartFire()
 	if(m_pWeapon->IsWeaponLowered())
 		return;
 
-	m_pWeapon->RequireUpdate(eIUS_FireMode);
+	//m_pWeapon->RequireUpdate(eIUS_FireMode); //CryMP: Don't think this is needed anymore?
 
 	GetPlantingParameters(m_plantPos, m_plantDir, m_plantVel);
 
@@ -322,9 +319,11 @@ void CPlant::StartFire()
 	m_pWeapon->SetBusy(true);
 	m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()));
 
-	m_plantTimer = m_plantparams.delay;
+	m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), 
+		CSchedulerAction<StartPlantAction>::Create(this), false);
 
-	m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), CSchedulerAction<StartPlantAction>::Create(this), false);
+	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32_t>(m_plantparams.delay * 1000.f), //CryMP added
+		CSchedulerAction<PlantTimer>::Create(this), false);
 }
 
 //------------------------------------------------------------------------
@@ -456,25 +455,28 @@ void CPlant::GetMemoryStatistics(ICrySizer * s)
 
 bool CPlant::PlayerStanceOK() const
 {
-	bool ok = true;
-	if(m_plantparams.need_to_crouch && m_pWeapon->GetOwnerActor())
+	if (m_plantparams.need_to_crouch)
 	{
-		CActor* pActor = (CActor*)m_pWeapon->GetOwnerActor();
-		ok = (pActor->GetStance() == STANCE_CROUCH);
-		if(ok)
+		CActor* pActor = m_pWeapon->GetOwnerActor();
+		if (pActor)
 		{
-			ok &= (pActor->GetActorStats()->velocity.GetLengthSquared() < 0.1f);
-
-			if(ok)
+			bool ok = (pActor->GetStance() == STANCE_CROUCH);
+			if (ok)
 			{
-				// also fire a ray forwards to check the placement position is nearby
-				Vec3 pos;
-				Vec3 dir(FORWARD_DIRECTION);
-				Vec3 vel(0,0,0);
-				ok &= GetPlantingParameters(pos, dir, vel);
+				ok &= (pActor->GetActorStats()->velocity.GetLengthSquared() < 0.1f);
+
+				if (ok)
+				{
+					// also fire a ray forwards to check the placement position is nearby
+					Vec3 pos;
+					Vec3 dir(FORWARD_DIRECTION);
+					Vec3 vel(0, 0, 0);
+					ok &= GetPlantingParameters(pos, dir, vel);
+				}
 			}
+			return ok;
 		}
 	}
 	
-	return ok;
+	return true;
 }

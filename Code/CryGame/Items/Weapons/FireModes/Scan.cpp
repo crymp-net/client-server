@@ -26,10 +26,7 @@ History:
 //------------------------------------------------------------------------
 CScan::CScan()
 :	m_scanning(false),
-	m_delayTimer(0.0f),
-	m_durationTimer(0.0f),
-	m_scanLoopId(INVALID_SOUNDID),
-	m_tagEntitiesDelay(0.0f)
+	m_scanLoopId(INVALID_SOUNDID)
 {
 }
 
@@ -81,7 +78,8 @@ const char *CScan::GetType() const
 void CScan::Activate(bool activate)
 {
 	m_scanning=false;
-	m_delayTimer=m_durationTimer=m_tagEntitiesDelay=0.0f;
+
+	m_pWeapon->GetScheduler()->Reset(); //reset timers here
 
 	if (m_scanLoopId != INVALID_SOUNDID)
 	{
@@ -93,97 +91,105 @@ void CScan::Activate(bool activate)
 //------------------------------------------------------------------------
 void CScan::Update(float frameTime, unsigned int frameId)
 {
-	CActor* pOwner = m_pWeapon->GetOwnerActor();
-	if (m_scanning && m_pWeapon->IsClient() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
+}
+
+//------------------------------------------------------------------------
+struct CScan::DelayTimer
+{
+	DelayTimer(CScan* _scan) : pScan(_scan) {};
+	CScan* pScan;
+
+	void execute(CItem* _this)
 	{
-		if (m_delayTimer > 0.0f)
+		CWeapon* pWeapon = pScan->m_pWeapon;
+		int slot = pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		int id = pWeapon->GetStats().fp ? 0 : 1;
+
+		pScan->m_scanLoopId = pWeapon->PlayAction(pScan->m_scanactions.scan, 0, true, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+		ISound* pSound = pWeapon->GetSoundProxy()->GetSound(pScan->m_scanLoopId);
+		if (pSound)
 		{
-			m_delayTimer -= frameTime;
-			if (m_delayTimer > 0.0f)
-				return;
-
-			m_delayTimer = 0.0f;
-
-			int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
-			int id = m_pWeapon->GetStats().fp ? 0 : 1;
-
-			m_scanLoopId = m_pWeapon->PlayAction(m_scanactions.scan, 0, true, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
-
-			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
-			if (pSound)
-				pSound->SetLoopMode(true);
+			pSound->SetLoopMode(true);
 		}
-
-		if (m_delayTimer == 0.0f && pOwner->IsClient())
-		{
-			if (m_tagEntitiesDelay > 0.0f)
-			{
-				m_tagEntitiesDelay -= frameTime;
-				if (m_tagEntitiesDelay <= 0.0f)
-				{
-					m_tagEntitiesDelay = 0.0f;
-
-					//Here is when entities are displayed on Radar
-					if (gEnv->bServer)
-						NetShoot(ZERO, 0);
-					else
-						m_pWeapon->RequestShoot(0, ZERO, ZERO, ZERO, ZERO, 1.0f, 0, 0, 0, false);
-				}
-			}
-
-			if (m_durationTimer > 0.0f)
-			{
-				m_durationTimer -= frameTime;
-				if (m_durationTimer <= 0.0f)
-				{
-					m_durationTimer = 0.0f;
-					StopFire();
-				}
-			}
-		}
-
-		m_pWeapon->RequireUpdate(eIUS_FireMode);
+		pScan->StartTimers();
 	}
+};
+
+//------------------------------------------------------------------------
+struct CScan::TagEntitiesDelay
+{
+	TagEntitiesDelay(CScan* _scan) : pScan(_scan) {};
+	CScan* pScan;
+
+	void execute(CItem* _this)
+	{
+		CWeapon* pWeapon = pScan->m_pWeapon;
+		//Here is when entities are displayed on Radar
+		if (gEnv->bServer)
+		{
+			pScan->NetShoot(ZERO, 0);
+		}
+		else
+		{
+			pWeapon->RequestShoot(0, ZERO, ZERO, ZERO, ZERO, 1.0f, 0, 0, 0, false);
+		}
+	}
+};
+
+//------------------------------------------------------------------------
+struct CScan::DurationTimer
+{
+	DurationTimer(CScan* _scan) : pScan(_scan) {};
+	CScan* pScan;
+
+	void execute(CItem* _this)
+	{
+		pScan->StopFire();
+	}
+};
+
+//------------------------------------------------------------------------
+void CScan::StartTimers()
+{
+	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.tagDelay * 1000.f), 
+		CSchedulerAction<TagEntitiesDelay>::Create(this), false);
+
+	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.duration * 1000.f), 
+		CSchedulerAction<DurationTimer>::Create(this), false);
 }
 
 //------------------------------------------------------------------------
 void CScan::ShowFlashAnimation(bool enable)
 {
 	// add the flash animation part here
-	IEntity* pEntity = m_pWeapon->GetEntity();
-	if (pEntity)
-	{
-		IEntityRenderProxy* pRenderProxy((IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER));
-		if (pRenderProxy)
-		{
-			IMaterial* pMtl(pRenderProxy->GetRenderMaterial(0));
-			if (pMtl)
-			{
-				pMtl = pMtl->GetSafeSubMtl(2);
-				if (pMtl)
-				{
-					const SShaderItem& shaderItem(pMtl->GetShaderItem());
-					if (shaderItem.m_pShaderResources && shaderItem.m_pShaderResources->GetTexture(0))
-					{
-						SEfResTexture* pTex(shaderItem.m_pShaderResources->GetTexture(0));
-						if (pTex->m_Sampler.m_pDynTexSource)
-						{
-							IFlashPlayer* pFlashPlayer(0);
-							IDynTextureSource::EDynTextureSource type(IDynTextureSource::DTS_I_FLASHPLAYER);
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(m_pWeapon->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+	if (!pRenderProxy)
+		return;
 
-							pTex->m_Sampler.m_pDynTexSource->GetDynTextureSource((void*&)pFlashPlayer, type);
-							if (pFlashPlayer && type == IDynTextureSource::DTS_I_FLASHPLAYER)
-							{
-								if (enable)
-								{
-									pFlashPlayer->Invoke0("startScan");
-								}
-								else
-								{
-									pFlashPlayer->Invoke0("cancelScan");
-								}
-							}
-						}
+	IMaterial* pMtl = pRenderProxy->GetRenderMaterial(0);
+	pMtl = pMtl ? pMtl->GetSafeSubMtl(2) : nullptr;
+	if (pMtl)
+	{
+		const SShaderItem& shaderItem = pMtl->GetShaderItem();
+		if (shaderItem.m_pShaderResources)
+		{
+			SEfResTexture* pTex = shaderItem.m_pShaderResources->GetTexture(0);
+			if (pTex->m_Sampler.m_pDynTexSource)
+			{
+				IFlashPlayer* pFlashPlayer(0);
+				IDynTextureSource::EDynTextureSource type(IDynTextureSource::DTS_I_FLASHPLAYER);
+
+				pTex->m_Sampler.m_pDynTexSource->GetDynTextureSource((void*&)pFlashPlayer, type);
+				if (pFlashPlayer && type == IDynTextureSource::DTS_I_FLASHPLAYER)
+				{
+					if (enable)
+					{
+						pFlashPlayer->Invoke0("startScan");
+					}
+					else
+					{
+						pFlashPlayer->Invoke0("cancelScan");
 					}
 				}
 			}
@@ -196,20 +202,24 @@ void CScan::StartFire()
 {
 	if (!m_pWeapon->IsBusy())
 	{
-		if(m_pWeapon->GetOwnerActor())
+		CActor* pOwner = m_pWeapon->GetOwnerActor();
+		if (pOwner)
 		{
-			ShowFlashAnimation(true);
-
 			m_scanning=true;
-			m_delayTimer=m_scanparams.delay;
-			m_durationTimer=m_scanparams.duration;
-			m_tagEntitiesDelay=m_scanparams.tagDelay;
+
+			if (m_pWeapon->IsClient() && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
+			{
+				ShowFlashAnimation(true);
+
+				m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.delay * 1000.f), 
+					CSchedulerAction<DelayTimer>::Create(this), false);
+			}
+
 			m_pWeapon->SetBusy(true);
 		}
 
-		m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
 		m_pWeapon->RequestStartFire();
-		m_pWeapon->RequireUpdate(eIUS_FireMode);
+		m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
 	}
 }
 
@@ -226,6 +236,8 @@ void CScan::StopFire()
 	m_scanning=false;
 	m_pWeapon->SetBusy(false);
 	m_pWeapon->RequestStopFire();
+
+	m_pWeapon->GetScheduler()->Reset();
 
 	if (m_scanLoopId != INVALID_SOUNDID)
 	{
@@ -250,9 +262,6 @@ void CScan::NetStartFire()
 			ShowFlashAnimation(true);
 
 			m_pWeapon->PlayAction(m_scanactions.spin_up, 0, false, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
-
-			m_delayTimer = m_scanparams.delay;
-			m_pWeapon->RequireUpdate(eIUS_FireMode);
 		}
 		else
 		{
@@ -260,7 +269,9 @@ void CScan::NetStartFire()
 		}
 		ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
 		if (pSound)
+		{
 			pSound->SetLoopMode(true);
+		}
 	}
 }
 
@@ -369,7 +380,9 @@ void CScan::OnEnterFirstPerson()
 
 	ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
 	if (pSound)
+	{
 		pSound->SetLoopMode(true);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -391,7 +404,9 @@ void CScan::OnEnterThirdPerson()
 
 	ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_scanLoopId);
 	if (pSound)
+	{
 		pSound->SetLoopMode(true);
+	}
 }
 
 //------------------------------------------------------------------------
