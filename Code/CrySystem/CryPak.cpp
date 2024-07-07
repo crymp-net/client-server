@@ -1103,7 +1103,11 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 
 bool CryPak::OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot, unsigned int flags)
 {
-	// TODO: flags
+	if (this->FindLoadedPakByPath(pakPath))
+	{
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Already loaded", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
+		return true;
+	}
 
 	std::unique_ptr<IPak> pakImpl = m_loader.LoadPak(pakPath);
 	if (!pakImpl)
@@ -1147,8 +1151,6 @@ bool CryPak::OpenPacksImpl(std::string_view wildcardPath, std::string_view bindi
 
 bool CryPak::ClosePackImpl(std::string_view pakPath, unsigned int flags)
 {
-	// TODO: flags
-
 	PakSlot* pak = this->FindLoadedPakByPath(pakPath);
 	if (!pak)
 	{
@@ -1156,6 +1158,7 @@ bool CryPak::ClosePackImpl(std::string_view pakPath, unsigned int flags)
 		return false;
 	}
 
+	this->RemovePakFromTree(pak);
 	this->DecrementPakRefCount(pak);
 
 	CryLogAlways("%s(\"%s\", 0x%x): Success", __FUNCTION__, pakPath.data(), flags);
@@ -1193,8 +1196,6 @@ void CryPak::DecrementPakRefCount(PakSlot* pak)
 
 	if (pak->refCount <= 0)
 	{
-		this->RemovePakFromTree(pak);
-
 		pak->clear();
 	}
 }

@@ -88,9 +88,11 @@ public:
 	template<class UnaryPredicate>
 	T* Find(UnaryPredicate predicate)
 	{
-		const auto it = std::find_if(m_slots.begin(), m_slots.end(), predicate);
+		const auto it = std::find_if(m_slots.begin(), m_slots.end(), [&predicate](const T& x) {
+			return !x.empty() && predicate(x);
+		});
 
-		if (it == m_slots.end() || it->empty())
+		if (it == m_slots.end())
 		{
 			return nullptr;
 		}
