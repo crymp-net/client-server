@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdio>
-#include <stdexcept>
+#include <string>
 
 #include <miniz.h>
 
@@ -9,14 +9,19 @@
 
 class ZipPak final : public IPak
 {
-	std::FILE* m_file = nullptr;
 	mz_zip_archive m_zip = {};
 
 public:
-	explicit ZipPak(std::FILE* file);
+	ZipPak() = default;
 	ZipPak(const ZipPak&) = delete;
 	ZipPak& operator=(const ZipPak&) = delete;
-	~ZipPak();
+
+	~ZipPak()
+	{
+		mz_zip_end(&m_zip);
+	}
+
+	static std::unique_ptr<ZipPak> TryOpen(const std::string& adjustedName);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IPak
@@ -31,6 +36,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////
 
-private:
+protected:
 	void LogError(const char* function);
 };

@@ -3,18 +3,17 @@
 #include "ZipPak.h"
 #include "ZipPakFile.h"
 
-ZipPak::ZipPak(std::FILE* file) : m_file(file)
+std::unique_ptr<ZipPak> ZipPak::TryOpen(const std::string& adjustedName)
 {
-	if (!mz_zip_reader_init_cfile(&m_zip, file, 0, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
-	{
-		throw std::runtime_error(mz_zip_get_error_string(mz_zip_peek_last_error(&m_zip)));
-	}
-}
+	std::unique_ptr<ZipPak> pak = std::make_unique<ZipPak>();
 
-ZipPak::~ZipPak()
-{
-	mz_zip_end(&m_zip);
-	std::fclose(m_file);
+	if (!mz_zip_reader_init_file(&pak->m_zip, adjustedName.c_str(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+	{
+		pak->LogError(__FUNCTION__);
+		return {};
+	}
+
+	return pak;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

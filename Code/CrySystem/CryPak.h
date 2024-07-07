@@ -16,7 +16,6 @@
 
 #include "Pak/IPak.h"
 #include "Pak/IPakFile.h"
-#include "Pak/PakLoader.h"
 
 class CryPak final : public ICryPak
 {
@@ -109,7 +108,6 @@ class CryPak final : public ICryPak
 	SlotVector<DirectorySlot> m_directories;
 	SlotVector<FileSlot> m_files;
 	SlotVector<PakSlot> m_paks;
-	PakLoader m_loader;
 	Tree m_tree;
 
 	_smart_ptr<IResourceList> m_resourceList_EngineStartup;
@@ -230,10 +228,10 @@ private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
-	bool OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot, unsigned int flags);
-	bool OpenPacksImpl(std::string_view wildcardPath, std::string_view bindingRoot, unsigned int flags);
-	bool ClosePackImpl(std::string_view pakPath, unsigned int flags);
-	bool ClosePacksImpl(std::string_view wildcardPath, unsigned int flags);
+	bool OpenPackImpl(const std::string& pakPath, const std::string& bindingRoot, unsigned int flags);
+	bool OpenPacksImpl(const std::string& wildcardPath, const std::string& bindingRoot, unsigned int flags);
+	bool ClosePackImpl(const std::string& pakPath, unsigned int flags);
+	bool ClosePacksImpl(const std::string& wildcardPath, unsigned int flags);
 
 	PakSlot* FindLoadedPakByPath(std::string_view pakPath);
 

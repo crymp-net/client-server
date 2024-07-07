@@ -8,12 +8,17 @@
 #include "CryLog.h"
 #include "CryPak.h"
 #include "Pak/FileOutsidePak.h"
+#include "Pak/ZipPak.h"
 #include "ResourceList.h"
 
 // TODO: CryLog and std::string_view::data()
 // TODO: remove file redirectors
 // TODO: PAK priority
 // TODO: PAK in EXE
+// TODO: use std::filesystem::path instead of strings?
+// TODO: fix StreamEngine
+// TODO: custom allocator for CryPak
+// TODO: debug commands
 
 class CryPakWildcardMatcher
 {
@@ -182,7 +187,7 @@ bool CryPak::OpenPack(const char* name, unsigned int flags)
 	std::lock_guard lock(m_mutex);
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
-	const std::string_view adjustedBindingRoot = PathTools::DirPath(adjustedName);
+	const std::string adjustedBindingRoot(PathTools::DirPath(adjustedName));
 
 	return this->OpenPackImpl(adjustedName, adjustedBindingRoot, flags);
 }
@@ -211,7 +216,7 @@ bool CryPak::OpenPacks(const char* wildcard, unsigned int flags)
 	std::lock_guard lock(m_mutex);
 
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
-	const std::string_view adjustedBindingRoot = PathTools::DirPath(adjustedWildcard);
+	const std::string adjustedBindingRoot(PathTools::DirPath(adjustedWildcard));
 
 	return this->OpenPacksImpl(adjustedWildcard, adjustedBindingRoot, flags);
 }
@@ -1139,25 +1144,25 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 	return redirected;
 }
 
-bool CryPak::OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot, unsigned int flags)
+bool CryPak::OpenPackImpl(const std::string& pakPath, const std::string& bindingRoot, unsigned int flags)
 {
 	if (this->FindLoadedPakByPath(pakPath))
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Already loaded", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Already loaded", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
 		return true;
 	}
 
-	std::unique_ptr<IPak> pakImpl = m_loader.LoadPak(pakPath);
+	std::unique_ptr<ZipPak> pakImpl = ZipPak::TryOpen(pakPath);
 	if (!pakImpl)
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Failed", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Failed", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
 		return false;
 	}
 
 	PakSlot* pak = m_paks.GetFreeSlot();
 	if (!pak)
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
 		return false;
 	}
 
@@ -1168,14 +1173,14 @@ bool CryPak::OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot
 
 	this->AddPakToTree(pak);
 
-	CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Success", __FUNCTION__, pakPath.data(), bindingRoot.data(), flags);
+	CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Success", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
 
 	return true;
 }
 
-bool CryPak::OpenPacksImpl(std::string_view wildcardPath, std::string_view bindingRoot, unsigned int flags)
+bool CryPak::OpenPacksImpl(const std::string& wildcardPath, const std::string& bindingRoot, unsigned int flags)
 {
-	CryLogAlways("%s(\"%s\", \"%s\", 0x%x)", __FUNCTION__, wildcardPath.data(), bindingRoot.data(), flags);
+	CryLogAlways("%s(\"%s\", \"%s\", 0x%x)", __FUNCTION__, wildcardPath.c_str(), bindingRoot.c_str(), flags);
 
 	bool success = false;
 
@@ -1187,26 +1192,26 @@ bool CryPak::OpenPacksImpl(std::string_view wildcardPath, std::string_view bindi
 	return success;
 }
 
-bool CryPak::ClosePackImpl(std::string_view pakPath, unsigned int flags)
+bool CryPak::ClosePackImpl(const std::string& pakPath, unsigned int flags)
 {
 	PakSlot* pak = this->FindLoadedPakByPath(pakPath);
 	if (!pak)
 	{
-		CryLogAlways("%s(\"%s\", 0x%x): Not found", __FUNCTION__, pakPath.data(), flags);
+		CryLogAlways("%s(\"%s\", 0x%x): Not found", __FUNCTION__, pakPath.c_str(), flags);
 		return false;
 	}
 
 	this->RemovePakFromTree(pak);
 	this->DecrementPakRefCount(pak);
 
-	CryLogAlways("%s(\"%s\", 0x%x): Success", __FUNCTION__, pakPath.data(), flags);
+	CryLogAlways("%s(\"%s\", 0x%x): Success", __FUNCTION__, pakPath.c_str(), flags);
 
 	return true;
 }
 
-bool CryPak::ClosePacksImpl(std::string_view wildcardPath, unsigned int flags)
+bool CryPak::ClosePacksImpl(const std::string& wildcardPath, unsigned int flags)
 {
-	CryLogAlways("%s(\"%s\", 0x%x)", __FUNCTION__, wildcardPath.data(), flags);
+	CryLogAlways("%s(\"%s\", 0x%x)", __FUNCTION__, wildcardPath.c_str(), flags);
 
 	bool success = false;
 
