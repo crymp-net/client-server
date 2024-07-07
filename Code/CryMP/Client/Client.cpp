@@ -19,7 +19,6 @@
 
 #include "Client.h"
 #include "FileDownloader.h"
-#include "FileRedirector.h"
 #include "FileCache.h"
 #include "MapDownloader.h"
 #include "ScriptCommands.h"
@@ -204,7 +203,6 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pExecutor          = std::make_unique<Executor>();
 	m_pHTTPClient        = std::make_unique<HTTPClient>(*m_pExecutor);
 	m_pFileDownloader    = std::make_unique<FileDownloader>();
-	m_pFileRedirector    = std::make_unique<FileRedirector>();
 	m_pFileCache         = std::make_unique<FileCache>();
 	m_pMapDownloader     = std::make_unique<MapDownloader>();
 	m_pGSMasterHook      = std::make_unique<GSMasterHook>();

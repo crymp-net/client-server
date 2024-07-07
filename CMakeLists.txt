@@ -585,8 +585,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryMP/Client/FileCache.h
 	Code/CryMP/Client/FileDownloader.cpp
 	Code/CryMP/Client/FileDownloader.h
-	Code/CryMP/Client/FileRedirector.cpp
-	Code/CryMP/Client/FileRedirector.h
 	Code/CryMP/Client/FlashFileHooks.cpp
 	Code/CryMP/Client/FlashFileHooks.h
 	Code/CryMP/Client/MapDownloader.cpp

@@ -98,11 +98,13 @@ class CryPak final : public ICryPak
 	};
 
 	using Tree = PathTree<FileNode, StringTools::ComparatorNoCase>;
+	using Redirects = PathTree<std::string, StringTools::ComparatorNoCase>;
 
 	bool m_gameFolderWritable = false;
 	bool m_lvlRes = false;
 
 	std::recursive_mutex m_mutex;
+	Redirects m_redirects;
 	std::map<std::string, std::string, StringTools::ComparatorNoCase> m_aliases;
 	SlotVector<DirectorySlot> m_directories;
 	SlotVector<FileSlot> m_files;
@@ -221,7 +223,11 @@ public:
 	void SetGameFolderWritable(bool writable) { m_gameFolderWritable = writable; }
 	bool IsGameFolderWritable() const { return m_gameFolderWritable; }
 
+	void AddRedirect(std::string_view path, std::string_view newPath);
+	void RemoveRedirect(std::string_view path);
+
 private:
+	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
 	bool OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot, unsigned int flags);

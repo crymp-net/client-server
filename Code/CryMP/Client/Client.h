@@ -14,7 +14,6 @@ struct IConsoleCmdArgs;
 
 class Executor;
 class FileDownloader;
-class FileRedirector;
 class FileCache;
 class MapDownloader;
 class GSMasterHook;
@@ -42,7 +41,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<Executor> m_pExecutor;
 	std::unique_ptr<HTTPClient> m_pHTTPClient;
 	std::unique_ptr<FileDownloader> m_pFileDownloader;
-	std::unique_ptr<FileRedirector> m_pFileRedirector;
 	std::unique_ptr<FileCache> m_pFileCache;
 	std::unique_ptr<MapDownloader> m_pMapDownloader;
 	std::unique_ptr<GSMasterHook> m_pGSMasterHook;
@@ -146,11 +144,6 @@ public:
 	FileDownloader *GetFileDownloader()
 	{
 		return m_pFileDownloader.get();
-	}
-
-	FileRedirector *GetFileRedirector()
-	{
-		return m_pFileRedirector.get();
 	}
 
 	FileCache *GetFileCache()

@@ -5,6 +5,7 @@
 #include <stack>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <variant>
 
 #include "PathTools.h"
@@ -15,18 +16,17 @@ struct PathTree
 	struct Node;
 	using DirectoryNode = std::map<std::string, Node, Compare>;
 
+	// directory is the default
 	struct Node : public std::variant<DirectoryNode, T>
 	{
 	};
 
 	Node root;
 
-	Node* AddDirectory(std::string_view path, bool& added, Node* node = nullptr)
+	std::tuple<Node*, bool> AddDirectory(std::string_view path, Node* baseNode = nullptr)
 	{
-		if (!node)
-		{
-			node = &this->root;
-		}
+		bool added = false;
+		Node* node = (baseNode) ? baseNode : &this->root;
 
 		while (!path.empty())
 		{
@@ -35,7 +35,7 @@ struct PathTree
 			DirectoryNode* dirNode = std::get_if<DirectoryNode>(node);
 			if (!dirNode)
 			{
-				return nullptr;
+				return {};
 			}
 
 			// a directory node is added
@@ -50,27 +50,26 @@ struct PathTree
 			path = remainingPath;
 		}
 
-		return node;
+		return {node, added};
 	}
 
-	DirectoryNode* AddDirectoryNode(std::string_view path, bool& added, Node* node = nullptr)
+	std::tuple<DirectoryNode*, bool> AddDirectoryNode(std::string_view path, Node* baseNode = nullptr)
 	{
-		return std::get_if<DirectoryNode>(this->AddDirectory(path, added, node));
+		auto [node, added] = this->AddDirectory(path, baseNode);
+
+		return {std::get_if<DirectoryNode>(node), added};
 	}
 
-	T* AddNode(std::string_view path, bool& added, Node* node = nullptr)
+	std::tuple<T*, bool> AddNode(std::string_view path, Node* baseNode = nullptr)
 	{
-		node = this->AddDirectory(path, added, node);
+		auto [node, added] = this->AddDirectory(path, baseNode);
 
-		return added ? &node->emplace<T>() : std::get_if<T>(node);
+		return {added ? &node->emplace<T>() : std::get_if<T>(node), added};
 	}
 
-	Node* Find(std::string_view path, Node* node = nullptr)
+	Node* Find(std::string_view path, Node* baseNode = nullptr)
 	{
-		if (!node)
-		{
-			node = &this->root;
-		}
+		Node* node = (baseNode) ? baseNode : &this->root;
 
 		while (!path.empty())
 		{
@@ -95,22 +94,46 @@ struct PathTree
 		return node;
 	}
 
-	DirectoryNode* FindDirectoryNode(std::string_view path, Node* node = nullptr)
+	DirectoryNode* FindDirectoryNode(std::string_view path, Node* baseNode = nullptr)
 	{
-		return std::get_if<DirectoryNode>(this->Find(path, node));
+		return std::get_if<DirectoryNode>(this->Find(path, baseNode));
 	}
 
-	T* FindNode(std::string_view path, Node* node = nullptr)
+	T* FindNode(std::string_view path, Node* baseNode = nullptr)
 	{
-		return std::get_if<T>(this->Find(path, node));
+		return std::get_if<T>(this->Find(path, baseNode));
 	}
 
-	void Erase(std::string_view path, Node* node = nullptr)
+	std::tuple<T*, std::string_view> FindNodeAsPrefix(std::string_view path, Node* baseNode = nullptr)
 	{
-		if (!node)
+		Node* node = (baseNode) ? baseNode : &this->root;
+
+		while (!path.empty())
 		{
-			node = &this->root;
+			const auto [pathComponent, remainingPath] = PathTools::SplitFirstPathComponent(path);
+
+			DirectoryNode* dirNode = std::get_if<DirectoryNode>(node);
+			if (!dirNode)
+			{
+				break;
+			}
+
+			const auto it = dirNode->find(pathComponent);
+			if (it == dirNode->end())
+			{
+				return {};
+			}
+
+			node = &it->second;
+			path = remainingPath;
 		}
+
+		return {std::get_if<T>(node), path};
+	}
+
+	bool Erase(std::string_view path, Node* baseNode = nullptr)
+	{
+		Node* node = (baseNode) ? baseNode : &this->root;
 
 		struct Entry
 		{
@@ -127,13 +150,13 @@ struct PathTree
 			DirectoryNode* dirNode = std::get_if<DirectoryNode>(node);
 			if (!dirNode)
 			{
-				return;
+				return false;
 			}
 
 			const auto it = dirNode->find(pathComponent);
 			if (it == dirNode->end())
 			{
-				return;
+				return false;
 			}
 
 			stack.emplace(dirNode, it);
@@ -150,20 +173,19 @@ struct PathTree
 
 			if (!entry.dirNode->empty())
 			{
-				return;
+				break;
 			}
 
 			stack.pop();
 		}
+
+		return true;
 	}
 
 	template<class Predicate>
-	void EraseIf(Predicate predicate, Node* node = nullptr)
+	void EraseIf(Predicate predicate, Node* baseNode = nullptr)
 	{
-		if (!node)
-		{
-			node = &this->root;
-		}
+		Node* node = (baseNode) ? baseNode : &this->root;
 
 		struct Branch
 		{

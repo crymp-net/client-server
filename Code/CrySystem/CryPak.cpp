@@ -142,21 +142,22 @@ CryPak::~CryPak()
 
 const char* CryPak::AdjustFileName(const char* src, char* dst, unsigned int flags, bool* foundInPak)
 {
+	std::lock_guard lock(m_mutex);
+
 	if (foundInPak)
 	{
 		CryLogAlways("%s(\"%s\"): Ignoring foundInPak", __FUNCTION__, src);
 		*foundInPak = false;
 	}
 
-	// no need to lock m_mutex
-	const std::string result = this->AdjustFileNameImpl(StringTools::SafeView(src), flags);
+	const std::string adjusted = this->AdjustFileNameImpl(StringTools::SafeView(src), flags);
 
 	// we don't know the actual size of the dst buffer
 	// it's supposed to be ICryPak::g_nMaxPath, which is 2048, but it's not always the case!
 	// let's hope all buffers out there are at least MAX_PATH, which is 260
-	if (result.length() < 260)
+	if (adjusted.length() < 260)
 	{
-		std::memcpy(dst, result.c_str(), result.length() + 1);
+		std::memcpy(dst, adjusted.c_str(), adjusted.length() + 1);
 	}
 	else
 	{
@@ -341,6 +342,8 @@ ICryPak::PakInfo* CryPak::GetPakInfo()
 
 void CryPak::FreePakInfo(PakInfo* pakInfo)
 {
+	// no need to lock m_mutex
+
 	const unsigned int pakCount = pakInfo->numOpenPaks;
 
 	for (unsigned int i = 0; i < pakCount; ++i)
@@ -1039,58 +1042,101 @@ const char* CryPak::GetModDir() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags)
+void CryPak::AddRedirect(std::string_view path, std::string_view newPath)
 {
-	std::string result;
-	result.reserve(260);
+	auto [node, added] = m_redirects.AddNode(this->AdjustFileNameImplWithoutRedirect(path, 0));
+	if (!node)
+	{
+		CryLogAlways("%s(\"%s\", \"%s\"): Cannot replace more specific redirect", __FUNCTION__, path.data(), newPath.data());
+		return;
+	}
+
+	node->assign(this->AdjustFileNameImplWithoutRedirect(newPath, 0));
+
+	CryLogAlways("%s(\"%s\", \"%s\"): %s", __FUNCTION__, path.data(), newPath.data(), added ? "Added" : "Changed existing");
+}
+
+void CryPak::RemoveRedirect(std::string_view path)
+{
+	bool removed = m_redirects.Erase(this->AdjustFileNameImplWithoutRedirect(path, 0));
+
+	CryLogAlways("%s(\"%s\"): %s", __FUNCTION__, path.data(), removed ? "Removed" : "Not found");
+}
+
+std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags)
+{
+	std::string adjusted;
+	adjusted.reserve(260);
+	adjusted = path;
 
 	if ((flags & FLAGS_FOR_WRITING) && !m_gameFolderWritable)
 	{
-		if (path.empty() || (path[0] != '%' && !PathTools::IsAbsolutePath(path)))
+		if (adjusted.empty() || (adjusted[0] != '%' && !PathTools::IsAbsolutePath(adjusted)))
 		{
-			result += "%USER%/";
+			adjusted.insert(0, "%USER%/");
 		}
 	}
 
-	result += path;
+	this->ExpandAliases(adjusted);
 
-	this->ExpandAliases(result);
-
-	std::replace(result.begin(), result.end(), '\\', '/');
+	std::replace(adjusted.begin(), adjusted.end(), '\\', '/');
 	// TODO: remove duplicate slashes
+	// TODO: normalize the path
 
 	if (flags & FLAGS_NO_FULL_PATH)
 	{
-		return result;
+		return adjusted;
 	}
 
-	if (!PathTools::IsAbsolutePath(result))
+	if (!PathTools::IsAbsolutePath(adjusted))
 	{
-		const bool hasDotSlash = result.starts_with("./");
+		const bool hasDotSlash = adjusted.starts_with("./");
 
 		if (!hasDotSlash
-		 && !StringTools::StartsWithNoCase(result, "Game/")
-		 && !StringTools::StartsWithNoCase(result, "Editor/")
-		 && !StringTools::StartsWithNoCase(result, "Bin32/")
-		 && !StringTools::StartsWithNoCase(result, "Bin64/")
-		 && !StringTools::StartsWithNoCase(result, "Mods/"))
+		 && !StringTools::StartsWithNoCase(adjusted, "Game/")
+		 && !StringTools::StartsWithNoCase(adjusted, "Editor/")
+		 && !StringTools::StartsWithNoCase(adjusted, "Bin32/")
+		 && !StringTools::StartsWithNoCase(adjusted, "Bin64/")
+		 && !StringTools::StartsWithNoCase(adjusted, "Mods/"))
 		{
-			result.insert(0, "Game/");
+			adjusted.insert(0, "Game/");
 		}
 		else if (hasDotSlash)
 		{
-			result.erase(0, 2);
+			adjusted.erase(0, 2);
 		}
 	}
 
-	// TODO: normalize the path
-
 	if (flags & FLAGS_ADD_TRAILING_SLASH)
 	{
-		PathTools::AddTrailingSlash(result);
+		PathTools::AddTrailingSlash(adjusted);
 	}
 
-	return result;
+	return adjusted;
+}
+
+std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags)
+{
+	std::string adjusted = this->AdjustFileNameImplWithoutRedirect(path, flags);
+
+	auto [redirectNode, remainingPath] = m_redirects.FindNodeAsPrefix(adjusted);
+	if (!redirectNode)
+	{
+		return adjusted;
+	}
+
+	std::string redirected;
+	redirected.reserve(260);
+	redirected = *redirectNode;
+
+	if (!remainingPath.empty() && !redirected.empty() && redirected.back() != '/')
+	{
+		redirected += '/';
+	}
+
+	redirected += remainingPath;
+
+	return redirected;
 }
 
 bool CryPak::OpenPackImpl(std::string_view pakPath, std::string_view bindingRoot, unsigned int flags)
@@ -1276,8 +1322,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 {
 	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
 
-	bool added = false;
-	Tree::Node* baseNode = m_tree.AddDirectory(pak->bindingRoot, added);
+	auto [baseNode, baseNodeAdded] = m_tree.AddDirectory(pak->bindingRoot);
 	if (!baseNode)
 	{
 		// binding root path points to a file
@@ -1301,13 +1346,13 @@ void CryPak::AddPakToTree(PakSlot* pak)
 
 		// TODO: normalize the path
 
-		FileNode* fileNode = m_tree.AddNode(path, added, baseNode);
+		auto [fileNode, fileNodeAdded] = m_tree.AddNode(path, baseNode);
 		if (!fileNode)
 		{
 			continue;
 		}
 
-		if (!added)
+		if (!fileNodeAdded)
 		{
 			fileNode->alternatives.push_front(fileNode->current);
 		}
@@ -1329,14 +1374,13 @@ void CryPak::RemovePakFromTree(PakSlot* pak)
 			return false;
 		}
 
-		if (fileNode.alternatives.empty())
+		if (!fileNode.alternatives.empty())
 		{
-			return true;
+			fileNode.current = fileNode.alternatives.front();
+			fileNode.alternatives.pop_front();
+			return false;
 		}
 
-		fileNode.current = fileNode.alternatives.front();
-		fileNode.alternatives.pop_front();
-
-		return false;
+		return true;
 	});
 }
