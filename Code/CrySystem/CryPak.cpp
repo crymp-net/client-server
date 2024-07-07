@@ -358,7 +358,6 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 
-	// TODO: r+
 	bool isWriting = false;
 	bool isBinary = false;
 	for (char ch : StringTools::SafeView(mode))
@@ -371,7 +370,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 			case 'b': isBinary = true; break;
 			case 't': isBinary = false; break;
 			case 'x': break;
-			case '+': break;
+			case '+': isWriting = true; break;
 			default:
 			{
 				CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Unknown mode char '%c'", __FUNCTION__, name, mode, flags, ch);
@@ -418,14 +417,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 		return handle;
 	}
 
-	const std::filesystem::path filePath(adjustedName);
-
-	if (isWriting)
-	{
-		std::error_code ec;
-		std::filesystem::create_directories(filePath.parent_path(), ec);
-	}
-
+	// TODO: use some flags instead
 	std::string newMode = StringTools::SafeString(mode);
 	newMode.erase(std::remove_if(newMode.begin(), newMode.end(),
 		[](char ch) -> bool
@@ -439,8 +431,8 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): newMode=\"%s\"", __FUNCTION__, name, mode, flags, newMode.c_str());
 	}
 
-	std::FILE* fileHandle = std::fopen(adjustedName.c_str(), newMode.c_str());
-	if (fileHandle)
+	std::unique_ptr<FileOutsidePak> externalFileImpl = FileOutsidePak::TryOpen(adjustedName, newMode, isWriting);
+	if (externalFileImpl)
 	{
 		FileSlot* file = m_files.GetFreeSlot();
 		if (!file)
@@ -449,7 +441,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 			return nullptr;
 		}
 
-		file->impl = std::make_unique<FileOutsidePak>(fileHandle, filePath);
+		file->impl = std::move(externalFileImpl);
 		file->pakHandle = 0;
 		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
 		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found outside in \"%s\"", __FUNCTION__, name, mode, flags, handle, adjustedName.c_str());

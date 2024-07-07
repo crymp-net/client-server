@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <memory>
+#include <string>
 
 #include "IPakFile.h"
 
@@ -10,22 +11,30 @@ class FileOutsidePak final : public IPakFile
 {
 	struct FileReleaser
 	{
-		void operator()(std::FILE* file)
+		void operator()(std::FILE* file) const
 		{
 			std::fclose(file);
 		}
 	};
 
-	std::unique_ptr<std::FILE, FileReleaser> m_file;
+	using FileHandle = std::unique_ptr<std::FILE, FileReleaser>;
 
+	FileHandle m_handle;
 	std::filesystem::path m_path;
 
 	std::unique_ptr<std::byte[]> m_data;
 	std::size_t m_dataSize = 0;
 
 public:
-	explicit FileOutsidePak(std::FILE* file, const std::filesystem::path& path)
-	: m_file(file), m_path(std::move(path)) {}
+	explicit FileOutsidePak(FileHandle&& handle, std::filesystem::path&& path)
+	: m_handle(std::move(handle)), m_path(std::move(path))
+	{
+	}
+
+	static std::unique_ptr<FileOutsidePak> TryOpen(
+		const std::string& adjustedName,
+		const std::string& mode,
+		bool isWriting);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IPakFile
