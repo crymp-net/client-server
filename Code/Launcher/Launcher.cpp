@@ -704,6 +704,10 @@ void Launcher::OnInitProgress(const char* message)
 // extern std::map<size_t, size_t> g_allocs;
 extern size_t g_mem_cached, g_mem_misses;
 extern std::vector<unsigned> g_pages;
+extern std::vector<unsigned> g_page_usage;
+extern std::vector<unsigned> g_leaks_by_size;
+
+extern size_t FindLeaks();
 
 void Launcher::OnInit(ISystem* pSystem)
 {
@@ -776,6 +780,18 @@ void Launcher::OnInit(ISystem* pSystem)
 		for (size_t i = 0; i < pairs.size() && i < 20; i++) {
 			sprintf(buff, "Size: %zu, Allocations: %zu, Share: %.3f percent)\n", pairs[i].k, pairs[i].v, 100.0 * pairs[i].v / allocs);
 			gEnv->pConsole->PrintLine(buff);
+		}
+
+		size_t leaked = FindLeaks();
+		sprintf(buff, "Total leaked memory: %zu\n", leaked);
+		gEnv->pConsole->PrintLine(buff);
+
+		for (size_t i = 0; i < g_leaks_by_size.size(); i++) {
+			size_t leakage = g_leaks_by_size[i] * i;
+			if (leakage > 0) {
+				sprintf(buff, " Block size: %zu, leaks: %u, total leakage: %zu\n", i, g_leaks_by_size[i], leakage);
+				gEnv->pConsole->PrintLine(buff);
+			}
 		}
 	});
 
