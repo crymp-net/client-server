@@ -2,84 +2,63 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include "CryCommon/CrySystem/IStreamEngine.h"
 
 class StreamEngine final : public IStreamEngine
 {
-	template<class T>
-	class CompletionQueue
+	enum class JobState
 	{
-	protected:
-		std::mutex mutex;
-		std::deque<T> queue;
-
-	public:
-		void Push(const T& element)
-		{
-			std::lock_guard lock(this->mutex);
-			this->queue.push_back(element);
-		}
-
-		bool TryPop(T& element)
-		{
-			std::lock_guard lock(this->mutex);
-			if (this->queue.empty())
-			{
-				return false;
-			}
-			else
-			{
-				element = this->queue.front();
-				this->queue.pop_front();
-				return true;
-			}
-		}
+		PENDING, ERROR, ABORTED, FINISHED, CALLBACK_DONE
 	};
 
-	template<class T>
-	class SubmissionQueue : private CompletionQueue<T>
+	class WaitableJobState
 	{
+		std::atomic<JobState> state{JobState::PENDING};
+		std::mutex mutex;
 		std::condition_variable cv;
 
 	public:
-		void PushAndNotify(const T& element)
+		JobState Get()
 		{
-			this->Push(element);
-			this->cv.notify_one();
+			return this->state.load(std::memory_order_relaxed);
 		}
 
-		void BlockingPop(T& element)
+		void Set(JobState state)
+		{
+			std::lock_guard lock(this->mutex);
+			this->state.store(state, std::memory_order_relaxed);
+			this->cv.notify_all();
+		}
+
+		void WaitUntilExecuted()
 		{
 			std::unique_lock lock(this->mutex);
-			this->cv.wait(lock, [this]() { return !this->queue.empty(); });
-			element = this->queue.front();
-			this->queue.pop_front();
+			this->cv.wait(lock, [this]() { return this->Get() != JobState::PENDING; });
 		}
 	};
 
 	struct Job final : public IReadStream
 	{
 		std::atomic<int> refCount = 0;
-		std::atomic<bool> isError = false;
-		std::atomic<bool> isAborted = false;
-		std::atomic<bool> isFinished = false;
-		std::atomic<unsigned int> bytesRead = 0;
+		WaitableJobState state;
 		unsigned int flags = 0;
 		unsigned int requestedSize = 0;
 		unsigned int requestedOffset = 0;
+		std::atomic<unsigned int> bytesRead = 0;
+		std::uintptr_t userData = 0;
 		void* userBuffer = nullptr;
 		IStreamCallback* callback = nullptr;
-		std::uintptr_t userData = 0;
 		std::string source;
 		std::string filename;
 		std::unique_ptr<unsigned char[]> buffer;
-		std::mutex mutex;
-		std::condition_variable cv;
+		StreamEngine* engine = nullptr;
 
 		////////////////////////////////////////////////////////////////////////////////
 		// IReadStream
@@ -105,20 +84,68 @@ class StreamEngine final : public IStreamEngine
 		////////////////////////////////////////////////////////////////////////////////
 	};
 
+	template<class T>
+	class CompletionQueue
+	{
+	protected:
+		std::mutex mutex;
+		std::deque<T> queue;
+
+	public:
+		void Push(const T& element)
+		{
+			std::lock_guard lock(this->mutex);
+			this->queue.push_back(element);
+		}
+
+		bool TryPop(T& element)
+		{
+			std::lock_guard lock(this->mutex);
+
+			if (this->queue.empty())
+			{
+				return false;
+			}
+
+			element = this->queue.front();
+			this->queue.pop_front();
+			return true;
+		}
+	};
+
+	template<class T>
+	class SubmissionQueue : private CompletionQueue<T>
+	{
+		std::condition_variable cv;
+
+	public:
+		void PushAndNotify(const T& element)
+		{
+			this->Push(element);
+			this->cv.notify_one();
+		}
+
+		void BlockingPop(T& element)
+		{
+			std::unique_lock lock(this->mutex);
+			this->cv.wait(lock, [this]() { return !this->queue.empty(); });
+			element = this->queue.front();
+			this->queue.pop_front();
+		}
+	};
+
+	std::thread m_workerThread{[this]() { this->WorkerThreadLoop(); }};
+	std::thread::id m_mainThreadID{std::this_thread::get_id()};
 	SubmissionQueue<_smart_ptr<Job>> m_submittedJobs;
 	CompletionQueue<_smart_ptr<Job>> m_completedJobs;
-
-	static StreamEngine s_globalInstance;
 
 public:
 	// to be removed once we have our own CrySystem
 	static StreamEngine& GetInstance()
 	{
-		return s_globalInstance;
+		static StreamEngine* instance = new StreamEngine;
+		return *instance;
 	}
-
-	// and this too
-	void Init();
 
 	StreamEngine();
 	~StreamEngine();
@@ -144,7 +171,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
+	bool IsMainThread();
+
 	void WorkerThreadLoop();
 	void ExecuteJob(Job& job);
-	void FinishJob(Job& job);
+	void DoCallback(Job& job);
 };

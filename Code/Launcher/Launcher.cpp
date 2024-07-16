@@ -141,10 +141,7 @@ static IStreamEngine* CreateNewStreamEngine()
 {
 	CryLogAlways("$3[CryMP] Initializing Stream Engine");
 
-	StreamEngine* pStreamEngine = &StreamEngine::GetInstance();
-	pStreamEngine->Init();
-
-	return pStreamEngine;
+	return &StreamEngine::GetInstance();
 }
 
 static void UpdateStreamEngine()
@@ -835,7 +832,6 @@ void Launcher::PatchEngine()
 	{
 		MemoryPatch::CrySystem::AllowDX9VeryHighSpec(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::AllowMultipleInstances(m_dlls.pCrySystem);
-		MemoryPatch::CrySystem::DisableIOErrorLog(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::FixCPUInfoOverflow(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::FixFlashAllocatorUnderflow(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::HookCPUDetect(m_dlls.pCrySystem, &CPUInfo::Detect);

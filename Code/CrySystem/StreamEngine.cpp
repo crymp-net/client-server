@@ -1,10 +1,6 @@
-#include <thread>
-
 #include "CryLog.h"
 #include "CryPak.h"
 #include "StreamEngine.h"
-
-StreamEngine StreamEngine::s_globalInstance;
 
 ////////////////////////////////////////////////////////////////////////////////
 // IReadStream
@@ -25,12 +21,12 @@ void StreamEngine::Job::Release()
 
 bool StreamEngine::Job::IsError()
 {
-	return this->isError.load(std::memory_order_relaxed);
+	return this->state.Get() == JobState::ERROR;
 }
 
 bool StreamEngine::Job::IsFinished()
 {
-	return this->isFinished.load(std::memory_order_relaxed);
+	return this->state.Get() == JobState::CALLBACK_DONE;
 }
 
 unsigned int StreamEngine::Job::GetBytesRead(bool wait)
@@ -50,8 +46,7 @@ const void* StreamEngine::Job::GetBuffer()
 
 void StreamEngine::Job::Abort()
 {
-	this->isAborted.store(true, std::memory_order_relaxed);
-	this->isFinished.store(true, std::memory_order_relaxed);
+	this->state.Set(JobState::ABORTED);
 }
 
 void StreamEngine::Job::RaisePriority(unsigned int priority)
@@ -66,17 +61,15 @@ std::uintptr_t StreamEngine::Job::GetUserData()
 
 void StreamEngine::Job::Wait()
 {
-	std::unique_lock lock(this->mutex);
-	this->cv.wait(lock, [this]() { return this->isFinished.load(std::memory_order_relaxed); });
+	this->state.WaitUntilExecuted();
+
+	if (this->engine->IsMainThread())
+	{
+		this->engine->DoCallback(*this);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void StreamEngine::Init()
-{
-	// TODO: no detach once the global instance is gone
-	std::thread([this]() { this->WorkerThreadLoop(); }).detach();
-}
 
 StreamEngine::StreamEngine()
 {
@@ -84,6 +77,8 @@ StreamEngine::StreamEngine()
 
 StreamEngine::~StreamEngine()
 {
+	m_submittedJobs.PushAndNotify({});
+	m_workerThread.join();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +90,7 @@ IReadStreamPtr StreamEngine::StartRead(const char* source, const char* filename,
 {
 	_smart_ptr<Job> job(new Job);
 	job->callback = callback;
+	job->engine = this;
 
 	if (source)
 	{
@@ -115,7 +111,7 @@ IReadStreamPtr StreamEngine::StartRead(const char* source, const char* filename,
 		job->flags = params->nFlags;
 	}
 
-	CryLogAlways("%s(\"%s\", \"%s\", size=%u, offset=%u, flags=0x%x)", __FUNCTION__, source, filename,
+	CryLogAlways("%s(\"%s\", \"%s\", size=0x%x, offset=0x%x, flags=0x%x)", __FUNCTION__, source, filename,
 		job->requestedSize, job->requestedOffset, job->flags);
 
 	m_submittedJobs.PushAndNotify(job);
@@ -125,15 +121,13 @@ IReadStreamPtr StreamEngine::StartRead(const char* source, const char* filename,
 
 unsigned int StreamEngine::GetFileSize(const char* filename, unsigned int cryPakFlags)
 {
-	auto handle = CryPak::GetInstance().FOpen(filename, "rb");
-	if (!handle)
+	CryFile file(filename, "rb");
+	if (!file)
 	{
 		return 0;
 	}
 
-	const unsigned int size = static_cast<unsigned int>(CryPak::GetInstance().FGetSize(handle));
-
-	CryPak::GetInstance().FClose(handle);
+	const unsigned int size = static_cast<unsigned int>(file.GetSize());
 
 	return size;
 }
@@ -146,7 +140,7 @@ void StreamEngine::Update(unsigned int flags)
 	{
 		if (job)
 		{
-			this->FinishJob(*job);
+			this->DoCallback(*job);
 		}
 	}
 }
@@ -159,6 +153,7 @@ unsigned int StreamEngine::Wait(unsigned int milliseconds, unsigned int flags)
 
 void StreamEngine::GetMemoryStatistics(ICrySizer* sizer)
 {
+	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
 }
 
 void StreamEngine::SuspendCallbackTimeQuota()
@@ -173,6 +168,11 @@ void StreamEngine::ResumeCallbackTimeQuota()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool StreamEngine::IsMainThread()
+{
+	return std::this_thread::get_id() == m_mainThreadID;
+}
+
 void StreamEngine::WorkerThreadLoop()
 {
 	_smart_ptr<Job> job;
@@ -183,13 +183,11 @@ void StreamEngine::WorkerThreadLoop()
 
 		if (!job)
 		{
+			// joining now
 			break;
 		}
 
 		this->ExecuteJob(*job);
-
-		job->isFinished.store(true, std::memory_order_relaxed);
-		job->cv.notify_all();
 
 		m_completedJobs.Push(job);
 	}
@@ -197,22 +195,27 @@ void StreamEngine::WorkerThreadLoop()
 
 void StreamEngine::ExecuteJob(Job& job)
 {
-	auto handle = CryPak::GetInstance().FOpen(job.filename.c_str(), "rb");
-	if (!handle)
+	if (job.state.Get() != JobState::PENDING)
 	{
-		job.isError.store(true, std::memory_order_relaxed);
+		return;
+	}
+
+	CryFile file(job.filename.c_str(), "rb");
+	if (!file)
+	{
+		job.state.Set(JobState::ERROR);
 		return;
 	}
 
 	if (job.requestedOffset > 0)
 	{
-		CryPak::GetInstance().FSeek(handle, job.requestedOffset, SEEK_SET);
+		file.Seek(job.requestedOffset, SEEK_SET);
 	}
 
-	auto size = job.requestedSize;
+	unsigned int size = job.requestedSize;
 	if (!size)
 	{
-		size = static_cast<unsigned int>(CryPak::GetInstance().FGetSize(handle));
+		size = static_cast<unsigned int>(file.GetSize());
 
 		if (job.requestedOffset < size)
 		{
@@ -230,30 +233,43 @@ void StreamEngine::ExecuteJob(Job& job)
 		job.userBuffer = job.buffer.get();
 	}
 
-	auto bytesRead = CryPak::GetInstance().FReadRaw(job.userBuffer, 1, size, handle);
+	const unsigned int bytesRead = static_cast<unsigned int>(file.ReadRaw(job.userBuffer, size));
 
-	job.bytesRead.store(static_cast<unsigned int>(bytesRead), std::memory_order_relaxed);
-
-	CryPak::GetInstance().FClose(handle);
+	job.bytesRead.store(bytesRead, std::memory_order_relaxed);
+	job.state.Set(JobState::FINISHED);
 }
 
-void StreamEngine::FinishJob(Job& job)
+void StreamEngine::DoCallback(Job& job)
 {
-	if (!job.callback)
-	{
-		return;
-	}
-
 	unsigned int error = 0;
 
-	if (job.isAborted.load(std::memory_order_relaxed))
+	switch (job.state.Get())
 	{
-		error = ERROR_USER_ABORT;
-	}
-	else if (job.isError.load(std::memory_order_relaxed))
-	{
-		error = ERROR_CANT_OPEN_FILE;
+		case JobState::ERROR:
+		{
+			error = ERROR_CANT_OPEN_FILE;
+			break;
+		}
+		case JobState::ABORTED:
+		{
+			error = ERROR_USER_ABORT;
+			break;
+		}
+		case JobState::FINISHED:
+		{
+			break;
+		}
+		case JobState::PENDING:
+		case JobState::CALLBACK_DONE:
+		{
+			return;
+		}
 	}
 
-	job.callback->StreamOnComplete(&job, error);
+	if (job.callback)
+	{
+		job.callback->StreamOnComplete(&job, error);
+	}
+
+	job.state.Set(JobState::CALLBACK_DONE);
 }

@@ -16,7 +16,6 @@
 // TODO: PAK priority
 // TODO: PAK in EXE
 // TODO: use std::filesystem::path instead of strings?
-// TODO: fix StreamEngine
 // TODO: custom allocator for CryPak
 // TODO: debug commands
 
