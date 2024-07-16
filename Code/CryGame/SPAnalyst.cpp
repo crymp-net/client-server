@@ -408,20 +408,18 @@ void CSPAnalyst::WriteXML()
 {
 	if(m_recordingData)
 	{
-		const string xmlHeader("<?xml version=\"1.0\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n");
-
 		string filename;
 		filename.append(m_recordingFileName);
 		filename.append(".xml");
 
-		FILE *pFile = gEnv->pCryPak->FOpen(filename.c_str(),"wb");
-		if (pFile)
+		if (CryFile file(filename.c_str(), "wb"); file)
 		{
 			_smart_ptr<IXmlStringData> pXmlStrData = m_recordingData->getXMLData( 6000000 );
-			gEnv->pCryPak->FWrite((void*)xmlHeader.c_str(), xmlHeader.size(), 1, pFile);
-			gEnv->pCryPak->FWrite((void*)pXmlStrData->GetString(), pXmlStrData->GetStringLength(), 1, pFile);
-			gEnv->pCryPak->FClose(pFile);
+			file.Puts("<?xml version=\"1.0\"?>");
+			file.Puts("<?mso-application progid=\"Excel.Sheet\"?>");
+			file.Write(pXmlStrData->GetString(), pXmlStrData->GetStringLength());
 		}
+
 		m_recordingData = NULL;
 		m_currentRecordingSection = NULL;
 	}

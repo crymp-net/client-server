@@ -1,21 +1,7 @@
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2002.
-// -------------------------------------------------------------------------
-//  File name:   cryfile.h
-//  Version:     v1.00
-//  Created:     3/7/2003 by Timur.
-//  Compilers:   Visual Studio.NET
-//  Description: File wrapper.
-// -------------------------------------------------------------------------
-//  History:
-//
-////////////////////////////////////////////////////////////////////////////
-
-#ifndef __cryfile_h__
-#define __cryfile_h__
 #pragma once
+
+#include <cstddef>
+#include <memory>
 
 #include "gEnv.h"
 #include "ICryPak.h"
@@ -33,6 +19,7 @@
 #define CRY_COMPILED_FILE_EXT                    "(c)"
 //////////////////////////////////////////////////////////////////////////
 
+/*
 inline const char* CryGetExt( const char *filepath )
 {
 	const char *str = filepath;
@@ -83,234 +70,107 @@ inline bool IsStatObjFile( const char *filename )
 	else
 		return false;
 }
+*/
 
-//////////////////////////////////////////////////////////////////////////
-// Wrapper on file system.
-//////////////////////////////////////////////////////////////////////////
-class CCryFile
+class CryFile
 {
+	struct Releaser
+	{
+		void operator()(FILE* file) const
+		{
+			gEnv->pCryPak->FClose(file);
+		}
+	};
+
+	std::unique_ptr<FILE, Releaser> m_file;
+
 public:
-	CCryFile();
-	CCryFile( const char *filename, const char *mode );
-	virtual ~CCryFile();
+	CryFile() = default;
 
-	virtual bool Open( const char *filename, const char *mode,int nOpenFlagsEx=0 );
-	virtual void Close();
-
-	//! Writes data in a file to the current file position.
-	virtual size_t Write( const void *lpBuf,size_t nSize );
-	//! Reads data from a file at the current file position.
-	virtual size_t ReadRaw( void *lpBuf, size_t nSize );
-	//! Template version, for automatic size support.
-	template<class T>
-	size_t ReadTypeRaw( T *pDest, size_t nCount = 1 )
+	CryFile(const char* filename, const char* mode) : m_file(gEnv->pCryPak->FOpen(filename, mode))
 	{
-		return ReadRaw( pDest, sizeof(T)*nCount );
 	}
 
-	//! Automatic endian-swapping version.
-	template<class T>
-	size_t ReadType( T *pDest, size_t nCount = 1 )
+	bool IsOpen() const
 	{
-		size_t nRead = ReadRaw( pDest, sizeof(T)*nCount );
-		SwapEndian(pDest, nCount);
-		return nRead;
+		return m_file != nullptr;
 	}
 
-	void Puts(const char* line)
+	explicit operator bool() const
 	{
-		m_pIPak->FPrintf(m_file, "%s\n", line);
+		return this->IsOpen();
+	}
+
+	bool Open(const char* filename, const char* mode)
+	{
+		m_file.reset(gEnv->pCryPak->FOpen(filename, mode));
+
+		return this->IsOpen();
+	}
+
+	void Close()
+	{
+		m_file.reset();
+	}
+
+	std::size_t Write(const void* data, std::size_t size)
+	{
+		return gEnv->pCryPak->FWrite(data, 1, size, m_file.get());
+	}
+
+	std::size_t ReadRaw(void* buffer, std::size_t size)
+	{
+		return gEnv->pCryPak->FReadRaw(buffer, 1, size, m_file.get());
 	}
 
 	template<class... Args>
 	int FPrintf(const char* format, Args... args)
 	{
-		return m_pIPak->FPrintf(m_file, format, args...);
+		return gEnv->pCryPak->FPrintf(m_file.get(), format, args...);
 	}
 
-	//! Retrieves the length of the file.
-	virtual size_t GetLength();
+	void Puts(const char* line)
+	{
+		this->FPrintf("%s\n", line);
+	}
 
-	//! Positions the current file pointer.
-	virtual size_t Seek( size_t seek, int mode );
-	//! Positions the current file pointer at the beginning of the file.
-	void SeekToBegin();
-	//! Positions the current file pointer at the end of the file.
-	size_t SeekToEnd();
-	//! Retrieves the current file pointer.
-	size_t GetPosition();
+	std::size_t GetSize()
+	{
+		return gEnv->pCryPak->FGetSize(m_file.get());
+	}
 
-	//! Tests for end-of-file on a selected file.
-	virtual bool IsEof();
+	int Seek(long seek, int mode)
+	{
+		return static_cast<int>(gEnv->pCryPak->FSeek(m_file.get(), seek, mode));
+	}
 
-	//! Flushes any data yet to be written.
-	virtual void Flush();
+	void SeekToBegin()
+	{
+		this->Seek(0, SEEK_SET);
+	}
 
-	//! A handle to a pack object.
-	FILE* GetHandle() const { return m_file; };
+	void SeekToEnd()
+	{
+		this->Seek(0, SEEK_END);
+	}
 
-	// Description:
-	//    Retrieves the filename of the selected file.
-	const char* GetFilename() const { return m_filename.c_str(); };
+	long GetPosition()
+	{
+		return gEnv->pCryPak->FTell(m_file.get());
+	}
 
-	// Description:
-	//    Retrieves the filename after adjustment to the real relative to engine root path.
-	//    Ex. original filename "textures/red.dds" adjusted filename will look like "game/textures/red.dds"
-	// Return:
-	//    Adjusted filename, this is a pointer to a static string, copy return value if you want to keep it.
-	const char* GetAdjustedFilename() const;
+	FILE* GetHandle()
+	{
+		return m_file.get();
+	}
 
-	//! Check if file is opened from pak file.
-	bool IsInPak() const;
+	bool IsInPak()
+	{
+		return gEnv->pCryPak->IsInPak(m_file.get());
+	}
 
-	//! Get path of archive this file is in.
-	const char* GetPakPath() const;
-
-private:
-	string m_filename;
-	FILE *m_file;
-	ICryPak *m_pIPak;
+	const char* GetPakPath()
+	{
+		return gEnv->pCryPak->GetFileArchivePath(m_file.get());
+	}
 };
-
-//////////////////////////////////////////////////////////////////////////
-// CCryFile implementation.
-//////////////////////////////////////////////////////////////////////////
-inline CCryFile::CCryFile()
-{
-	m_file = 0;
-	m_pIPak = gEnv->pCryPak;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline CCryFile::CCryFile( const char *filename, const char *mode )
-{
-	m_file = 0;
-	m_pIPak = gEnv->pCryPak;
-	Open( filename,mode );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline CCryFile::~CCryFile()
-{
-	Close();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// for nOpenFlagsEx see ICryPak::EFOpenFlags
-//////////////////////////////////////////////////////////////////////////
-inline bool CCryFile::Open( const char *filename, const char *mode,int nOpenFlagsEx )
-{
-	if (m_file)
-		Close();
-	m_filename = filename;
-	m_file = m_pIPak->FOpen( filename,mode,nOpenFlagsEx );
-	return m_file != NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CCryFile::Close()
-{
-	if (m_file)
-	{
-		m_pIPak->FClose(m_file);
-		m_file = 0;
-		m_filename = "";
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::Write( const void *lpBuf,size_t nSize )
-{
-	assert( m_file );
-	return m_pIPak->FWrite( lpBuf,1,nSize,m_file );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::ReadRaw( void *lpBuf,size_t nSize )
-{
-	assert( m_file );
-	return m_pIPak->FReadRaw( lpBuf,1,nSize,m_file );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::GetLength()
-{
-	assert( m_file );
-	long curr = m_pIPak->FTell(m_file);
-	m_pIPak->FSeek( m_file,0,SEEK_END );
-	long size = m_pIPak->FTell(m_file);
-	m_pIPak->FSeek(m_file,curr,SEEK_SET);
-	return size;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::Seek( size_t seek, int mode )
-{
-	assert( m_file );
-	return m_pIPak->FSeek( m_file,static_cast<long>(seek),mode );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CCryFile::SeekToBegin()
-{
-	Seek( 0,SEEK_SET );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::SeekToEnd()
-{
-	return Seek( 0,SEEK_END );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline size_t CCryFile::GetPosition()
-{
-	assert(m_file);
-	return m_pIPak->FTell(m_file);
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline bool CCryFile::IsEof()
-{
-	assert(m_file);
-	return m_pIPak->FEof(m_file) != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CCryFile::Flush()
-{
-	assert( m_file );
-	m_pIPak->FFlush( m_file );
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline bool CCryFile::IsInPak() const
-{
-	if (m_file)
-	{
-		if (m_pIPak->GetFileArchivePath(m_file) != NULL)
-			return true;
-	}
-	return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline const char* CCryFile::GetPakPath() const
-{
-	if (m_file)
-	{
-		const char *sPath = m_pIPak->GetFileArchivePath(m_file);
-		if (sPath != NULL)
-			return sPath;
-	}
-	return "";
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline const char* CCryFile::GetAdjustedFilename() const
-{
-	static char szAdjustedFile[ICryPak::g_nMaxPath];
-	return m_pIPak->AdjustFileName( m_filename.c_str(),szAdjustedFile,0 );
-}
-
-#endif // __cryfile_h__

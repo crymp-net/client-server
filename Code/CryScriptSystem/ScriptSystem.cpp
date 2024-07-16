@@ -457,19 +457,16 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 
 	if (isNew || forceReload || m_nestedForceReload > 0)
 	{
-		CCryFile file;
-
 		// try to load and execute the script file
-		if (file.Open(fileName, "rb"))
+		if (CryFile file(fileName, "rb"); file)
 		{
 			std::vector<char> content;
 
 			// read script file content
-			content.resize(file.GetLength());
+			content.resize(file.GetSize());
 			content.resize(file.ReadRaw(content.data(), content.size()));
 
 			// use script file path as its description
-			// TODO: maybe use real path from CryPak instead?
 			const char *description = fileName;
 
 			// execute the file

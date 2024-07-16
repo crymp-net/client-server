@@ -28,13 +28,10 @@ bool ResourceList::IsExist(const char* resourceFile)
 void ResourceList::Load(const char* resourceListFilename)
 {
 	std::string content;
+	if (CryFile file(resourceListFilename, "rb"); file)
 	{
-		CCryFile file;
-		if (file.Open(resourceListFilename, "rb"))
-		{
-			content.resize(file.GetLength());
-			content.resize(file.ReadRaw(content.data(), content.size()));
-		}
+		content.resize(file.GetSize());
+		content.resize(file.ReadRaw(content.data(), content.size()));
 	}
 
 	std::string::size_type pos = 0;
