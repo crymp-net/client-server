@@ -1,25 +1,36 @@
 #pragma once
 
-#include "IPakFile.h"
+#include <cstdlib>
+#include <memory>
 
-class ZipPakFile final : public IPakFile
+#include "IFileInPak.h"
+
+struct FileInZipPak final : public IFileInPak
 {
-	std::byte* m_data = nullptr;
-	std::size_t m_size = 0;
-	std::int64_t m_pos = 0;
-	std::uint64_t m_modificationTime = 0;
-	bool m_isBinary = false;
+	struct DataReleaser
+	{
+		void operator()(void* data) const
+		{
+			// release memory allocated by mz_zip_reader_extract_to_heap
+			std::free(data);
+		}
+	};
 
-public:
-	explicit ZipPakFile(void* data, std::size_t size, std::uint64_t modificationTime, bool isBinary)
-	: m_data(static_cast<std::byte*>(data)), m_size(size), m_modificationTime(modificationTime),
-	  m_isBinary(isBinary) {}
-	ZipPakFile(const ZipPakFile&) = delete;
-	ZipPakFile& operator=(const ZipPakFile&) = delete;
-	~ZipPakFile();
+	using Data = std::unique_ptr<void, DataReleaser>;
+
+	Data data;
+	std::size_t size = 0;
+	std::int64_t pos = 0;
+	std::uint64_t modificationTime = 0;
+	bool isBinary = false;
+
+	std::byte* GetBytes()
+	{
+		return static_cast<std::byte*>(this->data.get());
+	}
 
 	////////////////////////////////////////////////////////////////////////////////
-	// IPakFile
+	// IFileInPak
 	////////////////////////////////////////////////////////////////////////////////
 
 	std::size_t FRead(void* buffer, std::size_t elementSize, std::size_t elementCount) override;
@@ -43,6 +54,8 @@ public:
 	void* GetCachedFileData(std::size_t& fileSize) override;
 
 	std::uint64_t GetModificationTime() override;
+
+	std::FILE* GetHandle() override;
 
 	////////////////////////////////////////////////////////////////////////////////
 };

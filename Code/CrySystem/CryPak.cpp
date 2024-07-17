@@ -11,13 +11,13 @@
 #include "Pak/ZipPak.h"
 #include "ResourceList.h"
 
-// TODO: CryLog and std::string_view::data()
+// TODO: std::string_view::data() in log messages
+// TODO: cleanup newly added log messages
 // TODO: remove file redirectors
-// TODO: PAK priority
 // TODO: PAK in EXE
-// TODO: use std::filesystem::path instead of strings?
 // TODO: custom allocator for CryPak
 // TODO: debug commands
+// TODO: some dev-only command line argument to set a folder that overrides PAK in EXE
 
 class CryPakWildcardMatcher
 {
@@ -127,6 +127,27 @@ static std::vector<std::string> ExpandWildcardFilesystemPath(std::string_view wi
 	return foundPaths;
 }
 
+static std::unique_ptr<FileOutsidePak> OpenFileOutside(const std::string& path, const std::string& mode, bool writable)
+{
+	auto file = std::make_unique<FileOutsidePak>();
+
+	file->path = path;
+
+	if (writable)
+	{
+		std::error_code ec;
+		std::filesystem::create_directories(file->path.parent_path(), ec);
+	}
+
+	file->handle = FileOutsidePak::Handle(std::fopen(path.c_str(), mode.c_str()));
+	if (!file->handle)
+	{
+		return {};
+	}
+
+	return file;
+}
+
 CryPak CryPak::s_globalInstance;
 
 CryPak::CryPak()
@@ -188,7 +209,7 @@ bool CryPak::OpenPack(const char* name, unsigned int flags)
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 	const std::string adjustedBindingRoot(PathTools::DirPath(adjustedName));
 
-	return this->OpenPackImpl(adjustedName, adjustedBindingRoot, flags);
+	return this->OpenPakImpl(adjustedName, adjustedBindingRoot);
 }
 
 bool CryPak::OpenPack(const char* bindingRoot, const char* name, unsigned int flags)
@@ -198,7 +219,13 @@ bool CryPak::OpenPack(const char* bindingRoot, const char* name, unsigned int fl
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 	const std::string adjustedBindingRoot = this->AdjustFileNameImpl(StringTools::SafeView(bindingRoot), flags);
 
-	return this->OpenPackImpl(adjustedName, adjustedBindingRoot, flags);
+	PakSlot* pak = this->OpenPakImpl(adjustedName, adjustedBindingRoot);
+	if (!pak)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool CryPak::ClosePack(const char* name, unsigned int flags)
@@ -207,36 +234,96 @@ bool CryPak::ClosePack(const char* name, unsigned int flags)
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 
-	return this->ClosePackImpl(adjustedName, flags);
+	PakSlot* pak = this->FindLoadedPakByPath(adjustedName);
+	if (!pak)
+	{
+		CryLogAlways("%s(\"%s\"): Not found", __FUNCTION__, name);
+		return false;
+	}
+
+	this->ClosePakImpl(pak);
+
+	CryLogAlways("%s(\"%s\"): Success", __FUNCTION__, name);
+
+	return true;
 }
 
 bool CryPak::OpenPacks(const char* wildcard, unsigned int flags)
 {
 	std::lock_guard lock(m_mutex);
 
+	CryLogAlways("%s(\"%s\")", __FUNCTION__, wildcard);
+
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
 	const std::string adjustedBindingRoot(PathTools::DirPath(adjustedWildcard));
 
-	return this->OpenPacksImpl(adjustedWildcard, adjustedBindingRoot, flags);
+	bool success = false;
+
+	for (const std::string& path : ExpandWildcardFilesystemPath(adjustedWildcard))
+	{
+		PakSlot* pak = this->OpenPakImpl(path, adjustedBindingRoot);
+		if (!pak)
+		{
+			continue;
+		}
+
+		success = true;
+	}
+
+	return success;
 }
 
 bool CryPak::OpenPacks(const char* bindingRoot, const char* wildcard, unsigned int flags)
 {
 	std::lock_guard lock(m_mutex);
 
+	CryLogAlways("%s(\"%s\", \"%s\")", __FUNCTION__, bindingRoot, wildcard);
+
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
 	const std::string adjustedBindingRoot = this->AdjustFileNameImpl(StringTools::SafeView(bindingRoot), flags);
 
-	return this->OpenPacksImpl(adjustedWildcard, adjustedBindingRoot, flags);
+	bool success = false;
+
+	for (const std::string& path : ExpandWildcardFilesystemPath(adjustedWildcard))
+	{
+		PakSlot* pak = this->OpenPakImpl(path, adjustedBindingRoot);
+		if (!pak)
+		{
+			continue;
+		}
+
+		success = true;
+	}
+
+	return success;
 }
 
 bool CryPak::ClosePacks(const char* wildcard, unsigned int flags)
 {
 	std::lock_guard lock(m_mutex);
 
+	CryLogAlways("%s(\"%s\")", __FUNCTION__, wildcard);
+
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
 
-	return this->ClosePacksImpl(adjustedWildcard, flags);
+	bool success = false;
+
+	for (const std::string& path : ExpandWildcardFilesystemPath(adjustedWildcard))
+	{
+		PakSlot* pak = this->FindLoadedPakByPath(path);
+		if (!pak)
+		{
+			continue;
+		}
+
+		this->ClosePakImpl(pak);
+
+		CryLogAlways("%s(\"%s\"): Success -> \"%s\"", __FUNCTION__, wildcard, path.c_str());
+
+		success = true;
+	}
+
+	return success;
 }
 
 void CryPak::AddMod(const char* mod)
@@ -365,98 +452,39 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 
 	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 
-	bool isWriting = false;
-	bool isBinary = false;
-	for (char ch : StringTools::SafeView(mode))
-	{
-		switch (ch)
-		{
-			case 'r': break;
-			case 'w': isWriting = true; break;
-			case 'a': isWriting = true; break;
-			case 'b': isBinary = true; break;
-			case 't': isBinary = false; break;
-			case 'x': break;
-			case '+': isWriting = true; break;
-			default:
-			{
-				CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Unknown mode char '%c'", __FUNCTION__, name, mode, flags, ch);
-				break;
-			}
-		}
-	}
-
-	FileTreeNode* fileNode = m_tree.FindNode(adjustedName);
-	if (fileNode)
-	{
-		PakSlot* pak = m_paks.HandleToSlot(fileNode->current.pakHandle);
-		if (!pak)
-		{
-			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Invalid pak handle", __FUNCTION__, name, mode, flags);
-			return nullptr;
-		}
-
-		std::unique_ptr<IPakFile> fileImpl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
-		if (!fileImpl)
-		{
-			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Opening a file in a pak failed", __FUNCTION__, name, mode, flags);
-			return nullptr;
-		}
-
-		if (isWriting)
-		{
-			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Writing to paks is not supported", __FUNCTION__, name, mode, flags);
-			return nullptr;
-		}
-
-		OpenFileSlot* file = m_files.GetFreeSlot();
-		if (!file)
-		{
-			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, name, mode, flags);
-			return nullptr;
-		}
-
-		file->impl = std::move(fileImpl);
-		file->pakHandle = m_paks.SlotToHandle(pak);
-		this->IncrementPakRefCount(pak);
-		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found in pak \"%s\"", __FUNCTION__, name, mode, flags, handle, pak->path.c_str());
-		return handle;
-	}
-
 	// TODO: use some flags instead
-	std::string newMode = StringTools::SafeString(mode);
-	newMode.erase(std::remove_if(newMode.begin(), newMode.end(),
+	std::string adjustedMode = StringTools::SafeString(mode);
+	adjustedMode.erase(std::remove_if(adjustedMode.begin(), adjustedMode.end(),
 		[](char ch) -> bool
 		{
 			return std::string_view("rwab+").find(ch) == std::string_view::npos;
 		}
-	), newMode.end());
+	), adjustedMode.end());
 
-	if (newMode != StringTools::SafeView(mode))
+	if (adjustedMode != StringTools::SafeView(mode))
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): newMode=\"%s\"", __FUNCTION__, name, mode, flags, newMode.c_str());
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Using mode \"%s\"", __FUNCTION__, name, mode, flags, adjustedMode.c_str());
 	}
 
-	std::unique_ptr<FileOutsidePak> externalFileImpl = FileOutsidePak::TryOpen(adjustedName, newMode, isWriting);
-	if (externalFileImpl)
+	OpenFileSlot* file = this->OpenFileImpl(adjustedName, adjustedMode);
+	if (!file)
 	{
-		OpenFileSlot* file = m_files.GetFreeSlot();
-		if (!file)
-		{
-			CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, name, mode, flags);
-			return nullptr;
-		}
-
-		file->impl = std::move(externalFileImpl);
-		file->pakHandle = 0;
-		FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found outside in \"%s\"", __FUNCTION__, name, mode, flags, handle, adjustedName.c_str());
-		return handle;
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Not found", __FUNCTION__, name, mode, flags);
+		return nullptr;
 	}
 
-	CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Not found", __FUNCTION__, name, mode, flags);
-	return nullptr;
+	FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
+
+	if (PakSlot* pak = m_paks.HandleToSlot(file->pakHandle); pak)
+	{
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found in pak \"%s\"", __FUNCTION__, name, mode, flags, handle, pak->path.c_str());
+	}
+	else
+	{
+		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): 0x%p Found outside \"%s\"", __FUNCTION__, name, mode, flags, handle, adjustedName.c_str());
+	}
+
+	return handle;
 }
 
 FILE* CryPak::FOpen(const char* name, const char* mode, char* fileGamePath, int length)
@@ -680,17 +708,9 @@ int CryPak::FClose(FILE* handle)
 		return EOF;
 	}
 
-	PakSlot* pak = m_paks.HandleToSlot(file->pakHandle);
+	this->CloseFileImpl(file);
 
-	// close the file
-	file->clear();
-
-	if (pak)
-	{
-		this->DecrementPakRefCount(pak);
-	}
-
-	CryLogAlways("%s(0x%p)", __FUNCTION__, handle);
+	CryLogAlways("%s(0x%p): Success", __FUNCTION__, handle);
 
 	return 0;
 }
@@ -757,75 +777,12 @@ intptr_t CryPak::FindFirst(const char* wildcard, struct _finddata_t* fd, unsigne
 	std::lock_guard lock(m_mutex);
 
 	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
-	const auto [dirPath, wildcardName] = PathTools::SplitPathIntoDirAndFile(adjustedWildcard);
-	const CryPakWildcardMatcher matcher(wildcardName);
 
-	std::vector<FindSlot::Entry> entries;
-
-	// TODO: maybe std::map instead?
-	const auto isDuplicate = [&entries](std::string_view name) -> bool
-	{
-		const auto it = std::find_if(entries.begin(), entries.end(),
-			[name](const FindSlot::Entry& entry) -> bool
-			{
-				return StringTools::IsEqualNoCase(entry.name, name);
-			}
-		);
-
-		return it != entries.end();
-	};
-
-	Tree::DirectoryNode* dirNode = m_tree.FindDirectoryNode(dirPath);
-	if (dirNode)
-	{
-		for (auto& [name, node] : *dirNode)
-		{
-			if (!matcher(name) || isDuplicate(name))
-			{
-				continue;
-			}
-
-			FileTreeNode* fileNode = std::get_if<FileTreeNode>(&node);
-
-			FindSlot::Entry& e = entries.emplace_back();
-			e.name = name;
-			e.isInPak = true;
-			e.isDirectory = (fileNode == nullptr);
-			e.size = (fileNode == nullptr) ? 0 : this->GetFileSize(*fileNode);
-		}
-	}
-
-	std::error_code ec;
-	for (const auto& dirEntry : std::filesystem::directory_iterator(dirPath, ec))
-	{
-		std::string name = dirEntry.path().filename().generic_string();
-
-		if (matcher(name) && !isDuplicate(name))
-		{
-			FindSlot::Entry& e = entries.emplace_back();
-			e.name = std::move(name);
-			e.isInPak = false;
-			e.isDirectory = dirEntry.is_directory(ec);
-			e.size = e.isDirectory ? 0 : dirEntry.file_size(ec);
-		}
-	}
-
-	CryLogAlways("%s(\"%s\", 0x%x): Found %zu entries", __FUNCTION__, wildcard, flags, entries.size());
-
-	if (entries.empty())
-	{
-		return -1;
-	}
-
-	FindSlot* find = m_finds.GetFreeSlot();
+	FindSlot* find = this->OpenFindImpl(adjustedWildcard);
 	if (!find)
 	{
-		CryLogAlways("%s(\"%s\", 0x%x): Max number of slots reached", __FUNCTION__, wildcard, flags);
 		return -1;
 	}
-
-	find->entries = std::move(entries);
-	find->pos = 0;
 
 	this->FillFindData(fd, find->entries[0]);
 	find->pos++;
@@ -866,7 +823,7 @@ int CryPak::FindClose(intptr_t handle)
 		return -1;
 	}
 
-	find->clear();
+	this->CloseFindImpl(find);
 
 	return 0;
 }
@@ -1123,46 +1080,210 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 {
 	std::string adjusted = this->AdjustFileNameImplWithoutRedirect(path, flags);
 
-	auto [redirectNode, remainingPath] = m_redirects.FindNodeAsPrefix(adjusted);
-	if (!redirectNode)
+	auto [redirectNode, remainingPath] = m_redirects.FindNodeInPath(adjusted);
+	if (redirectNode)
 	{
-		return adjusted;
+		// remaining path is also a string view into adjusted
+		std::string_view prefix(adjusted.data(), adjusted.length() - remainingPath.length());
+
+		if (!prefix.empty() && prefix.back() == '/')
+		{
+			// keep the slash
+			prefix.remove_suffix(1);
+		}
+
+		adjusted.replace(0, prefix.length(), *redirectNode);
 	}
 
-	std::string redirected;
-	redirected.reserve(260);
-	redirected = *redirectNode;
-
-	if (!remainingPath.empty() && !redirected.empty() && redirected.back() != '/')
-	{
-		redirected += '/';
-	}
-
-	redirected += remainingPath;
-
-	return redirected;
+	return adjusted;
 }
 
-bool CryPak::OpenPackImpl(const std::string& pakPath, const std::string& bindingRoot, unsigned int flags)
+CryPak::OpenFileSlot* CryPak::OpenFileImpl(const std::string& filePath, const std::string& mode)
 {
-	if (this->FindLoadedPakByPath(pakPath))
+	bool isWriting = false;
+	bool isBinary = false;
+	for (char ch : mode)
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Already loaded", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
-		return true;
+		switch (ch)
+		{
+			case 'r': break;
+			case 'w': isWriting = true; break;
+			case 'a': isWriting = true; break;
+			case 'b': isBinary = true; break;
+			case 't': isBinary = false; break;
+			case 'x': break;
+			case '+': isWriting = true; break;
+		}
 	}
 
-	std::unique_ptr<ZipPak> pakImpl = ZipPak::TryOpen(pakPath);
+	FileTreeNode* fileNode = m_tree.FindNode(filePath);
+	if (fileNode)
+	{
+		PakSlot* pak = m_paks.HandleToSlot(fileNode->current.pakHandle);
+		if (!pak)
+		{
+			CryLogAlways("%s(\"%s\", \"%s\"): Invalid pak handle", __FUNCTION__, filePath.c_str(), mode);
+			return nullptr;
+		}
+
+		std::unique_ptr<IFileInPak> fileImpl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
+		if (!fileImpl)
+		{
+			CryLogAlways("%s(\"%s\", \"%s\"): Opening a file in a pak failed", __FUNCTION__, filePath.c_str(), mode);
+			return nullptr;
+		}
+
+		if (isWriting)
+		{
+			CryLogAlways("%s(\"%s\", \"%s\"): Writing to paks is not supported", __FUNCTION__, filePath.c_str(), mode);
+			return nullptr;
+		}
+
+		OpenFileSlot* file = m_files.GetFreeSlot();
+		if (!file)
+		{
+			CryLogAlways("%s(\"%s\", \"%s\"): Max number of slots reached", __FUNCTION__, filePath.c_str(), mode);
+			return nullptr;
+		}
+
+		file->impl = std::move(fileImpl);
+		file->pakHandle = m_paks.SlotToHandle(pak);
+		this->IncrementPakRefCount(pak);
+		return file;
+	}
+
+	std::unique_ptr<FileOutsidePak> fileImpl = OpenFileOutside(filePath, mode, isWriting);
+	if (fileImpl)
+	{
+		OpenFileSlot* file = m_files.GetFreeSlot();
+		if (!file)
+		{
+			CryLogAlways("%s(\"%s\", \"%s\"): Max number of slots reached", __FUNCTION__, filePath.c_str(), mode);
+			return nullptr;
+		}
+
+		file->impl = std::move(fileImpl);
+		file->pakHandle = 0;
+		return file;
+	}
+
+	return nullptr;
+}
+
+void CryPak::CloseFileImpl(OpenFileSlot* file)
+{
+	PakSlot* pak = m_paks.HandleToSlot(file->pakHandle);
+
+	// close the file
+	file->clear();
+
+	if (pak)
+	{
+		this->DecrementPakRefCount(pak);
+	}
+}
+
+CryPak::FindSlot* CryPak::OpenFindImpl(const std::string& wildcardPath)
+{
+	const auto [dirPath, wildcardName] = PathTools::SplitPathIntoDirAndFile(wildcardPath);
+	const CryPakWildcardMatcher matcher(wildcardName);
+
+	std::vector<FindSlot::Entry> entries;
+
+	// TODO: maybe std::map instead?
+	const auto isDuplicate = [&entries](std::string_view name) -> bool
+	{
+		const auto it = std::find_if(entries.begin(), entries.end(),
+			[name](const FindSlot::Entry& entry) -> bool
+			{
+				return StringTools::IsEqualNoCase(entry.name, name);
+			}
+		);
+
+		return it != entries.end();
+	};
+
+	Tree::DirectoryNode* dirNode = m_tree.FindDirectoryNode(dirPath);
+	if (dirNode)
+	{
+		for (auto& [name, node] : *dirNode)
+		{
+			if (!matcher(name) || isDuplicate(name))
+			{
+				continue;
+			}
+
+			FileTreeNode* fileNode = std::get_if<FileTreeNode>(&node);
+
+			FindSlot::Entry& e = entries.emplace_back();
+			e.name = name;
+			e.isInPak = true;
+			e.isDirectory = (fileNode == nullptr);
+			e.size = (fileNode == nullptr) ? 0 : this->GetFileSize(*fileNode);
+		}
+	}
+
+	std::error_code ec;
+	for (const auto& dirEntry : std::filesystem::directory_iterator(dirPath, ec))
+	{
+		std::string name = dirEntry.path().filename().generic_string();
+
+		if (matcher(name) && !isDuplicate(name))
+		{
+			FindSlot::Entry& e = entries.emplace_back();
+			e.name = std::move(name);
+			e.isInPak = false;
+			e.isDirectory = dirEntry.is_directory(ec);
+			e.size = e.isDirectory ? 0 : dirEntry.file_size(ec);
+		}
+	}
+
+	CryLogAlways("%s(\"%s\"): Found %zu entries", __FUNCTION__, wildcardPath.c_str(), entries.size());
+
+	if (entries.empty())
+	{
+		return nullptr;
+	}
+
+	FindSlot* find = m_finds.GetFreeSlot();
+	if (!find)
+	{
+		CryLogAlways("%s(\"%s\"): Max number of slots reached", __FUNCTION__, wildcardPath.c_str());
+		return nullptr;
+	}
+
+	find->entries = std::move(entries);
+	find->pos = 0;
+
+	return find;
+}
+
+void CryPak::CloseFindImpl(FindSlot* find)
+{
+	find->clear();
+}
+
+CryPak::PakSlot* CryPak::OpenPakImpl(const std::string& pakPath, const std::string& bindingRoot)
+{
+	PakSlot* pak = this->FindLoadedPakByPath(pakPath);
+	if (pak)
+	{
+		CryLogAlways("%s(\"%s\", \"%s\"): Already loaded", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str());
+		return pak;
+	}
+
+	std::unique_ptr<ZipPak> pakImpl = ZipPak::OpenFileName(pakPath);
 	if (!pakImpl)
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Failed", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
-		return false;
+		CryLogAlways("%s(\"%s\", \"%s\"): Failed", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str());
+		return nullptr;
 	}
 
-	PakSlot* pak = m_paks.GetFreeSlot();
+	pak = m_paks.GetFreeSlot();
 	if (!pak)
 	{
-		CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Max number of slots reached", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
-		return false;
+		CryLogAlways("%s(\"%s\", \"%s\"): Max number of slots reached", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str());
+		return nullptr;
 	}
 
 	pak->path = pakPath;
@@ -1173,59 +1294,20 @@ bool CryPak::OpenPackImpl(const std::string& pakPath, const std::string& binding
 
 	this->AddPakToTree(pak);
 
-	CryLogAlways("%s(\"%s\", \"%s\", 0x%x): Success", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str(), flags);
+	CryLogAlways("%s(\"%s\", \"%s\"): Success", __FUNCTION__, pakPath.c_str(), bindingRoot.c_str());
 
-	return true;
+	return pak;
 }
 
-bool CryPak::OpenPacksImpl(const std::string& wildcardPath, const std::string& bindingRoot, unsigned int flags)
-{
-	CryLogAlways("%s(\"%s\", \"%s\", 0x%x)", __FUNCTION__, wildcardPath.c_str(), bindingRoot.c_str(), flags);
-
-	bool success = false;
-
-	for (const std::string& path : ExpandWildcardFilesystemPath(wildcardPath))
-	{
-		success |= this->OpenPackImpl(path, bindingRoot, flags);
-	}
-
-	return success;
-}
-
-bool CryPak::ClosePackImpl(const std::string& pakPath, unsigned int flags)
-{
-	PakSlot* pak = this->FindLoadedPakByPath(pakPath);
-	if (!pak)
-	{
-		CryLogAlways("%s(\"%s\", 0x%x): Not found", __FUNCTION__, pakPath.c_str(), flags);
-		return false;
-	}
-
-	this->RemovePakFromTree(pak);
-	this->DecrementPakRefCount(pak);
-
-	CryLogAlways("%s(\"%s\", 0x%x): Success", __FUNCTION__, pakPath.c_str(), flags);
-
-	return true;
-}
-
-bool CryPak::ClosePacksImpl(const std::string& wildcardPath, unsigned int flags)
-{
-	CryLogAlways("%s(\"%s\", 0x%x)", __FUNCTION__, wildcardPath.c_str(), flags);
-
-	bool success = false;
-
-	for (const std::string& path : ExpandWildcardFilesystemPath(wildcardPath))
-	{
-		success |= this->ClosePackImpl(path, flags);
-	}
-
-	return success;
-}
-
-CryPak::PakSlot* CryPak::FindLoadedPakByPath(std::string_view pakPath)
+CryPak::PakSlot* CryPak::FindLoadedPakByPath(const std::string& pakPath)
 {
 	return m_paks.Find([pakPath](const PakSlot& pak) { return StringTools::IsEqualNoCase(pak.path, pakPath); });
+}
+
+void CryPak::ClosePakImpl(PakSlot* pak)
+{
+	this->RemovePakFromTree(pak);
+	this->DecrementPakRefCount(pak);
 }
 
 void CryPak::IncrementPakRefCount(PakSlot* pak)

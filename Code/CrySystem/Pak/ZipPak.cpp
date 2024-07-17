@@ -1,13 +1,39 @@
 #include "CrySystem/CryLog.h"
 
+#include "FileInZipPak.h"
 #include "ZipPak.h"
-#include "ZipPakFile.h"
 
-std::unique_ptr<ZipPak> ZipPak::TryOpen(const std::string& adjustedName)
+std::unique_ptr<ZipPak> ZipPak::OpenFileHandle(std::FILE* file)
 {
-	std::unique_ptr<ZipPak> pak = std::make_unique<ZipPak>();
+	auto pak = std::make_unique<ZipPak>();
 
-	if (!mz_zip_reader_init_file(&pak->m_zip, adjustedName.c_str(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+	if (!mz_zip_reader_init_cfile(&pak->zip, file, 0, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+	{
+		pak->LogError(__FUNCTION__);
+		return {};
+	}
+
+	return pak;
+}
+
+std::unique_ptr<ZipPak> ZipPak::OpenFileName(const std::string& adjustedName)
+{
+	auto pak = std::make_unique<ZipPak>();
+
+	if (!mz_zip_reader_init_file(&pak->zip, adjustedName.c_str(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
+	{
+		pak->LogError(__FUNCTION__);
+		return {};
+	}
+
+	return pak;
+}
+
+std::unique_ptr<ZipPak> ZipPak::OpenMemory(const void* mem, std::size_t size)
+{
+	auto pak = std::make_unique<ZipPak>();
+
+	if (!mz_zip_reader_init_mem(&pak->zip, mem, size, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
 	{
 		pak->LogError(__FUNCTION__);
 		return {};
@@ -20,42 +46,44 @@ std::unique_ptr<ZipPak> ZipPak::TryOpen(const std::string& adjustedName)
 // IPak
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<IPakFile> ZipPak::OpenFile(std::uint32_t index, bool isBinary)
+std::unique_ptr<IFileInPak> ZipPak::OpenFile(std::uint32_t index, bool isBinary)
 {
-	std::size_t file_size = 0;
-	void* file_data = mz_zip_reader_extract_to_heap(&m_zip, index, &file_size, 0);
-	if (!file_data)
+	auto file = std::make_unique<FileInZipPak>();
+
+	file->data = FileInZipPak::Data(mz_zip_reader_extract_to_heap(&this->zip, index, &file->size, 0));
+	if (!file->data)
 	{
 		this->LogError(__FUNCTION__);
 		return {};
 	}
 
 	mz_zip_archive_file_stat stat = {};
-	if (mz_zip_reader_file_stat(&m_zip, index, &stat) != MZ_TRUE)
+	if (mz_zip_reader_file_stat(&this->zip, index, &stat) != MZ_TRUE)
 	{
 		this->LogError(__FUNCTION__);
 		return {};
 	}
 
-	const std::uint64_t modificationTime = stat.m_time;
+	file->modificationTime = stat.m_time;
+	file->isBinary = isBinary;
 
-	return std::make_unique<ZipPakFile>(file_data, file_size, modificationTime, isBinary);
+	return file;
 }
 
 std::uint32_t ZipPak::GetEntryCount()
 {
-	return mz_zip_reader_get_num_files(&m_zip);
+	return mz_zip_reader_get_num_files(&this->zip);
 }
 
 bool ZipPak::IsDirectoryEntry(std::uint32_t index)
 {
-	return mz_zip_reader_is_file_a_directory(&m_zip, index) == MZ_TRUE;
+	return mz_zip_reader_is_file_a_directory(&this->zip, index) == MZ_TRUE;
 }
 
 bool ZipPak::GetEntryPath(std::uint32_t index, std::string& path)
 {
 	char buffer[256];
-	unsigned int byteCount = mz_zip_reader_get_filename(&m_zip, index, buffer, sizeof(buffer));
+	unsigned int byteCount = mz_zip_reader_get_filename(&this->zip, index, buffer, sizeof(buffer));
 	if (byteCount == 0)
 	{
 		return false;
@@ -69,7 +97,7 @@ bool ZipPak::GetEntryPath(std::uint32_t index, std::string& path)
 bool ZipPak::GetEntrySize(std::uint32_t index, std::uint64_t& size)
 {
 	mz_zip_archive_file_stat stat = {};
-	if (mz_zip_reader_file_stat(&m_zip, index, &stat) != MZ_TRUE)
+	if (mz_zip_reader_file_stat(&this->zip, index, &stat) != MZ_TRUE)
 	{
 		return false;
 	}
@@ -83,7 +111,7 @@ bool ZipPak::GetEntrySize(std::uint32_t index, std::uint64_t& size)
 
 void ZipPak::LogError(const char* function)
 {
-	const char* error = mz_zip_get_error_string(mz_zip_peek_last_error(&m_zip));
+	const char* error = mz_zip_get_error_string(mz_zip_peek_last_error(&this->zip));
 
 	CryLogAlways("%s: %s", function, error);
 }

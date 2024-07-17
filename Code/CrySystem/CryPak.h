@@ -14,14 +14,14 @@
 #include "Library/SlotVector.h"
 #include "Library/StringTools.h"
 
+#include "Pak/IFileInPak.h"
 #include "Pak/IPak.h"
-#include "Pak/IPakFile.h"
 
 class CryPak final : public ICryPak
 {
 	struct OpenFileSlot
 	{
-		std::unique_ptr<IPakFile> impl;
+		std::unique_ptr<IFileInPak> impl;
 		std::uint32_t pakHandle = 0;
 		std::uint16_t serial = 0;
 
@@ -235,12 +235,15 @@ private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
-	bool OpenPackImpl(const std::string& pakPath, const std::string& bindingRoot, unsigned int flags);
-	bool OpenPacksImpl(const std::string& wildcardPath, const std::string& bindingRoot, unsigned int flags);
-	bool ClosePackImpl(const std::string& pakPath, unsigned int flags);
-	bool ClosePacksImpl(const std::string& wildcardPath, unsigned int flags);
+	OpenFileSlot* OpenFileImpl(const std::string& filePath, const std::string& mode);
+	void CloseFileImpl(OpenFileSlot* file);
 
-	PakSlot* FindLoadedPakByPath(std::string_view pakPath);
+	FindSlot* OpenFindImpl(const std::string& wildcardPath);
+	void CloseFindImpl(FindSlot* find);
+
+	PakSlot* OpenPakImpl(const std::string& pakPath, const std::string& bindingRoot);
+	PakSlot* FindLoadedPakByPath(const std::string& pakPath);
+	void ClosePakImpl(PakSlot* pak);
 
 	void IncrementPakRefCount(PakSlot* pak);
 	void DecrementPakRefCount(PakSlot* pak);

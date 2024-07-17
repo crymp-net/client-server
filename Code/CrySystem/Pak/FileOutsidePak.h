@@ -1,15 +1,13 @@
 #pragma once
 
-#include <cstdio>
 #include <filesystem>
 #include <memory>
-#include <string>
 
-#include "IPakFile.h"
+#include "IFileInPak.h"
 
-class FileOutsidePak final : public IPakFile
+struct FileOutsidePak final : public IFileInPak
 {
-	struct FileReleaser
+	struct Releaser
 	{
 		void operator()(std::FILE* file) const
 		{
@@ -17,27 +15,16 @@ class FileOutsidePak final : public IPakFile
 		}
 	};
 
-	using FileHandle = std::unique_ptr<std::FILE, FileReleaser>;
+	using Handle = std::unique_ptr<std::FILE, Releaser>;
 
-	FileHandle m_handle;
-	std::filesystem::path m_path;
+	Handle handle;
+	std::filesystem::path path;
 
-	std::unique_ptr<std::byte[]> m_data;
-	std::size_t m_dataSize = 0;
-
-public:
-	explicit FileOutsidePak(FileHandle&& handle, std::filesystem::path&& path)
-	: m_handle(std::move(handle)), m_path(std::move(path))
-	{
-	}
-
-	static std::unique_ptr<FileOutsidePak> TryOpen(
-		const std::string& adjustedName,
-		const std::string& mode,
-		bool isWriting);
+	std::unique_ptr<std::byte[]> data;
+	std::size_t dataSize = 0;
 
 	////////////////////////////////////////////////////////////////////////////////
-	// IPakFile
+	// IFileInPak
 	////////////////////////////////////////////////////////////////////////////////
 
 	std::size_t FRead(void* buffer, std::size_t elementSize, std::size_t elementCount) override;
@@ -61,6 +48,8 @@ public:
 	void* GetCachedFileData(std::size_t& fileSize) override;
 
 	std::uint64_t GetModificationTime() override;
+
+	std::FILE* GetHandle() override;
 
 	////////////////////////////////////////////////////////////////////////////////
 };

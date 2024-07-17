@@ -104,7 +104,7 @@ struct PathTree
 		return std::get_if<T>(this->Find(path, baseNode));
 	}
 
-	std::tuple<T*, std::string_view> FindNodeAsPrefix(std::string_view path, Node* baseNode = nullptr)
+	std::tuple<T*, std::string_view> FindNodeInPath(std::string_view path, Node* baseNode = nullptr)
 	{
 		Node* node = (baseNode) ? baseNode : &this->root;
 

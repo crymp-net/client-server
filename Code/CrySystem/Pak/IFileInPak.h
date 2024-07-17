@@ -3,10 +3,11 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 
-struct IPakFile
+struct IFileInPak
 {
-	virtual ~IPakFile() = default;
+	virtual ~IFileInPak() = default;
 
 	virtual std::size_t FRead(void* buffer, std::size_t elementSize, std::size_t elementCount) = 0;
 	virtual std::size_t FWrite(const void* buffer, std::size_t elementSize, std::size_t elementCount) = 0;
@@ -29,4 +30,6 @@ struct IPakFile
 	virtual void* GetCachedFileData(std::size_t& fileSize) = 0;
 
 	virtual std::uint64_t GetModificationTime() = 0;
+
+	virtual std::FILE* GetHandle() = 0;
 };

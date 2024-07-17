@@ -7,27 +7,28 @@
 
 #include "IPak.h"
 
-class ZipPak final : public IPak
+struct ZipPak final : public IPak
 {
-	mz_zip_archive m_zip = {};
+	mz_zip_archive zip = {};
 
-public:
 	ZipPak() = default;
 	ZipPak(const ZipPak&) = delete;
 	ZipPak& operator=(const ZipPak&) = delete;
 
 	~ZipPak()
 	{
-		mz_zip_end(&m_zip);
+		mz_zip_end(&this->zip);
 	}
 
-	static std::unique_ptr<ZipPak> TryOpen(const std::string& adjustedName);
+	static std::unique_ptr<ZipPak> OpenFileHandle(std::FILE* file);
+	static std::unique_ptr<ZipPak> OpenFileName(const std::string& adjustedName);
+	static std::unique_ptr<ZipPak> OpenMemory(const void* mem, std::size_t size);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IPak
 	////////////////////////////////////////////////////////////////////////////////
 
-	std::unique_ptr<IPakFile> OpenFile(std::uint32_t index, bool isBinary) override;
+	std::unique_ptr<IFileInPak> OpenFile(std::uint32_t index, bool isBinary) override;
 
 	std::uint32_t GetEntryCount() override;
 	bool IsDirectoryEntry(std::uint32_t index) override;
@@ -36,6 +37,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////
 
-protected:
+private:
 	void LogError(const char* function);
 };
