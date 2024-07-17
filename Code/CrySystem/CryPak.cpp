@@ -1168,6 +1168,7 @@ bool CryPak::OpenPackImpl(const std::string& pakPath, const std::string& binding
 	pak->path = pakPath;
 	pak->bindingRoot = bindingRoot;
 	pak->impl = std::move(pakImpl);
+	pak->priority = PakPriority::NORMAL;
 	pak->refCount = 1;
 
 	this->AddPakToTree(pak);
@@ -1356,13 +1357,14 @@ void CryPak::AddPakToTree(PakSlot* pak)
 			continue;
 		}
 
-		if (!fileNodeAdded)
-		{
-			fileNode->alternatives.push_front(fileNode->current);
-		}
+		const FileTreeNode::FileInPak file = {
+			.fileIndex = i,
+			.pakHandle = pakHandle,
+			.pakPriority = pak->priority,
+		};
 
-		fileNode->current.pakHandle = pakHandle;
-		fileNode->current.fileIndex = i;
+		// we don't need to check if the node was added because newly added nodes have invalid pak handle
+		this->AddFileAlternative(*fileNode, file);
 	}
 }
 
@@ -1371,20 +1373,47 @@ void CryPak::RemovePakFromTree(PakSlot* pak)
 	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
 
 	m_tree.EraseIf([pakHandle](FileTreeNode& fileNode) -> bool {
-		std::erase_if(fileNode.alternatives, [pakHandle](const auto& x) { return x.pakHandle == pakHandle; });
+		fileNode.alternatives.remove_if([pakHandle](const auto& x) { return x.pakHandle == pakHandle; });
 
 		if (fileNode.current.pakHandle != pakHandle)
 		{
+			// keep the node
 			return false;
 		}
 
 		if (!fileNode.alternatives.empty())
 		{
+			// use the previous alternative of the file in a different pak with the same or lower priority
 			fileNode.current = fileNode.alternatives.front();
 			fileNode.alternatives.pop_front();
+
+			// keep the node
 			return false;
 		}
 
+		// the node is now empty, so erase it
 		return true;
 	});
+}
+
+void CryPak::AddFileAlternative(FileTreeNode& fileNode, const FileTreeNode::FileInPak& newFile)
+{
+	if (!fileNode.current.pakHandle)
+	{
+		// newly added empty file node
+		fileNode.current = newFile;
+		return;
+	}
+
+	if (fileNode.current.pakPriority <= newFile.pakPriority)
+	{
+		fileNode.alternatives.push_front(fileNode.current);
+		fileNode.current = newFile;
+		return;
+	}
+
+	fileNode.alternatives.push_front(newFile);
+
+	// sort from highest priority to lowest
+	fileNode.alternatives.sort([](const auto& a, const auto& b) { return a.pakPriority > b.pakPriority; });
 }

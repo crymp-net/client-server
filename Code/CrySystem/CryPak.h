@@ -63,11 +63,17 @@ class CryPak final : public ICryPak
 		}
 	};
 
+	enum class PakPriority
+	{
+		NORMAL, HIGH
+	};
+
 	struct PakSlot
 	{
 		std::string path;
 		std::string bindingRoot;
 		std::unique_ptr<IPak> impl;
+		PakPriority priority = {};
 		std::int32_t refCount = 0;
 		std::uint16_t serial = 0;
 
@@ -88,8 +94,9 @@ class CryPak final : public ICryPak
 	{
 		struct FileInPak
 		{
-			std::uint32_t pakHandle = 0;
 			std::uint32_t fileIndex = 0;
+			std::uint32_t pakHandle = 0;
+			PakPriority pakPriority = {};
 		};
 
 		FileInPak current;
@@ -246,4 +253,6 @@ private:
 
 	void AddPakToTree(PakSlot* pak);
 	void RemovePakFromTree(PakSlot* pak);
+
+	void AddFileAlternative(FileTreeNode& fileNode, const FileTreeNode::FileInPak& newFile);
 };
