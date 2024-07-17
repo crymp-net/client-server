@@ -19,7 +19,25 @@
 
 class CryPak final : public ICryPak
 {
-	struct DirectorySlot
+	struct OpenFileSlot
+	{
+		std::unique_ptr<IPakFile> impl;
+		std::uint32_t pakHandle = 0;
+		std::uint16_t serial = 0;
+
+		bool empty() const
+		{
+			return impl == nullptr;
+		}
+
+		void clear()
+		{
+			impl = nullptr;
+			pakHandle = 0;
+		}
+	};
+
+	struct FindSlot
 	{
 		struct Entry
 		{
@@ -45,24 +63,6 @@ class CryPak final : public ICryPak
 		}
 	};
 
-	struct FileSlot
-	{
-		std::unique_ptr<IPakFile> impl;
-		std::uint32_t pakHandle = 0;
-		std::uint16_t serial = 0;
-
-		bool empty() const
-		{
-			return impl == nullptr;
-		}
-
-		void clear()
-		{
-			impl = nullptr;
-			pakHandle = 0;
-		}
-	};
-
 	struct PakSlot
 	{
 		std::string path;
@@ -84,7 +84,7 @@ class CryPak final : public ICryPak
 		}
 	};
 
-	struct FileNode
+	struct FileTreeNode
 	{
 		struct FileInPak
 		{
@@ -96,19 +96,19 @@ class CryPak final : public ICryPak
 		std::forward_list<FileInPak> alternatives;
 	};
 
-	using Tree = PathTree<FileNode, StringTools::ComparatorNoCase>;
+	using Tree = PathTree<FileTreeNode, StringTools::ComparatorNoCase>;
 	using Redirects = PathTree<std::string, StringTools::ComparatorNoCase>;
 
 	bool m_gameFolderWritable = false;
 	bool m_lvlRes = false;
 
 	std::recursive_mutex m_mutex;
-	Redirects m_redirects;
 	std::map<std::string, std::string, StringTools::ComparatorNoCase> m_aliases;
-	SlotVector<DirectorySlot> m_directories;
-	SlotVector<FileSlot> m_files;
+	SlotVector<OpenFileSlot> m_files;
+	SlotVector<FindSlot> m_finds;
 	SlotVector<PakSlot> m_paks;
 	Tree m_tree;
+	Redirects m_redirects;
 
 	_smart_ptr<IResourceList> m_resourceList_EngineStartup;
 	_smart_ptr<IResourceList> m_resourceList_NextLevel;
@@ -240,9 +240,9 @@ private:
 
 	void ExpandAliases(std::string& path);
 
-	void FillFindData(struct _finddata_t* fd, const DirectorySlot::Entry& entry);
+	void FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry);
 
-	std::uint64_t GetFileSize(FileNode& fileNode);
+	std::uint64_t GetFileSize(FileTreeNode& fileNode);
 
 	void AddPakToTree(PakSlot* pak);
 	void RemovePakFromTree(PakSlot* pak);
