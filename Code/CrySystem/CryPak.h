@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <forward_list>
 #include <map>
@@ -63,7 +64,7 @@ class CryPak final : public ICryPak
 		}
 	};
 
-	enum class PakPriority
+	enum class Priority
 	{
 		NORMAL, HIGH
 	};
@@ -73,7 +74,7 @@ class CryPak final : public ICryPak
 		std::string path;
 		std::string bindingRoot;
 		std::unique_ptr<IPak> impl;
-		PakPriority priority = {};
+		Priority priority = {};
 		std::int32_t refCount = 0;
 		std::uint16_t serial = 0;
 
@@ -96,7 +97,7 @@ class CryPak final : public ICryPak
 		{
 			std::uint32_t fileIndex = 0;
 			std::uint32_t pakHandle = 0;
-			PakPriority pakPriority = {};
+			Priority priority = {};
 		};
 
 		FileInPak current;
@@ -121,8 +122,6 @@ class CryPak final : public ICryPak
 	_smart_ptr<IResourceList> m_resourceList_NextLevel;
 	_smart_ptr<IResourceList> m_resourceList_Level;
 
-	static CryPak s_globalInstance;
-
 public:
 	CryPak();
 	~CryPak();
@@ -130,7 +129,8 @@ public:
 	// to be removed once we have our own CrySystem
 	static CryPak& GetInstance()
 	{
-		return s_globalInstance;
+		static CryPak* instance = new CryPak();
+		return *instance;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -227,6 +227,8 @@ public:
 
 	void SetGameFolderWritable(bool writable) { m_gameFolderWritable = writable; }
 	bool IsGameFolderWritable() const { return m_gameFolderWritable; }
+
+	void LoadInternalPak(const void* data, std::size_t size);
 
 	void AddRedirect(std::string_view path, std::string_view newPath);
 	void RemoveRedirect(std::string_view path);

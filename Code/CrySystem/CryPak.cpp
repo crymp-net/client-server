@@ -13,8 +13,6 @@
 
 // TODO: std::string_view::data() in log messages
 // TODO: cleanup newly added log messages
-// TODO: remove file redirectors
-// TODO: PAK in EXE
 // TODO: custom allocator for CryPak
 // TODO: debug commands
 // TODO: some dev-only command line argument to set a folder that overrides PAK in EXE
@@ -147,8 +145,6 @@ static std::unique_ptr<FileOutsidePak> OpenFileOutside(const std::string& path, 
 
 	return file;
 }
-
-CryPak CryPak::s_globalInstance;
 
 CryPak::CryPak()
 {
@@ -1003,6 +999,33 @@ const char* CryPak::GetModDir() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void CryPak::LoadInternalPak(const void* data, std::size_t size)
+{
+	std::unique_ptr<ZipPak> pakImpl = ZipPak::OpenMemory(data, size);
+	if (!pakImpl)
+	{
+		CryLogAlways("%s: Failed", __FUNCTION__);
+		return;
+	}
+
+	PakSlot* pak = m_paks.GetFreeSlot();
+	if (!pak)
+	{
+		CryLogAlways("%s: Max number of slots reached", __FUNCTION__);
+		return;
+	}
+
+	pak->path.clear();
+	pak->bindingRoot = "Game";
+	pak->impl = std::move(pakImpl);
+	pak->priority = Priority::HIGH;
+	pak->refCount = 1;
+
+	this->AddPakToTree(pak);
+
+	CryLogAlways("%s: Success", __FUNCTION__);
+}
+
 void CryPak::AddRedirect(std::string_view path, std::string_view newPath)
 {
 	auto [node, added] = m_redirects.AddNode(this->AdjustFileNameImplWithoutRedirect(path, 0));
@@ -1289,7 +1312,7 @@ CryPak::PakSlot* CryPak::OpenPakImpl(const std::string& pakPath, const std::stri
 	pak->path = pakPath;
 	pak->bindingRoot = bindingRoot;
 	pak->impl = std::move(pakImpl);
-	pak->priority = PakPriority::NORMAL;
+	pak->priority = Priority::NORMAL;
 	pak->refCount = 1;
 
 	this->AddPakToTree(pak);
@@ -1442,7 +1465,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 		const FileTreeNode::FileInPak file = {
 			.fileIndex = i,
 			.pakHandle = pakHandle,
-			.pakPriority = pak->priority,
+			.priority = pak->priority,
 		};
 
 		// we don't need to check if the node was added because newly added nodes have invalid pak handle
@@ -1487,7 +1510,7 @@ void CryPak::AddFileAlternative(FileTreeNode& fileNode, const FileTreeNode::File
 		return;
 	}
 
-	if (fileNode.current.pakPriority <= newFile.pakPriority)
+	if (fileNode.current.priority <= newFile.priority)
 	{
 		fileNode.alternatives.push_front(fileNode.current);
 		fileNode.current = newFile;
@@ -1497,5 +1520,5 @@ void CryPak::AddFileAlternative(FileTreeNode& fileNode, const FileTreeNode::File
 	fileNode.alternatives.push_front(newFile);
 
 	// sort from highest priority to lowest
-	fileNode.alternatives.sort([](const auto& a, const auto& b) { return a.pakPriority > b.pakPriority; });
+	fileNode.alternatives.sort([](const auto& a, const auto& b) { return a.priority > b.priority; });
 }

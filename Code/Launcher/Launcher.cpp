@@ -25,6 +25,7 @@
 
 #include "Launcher.h"
 #include "MemoryPatch.h"
+#include "Resources.h"
 
 #include "config.h"
 
@@ -72,10 +73,13 @@ static ICryPak* CreateNewCryPak(ISystem* pSystem, CryPakConfig* config, bool lvl
 	// dropped because neither log file nor console are available at this point
 	CryLogAlways("$3[CryMP] Initializing CryPak");
 
+	const auto internalPak = WinAPI::GetDataResource(nullptr, RESOURCE_INTERNAL_PAK);
+
 	CryPak* pCryPak = &CryPak::GetInstance();
 	// TODO: config
 	// TODO: lvlRes
 	pCryPak->SetGameFolderWritable(gameFolderWritable);
+	pCryPak->LoadInternalPak(internalPak.data(), internalPak.size());
 
 	return pCryPak;
 }

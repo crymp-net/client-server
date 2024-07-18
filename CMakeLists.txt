@@ -585,8 +585,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryMP/Client/FileCache.h
 	Code/CryMP/Client/FileDownloader.cpp
 	Code/CryMP/Client/FileDownloader.h
-	Code/CryMP/Client/FlashFileHooks.cpp
-	Code/CryMP/Client/FlashFileHooks.h
 	Code/CryMP/Client/MapDownloader.cpp
 	Code/CryMP/Client/MapDownloader.h
 	Code/CryMP/Client/MapExtractor.cpp
@@ -787,27 +785,31 @@ endif()
 
 ################################################################################
 
+set(CRYMP_INTERNAL_PAK_PATH ${PROJECT_BINARY_DIR}/Pak.zip)
+
+# also list directories to detect removed files
+file(GLOB_RECURSE CRYMP_INTERNAL_PAK_DEPENDENCIES LIST_DIRECTORIES true CONFIGURE_DEPENDS Pak/*)
+list(INSERT CRYMP_INTERNAL_PAK_DEPENDENCIES 0 ${PROJECT_SOURCE_DIR}/Pak)
+
+add_custom_command(
+	OUTPUT ${CRYMP_INTERNAL_PAK_PATH}
+	DEPENDS ${CRYMP_INTERNAL_PAK_DEPENDENCIES}
+	COMMAND ${CMAKE_COMMAND} -E tar cf ${CRYMP_INTERNAL_PAK_PATH} --format=zip .
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Pak
+	VERBATIM
+)
+
+################################################################################
+
 set(CRYMP_CLIENT_RESOURCES
 	${PROJECT_SOURCE_DIR}/Resources/CursorAmber.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorBlue.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorRed.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorWhite.cur
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_VehicleStats.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_PDA_Buy.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/Menus_Loading_MP.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_HitIndicator.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_Spectate.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_MP_Radio_Buttons.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem_HR.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_KillLog.gfx
 	${PROJECT_SOURCE_DIR}/Resources/Icon.ico
-	${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
-	${PROJECT_SOURCE_DIR}/Scripts/Localization.lua
-	${PROJECT_SOURCE_DIR}/Scripts/Main.lua
-	${PROJECT_SOURCE_DIR}/Scripts/RPC.lua
 	${PROJECT_SOURCE_DIR}/masters.txt
+	${CRYMP_INTERNAL_PAK_PATH}
 )
 
 set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")
