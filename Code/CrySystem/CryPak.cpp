@@ -649,18 +649,35 @@ bool CryPak::IsInPak(FILE* handle)
 
 bool CryPak::RemoveFile(const char* name)
 {
-	// TODO: AdjustFileName
-	// TODO
-	CryLogErrorAlways("%s(\"%s\"): Not implemented!", __FUNCTION__, name);
-	return {};
+	std::lock_guard lock(m_mutex);
+
+	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), 0);
+
+	CryLog("%s(\"%s\"): Removing \"%s\"", __FUNCTION__, name, adjustedName.c_str());
+
+	std::error_code ec;
+	return std::filesystem::remove(adjustedName, ec);
 }
 
 bool CryPak::RemoveDir(const char* name, bool recurse)
 {
-	// TODO: AdjustFileName
-	// TODO
-	CryLogErrorAlways("%s(\"%s\", %d): Not implemented!", __FUNCTION__, name, static_cast<int>(recurse));
-	return {};
+	std::lock_guard lock(m_mutex);
+
+	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), 0);
+
+	CryLog("%s(\"%s\", recurse=%d): Removing \"%s\"", __FUNCTION__, name, static_cast<int>(recurse),
+		adjustedName.c_str());
+
+	if (recurse)
+	{
+		std::error_code ec;
+		return std::filesystem::remove_all(adjustedName, ec) > 0 && !ec;
+	}
+	else
+	{
+		std::error_code ec;
+		return std::filesystem::remove(adjustedName, ec);
+	}
 }
 
 bool CryPak::IsAbsPath(const char* path)
