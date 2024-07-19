@@ -9,7 +9,7 @@ std::unique_ptr<ZipPak> ZipPak::OpenFileHandle(std::FILE* file)
 
 	if (!mz_zip_reader_init_cfile(&pak->zip, file, 0, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
 	{
-		pak->LogError(__FUNCTION__);
+		pak->LogZipError(__FUNCTION__);
 		return {};
 	}
 
@@ -22,7 +22,7 @@ std::unique_ptr<ZipPak> ZipPak::OpenFileName(const std::string& adjustedName)
 
 	if (!mz_zip_reader_init_file(&pak->zip, adjustedName.c_str(), MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
 	{
-		pak->LogError(__FUNCTION__);
+		pak->LogZipError(__FUNCTION__);
 		return {};
 	}
 
@@ -35,7 +35,7 @@ std::unique_ptr<ZipPak> ZipPak::OpenMemory(const void* mem, std::size_t size)
 
 	if (!mz_zip_reader_init_mem(&pak->zip, mem, size, MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY))
 	{
-		pak->LogError(__FUNCTION__);
+		pak->LogZipError(__FUNCTION__);
 		return {};
 	}
 
@@ -53,14 +53,14 @@ std::unique_ptr<IFileInPak> ZipPak::OpenFile(std::uint32_t index, bool isBinary)
 	file->data = FileInZipPak::Data(mz_zip_reader_extract_to_heap(&this->zip, index, &file->size, 0));
 	if (!file->data)
 	{
-		this->LogError(__FUNCTION__);
+		this->LogZipError(__FUNCTION__);
 		return {};
 	}
 
 	mz_zip_archive_file_stat stat = {};
 	if (mz_zip_reader_file_stat(&this->zip, index, &stat) != MZ_TRUE)
 	{
-		this->LogError(__FUNCTION__);
+		this->LogZipError(__FUNCTION__);
 		return {};
 	}
 
@@ -109,7 +109,7 @@ bool ZipPak::GetEntrySize(std::uint32_t index, std::uint64_t& size)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ZipPak::LogError(const char* function)
+void ZipPak::LogZipError(const char* function)
 {
 	const char* error = mz_zip_get_error_string(mz_zip_peek_last_error(&this->zip));
 

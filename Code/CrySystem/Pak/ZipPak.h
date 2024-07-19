@@ -38,5 +38,5 @@ struct ZipPak final : public IPak
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
-	void LogError(const char* function);
+	void LogZipError(const char* function);
 };

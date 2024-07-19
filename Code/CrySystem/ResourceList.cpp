@@ -50,7 +50,7 @@ void ResourceList::Load(const char* resourceListFilename)
 			line.remove_suffix(1);
 		}
 
-		if (!line.empty() && !StringTools::StartsWithNoCase(line, "editor/"))
+		if (!line.empty() && !StringTools::StartsWithNoCase(line, "Editor/"))
 		{
 			m_paths.emplace(line);
 		}

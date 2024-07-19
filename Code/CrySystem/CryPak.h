@@ -20,6 +20,11 @@
 
 class CryPak final : public ICryPak
 {
+	enum class Priority
+	{
+		NORMAL, HIGH
+	};
+
 	struct OpenFileSlot
 	{
 		std::unique_ptr<IFileInPak> impl;
@@ -64,11 +69,6 @@ class CryPak final : public ICryPak
 		}
 	};
 
-	enum class Priority
-	{
-		NORMAL, HIGH
-	};
-
 	struct PakSlot
 	{
 		std::string path;
@@ -107,9 +107,6 @@ class CryPak final : public ICryPak
 	using Tree = PathTree<FileTreeNode, StringTools::ComparatorNoCase>;
 	using Redirects = PathTree<std::string, StringTools::ComparatorNoCase>;
 
-	bool m_gameFolderWritable = false;
-	bool m_lvlRes = false;
-
 	std::recursive_mutex m_mutex;
 	std::map<std::string, std::string, StringTools::ComparatorNoCase> m_aliases;
 	SlotVector<OpenFileSlot> m_files;
@@ -117,6 +114,8 @@ class CryPak final : public ICryPak
 	SlotVector<PakSlot> m_paks;
 	Tree m_tree;
 	Redirects m_redirects;
+
+	bool m_gameFolderWritable = false;
 
 	_smart_ptr<IResourceList> m_resourceList_EngineStartup;
 	_smart_ptr<IResourceList> m_resourceList_NextLevel;
@@ -129,7 +128,7 @@ public:
 	// to be removed once we have our own CrySystem
 	static CryPak& GetInstance()
 	{
-		static CryPak* instance = new CryPak();
+		static CryPak* instance = new CryPak;
 		return *instance;
 	}
 

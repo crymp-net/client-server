@@ -16,6 +16,7 @@
 // TODO: custom allocator for CryPak
 // TODO: debug commands
 // TODO: some dev-only command line argument to set a folder that overrides PAK in EXE
+// TODO: nested paks
 
 class CryPakWildcardMatcher
 {
@@ -485,7 +486,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 
 FILE* CryPak::FOpen(const char* name, const char* mode, char* fileGamePath, int length)
 {
-	CryLogAlways("%s(\"%s\", \"%s\"): NOT IMPLEMENTED!", __FUNCTION__, name, mode);
+	CryLogAlways("%s(\"%s\", \"%s\", 0x%p, %d): NOT IMPLEMENTED!", __FUNCTION__, name, mode, fileGamePath, length);
 	return nullptr;
 }
 
@@ -889,9 +890,8 @@ bool CryPak::MakeDir(const char* path)
 
 ICryArchive* CryPak::OpenArchive(const char* path, unsigned int flags)
 {
-	// TODO
 	CryLogAlways("%s(\"%s\", 0x%x): NOT IMPLEMENTED!", __FUNCTION__, path, flags);
-	return {};
+	return nullptr;
 }
 
 const char* CryPak::GetFileArchivePath(FILE* handle)
@@ -928,14 +928,12 @@ int CryPak::RawUncompress(void* uncompressed, unsigned long* dstSize, const void
 
 void CryPak::RecordFileOpen(const ERecordFileOpenList list)
 {
-	// TODO
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogAlways("%s(%d): NOT IMPLEMENTED!", __FUNCTION__, static_cast<int>(list));
 }
 
 void CryPak::RecordFile(FILE* handle, const char* name)
 {
-	// TODO
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogAlways("%s(0x%p, \"%s\"): NOT IMPLEMENTED!", __FUNCTION__, handle, name);
 }
 
 IResourceList* CryPak::GetRecorderdResourceList(const ERecordFileOpenList list)
@@ -953,9 +951,7 @@ IResourceList* CryPak::GetRecorderdResourceList(const ERecordFileOpenList list)
 
 ICryPak::ERecordFileOpenList CryPak::GetRecordFileOpenList()
 {
-	// TODO
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
-	return {};
+	return RFOM_Disabled;
 }
 
 void CryPak::Notify(ENotifyEvent event)
@@ -976,20 +972,17 @@ bool CryPak::ComputeMD5(const char* path, unsigned char* md5)
 
 void CryPak::RegisterFileAccessSink(ICryPakFileAcesssSink* pSink)
 {
-	// TODO
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogAlways("%s(0x%p): NOT IMPLEMENTED!", __FUNCTION__, pSink);
 }
 
 void CryPak::UnregisterFileAccessSink(ICryPakFileAcesssSink* pSink)
 {
-	// TODO
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogAlways("%s(0x%p): NOT IMPLEMENTED!", __FUNCTION__, pSink);
 }
 
 bool CryPak::GetLvlResStatus() const
 {
-	// TODO: check disassembly how this is set
-	return m_lvlRes;
+	return false;
 }
 
 const char* CryPak::GetModDir() const
@@ -1053,6 +1046,8 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 	adjusted.reserve(260);
 	adjusted = path;
 
+	// TODO: prevent access outside Crysis main directory and user directory
+
 	if ((flags & FLAGS_FOR_WRITING) && !m_gameFolderWritable)
 	{
 		if (adjusted.empty() || (adjusted[0] != '%' && !PathTools::IsAbsolutePath(adjusted)))
@@ -1067,12 +1062,7 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 	// TODO: remove duplicate slashes
 	// TODO: normalize the path
 
-	if (flags & FLAGS_NO_FULL_PATH)
-	{
-		return adjusted;
-	}
-
-	if (!PathTools::IsAbsolutePath(adjusted))
+	if (!PathTools::IsAbsolutePath(adjusted) && !(flags & FLAGS_NO_FULL_PATH))
 	{
 		const bool hasDotSlash = adjusted.starts_with("./");
 
