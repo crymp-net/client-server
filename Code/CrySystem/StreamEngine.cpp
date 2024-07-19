@@ -51,7 +51,7 @@ void StreamEngine::Job::Abort()
 
 void StreamEngine::Job::RaisePriority(unsigned int priority)
 {
-	CryLogAlways("%s(%u): NOT IMPLEMENTED!", __FUNCTION__, priority);
+	CryLogErrorAlways("%s(%u): Not implemented!", __FUNCTION__, priority);
 }
 
 std::uintptr_t StreamEngine::Job::GetUserData()
@@ -111,10 +111,11 @@ IReadStreamPtr StreamEngine::StartRead(const char* source, const char* filename,
 		job->flags = params->nFlags;
 	}
 
-	CryLogAlways("%s(\"%s\", \"%s\", size=0x%x, offset=0x%x, flags=0x%x)", __FUNCTION__, source, filename,
-		job->requestedSize, job->requestedOffset, job->flags);
-
 	m_submittedJobs.PushAndNotify(job);
+
+	CryLogComment("StreamEngine(\"%s\", \"%s\", size=0x%x, offset=0x%x, flags=0x%x): Started",
+		job->source.c_str(), job->filename.c_str(), job->requestedSize, job->requestedOffset, job->flags);
+
 
 	return IReadStreamPtr(job.get());
 }
@@ -147,23 +148,23 @@ void StreamEngine::Update(unsigned int flags)
 
 unsigned int StreamEngine::Wait(unsigned int milliseconds, unsigned int flags)
 {
-	CryLogAlways("%s(%u, 0x%x): NOT IMPLEMENTED!", __FUNCTION__, milliseconds, flags);
+	CryLogErrorAlways("%s(%u, 0x%x): Not implemented!", __FUNCTION__, milliseconds, flags);
 	return 0;
 }
 
 void StreamEngine::GetMemoryStatistics(ICrySizer* sizer)
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 void StreamEngine::SuspendCallbackTimeQuota()
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 void StreamEngine::ResumeCallbackTimeQuota()
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,4 +273,7 @@ void StreamEngine::DoCallback(Job& job)
 	}
 
 	job.state.Set(JobState::CALLBACK_DONE);
+
+	CryLogComment("StreamEngine(\"%s\", \"%s\", size=0x%x, offset=0x%x, flags=0x%x): Finished",
+		job.source.c_str(), job.filename.c_str(), job.requestedSize, job.requestedOffset, job.flags);
 }

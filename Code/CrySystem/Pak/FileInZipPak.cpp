@@ -48,13 +48,13 @@ std::size_t FileInZipPak::FRead(void* buffer, std::size_t elementSize, std::size
 
 std::size_t FileInZipPak::FWrite(const void* buffer, std::size_t elementSize, std::size_t elementCount)
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 	return 0;
 }
 
 int FileInZipPak::VFPrintF(const char* format, va_list args)
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 	return -1;
 }
 
@@ -113,7 +113,7 @@ int FileInZipPak::FGetC()
 
 int FileInZipPak::FUnGetC(int ch)
 {
-	CryLogAlways("%s: NOT IMPLEMENTED!", __FUNCTION__);
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 	return EOF;
 }
 

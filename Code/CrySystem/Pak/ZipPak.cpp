@@ -113,5 +113,5 @@ void ZipPak::LogZipError(const char* function)
 {
 	const char* error = mz_zip_get_error_string(mz_zip_peek_last_error(&this->zip));
 
-	CryLogAlways("%s: %s", function, error);
+	CryLogErrorAlways("%s: %s", function, error);
 }
