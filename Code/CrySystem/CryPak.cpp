@@ -1168,12 +1168,12 @@ CryPak::OpenFileSlot* CryPak::OpenFileInPakImpl(std::string&& filePath, FileMode
 
 CryPak::OpenFileSlot* CryPak::OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode)
 {
-	std::filesystem::path stdPath(filePath);
+	std::filesystem::path fsPath(filePath);
 
 	if (this->IsFileModeWriting(mode))
 	{
 		std::error_code ec;
-		std::filesystem::create_directories(stdPath.parent_path(), ec);
+		std::filesystem::create_directories(fsPath.parent_path(), ec);
 
 		if (ec)
 		{
@@ -1203,7 +1203,7 @@ CryPak::OpenFileSlot* CryPak::OpenFileOutsideImpl(std::string&& filePath, FileMo
 	}
 
 	file->path = std::move(filePath);
-	file->impl = std::make_unique<FileOutsidePak>(std::move(handle), std::move(stdPath));
+	file->impl = std::make_unique<FileOutsidePak>(std::move(handle), std::move(fsPath));
 	file->pakHandle = 0;
 	return file;
 }
@@ -1228,52 +1228,55 @@ CryPak::FindSlot* CryPak::OpenFindImpl(const std::string& wildcardPath)
 
 	std::vector<FindSlot::Entry> entries;
 
-	// TODO: maybe std::map instead?
-	const auto isDuplicate = [&entries](std::string_view name) -> bool
-	{
-		const auto it = std::find_if(entries.begin(), entries.end(),
-			[name](const FindSlot::Entry& entry) -> bool
-			{
-				return StringTools::IsEqualNoCase(entry.name, name);
-			}
-		);
-
-		return it != entries.end();
-	};
-
 	Tree::DirectoryNode* dirNode = m_tree.FindDirectoryNode(dirPath);
 	if (dirNode)
 	{
 		for (auto& [name, node] : *dirNode)
 		{
-			if (!matcher(name) || isDuplicate(name))
+			if (!matcher(name))
 			{
 				continue;
 			}
 
-			FileTreeNode* fileNode = std::get_if<FileTreeNode>(&node);
+			std::uint64_t size = 0;
+			bool isDirectory = true;
 
-			FindSlot::Entry& e = entries.emplace_back();
-			e.name = name;
-			e.isInPak = true;
-			e.isDirectory = (fileNode == nullptr);
-			e.size = (fileNode == nullptr) ? 0 : this->GetFileSize(*fileNode);
+			if (FileTreeNode* fileNode = std::get_if<FileTreeNode>(&node); fileNode)
+			{
+				isDirectory = false;
+				size = this->GetFileSize(*fileNode);
+			}
+
+			entries.emplace_back(name, size, isDirectory, true);
 		}
 	}
 
-	std::error_code ec;
-	for (const auto& dirEntry : std::filesystem::directory_iterator(dirPath, ec))
+	const auto isDuplicate = [&entries](std::string_view name) -> bool
 	{
-		std::string name = dirEntry.path().filename().generic_string();
+		return std::any_of(entries.begin(), entries.end(),
+			[name](const auto& entry) { return StringTools::IsEqualNoCase(entry.name, name); });
+	};
 
-		if (matcher(name) && !isDuplicate(name))
+	std::error_code ec;
+	for (const auto& fsEntry : std::filesystem::directory_iterator(dirPath, ec))
+	{
+		std::string name = fsEntry.path().filename().generic_string();
+
+		if (!matcher(name) || isDuplicate(name))
 		{
-			FindSlot::Entry& e = entries.emplace_back();
-			e.name = std::move(name);
-			e.isInPak = false;
-			e.isDirectory = dirEntry.is_directory(ec);
-			e.size = e.isDirectory ? 0 : dirEntry.file_size(ec);
+			continue;
 		}
+
+		std::uint64_t size = 0;
+		bool isDirectory = true;
+
+		if (!fsEntry.is_directory(ec))
+		{
+			isDirectory = false;
+			size = fsEntry.file_size(ec);
+		}
+
+		entries.emplace_back(std::move(name), size, isDirectory, false);
 	}
 
 	CryLogComment("%s(\"%s\"): Found %zu entries", __FUNCTION__, wildcardPath.c_str(), entries.size());
@@ -1408,13 +1411,12 @@ void CryPak::FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry)
 		return;
 	}
 
-	*fd = {};
-
 	fd->attrib = _A_NORMAL;
 	fd->size = entry.size;
-	//fd->time_create = 0;
-	//fd->time_access = 0;
-	//fd->time_write = 0;
+	// nothing uses these anyway
+	fd->time_create = 0;
+	fd->time_access = 0;
+	fd->time_write = 0;
 
 	if (entry.isDirectory)
 	{
