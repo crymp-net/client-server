@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdio>
 #include <filesystem>
 #include <memory>
 
@@ -22,6 +23,11 @@ struct FileOutsidePak final : public IFileInPak
 
 	std::unique_ptr<std::byte[]> data;
 	std::size_t dataSize = 0;
+
+	explicit FileOutsidePak(Handle&& handle, std::filesystem::path&& path)
+	: handle(std::move(handle)), path(std::move(path))
+	{
+	}
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IFileInPak

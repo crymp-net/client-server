@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cerrno>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -57,8 +59,11 @@ public:
 			m_kind = (m_kind == Wildcard::STEM) ? Wildcard::FULL : Wildcard::EXTENSION;
 		}
 
-		if (m_stem.find_first_of("*?") != std::string_view::npos
-		 || m_extension.find_first_of("*?") != std::string_view::npos)
+		const auto hasWildcard = [](std::string_view x) {
+			return x.find_first_of("*?") != std::string_view::npos;
+		};
+
+		if (hasWildcard(m_stem) || hasWildcard(m_extension))
 		{
 			CryLogErrorAlways("CryPakWildcardMatcher(\"%.*s\"): Unsupported wildcard!",
 				static_cast<int>(wildcard.size()), wildcard.data());
@@ -122,27 +127,6 @@ static std::vector<std::string> ExpandWildcardFilesystemPath(std::string_view wi
 	std::sort(foundPaths.begin(), foundPaths.end(), StringTools::ComparatorNoCase());
 
 	return foundPaths;
-}
-
-static std::unique_ptr<FileOutsidePak> OpenFileOutside(const std::string& path, const std::string& mode, bool writable)
-{
-	auto file = std::make_unique<FileOutsidePak>();
-
-	file->path = path;
-
-	if (writable)
-	{
-		std::error_code ec;
-		std::filesystem::create_directories(file->path.parent_path(), ec);
-	}
-
-	file->handle = FileOutsidePak::Handle(std::fopen(path.c_str(), mode.c_str()));
-	if (!file->handle)
-	{
-		return {};
-	}
-
-	return file;
 }
 
 CryPak::CryPak()
@@ -445,41 +429,34 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 {
 	std::lock_guard lock(m_mutex);
 
-	const std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
+	std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
+	const FileModeFlags modeFlags = this->FileModeFromString(StringTools::SafeView(mode));
+	bool foundInPak = true;
 
-	// TODO: use some flags instead
-	std::string adjustedMode = StringTools::SafeString(mode);
-	adjustedMode.erase(std::remove_if(adjustedMode.begin(), adjustedMode.end(),
-		[](char ch) -> bool
-		{
-			return std::string_view("rwab+").find(ch) == std::string_view::npos;
-		}
-	), adjustedMode.end());
-
-	if (adjustedMode != StringTools::SafeView(mode))
-	{
-		CryLogComment("%s(\"%s\", \"%s\", 0x%x): Changing mode to \"%s\"", __FUNCTION__, name, mode, flags,
-			adjustedMode.c_str());
-	}
-
-	OpenFileSlot* file = this->OpenFileImpl(adjustedName, adjustedMode);
+	OpenFileSlot* file = this->OpenFileInPakImpl(std::move(adjustedName), modeFlags);
 	if (!file)
 	{
-		CryLogComment("%s(\"%s\", \"%s\", 0x%x): Not found!", __FUNCTION__, name, mode, flags);
-		return nullptr;
+		foundInPak = false;
+		file = this->OpenFileOutsideImpl(std::move(adjustedName), modeFlags);
+		if (!file)
+		{
+			CryLogComment("%s(\"%s\", \"%s\", 0x%x): Not found!", __FUNCTION__, name, mode, flags);
+			return nullptr;
+		}
 	}
 
 	FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
 
-	if (PakSlot* pak = m_paks.HandleToSlot(file->pakHandle); pak)
+	if (foundInPak)
 	{
+		PakSlot* pak = m_paks.HandleToSlot(file->pakHandle);
 		CryLogComment("%s(\"%s\", \"%s\", 0x%x): 0x%p Found in pak \"%s\"", __FUNCTION__, name, mode, flags,
-			handle, pak->path.c_str());
+			handle, pak ? pak->path.c_str() : "");
 	}
 	else
 	{
 		CryLogComment("%s(\"%s\", \"%s\", 0x%x): 0x%p Found outside \"%s\"", __FUNCTION__, name, mode, flags,
-			handle, adjustedName.c_str());
+			handle, file->path.c_str());
 	}
 
 	return handle;
@@ -496,7 +473,7 @@ size_t CryPak::FReadRaw(void* data, size_t elementSize, size_t elementCount, FIL
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -510,7 +487,7 @@ size_t CryPak::FReadRawAll(void* data, size_t fileSize, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -534,7 +511,7 @@ void* CryPak::FGetCachedFileData(FILE* handle, size_t& fileSize)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -548,7 +525,7 @@ size_t CryPak::FWrite(const void* data, size_t elementSize, size_t elementCount,
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -562,7 +539,7 @@ int CryPak::FPrintf(FILE* handle, const char* format, ...)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -581,7 +558,7 @@ char* CryPak::FGets(char* buffer, int bufferSize, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -595,7 +572,7 @@ int CryPak::Getc(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -609,7 +586,7 @@ size_t CryPak::FGetSize(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -623,7 +600,7 @@ int CryPak::Ungetc(int ch, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -637,7 +614,7 @@ bool CryPak::IsInPak(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -691,7 +668,7 @@ size_t CryPak::FSeek(FILE* handle, long seek, int mode)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -705,7 +682,7 @@ long CryPak::FTell(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -719,7 +696,7 @@ int CryPak::FClose(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -737,7 +714,7 @@ int CryPak::FEof(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -751,7 +728,7 @@ int CryPak::FError(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -770,7 +747,7 @@ int CryPak::FFlush(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -812,7 +789,7 @@ int CryPak::FindNext(intptr_t handle, struct _finddata_t* fd)
 {
 	std::lock_guard lock(m_mutex);
 
-	FindSlot* find = m_finds.HandleToSlot(static_cast<std::uint32_t>(handle));
+	FindSlot* find = m_finds.HandleToSlot(static_cast<SlotVectorHandle>(handle));
 	if (!find)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, reinterpret_cast<void*>(handle));
@@ -834,7 +811,7 @@ int CryPak::FindClose(intptr_t handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FindSlot* find = m_finds.HandleToSlot(static_cast<std::uint32_t>(handle));
+	FindSlot* find = m_finds.HandleToSlot(static_cast<SlotVectorHandle>(handle));
 	if (!find)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, reinterpret_cast<void*>(handle));
@@ -850,7 +827,7 @@ ICryPak::FileTime CryPak::GetModificationTime(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -921,7 +898,7 @@ const char* CryPak::GetFileArchivePath(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<std::uint32_t>(handle));
+	OpenFileSlot* file = m_files.HandleToSlot(reinterpret_cast<SlotVectorHandle>(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -1145,81 +1122,90 @@ std::string CryPak::AdjustFileNameImpl(std::string_view path, unsigned int flags
 	return adjusted;
 }
 
-CryPak::OpenFileSlot* CryPak::OpenFileImpl(const std::string& filePath, const std::string& mode)
+CryPak::OpenFileSlot* CryPak::OpenFileInPakImpl(std::string&& filePath, FileModeFlags mode)
 {
-	bool isWriting = false;
-	bool isBinary = false;
-	for (char ch : mode)
-	{
-		switch (ch)
-		{
-			case 'r': break;
-			case 'w': isWriting = true; break;
-			case 'a': isWriting = true; break;
-			case 'b': isBinary = true; break;
-			case 't': isBinary = false; break;
-			case 'x': break;
-			case '+': isWriting = true; break;
-		}
-	}
-
 	FileTreeNode* fileNode = m_tree.FindNode(filePath);
-	if (fileNode)
+	if (!fileNode)
 	{
-		PakSlot* pak = m_paks.HandleToSlot(fileNode->current.pakHandle);
-		if (!pak)
-		{
-			CryLogErrorAlways("%s(\"%s\", \"%s\"): Invalid pak handle!", __FUNCTION__,
-				filePath.c_str(), mode.c_str());
-			return nullptr;
-		}
-
-		std::unique_ptr<IFileInPak> fileImpl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
-		if (!fileImpl)
-		{
-			CryLogErrorAlways("%s(\"%s\", \"%s\"): Failed!", __FUNCTION__,
-				filePath.c_str(), mode.c_str());
-			return nullptr;
-		}
-
-		if (isWriting)
-		{
-			CryLogErrorAlways("%s(\"%s\", \"%s\"): Writing to paks is not supported!", __FUNCTION__,
-				filePath.c_str(), mode.c_str());
-			return nullptr;
-		}
-
-		OpenFileSlot* file = m_files.GetFreeSlot();
-		if (!file)
-		{
-			CryLogErrorAlways("%s(\"%s\", \"%s\"): Max number of slots reached!", __FUNCTION__,
-				filePath.c_str(), mode.c_str());
-			return nullptr;
-		}
-
-		file->impl = std::move(fileImpl);
-		file->pakHandle = m_paks.SlotToHandle(pak);
-		this->IncrementPakRefCount(pak);
-		return file;
+		return nullptr;
 	}
 
-	std::unique_ptr<FileOutsidePak> fileImpl = OpenFileOutside(filePath, mode, isWriting);
-	if (fileImpl)
+	if (this->IsFileModeWriting(mode))
 	{
-		OpenFileSlot* file = m_files.GetFreeSlot();
-		if (!file)
-		{
-			CryLogErrorAlways("%s(\"%s\", \"%s\"): Max number of slots reached!", __FUNCTION__,
-				filePath.c_str(), mode.c_str());
-			return nullptr;
-		}
-
-		file->impl = std::move(fileImpl);
-		file->pakHandle = 0;
-		return file;
+		CryLogErrorAlways("%s(\"%s\"): Writing to paks is not supported!", __FUNCTION__, filePath.c_str());
+		return nullptr;
 	}
 
-	return nullptr;
+	PakSlot* pak = m_paks.HandleToSlot(fileNode->current.pakHandle);
+	if (!pak)
+	{
+		CryLogErrorAlways("%s(\"%s\"): Invalid pak handle!", __FUNCTION__, filePath.c_str());
+		return nullptr;
+	}
+
+	const bool isBinary = (mode & FILE_MODE_BINARY);
+
+	std::unique_ptr<IFileInPak> fileImpl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
+	if (!fileImpl)
+	{
+		CryLogErrorAlways("%s(\"%s\"): Error in pak!", __FUNCTION__, filePath.c_str());
+		return nullptr;
+	}
+
+	OpenFileSlot* file = m_files.GetFreeSlot();
+	if (!file)
+	{
+		CryLogErrorAlways("%s(\"%s\"): Max number of slots reached!", __FUNCTION__, filePath.c_str());
+		return nullptr;
+	}
+
+	file->path = std::move(filePath);
+	file->impl = std::move(fileImpl);
+	file->pakHandle = m_paks.SlotToHandle(pak);
+	this->IncrementPakRefCount(pak);
+	return file;
+}
+
+CryPak::OpenFileSlot* CryPak::OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode)
+{
+	std::filesystem::path stdPath(filePath);
+
+	if (this->IsFileModeWriting(mode))
+	{
+		std::error_code ec;
+		std::filesystem::create_directories(stdPath.parent_path(), ec);
+
+		if (ec)
+		{
+			CryLogErrorAlways("%s(\"%s\"): Creating directories failed: Error %d (%s)", __FUNCTION__,
+				filePath.c_str(), ec.value(), ec.message().c_str());
+			return nullptr;
+		}
+	}
+
+	FileOutsidePak::Handle handle(std::fopen(filePath.c_str(), this->FileModeToString(mode).c_str()));
+	if (!handle)
+	{
+		const int errnum = errno;
+		if (errnum != ENOENT)
+		{
+			CryLogErrorAlways("%s(\"%s\"): File open failed: Error %d (%s)", __FUNCTION__,
+				filePath.c_str(), errnum, std::strerror(errnum));
+		}
+		return nullptr;
+	}
+
+	OpenFileSlot* file = m_files.GetFreeSlot();
+	if (!file)
+	{
+		CryLogErrorAlways("%s(\"%s\"): Max number of slots reached!", __FUNCTION__, filePath.c_str());
+		return nullptr;
+	}
+
+	file->path = std::move(filePath);
+	file->impl = std::make_unique<FileOutsidePak>(std::move(handle), std::move(stdPath));
+	file->pakHandle = 0;
+	return file;
 }
 
 void CryPak::CloseFileImpl(OpenFileSlot* file)
@@ -1354,6 +1340,11 @@ CryPak::PakSlot* CryPak::OpenPakImpl(const std::string& pakPath, const std::stri
 
 CryPak::PakSlot* CryPak::FindLoadedPakByPath(const std::string& pakPath)
 {
+	if (pakPath.empty())
+	{
+		return nullptr;
+	}
+
 	return m_paks.Find([pakPath](const PakSlot& pak) { return StringTools::IsEqualNoCase(pak.path, pakPath); });
 }
 
@@ -1421,9 +1412,9 @@ void CryPak::FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry)
 
 	fd->attrib = _A_NORMAL;
 	fd->size = entry.size;
-	// TODO: fd->time_create
-	// TODO: fd->time_access
-	// TODO: fd->time_write
+	//fd->time_create = 0;
+	//fd->time_access = 0;
+	//fd->time_write = 0;
 
 	if (entry.isDirectory)
 	{
@@ -1439,6 +1430,64 @@ void CryPak::FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry)
 
 	std::memcpy(fd->name, entry.name.c_str(), length);
 	fd->name[length] = '\0';
+}
+
+CryPak::FileModeFlags CryPak::FileModeFromString(std::string_view mode)
+{
+	FileModeFlags flags = 0;
+
+	for (char ch : mode)
+	{
+		switch (ch)
+		{
+			case 'r': flags |= FILE_MODE_READ; break;
+			case 'w': flags |= FILE_MODE_WRITE; break;
+			case 'a': flags |= FILE_MODE_APPEND; break;
+			case '+': flags |= FILE_MODE_EXTENDED; break;
+			case 'b': flags |= FILE_MODE_BINARY; break;
+			case 't': flags &= ~FILE_MODE_BINARY; break;
+			case 'x': break;
+		}
+	}
+
+	return flags;
+}
+
+std::string CryPak::FileModeToString(FileModeFlags flags)
+{
+	std::string mode;
+
+	if (flags & FILE_MODE_READ)
+	{
+		mode += 'r';
+	}
+
+	if (flags & FILE_MODE_WRITE)
+	{
+		mode += 'w';
+	}
+
+	if (flags & FILE_MODE_APPEND)
+	{
+		mode += 'a';
+	}
+
+	if (flags & FILE_MODE_EXTENDED)
+	{
+		mode += '+';
+	}
+
+	if (flags & FILE_MODE_BINARY)
+	{
+		mode += 'b';
+	}
+
+	return mode;
+}
+
+bool CryPak::IsFileModeWriting(FileModeFlags flags)
+{
+	return (flags & (FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_EXTENDED));
 }
 
 std::uint64_t CryPak::GetFileSize(FileTreeNode& fileNode)
@@ -1460,7 +1509,7 @@ std::uint64_t CryPak::GetFileSize(FileTreeNode& fileNode)
 
 void CryPak::AddPakToTree(PakSlot* pak)
 {
-	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
+	const SlotVectorHandle pakHandle = m_paks.SlotToHandle(pak);
 
 	auto [baseNode, baseNodeAdded] = m_tree.AddDirectory(pak->bindingRoot);
 	if (!baseNode)
@@ -1505,7 +1554,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 
 void CryPak::RemovePakFromTree(PakSlot* pak)
 {
-	const std::uint32_t pakHandle = m_paks.SlotToHandle(pak);
+	const SlotVectorHandle pakHandle = m_paks.SlotToHandle(pak);
 
 	m_tree.EraseIf([pakHandle](FileTreeNode& fileNode) -> bool {
 		fileNode.alternatives.remove_if([pakHandle](const auto& x) { return x.pakHandle == pakHandle; });

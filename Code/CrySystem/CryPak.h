@@ -25,11 +25,24 @@ class CryPak final : public ICryPak
 		NORMAL, HIGH
 	};
 
+	enum
+	{
+		FILE_MODE_READ     = (1 << 0),
+		FILE_MODE_WRITE    = (1 << 1),
+		FILE_MODE_APPEND   = (1 << 2),
+		FILE_MODE_EXTENDED = (1 << 3),
+		FILE_MODE_BINARY   = (1 << 4),
+	};
+
+	using FileModeFlags = std::uint16_t;
+
 	struct OpenFileSlot
 	{
+		std::string path;
 		std::unique_ptr<IFileInPak> impl;
-		std::uint32_t pakHandle = 0;
-		std::uint16_t serial = 0;
+		SlotVectorHandle pakHandle = 0;
+		SlotVectorSerial serial = 0;
+		FileModeFlags mode = 0;
 
 		bool empty() const
 		{
@@ -39,7 +52,6 @@ class CryPak final : public ICryPak
 		void clear()
 		{
 			impl = nullptr;
-			pakHandle = 0;
 		}
 	};
 
@@ -55,7 +67,7 @@ class CryPak final : public ICryPak
 
 		std::vector<Entry> entries;
 		std::vector<Entry>::size_type pos = 0;
-		std::uint16_t serial = 0;
+		SlotVectorSerial serial = 0;
 
 		bool empty() const
 		{
@@ -65,7 +77,6 @@ class CryPak final : public ICryPak
 		void clear()
 		{
 			entries.clear();
-			pos = 0;
 		}
 	};
 
@@ -76,7 +87,7 @@ class CryPak final : public ICryPak
 		std::unique_ptr<IPak> impl;
 		Priority priority = {};
 		std::int32_t refCount = 0;
-		std::uint16_t serial = 0;
+		SlotVectorSerial serial = 0;
 
 		bool empty() const
 		{
@@ -85,8 +96,6 @@ class CryPak final : public ICryPak
 
 		void clear()
 		{
-			path.clear();
-			bindingRoot.clear();
 			impl = nullptr;
 		}
 	};
@@ -96,7 +105,7 @@ class CryPak final : public ICryPak
 		struct FileInPak
 		{
 			std::uint32_t fileIndex = 0;
-			std::uint32_t pakHandle = 0;
+			SlotVectorHandle pakHandle = 0;
 			Priority priority = {};
 		};
 
@@ -236,7 +245,8 @@ private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
-	OpenFileSlot* OpenFileImpl(const std::string& filePath, const std::string& mode);
+	OpenFileSlot* OpenFileInPakImpl(std::string&& filePath, FileModeFlags mode);
+	OpenFileSlot* OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode);
 	void CloseFileImpl(OpenFileSlot* file);
 
 	FindSlot* OpenFindImpl(const std::string& wildcardPath);
@@ -252,6 +262,10 @@ private:
 	void ExpandAliases(std::string& path);
 
 	void FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry);
+
+	FileModeFlags FileModeFromString(std::string_view mode);
+	std::string FileModeToString(FileModeFlags flags);
+	bool IsFileModeWriting(FileModeFlags flags);
 
 	std::uint64_t GetFileSize(FileTreeNode& fileNode);
 

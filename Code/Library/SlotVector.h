@@ -4,16 +4,21 @@
 #include <cstdint>
 #include <vector>
 
+using SlotVectorHandle = std::uint32_t;
+using SlotVectorSerial = std::uint16_t;
+
 template<class T>
 class SlotVector
 {
 	std::vector<T> m_slots;
 
-	void IncrementSerial(std::uint16_t& serial)
+	SlotVectorSerial IncrementSerial(SlotVectorSerial serial)
 	{
 		// serial is never zero to make sure a valid handle is never zero as well
+		// zero handle can be used as an invalid handle
 		serial += 1;
 		serial += (serial == 0);
+		return serial;
 	}
 
 	T* SkipEmptySlots(T* slot)
@@ -54,21 +59,21 @@ public:
 			slot = &(*it);
 		}
 
-		this->IncrementSerial(slot->serial);
+		slot->serial = this->IncrementSerial(slot->serial);
 
 		return slot;
 	}
 
-	std::uint32_t SlotToHandle(T* slot)
+	SlotVectorHandle SlotToHandle(T* slot)
 	{
-		const std::uint32_t index = static_cast<std::uint32_t>(slot - &m_slots[0]);
+		const SlotVectorHandle index = static_cast<SlotVectorHandle>(slot - &m_slots[0]);
 
 		return (index << 16) | slot->serial;
 	}
 
-	T* HandleToSlot(std::uint32_t handle)
+	T* HandleToSlot(SlotVectorHandle handle)
 	{
-		const std::uint32_t index = handle >> 16;
+		const SlotVectorHandle index = handle >> 16;
 
 		if (index >= m_slots.size())
 		{
@@ -100,9 +105,12 @@ public:
 		return &(*it);
 	}
 
-	std::uint32_t GetActiveCount()
+	std::uint16_t GetActiveCount()
 	{
-		return std::count_if(m_slots.begin(), m_slots.end(), [](const T& x) { return !x.empty(); });
+		// index is std::uint16_t
+		return static_cast<std::uint16_t>(
+			std::count_if(m_slots.begin(), m_slots.end(), [](const T& x) { return !x.empty(); })
+		);
 	}
 
 	T* GetFirstActive()
