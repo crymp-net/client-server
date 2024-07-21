@@ -11,6 +11,12 @@ namespace MemoryPatch
 	{
 		void AllowDX9ImmersiveMultiplayer(void* pCryAction);
 		void DisableBreakLog(void* pCryAction);
+		void DisableTimeOfDayLengthLowerLimit(void* pCryAction);
+	}
+
+	namespace CryAISystem
+	{
+		void DisableMPChecksInAI(void* pCryAISystem);
 	}
 
 	namespace CryNetwork
@@ -79,6 +85,7 @@ namespace MemoryPatch
 		void MakeDX9Default(void* pCrySystem);
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
+		void EnablePhysicsThread(void* pCrySystem);
 	}
 
 	namespace FMODEx

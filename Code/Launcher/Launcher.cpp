@@ -603,6 +603,12 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the CryAction DLL!");
 	}
 
+	m_dlls.pCryAISystem = WinAPI::DLL::Load("CryAISystem.dll");
+	if (!m_dlls.pCryAISystem)
+	{
+		throw StringTools::SysErrorFormat("Failed to load the CryAISystem DLL!");
+	}
+
 	m_dlls.pCryNetwork = WinAPI::DLL::Load("CryNetwork.dll");
 	if (!m_dlls.pCryNetwork)
 	{
@@ -656,6 +662,12 @@ void Launcher::PatchEngine()
 	{
 		MemoryPatch::CryAction::AllowDX9ImmersiveMultiplayer(m_dlls.pCryAction);
 		MemoryPatch::CryAction::DisableBreakLog(m_dlls.pCryAction);
+		MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(m_dlls.pCryAction);
+	}
+
+	if (m_dlls.pCryAISystem)
+	{
+		MemoryPatch::CryAISystem::DisableMPChecksInAI(m_dlls.pCryAISystem);
 	}
 
 	if (m_dlls.pCryNetwork)
@@ -679,6 +691,7 @@ void Launcher::PatchEngine()
 		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::RemoveSecuROM(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::UnhandledExceptions(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::EnablePhysicsThread(m_dlls.pCrySystem);
 
 		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{

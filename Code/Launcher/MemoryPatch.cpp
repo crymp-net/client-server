@@ -697,3 +697,41 @@ void MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(void* pFMODEx)
 	FillMem(pFMODEx, 0x486B7, &code, sizeof(code));
 #endif
 }
+
+/**
+ * Disables some MP checks in AI
+ */
+void MemoryPatch::CryAISystem::DisableMPChecksInAI(void* pCryAISystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCryAISystem, 0x1C8740, 0x9);
+#else
+	FillNop(pCryAISystem, 0x17504B, 0x6);
+#endif
+}
+
+/**
+ * Enables physics thread on server
+ */
+void MemoryPatch::CrySystem::EnablePhysicsThread(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0x36CD6, 0x11);
+#else
+	FillNop(pCrySystem, 0x4CBC1, 0xD);
+#endif
+
+	//CryLogAlways("$3[CryMP] Enabled Physics Thread");
+}
+
+/**
+ * Disable Time of Day Length lower limit
+ */
+void MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(void* pCryAction)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCryAction, 0x302F28, 0x1A);
+#else
+	FillNop(pCryAction, 0x20C9E4, 0x23);
+#endif
+}
