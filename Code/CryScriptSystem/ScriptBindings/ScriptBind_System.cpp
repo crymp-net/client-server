@@ -11,7 +11,7 @@
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFind.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
@@ -511,16 +511,13 @@ static bool Filter(struct __finddata64_t& fd, int nScanMode)
 	return false;
 }
 
-static bool Filter(struct _finddata_t& fd, int nScanMode)
+static bool Filter(const CryFindEntry& entry, int scanMode)
 {
-	if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-		return false;
-
-	switch (nScanMode)
+	switch (scanMode)
 	{
 		case SCANDIR_ALL:     return true;
-		case SCANDIR_SUBDIRS: return 0 != (fd.attrib & _A_SUBDIR);
-		case SCANDIR_FILES:   return 0 == (fd.attrib & _A_SUBDIR);
+		case SCANDIR_SUBDIRS: return entry.IsDirectory();
+		case SCANDIR_FILES:   return !entry.IsDirectory();
 	}
 
 	return false;
@@ -529,41 +526,34 @@ static bool Filter(struct _finddata_t& fd, int nScanMode)
 int ScriptBind_System::ScanDirectory(IFunctionHandler *pH)
 {
 	if (pH->GetParamCount() < 1)
+	{
 		return pH->EndFunction();
+	}
 
 	SmartScriptTable pObj(m_pSS);
 	int k = 1;
 
 	const char *folderName = nullptr;
 	if (!pH->GetParam(1, folderName))
-		return pH->EndFunction(*pObj);
-
-	int nScanMode = SCANDIR_SUBDIRS;
-
-	if (pH->GetParamCount() > 1)
-		pH->GetParam(2, nScanMode);
-
 	{
-		_finddata_t c_file;
-		intptr_t hFile;
+		return pH->EndFunction(*pObj);
+	}
 
-		if ((hFile = gEnv->pCryPak->FindFirst((std::string(folderName) + "\\*.*").c_str(), &c_file)) == -1L)
-		{
-			return pH->EndFunction(*pObj);
-		}
-		else
-		{
-			do
-			{
-				if (Filter(c_file, nScanMode))
-				{
-					pObj->SetAt(k, c_file.name);
-					k++;
-				}
-			}
-			while (gEnv->pCryPak->FindNext(hFile, &c_file) == 0);
+	int scanMode = SCANDIR_SUBDIRS;
+	if (pH->GetParamCount() > 1)
+	{
+		pH->GetParam(2, scanMode);
+	}
 
-			gEnv->pCryPak->FindClose(hFile);
+	std::string wildcard(folderName);
+	wildcard += "/*";
+
+	for (auto& entry : CryFind(wildcard.c_str()))
+	{
+		if (Filter(entry, scanMode))
+		{
+			pObj->SetAt(k, entry.name);
+			k++;
 		}
 	}
 

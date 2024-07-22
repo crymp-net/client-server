@@ -87,7 +87,7 @@ class CryFile
 public:
 	CryFile() = default;
 
-	CryFile(const char* filename, const char* mode) : m_file(gEnv->pCryPak->FOpen(filename, mode))
+	explicit CryFile(const char* filename, const char* mode) : m_file(gEnv->pCryPak->FOpen(filename, mode))
 	{
 	}
 
@@ -157,11 +157,6 @@ public:
 	long GetPosition()
 	{
 		return gEnv->pCryPak->FTell(m_file.get());
-	}
-
-	FILE* GetHandle()
-	{
-		return m_file.get();
 	}
 
 	bool IsInPak()

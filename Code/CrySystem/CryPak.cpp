@@ -40,16 +40,10 @@ public:
 	{
 		std::tie(m_stem, m_extension) = PathTools::SplitNameIntoStemAndExtension(wildcard);
 
-		if (!m_extension.empty())
-		{
-			// remove dot
-			m_extension.remove_prefix(1);
-		}
-
 		if (!m_stem.empty() && m_stem.back() == '*')
 		{
 			m_stem.remove_suffix(1);
-			m_kind = Wildcard::STEM;
+			m_kind = m_extension.empty() ? Wildcard::FULL : Wildcard::STEM;
 		}
 
 		if (!m_extension.empty() && m_extension.back() == '*')
@@ -72,12 +66,6 @@ public:
 	bool operator()(std::string_view name) const
 	{
 		auto [stem, extension] = PathTools::SplitNameIntoStemAndExtension(name);
-
-		if (!extension.empty())
-		{
-			// remove dot
-			extension.remove_prefix(1);
-		}
 
 		const auto check = [](std::string_view a, std::string_view b, bool prefix) -> bool
 		{

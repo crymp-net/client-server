@@ -139,7 +139,7 @@ std::tuple<std::string_view, std::string_view> PathTools::SplitNameIntoStemAndEx
 	if (pos != std::string_view::npos && pos != 0)
 	{
 		extension = stem;
-		extension.remove_prefix(pos);
+		extension.remove_prefix(pos + 1);
 		stem.remove_suffix(stem.length() - pos);
 	}
 
