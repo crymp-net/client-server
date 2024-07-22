@@ -14,7 +14,6 @@
 #include "ResourceList.h"
 
 // TODO: custom allocator for CryPak
-// TODO: debug commands
 // TODO: some dev-only command line argument to set a folder that overrides PAK in EXE
 // TODO: nested paks
 
@@ -771,9 +770,9 @@ intptr_t CryPak::FindFirst(const char* wildcard, struct _finddata_t* fd, unsigne
 {
 	std::lock_guard lock(m_mutex);
 
-	const std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
+	std::string adjustedWildcard = this->AdjustFileNameImpl(StringTools::SafeView(wildcard), flags);
 
-	FindSlot* find = this->OpenFindImpl(adjustedWildcard);
+	FindSlot* find = this->OpenFindImpl(std::move(adjustedWildcard));
 	if (!find)
 	{
 		return -1;
@@ -1051,6 +1050,58 @@ void CryPak::RemoveRedirect(std::string_view path)
 		removed ? "Removed" : "Not found");
 }
 
+void CryPak::LogInfo()
+{
+	std::lock_guard lock(m_mutex);
+
+	CryLogAlways("------------------------------------ CryPak ------------------------------------");
+
+	{
+		std::size_t totalCount = 0;
+		std::size_t totalCachedBytes = 0;
+		CryLogAlways("Open files:");
+		for (OpenFileSlot* file = m_files.GetFirstActive(); file; file = m_files.GetNextActive(file))
+		{
+			std::size_t cachedBytes = file->impl->GetCachedDataSize();
+			CryLogAlways("- $8\"%s\"$o in_pak=$5%d$o cached_bytes=$5%zu$o", file->path.c_str(),
+				(file->pakHandle) ? 1 : 0, cachedBytes);
+			totalCount++;
+			totalCachedBytes += cachedBytes;
+		}
+		CryLogAlways("Total open file count: $5%zu$o", totalCount);
+		CryLogAlways("Total cached bytes: $5%zu$o", totalCachedBytes);
+	}
+
+	{
+		std::size_t totalCount = 0;
+		CryLogAlways("Open finds:");
+		for (FindSlot* find = m_finds.GetFirstActive(); find; find = m_finds.GetNextActive(find))
+		{
+			CryLogAlways("- $8\"%s\"$o entry_count=$5%zu$o", find->path.c_str(), find->entries.size());
+			totalCount++;
+		}
+		CryLogAlways("Total open find count: $5%zu$o", totalCount);
+	}
+
+	{
+		std::size_t totalCount = 0;
+		std::size_t totalEntryCount = 0;
+		CryLogAlways("Loaded paks:");
+		for (PakSlot* pak = m_paks.GetFirstActive(); pak; pak = m_paks.GetNextActive(pak))
+		{
+			const std::size_t entryCount = pak->impl->GetEntryCount();
+			CryLogAlways("- $8\"%s\"$o binding_root=$8\"%s\"$o entry_count=$5%u$o", pak->path.c_str(),
+				pak->bindingRoot.c_str(), entryCount);
+			totalCount++;
+			totalEntryCount += entryCount;
+		}
+		CryLogAlways("Total pak count: $5%zu$o", totalCount);
+		CryLogAlways("Total pak entry count: $5%zu$o", totalEntryCount);
+	}
+
+	CryLogAlways("--------------------------------------------------------------------------------");
+}
+
 std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags)
 {
 	std::string adjusted;
@@ -1221,7 +1272,7 @@ void CryPak::CloseFileImpl(OpenFileSlot* file)
 	}
 }
 
-CryPak::FindSlot* CryPak::OpenFindImpl(const std::string& wildcardPath)
+CryPak::FindSlot* CryPak::OpenFindImpl(std::string&& wildcardPath)
 {
 	const auto [dirPath, wildcardName] = PathTools::SplitPathIntoDirAndFile(wildcardPath);
 	const CryPakWildcardMatcher matcher(wildcardName);
@@ -1293,6 +1344,7 @@ CryPak::FindSlot* CryPak::OpenFindImpl(const std::string& wildcardPath)
 		return nullptr;
 	}
 
+	find->path = std::move(wildcardPath);
 	find->entries = std::move(entries);
 	find->pos = 0;
 

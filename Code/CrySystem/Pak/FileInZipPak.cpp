@@ -190,4 +190,9 @@ std::FILE* FileInZipPak::GetHandle()
 	return nullptr;
 }
 
+std::size_t FileInZipPak::GetCachedDataSize()
+{
+	return this->size;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

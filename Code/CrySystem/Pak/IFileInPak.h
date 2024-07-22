@@ -32,4 +32,5 @@ struct IFileInPak
 	virtual std::uint64_t GetModificationTime() = 0;
 
 	virtual std::FILE* GetHandle() = 0;
+	virtual std::size_t GetCachedDataSize() = 0;
 };

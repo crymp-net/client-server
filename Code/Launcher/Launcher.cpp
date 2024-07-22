@@ -6,6 +6,7 @@
 #include "Cry3DEngine/TimeOfDay.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/FrameProfiler.h"
+#include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryMP/Client/Client.h"
@@ -997,6 +998,10 @@ void Launcher::OnInit(ISystem* pSystem)
 	logger.SetPrefix(logPrefix);
 
 	EnableHiddenProfilerSubsystems(pSystem);
+
+	gEnv->pConsole->AddCommand("CryPakInfo", [](IConsoleCmdArgs* args) {
+		CryPak::GetInstance().LogInfo();
+	});
 }
 
 void Launcher::OnShutdown()

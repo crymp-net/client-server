@@ -56,6 +56,7 @@ struct FileOutsidePak final : public IFileInPak
 	std::uint64_t GetModificationTime() override;
 
 	std::FILE* GetHandle() override;
+	std::size_t GetCachedDataSize() override;
 
 	////////////////////////////////////////////////////////////////////////////////
 };

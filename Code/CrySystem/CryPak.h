@@ -65,6 +65,7 @@ class CryPak final : public ICryPak
 			bool isInPak = false;
 		};
 
+		std::string path;
 		std::vector<Entry> entries;
 		std::vector<Entry>::size_type pos = 0;
 		SlotVectorSerial serial = 0;
@@ -241,6 +242,8 @@ public:
 	void AddRedirect(std::string_view path, std::string_view newPath);
 	void RemoveRedirect(std::string_view path);
 
+	void LogInfo();
+
 private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
@@ -249,7 +252,7 @@ private:
 	OpenFileSlot* OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode);
 	void CloseFileImpl(OpenFileSlot* file);
 
-	FindSlot* OpenFindImpl(const std::string& wildcardPath);
+	FindSlot* OpenFindImpl(std::string&& wildcardPath);
 	void CloseFindImpl(FindSlot* find);
 
 	PakSlot* OpenPakImpl(const std::string& pakPath, const std::string& bindingRoot);

@@ -103,4 +103,9 @@ std::FILE* FileOutsidePak::GetHandle()
 	return this->handle.get();
 }
 
+std::size_t FileOutsidePak::GetCachedDataSize()
+{
+	return this->dataSize;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
