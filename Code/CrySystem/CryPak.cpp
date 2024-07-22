@@ -1108,6 +1108,14 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 	adjusted.reserve(260);
 	adjusted = path;
 
+	const unsigned int supportedFlags = FLAGS_ADD_TRAILING_SLASH | FLAGS_NO_FULL_PATH | FLAGS_FOR_WRITING;
+	const unsigned int garbageFlags = 0x1 | 0x2 | FLAGS_PATH_REAL;
+
+	if (flags & ~(supportedFlags | garbageFlags))
+	{
+		CryLogWarningAlways("CryPak::AdjustFileName(\"%s\", 0x%x): Unknown flag(s)", adjusted.c_str(), flags);
+	}
+
 	// TODO: prevent access outside Crysis main directory and user directory
 
 	if ((flags & FLAGS_FOR_WRITING) && !m_gameFolderWritable)
