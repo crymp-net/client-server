@@ -1,5 +1,6 @@
+#include "CryCommon/CrySystem/CryFile.h"
+
 #include "CryLog.h"
-#include "CryPak.h"
 #include "StreamEngine.h"
 
 ////////////////////////////////////////////////////////////////////////////////

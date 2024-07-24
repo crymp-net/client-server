@@ -15,7 +15,7 @@ History:
 #include <cstring>
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "OptionsManager.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "FlashMenuObject.h"

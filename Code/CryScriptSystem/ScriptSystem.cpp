@@ -12,8 +12,8 @@ extern "C"
 #include <tracy/Tracy.hpp>
 
 #include "CryCommon/CryCore/CryMalloc.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CryAISystem/IAISystem.h"

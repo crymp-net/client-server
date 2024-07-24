@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "SPAnalyst.h"
 
 #include "CryCommon/CryNetwork/ISerialize.h"
