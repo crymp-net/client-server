@@ -27,5 +27,7 @@ namespace PathTools
 	std::tuple<std::string_view, std::string_view> SplitNameIntoStemAndExtension(std::string_view name);
 	std::tuple<std::string_view, std::string_view> SplitPathIntoStemAndExtension(std::string_view path);
 
+	std::string Join(std::string_view pathA, std::string_view pathB);
+
 	void AddTrailingSlash(std::string& path);
 }

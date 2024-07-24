@@ -151,6 +151,29 @@ std::tuple<std::string_view, std::string_view> PathTools::SplitPathIntoStemAndEx
 	return SplitNameIntoStemAndExtension(FileName(path));
 }
 
+std::string PathTools::Join(std::string_view pathA, std::string_view pathB)
+{
+	std::string result;
+
+	if (pathA.empty() || IsSlash(pathA.back()) || pathB.empty() || IsSlash(pathB.front()))
+	{
+		result.reserve(pathA.length() + pathB.length());
+
+		result += pathA;
+		result += pathB;
+	}
+	else
+	{
+		result.reserve(pathA.length() + 1 + pathB.length());
+
+		result += pathA;
+		result += '/';
+		result += pathB;
+	}
+
+	return result;
+}
+
 void PathTools::AddTrailingSlash(std::string& path)
 {
 	if (!path.empty() && !IsSlash(path.back()))
