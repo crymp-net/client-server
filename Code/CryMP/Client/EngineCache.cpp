@@ -70,7 +70,7 @@ int EngineCache::ScanFolder(const char* folderName)
 			continue;
 		}
 
-		const char* ext = PathUtil::GetExt(entry.name);
+		const char* ext = CryPath::GetExt(entry.name);
 
 		//supported file ext
 		if (stricmp(ext, "cdf") && stricmp(ext, "cgf") && stricmp(ext, "cga") && stricmp(ext, "chr"))
@@ -99,7 +99,7 @@ bool EngineCache::Cache(string folder, string file)
 	float color[] = { 1.0, 1.0, 1.0, 1.0 };
 	//CryLogAlways("Caching %s... (%s)", file.c_str(), folder.c_str());
 
-	const char* ext = PathUtil::GetExt(file.c_str());
+	const char* ext = CryPath::GetExt(file.c_str());
 	if (!stricmp(ext, "cdf") || !stricmp(ext, "chr") || !stricmp(ext, "cga"))
 	{
 		ICharacterInstance* pChar = gEnv->pCharacterManager->CreateInstance(file.c_str());

@@ -7,7 +7,7 @@
 //  Version:     v1.00
 //  Created:     19/10/2004 by Timur.
 //  Compilers:   Visual Studio.NET
-//  Description: Defines namespace PathUtil for operations on files paths.
+//  Description: Defines namespace CryPath for operations on files paths.
 // -------------------------------------------------------------------------
 //  History:
 //
@@ -24,7 +24,7 @@
 #include "ISystem.h"
 #include "ICryPak.h"
 
-namespace PathUtil
+namespace CryPath
 {
 	//! Split full file name to path and filename
 	//! @param filepath [IN] Full file name inclusing path.

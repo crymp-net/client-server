@@ -3640,10 +3640,10 @@ public:
 IFlashLoadMovieImage* CFlashMenuObject::LoadMovie(const char* pFilePath)
 {
 	bool bResolved = false;
-	if (_stricmp(PathUtil::GetExt(pFilePath), "thumbnail") == 0)
+	if (_stricmp(CryPath::GetExt(pFilePath), "thumbnail") == 0)
 	{
 		string saveGameName = pFilePath;
-		PathUtil::RemoveExtension(saveGameName);
+		CryPath::RemoveExtension(saveGameName);
 
 		if (m_pPlayerProfileManager == 0)
 			return 0;

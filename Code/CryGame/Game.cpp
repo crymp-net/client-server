@@ -431,7 +431,7 @@ void CGame::PlayerIdSet(EntityId playerId)
 string CGame::InitMapReloading()
 {
 	string levelFileName = GetIGameFramework()->GetLevelName();
-	levelFileName = PathUtil::GetFileName(levelFileName);
+	levelFileName = CryPath::GetFileName(levelFileName);
 	if (const char* visibleName = GetMappedLevelName(levelFileName.c_str()))
 		levelFileName = visibleName;
 	//levelFileName.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
