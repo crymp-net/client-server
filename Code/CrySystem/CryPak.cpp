@@ -14,7 +14,6 @@
 #include "ResourceList.h"
 
 // TODO: custom allocator for CryPak
-// TODO: some dev-only command line argument to set a folder that overrides PAK in EXE
 // TODO: nested paks
 
 class CryPakWildcardMatcher
@@ -418,12 +417,10 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 
 	std::string adjustedName = this->AdjustFileNameImpl(StringTools::SafeView(name), flags);
 	const FileModeFlags modeFlags = this->FileModeFromString(StringTools::SafeView(mode));
-	bool foundInPak = true;
 
 	OpenFileSlot* file = this->OpenFileInPakImpl(std::move(adjustedName), modeFlags);
 	if (!file)
 	{
-		foundInPak = false;
 		file = this->OpenFileOutsideImpl(std::move(adjustedName), modeFlags);
 		if (!file)
 		{
@@ -434,7 +431,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 
 	FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file));
 
-	if (foundInPak)
+	if (file->pakHandle)
 	{
 		PakSlot* pak = m_paks.HandleToSlot(file->pakHandle);
 		CryLogComment("%s(\"%s\", \"%s\", 0x%x): 0x%p Found in pak \"%s\"", __FUNCTION__, name, mode, flags,
