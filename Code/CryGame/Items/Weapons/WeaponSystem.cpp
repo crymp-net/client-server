@@ -15,6 +15,7 @@ History:
 #include "CryGame/Game.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/CryFind.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryGame/Actors/Actor.h"

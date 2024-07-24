@@ -26,7 +26,7 @@
 #include "HUD/HUD.h"
 #include "Items/Weapons/WeaponSystem.h"
 
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
