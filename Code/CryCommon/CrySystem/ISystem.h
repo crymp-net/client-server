@@ -74,10 +74,6 @@ struct IGPUPhysicsManager;
 class ICmdLine;
 class CFrameProfilerSection;
 
-#ifndef DATA_FOLDER
-#define DATA_FOLDER "game"
-#endif
-
 #define PROC_MENU		1
 #define PROC_3DENGINE	2
 
