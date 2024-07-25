@@ -40,8 +40,8 @@ class CryPak final : public ICryPak
 	{
 		std::string path;
 		std::unique_ptr<IFileInPak> impl;
-		SlotVectorHandle pakHandle = 0;
-		SlotVectorSerial serial = 0;
+		SlotVectorHandle pakHandle;
+		SlotVectorSerial serial;
 		FileModeFlags mode = 0;
 
 		bool empty() const
@@ -68,7 +68,7 @@ class CryPak final : public ICryPak
 		std::string path;
 		std::vector<Entry> entries;
 		std::vector<Entry>::size_type pos = 0;
-		SlotVectorSerial serial = 0;
+		SlotVectorSerial serial;
 
 		bool empty() const
 		{
@@ -86,9 +86,10 @@ class CryPak final : public ICryPak
 		std::string path;
 		std::string bindingRoot;
 		std::unique_ptr<IPak> impl;
+		SlotVectorHandle fileHandle;
+		SlotVectorSerial serial;
 		Priority priority = {};
 		std::int32_t refCount = 0;
-		SlotVectorSerial serial = 0;
 
 		bool empty() const
 		{
@@ -101,12 +102,32 @@ class CryPak final : public ICryPak
 		}
 	};
 
+	template<class T>
+	struct SlotDeleter
+	{
+		CryPak* pCryPak = nullptr;
+
+		SlotDeleter(CryPak* pCryPak = nullptr) : pCryPak(pCryPak) {}
+
+		void operator()(T* slot) const
+		{
+			this->pCryPak->CloseSlot(slot);
+		}
+	};
+
+	template<class T>
+	struct SlotGuard : std::unique_ptr<T, SlotDeleter<T>>
+	{
+		SlotGuard() = default;
+		SlotGuard(T* slot, CryPak* pCryPak) : std::unique_ptr<T, SlotDeleter<T>>(slot, pCryPak) {}
+	};
+
 	struct FileTreeNode
 	{
 		struct FileInPak
 		{
 			std::uint32_t fileIndex = 0;
-			SlotVectorHandle pakHandle = 0;
+			SlotVectorHandle pakHandle;
 			Priority priority = {};
 		};
 
@@ -248,21 +269,25 @@ private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
+	OpenFileSlot* OpenFileImpl(std::string&& filePath, FileModeFlags mode);
 	OpenFileSlot* OpenFileInPakImpl(std::string&& filePath, FileModeFlags mode);
 	OpenFileSlot* OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode);
-	void CloseFileImpl(OpenFileSlot* file);
 
 	FindSlot* OpenFindImpl(std::string&& wildcardPath);
-	void CloseFindImpl(FindSlot* find);
 
 	PakSlot* OpenPakImpl(const std::string& pakPath, const std::string& bindingRoot);
-	PakSlot* FindLoadedPakByPath(const std::string& pakPath);
-	void ClosePakImpl(PakSlot* pak);
+	PakSlot* FindLoadedPakByPath(std::string_view pakPath);
+
+	void CloseSlot(OpenFileSlot* file);
+	void CloseSlot(FindSlot* find);
+	void CloseSlot(PakSlot* pak);
 
 	void IncrementPakRefCount(PakSlot* pak);
 	void DecrementPakRefCount(PakSlot* pak);
 
 	void ExpandAliases(std::string& path);
+
+	std::vector<FindSlot::Entry> SearchWildcardPath(std::string_view wildcardPath);
 
 	void FillFindData(struct _finddata_t* fd, const FindSlot::Entry& entry);
 
