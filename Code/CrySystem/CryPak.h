@@ -36,7 +36,7 @@ class CryPak final : public ICryPak
 
 	using FileModeFlags = std::uint16_t;
 
-	struct OpenFileSlot
+	struct FileSlot
 	{
 		std::string path;
 		std::unique_ptr<IFileInPak> impl;
@@ -60,12 +60,12 @@ class CryPak final : public ICryPak
 		struct Entry
 		{
 			std::string name;
-			std::uint64_t size;
+			std::uint64_t size = 0;
 			bool isDirectory = false;
 			bool isInPak = false;
 		};
 
-		std::string path;
+		std::string wildcard;
 		std::vector<Entry> entries;
 		std::vector<Entry>::size_type pos = 0;
 		SlotVectorSerial serial;
@@ -84,7 +84,7 @@ class CryPak final : public ICryPak
 	struct PakSlot
 	{
 		std::string path;
-		std::string bindingRoot;
+		std::string root;
 		std::unique_ptr<IPak> impl;
 		SlotVectorHandle fileHandle;
 		SlotVectorSerial serial;
@@ -107,7 +107,7 @@ class CryPak final : public ICryPak
 	{
 		CryPak* pCryPak = nullptr;
 
-		SlotDeleter(CryPak* pCryPak = nullptr) : pCryPak(pCryPak) {}
+		explicit SlotDeleter(CryPak* pCryPak) : pCryPak(pCryPak) {}
 
 		void operator()(T* slot) const
 		{
@@ -116,11 +116,7 @@ class CryPak final : public ICryPak
 	};
 
 	template<class T>
-	struct SlotGuard : std::unique_ptr<T, SlotDeleter<T>>
-	{
-		SlotGuard() = default;
-		SlotGuard(T* slot, CryPak* pCryPak) : std::unique_ptr<T, SlotDeleter<T>>(slot, pCryPak) {}
-	};
+	using SlotGuard = std::unique_ptr<T, SlotDeleter<T>>;
 
 	struct FileTreeNode
 	{
@@ -140,7 +136,7 @@ class CryPak final : public ICryPak
 
 	std::recursive_mutex m_mutex;
 	std::map<std::string, std::string, StringTools::ComparatorNoCase> m_aliases;
-	SlotVector<OpenFileSlot> m_files;
+	SlotVector<FileSlot> m_files;
 	SlotVector<FindSlot> m_finds;
 	SlotVector<PakSlot> m_paks;
 	Tree m_tree;
@@ -173,10 +169,10 @@ public:
 	void Release() override;
 
 	bool OpenPack(const char* name, unsigned int flags = FLAGS_PATH_REAL) override;
-	bool OpenPack(const char* bindingRoot, const char* name, unsigned int flags = FLAGS_PATH_REAL) override;
+	bool OpenPack(const char* root, const char* name, unsigned int flags = FLAGS_PATH_REAL) override;
 	bool ClosePack(const char* name, unsigned int flags = FLAGS_PATH_REAL) override;
 	bool OpenPacks(const char* wildcard, unsigned int flags = FLAGS_PATH_REAL) override;
-	bool OpenPacks(const char* bindingRoot, const char* wildcard, unsigned int flags = FLAGS_PATH_REAL) override;
+	bool OpenPacks(const char* root, const char* wildcard, unsigned int flags = FLAGS_PATH_REAL) override;
 	bool ClosePacks(const char* wildcard, unsigned int flags = FLAGS_PATH_REAL) override;
 
 	void AddMod(const char* mod) override;
@@ -269,16 +265,21 @@ private:
 	std::string AdjustFileNameImplWithoutRedirect(std::string_view path, unsigned int flags);
 	std::string AdjustFileNameImpl(std::string_view path, unsigned int flags);
 
-	OpenFileSlot* OpenFileImpl(std::string&& filePath, FileModeFlags mode);
-	OpenFileSlot* OpenFileInPakImpl(std::string&& filePath, FileModeFlags mode);
-	OpenFileSlot* OpenFileOutsideImpl(std::string&& filePath, FileModeFlags mode);
+	SlotGuard<FileSlot> GetFreeFileSlot();
+	SlotGuard<FindSlot> GetFreeFindSlot();
+	SlotGuard<PakSlot> GetFreePakSlot();
 
-	FindSlot* OpenFindImpl(std::string&& wildcardPath);
+	bool OpenFileImpl(SlotGuard<FileSlot>& file);
+	bool OpenFileInPakImpl(SlotGuard<FileSlot>& file);
+	bool OpenFileOutsideImpl(SlotGuard<FileSlot>& file);
 
-	PakSlot* OpenPakImpl(const std::string& pakPath, const std::string& bindingRoot);
+	bool OpenFindImpl(SlotGuard<FindSlot>& find);
+
+	bool OpenPakImpl(SlotGuard<PakSlot>& pak);
+
 	PakSlot* FindLoadedPakByPath(std::string_view pakPath);
 
-	void CloseSlot(OpenFileSlot* file);
+	void CloseSlot(FileSlot* file);
 	void CloseSlot(FindSlot* find);
 	void CloseSlot(PakSlot* pak);
 
