@@ -480,7 +480,13 @@ void Launcher::InitWorkingDirectory()
 	}
 
 	// sanitize the path
-	dir = std::filesystem::canonical(dir);
+	dir = dir.lexically_normal();
+
+	// remove trailing slash
+	if (!dir.has_filename())
+	{
+		dir = dir.parent_path();
+	}
 
 #ifdef BUILD_64BIT
 	constexpr std::string_view BIN_DIR = "Bin64";
