@@ -240,6 +240,7 @@ bool CryPak::OpenPacks(const char* root, const char* wildcard, unsigned int flag
 		{
 			CryLog("%s(\"%s\", \"%s\", 0x%x): Already loaded \"%s\"", __FUNCTION__, root, wildcard, flags,
 				pak->path.c_str());
+			success = true;
 			continue;
 		}
 
