@@ -1801,9 +1801,9 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			{
 				pTarget->m_netAimDirSmooth = pTarget->m_netAimDir;
 			}
-
-			pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 		}
+
+		pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 
 		//Hide TP model or not
 		pTarget->m_stats.isHidden = pVehicle ? false : true;
