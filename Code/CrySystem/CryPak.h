@@ -40,6 +40,7 @@ class CryPak final : public ICryPak
 	{
 		std::string path;
 		std::unique_ptr<IFileInPak> impl;
+		std::uint32_t indexInPak = 0;
 		SlotVectorHandle pakHandle;
 		SlotVectorSerial serial;
 		FileModeFlags mode = 0;
@@ -123,6 +124,7 @@ class CryPak final : public ICryPak
 		struct FileInPak
 		{
 			std::uint32_t fileIndex = 0;
+			std::uint64_t fileSize = 0;
 			SlotVectorHandle pakHandle;
 			Priority priority = {};
 		};
@@ -295,8 +297,6 @@ private:
 	FileModeFlags FileModeFromString(std::string_view mode);
 	std::string FileModeToString(FileModeFlags flags);
 	bool IsFileModeWriting(FileModeFlags flags);
-
-	std::uint64_t GetFileSize(FileTreeNode& fileNode);
 
 	void AddPakToTree(PakSlot* pak);
 	void RemovePakFromTree(PakSlot* pak);

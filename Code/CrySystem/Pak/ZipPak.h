@@ -1,24 +1,24 @@
 #pragma once
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include <miniz.h>
 
 #include "IPak.h"
+#include "ZipCache.h"
 
-struct ZipPak final : public IPak
+class ZipPak final : public IPak
 {
-	mz_zip_archive zip = {};
+	mz_zip_archive m_zip = {};
+	ZipCache m_cache;
 
+public:
 	ZipPak() = default;
 	ZipPak(const ZipPak&) = delete;
 	ZipPak& operator=(const ZipPak&) = delete;
-
-	~ZipPak()
-	{
-		mz_zip_end(&this->zip);
-	}
+	~ZipPak() noexcept;
 
 	static std::unique_ptr<ZipPak> OpenFileHandle(std::FILE* file);
 	static std::unique_ptr<ZipPak> OpenFileName(const std::string& adjustedName);
@@ -28,15 +28,19 @@ struct ZipPak final : public IPak
 	// IPak
 	////////////////////////////////////////////////////////////////////////////////
 
-	std::unique_ptr<IFileInPak> OpenFile(std::uint32_t index, bool isBinary) override;
-
 	std::uint32_t GetEntryCount() override;
 	bool IsDirectoryEntry(std::uint32_t index) override;
-	bool GetEntryPath(std::uint32_t index, std::string& path) override;
-	bool GetEntrySize(std::uint32_t index, std::uint64_t& size) override;
+	bool GetEntryPathAndSize(std::uint32_t index, std::string& path, std::uint64_t& size) override;
+
+	std::unique_ptr<IFileInPak> OpenFile(std::uint32_t index, bool isBinary) override;
+	void OnFileClosed(std::uint32_t index) override;
+
+	std::size_t GetCachedDataSize() const override;
 
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
-	void LogZipError(const char* function);
+	const char* GetCurrentErrorString();
+	bool GetEntryStat(std::uint32_t index, mz_zip_archive_file_stat& stat);
+	bool DecompressEntry(std::uint32_t index, ZipCache::DecompressedEntry& entry);
 };

@@ -14,8 +14,6 @@
 #include "Pak/ZipPak.h"
 #include "ResourceList.h"
 
-// TODO: ZIP cache
-
 class CryPakWildcardMatcher
 {
 	enum class Wildcard
@@ -390,7 +388,7 @@ ICryPak::PakInfo* CryPak::GetPakInfo()
 	{
 		info->arrPaks[i].szFilePath = my_strdup(pak->path);
 		info->arrPaks[i].szBindRoot = my_strdup(pak->root);
-		info->arrPaks[i].nUsedMem = 0;
+		info->arrPaks[i].nUsedMem = pak->impl->GetCachedDataSize();
 
 		pak = m_paks.GetNextActive(pak);
 	}
@@ -484,7 +482,7 @@ size_t CryPak::FReadRawAll(void* data, size_t fileSize, FILE* handle)
 		return 0;
 	}
 
-	if (file->impl->GetSize() != fileSize)
+	if (static_cast<size_t>(file->impl->GetSize()) != fileSize)
 	{
 		return 0;
 	}
@@ -1066,18 +1064,14 @@ void CryPak::LogInfo()
 
 	{
 		std::size_t totalCount = 0;
-		std::size_t totalCachedBytes = 0;
 		CryLogAlways("Open files:");
 		for (FileSlot* file = m_files.GetFirstActive(); file; file = m_files.GetNextActive(file))
 		{
-			std::size_t cachedBytes = file->impl->GetCachedDataSize();
-			CryLogAlways("- $8\"%s\"$o in_pak=$5%d$o cached_bytes=$5%zu$o", file->path.c_str(),
-				(file->pakHandle) ? 1 : 0, cachedBytes);
+			CryLogAlways("- $8\"%s\"$o in_pak=$5%d$o mode=$8\"%s\"$o", file->path.c_str(),
+				(file->pakHandle) ? 1 : 0, this->FileModeToString(file->mode).c_str());
 			totalCount++;
-			totalCachedBytes += cachedBytes;
 		}
-		CryLogAlways("Total open file count: $5%zu$o", totalCount);
-		CryLogAlways("Total cached bytes: $5%zu$o", totalCachedBytes);
+		CryLogAlways("Total open files: $5%zu$o", totalCount);
 	}
 
 	{
@@ -1085,27 +1079,31 @@ void CryPak::LogInfo()
 		CryLogAlways("Open finds:");
 		for (FindSlot* find = m_finds.GetFirstActive(); find; find = m_finds.GetNextActive(find))
 		{
-			CryLogAlways("- $8\"%s\"$o entry_count=$5%zu$o", find->wildcard.c_str(),
+			CryLogAlways("- $8\"%s\"$o entries=$5%zu$o", find->wildcard.c_str(),
 				find->entries.size());
 			totalCount++;
 		}
-		CryLogAlways("Total open find count: $5%zu$o", totalCount);
+		CryLogAlways("Total open finds: $5%zu$o", totalCount);
 	}
 
 	{
 		std::size_t totalCount = 0;
 		std::size_t totalEntryCount = 0;
+		std::size_t totalCacheSize = 0;
 		CryLogAlways("Loaded paks:");
 		for (PakSlot* pak = m_paks.GetFirstActive(); pak; pak = m_paks.GetNextActive(pak))
 		{
 			const std::size_t entryCount = pak->impl->GetEntryCount();
-			CryLogAlways("- $8\"%s\"$o root=$8\"%s\"$o entry_count=$5%u$o", pak->path.c_str(),
-				pak->root.c_str(), entryCount);
+			const std::size_t cacheSize = pak->impl->GetCachedDataSize();
+			CryLogAlways("- $8\"%s\"$o root=$8\"%s\"$o entries=$5%zu$o cache_size=$5%zu$o",
+				pak->path.c_str(), pak->root.c_str(), entryCount, cacheSize);
 			totalCount++;
 			totalEntryCount += entryCount;
+			totalCacheSize += cacheSize;
 		}
-		CryLogAlways("Total pak count: $5%zu$o", totalCount);
-		CryLogAlways("Total pak entry count: $5%zu$o", totalEntryCount);
+		CryLogAlways("Total paks: $5%zu$o", totalCount);
+		CryLogAlways("Total pak entries: $5%zu$o", totalEntryCount);
+		CryLogAlways("Total pak cache size: $5%zu$o", totalCacheSize);
 	}
 
 	CryLogAlways("--------------------------------------------------------------------------------");
@@ -1240,13 +1238,15 @@ bool CryPak::OpenFileInPakImpl(SlotGuard<FileSlot>& file)
 
 	const bool isBinary = (file->mode & FILE_MODE_BINARY);
 
-	file->impl = pak->impl->OpenFile(fileNode->current.fileIndex, isBinary);
+	file->indexInPak = fileNode->current.fileIndex;
+	file->impl = pak->impl->OpenFile(file->indexInPak, isBinary);
 	if (!file->impl)
 	{
 		CryLogErrorAlways("%s(\"%s\"): Error in pak!", __FUNCTION__, file->path.c_str());
 		return false;
 	}
 
+	// set pak handle right after opening the file, so CloseSlot correctly informs the pak when closing the file
 	file->pakHandle = m_paks.SlotToHandle(pak);
 	this->IncrementPakRefCount(pak);
 
@@ -1283,6 +1283,7 @@ bool CryPak::OpenFileOutsideImpl(SlotGuard<FileSlot>& file)
 	}
 
 	file->impl = std::make_unique<FileOutsidePak>(std::move(handle), std::move(fsPath));
+	file->indexInPak = 0;
 	file->pakHandle = {};
 
 	return true;
@@ -1315,18 +1316,17 @@ bool CryPak::OpenPakImpl(SlotGuard<PakSlot>& pak)
 	}
 
 	std::FILE* fileImplHandle = file->impl->GetHandle();
-
-	if (fileImplHandle)
-	{
-		pak->impl = ZipPak::OpenFileHandle(fileImplHandle);
-	}
-	else
+	if (!fileImplHandle)
 	{
 		// nested pak
 		std::size_t pakSize = 0;
 		const void* pakData = file->impl->GetCachedFileData(pakSize);
 
 		pak->impl = ZipPak::OpenMemory(pakData, pakSize);
+	}
+	else
+	{
+		pak->impl = ZipPak::OpenFileHandle(fileImplHandle);
 	}
 
 	if (!pak->impl)
@@ -1365,6 +1365,8 @@ void CryPak::CloseSlot(FileSlot* file)
 
 	if (pak)
 	{
+		pak->impl->OnFileClosed(file->indexInPak);
+
 		this->DecrementPakRefCount(pak);
 	}
 }
@@ -1376,6 +1378,12 @@ void CryPak::CloseSlot(FindSlot* find)
 
 void CryPak::CloseSlot(PakSlot* pak)
 {
+	if (pak->empty())
+	{
+		// not loaded
+		return;
+	}
+
 	this->RemovePakFromTree(pak);
 	this->DecrementPakRefCount(pak);
 }
@@ -1458,7 +1466,7 @@ std::vector<CryPak::FindSlot::Entry> CryPak::SearchWildcardPath(std::string_view
 			if (FileTreeNode* fileNode = std::get_if<FileTreeNode>(&node); fileNode)
 			{
 				isDirectory = false;
-				size = this->GetFileSize(*fileNode);
+				size = fileNode->current.fileSize;
 			}
 
 			entries.emplace_back(name, size, isDirectory, true);
@@ -1468,7 +1476,7 @@ std::vector<CryPak::FindSlot::Entry> CryPak::SearchWildcardPath(std::string_view
 	const auto isDuplicate = [&entries](std::string_view name) -> bool
 	{
 		return std::any_of(entries.begin(), entries.end(),
-			[name](const FindSlot::Entry& entry) { return StringTools::IsEqualNoCase(entry.name, name); }
+			[name](const auto& entry) { return StringTools::IsEqualNoCase(entry.name, name); }
 		);
 	};
 
@@ -1588,23 +1596,6 @@ bool CryPak::IsFileModeWriting(FileModeFlags flags)
 	return (flags & (FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_EXTENDED));
 }
 
-std::uint64_t CryPak::GetFileSize(FileTreeNode& fileNode)
-{
-	PakSlot* pak = m_paks.HandleToSlot(fileNode.current.pakHandle);
-	if (!pak)
-	{
-		return 0;
-	}
-
-	std::uint64_t size = 0;
-	if (!pak->impl->GetEntrySize(fileNode.current.fileIndex, size))
-	{
-		return 0;
-	}
-
-	return size;
-}
-
 void CryPak::AddPakToTree(PakSlot* pak)
 {
 	const SlotVectorHandle pakHandle = m_paks.SlotToHandle(pak);
@@ -1619,6 +1610,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 	const std::uint32_t entryCount = pak->impl->GetEntryCount();
 
 	std::string filePath;
+	filePath.reserve(260);
 	for (std::uint32_t i = 0; i < entryCount; i++)
 	{
 		if (pak->impl->IsDirectoryEntry(i))
@@ -1626,7 +1618,8 @@ void CryPak::AddPakToTree(PakSlot* pak)
 			continue;
 		}
 
-		if (!pak->impl->GetEntryPath(i, filePath))
+		std::uint64_t fileSize = 0;
+		if (!pak->impl->GetEntryPathAndSize(i, filePath, fileSize))
 		{
 			continue;
 		}
@@ -1641,6 +1634,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 
 		const FileTreeNode::FileInPak file = {
 			.fileIndex = i,
+			.fileSize = fileSize,
 			.pakHandle = pakHandle,
 			.priority = pak->priority,
 		};
@@ -1655,9 +1649,7 @@ void CryPak::RemovePakFromTree(PakSlot* pak)
 	const SlotVectorHandle pakHandle = m_paks.SlotToHandle(pak);
 
 	m_tree.EraseIf([pakHandle](FileTreeNode& fileNode) -> bool {
-		fileNode.alternatives.remove_if(
-			[pakHandle](const FileTreeNode::FileInPak& x) { return x.pakHandle == pakHandle; }
-		);
+		fileNode.alternatives.remove_if([pakHandle](const auto& x) { return x.pakHandle == pakHandle; });
 
 		if (fileNode.current.pakHandle != pakHandle)
 		{
@@ -1699,10 +1691,5 @@ void CryPak::AddFileAlternative(FileTreeNode& fileNode, const FileTreeNode::File
 	fileNode.alternatives.push_front(newFile);
 
 	// sort from highest priority to lowest
-	fileNode.alternatives.sort(
-		[](const FileTreeNode::FileInPak& a, const FileTreeNode::FileInPak& b)
-		{
-			return a.priority > b.priority;
-		}
-	);
+	fileNode.alternatives.sort([](const auto& a, const auto& b) { return a.priority > b.priority; });
 }

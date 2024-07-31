@@ -18,9 +18,10 @@ struct IFileInPak
 	virtual int FGetC() = 0;
 	virtual int FUnGetC(int ch) = 0;
 
-	virtual int FSeek(std::int64_t offset, int mode) = 0;
-	virtual std::int64_t FTell() const = 0;
-	virtual std::int64_t GetSize() const = 0;
+	virtual int FSeek(long offset, int mode) = 0;
+	virtual long FTell() const = 0;
+
+	virtual std::uint64_t GetSize() const = 0;
 
 	virtual int FFlush() = 0;
 
@@ -32,5 +33,4 @@ struct IFileInPak
 	virtual std::uint64_t GetModificationTime() = 0;
 
 	virtual std::FILE* GetHandle() = 0;
-	virtual std::size_t GetCachedDataSize() = 0;
 };

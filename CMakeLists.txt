@@ -665,6 +665,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CrySystem/Pak/FileOutsidePak.h
 	Code/CrySystem/Pak/IFileInPak.h
 	Code/CrySystem/Pak/IPak.h
+	Code/CrySystem/Pak/ZipCache.cpp
+	Code/CrySystem/Pak/ZipCache.h
 	Code/CrySystem/Pak/ZipPak.cpp
 	Code/CrySystem/Pak/ZipPak.h
 	Code/CrySystem/RandomGenerator.cpp
