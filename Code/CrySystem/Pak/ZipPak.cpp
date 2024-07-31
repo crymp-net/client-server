@@ -134,7 +134,7 @@ bool ZipPak::DecompressEntry(std::uint32_t index, ZipCache::DecompressedEntry& e
 		return false;
 	}
 
-	if (sizeof(std::size_t) == sizeof(std::uint32_t) && stat.m_uncomp_size > 0x7fffffff)
+	if (stat.m_uncomp_size > 0x7fffffff)
 	{
 		CryLogErrorAlways("%s(%u): Too big file \"%s\"", __FUNCTION__, index, stat.m_filename);
 		return false;

@@ -1,6 +1,16 @@
 #include <chrono>
 
+#include "CrySystem/CryLog.h"
+
 #include "FileOutsidePak.h"
+
+#if defined(_MSC_VER) || defined(__MINGW64__)
+#define FSEEK64 _fseeki64
+#define FTELL64 _ftelli64
+#else
+#define FSEEK64 std::fseek
+#define FTELL64 std::ftell
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // IFileInPak
@@ -36,22 +46,22 @@ int FileOutsidePak::FUnGetC(int ch)
 	return std::ungetc(ch, m_handle.get());
 }
 
-int FileOutsidePak::FSeek(long offset, int mode)
+int FileOutsidePak::FSeek(std::int64_t offset, int mode)
 {
-	return std::fseek(m_handle.get(), offset, mode);
+	return FSEEK64(m_handle.get(), offset, mode);
 }
 
-long FileOutsidePak::FTell() const
+std::int64_t FileOutsidePak::FTell() const
 {
-	return std::ftell(m_handle.get());
+	return FTELL64(m_handle.get());
 }
 
 std::uint64_t FileOutsidePak::GetSize() const
 {
-	const long pos = std::ftell(m_handle.get());
-	std::fseek(m_handle.get(), 0, SEEK_END);
-	const long size = std::ftell(m_handle.get());
-	std::fseek(m_handle.get(), pos, SEEK_SET);
+	const auto pos = FTELL64(m_handle.get());
+	FSEEK64(m_handle.get(), 0, SEEK_END);
+	const auto size = FTELL64(m_handle.get());
+	FSEEK64(m_handle.get(), pos, SEEK_SET);
 
 	return (size < 0) ? 0 : size;
 }
@@ -75,13 +85,21 @@ void* FileOutsidePak::GetCachedFileData(std::size_t& fileSize)
 {
 	if (!m_data)
 	{
-		m_dataSize = static_cast<std::size_t>(this->GetSize());
+		const std::uint64_t rawSize = this->GetSize();
+
+		if (rawSize > 0x7fffffff)
+		{
+			CryLogErrorAlways("%s: Too big file \"%s\"", __FUNCTION__, m_path.string().c_str());
+			return nullptr;
+		}
+
+		m_dataSize = static_cast<std::size_t>(rawSize);
 		m_data = std::make_unique<std::byte[]>(m_dataSize);
 
-		const long pos = std::ftell(m_handle.get());
-		std::fseek(m_handle.get(), 0, SEEK_SET);
+		const auto pos = FTELL64(m_handle.get());
+		FSEEK64(m_handle.get(), 0, SEEK_SET);
 		std::fread(m_data.get(), 1, m_dataSize, m_handle.get());
-		std::fseek(m_handle.get(), pos, SEEK_SET);
+		FSEEK64(m_handle.get(), pos, SEEK_SET);
 	}
 
 	fileSize = m_dataSize;

@@ -677,7 +677,14 @@ long CryPak::FTell(FILE* handle)
 		return -1;
 	}
 
-	return static_cast<long>(file->impl->FTell());
+	const std::int64_t pos = file->impl->FTell();
+	if (pos > 0x7fffffff)
+	{
+		CryLogErrorAlways("%s(0x%p): Cannot return position beyond 2GB!", __FUNCTION__, handle);
+		return -1;
+	}
+
+	return static_cast<long>(pos);
 }
 
 int CryPak::FClose(FILE* handle)

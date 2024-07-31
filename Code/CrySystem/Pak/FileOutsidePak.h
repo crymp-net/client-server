@@ -45,8 +45,8 @@ public:
 	int FGetC() override;
 	int FUnGetC(int ch) override;
 
-	int FSeek(long offset, int mode) override;
-	long FTell() const override;
+	int FSeek(std::int64_t offset, int mode) override;
+	std::int64_t FTell() const override;
 
 	std::uint64_t GetSize() const override;
 

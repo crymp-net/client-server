@@ -117,9 +117,9 @@ int FileInZipPak::FUnGetC(int ch)
 	return EOF;
 }
 
-int FileInZipPak::FSeek(long offset, int mode)
+int FileInZipPak::FSeek(std::int64_t offset, int mode)
 {
-	std::intmax_t newPos = 0;
+	std::int64_t newPos = 0;
 
 	switch (mode)
 	{
@@ -150,7 +150,7 @@ int FileInZipPak::FSeek(long offset, int mode)
 	{
 		newPos = 0;
 	}
-	else if (newPos > this->size)
+	else if (newPos > static_cast<std::int64_t>(this->size))
 	{
 		newPos = this->size;
 	}
@@ -160,9 +160,9 @@ int FileInZipPak::FSeek(long offset, int mode)
 	return 0;
 }
 
-long FileInZipPak::FTell() const
+std::int64_t FileInZipPak::FTell() const
 {
-	return static_cast<long>(this->pos);
+	return this->pos;
 }
 
 std::uint64_t FileInZipPak::GetSize() const
