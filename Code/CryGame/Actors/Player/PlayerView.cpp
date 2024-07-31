@@ -178,8 +178,12 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 		ViewFirstThirdSharedPost(viewParams);
 	}
 	// Externally controlled first person view e.g. by animation
-	else if ((stats.isRagDoll || stats.isFrozen.Value() || stats.isStandingUp) 
-		&& !stats.isThirdPerson && !stats.isOnLadder && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value()))
+	else if ((!stats.isRagDoll || stats.isFrozen.Value() || stats.isStandingUp) 
+		&& !stats.isThirdPerson && !stats.isOnLadder && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value() == 1))
+	{
+		ViewFollowCharacterFirstPerson(viewParams);
+	}
+	else if (stats.followCharacterHead.Value() == 2 && stats.isThirdPerson)
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}
@@ -242,13 +246,13 @@ void PlayerView::ViewPostProcess(SViewParams& viewParams)
 
 	ViewShakePostProcess(viewParams);
 
-	m_player.m_viewQuat = m_viewQuat;
+	//m_player.m_viewQuat = m_viewQuat;
 	//FIXME:updating the baseMatrix due being in a vehicle or having a first person animations playing has to be moved somewhere else
-	m_player.m_baseQuat = m_baseQuat;
+	//m_player.m_baseQuat = m_baseQuat;
 
 	if (!m_player.IsTimeDemo())
 	{
-		m_player.m_viewQuatFinal = m_viewQuatFinal;
+		//m_player.m_viewQuatFinal = m_viewQuatFinal;
 	}
 
 	//m_player.m_stats.FPSecWeaponAngles = m_io.stats_FPSecWeaponAngles;
@@ -887,7 +891,8 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 
 				//CryMP: Check if player is switching seat
 				if (m_lastSeatId != pSeat->GetSeatId())
-				{
+				{	
+
 					IVehicleView* pNewView = pSeat->GetView(currSeatViewId);
 					if (pNewView)
 					{
@@ -902,11 +907,15 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 
 					m_lastSeatId = pSeat->GetSeatId();
 				}
-				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
+				if (IVehicleView* pView = (m_lastSeatId < 3) ? pSeat->GetView(currSeatViewId) : nullptr)
 				{
 					pView->UpdateView(viewParams, m_playerId);
 
 					//viewParams.viewID = 2;
+				}
+				else
+				{
+					ViewFollowCharacterFirstPerson(viewParams);
 				}
 			}
 		}
