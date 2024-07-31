@@ -113,6 +113,16 @@ void CPlant::NetShoot(const Vec3 &hit, int ph)
 void CPlant::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, const Vec3 &hit, float extra, int ph)
 {
 	Plant(pos, dir, vel, true, ph);
+		
+	CActor* pActor = m_pWeapon->GetOwnerActor();
+	if (pActor)
+	{
+		const bool fpSpecTarget = pActor->IsFpSpectatorTarget();
+		unsigned int flags = CItem::eIPAF_Default;
+		m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()), 0, false, flags, fpSpecTarget ? 2.0f : 1.0f);
+		m_pWeapon->HideItem(false);
+	}
+
 }
 
 //------------------------------------------------------------------------
@@ -317,7 +327,12 @@ void CPlant::StartFire()
 
 	m_planting = true;
 	m_pWeapon->SetBusy(true);
-	m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()));
+
+	CActor* pActor = m_pWeapon->GetOwnerActor();
+	if (pActor && pActor->IsClient())
+	{
+		m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()));
+	}
 
 	m_pWeapon->GetScheduler()->TimerAction(m_pWeapon->GetCurrentAnimationTime(CItem::eIGS_FirstPerson), 
 		CSchedulerAction<StartPlantAction>::Create(this), false);
@@ -351,7 +366,7 @@ void CPlant::Plant(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, bool net, 
 	if (m_plantparams.clip_size==0)
 		ammoCount = m_pWeapon->GetInventoryAmmoCount(ammo);
 
-	CProjectile *pAmmo = m_pWeapon->SpawnAmmo(ammo, net);
+	CProjectile* pAmmo = m_pWeapon->SpawnAmmo(ammo, net);
 	CActor *pActor=m_pWeapon->GetOwnerActor();
 	if (pAmmo)
 	{
