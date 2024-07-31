@@ -1142,12 +1142,11 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 
 	this->ExpandAliases(adjusted);
 
-	std::replace(adjusted.begin(), adjusted.end(), '\\', '/');
-	// TODO: remove duplicate slashes
-	// TODO: normalize the path
+	PathTools::Normalize(adjusted);
 
 	if (!PathTools::IsAbsolutePath(adjusted) && !(flags & FLAGS_NO_FULL_PATH))
 	{
+		// TODO: refactor
 		if (adjusted.starts_with("./"))
 		{
 			adjusted.erase(0, 2);
@@ -1432,21 +1431,19 @@ void CryPak::ExpandAliases(std::string& path)
 			break;
 		}
 
-		++endPos;
+		endPos++;
 
-		const std::string_view aliasName(path.c_str() + pos, endPos - pos);
-		const auto aliasIt = m_aliases.find(aliasName);
+		const auto aliasIt = m_aliases.find(std::string_view(path.data() + pos, endPos - pos));
 		if (aliasIt == m_aliases.end())
 		{
 			// ignore unknown aliases
 			pos = endPos;
+			continue;
 		}
-		else
-		{
-			path.replace(path.begin() + pos, path.begin() + endPos, aliasIt->second);
 
-			pos += aliasIt->second.length();
-		}
+		path.replace(path.begin() + pos, path.begin() + endPos, aliasIt->second);
+
+		pos += aliasIt->second.length();
 	}
 }
 
@@ -1631,7 +1628,7 @@ void CryPak::AddPakToTree(PakSlot* pak)
 			continue;
 		}
 
-		// TODO: normalize the path
+		PathTools::Normalize(filePath);
 
 		auto [fileNode, fileNodeAdded] = m_tree.AddNode(filePath, baseNode);
 		if (!fileNode)

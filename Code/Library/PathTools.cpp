@@ -1,21 +1,22 @@
 #include "PathTools.h"
 
+static bool IsAlpha(char ch)
+{
+	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+}
+
 bool PathTools::IsAbsolutePath(std::string_view path)
 {
-	if (path.length() > 0 && IsSlash(path[0]))
+	if (path.length() >= 1 && IsSlash(path[0]))
 	{
-		// also handles UNC paths
+		// POSIX or UNC path
 		return true;
 	}
 
-	if (path.length() > 1 && path[1] == ':')
+	if (path.length() >= 3 && IsAlpha(path[0]) && path[1] == ':' && IsSlash(path[2]))
 	{
-		const char drive = path[0];
-
-		if ((drive >= 'A' && drive <= 'Z') || (drive >= 'a' && drive <= 'z'))
-		{
-			return true;
-		}
+		// Windows path
+		return true;
 	}
 
 	return false;
@@ -179,5 +180,81 @@ void PathTools::AddTrailingSlash(std::string& path)
 	if (!path.empty() && !IsSlash(path.back()))
 	{
 		path += '/';
+	}
+}
+
+void PathTools::Normalize(std::string& path)
+{
+	std::string::size_type prefixLength = 0;
+
+	if (path.length() >= 1 && IsSlash(path[0]))
+	{
+		// POSIX absolute path
+		// note that UNC paths are not supported
+		path[0] = '/';
+		prefixLength = 1;
+	}
+	else if (path.length() >= 3 && IsAlpha(path[0]) && path[1] == ':' && IsSlash(path[2]))
+	{
+		// Windows absolute path
+		path[2] = '/';
+		prefixLength = 3;
+	}
+
+	auto goodLength = prefixLength;
+
+	while (goodLength < path.length())
+	{
+		const auto nextSlashPos = path.find_first_of("/\\", goodLength);
+		const std::string_view element(path.data() + goodLength, ((nextSlashPos != std::string::npos) ?
+			nextSlashPos : path.length()) - goodLength);
+
+		if (element.empty())
+		{
+			path.erase(goodLength, 1);
+			continue;
+		}
+
+		if (element == ".")
+		{
+			path.erase(goodLength, 2);
+			continue;
+		}
+
+		if (element == "..")
+		{
+			auto erasePos = prefixLength;
+
+			if (goodLength > 2)
+			{
+				const auto prevSlashPos = path.rfind('/', goodLength - 2);
+				if (prevSlashPos != std::string::npos && prevSlashPos > prefixLength)
+				{
+					erasePos = prevSlashPos + 1;
+				}
+			}
+
+			path.erase(erasePos, ((nextSlashPos != std::string::npos) ?
+				(nextSlashPos + 1) : path.length()) - erasePos);
+
+			goodLength = erasePos;
+
+			continue;
+		}
+
+		goodLength += element.length();
+
+		if (nextSlashPos != std::string::npos)
+		{
+			path[nextSlashPos] = '/';
+			goodLength++;
+		}
+	}
+
+	// remove trailing slash
+	// but keep the first slash
+	if (path.length() > 1 && path.back() == '/')
+	{
+		path.pop_back();
 	}
 }

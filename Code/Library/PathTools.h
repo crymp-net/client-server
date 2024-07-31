@@ -30,4 +30,5 @@ namespace PathTools
 	std::string Join(std::string_view pathA, std::string_view pathB);
 
 	void AddTrailingSlash(std::string& path);
+	void Normalize(std::string& path);
 }
