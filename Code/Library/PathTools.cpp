@@ -5,6 +5,16 @@ static bool IsAlpha(char ch)
 	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
 }
 
+static char ToLower(char ch)
+{
+	return ch |= (ch >= 'A' && ch <= 'Z') << 5;
+}
+
+static char FixSlash(char ch)
+{
+	return (ch == '\\') ? '/' : ch;
+}
+
 bool PathTools::IsAbsolutePath(std::string_view path)
 {
 	if (path.length() >= 1 && IsSlash(path[0]))
@@ -20,6 +30,37 @@ bool PathTools::IsAbsolutePath(std::string_view path)
 	}
 
 	return false;
+}
+
+bool PathTools::StartsWith(std::string_view path, std::string_view prefix)
+{
+	auto length = prefix.length();
+
+	if (length > 0)
+	{
+		if (IsSlash(prefix.back()))
+		{
+			length--;
+		}
+
+		if (path.length() < length || (path.length() > length && !IsSlash(path[length])))
+		{
+			return false;
+		}
+	}
+
+	for (std::string_view::size_type i = 0; i < length; i++)
+	{
+		const char chA = FixSlash(ToLower(prefix[i]));
+		const char chB = FixSlash(ToLower(path[i]));
+
+		if (chA != chB)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 std::string_view PathTools::RemoveLeadingSlashes(std::string_view path)

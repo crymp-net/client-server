@@ -12,6 +12,7 @@ namespace PathTools
 	}
 
 	bool IsAbsolutePath(std::string_view path);
+	bool StartsWith(std::string_view path, std::string_view prefix);
 
 	std::string_view RemoveLeadingSlashes(std::string_view path);
 	std::string_view RemoveTrailingSlashes(std::string_view path);

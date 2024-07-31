@@ -1130,7 +1130,7 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 		CryLogWarningAlways("CryPak::AdjustFileName(\"%s\", 0x%x): Unknown flag(s)", adjusted.c_str(), flags);
 	}
 
-	// TODO: prevent access outside Crysis main directory and user directory
+	// TODO: prevent access outside Crysis directories (main, root, user)
 
 	if ((flags & FLAGS_FOR_WRITING) && !m_gameFolderWritable)
 	{
@@ -1144,21 +1144,18 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 
 	PathTools::Normalize(adjusted);
 
-	if (!PathTools::IsAbsolutePath(adjusted) && !(flags & FLAGS_NO_FULL_PATH))
+	// check the original path because Normalize removes the "./" prefix
+	const bool noFullPath = path.length() >= 2 && path[0] == '.' && (path[1] == '/' || path[1] == '\\');
+
+	if (!noFullPath && !(flags & FLAGS_NO_FULL_PATH)
+	 && !PathTools::IsAbsolutePath(adjusted)
+	 && !PathTools::StartsWith(adjusted, "Game/")
+	 && !PathTools::StartsWith(adjusted, "Editor/")
+	 && !PathTools::StartsWith(adjusted, "Bin32/")
+	 && !PathTools::StartsWith(adjusted, "Bin64/")
+	 && !PathTools::StartsWith(adjusted, "Mods/"))
 	{
-		// TODO: refactor
-		if (adjusted.starts_with("./"))
-		{
-			adjusted.erase(0, 2);
-		}
-		else if (!(StringTools::StartsWithNoCase(adjusted, "Game/")   || StringTools::IsEqualNoCase(adjusted, "Game"))
-		      && !(StringTools::StartsWithNoCase(adjusted, "Editor/") || StringTools::IsEqualNoCase(adjusted, "Editor"))
-		      && !(StringTools::StartsWithNoCase(adjusted, "Bin32/")  || StringTools::IsEqualNoCase(adjusted, "Bin32"))
-		      && !(StringTools::StartsWithNoCase(adjusted, "Bin64/")  || StringTools::IsEqualNoCase(adjusted, "Bin64"))
-		      && !(StringTools::StartsWithNoCase(adjusted, "Mods/")   || StringTools::IsEqualNoCase(adjusted, "Mods")))
-		{
-			adjusted.insert(0, "Game/");
-		}
+		adjusted.insert(0, "Game/");
 	}
 
 	if (flags & FLAGS_ADD_TRAILING_SLASH)
