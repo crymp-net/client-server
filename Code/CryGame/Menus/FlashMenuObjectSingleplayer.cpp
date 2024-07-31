@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFind.h"
 
 #include "FlashMenuObject.h"
 #include "FlashMenuScreen.h"
@@ -381,10 +381,6 @@ const char* CFlashMenuObject::ValidateName(const char* fileName)
 
 void CFlashMenuObject::UpdateMods()
 {
-	string dir("Mods\\");
-	string search = dir;
-	search += "*.*";
-
 	SModInfo info;
 	string currentMod;
 	bool currentModExists = g_pGame->GetIGameFramework()->GetModInfo(&info);
@@ -393,31 +389,26 @@ void CFlashMenuObject::UpdateMods()
 
 	m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.resetMods");
 
-	ICryPak* pPak = gEnv->pSystem->GetIPak();
-	_finddata_t fd;
-	intptr_t handle = pPak->FindFirst(search.c_str(), &fd, ICryPak::FLAGS_NO_MASTER_FOLDER_MAPPING);
-	if (handle > -1)
+	for (auto& entry : CryFind("./Mods/*"))
 	{
-		do
+		if (!entry.IsDirectory())
 		{
-			if (fd.attrib & _A_SUBDIR)
-			{
-				if (!_stricmp("..", fd.name)) continue;
-				string subDir(dir);
-				subDir.append(fd.name);
-				subDir += "\\";
-				if (g_pGame->GetIGameFramework()->GetModInfo(&info, subDir.c_str()))
-				{
-					string screenshot = subDir;
-					screenshot += "\\";
-					screenshot += info.m_screenshot;
-					bool isCurrent = false;
-					if (currentModExists)
-						isCurrent = (!strcmp(info.m_name, currentMod.c_str())) ? true : false;
-					SFlashVarValue args[8] = { info.m_name, info.m_name, info.m_name, info.m_version, info.m_url, info.m_description, screenshot.c_str(), isCurrent };
-					m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.addModToList", args, 8);
-				}
-			}
-		} while (pPak->FindNext(handle, &fd) >= 0);
+			continue;
+		}
+
+		string subDir("Mods\\");
+		subDir.append(entry.name);
+		subDir += "\\";
+		if (g_pGame->GetIGameFramework()->GetModInfo(&info, subDir.c_str()))
+		{
+			string screenshot = subDir;
+			screenshot += "\\";
+			screenshot += info.m_screenshot;
+			bool isCurrent = false;
+			if (currentModExists)
+				isCurrent = (!strcmp(info.m_name, currentMod.c_str())) ? true : false;
+			SFlashVarValue args[8] = { info.m_name, info.m_name, info.m_name, info.m_version, info.m_url, info.m_description, screenshot.c_str(), isCurrent };
+			m_pCurrentFlashMenuScreen->Invoke("Root.MainMenu.Mods.addModToList", args, 8);
+		}
 	}
 }

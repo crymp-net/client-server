@@ -266,12 +266,6 @@ public:
 inline CMultiThreadRefCount::~CMultiThreadRefCount() {}
 
 // TYPEDEF_AUTOPTR macro, declares Class_AutoPtr, which is the smart pointer to the given class,
-// and Class_AutoArray, which is the array(STL vector) of autopointers
-#ifdef ENABLE_NAIIVE_AUTOPTR
-// naiive autopointer makes it easier for Visual Assist to parse the declaration and sometimes is easier for debug
-#define TYPEDEF_AUTOPTR(T) typedef T* T##_AutoPtr; typedef std::vector<T##_AutoPtr> T##_AutoArray;
-#else
-#define TYPEDEF_AUTOPTR(T) typedef _smart_ptr<T> T##_AutoPtr; typedef std::vector<T##_AutoPtr> T##_AutoArray;
-#endif
+#define TYPEDEF_AUTOPTR(T) typedef _smart_ptr<T> T##_AutoPtr;
 
 #endif //_SMART_PTR_H_

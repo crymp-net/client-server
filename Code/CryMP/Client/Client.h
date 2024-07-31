@@ -14,7 +14,6 @@ struct IConsoleCmdArgs;
 
 class Executor;
 class FileDownloader;
-class FileRedirector;
 class FileCache;
 class MapDownloader;
 class GSMasterHook;
@@ -26,7 +25,6 @@ class ServerConnector;
 class ServerPAK;
 class EngineCache;
 class ParticleManager;
-class FlashFileHooks;
 class DrawTools;
 
 class Client : public IGameFrameworkListener, public ILevelSystemListener, public IEntitySystemSink
@@ -34,15 +32,9 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	IGameFramework *m_pGameFramework = nullptr;
 	IGame *m_pGame = nullptr;
 
-	std::string_view m_scriptMain;
-	std::string_view m_scriptJSON;
-	std::string_view m_scriptRPC;
-	std::string_view m_scriptLocalization;
-
 	std::unique_ptr<Executor> m_pExecutor;
 	std::unique_ptr<HTTPClient> m_pHTTPClient;
 	std::unique_ptr<FileDownloader> m_pFileDownloader;
-	std::unique_ptr<FileRedirector> m_pFileRedirector;
 	std::unique_ptr<FileCache> m_pFileCache;
 	std::unique_ptr<MapDownloader> m_pMapDownloader;
 	std::unique_ptr<GSMasterHook> m_pGSMasterHook;
@@ -54,7 +46,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 	std::unique_ptr<ServerPAK> m_pServerPAK;
 	std::unique_ptr<EngineCache> m_pEngineCache;
 	std::unique_ptr<ParticleManager> m_pParticleManager;
-	std::unique_ptr<FlashFileHooks> m_pFlashFileHooks;
 	std::unique_ptr<DrawTools> m_pDrawTools;
 
 	std::string m_hwid;
@@ -77,7 +68,6 @@ class Client : public IGameFrameworkListener, public ILevelSystemListener, publi
 
 	void InitMasters();
 	void SetVersionInLua();
-	void AddFlashFileHook(const std::string_view& path, int resourceID);
 
 	std::string GenerateRandomCDKey();
 	void SetRandomCDKey();
@@ -146,11 +136,6 @@ public:
 	FileDownloader *GetFileDownloader()
 	{
 		return m_pFileDownloader.get();
-	}
-
-	FileRedirector *GetFileRedirector()
-	{
-		return m_pFileRedirector.get();
 	}
 
 	FileCache *GetFileCache()

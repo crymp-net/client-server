@@ -22,7 +22,7 @@ History:
 
 //-----------------------------------------------------------------------------------------------------
 
-class CCryFile;
+class CryFile;
 class CFlashMenuScreen;
 struct IPlayerProfileManager;
 
@@ -100,9 +100,9 @@ private:
 	struct CCVarSink : public ICVarDumpSink
 	{
 		const COptionsManager* self;
-		CCryFile& file;
+		CryFile& file;
 
-		explicit CCVarSink(const COptionsManager* self, CCryFile& file) : self(self), file(file) {}
+		explicit CCVarSink(const COptionsManager* self, CryFile& file) : self(self), file(file) {}
 
 		void OnElementFound(ICVar* pCVar) override;
 	};

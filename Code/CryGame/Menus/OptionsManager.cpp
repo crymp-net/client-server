@@ -15,7 +15,7 @@ History:
 #include <cstring>
 
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "OptionsManager.h"
 #include "CryCommon/CryAction/IPlayerProfiles.h"
 #include "FlashMenuObject.h"
@@ -848,8 +848,8 @@ static void EscapeChar(std::string& text, char ch)
 
 bool COptionsManager::WriteGameCfg()
 {
-	CCryFile file;
-	if (!file.Open("%USER%/game.cfg", "w"))
+	CryFile file("%USER%/game.cfg", "w");
+	if (!file)
 	{
 		CryLogErrorAlways("Failed to open %USER%/game.cfg for writing!");
 		return false;

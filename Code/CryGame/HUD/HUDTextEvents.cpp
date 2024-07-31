@@ -533,7 +533,7 @@ const char* GetSoundKey(const char* soundName)
 	{
 		buf.append (soundName);
 	}
-	PathUtil::RemoveExtension(buf);
+	CryPath::RemoveExtension(buf);
 	return buf.c_str();
 }
 

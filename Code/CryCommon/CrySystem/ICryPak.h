@@ -6,12 +6,28 @@
 
 #pragma once
 
-#ifdef _MSC_VER
-#include <io.h>  // _finddata_t
-#endif
-
 #include <cstdint>
-#include <vector>  // for smartptr.h
+
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <ctime>
+#define _A_NORMAL 0x00
+#define _A_RDONLY 0x01
+#define _A_HIDDEN 0x02
+#define _A_SYSTEM 0x04
+#define _A_SUBDIR 0x10
+#define _A_ARCH 0x20
+struct _finddata_t
+{
+	unsigned int attrib;
+	std::time_t time_create;
+	std::time_t time_access;
+	std::time_t time_write;
+	std::uint64_t size;
+	char name[260];
+};
+#endif
 
 #include "CryCommon/CryCore/platform.h"  // PRINTF_PARAMS
 #include "CryCommon/CryCore/smartptr.h"
@@ -498,9 +514,3 @@ struct IResourceList : public _reference_target_t
 	//    Client must call GetFirst before calling GetNext.
 	virtual const char* GetNext() = 0;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Include File helpers.
-//////////////////////////////////////////////////////////////////////////
-#include "CryPath.h"
-#include "CryFile.h"

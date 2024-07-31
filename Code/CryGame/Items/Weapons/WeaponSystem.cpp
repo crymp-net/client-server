@@ -14,7 +14,8 @@ History:
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFind.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryGame/Actors/Actor.h"
@@ -428,51 +429,42 @@ void CWeaponSystem::Scan(const char *folderName)
 	string search = folder;
 	search += "/*.*";
 
-	ICryPak *pPak = m_pSystem->GetIPak();
-
-	_finddata_t fd;
-	intptr_t handle = pPak->FindFirst(search.c_str(), &fd);
-
 	if (!m_recursing)
 		CryLog("Loading ammo XML definitions from '%s'!", folderName);
 
-	if (handle > -1)
+	for (auto& entry : CryFind(search.c_str()))
 	{
-		do
+		if (entry.IsDirectory())
 		{
-			if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-				continue;
-
-			if (fd.attrib & _A_SUBDIR)
+			string subName = folder + "/" + entry.name;
+			if (m_recursing)
 			{
-				string subName = folder+"/"+fd.name;
-				if (m_recursing)
-					Scan(subName.c_str());
-				else
-				{
-					m_recursing=true;
-					Scan(subName.c_str());
-					m_recursing=false;
-				}
-				continue;
+				Scan(subName.c_str());
 			}
-
-			if (_stricmp(PathUtil::GetExt(fd.name), "xml"))
-				continue;
-
-			string xmlFile = folder + string("/") + string(fd.name);
-			XmlNodeRef rootNode = m_pSystem->LoadXmlFile(xmlFile.c_str());
-
-			if (!rootNode)
+			else
 			{
-				CryLogWarning("Invalid XML file '%s'! Skipping...", xmlFile.c_str());
-				continue;
+				m_recursing=true;
+				Scan(subName.c_str());
+				m_recursing=false;
 			}
+			continue;
+		}
 
-			if (!ScanXML(rootNode, xmlFile.c_str()))
-				continue;
+		if (_stricmp(CryPath::GetExt(entry.name), "xml"))
+		{
+			continue;
+		}
 
-		} while (pPak->FindNext(handle, &fd) >= 0);
+		string xmlFile = folder + string("/") + string(entry.name);
+		XmlNodeRef rootNode = m_pSystem->LoadXmlFile(xmlFile.c_str());
+
+		if (!rootNode)
+		{
+			CryLogWarning("Invalid XML file '%s'! Skipping...", xmlFile.c_str());
+			continue;
+		}
+
+		ScanXML(rootNode, xmlFile.c_str());
 	}
 
 	if (!m_recursing)

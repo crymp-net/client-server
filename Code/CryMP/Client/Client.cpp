@@ -19,7 +19,6 @@
 
 #include "Client.h"
 #include "FileDownloader.h"
-#include "FileRedirector.h"
 #include "FileCache.h"
 #include "MapDownloader.h"
 #include "ScriptCommands.h"
@@ -30,7 +29,6 @@
 #include "ServerPAK.h"
 #include "EngineCache.h"
 #include "ParticleManager.h"
-#include "FlashFileHooks.h"
 #include "DrawTools.h"
 #include "FFontHooks.h"
 
@@ -56,7 +54,7 @@ void Client::InitMasters()
 	}
 	else
 	{
-		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
+		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS_TXT);
 	}
 
 	for (const std::string_view & master : Util::SplitWhitespace(content))
@@ -77,11 +75,6 @@ void Client::SetVersionInLua()
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT", CRYMP_CLIENT_VERSION);
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_STRING", CRYMP_CLIENT_VERSION_STRING);
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_BITS", CRYMP_CLIENT_BITS);
-}
-
-void Client::AddFlashFileHook(const std::string_view& path, int resourceID)
-{
-	m_pFlashFileHooks->Add(path, WinAPI::GetDataResource(nullptr, resourceID));
 }
 
 std::string Client::GenerateRandomCDKey()
@@ -204,7 +197,6 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pExecutor          = std::make_unique<Executor>();
 	m_pHTTPClient        = std::make_unique<HTTPClient>(*m_pExecutor);
 	m_pFileDownloader    = std::make_unique<FileDownloader>();
-	m_pFileRedirector    = std::make_unique<FileRedirector>();
 	m_pFileCache         = std::make_unique<FileCache>();
 	m_pMapDownloader     = std::make_unique<MapDownloader>();
 	m_pGSMasterHook      = std::make_unique<GSMasterHook>();
@@ -216,24 +208,7 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 	m_pEngineCache       = std::make_unique<EngineCache>();
 	m_pParticleManager   = std::make_unique<ParticleManager>();
-	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
 	m_pDrawTools         = std::make_unique<DrawTools>();
-
-	// prepare Lua scripts
-	m_scriptMain         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
-	m_scriptJSON         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
-	m_scriptRPC          = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
-	m_scriptLocalization = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_LOCALIZATION);
-
-	AddFlashFileHook("Libs/UI/HUD_ChatSystem.gfx", RESOURCE_HUD_CHAT_SYSTEM_GFX);
-	AddFlashFileHook("Libs/UI/HUD_VehicleStats.gfx", RESOURCE_HUD_VEHICLE_STATS_GFX);
-	AddFlashFileHook("Libs/UI/HUD_PDA_Buy.gfx", RESOURCE_HUD_PDA_BUY_GFX);
-	AddFlashFileHook("Libs/UI/Menus_Loading_MP.gfx", RESOURCE_MENUS_LOADING_MP_GFX);
-	AddFlashFileHook("Libs/UI/HUD_HitIndicator.gfx", RESOURCE_HUD_HIT_INDICATOR_GFX);
-	AddFlashFileHook("Libs/UI/HUD_Spectate.gfx", RESOURCE_HUD_SPECTATE_GFX);
-	AddFlashFileHook("Libs/UI/HUD_MP_Radio_Buttons.gfx", RESOURCE_HUD_MP_RADIO_BUTTONS_GFX);
-	AddFlashFileHook("Libs/UI/HUD_ChatSystem_HR.gfx", RESOURCE_HUD_CHAT_SYSTEM_HR_GFX);
-	AddFlashFileHook("Libs/UI/HUD_KillLog.gfx", RESOURCE_HUD_KILL_LOG_GFX);
 
 	PatchCryFont();
 
@@ -261,10 +236,10 @@ void Client::Init(IGameFramework *pGameFramework)
 	SetVersionInLua();
 
 	// execute Lua scripts
-	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
+	pScriptSystem->ExecuteFile("Scripts/JSON.lua", true, true);
+	pScriptSystem->ExecuteFile("Scripts/CryMP/RPC.lua", true, true);
+	pScriptSystem->ExecuteFile("Scripts/CryMP/Client.lua", true, true);
+	pScriptSystem->ExecuteFile("Scripts/CryMP/Localization.lua", true, true);
 
 	InitMasters();
 
