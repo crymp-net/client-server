@@ -111,7 +111,7 @@ public:
 	void Reset(bool keepPersistent=false);
 	void Update(float frameTime);
 	unsigned int TimerAction(unsigned int time, ISchedulerAction *action, bool persistent=false);
-	bool KillTimer(unsigned int timerId);
+	void KillTimer(unsigned int timerId);
 	void ScheduleAction(ISchedulerAction *action, bool persistent=false);
 	void GetMemoryStatistics(ICrySizer * s);
 

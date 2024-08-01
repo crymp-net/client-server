@@ -148,7 +148,7 @@ void CItemScheduler::ScheduleAction(ISchedulerAction *action, bool persistent)
 unsigned int CItemScheduler::TimerAction(unsigned int time, ISchedulerAction *action, bool persistent)
 {
 	if (m_locked)
-		return;
+		return 0;
 
 	STimerAction timerAction;
 	timerAction.action = action;
@@ -170,9 +170,9 @@ unsigned int CItemScheduler::TimerAction(unsigned int time, ISchedulerAction *ac
 }
 
 //------------------------------------------------------------------------
-bool CItemScheduler::KillTimer(unsigned int timerId)
+void CItemScheduler::KillTimer(unsigned int timerId)
 {
-	std::remove_if(m_timers.begin(), m_timers.end(),
+	std::erase_if(m_timers,
 		[timerId](auto& timer)
 		{
 			if (timer.id == timerId)
@@ -181,7 +181,8 @@ bool CItemScheduler::KillTimer(unsigned int timerId)
 				return true;
 			}
 			return false;
-		});
+		}
+	);
 }
 
 //------------------------------------------------------------------------
