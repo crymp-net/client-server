@@ -151,8 +151,6 @@ struct IntSkinVertex
 	uint16 boneIDs[4];
 	f32 weights[4];
 	ColorB color;   //index for blend-array
-
-	AUTO_STRUCT_INFO
 };
 
 struct ExtSkinVertex
@@ -166,8 +164,6 @@ struct ExtSkinVertex
 	ColorB color;			//index for blend-array
 	ColorB boneIDs;		//boneIDs per render-batch
 	ColorB weights;   //weights for every bone (four in16)
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -222,7 +218,6 @@ struct CStoredSkinningInfo
 	{
 
 	}
-  AUTO_STRUCT_INFO
 };
 
 // structure for recreating controllers
@@ -235,8 +230,6 @@ struct CControllerInfo
 	uint32 m_nRotTrack;
 
 	CControllerInfo() : m_nControllerID(-1), m_nPosKeyTimeTrack(-1), m_nPosTrack(-1), m_nRotKeyTimeTrack(-1), m_nRotTrack(-1) {}
-
-  AUTO_STRUCT_INFO
 };
 
 struct MeshCollisionInfo

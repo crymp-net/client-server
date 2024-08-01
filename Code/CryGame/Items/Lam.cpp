@@ -10,7 +10,7 @@ History:
 - 16:10:2006   16:56 : Created by Benito Gangoso Rodriguez
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Lam.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Actors/Player/Player.h"
@@ -65,8 +65,6 @@ bool CLam::Init(IGameObject* pGameObject)
 {
 	if (!CItem::Init(pGameObject))
 		return false;
-
-	m_pParent = static_cast<CItem*>(m_pItemSystem->GetItem(GetParentId()));
 
 	return true;
 }
@@ -216,8 +214,6 @@ void CLam::ActivateLight(bool activate, bool aiRequest /* = false */)
 void CLam::OnAttach(bool attach)
 {
 	CItem::OnAttach(attach);
-
-	m_pParent = static_cast<CItem*>(m_pItemSystem->GetItem(GetParentId()));
 
 	if (m_pParent)
 	{
@@ -917,3 +913,10 @@ void CLam::PostSerialize()
 {
 }
 
+//------------------------------------------------------------------
+void CLam::SetParentId(EntityId parentId)
+{
+	CItem::SetParentId(parentId);
+
+	m_pParent = static_cast<CItem*>(m_pItemSystem->GetItem(parentId));
+}

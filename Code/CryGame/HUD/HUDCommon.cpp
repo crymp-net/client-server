@@ -14,7 +14,7 @@ History:
 - 22:02:2006: Created by Matthew Jack from original HUD class
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "HUDCommon.h"
 #include "HUD.h"

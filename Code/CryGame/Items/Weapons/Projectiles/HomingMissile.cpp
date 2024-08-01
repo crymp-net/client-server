@@ -10,7 +10,7 @@ History:
 - 08:12:2005   14:14 : Created by MichaelR (port from Marcios HomingMissile.lua)
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "HomingMissile.h"

@@ -128,6 +128,7 @@ inline void UnifyFilePath (string& strPath)
 	strPath.MakeLower();
 }
 
+/*
 // converts the number to a string
 inline string toString(unsigned nNumber)
 {
@@ -173,6 +174,7 @@ inline string toString (const Vec3& v)
 	return szBuf;
 }
 #endif
+*/
 
 // does the same as strstr, but the szString is allowed to be no more than the specified size
 inline const char* strnstr (const char* szString, const char* szSubstring, int nSuperstringLength)
@@ -216,6 +218,7 @@ inline int findString(const char* szString, const char* arrStringList[])
 }
 
 
+/*
 // This function is used for printing out sets of objects of string type.
 // just forms the comma-delimited string where each string in the set is presented as a formatted substring
 inline string toString (const std::set<string>& setStrings)
@@ -236,6 +239,7 @@ inline string toString (const std::set<string>& setStrings)
 	}
 	return strResult ;
 }
+*/
 
 // cuts the string and adds leading ... if it's longer than specified maximum length
 inline string cutString (const string& strPath, unsigned nMaxLength)
@@ -311,6 +315,7 @@ const char* CBMGSubstring::findSubstringIn (const char* buffer, int buflen)
 }
 */
 
+/*
 //////////////////////////////////////////////////////////////////////////
 // Converts the given set of NUMBERS into the string
 template <typename T>
@@ -350,6 +355,7 @@ string toString (const std::set<T>& setMtls, const char* szFormat, const char* s
 	}
 	return szPostfix[0]?strResult+szPostfix:strResult;
 }
+*/
 
 // returns true if the string matches the wildcard
 inline bool MatchWildcard (const char* szString, const char* szWildcard)

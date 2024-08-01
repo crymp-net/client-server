@@ -10,7 +10,7 @@ History:
 - 9:12:2005   10:50 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "Weapon.h"
 #include "CryGame/Actors/Player/Player.h"
@@ -21,6 +21,10 @@ History:
 #include "CryCommon/CryAction/IActorSystem.h"
 #include "CryCommon/CryAISystem/IAISystem.h"
 #include "CryCommon/CryAISystem/IAgent.h"
+#include "FireModes/WorkOnTarget.h"
+#include "FireModes/Rapid.h"
+#include "FireModes/FreezingBeam.h"
+#include "FireModes/Scan.h"
 
 CWeapon::TEventListenerVector * CWeapon::m_listenerCache = 0;
 bool CWeapon::m_listenerCacheInUse = false;
@@ -319,10 +323,22 @@ void CWeapon::OnSelected(bool selected)
 void CWeapon::OnEnterFirstPerson()
 {
 	CItem::OnEnterFirstPerson();
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		pFM->OnEnterFirstPerson();
+	}
 }
 
 //------------------------------------------------------
 void CWeapon::OnEnterThirdPerson()
 {
 	CItem::OnEnterThirdPerson();
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		pFM->OnEnterThirdPerson();
+	}
 }

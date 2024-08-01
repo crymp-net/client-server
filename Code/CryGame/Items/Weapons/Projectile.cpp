@@ -10,7 +10,7 @@ History:
 - 18:10:2005   14:14 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "Projectile.h"
@@ -526,6 +526,14 @@ void CProjectile::SetVelocity(const Vec3& pos, const Vec3& dir, const Vec3& velo
 {
 	if (!m_pPhysicalEntity)
 		return;
+
+	if (gEnv->bMultiplayer && !gEnv->bServer) 
+	{
+		if (m_pAmmoParams->predictSpawn)
+		{
+			return; //CryMP: Fix initial projectile lag, this is already being done on server 
+		}
+	}
 
 	Vec3 totalVelocity = (dir * m_pAmmoParams->speed * speedScale) + velocity;
 

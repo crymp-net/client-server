@@ -59,7 +59,7 @@ void CPUInfo::Detect(CPUInfo* self)
 	self->cores[0].flags = features;
 
 	CryLogAlways("%s [Count: %u] [Features:%s%s%s%s]",
-		g_cpuid.brand_string.data(),
+		g_cpuid.brand_string,
 		coreCount,
 		(features & FLAG_MMX)   ? " MMX"    : "",
 		(features & FLAG_3DNOW) ? " 3DNow!" : "",

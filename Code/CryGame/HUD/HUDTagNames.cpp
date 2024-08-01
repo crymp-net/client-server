@@ -15,7 +15,7 @@ History:
 
 #include <algorithm>
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/GameCVars.h"
 #include "GameFlashLogic.h"

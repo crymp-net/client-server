@@ -73,7 +73,7 @@ void ScriptTable::PushRef()
 	}
 	else
 	{
-		CryLogWarning("[Script] Pushing Nil table reference");
+		CryLogWarningAlways("[Script] Pushing nil table");
 
 		lua_pushnil(m_L);
 	}
@@ -483,6 +483,12 @@ bool ScriptTable::AddFunction(const SUserFunctionDesc & fd)
 	lua_pop(m_L, 1);  // pop table
 
 	return true;
+}
+
+bool ScriptTable::GetValueRecursive(const char *path, IScriptTable *pTable)
+{
+	CryLogErrorAlways("[ScriptTable::GetValueRecursive] Should not be used");
+	return false;
 }
 
 ///////////////////////

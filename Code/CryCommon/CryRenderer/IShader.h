@@ -11,6 +11,7 @@
 #define _ISHADER_H_
 
 #include "CryCommon/CryCore/smartptr.h"
+#include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,7 +495,7 @@ public:
   // - and we need to store only the offset, not the actual pointer
   void* operator new( size_t Size )
   {
-    unsigned char *ptr = (unsigned char *)malloc(Size+16+4);
+    unsigned char *ptr = (unsigned char *)CryMalloc(Size+16+4);
     memset(ptr, 0, Size+16+4);
     unsigned char *bPtrRes = (unsigned char *)((INT_PTR)(ptr+4+16) & ~0xf);
     ((unsigned char**)bPtrRes)[-1] = ptr;
@@ -507,7 +508,7 @@ public:
   }
   void* operator new[](size_t Size)
   {
-    unsigned char *ptr = (unsigned char *)malloc(Size+16+2*sizeof(INT_PTR));
+    unsigned char *ptr = (unsigned char *)CryMalloc(Size+16+2*sizeof(INT_PTR));
     memset(ptr, 0, Size+16+2*sizeof(INT_PTR));
     unsigned char *bPtrRes = (unsigned char *)((INT_PTR)(ptr+16+2*sizeof(INT_PTR)) & ~0xf);
     ((unsigned char**)bPtrRes)[-2] = ptr;
@@ -522,13 +523,13 @@ public:
   {
     unsigned char *bActualPtr = ((unsigned char **)Ptr)[-1];
     assert (bActualPtr <= (unsigned char*)Ptr && (unsigned char*)Ptr-bActualPtr < 20);
-    free ((void *)bActualPtr);
+    CryFree(bActualPtr);
   }
 
   void operator delete[]( void *Ptr )
   {
     unsigned char *bActualPtr = ((unsigned char **)Ptr)[-1];
-    free ((void *)bActualPtr);
+    CryFree(bActualPtr);
   }
 };
 

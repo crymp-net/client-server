@@ -113,12 +113,16 @@ public:
 	virtual int PlayActionSAFlags(int flags) { return (flags | CItem::eIPAF_Animation) & ~CItem::eIPAF_Sound; };
 	// ~CSingle
 
+	//CryMP ------------------------------------------------------
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
+
 protected:
 	virtual void Accelerate(float acc);
 	virtual void Firing(bool firing);
-	virtual void UpdateRotation(float frameTime);
+	void UpdateRotation(CItem::eGeometrySlot slot, float frameTime);
 	virtual void UpdateSound(float frameTime);
-  virtual void FinishDeceleration();
+	virtual void FinishDeceleration();
 
 	SRapidActions m_rapidactions;
 	SRapidParams	m_rapidparams;
@@ -137,6 +141,8 @@ protected:
 
 	bool  m_startedToFire;
 
+	bool m_hasBarrelAttachment = false;
+	bool m_hasEngineAttachment = false;
 };
 
 

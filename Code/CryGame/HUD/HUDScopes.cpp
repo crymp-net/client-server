@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "HUDScopes.h"
 #include "HUD.h"
 #include "HUDRadar.h"

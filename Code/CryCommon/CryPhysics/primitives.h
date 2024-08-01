@@ -18,19 +18,16 @@ namespace primitives {
 		int bOriented;
 		Vec3 center;
 		Vec3 size;
-		AUTO_STRUCT_INFO
 	};
 
 	struct triangle : primitive {
 		enum entype { type=1 };
 		Vec3 pt[3];
 		Vec3 n;
-		AUTO_STRUCT_INFO
 	};
 
 	struct indexed_triangle : triangle {
 		int idx;
-		AUTO_STRUCT_INFO
 	};
 
 	typedef float (*getHeightCallback)(int ix,int iy);
@@ -46,7 +43,6 @@ namespace primitives {
 
 		int inrange(int ix, int iy) {	return -((ix-size.x & -1-ix & iy-size.y & -1-iy)>>31); }
 		int getcell_safe(int ix,int iy) { int mask=-inrange(ix,iy); return iy*stride.y+ix*stride.x&mask | size.x*size.y&~mask; }
-		AUTO_STRUCT_INFO
 	};
 
 	struct heightfield : grid {
@@ -74,21 +70,18 @@ namespace primitives {
 		int typepower;
 		getHeightCallback fpGetHeightCallback;
 		getSurfTypeCallback fpGetSurfTypeCallback;
-		AUTO_STRUCT_INFO
 	};
 
 	struct ray : primitive {
 		enum entype { type=3 };
 		Vec3 origin;
 		Vec3 dir;
-		AUTO_STRUCT_INFO
 	};
 
 	struct sphere : primitive {
 		enum entype { type=4 };
 		Vec3 center;
 		float r;
-		AUTO_STRUCT_INFO
 	};
 
 	struct cylinder : primitive {
@@ -96,12 +89,10 @@ namespace primitives {
 		Vec3 center;
 		Vec3 axis;
 		float r,hh;
-		AUTO_STRUCT_INFO
 	};
 
 	struct capsule : cylinder {
 		enum entype { type=6 };
-		AUTO_STRUCT_INFO
 	};
 
 	struct grid3d : primitive {
@@ -130,17 +121,12 @@ namespace primitives {
 		enum entype { type=8 };
 		Vec3 n;
 		Vec3 origin;
-		AUTO_STRUCT_INFO
 	};
 
 	struct coord_plane : plane {
 		Vec3 axes[2];
-		AUTO_STRUCT_INFO
 	};
 }
-
-AUTO_TYPE_INFO(primitives::getHeightCallback)
-AUTO_TYPE_INFO(primitives::getSurfTypeCallback)
 
 struct prim_inters {
 	prim_inters() { minPtDist2=0.0f; }

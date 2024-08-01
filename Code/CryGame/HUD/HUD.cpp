@@ -18,7 +18,7 @@ History:
 - 2007: Refactored by Jan Müller
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/StlUtils.h"
 #include <ctype.h>
 
@@ -54,8 +54,6 @@ History:
 #include "CryGame/Items/Item.h"
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "CryGame/Items/Weapons/OffHand.h"
-
-#include "Tweaks/HUDTweakMenu.h"
 
 #include "HUDVehicleInterface.h"
 #include "HUDPowerStruggle.h"
@@ -119,7 +117,6 @@ CHUD::CHUD()
 	CFlashMenuObject::GetFlashMenuObject()->SetColorChanged();
 	// CHUDCommon constructor runs first
 	m_pHUDRadar = NULL;
-	m_pHUDTweakMenu = NULL;
 	m_pHUDScore = NULL;
 	m_pHUDTextChat = NULL;
 	m_pRenderer = NULL;
@@ -486,7 +483,6 @@ bool CHUD::Init(IActor* pActor)
 	m_pHUDTextArea->SetFadeTime(2.0f);
 	m_pHUDTextArea->SetPos(Vec2(200.0f, 450.0f));
 
-	m_pHUDTweakMenu = new CHUDTweakMenu(pScriptSystem);
 	m_pHUDCrosshair = new CHUDCrosshair(this);
 	m_pHUDTagNames = new CHUDTagNames(this);
 	m_pHUDSilhouettes = new CHUDSilhouettes;
@@ -502,7 +498,6 @@ bool CHUD::Init(IActor* pActor)
 	m_hudObjectsList.push_back(m_pHUDRadar);
 	m_hudObjectsList.push_back(m_pHUDObituary);
 	m_hudObjectsList.push_back(m_pHUDTextArea);
-	m_hudObjectsList.push_back(m_pHUDTweakMenu);
 	m_hudObjectsList.push_back(m_pHUDCrosshair);
 
 	if (gEnv->bMultiplayer || loadEverything)
@@ -564,12 +559,18 @@ bool CHUD::Init(IActor* pActor)
 	m_animWeaponAccessories.Load("Libs/UI/HUD_WeaponAccessories.gfx", eFD_Center, eFAF_ThisHandler);
 	if (loadEverything)
 	{
-		m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Load("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 	else
 	{
-		m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Init("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 
@@ -691,6 +692,16 @@ bool CHUD::Init(IActor* pActor)
 
 //-----------------------------------------------------------------------------------------------------
 
+void CHUD::OnAmmoChanged(CActor *pActor)
+{
+	if (pActor && pActor->IsClient() && IsBuyMenuActive() && GetPowerStruggleHUD())
+	{
+		GetPowerStruggleHUD()->UpdateBuyList(nullptr, false);
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void CHUD::ShowBootSequence()
 {
 	if (m_pHUDScopes->m_animBinoculars.IsLoaded())
@@ -704,12 +715,13 @@ void CHUD::ShowBootSequence()
 
 	if (m_iBreakHUD)
 		BreakHUD(0);
-	for (TGameFlashAnimationsList::iterator iter = m_gameFlashAnimationsList.begin(); iter != m_gameFlashAnimationsList.end(); ++iter)
+
+	for (CGameFlashAnimation *pAnim : m_gameFlashAnimationsList)
 	{
-		CGameFlashAnimation* pAnim = (*iter);
 		if (!(pAnim->GetFlags() & eFAF_ManualRender))
 			pAnim->SetVariable("SkipSequence", SFlashVarValue(false));
 	}
+
 	SetHUDColor();
 	m_animInitialize.Load("Libs/UI/HUD_Initialize.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender);
 	m_animInitialize.SetVisible(true);
@@ -1081,7 +1093,7 @@ void CHUD::ResetPostSerElements()
 	}
 
 	if (m_iProgressBar)
-		ShowProgress(m_iProgressBar, true, m_iProgressBarX, m_iProgressBarY, m_sProgressBarText.c_str(), m_bProgressBarTextPos, m_bProgressLocking);
+		ShowProgress(m_iProgressBar, true, m_iProgressBarX, m_iProgressBarY, m_sProgressBarText, m_bProgressBarTextPos, m_bProgressLocking);
 	else
 	{
 		m_animProgress.Unload();
@@ -1192,7 +1204,7 @@ void CHUD::OnSetActorItem(IActor* pActor, IItem* pItem)
 
 	//notify the buymenu of the item change
 	if (m_pHUDPowerStruggle)
-		m_pHUDPowerStruggle->PopulateBuyList();
+		m_pHUDPowerStruggle->PopulateBuyList(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -1968,7 +1980,7 @@ bool CHUD::OnInputEvent(const SInputEvent& rInputEvent)
 	if (!gEnv->bMultiplayer)
 		return false;
 
-	const char* sKey = rInputEvent.keyName.c_str();
+	const char* sKey = rInputEvent.keyName;
 	// nasty check, but fastest early out
 	if (sKey && sKey[0] && !sKey[1])
 	{
@@ -2608,10 +2620,12 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				g_pGame->GetOptions()->SaveCVarToProfile("OptionCfg.g_PSTutorial_Enabled", "0");
 			}
 		}
+		//CryMP
+		if (m_animTutorial.IsLoaded() && m_animTutorial.GetVisible())
+		{
+			m_animTutorial.Invoke("showTutorial", false);
+		}
 	}
-
-	if (m_pHUDTweakMenu)
-		m_pHUDTweakMenu->OnActionTweak(action.c_str(), activationMode, value);
 
 	return filterOut;
 }
@@ -2850,16 +2864,18 @@ void CHUD::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMou
 		return;
 	}
 
+	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
 	if (HARDWAREMOUSEEVENT_LBUTTONDOUBLECLICK == eHardwareMouseEvent)
 	{
 		if (m_pModalHUD)
 		{
 			m_pModalHUD->CheckedInvoke("DoubleClick");
 		}
-	}
 
-	SFlashCursorEvent::ECursorState eCursorState = SFlashCursorEvent::eCursorMoved;
-	if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
+		//CryMP:
+		eCursorState = SFlashCursorEvent::eCursorPressed;
+	}
+	else if (HARDWAREMOUSEEVENT_LBUTTONDOWN == eHardwareMouseEvent)
 	{
 		eCursorState = SFlashCursorEvent::eCursorPressed;
 	}
@@ -3113,7 +3129,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			highLatency = pNetChannel->IsSufferingHighLatency(gEnv->pTimer->GetAsyncTime());
 		}
 
-		if (noConnectivity || highLatency || g_pGameCVars->cl_bob > 5.9f)
+		if (noConnectivity || highLatency)
 		{
 			if (!m_animNetworkConnection.GetVisible())
 			{
@@ -3250,7 +3266,6 @@ void CHUD::OnPostUpdate(float frameTime)
 				}
 				m_animSpawnCycle.GetFlashPlayer()->SetVariableArray(FVAT_ConstStrPtr, "m_players", 0, &pushArray[0], size);
 
-
 				float remaining = m_pGameRules->GetRemainingReviveCycleTime();
 				// Because of net lag, it can happens that the time value is reset from 0 g_revivetime
 				// To prevent this, just ignore these values (it should be a matter of a second)
@@ -3269,9 +3284,8 @@ void CHUD::OnPostUpdate(float frameTime)
 	if (m_bFirstFrame)
 	{
 		// FIXME: remove setalpha(0) from all files and remove this block
-		for (TGameFlashAnimationsList::iterator iter = m_gameFlashAnimationsList.begin(); iter != m_gameFlashAnimationsList.end(); ++iter)
+		for (CGameFlashAnimation *pAnim : m_gameFlashAnimationsList)
 		{
-			CGameFlashAnimation* pAnim = (*iter);
 			if (!(pAnim->GetFlags() & eFAF_ManualRender))
 				pAnim->CheckedInvoke("setAlpha", 1.0f);
 		}
@@ -3301,6 +3315,8 @@ void CHUD::OnPostUpdate(float frameTime)
 		UpdateVoiceChat();
 
 		UpdateCrosshairVisibility();
+
+		UpdateProgressBar(frameTime);
 
 		// Target autoaim and locking
 		Targetting(0, false);
@@ -3348,7 +3364,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			m_animAirStrike.GetFlashPlayer()->Render();
 		}
 
-		if (gEnv->bMultiplayer && m_pGameRules && m_pClientActor->GetSpectatorMode()) //SPECTATOR Mode
+		if (gEnv->bMultiplayer && m_pClientActor->GetSpectatorMode()) //SPECTATOR Mode
 		{
 			if (!m_animSpectate.IsLoaded())
 			{
@@ -3360,25 +3376,22 @@ void CHUD::OnPostUpdate(float frameTime)
 				//	as text changes based on current spectator mode.
 			}
 
-			if (m_pClientActor)
+			const uint8 specMode = m_pClientActor->GetSpectatorMode();
+			if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
 			{
-				const uint8 specMode = m_pClientActor->GetSpectatorMode();
-				if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
+				CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetPlayer());
+				CheckSpectatorTarget(pSpectatorTarget, frameTime);
+
+				m_animSpectate.GetFlashPlayer()->Advance(frameTime);
+				m_animSpectate.GetFlashPlayer()->Render();
+
+				if (m_animNetworkConnection.GetVisible())
 				{
-					CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetPlayer());
-					CheckSpectatorTarget(pSpectatorTarget, frameTime);
-
-					m_animSpectate.GetFlashPlayer()->Advance(frameTime);
-					m_animSpectate.GetFlashPlayer()->Render();
-
-					if (m_animNetworkConnection.GetVisible())
-					{
-						m_animNetworkConnection.GetFlashPlayer()->Advance(frameTime);
-						m_animNetworkConnection.GetFlashPlayer()->Render();
-					}
-
-					UpdateSpectator(pSpectatorTarget, frameTime);
+					m_animNetworkConnection.GetFlashPlayer()->Advance(frameTime);
+					m_animNetworkConnection.GetFlashPlayer()->Render();
 				}
+
+				UpdateSpectator(pSpectatorTarget, frameTime);
 			}
 
 			if (m_animPDA.GetVisible())
@@ -3411,6 +3424,14 @@ void CHUD::OnPostUpdate(float frameTime)
 				m_animKillLog.GetFlashPlayer()->Advance(frameTime);
 				m_animKillLog.GetFlashPlayer()->Render();
 			}
+			if (m_pHUDPowerStruggle && !m_pGameRules->IsNeutral(m_pClientActor->GetEntityId()))
+			{
+				if (m_animPlayerPP.GetVisible()) //CryMP: playerPP while dead
+				{
+					m_animPlayerPP.GetFlashPlayer()->Advance(frameTime);
+					m_animPlayerPP.GetFlashPlayer()->Render();
+				}
+			}
 			if (m_animFriendlyProjectileTracker.GetVisible()) //CryMP: grenade indicator in spectator mode
 			{
 				m_animFriendlyProjectileTracker.GetFlashPlayer()->Advance(frameTime);
@@ -3441,9 +3462,8 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			CreateInterference();
 
-			for (TGameFlashAnimationsList::iterator iter = m_gameFlashAnimationsList.begin(); iter != m_gameFlashAnimationsList.end(); ++iter)
+			for (CGameFlashAnimation *pAnim : m_gameFlashAnimationsList)
 			{
-				CGameFlashAnimation* pAnim = (*iter);
 				if (pAnim->GetFlags() & eFAF_ManualRender)
 					continue;
 
@@ -3787,11 +3807,11 @@ void CHUD::BreakHUD(int state)
 		m_animDeathMessage.Unload();
 	}
 
-	for (TGameFlashAnimationsList::iterator iter = m_gameFlashAnimationsList.begin(); iter != m_gameFlashAnimationsList.end(); ++iter)
+	for (CGameFlashAnimation *pAnim : m_gameFlashAnimationsList)
 	{
-		CGameFlashAnimation* pAnim = (*iter);
-		if (pAnim->GetFlags() & eFAF_ManualRender)
+		if (pAnim->GetFlags() & eFAF_ManualRender || pAnim->GetFlags() & eFAF_SkipBreak)
 			continue;
+
 		pAnim->CheckedInvoke("destroy", state);
 	}
 
@@ -3812,11 +3832,12 @@ void CHUD::RebootHUD()
 {
 	if (m_iBreakHUD)
 		BreakHUD(false);
-	for (TGameFlashAnimationsList::iterator iter = m_gameFlashAnimationsList.begin(); iter != m_gameFlashAnimationsList.end(); ++iter)
+
+	for (CGameFlashAnimation *pAnim : m_gameFlashAnimationsList)
 	{
-		CGameFlashAnimation* pAnim = (*iter);
 		if (pAnim->GetFlags() & eFAF_ManualRender)
 			continue;
+
 		pAnim->CheckedInvoke("reboot");
 	}
 	m_animRebootHUD.SetVisible(true);
@@ -4622,7 +4643,6 @@ void CHUD::GetMemoryStatistics(ICrySizer* s)
 	//CHILD_STATISTICS(m_pHUDTextChat);
 	CHILD_STATISTICS(m_pHUDObituary);
 	CHILD_STATISTICS(m_pHUDTextArea);
-	CHILD_STATISTICS(m_pHUDTweakMenu);
 
 	TGameFlashAnimationsList::const_iterator iter = m_gameFlashAnimationsList.begin();
 	TGameFlashAnimationsList::const_iterator end = m_gameFlashAnimationsList.end();
@@ -4873,15 +4893,15 @@ void CHUD::LoadGameRulesHUD(bool load)
 			if (!m_animVoiceChat.IsLoaded())
 				m_animVoiceChat.Load("Libs/UI/HUD_MultiPlayer_VoiceChat.gfx", eFD_Right, eFAF_ThisHandler);
 			if (!m_animBattleLog.IsLoaded())
-				m_animBattleLog.Load("Libs/UI/HUD_MP_Log.gfx", eFD_Left);
+				m_animBattleLog.Load("Libs/UI/HUD_MP_Log.gfx", eFD_Left, eFAF_Default | eFAF_SkipBreak);
 
 			if (!m_animRadioButtons.IsLoaded())
-				m_animRadioButtons.Load("Libs/UI/HUD_MP_Radio_Buttons.gfx", eFD_Center, eFAF_ThisHandler);
+				m_animRadioButtons.Load("Libs/UI/HUD_MP_Radio_Buttons.gfx", eFD_Center, eFAF_ThisHandler | eFAF_SkipBreak);
 
 			if (!m_animBuyMenu.IsLoaded())
 				m_animBuyMenu.Load("Libs/UI/HUD_PDA_Buy.gfx", eFD_Right, eFAF_ThisHandler);
 			if (!m_animPlayerPP.IsLoaded())
-				m_animPlayerPP.Load("Libs/UI/HUD_MP_PPoints.gfx", eFD_Right);
+				m_animPlayerPP.Load("Libs/UI/HUD_MP_PPoints.gfx", eFD_Right, eFAF_Default | eFAF_SkipBreak);
 			if (!m_animTutorial.IsLoaded())
 				m_animTutorial.Load("Libs/UI/HUD_Tutorial.gfx");
 		}

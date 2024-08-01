@@ -1,7 +1,7 @@
 #include <cctype>
 #include <string_view>
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/GameRules.h"
 #include "Library/WinAPI.h"
@@ -208,7 +208,7 @@ bool CHUDTextChat::OnInputEventUI(const SInputEvent& event)
 		return false;
 	}
 
-	const char ch = event.keyName.key[0];
+	const char ch = event.keyName[0];
 
 	this->Insert(ch);
 

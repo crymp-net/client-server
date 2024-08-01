@@ -168,6 +168,8 @@ public:
 	virtual void FullSerialize(TSerialize ser);
 	virtual void PostSerialize();
 
+	void SetParentId(EntityId parentId) override;
+
 	static  inline  unsigned int GetNumLightsActivated() { return s_lightCount; }
 
 	inline bool IsLaserActivated() const { return m_laserActivated; }

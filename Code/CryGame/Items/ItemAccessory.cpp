@@ -10,7 +10,7 @@ History:
 - 8:9:2005   12:52 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 #include "CryGame/Actors/Actor.h"
@@ -468,8 +468,8 @@ void CItem::PatchInitialSetup()
 		while (string::npos != pos || string::npos != lastPos)
 		{
 			//Add to initial setup
-			const char* name = m_properties.initialSetup.substr(lastPos, pos - lastPos).c_str();
-			m_initialSetup.push_back(ItemString(name));
+			const string name = m_properties.initialSetup.substr(lastPos, pos - lastPos);
+			m_initialSetup.push_back(ItemString(name.c_str()));
 
 			lastPos = m_properties.initialSetup.find_first_not_of(",", pos);
 			pos = m_properties.initialSetup.find_first_of(",", lastPos);

@@ -11,7 +11,7 @@ History:
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "RocketLauncher.h"
 
 #include "CryGame/Actors/Actor.h"

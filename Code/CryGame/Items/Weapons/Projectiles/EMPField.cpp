@@ -11,7 +11,7 @@ History:
 - 21:08:2007   Benito G.R. - Not used (not registered in WeaponSytem)
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "EMPField.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/HUD/HUD.h"

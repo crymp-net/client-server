@@ -11,7 +11,7 @@ History:
 - 13:06:2007: Created by MichaelR
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryCommon/CryGame/GameUtils.h"
@@ -190,7 +190,7 @@ void CVehicleMovementAmphibious::Boost(bool enable)
   m_boat.Boost(enable);
 }
 
-
+//------------------------------------------------------------------------
 void CVehicleMovementAmphibious::GetMemoryStatistics(ICrySizer * s)
 {
   s->Add(*this);

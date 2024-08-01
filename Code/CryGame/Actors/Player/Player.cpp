@@ -10,7 +10,7 @@ History:
 - 29:9:2004: Created by Filippo De Luca
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
 #include "CryGame/GameActions.h"
@@ -180,7 +180,7 @@ CPlayer::CPlayer()
 	m_pNanoSuit = NULL;
 
 	m_nParachuteSlot = 0;
-	m_fParachuteMorph = 0;
+	m_fParachuteMorph = 0.f;
 
 	m_pVehicleClient = 0;
 
@@ -244,6 +244,7 @@ CPlayer::~CPlayer()
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (pCharacter)
 		pCharacter->GetISkeletonPose()->SetPostProcessCallback0(0, 0);
+
 	if (m_pNanoSuit)
 		delete m_pNanoSuit;
 
@@ -1097,16 +1098,7 @@ void CPlayer::UpdateParachute(float frameTime)
 	}
 	else if (m_stats.inFreefall.Value() == 2)
 	{
-		// update parachute morph
-		m_fParachuteMorph += frameTime;
-		if (m_fParachuteMorph > 1.0f)
-			m_fParachuteMorph = 1.0f;
-		if (m_nParachuteSlot)
-		{
-			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(m_nParachuteSlot);
-			//if (pCharacter)
-			//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
-		}
+		UpdateParachuteMorph(frameTime);
 	}
 	else if (m_stats.inFreefall.Value() == 3)
 	{
@@ -1123,6 +1115,44 @@ void CPlayer::UpdateParachute(float frameTime)
 	else if (m_stats.inFreefall.Value() == -1)
 	{
 		ChangeParachuteState(0);
+	}
+
+	//remove the parachute, if one was loaded. additional sounds should go in here
+	if (m_nParachuteSlot && m_stats.inFreefall.Value() <= 0)
+	{
+		if (m_fParachuteMorph > 0.0f)
+		{
+			// update parachute morph (closing)
+			UpdateParachuteMorph(frameTime);
+		}
+		else
+		{
+			DeployParachute(false, true);
+		}
+	}
+}
+
+void CPlayer::UpdateParachuteMorph(float frameTime)
+{
+	const bool open = m_stats.inFreefall.Value() == 2;
+	// update parachute 
+	if (open)
+	{
+		m_fParachuteMorph += frameTime;
+		if (m_fParachuteMorph > 1.0f)
+			m_fParachuteMorph = 1.0f;
+	}
+	else
+	{
+		m_fParachuteMorph -= frameTime;
+	}
+	if (m_nParachuteSlot)
+	{
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(m_nParachuteSlot);
+		if (pCharacter)
+		{
+			pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+		}
 	}
 }
 
@@ -1557,8 +1587,8 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 	if (!m_pAnimatedCharacter)
 		return;
 
-	if (!IsThirdPerson() && !IsFpSpectatorTarget())
-		return;
+	//if (!IsThirdPerson() && !IsFpSpectatorTarget()) //Needed for shadows in FP
+	//	return;
 
 	IAnimationGraphState* pGraph = m_pAnimatedCharacter ? m_pAnimatedCharacter->GetAnimationGraphState() : NULL;
 	if (!pGraph)
@@ -1773,13 +1803,10 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 			}
 		}
 
+		pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
+
 		//Hide TP model or not
 		pTarget->m_stats.isHidden = pVehicle ? false : true;
-
-		//Run target view as First Person
-		CPlayerView playerView(*pTarget, m_FirstPersonSpectatorParams);
-		playerView.Process(m_FirstPersonSpectatorParams);
-		playerView.Commit(*pTarget, m_FirstPersonSpectatorParams);
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -1855,9 +1882,7 @@ void CPlayer::UpdateView(SViewParams& viewParams)
 		}
 	}
 
-	CPlayerView playerView(*this, viewParams);
-	playerView.Process(viewParams);
-	playerView.Commit(*this, viewParams);
+	m_PlayerView.Update(viewParams);
 
 	if (!IsThirdPerson())
 	{
@@ -1937,6 +1962,16 @@ void CPlayer::UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventLi
 	stl::find_and_erase(m_playerEventListeners, pPlayerEventListener);
 }
 
+void CPlayer::ResetOpacity()
+{
+	//CryMP: reset opacity (just incase)
+	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+	if (pRenderProxy)
+	{
+		pRenderProxy->SetOpacity(1.0f);
+	}
+}
+
 IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 {
 	IEntity* pLinkedEntity = CActor::LinkToVehicle(vehicleId);
@@ -1962,12 +1997,7 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		{
 			SupressViewBlending();
 
-			//CryMP: reset opacity (just incase)
-			IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
-			if (pRenderProxy)
-			{
-				pRenderProxy->SetOpacity(1.0f);
-			}
+			ResetOpacity();
 
 		}
 	}
@@ -1987,10 +2017,8 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 		// don't interpolate back from vehicle camera (otherwise you see your own legs)
 		if (IsClient())
 			SupressViewBlending();
-		else
-		{
-			m_currentSeatId = -1;
-		}
+
+		m_PlayerView.OnExitVehicle();
 	}
 
 	return pLinkedEntity;
@@ -2279,9 +2307,23 @@ void CPlayer::SetParams(SmartScriptTable& rTable, bool resetFirst)
 		m_params = SPlayerParams();
 	}
 
+	CScriptSetGetChain params(rTable);
+	if (ShouldUseMPParams())
+	{
+		params.GetValue("speedMultiplier", m_params.speedMultiplier);
+		SmartScriptTable nanoTable;
+		if (m_pNanoSuit && params.GetValue("nanoSuit", nanoTable))
+		{
+			m_pNanoSuit->SetParams(nanoTable, resetFirst);
+		}
+		int followHead = m_stats.followCharacterHead.Value();
+		params.GetValue("followCharacterHead", followHead);
+		m_stats.followCharacterHead = followHead;
+		return;
+	}
+
 	CActor::SetParams(rTable, resetFirst);
 
-	CScriptSetGetChain params(rTable);
 	params.GetValue("sprintMultiplier", m_params.sprintMultiplier);
 	params.GetValue("strafeMultiplier", m_params.strafeMultiplier);
 	params.GetValue("backwardMultiplier", m_params.backwardMultiplier);
@@ -2334,6 +2376,152 @@ void CPlayer::SetParams(SmartScriptTable& rTable, bool resetFirst)
 	{
 		m_pNanoSuit->SetParams(nanoTable, resetFirst);
 	}
+}
+
+void CPlayer::SetParamsMP(bool resetFirst)
+{
+	//not sure about this
+	if (resetFirst)
+	{
+		m_params = SPlayerParams();
+	}
+
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 1.200000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanRightViewOffset = Vec3(0.500000f, 0.100000f, 1.525000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.450000f, 0.000000f, 1.300000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.650000f, 0.000000f, 1.300000f);
+		sInfo.maxSpeed = 4.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "combat");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.300000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.150000f, 1.625000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 1.350000f);
+
+		SetupStance(EStance::STANCE_STAND, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.900000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(-0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanRightViewOffset = Vec3(0.550000f, 0.000000f, 0.950000f);
+		sInfo.leanLeftWeaponOffset = Vec3(-0.500000f, 0.000000f, 0.650000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.500000f, 0.000000f, 0.650000f);
+		sInfo.maxSpeed = 1.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "crouch");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.100000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.000000f);
+		sInfo.weaponOffset = Vec3(0.200000f, 0.000000f, 0.850000f);
+
+		SetupStance(EStance::STANCE_CROUCH, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.400000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 0.750000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "prone");
+		sInfo.normalSpeed = 0.375000f;
+		sInfo.size = Vec3(0.350000f, 0.350000f, 0.001000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.500000f);
+		sInfo.weaponOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_PRONE, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 1.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 2.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "swim");
+		sInfo.normalSpeed = 1.000000f;
+		sInfo.size = Vec3(0.400000f, 0.400000f, 0.350000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.100000f, 1.500000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_SWIM, &sInfo);
+	}
+	{
+		SStanceInfo sInfo;
+		sInfo.heightCollider = 0.000000f;
+		sInfo.heightPivot = 0.000000f;
+		sInfo.leanLeftViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanRightViewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.leanLeftWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.leanRightWeaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+		sInfo.maxSpeed = 3.500000f;
+		sInfo.modelOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+		strcpy(sInfo.name, "zerog");
+		sInfo.normalSpeed = 1.750000f;
+		sInfo.size = Vec3(0.600000f, 0.600000f, 0.001000f);
+		sInfo.useCapsule = true;
+		sInfo.viewOffset = Vec3(0.000000f, 0.000000f, 0.350000f);
+		sInfo.weaponOffset = Vec3(0.300000f, 0.000000f, 0.000000f);
+
+		SetupStance(EStance::STANCE_ZEROG, &sInfo);
+	}
+	
+	m_params.afterburnerMultiplier = 2.000000f;
+	strcpy(m_params.animationAppendix, "nw");
+	m_params.backwardMultiplier = 0.700000f;
+	m_params.grabMultiplier = 0.500000f;
+	m_params.gravityBootsMultipler = 0.800000f;
+	m_params.hudAngleOffset = Ang3(0.000000f, 0.000000f, 0.000000f);
+	m_params.hudOffset = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.inertia = 10.000000f;
+	m_params.inertiaAccel = 11.000000f;
+	m_params.jumpHeight = 1.000000f;
+	m_params.leanAngle = 15.000000f;
+	m_params.leanShift = 0.350000f;
+	m_params.maxGrabMass = 70.000000f;
+	m_params.maxGrabVolume = 2.000000f;
+	m_params.nanoSuitActive = true;
+	m_params.slopeSlowdown = 3.000000f;
+	m_params.speedMultiplier = 1.000000f;
+	m_params.sprintMultiplier = 1.500000f;
+	m_params.strafeMultiplier = 1.000000f;
+	m_params.thrusterImpulse = 14.000000f;
+	m_params.thrusterStabilizeImpulse = 0.010000f;
+	m_params.timeImpulseRecover = 0.000000f;
+	m_params.viewDistance = 0.000000f;
+	m_params.viewFoVScale = 1.000000f;
+	m_params.viewHeightOffset = 0.000000f;
+	m_params.viewPivot = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.viewSensitivity = 1.000000f;
+	m_params.vLimitDir = Vec3(0.000000f, 0.000000f, 0.000000f);
+	m_params.vLimitRangeH = 0.000000f;
+	m_params.vLimitRangeV = 0.000000f;
+	m_params.vLimitRangeVDown = 0.000000f;
+	m_params.vLimitRangeVUp = 0.000000f;
+	m_params.weaponBobbingMultiplier = 1.000000f;
+	m_params.weaponInertiaMultiplier = 1.000000f;
+	m_params.zoomFoV = 1.000000f;
+
+	//TODO:move to SetStats()
+	int followHead = m_stats.followCharacterHead.Value();
+	//params.GetValue("followCharacterHead", followHead);
+	m_stats.followCharacterHead = followHead;
 }
 
 //fill the status table for the scripts
@@ -3514,6 +3702,11 @@ bool CPlayer::IsThirdPerson() const
 
 void CPlayer::Revive(ReasonForRevive reason)
 {
+	if (ShouldUseMPParams())
+	{
+		SetParamsMP(true);
+	}
+
 	CActor::Revive(reason);
 
 	ResetScreenFX();
@@ -3533,6 +3726,8 @@ void CPlayer::Revive(ReasonForRevive reason)
 	m_parachuteEnabled = false; // no parachute by default
 	m_openParachuteTimer = -1.0f;
 	m_openingParachute = false;
+
+	DeployParachute(false, false);
 
 	m_bSwimming = false;
 	m_actions = 0;
@@ -3726,6 +3921,11 @@ void CPlayer::Kill()
 {
 	//CryMP
 	NotifyObjectGrabbed(false, 0, false);
+
+	if (IsClient())
+	{
+		ResetOpacity();
+	}
 
 	if (CNanoSuit* pSuit = GetNanoSuit())
 		pSuit->Death();
@@ -4517,6 +4717,24 @@ bool CPlayer::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			m_stats.isStandingUp = true;
 			m_stats.isRagDoll = false;
 		}
+
+		//CryMP: Fix for spectator body interfering players
+		if (gEnv->bMultiplayer)
+		{
+			if (!IsClient() && gEnv->bClient && !gEnv->bServer)
+			{
+				if (profile == eAP_Spectator)
+				{
+					GetEntity()->Hide(true);
+					//CryLogAlways("netplayer goes spectating, hiding.");
+				}
+				else
+				{
+					GetEntity()->Hide(false);
+					//CryLogAlways("netplayer goes into play, un-hiding.");
+				}
+			}
+		}
 	}
 
 	bool res = CActor::SetAspectProfile(aspect, profile);
@@ -4864,6 +5082,11 @@ void CPlayer::PlayAction(const char* action, const char* extension, bool looping
 	if (!m_pAnimatedCharacter)
 		return;
 
+	if (strcmp(action, "use_lockpick") && !strcmp(extension, "lockpick")) //CryMP: A bit hacky, but use lockpick pose only when actually using it
+	{
+		extension = "claymore";
+	}
+
 	if (extension == NULL || strcmp(extension, "ignore") != 0)
 	{
 		if (extension && extension[0])
@@ -5052,13 +5275,6 @@ void CPlayer::ChangeParachuteState(int8 newState)
 			if (m_stats.inFreefall.Value() > 0)
 				AddAngularImpulse(Ang3(-0.5f, RANDOM() * 0.5f, RANDOM() * 0.35f), 0.0f, 0.5f);
 
-			//remove the parachute, if one was loaded. additional sounds should go in here
-			if (m_nParachuteSlot)
-			{
-				int flags = GetEntity()->GetSlotFlags(m_nParachuteSlot) & ~ENTITY_SLOT_RENDER;
-				GetEntity()->SetSlotFlags(m_nParachuteSlot, flags);
-			}
-
 			if (IsClient())
 			{
 				if (CHUD* pHUD = g_pGame->GetHUD())
@@ -5072,30 +5288,25 @@ void CPlayer::ChangeParachuteState(int8 newState)
 
 		case 2:
 		{
-			IEntity* pEnt = GetEntity();
-			// load and draw the parachute
-			if (!m_nParachuteSlot)
-				m_nParachuteSlot = pEnt->LoadCharacter(10, "Objects/Vehicles/Parachute/parachute_opening.chr");
-			if (m_nParachuteSlot) // check if it was correctly loaded...dont wanna modify another character slot
+			DeployParachute(true, true);
+
+			if (!IsThirdPerson())
 			{
-				m_fParachuteMorph = 0;
-				ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
-				//if (pCharacter)
-				//{
-				//	pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
-				//}
-				int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
-				pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+				AddAngularImpulse(Ang3(1.35f, RANDOM() * 0.5f, RANDOM() * 0.5f), 0.0f, 1.5f);
 			}
 
-			AddAngularImpulse(Ang3(1.35f, RANDOM() * 0.5f, RANDOM() * 0.5f), 0.0f, 1.5f);
-
-			if (IPhysicalEntity* pPE = pEnt->GetPhysics())
+			if (IPhysicalEntity* pPE = GetEntity()->GetPhysics())
 			{
 				pe_action_impulse actionImp;
 				actionImp.impulse = Vec3(0, 0, 9.81f) * m_stats.mass;
 				actionImp.iApplyTime = 0;
 				pPE->Action(&actionImp);
+			}
+
+			//CryMP: Start parachute runsound
+			if (!m_sounds[ESound_ParachuteRun])
+			{
+				PlaySound(ESound_ParachuteRun, true);
 			}
 
 			//if (IsClient())
@@ -5117,6 +5328,57 @@ void CPlayer::ChangeParachuteState(int8 newState)
 		m_stats.inFreefall = newState;
 
 		UpdateFreefallAnimationInputs();
+	}
+}
+
+void CPlayer::DeployParachute(bool deploy, bool sound)
+{
+	if (deploy)
+	{
+		IEntity* pEnt = GetEntity();
+		// load and draw the parachute
+		if (!m_nParachuteSlot)
+		{
+			m_nParachuteSlot = pEnt->LoadCharacter(10, "Objects/Vehicles/Parachute/parachute_opening.chr");
+		}
+
+		if (m_nParachuteSlot && !(pEnt->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)) // check if it was correctly loaded...dont wanna modify another character slot
+		{
+			m_fParachuteMorph = 0.0f;
+	
+			const int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
+			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+
+			ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
+			if (pCharacter)
+			{
+				pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+			}
+
+			if (sound)
+			{
+				PlaySound(ESound_ParachuteStart);
+			}
+		}
+	}
+	else
+	{
+		if (m_sounds[ESound_ParachuteRun])
+		{
+			//Stop sound
+			PlaySound(ESound_ParachuteRun, false);
+		}
+
+		if (GetEntity()->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)
+		{
+			int flags = GetEntity()->GetSlotFlags(m_nParachuteSlot) & ~ENTITY_SLOT_RENDER;
+			GetEntity()->SetSlotFlags(m_nParachuteSlot, flags);
+
+			if (sound)
+			{
+				PlaySound(ESound_ParachuteStop);
+			}
+		}
 	}
 }
 
@@ -5834,6 +6096,25 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 		if (!IsThirdPerson())
 			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
+		break;
+	case ESound_ParachuteStart:
+		soundName = "sounds/vehicles:us_parachute:start";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		break;
+	case ESound_ParachuteRun:
+		soundName = "sounds/vehicles:us_parachute:run";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = true;
+		break;
+	case ESound_ParachuteStop:
+		soundName = "sounds/vehicles:us_parachute:stop";
+		soundSemantic = eSoundSemantic_Vehicle;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		break;
 	default:
 		break;
 	}
@@ -5865,8 +6146,9 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 			pSound->SetSemantic(soundSemantic);
 
 			if (repeating)
+			{
 				m_sounds[sound] = pSound->GetId();
-
+			}
 
 			IEntity* pEntity = GetEntity();
 			assert(pEntity);

@@ -64,6 +64,8 @@ public:
 
 	bool AddFunction(const SUserFunctionDesc & fd) override;
 
+	bool GetValueRecursive(const char *path, IScriptTable *pTable) override;
+
 private:
 	void CloneTable(int srcTableIndex, int dstTableIndex);
 	void CloneTableRecursive(int srcTableIndex, int dstTableIndex);

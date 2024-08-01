@@ -10,7 +10,7 @@ History:
 - 02:27:2007: Created by Marco Koegler
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "FlashAnimation.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"

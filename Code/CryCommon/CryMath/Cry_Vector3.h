@@ -466,7 +466,30 @@ template <typename F> struct Vec3_tpl
 			return Vec3_tpl(0,0,1);
 	}
 
-	AUTO_STRUCT_INFO
+	//vector subtraction
+	template<class F1>
+	ILINE Vec3_tpl<F1> sub(const Vec3_tpl<F1>& v) const
+	{
+		return Vec3_tpl<F1>(x - v.x, y - v.y, z - v.z);
+	}
+	//vector dot product
+	template<class F1>
+	ILINE F1 dot(const Vec3_tpl<F1>& v) const
+	{
+		return (F1)(x * v.x + y * v.y + z * v.z);
+	}
+	//vector scale
+	template<class F1>
+	ILINE Vec3_tpl<F1> scale(const F1 k)
+	{
+		return Vec3_tpl<F>(x * k, y * k, z * k);
+	}
+	//vector cross product
+	template<class F1>
+	ILINE Vec3_tpl<F1> cross(const Vec3_tpl<F1>& v) const
+	{
+		return Vec3_tpl<F1>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -701,8 +724,6 @@ template <typename F> struct Vec4_tpl
 		if (!NumberValid(w)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 } 
 
 
@@ -941,8 +962,6 @@ template <typename F> struct Ang3_tpl
 		if (!NumberValid(z)) return false;
 		return true;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef Ang3_tpl<f32>		Ang3;
@@ -1156,8 +1175,6 @@ template<typename F> struct Plane_tpl
 
 	Vec3_tpl<F> MirrorVector(const Vec3_tpl<F>& i)   {	return n*(2* (n|i))-i;	}
 	Vec3_tpl<F> MirrorPosition(const Vec3_tpl<F>& i) {  return n*(2* ((n|i)-d))-i;	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef Plane_tpl<f32>	Plane;

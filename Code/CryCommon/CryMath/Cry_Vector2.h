@@ -197,9 +197,6 @@ template<class F> struct Vec2_tpl
 		if (!NumberValid(y)) return false;
 		return true;
 	}
-
-
-	AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////

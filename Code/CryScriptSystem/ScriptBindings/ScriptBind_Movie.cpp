@@ -13,7 +13,6 @@ ScriptBind_Movie::ScriptBind_Movie(IScriptSystem* pSS)
 
 	SCRIPT_REG_TEMPLFUNC(PlaySequence, "sSequenceName");
 	SCRIPT_REG_TEMPLFUNC(StopSequence, "sSequenceName");
-	SCRIPT_REG_TEMPLFUNC(AbortSequence, "sSequenceName");
 	SCRIPT_REG_FUNC(StopAllSequences);
 	SCRIPT_REG_FUNC(StopAllCutScenes);
 	SCRIPT_REG_FUNC(PauseSequences);
@@ -40,24 +39,6 @@ int ScriptBind_Movie::StopSequence(IFunctionHandler *pH, const char *sSequenceNa
 
 	if (pMovieSystem)
 		pMovieSystem->StopSequence(sSequenceName);
-
-	return pH->EndFunction();
-}
-
-int ScriptBind_Movie::AbortSequence(IFunctionHandler *pH, const char *sSequenceName)
-{
-	bool leaveTime = false;
-	if (pH->GetParamCount() >= 2)
-		pH->GetParam(2, leaveTime);
-
-	IMovieSystem *pMovieSystem = gEnv->pMovieSystem;
-
-	if (pMovieSystem)
-	{
-		IAnimSequence *seq = pMovieSystem->FindSequence(sSequenceName);
-		if (seq)
-			pMovieSystem->AbortSequence(seq, leaveTime);
-	}
 
 	return pH->EndFunction();
 }

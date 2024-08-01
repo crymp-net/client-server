@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "NetPlayerInput.h"
 #include "Player.h"
 #include "CryGame/Game.h"
@@ -14,7 +14,7 @@ CNetPlayerInput::CNetPlayerInput(CPlayer* pPlayer) : m_pPlayer(pPlayer)
 
 void CNetPlayerInput::PreUpdate()
 {
-	const auto pPhysEnt = m_pPlayer->GetEntity()->GetPhysics();
+	const IPhysicalEntity *pPhysEnt = m_pPlayer->GetEntity()->GetPhysics();
 	if (!pPhysEnt)
 		return;
 

@@ -96,8 +96,6 @@ struct CryVertex
 {
 	Vec3 p;			//position
 	Vec3 n;			//normal vector
-
-	AUTO_STRUCT_INFO
 };
 
 struct CryFace
@@ -111,8 +109,6 @@ struct CryFace
 	int operator [] (int i)const {return (&v0)[i];}
 	bool isDegenerate ()const {return v0 == v1 || v1 == v2 || v2 == v0;}
 	bool isCollapsed()const {return v0 == v1 && v1 == v2;}
-
-	AUTO_STRUCT_INFO
 };
 
 // structure used for sorting the cryFace arrays by material id
@@ -131,14 +127,11 @@ struct CryKey
 
 	Vec3	relpos;		//relative position;
 	CryQuat		relquat;	//relative quaternion
-
-	AUTO_STRUCT_INFO
 };
 
 struct CryUV
 {
 	float u,v;				//texture coordinates
-	AUTO_STRUCT_INFO
 };
 
 struct CryTexFace
@@ -149,8 +142,6 @@ struct CryTexFace
 	CryTexFace (int _t0,int _t1, int _t2):t0(_t0),t1(_t1),t2(_t2) {}
 	int& operator[] (int i) {return (&t0)[i];}
 	int operator[] (int i) const {return (&t0)[i];}
-
-	AUTO_STRUCT_INFO
 };
 
 // Material & Texture Primitives _____________________________________________________________________________________________________
@@ -275,8 +266,6 @@ struct TextureMap2
 	int	vscl_ctrlID;
 	int	vrot_ctrlID;
 	int	wrot_ctrlID;
-
-	AUTO_STRUCT_INFO
 };
 
 struct TextureMap3
@@ -346,8 +335,6 @@ struct TextureMap3
     
     return *this;
   }  
-
-	AUTO_STRUCT_INFO
 };
 
 struct CryLink
@@ -355,8 +342,6 @@ struct CryLink
 	int			BoneID;
 	Vec3		offset;
 	float		Blending;
-
-	AUTO_STRUCT_INFO
 };
 
 // structure used to sort the crylink array by the blending factor, descending
@@ -371,13 +356,11 @@ struct CryLinkOrderByBlending
 struct CryIRGB
 {
 	unsigned char r,g,b;
-	AUTO_STRUCT_INFO
 };
 
 struct CryFRGB
 {
 	float r,g,b;
-	AUTO_STRUCT_INFO
 };
 
 struct NAME_ENTITY
@@ -412,8 +395,6 @@ struct BONE_PHYSICS
 	float spring_tension[3];
 	float damping[3];
 	float framemtx[3][3];
-
-	AUTO_STRUCT_INFO
 };
 
 // the compatible between 32- and 64-bits structure 
@@ -427,8 +408,6 @@ struct BONE_PHYSICS_COMP
 	float spring_tension[3];
 	float damping[3];
 	float framemtx[3][3];
-
-	AUTO_STRUCT_INFO
 };
 
 struct CryBoneDescData
@@ -457,8 +436,6 @@ struct CryBoneDescData
 	// the beginning of the subarray of children is at this[m_nOffsetChildren]
 	// this is 0 if there are no children
 	int m_nOffsetChildren;
-
-	AUTO_STRUCT_INFO
 }; 
 
 struct CryBoneDescData_Comp
@@ -487,8 +464,6 @@ struct CryBoneDescData_Comp
 	// the beginning of the subarray of children is at this[m_nOffsetChildren]
 	// this is 0 if there are no children
 	int m_nOffsetChildren;
-
-	AUTO_STRUCT_INFO
 }; 
 
 #define __copy3(MEMBER) left.MEMBER[0] = right.MEMBER[0]; left.MEMBER[1] = right.MEMBER[1]; left.MEMBER[2] = right.MEMBER[2];
@@ -534,8 +509,6 @@ struct BONE_ENTITY
 	BONE_PHYSICS_COMP phys;
 
 	//BONE_ENTITY() {};
-
-	AUTO_STRUCT_INFO
 };
 
   /*
@@ -621,7 +594,6 @@ struct MAT_ENTITY : public MAT_ENTITY_DATA
 struct KEY_HEADER
 {
 	int		KeyTime;	//in ticks
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -635,8 +607,6 @@ struct FILE_HEADER
 	int		FileType;
 	int		Version;
 	int		ChunkTableOffset;
-
-	AUTO_STRUCT_INFO
 };
 
 enum FileTypes
@@ -662,8 +632,6 @@ struct CHUNK_HEADER_0623
 	ChunkTypes	ChunkType;
 	int			ChunkVersion;
 	int			FileOffset;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CHUNK_HEADER_0744
@@ -678,8 +646,6 @@ struct CHUNK_HEADER_0744
 	{
 		FileOffset = -1;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef CHUNK_HEADER_0744 CHUNK_HEADER;
@@ -689,7 +655,6 @@ struct RANGE_ENTITY
 	char name[32];
 	int start;
 	int end;
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -705,8 +670,6 @@ struct TIMING_CHUNK_DESC_0918
 
 	RANGE_ENTITY	global_range;		// covers all of the time ranges
 	int				nSubRanges;
-
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -722,8 +685,6 @@ struct SPEED_CHUNK_DESC
 	float			Distance;
 	float			Slope;
 	int       Looped;
-
-	AUTO_STRUCT_INFO
 };
 
 struct SPEED_CHUNK_DESC_1
@@ -737,8 +698,6 @@ struct SPEED_CHUNK_DESC_1
 	float			Slope;
 	int       Looped;
 	f32				MoveDir[3];
-
-	AUTO_STRUCT_INFO
 };
 
 struct SPEED_CHUNK_DESC_2
@@ -753,8 +712,6 @@ struct SPEED_CHUNK_DESC_2
 	int       Looped;
 	f32				MoveDir[3];
 	QuatT			StartPosition;
-
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -774,8 +731,6 @@ struct FOOTPLANT_INFO
 	f32 m_LToe0Start,m_LToe0End;
 	f32 m_RHeelStart,m_RHeelEnd;
 	f32 m_RToe0Start,m_RToe0End;
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -861,8 +816,6 @@ struct MTL_CHUNK_DESC_0745
 			int		nChildren;
 		};
 	};
-
-	AUTO_STRUCT_INFO
 };
 
 struct MTL_CHUNK_DESC_0746
@@ -909,8 +862,6 @@ struct MTL_CHUNK_DESC_0746
 			int		nChildren;
 		};
 	};
-
-	AUTO_STRUCT_INFO
 };
 
 // The default MTL_CHUNK_DESC is different in the engine and in the plugin (exporter)
@@ -940,8 +891,6 @@ struct MTL_NAME_CHUNK_DESC_0800
 	int nAdvancedDataChunkId;
 	float sh_opacity;
 	int reserve[32];
-
-	AUTO_STRUCT_INFO
 };
 
 typedef MTL_NAME_CHUNK_DESC_0800 MTL_NAME_CHUNK_DESC;
@@ -976,8 +925,6 @@ struct LIGHT_CHUNK_DESC_0351
 	float 		attenStart;		// far attenuation ranges
 	float 		attenEnd;
 	bool   		shadow;			// shadow is on
-
-	AUTO_STRUCT_INFO
 };
 
 struct LIGHT_CHUNK_DESC_0744
@@ -1002,8 +949,6 @@ struct LIGHT_CHUNK_DESC_0744
 
 	Vec3		vDirection;			//spot light direction
 	char		szLightImage[256];	//spot light texture
-
-	AUTO_STRUCT_INFO
 };
 
 typedef LIGHT_CHUNK_DESC_0744 LIGHT_CHUNK_DESC;
@@ -1027,8 +972,6 @@ struct MESH_CHUNK_DESC_0623
 	int		nFaces;
 	int		MatID;
 	int		PropStrLen;		//lenght of the property string
-
-	AUTO_STRUCT_INFO
 };
 
 struct MESH_CHUNK_DESC_0744
@@ -1053,8 +996,6 @@ struct MESH_CHUNK_DESC_0744
 	int		nTVerts;		// # of texture vertices
 	int		nFaces;
 	int		VertAnimID;		// id of the related vertAnim chunk if present. otherwise it is -1
-
-	AUTO_STRUCT_INFO
 };
 
 // Compiled Mesh chunk.
@@ -1087,8 +1028,6 @@ struct MESH_CHUNK_DESC_0800
 	Vec3 bboxMax;
 	
 	int reserved[32];
-
-	AUTO_STRUCT_INFO
 };
 
 typedef MESH_CHUNK_DESC_0744 MESH_CHUNK_DESC;
@@ -1112,8 +1051,6 @@ struct STREAM_DATA_CHUNK_DESC_0800
 
 	// Data starts here at the end of the chunk..
 	//char streamData[nCount*nElementSize];
-
-	AUTO_STRUCT_INFO
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1122,7 +1059,6 @@ struct STREAM_DATA_CHUNK_DESC_0800
 //////////////////////////////////////////////////////////////////////////
 struct MESH_SUBSETS_CHUNK_DESC_0800
 {
-	AUTO_STRUCT_INFO
 	enum {VERSION = 0x0800};
 	CHUNK_HEADER	chdr;
 
@@ -1145,15 +1081,12 @@ struct MESH_SUBSETS_CHUNK_DESC_0800
 		int nMatID; // Material sub-object Id.
 		float fRadius;
 		Vec3 vCenter;
-
-		AUTO_STRUCT_INFO
 	};
 
 	struct MeshBoneIDs
 	{
 		uint32 numBoneIDs;
 		uint16 arrBoneIDs[0x80];
-		AUTO_STRUCT_INFO
 	};
 
 	// Data starts here at the end of the chunk.
@@ -1190,8 +1123,6 @@ struct MESH_PHYSICS_DATA_CHUNK_DESC_0800
 	// Data starts here at the end of the chunk.
 	//char physicsData[nDataSize];
 	//char tetrahedraData[nTetrahedraDataSize];
-
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -1203,7 +1134,6 @@ struct SCENEPROPS_CHUNK_DESC_0201
 	int		ChunkType;		//must be ChunkType_SceneProps
 	int		ChunkVersion;
 	int		nProps;
-	AUTO_STRUCT_INFO
 };
 
 struct SCENEPROPS_CHUNK_DESC_0744
@@ -1212,7 +1142,6 @@ struct SCENEPROPS_CHUNK_DESC_0744
 
 	CHUNK_HEADER	chdr;
 	int		nProps;
-	AUTO_STRUCT_INFO
 };
 
 typedef SCENEPROPS_CHUNK_DESC_0744 SCENEPROPS_CHUNK_DESC;
@@ -1235,7 +1164,6 @@ struct CryCustomAttribute
 	int type;
 	char name[32];
 	char value[64];
-	AUTO_STRUCT_INFO
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1250,8 +1178,6 @@ struct CUSTOM_ATTRIBS_CHUNK_DESC_0744
 
 	// Here goes array of custom attributes.
 	// CryCustomAttribute attributes[];
-
-	AUTO_STRUCT_INFO
 };
 
 typedef SCENEPROPS_CHUNK_DESC_0744 SCENEPROPS_CHUNK_DESC;
@@ -1266,7 +1192,6 @@ struct MRM_CHUNK_DESC
 	int		ChunkType;		//must be ChunkType_MRM
 	int		ChunkVersion;
 	int		GeomID;
-	AUTO_STRUCT_INFO
 };
 
 #define MRM_CHUNK_DESC_VERSION 0x0201
@@ -1279,8 +1204,6 @@ struct DUMMY_CHUNK_DESC
 	int		ChunkType;		//must be ChunkType_Dummy
 	int		ChunkVersion;
 	char	name[64];
-
-	AUTO_STRUCT_INFO
 };
 #define DUMMY_CHUNK_DESC_VERSION 0x0201
 
@@ -1298,8 +1221,6 @@ struct VERTANIM_CHUNK_DESC_0201
 	int		nFaces;			// # of faces this object has (for double check purpose)		
 	float	SecsPerTick;	// seconds/ticks
 	int		TicksPerFrame;	// ticks/Frame
-
-	AUTO_STRUCT_INFO
 };
 
 struct VERTANIM_CHUNK_DESC_0744
@@ -1310,8 +1231,6 @@ struct VERTANIM_CHUNK_DESC_0744
 	int		nKeys;			// # of keys
 	int		nVerts;			// # of vertices this object has
 	int		nFaces;			// # of faces this object has (for double check purpose)		
-
-	AUTO_STRUCT_INFO
 };
 
 typedef VERTANIM_CHUNK_DESC_0744 VERTANIM_CHUNK_DESC;
@@ -1338,8 +1257,6 @@ struct BONEANIM_CHUNK_DESC_0290
 
 	CHUNK_HEADER	chdr;
 	int		nBones;
-
-	AUTO_STRUCT_INFO
 };
 
 typedef BONEANIM_CHUNK_DESC_0290 BONEANIM_CHUNK_DESC;
@@ -1355,8 +1272,6 @@ struct GEOMNAMELIST_CHUNK_DESC_0201
 	int		ChunkType;		//must be ChunkType_GeomNameList
 	int		ChunkVersion;
 	int		nEntities;
-
-	AUTO_STRUCT_INFO
 };
 typedef GEOMNAMELIST_CHUNK_DESC_0201 GEOMNAMELIST_CHUNK_DESC;
 
@@ -1371,8 +1286,6 @@ struct BONENAMELIST_CHUNK_DESC_0201
 	int		ChunkType;		//must be ChunkType_BoneNameList
 	int		ChunkVersion;
 	int		nEntities;
-
-	AUTO_STRUCT_INFO
 };
 
 struct BONENAMELIST_CHUNK_DESC_0744
@@ -1380,8 +1293,6 @@ struct BONENAMELIST_CHUNK_DESC_0744
 	enum {VERSION=0x0744};
 	CHUNK_HEADER chdr;
 	int			 nEntities;
-
-	AUTO_STRUCT_INFO
 };
 
 // this structure describes the bone names
@@ -1390,7 +1301,6 @@ struct BONENAMELIST_CHUNK_DESC_0745
 {
 	enum {VERSION = 0x0745};
 	int numEntities;
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1399,7 +1309,6 @@ struct COMPILED_BONE_CHUNK_DESC_0800
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
 	char reserved[32];
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_PHYSICALBONE_CHUNK_DESC_0800
@@ -1407,7 +1316,6 @@ struct COMPILED_PHYSICALBONE_CHUNK_DESC_0800
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
 	char reserved[32];
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_PHYSICALPROXY_CHUNK_DESC_0800
@@ -1415,7 +1323,6 @@ struct COMPILED_PHYSICALPROXY_CHUNK_DESC_0800
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
 	uint32 numPhysicalProxies;
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_MORPHTARGETS_CHUNK_DESC_0800
@@ -1423,7 +1330,6 @@ struct COMPILED_MORPHTARGETS_CHUNK_DESC_0800
 	enum {VERSION=0x0800, VERSION1=0x801};
 	CHUNK_HEADER chdr;
 	uint32 numMorphTargets;
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1431,7 +1337,6 @@ struct COMPILED_INTFACES_CHUNK_DESC_0800
 {
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_INTSKINVERTICES_CHUNK_DESC_0800
@@ -1439,21 +1344,18 @@ struct COMPILED_INTSKINVERTICES_CHUNK_DESC_0800
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
 	char reserved[32];
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_EXT2INTMAP_CHUNK_DESC_0800
 {
 	enum {VERSION=0x0800};
 	CHUNK_HEADER chdr;
-	AUTO_STRUCT_INFO
 };
 
 struct COMPILED_BONEBOXES_CHUNK_DESC_0800
 {
 	enum {VERSION=0x0800, VERSION1=0x801};
 	CHUNK_HEADER chdr;
-	AUTO_STRUCT_INFO
 };
 
 //========================================
@@ -1465,7 +1367,6 @@ struct MTLLIST_CHUNK_DESC_0201
 	int		ChunkType;		//must be ChunkType_MtlList
 	int		ChunkVersion;
 	int		nEntities;
-	AUTO_STRUCT_INFO
 };
 typedef MTLLIST_CHUNK_DESC_0201 MTLLIST_CHUNK_DESC;
 #define MTLLIST_CHUNK_DESC_VERSION MTLLIST_CHUNK_DESC::VERSION
@@ -1475,36 +1376,32 @@ typedef MTLLIST_CHUNK_DESC_0201 MTLLIST_CHUNK_DESC;
 struct BaseKey
 {
 	int time;
-	AUTO_STRUCT_INFO
 };
 
 struct BaseTCB
 {
 	float t,c,b;
 	float ein, eout;
-	AUTO_STRUCT_INFO
 };
 
-struct BaseKey1 : BaseKey { float		val; AUTO_STRUCT_INFO };
-struct BaseKey3 : BaseKey { Vec3	val; AUTO_STRUCT_INFO };
-struct BaseKeyQ : BaseKey { CryQuat	val; AUTO_STRUCT_INFO };
+struct BaseKey1 : BaseKey { float		val; };
+struct BaseKey3 : BaseKey { Vec3	val; };
+struct BaseKeyQ : BaseKey { CryQuat	val; };
 
-struct CryLin1Key : BaseKey1 { AUTO_STRUCT_INFO };
-struct CryLin3Key : BaseKey3 { AUTO_STRUCT_INFO };
-struct CryLinQKey : BaseKeyQ { AUTO_STRUCT_INFO };
-struct CryTCB1Key : BaseKey1 , BaseTCB { AUTO_STRUCT_INFO };
-struct CryTCB3Key : BaseKey3 , BaseTCB { AUTO_STRUCT_INFO };
-struct CryTCBQKey : BaseKeyQ , BaseTCB { AUTO_STRUCT_INFO };
-struct CryBez1Key : BaseKey1 { float		intan, outtan; AUTO_STRUCT_INFO };
-struct CryBez3Key : BaseKey3 { Vec3	intan, outtan; AUTO_STRUCT_INFO };
-struct CryBezQKey : BaseKeyQ { AUTO_STRUCT_INFO };
+struct CryLin1Key : BaseKey1 {};
+struct CryLin3Key : BaseKey3 {};
+struct CryLinQKey : BaseKeyQ {};
+struct CryTCB1Key : BaseKey1 , BaseTCB {};
+struct CryTCB3Key : BaseKey3 , BaseTCB {};
+struct CryTCBQKey : BaseKeyQ , BaseTCB {};
+struct CryBez1Key : BaseKey1 { float		intan, outtan; };
+struct CryBez3Key : BaseKey3 { Vec3	intan, outtan; };
+struct CryBezQKey : BaseKeyQ {};
 struct CryBoneKey : BaseKey
 {
 	Vec3	abspos;
 	Vec3	relpos;
 	CryQuat	relquat;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CryKeyPQLog
@@ -1520,8 +1417,6 @@ struct CryKeyPQLog
 		vPos.x = vPos.y = vPos.z = 0;
 		vRotLog.x = vRotLog.y = vRotLog.z = 0;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1581,8 +1476,6 @@ struct CONTROLLER_CHUNK_DESC_0826
 	//int				nSubCtrl;	// # of sub controllers; not used now/reserved
 
   unsigned nControllerId; // unique generated in exporter id based on crc32 of bone name
-
-	AUTO_STRUCT_INFO
 };
 
 // intermediate version between the CONTROLLER_BSPLINE_DATA_0826 and CONTROLLER_CHUNK_DESC_0826
@@ -1592,8 +1485,6 @@ struct CONTROLLER_CHUNK_DESC_0827
 	enum {VERSION = 0x0827};
 	unsigned numKeys;
 	unsigned nControllerId;
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1606,8 +1497,6 @@ struct CONTROLLER_CHUNK_DESC_0828
 
 	unsigned numKeys;
 	unsigned nControllerId;
-
-	AUTO_STRUCT_INFO
 };
 
 struct BASE_CONTROLLER_CHUNK
@@ -1649,8 +1538,6 @@ struct CONTROLLER_CHUNK_DESC_0829 : public BASE_CONTROLLER_CHUNK
 	uint8 PositionFormat;
 	uint8 PositionKeysInfo;
 	uint8 PositionTimeFormat;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CONTROLLER_CHUNK_DESC_0830 : public BASE_CONTROLLER_CHUNK
@@ -1673,8 +1560,6 @@ struct CONTROLLER_CHUNK_DESC_0830 : public BASE_CONTROLLER_CHUNK
 	uint8 PositionKeysInfo;
 	uint8 PositionTimeFormat;
 	uint8 ChunkType;
-
-	AUTO_STRUCT_INFO
 };
 
 // Removed PQLog stuff, as intermediate result now we using floats
@@ -1697,8 +1582,6 @@ struct CONTROLLER_CHUNK_DESC_0900
 	uint32 numKeyRot;
 	uint32 numKeyTime;
 	uint32 numAnims;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CONTROLLER_CHUNK_DESC_0901
@@ -1708,8 +1591,6 @@ struct CONTROLLER_CHUNK_DESC_0901
 	CHUNK_HEADER	chdr;
 
 	uint32 numTimesteps;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CONTROLLER_CHUNK_DESC_0902
@@ -1719,8 +1600,6 @@ struct CONTROLLER_CHUNK_DESC_0902
 	CHUNK_HEADER	chdr;
 
 	uint32 numStartDirs;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CONTROLLER_CHUNK_DESC_0903
@@ -1733,8 +1612,6 @@ struct CONTROLLER_CHUNK_DESC_0903
 	uint32 numKeyRot;
 	uint32 numKeyTime;
 	uint32 numAnims;
-
-	AUTO_STRUCT_INFO
 };
 
 struct CONTROLLER_CHUNK_DESC_0904
@@ -1747,8 +1624,6 @@ struct CONTROLLER_CHUNK_DESC_0904
 	uint32 numKeyRot;
 	uint32 numKeyTime;
 	uint32 numAnims;
-
-	AUTO_STRUCT_INFO
 };
 
 //struct CONTROLLER_CHUNK_DESC_0830
@@ -1768,9 +1643,6 @@ struct CONTROLLER_CHUNK_DESC_0904
 //	uint8 RotationTimeFormat;
 //	uint8 PositionFormat;
 //	uint8 PositionKeysInfo;
-//
-//
-//	AUTO_STRUCT_INFO
 //};
 
 
@@ -1824,8 +1696,6 @@ struct NODE_CHUNK_DESC_0823
 	int			scl_cont_id;	// scale controller chunk id
 
 	int			PropStrLen;		// lenght of the property string
-
-	AUTO_STRUCT_INFO
 };
 typedef NODE_CHUNK_DESC_0823 NODE_CHUNK_DESC;
 #define NODE_CHUNK_DESC_VERSION NODE_CHUNK_DESC::VERSION
@@ -1849,8 +1719,6 @@ struct HELPER_CHUNK_DESC_0744
 
   HelperTypes	type;			// one of the HelperTypes values
 	Vec3	size;			// size in local x,y,z axises (for dummy only)
-
-	AUTO_STRUCT_INFO
 };
 
 typedef HELPER_CHUNK_DESC_0744 HELPER_CHUNK_DESC; 
@@ -1862,8 +1730,6 @@ struct BONELIGHTBINDING_CHUNK_DESC_0001
 {
 	enum {VERSION = 0x0001};
 	unsigned numBindings; // the number of bone-light binding substructures following this structure
-
-	AUTO_STRUCT_INFO
 };
 
 // single bone-light binding structure; numBindings such structures follow the BONELIGHTBINDING_CHUNK_DESC structure
@@ -1873,8 +1739,6 @@ struct SBoneLightBind
 	unsigned nBoneId;           // parent bone id
 	Vec3 vLightOffset;         // light position in the parent bone coordinate system
 	Vec3 vRotLightOrientation; // logarithm of quaternion that describes the light orientation relative to the parent bone
-
-	AUTO_STRUCT_INFO
 };
 
 // ChunkType_MeshMorphTarget  - morph target of a mesh chunk
@@ -1887,8 +1751,6 @@ struct MESHMORPHTARGET_CHUNK_DESC_0001
 	enum {VERSION = 0x0001};
 	unsigned nChunkIdMesh;   // the chunk id of the mesh chunk (ChunkType_Mesh) for which this morph target is
 	unsigned numMorphVertices;  // number of MORPHED vertices
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1898,8 +1760,6 @@ struct SMeshMorphTargetVertex
 {
 	unsigned nVertexId; // vertex index in the original (mesh) array of vertices
 	Vec3 ptVertex;     // the target point of the morph target
-
-	AUTO_STRUCT_INFO
 };
 
 struct SMeshMorphTargetHeader
@@ -1908,8 +1768,6 @@ struct SMeshMorphTargetHeader
 	uint32 NameLength;  //size of the name string
 	uint32 numIntVertices; //type SMeshMorphTargetVertex
 	uint32 numExtVertices; //type SMeshMorphTargetVertex
-
-	AUTO_STRUCT_INFO
 };
 
 struct SMeshPhysicalProxyHeader
@@ -1918,8 +1776,6 @@ struct SMeshPhysicalProxyHeader
 	uint32 numPoints;     //size of the name string
 	uint32 numIndices; //type SMeshMorphTargetVertex
 	uint32 numMaterials; //type SMeshMorphTargetVertex
-
-	AUTO_STRUCT_INFO
 };
 
 //
@@ -1934,8 +1790,6 @@ struct BONEINITIALPOS_CHUNK_DESC_0001
 	unsigned nChunkIdMesh; 
 	// this is the number of bone initial pose matrices here
 	unsigned numBones;
-
-	AUTO_STRUCT_INFO
 };
 
 // an array of these matrices follows the  BONEINITIALPOS_CHUNK_DESC_0001 header
@@ -1948,8 +1802,6 @@ struct SBoneInitPosMatrix
 	const float* operator [] (int i)const {return mx[i];}
 
 	const Vec3& getOrt (int nOrt)const {return *(const Vec3*)(mx[nOrt]);}
-
-	AUTO_STRUCT_INFO
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1968,8 +1820,6 @@ struct EXPORT_FLAGS_CHUNK_DESC
 	unsigned int rc_version[4]; // Resource compiler version.
 	char rc_version_string[16]; // Version as a string.
 	unsigned int reserved[32];
-
-	AUTO_STRUCT_INFO
 };
 
 struct BREAKABLE_PHYSICS_CHUNK_DESC
@@ -1981,8 +1831,6 @@ struct BREAKABLE_PHYSICS_CHUNK_DESC
 	int nRetVtx;
 	int nRetTets;
 	int nReserved[10];
-
-	AUTO_STRUCT_INFO
 };
 
 struct FACEMAP_CHUNK_DESC
@@ -1991,8 +1839,6 @@ struct FACEMAP_CHUNK_DESC
 	CHUNK_HEADER chdr;
 	char nodeName[64];
 	int StreamID;
-
-	AUTO_STRUCT_INFO
 };
 
 #endif

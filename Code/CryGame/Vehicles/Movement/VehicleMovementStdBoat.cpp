@@ -11,7 +11,7 @@ History:
 - 30:05:2005: Created by Michael Rauh
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryGame/Game.h"
@@ -1038,6 +1038,7 @@ void CVehicleMovementStdBoat::Serialize(TSerialize ser, unsigned aspects)
   }
 };
 
+//------------------------------------------------------------------------
 void CVehicleMovementStdBoat::GetMemoryStatistics(ICrySizer * s)
 {
 	s->Add(*this);

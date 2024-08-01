@@ -51,6 +51,11 @@ public:
 
   virtual void GetMemoryStatistics(ICrySizer * s);
 
+  virtual bool IsEngineAffectedBySubmerge() override
+  {
+	  return false; //CryMP: Amphibious shouldn't trigger engine stop if submerged
+  }
+
 protected:
 
   ILINE bool Submerged() { return m_statusDyn.submergedFraction > 0.01f; }

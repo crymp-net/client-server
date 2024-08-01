@@ -151,6 +151,7 @@ public:
 	void DrawNear(bool drawNear, EntityId entityId = 0);
 	bool PerformPickUp();
 	int  CanPerformPickUp(CActor* pActor, IPhysicalEntity* pPhysicalEntity = NULL, bool getEntityInfo = false);
+	void OnLookAtEntityChanged(IEntity* pEntity);
 	int  CheckItemsInProximity(Vec3 pos, Vec3 dir, bool getEntityInfo);
 
 	void UpdateCrosshairUsabilitySP();
@@ -213,6 +214,7 @@ private:
 	TGrabTypes		m_grabTypes;
 	uint32				m_grabType;
 	EntityId			m_heldEntityId, m_preHeldEntityId, m_crosshairId;
+	EntityId            m_lastLookAtEntityId = 0;
 	Matrix34			m_holdOffset;
 	Vec3          m_holdScale;
 	int						m_constraintId;

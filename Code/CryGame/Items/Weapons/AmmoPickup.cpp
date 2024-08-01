@@ -10,7 +10,7 @@ History:
 - 18:12:2005   14:01 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "AmmoPickup.h"
 #include "Weapon.h"
 #include "CryGame/Actors/Actor.h"

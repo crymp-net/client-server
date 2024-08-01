@@ -266,8 +266,6 @@ template <class T> struct Color_tpl
 
 		return out;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 

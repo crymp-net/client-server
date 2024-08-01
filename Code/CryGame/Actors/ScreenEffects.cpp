@@ -5,7 +5,7 @@
 // ScreenEffects - Allows for simultaneous and queued blending of effects
 //  John Newfield
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Actor.h"
 #include "Player/Player.h"
 #include "CryCommon/CryAction/IViewSystem.h"

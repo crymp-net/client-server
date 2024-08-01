@@ -22,8 +22,6 @@
 
 #include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryMath/Cry_Math.h"
-#include <vector>
-#include <set>
 
 #ifdef  SANDBOX_API
 #include "Util/GuidUtil.h"

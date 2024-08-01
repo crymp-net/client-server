@@ -17,6 +17,7 @@
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
+#include <string>
 #include <vector>
 #include <list>
 #include <set>
@@ -90,8 +91,6 @@ struct SNetObjectID
 	{
 		return (uint32(salt)<<16) | id;
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 // this enumeration details what "kind" of serialization we are
@@ -134,8 +133,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 struct SSerializeString
 {
-	AUTO_STRUCT_INFO
-
 	SSerializeString() = default;
 	SSerializeString( const SSerializeString &src ) { m_str.assign(src.c_str()); };
 	explicit SSerializeString( const char *s ) : m_str(s) { };
@@ -154,6 +151,11 @@ struct SSerializeString
 	void set_string( const string &s )
 	{
 		m_str.assign( s.begin(),s.size() );
+	}
+
+	void set_string(const std::string& s)
+	{
+		m_str.assign(s.c_str(), s.length());
 	}
 
 private:
@@ -276,6 +278,29 @@ public:
 	{
 		Value(szName, value, 0);
 	}
+
+	void Value(const char* name, std::string& value, int policy = 0)
+	{
+		if (IsWriting())
+		{
+			SSerializeString& buffer = this->GetSharedSerializeString();
+			buffer.set_string(value);
+			m_pSerialize->WriteStringValue(name, buffer, policy);
+		}
+		else
+		{
+			if (this->GetSerializationTarget() != eST_Script)
+			{
+				value.clear();
+			}
+
+			SSerializeString& buffer = this->GetSharedSerializeString();
+			buffer.set_string(value);
+			m_pSerialize->ReadStringValue(name, buffer, policy);
+			value.assign(buffer.c_str(), buffer.length());
+		}
+	}
+
 	void Value( const char * szName, const string& value, int policy )
 	{
 		if (IsWriting())

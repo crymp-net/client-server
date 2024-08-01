@@ -10,7 +10,7 @@ History:
 - 2:3:2005   16:06 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "C4.h"
 #include "FireModes/Plant.h"
 

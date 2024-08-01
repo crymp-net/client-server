@@ -21,7 +21,7 @@
 // Endian support
 //////////////////////////////////////////////////////////////////////////
 
-#if defined(NEED_ENDIAN_SWAP) || defined(_DEBUG)
+#if defined(NEED_ENDIAN_SWAP)
 
 // The endian swapping function.
 void SwapEndian(void* pData, size_t nCount, const CTypeInfo& Info, size_t nSizeCheck);
@@ -35,7 +35,7 @@ inline void SwapEndian(T* t, size_t nCount)
 #endif
 }
 
-#else	// NEED_ENDIAN_SWAP || _DEBUG
+#else	// NEED_ENDIAN_SWAP
 
 // Null endian swapping.
 template<class T>
@@ -43,7 +43,7 @@ inline void SwapEndian(T* t, size_t nCount)
 {
 }
 
-#endif	// NEED_ENDIAN_SWAP || _DEBUG
+#endif	// NEED_ENDIAN_SWAP
 
 // Derivative functions.
 template<class T>

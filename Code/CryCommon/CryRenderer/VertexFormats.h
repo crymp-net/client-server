@@ -88,7 +88,6 @@ struct UCol
 		uint8  bcolor[4];
 		uint32 dcolor;
 	};
-	AUTO_STRUCT_INFO
 };
 
 // Map 0..1 => 0..255
@@ -138,7 +137,6 @@ struct struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F
   Vec3 xyz;
   UCol color;
   Vec2 st;
-  AUTO_STRUCT_INFO
   bool operator == (struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F & other);
 };
 

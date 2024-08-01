@@ -27,6 +27,7 @@ enum EFlashAnimFlags
 	eFAF_ThisHandler	= (1 << 5),
 	eFAF_Visible			= (1 << 6),
 	eFAF_ManualRender	= (1 << 7),
+	eFAF_SkipBreak		= (1 << 8),
 	eFAF_Default			= (eFAF_ThisHandler|eFAF_Visible)
 };
 

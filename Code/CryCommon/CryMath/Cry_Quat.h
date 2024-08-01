@@ -205,8 +205,6 @@ template <typename F> struct Quat_tpl
 			Normalize();
 		}
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 
@@ -1171,8 +1169,6 @@ template <typename F> struct QuatT_tpl
 	{
 		return QuatT_tpl<F>(t * scale, q.GetScaled(scale));
 	}
-
-	AUTO_STRUCT_INFO
 };
 
 typedef QuatT_tpl<f32>	QuatT;
@@ -1396,8 +1392,6 @@ template <typename F> struct QuatTS_tpl
 	ILINE Vec3_tpl<F> GetRow0() const {	return q.GetRow0(); }
 	ILINE Vec3_tpl<F> GetRow1() const {	return q.GetRow1(); }
 	ILINE Vec3_tpl<F> GetRow2() const {	return q.GetRow2(); }
-
-	AUTO_STRUCT_INFO
 };
 
 typedef QuatTS_tpl<f32> QuatTS;

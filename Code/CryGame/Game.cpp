@@ -11,7 +11,9 @@
   - 17:8:2005        : Modified - NickH: Factory registration moved to GameFactory.cpp
 
 *************************************************************************/
-#include "StdAfx.h"
+#include <tracy/Tracy.hpp>
+
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Game.h"
 #include "GameCVars.h"
 #include "GameActions.h"
@@ -24,7 +26,7 @@
 #include "HUD/HUD.h"
 #include "Items/Weapons/WeaponSystem.h"
 
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryPath.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
@@ -353,6 +355,8 @@ bool CGame::CompleteInit()
 
 int CGame::Update(bool haveFocus, unsigned int updateFlags)
 {
+	ZoneScoped;
+
 	bool bRun = m_pFramework->PreUpdate(true, updateFlags);
 	float frameTime = gEnv->pTimer->GetFrameTime();
 
@@ -427,7 +431,7 @@ void CGame::PlayerIdSet(EntityId playerId)
 string CGame::InitMapReloading()
 {
 	string levelFileName = GetIGameFramework()->GetLevelName();
-	levelFileName = PathUtil::GetFileName(levelFileName);
+	levelFileName = CryPath::GetFileName(levelFileName);
 	if (const char* visibleName = GetMappedLevelName(levelFileName.c_str()))
 		levelFileName = visibleName;
 	//levelFileName.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
@@ -678,6 +682,61 @@ CFlashMenuObject* CGame::GetMenu() const
 COptionsManager* CGame::GetOptions() const
 {
 	return m_pOptionsManager;
+}
+
+bool CGame::IsMenuActive() const
+{
+	return GetMenu() && GetMenu()->IsActive();
+}
+
+bool CGame::ShowMousePointer(bool show)
+{
+	if (show == m_isMousePointerVisible)
+	{
+		return false;
+	}
+
+	if (m_isMousePointerVisible)
+	{
+		// hide mouse cursor
+
+		if (gEnv->pHardwareMouse)
+		{
+			gEnv->pHardwareMouse->DecrementCounter();
+		}
+
+		m_isMousePointerVisible = false;
+	}
+	else
+	{
+		// show mouse cursor
+
+		if (gEnv->pHardwareMouse)
+		{
+			gEnv->pHardwareMouse->IncrementCounter();
+		}
+
+		m_isMousePointerVisible = true;
+	}
+
+	return true;
+}
+
+void CGame::ConfineCursor(bool confine)
+{
+	if (gEnv->pHardwareMouse)
+	{
+		int fullscreen = 0;
+		if (ICVar* pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen"))
+		{
+			fullscreen = pFullscreenCVar->GetIVal();
+		}
+
+		if (!fullscreen)
+		{
+			gEnv->pHardwareMouse->ConfineCursor(confine);
+		}
+	}
 }
 
 void CGame::LoadActionMaps(const char* filename)

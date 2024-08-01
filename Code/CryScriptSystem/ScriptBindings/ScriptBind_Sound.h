@@ -35,6 +35,7 @@ public:
 	int SetMasterVolumeScale(IFunctionHandler *pH, float scale);
 	int SetMinMaxDistance(IFunctionHandler *pH);
 	int SetParameterValue(IFunctionHandler *pH);
+	int GetParameterValue(IFunctionHandler* pH);
 	int SetSoundLoop(IFunctionHandler *pH);
 	int SetSoundPaused(IFunctionHandler *pH);
 	int SetSoundPosition(IFunctionHandler *pH);
@@ -54,4 +55,5 @@ public:
 	int SetMenuMusic(IFunctionHandler *pH, bool playMenuMusic, const char *theme, const char *mood);
 	int SetMusicMood(IFunctionHandler *pH, const char *mood);
 	int SetMusicTheme(IFunctionHandler *pH, const char *theme);
+	int ReloadAudioDevice(IFunctionHandler* pH);
 };

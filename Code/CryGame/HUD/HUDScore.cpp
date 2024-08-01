@@ -12,7 +12,7 @@ History:
 
 *************************************************************************/
 
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryInput/IInput.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "HUDObject.h"

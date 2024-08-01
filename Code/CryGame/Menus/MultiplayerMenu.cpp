@@ -11,7 +11,7 @@ History:
 - 12/2006: Created by Stas Spivakov
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "MultiplayerMenu.h"
 #include "CryCommon/CryAction/IGameFramework.h"
@@ -1206,15 +1206,17 @@ bool CMultiPlayerMenu::CUI::OnHandleCommand(EGsUiCommand cmd, const char* pArgs)
 			m_menu->m_profile->SearchUsers(pArgs);
 		break;
 	case eGUC_selectServer:
-
-		//break;
+		if (!m_menu->m_joiningServer)
+		{
+			ResetServerDetails();
+			RefreshServer();
+		}
+		break;
 	case eGUC_refreshServer:
-	{
 		ResetServerDetails();
 		m_menu->m_joiningServer = false;
 		RefreshServer();
-	}
-	break;
+		break;
 	default:
 		handled = false;
 	}

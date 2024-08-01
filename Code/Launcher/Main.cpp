@@ -1,10 +1,11 @@
 #include <stdexcept>
 #include <string>
-#include <system_error>
 
 #include "Library/WinAPI.h"
 
 #include "Launcher.h"
+
+#include "config.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Request fast graphics card
@@ -28,17 +29,11 @@ static std::string RuntimeErrorToString(const std::runtime_error& error)
 	return message;
 }
 
-static std::string SystemErrorToString(const std::system_error& error)
-{
-	std::string message = RuntimeErrorToString(error);
-
-	message += "\n\nError code ";
-	message += std::to_string(error.code().value());
-
-	return message;
-}
-
+#ifdef CRYMP_CONSOLE_APP
+int main()
+#else
 int __stdcall WinMain(void*, void*, char*, int)
+#endif
 {
 	Launcher launcher;
 	gLauncher = &launcher;
@@ -46,11 +41,6 @@ int __stdcall WinMain(void*, void*, char*, int)
 	try
 	{
 		launcher.Run();
-	}
-	catch (const std::system_error& error)
-	{
-		WinAPI::ErrorBox(SystemErrorToString(error).c_str());
-		return 1;
 	}
 	catch (const std::runtime_error& error)
 	{

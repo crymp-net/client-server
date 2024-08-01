@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "CryCommon/CryNetwork/INetworkService.h"
@@ -758,7 +758,7 @@ void CMPHub::DisconnectError(EDisconnectionCause dc, bool connecting, const char
 		else
 		{
 			//CryMP: Attempt to download map and reconnect to server
-			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame("connect");
+			g_pGame->GetIGameFramework()->ExecuteCommandNextFrame("reconnect");
 		}
 		break;
 	}

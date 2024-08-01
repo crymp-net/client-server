@@ -27,7 +27,7 @@
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 
 #define GAME_NAME				"Crysis"
 #define GAME_LONGNAME		"Crysis"
@@ -188,38 +188,10 @@ public:
 
   ILINE SCVars *GetCVars() {return m_pCVars;}
 
-	bool ShowMousePointer(bool show)
-	{
-		if (show == m_isMousePointerVisible)
-		{
-			return false;
-		}
 
-		if (m_isMousePointerVisible)
-		{
-			// hide mouse cursor
-
-			if (gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->DecrementCounter();
-			}
-
-			m_isMousePointerVisible = false;
-		}
-		else
-		{
-			// show mouse cursor
-
-			if (gEnv->pHardwareMouse)
-			{
-				gEnv->pHardwareMouse->IncrementCounter();
-			}
-
-			m_isMousePointerVisible = true;
-		}
-
-		return true;
-	}
+    bool IsMenuActive() const;
+    bool ShowMousePointer(bool show);
+    void ConfineCursor(bool confine);
 
 	bool IsMousePointerVisible() const
 	{

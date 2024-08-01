@@ -33,6 +33,7 @@ class MapDownloader
 	std::filesystem::path GetVersionFilePath(const std::string_view & mapName);
 	void RescanMaps();
 	void RegisterDownloadedMaps();
+	void AddMapRedirect(const std::string& mapName);
 	void CompleteRequest(const MapDownloaderRequest & request, bool success);
 
 public:

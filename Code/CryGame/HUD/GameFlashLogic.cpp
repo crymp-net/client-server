@@ -11,7 +11,7 @@ History:
 - 18:08:2005: Created by Julien Darre
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "GameFlashLogic.h"
 #include "CryCommon/CryGame/IGame.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"

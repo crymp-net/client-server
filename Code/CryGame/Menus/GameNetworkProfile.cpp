@@ -11,7 +11,7 @@ History:
 - 03/2007: Created by Stas Spivakov
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryNetwork/INetwork.h"
 #include "GameNetworkProfile.h"
 #include "MPHub.h"

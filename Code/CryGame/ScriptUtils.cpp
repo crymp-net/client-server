@@ -15,7 +15,7 @@ Notes:
 *************************************************************************/
 
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "ScriptUtils.h"
 
 //-------------------------------------------------------------------------
@@ -151,21 +151,4 @@ bool SetLuaVarRecursive(const char *sKey, const ScriptAnyValue &newValue) {
 
 	// Delete copy and return
 	return true;
-}
-
-//-------------------------------------------------------------------------
-
-// Dump a Lua table as a string
-bool DumpLuaTable( IScriptTable * table, FILE * file, string &result ) {
-	
-	IScriptSystem *pScript = gEnv->pScriptSystem;
-	char *str = NULL; 		
-	HSCRIPTFUNCTION f = pScript->GetFunctionPtr("DumpTableAsLuaString");
-	//ScriptAnyValue val;
-	//gEnv->pScriptSystem->GetGlobalAny("DumpTableAsLuaString",val);
-	//SmartScriptFunction fun( pScript, pScript->GetFunctionPtr("DumpTableAsLuaString") );
-	bool success = Script::CallReturn( pScript, f, table, "Tweaks.TweaksSave", str );
-	result = str;
-	pScript->ReleaseFunc(f);
-	return success;
 }

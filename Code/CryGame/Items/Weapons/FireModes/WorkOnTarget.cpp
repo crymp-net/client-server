@@ -10,7 +10,7 @@ History:
 - 05:8:2007:		Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "WorkOnTarget.h"
 #include "CryGame/Game.h"
@@ -79,8 +79,10 @@ void CWorkOnTarget::Update(float frameTime, unsigned int frameId)
 				{
 					if (ISound *pSound=m_pWeapon->GetISound(m_soundId))
 					{
-						pSound->SetLoopMode(true);
-						pSound->SetPaused(false);
+						if (pSound->GetPaused())
+						{
+							pSound->SetPaused(false);
+						}
 					}
 				}
 			}
@@ -184,8 +186,16 @@ void CWorkOnTarget::StartFire()
 
 	const ItemString workAction(m_workactions.work.c_str());
 
-	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true,
+		CItem::eIPAF_Default|CItem::eIPAF_CleanBlending/*|CItem::eIPAF_SoundStartPaused*/);
+
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
+
+	if (ISound* pSound = m_pWeapon->GetISound(m_soundId))
+	{
+		pSound->SetLoopMode(true);
+		pSound->SetPaused(true); //CryMP: Need to pause manually as eIPAF_SoundStartPaused ain't working
+	}
 
 	m_pWeapon->EnableUpdate(true, eIUS_FireMode);	
 	m_delayTimer=m_workparams.delay;
@@ -232,8 +242,15 @@ void CWorkOnTarget::NetStartFire()
 
 	const ItemString workAction(m_workactions.work.c_str());
 
-	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending|CItem::eIPAF_SoundStartPaused);
+	m_soundId=m_pWeapon->PlayAction(workAction, 0, true, 
+		CItem::eIPAF_Default|CItem::eIPAF_CleanBlending/*|CItem::eIPAF_SoundStartPaused*/);
 	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, workAction);
+
+	if (ISound* pSound = m_pWeapon->GetISound(m_soundId))
+	{
+		pSound->SetLoopMode(true);
+		pSound->SetPaused(true); //CryMP: Need to pause manually as eIPAF_SoundStartPaused ain't working
+	}
 
 	m_delayTimer=m_workparams.delay;
 	m_firing=true;
@@ -265,18 +282,66 @@ void CWorkOnTarget::GetMemoryStatistics(ICrySizer * s)
 }
 
 //------------------------------------------------------------------------
+void CWorkOnTarget::OnEnterFirstPerson()
+{
+	if (m_effectId)
+	{
+		int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
+		m_effectId = 0;
+
+		if (m_firing && m_soundId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_soundId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			const ItemString workAction(m_workactions.work.c_str());
+			m_soundId = m_pWeapon->PlayAction(workAction, 0, true, 
+				CItem::eIPAF_ForceFirstPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_soundId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CWorkOnTarget::OnEnterThirdPerson()
+{
+	if (m_effectId)
+	{
+		int slot = m_pWeapon->GetStats().fp ? CItem::eIGS_FirstPerson : CItem::eIGS_ThirdPerson;
+		m_pWeapon->AttachEffect(slot, m_effectId, false);
+		m_effectId = 0;
+
+		if (m_firing && m_soundId != INVALID_SOUNDID)
+		{
+			m_pWeapon->StopSound(m_soundId);
+
+			//CryMP: We might not be first person untill next frame, so need to force it with flag
+			const ItemString workAction(m_workactions.work.c_str());
+			m_soundId = m_pWeapon->PlayAction(workAction, 0, true,
+				CItem::eIPAF_ForceThirdPerson | CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+
+			ISound* pSound = m_pWeapon->GetSoundProxy()->GetSound(m_soundId);
+			if (pSound)
+				pSound->SetLoopMode(true);
+		}
+	}
+}
+
+//------------------------------------------------------------------------
 IEntity *CWorkOnTarget::CanWork()
 {
-	static Vec3 pos,dir; 
-	static ICVar* pAimDebug = gEnv->pConsole->GetCVar("g_aimdebug");
-	
-	CActor *pActor=m_pWeapon->GetOwnerActor();
+	Vec3 pos, dir = Vec3(ZERO), Vec3(ZERO);
+	CActor *pActor = m_pWeapon->GetOwnerActor();
 	
 	static IPhysicalEntity* pSkipEntities[10];
-	int nSkip = CSingle::GetSkipEntities(m_pWeapon, pSkipEntities, 10);
+	const int nSkip = CSingle::GetSkipEntities(m_pWeapon, pSkipEntities, 10);
 
-	IEntity *pEntity=0;
-	float range=m_workparams.range;
+	IEntity *pEntity = nullptr;
+	const float range=m_workparams.range;
 	
 	IMovementController * pMC = pActor ? pActor->GetMovementController() : 0;
 	if (pMC)
@@ -302,49 +367,60 @@ IEntity *CWorkOnTarget::CanWork()
 			}
 		}
 	}
-	else
-	{ 
-		assert(0);
-	}
 
-	primitives::sphere sphere;
-	sphere.center = pos;
-	sphere.r = m_workparams.radius;
-	Vec3 end = pos+dir;
-
-	geom_contact *pContact=0;
-	float dst=gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, end-sphere.center, ent_all,
-		&pContact, 0, (geom_colltype_player<<rwi_colltype_bit)|rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
-
-	if (pContact && dst>=0.0f)
+	//CryMP: New code
+	static ray_hit hit;
+	if (gEnv->pPhysicalWorld->RayWorldIntersection(pos, dir, ent_all,
+		rwi_stop_at_pierceable | rwi_ignore_back_faces, &hit, 1, pSkipEntities, nSkip))
 	{
-		IPhysicalEntity *pCollider = gEnv->pPhysicalWorld->GetPhysicalEntityById(pContact->iPrim[0]);
-
-		if(pCollider && pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
+		if (hit.pCollider && hit.pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
 		{
-			if (pEntity = static_cast<IEntity *>(pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY)))
-			{
-				if (CGameRules *pGameRules=g_pGame->GetGameRules())
-				{
-					if (IScriptTable *pScriptTable=pGameRules->GetEntity()->GetScriptTable())
-					{
-						HSCRIPTFUNCTION pfnCanWork=0;
-						if (pScriptTable->GetValueType("CanWork")==svtFunction && pScriptTable->GetValue("CanWork", pfnCanWork))
-						{
-							bool result=false;
-							Script::CallReturn(gEnv->pScriptSystem, pfnCanWork, pScriptTable, ScriptHandle(pEntity->GetId()), ScriptHandle(m_pWeapon->GetOwnerId()), m_workparams.work_type.c_str(), result);
-							gEnv->pScriptSystem->ReleaseFunc(pfnCanWork);
+			pEntity = (IEntity*)hit.pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+		}
+	}
+	
+	/* old code
+		primitives::sphere sphere;
+		sphere.center = pos;
+		sphere.r = m_workparams.radius;
+		Vec3 end = pos + dir;
 
-							if (result)
-								return pEntity;
-						}
-					}
+		geom_contact* pContact = 0;
+		float dst = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, end - sphere.center, ent_all,
+			&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEntities, nSkip);
+
+		if (pContact && dst >= 0.0f)
+		{
+			IPhysicalEntity* pCollider = gEnv->pPhysicalWorld->GetPhysicalEntityById(pContact->iPrim[0]);
+
+			if (pCollider && pCollider->GetiForeignData() == PHYS_FOREIGN_ID_ENTITY)
+			{
+				pEntity = static_cast<IEntity*>(pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY));
+			}
+		}
+	*/
+
+	if (pEntity)
+	{
+		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		{
+			if (IScriptTable* pScriptTable = pGameRules->GetEntity()->GetScriptTable())
+			{
+				HSCRIPTFUNCTION pfnCanWork = 0;
+				if (pScriptTable->GetValueType("CanWork") == svtFunction && pScriptTable->GetValue("CanWork", pfnCanWork))
+				{
+					bool result = false;
+					Script::CallReturn(gEnv->pScriptSystem, pfnCanWork, pScriptTable, ScriptHandle(pEntity->GetId()), ScriptHandle(m_pWeapon->GetOwnerId()), m_workparams.work_type.c_str(), result);
+					gEnv->pScriptSystem->ReleaseFunc(pfnCanWork);
+
+					if (result)
+						return pEntity;
 				}
 			}
 		}
 	}
-
-	return 0;
+			
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -372,8 +448,11 @@ void CWorkOnTarget::StopWork()
 
 	const ItemString idleAction(m_workactions.idle.c_str());
 
-	m_pWeapon->PlayAction(idleAction, 0, true, CItem::eIPAF_Default|CItem::eIPAF_CleanBlending);
-	m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idleAction);
+	if (m_pWeapon->IsSelected()) //ClStopWork might come later so we need to check this
+	{
+		m_pWeapon->PlayAction(idleAction, 0, true, CItem::eIPAF_Default | CItem::eIPAF_CleanBlending);
+		m_pWeapon->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, idleAction);
+	}
 
 	if (m_effectId)
 	{

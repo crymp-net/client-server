@@ -18,6 +18,7 @@
 #pragma once
 
 #include "CryCommon/CryMath/Cry_Color.h"
+#include "CryCommon/CryCore/CryMalloc.h"
 #include "CryCommon/CryCore/StlUtils.h"
 
 // Description:
@@ -26,7 +27,6 @@ struct SMeshTexCoord
 {
 	float s,t;
 	bool operator==( const SMeshTexCoord &other ) { return s == other.s && t == other.t; }
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -34,7 +34,6 @@ struct SMeshTexCoord
 struct SMeshColor
 {
 	uint8 r,g,b,a;
-	AUTO_STRUCT_INFO
 };
 
 
@@ -46,7 +45,6 @@ struct SMeshFace
 	unsigned short t[3]; // indices to texcoords array
 	unsigned char nSubset; // index to mesh subsets array.
 	unsigned char dwFlags;
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -55,7 +53,6 @@ struct SMeshTangents
 {
 	Vec4sf Tangent;
 	Vec4sf Binormal;
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -64,7 +61,6 @@ struct SMeshBoneMapping
 {
 	ColorB boneIDs;		//boneIDs per render-batch
 	ColorB weights;   //weights for every bone (four in16)
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -74,7 +70,6 @@ struct SMeshShapeDeformation
 	Vec3 thin;
 	Vec3 fat;
 	ColorB index;		//boneIDs per render-batch
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -83,7 +78,6 @@ struct SMeshShapeDeformation
 struct SMeshSHCoeffs
 {
 	unsigned char coeffs[8];
-	AUTO_STRUCT_INFO
 };
 
 // Description:
@@ -95,7 +89,6 @@ struct SSHDecompressionMat
 	float offset1[4];
 	float scale0[4];
 	float scale1[4];
-	AUTO_STRUCT_INFO
 };
 
 struct SSHInfo
@@ -106,7 +99,7 @@ struct SSHInfo
 	SSHInfo() : pDecompressions(NULL), nDecompressionCount(0), pSHCoeffs(NULL){}
 	~SSHInfo()
 	{
-		free(pSHCoeffs);	//don't like this free and new mixery, but all other buffers behave that way
+		CryFree(pSHCoeffs);	//don't like this free and new mixery, but all other buffers behave that way
 		pSHCoeffs = NULL;
 		delete [] pDecompressions;
 	}
@@ -257,19 +250,19 @@ public:
 	{
     GetCounter()->Delete(this);
 
-		free(m_pFaces);
-		free(m_pIndices);
-		free(m_pPositions);
-    free(m_pVertMats);
-		free(m_pNorms);
-		free(m_pFaceNorms);
-		free(m_pTangents);
-		free(m_pTexCoord);
-		free(m_pColor0);
-		free(m_pColor1);
+		CryFree(m_pFaces);
+		CryFree(m_pIndices);
+		CryFree(m_pPositions);
+		CryFree(m_pVertMats);
+		CryFree(m_pNorms);
+		CryFree(m_pFaceNorms);
+		CryFree(m_pTangents);
+		CryFree(m_pTexCoord);
+		CryFree(m_pColor0);
+		CryFree(m_pColor1);
 
-		free(m_pShapeDeformation); 
-		//free(m_pBoneMapping); 
+		CryFree(m_pShapeDeformation);
+		//CryFree(m_pBoneMapping);
 		delete[] m_pBoneMapping;
 
 		delete m_pSHInfo;
@@ -609,7 +602,7 @@ public:
 private:
 	void *ReAllocElements(void *old_ptr,int new_elem_num, int size_of_element)
 	{
-		return realloc(old_ptr,new_elem_num*size_of_element);
+		return CryRealloc(old_ptr,new_elem_num*size_of_element);
 	}
 };
 

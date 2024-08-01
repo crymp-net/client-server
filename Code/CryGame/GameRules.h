@@ -1173,6 +1173,33 @@ protected:
 	bool                m_explosionScreenFX;
 
 	CShotValidator			*m_pShotValidator;
+
+	public:
+		enum class HitType
+		{
+			None,
+			Normal,
+			Repair,
+			Lockpick,
+			Bullet,
+			Gaussbullet,
+			Frost,
+			Fire,
+			Radiation,
+			Melee,
+			Tac,
+			Frag,
+			Fall,
+			Collision,
+			Event,
+			Punish,
+			Avmine,
+			Moacbullet,
+			Trooper_melee,
+			Scout_moac,
+			Aacannon,
+			Emp,
+		};
 };
 
 #endif //__GAMERULES_H__

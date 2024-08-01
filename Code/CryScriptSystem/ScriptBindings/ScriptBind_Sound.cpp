@@ -118,6 +118,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	pSS->SetGlobalValue("SOUNDSCALE_UNDERWATER", SOUNDSCALE_UNDERWATER);
 	pSS->SetGlobalValue("SOUNDSCALE_MISSIONHINT", SOUNDSCALE_MISSIONHINT);
 
+	pSS->SetGlobalValue("SOUND_VOLUMESCALEMISSIONHINT", 0.45f);
+
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NONE", eSoundSemantic_None);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_ONLYVOICE", eSoundSemantic_OnlyVoice);
 	pSS->SetGlobalValue("SOUND_SEMANTIC_NOVOICE", eSoundSemantic_NoVoice);
@@ -175,6 +177,7 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(SetMasterVolumeScale, "scale");
 	SCRIPT_REG_FUNC(SetMinMaxDistance);
 	SCRIPT_REG_FUNC(SetParameterValue);
+	SCRIPT_REG_FUNC(GetParameterValue);
 	SCRIPT_REG_FUNC(SetSoundLoop);
 	SCRIPT_REG_FUNC(SetSoundPaused);
 	SCRIPT_REG_FUNC(SetSoundPosition);
@@ -194,6 +197,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(SetMenuMusic, "playMenuMusic, theme, mood");
 	SCRIPT_REG_TEMPLFUNC(SetMusicMood, "mood");
 	SCRIPT_REG_TEMPLFUNC(SetMusicTheme, "theme");
+
+	SCRIPT_REG_FUNC(ReloadAudioDevice);
 }
 
 int ScriptBind_Sound::AddToScaleGroup(IFunctionHandler *pH)
@@ -597,13 +602,16 @@ int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 
 	_smart_ptr<ISound> pSound = GetSound(pH, 1);
 
-	const char *paramName = nullptr;
-	float paramValue = 0;
+	if (!pSound)
+		return pH->EndFunction();
 
-	pH->GetParam(2, paramName);
+	const char *paramName = nullptr;
+	int paramId = 0;
+	float paramValue = 0.0f;
+
 	pH->GetParam(3, paramValue);
 
-	if (pSound)
+	if (pH->GetParamType(2) == svtString && pH->GetParam(2, paramName))
 	{
 		if (strcmp(paramName, "pitch") == 0)
 		{
@@ -613,6 +621,45 @@ int ScriptBind_Sound::SetParameterValue(IFunctionHandler *pH)
 		else
 		{
 			pSound->SetParam(paramName, paramValue);
+		}
+	}
+	else if (pH->GetParamType(2) == svtNumber && pH->GetParam(2, paramId))
+	{
+		return pH->EndFunction(pSound->SetParam(paramId, paramValue));
+	}
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::GetParameterValue(IFunctionHandler* pH)
+{
+	SCRIPT_CHECK_PARAMETERS(2);
+
+	_smart_ptr<ISound> pSound = GetSound(pH, 1);
+
+	if (!pSound)
+		return pH->EndFunction();
+
+	if (pH->GetParamType(2) == svtNumber)
+	{
+		int paramId = 0;
+		if (pH->GetParam(2, paramId))
+		{
+			float value = 0;
+			pSound->GetParam(paramId, &value);
+
+			return pH->EndFunction(value);
+		}
+	}
+	else if (pH->GetParamType(2) == svtString)
+	{
+		const char* paramStr = nullptr;
+		if (pH->GetParam(2, paramStr))
+		{
+			float value = 0;
+			pSound->GetParam(paramStr, &value);
+
+			return pH->EndFunction(value);
 		}
 	}
 
@@ -929,6 +976,14 @@ int ScriptBind_Sound::SetMusicTheme(IFunctionHandler *pH, const char *theme)
 
 	if (!result)
 		CryLogError("Unable to set music theme '%s'", theme);
+
+	return pH->EndFunction(result);
+}
+
+int ScriptBind_Sound::ReloadAudioDevice(IFunctionHandler* pH)
+{
+	gEnv->pSoundSystem->DeactivateAudioDevice();
+	const bool result = gEnv->pSoundSystem->ActivateAudioDevice();
 
 	return pH->EndFunction(result);
 }

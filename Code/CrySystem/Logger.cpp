@@ -1,6 +1,7 @@
 #include <algorithm>
-#include <cerrno>
 #include <cstring>
+
+#include <tracy/Tracy.hpp>
 
 #include "CryCommon/CrySystem/CryColorCode.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -95,7 +96,7 @@ void Logger::OpenFile(const std::filesystem::path& filePath)
 	FileHandle file(std::fopen(filePathString.c_str(), "w"));
 	if (!file)
 	{
-		throw std::system_error(errno, std::generic_category(), "Failed to open log file: " + filePathString);
+		throw StringTools::SysErrorErrnoFormat("Failed to open log file: %s", filePathString.c_str());
 	}
 
 	m_file = std::move(file);
@@ -504,6 +505,8 @@ void Logger::PushMessageV(ILog::ELogType type, unsigned int flags, const char* f
 
 	BuildMessagePrefix(message);
 	BuildMessageContent(message, format, args);
+
+	TracyMessage(message.content.data(), message.content.length());
 
 	if (std::this_thread::get_id() == m_mainThreadID)
 	{

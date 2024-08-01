@@ -7,7 +7,7 @@
 //  Version:     v1.00
 //  Created:     19/10/2004 by Timur.
 //  Compilers:   Visual Studio.NET
-//  Description: Defines namespace PathUtil for operations on files paths.
+//  Description: Defines namespace CryPath for operations on files paths.
 // -------------------------------------------------------------------------
 //  History:
 //
@@ -17,14 +17,10 @@
 #define __CryPath_h__
 #pragma once
 
-#ifndef DATA_FOLDER
-#define DATA_FOLDER "game"
-#endif
-
 #include "ISystem.h"
 #include "ICryPak.h"
 
-namespace PathUtil
+namespace CryPath
 {
 	//! Split full file name to path and filename
 	//! @param filepath [IN] Full file name inclusing path.
@@ -241,27 +237,6 @@ namespace PathUtil
 		return path;
 	}
 
-	//! Makes a fully specified file path from path and file name.
-	inline string MakeFullPath( const string &relativePath )
-	{
-		return relativePath;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Description:
-	//    Make a game correct path out of any input path.
-	inline string MakeGamePath( const string &path )
-	{
-		string fullpath = MakeFullPath(path);
-		string rootDataFolder = ToUnixPath(AddSlash(DATA_FOLDER));
-		if (fullpath.length() > rootDataFolder.length() && _strnicmp(fullpath.c_str(),rootDataFolder.c_str(),rootDataFolder.length()) == 0)
-		{
-			return fullpath.substr(rootDataFolder.length(), fullpath.length()-rootDataFolder.length());
-		}
-		//fullpath = GetRelativePath(path);
-		return fullpath;
-	}
-
 	inline string GetParentDirectory (const string& strFilePath, int nGeneration = 1)
 	{
 		for (const char* p = strFilePath.c_str() + strFilePath.length() - 2; // -2 is for the possible trailing slash: there always must be some trailing symbol which is the file/directory name for which we should get the parent
@@ -332,11 +307,6 @@ namespace PathUtil
 			assert (0);
 			return false;
 		}
-	}
-
-	inline string GetGameFolder() 
-	{
-		return (gEnv->pCryPak->GetAlias(DATA_FOLDER));
 	}
 };
 

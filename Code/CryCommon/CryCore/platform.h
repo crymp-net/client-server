@@ -184,9 +184,6 @@ typedef CryStringT<wchar_t> wstring;
 // Include MultiThreading support.
 #include "MultiThread.h"
 
-// Include support for meta-type data.
-#include "TypeInfo.h"
-
 // Include Big/Small endianess conversion.
 #include "Endian.h"
 

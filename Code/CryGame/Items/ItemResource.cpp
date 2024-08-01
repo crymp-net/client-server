@@ -10,7 +10,7 @@ History:
 - 30:8:2005   12:30 : Created by Márcio Martins
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Item.h"
 #include "ItemSharedParams.h"
 
@@ -422,7 +422,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 		{
 			if (m_geometry[slot] != name)
 			{
-				const char* ext = PathUtil::GetExt(name.c_str());
+				const char* ext = CryPath::GetExt(name.c_str());
 				if ((_stricmp(ext, "chr") == 0) || (_stricmp(ext, "cdf") == 0) || (_stricmp(ext, "cga") == 0))
 					GetEntity()->LoadCharacter(slot, name.c_str(), 0);
 				else

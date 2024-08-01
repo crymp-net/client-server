@@ -55,14 +55,23 @@ namespace StringTools
 	}
 
 	template<typename T>
+	T ToLowerChar(T ch)
+	{
+		return ch |= (ch >= 'A' && ch <= 'Z') << 5;
+	}
+
+	template<typename T>
+	T ToUpperChar(T ch)
+	{
+		return ch &= ~((ch >= 'a' && ch <= 'z') << 5);
+	}
+
+	template<typename T>
 	void ToLowerInPlace(T& string)
 	{
 		for (auto& ch : string)
 		{
-			if (ch >= 'A' && ch <= 'Z')
-			{
-				ch += ('a' - 'A');
-			}
+			ch = ToLowerChar(ch);
 		}
 	}
 
@@ -71,10 +80,7 @@ namespace StringTools
 	{
 		for (auto& ch : string)
 		{
-			if (ch >= 'a' && ch <= 'z')
-			{
-				ch -= ('a' - 'A');
-			}
+			ch = ToUpperChar(ch);
 		}
 	}
 
@@ -94,6 +100,145 @@ namespace StringTools
 		ToUpperInPlace(result);
 
 		return result;
+	}
+
+	template<typename T, typename U>
+	bool IsEqualNoCase(const T& stringA, const U& stringB)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t lengthA = Length(stringA);
+		const std::size_t lengthB = Length(stringB);
+
+		if (lengthA != lengthB)
+		{
+			return false;
+		}
+
+		for (std::size_t i = 0; i < lengthA; i++)
+		{
+			if (ToLowerChar(stringA[i]) != ToLowerChar(stringB[i]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template<typename T, typename U>
+	bool IsLessNoCase(const T& stringA, const U& stringB)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t lengthA = Length(stringA);
+		const std::size_t lengthB = Length(stringB);
+
+		const std::size_t minLength = (lengthA <= lengthB) ? lengthA : lengthB;
+
+		for (std::size_t i = 0; i < minLength; i++)
+		{
+			const char chA = ToLowerChar(stringA[i]);
+			const char chB = ToLowerChar(stringB[i]);
+
+			if (chA != chB)
+			{
+				return chA < chB;
+			}
+		}
+
+		if (lengthA != lengthB)
+		{
+			return lengthA < lengthB;
+		}
+
+		return false;
+	}
+
+	template<typename T, typename U>
+	bool StartsWithNoCase(const T& string, const U& prefix)
+	{
+		static_assert(std::is_same_v<Char<T>, Char<U>>);
+
+		const std::size_t stringLength = Length(string);
+		const std::size_t prefixLength = Length(prefix);
+
+		if (stringLength < prefixLength)
+		{
+			return false;
+		}
+
+		return IsEqualNoCase(std::basic_string_view<Char<T>>(CStr(string), prefixLength), prefix);
+	}
+
+	struct Comparator
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			return a < b;
+		}
+	};
+
+	struct ComparatorNoCase
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			return IsLessNoCase(a, b);
+		}
+	};
+
+	struct PathComparator
+	{
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const
+		{
+			const auto fixSlash = [](char ch) -> char { return (ch == '\\') ? '/' : ch; };
+
+			const std::size_t minLength = (a.length() <= b.length()) ? a.length() : b.length();
+
+			for (std::size_t i = 0; i < minLength; i++)
+			{
+				const char chA = fixSlash(ToLowerChar(a[i]));
+				const char chB = fixSlash(ToLowerChar(b[i]));
+
+				if (chA != chB)
+				{
+					return chA < chB;
+				}
+			}
+
+			if (a.length() != b.length())
+			{
+				return a.length() < b.length();
+			}
+
+			return false;
+		}
+	};
+
+	inline std::string SafeString(const char* value)
+	{
+		return std::string(value ? value : "");
+	}
+
+	inline std::wstring SafeWString(const wchar_t* value)
+	{
+		return std::wstring(value ? value : L"");
+	}
+
+	inline std::string_view SafeView(const char* value)
+	{
+		return std::string_view(value ? value : "");
+	}
+
+	inline std::wstring_view SafeWView(const wchar_t* value)
+	{
+		return std::wstring_view(value ? value : L"");
 	}
 
 	namespace Detail
@@ -197,6 +342,9 @@ namespace StringTools
 	std::size_t FormatTo(std::string& result, const char* format, ...);
 	std::size_t FormatToV(std::string& result, const char* format, va_list args);
 
+	std::size_t FormatTo(std::pmr::string& result, const char* format, ...);
+	std::size_t FormatToV(std::pmr::string& result, const char* format, va_list args);
+
 	std::size_t FormatTo(char* buffer, std::size_t bufferSize, const char* format, ...);
 	std::size_t FormatToV(char* buffer, std::size_t bufferSize, const char* format, va_list args);
 
@@ -205,4 +353,7 @@ namespace StringTools
 
 	std::system_error SysErrorFormat(const char* format, ...);
 	std::system_error SysErrorFormatV(const char* format, va_list args);
+
+	std::system_error SysErrorErrnoFormat(const char* format, ...);
+	std::system_error SysErrorErrnoFormatV(const char* format, va_list args);
 }

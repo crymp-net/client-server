@@ -2,6 +2,7 @@
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
+#include "CrySystem/CryPak.h"
 #include "Library/Util.h"
 #include "Library/WinAPI.h"
 
@@ -9,7 +10,6 @@
 #include "MapExtractor.h"
 #include "Client.h"
 #include "FileDownloader.h"
-#include "FileRedirector.h"
 
 void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 {
@@ -93,8 +93,7 @@ void MapDownloader::DownloadMap(MapDownloaderRequest && request)
 				}
 
 				RescanMaps();
-
-				gClient->GetFileRedirector()->GetDownloadedMaps().Add(request.map);
+				AddMapRedirect(request.map);
 
 				CryLogAlways("$3[CryMP] [MapDownloader] Map downloaded successfully");
 			}
@@ -203,7 +202,6 @@ void MapDownloader::RescanMaps()
 void MapDownloader::RegisterDownloadedMaps()
 {
 	ILevelSystem *pLevelSystem = gClient->GetGameFramework()->GetILevelSystem();
-	FileRedirector::DownloadedMaps & downloadedMaps = gClient->GetFileRedirector()->GetDownloadedMaps();
 
 	const int levelCount = pLevelSystem->GetLevelCount();
 
@@ -213,9 +211,14 @@ void MapDownloader::RegisterDownloadedMaps()
 
 		if (Util::StartsWithNoCase(pLevelInfo->GetPath(), "%USER%"))
 		{
-			downloadedMaps.Add(pLevelInfo->GetName());
+			this->AddMapRedirect(pLevelInfo->GetName());
 		}
 	}
+}
+
+void MapDownloader::AddMapRedirect(const std::string& mapName)
+{
+	CryPak::GetInstance().AddRedirect("Levels/" + mapName, "%USER%/Downloads/Levels/" + mapName);
 }
 
 void MapDownloader::CompleteRequest(const MapDownloaderRequest & request, bool success)
@@ -236,8 +239,6 @@ MapDownloader::MapDownloader()
 
 	// make sure the map directory exists
 	std::filesystem::create_directories(m_downloadDir / "Levels");
-
-	gClient->GetFileRedirector()->GetDownloadedMaps().SetDownloadPath("%USER%/Downloads/Levels");
 
 	RescanMaps();
 	RegisterDownloadedMaps();

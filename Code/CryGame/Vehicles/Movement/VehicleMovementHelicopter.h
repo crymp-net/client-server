@@ -162,6 +162,9 @@ public:
 	virtual void SetChannelId(uint16 id) {};
 	// ~IVehicleMovement
 
+	void UpdateRotorAnimation(float frameTime);
+	bool CanUpdateDamageSound() override;
+
 	// CVehicleMovementBase
 	virtual void OnEngineCompletelyStopped();
 	virtual float GetEnginePedal();
@@ -172,6 +175,9 @@ public:
 	virtual void PreProcessMovement(const float deltaTime);
 	virtual void ResetActions();
 	virtual void UpdateDamages(float deltaTime);
+	bool IsDestroyed();
+	void SetDamage(float damage, bool fatal) override;
+	void StopSound(EVehicleMovementSound eSID) override;
 	virtual void UpdateEngine(float deltaTime);
 	virtual void ProcessActions_AdjustActions(float deltaTime) {}
 	virtual void SetSoundMasterVolume(float vol);
@@ -325,6 +331,8 @@ protected:
 	ICVar* m_pStabilizeVTOL;
 
 	friend class CNetworkMovementHelicopter;
+
+	float m_rotorSlowDownSpeed = 0.0f;
 
 };
 

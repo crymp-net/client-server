@@ -22,6 +22,19 @@ endif()
 
 ################################################################################
 
+option(CRYMP_CONSOLE_APP "Enable console window with standard output." OFF)
+
+option(CRYMP_USE_MIMALLOC "Use mimalloc as global allocator." OFF)
+
+option(CRYMP_DEBUG_ALLOCATOR_ENABLED "Enable debug allocator to detect memory errors." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_VERBOSE "Log each allocation and deallocation to standard output." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_OVERFLOW_INSTEAD_OF_UNDERFLOW "Detect buffer overflows instead of underflows." OFF)
+option(CRYMP_DEBUG_ALLOCATOR_CHECK_READS "Check for both invalid reads and writes." OFF)
+
+option(CRYMP_TRACY_ENABLED "Enable Tracy profiler." OFF)
+
+################################################################################
+
 math(EXPR BUILD_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -344,6 +357,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/ConfigurableVariant.h
 	Code/CryCommon/CryCore/CryArray.h
 	Code/CryCommon/CryCore/CryFixedString.h
+	Code/CryCommon/CryCore/CryMalloc.h
 	Code/CryCommon/CryCore/CryName.h
 	Code/CryCommon/CryCore/CryPodArray.h
 	Code/CryCommon/CryCore/CrySizer.h
@@ -357,7 +371,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/StlUtils.h
 	Code/CryCommon/CryCore/StringUtils.h
 	Code/CryCommon/CryCore/TArray.h
-	Code/CryCommon/CryCore/TypeInfo.h
 	Code/CryCommon/CryCore/Typelist.h
 	Code/CryCommon/CryCore/TypelistUtils.h
 	Code/CryCommon/CryCore/VectorMap.h
@@ -379,7 +392,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryGame/IGame.h
 	Code/CryCommon/CryGame/IGameRef.h
 	Code/CryCommon/CryGame/IGameStartup.h
-	Code/CryCommon/CryInput/IHardwareMouse.h
 	Code/CryCommon/CryInput/IInput.h
 	Code/CryCommon/CryMath/AABBSV.h
 	Code/CryCommon/CryMath/Cry_Camera.h
@@ -425,6 +437,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CrySoundSystem/ISoundMoodManager.h
 	Code/CryCommon/CrySystem/CryColorCode.h
 	Code/CryCommon/CrySystem/CryFile.h
+	Code/CryCommon/CrySystem/CryFind.h
 	Code/CryCommon/CrySystem/CryPath.h
 	Code/CryCommon/CrySystem/CryVersion.h
 	Code/CryCommon/CrySystem/FrameProfiler.h
@@ -436,6 +449,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CrySystem/IDataProbe.h
 	Code/CryCommon/CrySystem/IFlashPlayer.h
 	Code/CryCommon/CrySystem/IGlobalTaskScheduler.h
+	Code/CryCommon/CrySystem/IHardwareMouse.h
 	Code/CryCommon/CrySystem/ILog.h
 	Code/CryCommon/CrySystem/IProcess.h
 	Code/CryCommon/CrySystem/IReadWriteXMLSink.h
@@ -563,20 +577,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/HUD/HUDWeaponAccessories.cpp
 	Code/CryGame/HUD/ScriptBind_HUD.cpp
 	Code/CryGame/HUD/ScriptBind_HUD.h
-	Code/CryGame/HUD/Tweaks/HUDTweakMenu.cpp
-	Code/CryGame/HUD/Tweaks/HUDTweakMenu.h
-	Code/CryGame/HUD/Tweaks/TweakCommon.cpp
-	Code/CryGame/HUD/Tweaks/TweakCommon.h
-	Code/CryGame/HUD/Tweaks/TweakMenu.cpp
-	Code/CryGame/HUD/Tweaks/TweakMenu.h
-	Code/CryGame/HUD/Tweaks/TweakMetadata.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadata.h
-	Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadataCVAR.h
-	Code/CryGame/HUD/Tweaks/TweakMetadataLUA.cpp
-	Code/CryGame/HUD/Tweaks/TweakMetadataLUA.h
-	Code/CryGame/HUD/Tweaks/TweakTraverser.cpp
-	Code/CryGame/HUD/Tweaks/TweakTraverser.h
 	Code/CryGame/Items/FlowItemAnimation.cpp
 	Code/CryGame/Items/FlowItemAnimation.h
 	Code/CryGame/Items/Item.cpp
@@ -750,8 +750,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/ShotValidator.h
 	Code/CryGame/SoundMoods.cpp
 	Code/CryGame/SoundMoods.h
-	Code/CryGame/StdAfx.cpp
-	Code/CryGame/StdAfx.h
 	Code/CryGame/SynchedStorage.cpp
 	Code/CryGame/SynchedStorage.h
 	Code/CryGame/Vehicles/Action/VehicleActionAutomaticDoor.cpp
@@ -802,14 +800,12 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryMP/Client/DrawTools.h
 	Code/CryMP/Client/EngineCache.cpp
 	Code/CryMP/Client/EngineCache.h
+	Code/CryMP/Client/FFontHooks.cpp
+	Code/CryMP/Client/FFontHooks.h
 	Code/CryMP/Client/FileCache.cpp
 	Code/CryMP/Client/FileCache.h
 	Code/CryMP/Client/FileDownloader.cpp
 	Code/CryMP/Client/FileDownloader.h
-	Code/CryMP/Client/FileRedirector.cpp
-	Code/CryMP/Client/FileRedirector.h
-	Code/CryMP/Client/FlashFileHooks.cpp
-	Code/CryMP/Client/FlashFileHooks.h
 	Code/CryMP/Client/MapDownloader.cpp
 	Code/CryMP/Client/MapDownloader.h
 	Code/CryMP/Client/MapExtractor.cpp
@@ -873,14 +869,32 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CrySystem/CryLog.h
 	Code/CrySystem/CryMemoryManager.cpp
 	Code/CrySystem/CryMemoryManager.h
+	Code/CrySystem/CryPak.cpp
+	Code/CrySystem/CryPak.h
 	Code/CrySystem/GameWindow.cpp
 	Code/CrySystem/GameWindow.h
+	Code/CrySystem/HardwareMouse.cpp
+	Code/CrySystem/HardwareMouse.h
 	Code/CrySystem/LocalizationManager.cpp
 	Code/CrySystem/LocalizationManager.h
 	Code/CrySystem/Logger.cpp
 	Code/CrySystem/Logger.h
+	Code/CrySystem/Pak/FileInZipPak.cpp
+	Code/CrySystem/Pak/FileInZipPak.h
+	Code/CrySystem/Pak/FileOutsidePak.cpp
+	Code/CrySystem/Pak/FileOutsidePak.h
+	Code/CrySystem/Pak/IFileInPak.h
+	Code/CrySystem/Pak/IPak.h
+	Code/CrySystem/Pak/ZipCache.cpp
+	Code/CrySystem/Pak/ZipCache.h
+	Code/CrySystem/Pak/ZipPak.cpp
+	Code/CrySystem/Pak/ZipPak.h
 	Code/CrySystem/RandomGenerator.cpp
 	Code/CrySystem/RandomGenerator.h
+	Code/CrySystem/ResourceList.cpp
+	Code/CrySystem/ResourceList.h
+	Code/CrySystem/StreamEngine.cpp
+	Code/CrySystem/StreamEngine.h
 	Code/Launcher/Launcher.cpp
 	Code/Launcher/Launcher.h
 	Code/Launcher/Main.cpp
@@ -892,6 +906,10 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/CrashLogger.cpp
 	Code/Library/CrashLogger.h
 	Code/Library/DigitCount.h
+	Code/Library/PathTools.cpp
+	Code/Library/PathTools.h
+	Code/Library/PathTree.h
+	Code/Library/SlotVector.h
 	Code/Library/StlportVector.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h
@@ -958,8 +976,52 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	ThirdParty/nlohmann/json.hpp
 	ThirdParty/nlohmann/json_fwd.hpp
 	ThirdParty/picosha2.h
+	ThirdParty/tracy/public/TracyClient.cpp
 	${PROJECT_BINARY_DIR}/config.h
 	${PROJECT_BINARY_DIR}/version.h
+)
+
+################################################################################
+
+if(CRYMP_USE_MIMALLOC)
+	add_library(mimalloc STATIC
+		ThirdParty/mimalloc/src/alloc.c
+		ThirdParty/mimalloc/src/alloc-aligned.c
+		ThirdParty/mimalloc/src/alloc-posix.c
+		ThirdParty/mimalloc/src/arena.c
+		ThirdParty/mimalloc/src/bitmap.c
+		ThirdParty/mimalloc/src/heap.c
+		ThirdParty/mimalloc/src/init.c
+		ThirdParty/mimalloc/src/options.c
+		ThirdParty/mimalloc/src/os.c
+		ThirdParty/mimalloc/src/page.c
+		ThirdParty/mimalloc/src/random.c
+		ThirdParty/mimalloc/src/segment.c
+		ThirdParty/mimalloc/src/segment-map.c
+		ThirdParty/mimalloc/src/stats.c
+		ThirdParty/mimalloc/src/prim/prim.c
+	)
+
+	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
+	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
+
+	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
+endif()
+
+################################################################################
+
+set(CRYMP_INTERNAL_PAK_PATH ${PROJECT_BINARY_DIR}/Pak.zip)
+
+# also list directories to detect removed files
+file(GLOB_RECURSE CRYMP_INTERNAL_PAK_DEPENDENCIES LIST_DIRECTORIES true CONFIGURE_DEPENDS Pak/*)
+list(INSERT CRYMP_INTERNAL_PAK_DEPENDENCIES 0 ${PROJECT_SOURCE_DIR}/Pak)
+
+add_custom_command(
+	OUTPUT ${CRYMP_INTERNAL_PAK_PATH}
+	DEPENDS ${CRYMP_INTERNAL_PAK_DEPENDENCIES}
+	COMMAND ${CMAKE_COMMAND} -E tar cf ${CRYMP_INTERNAL_PAK_PATH} --format=zip .
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Pak
+	VERBATIM
 )
 
 ################################################################################
@@ -970,20 +1032,9 @@ set(CRYMP_CLIENT_RESOURCES
 	${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorRed.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorWhite.cur
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_VehicleStats.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_PDA_Buy.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/Menus_Loading_MP.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_HitIndicator.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_Spectate.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_MP_Radio_Buttons.gfx
-	${PROJECT_SOURCE_DIR}/Resources/Game/Libs/UI/HUD_ChatSystem_HR.gfx
 	${PROJECT_SOURCE_DIR}/Resources/Icon.ico
-	${PROJECT_SOURCE_DIR}/Scripts/JSON.lua
-	${PROJECT_SOURCE_DIR}/Scripts/Localization.lua
-	${PROJECT_SOURCE_DIR}/Scripts/Main.lua
-	${PROJECT_SOURCE_DIR}/Scripts/RPC.lua
 	${PROJECT_SOURCE_DIR}/masters.txt
+	${CRYMP_INTERNAL_PAK_PATH}
 )
 
 set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")
@@ -997,12 +1048,25 @@ if(BUILD_BITS EQUAL 64)
 	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
 endif()
 
+if(CRYMP_TRACY_ENABLED)
+	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE TRACY_ENABLE)
+endif()
+
+if(CRYMP_CONSOLE_APP)
+	set_target_properties(${CRYMP_CLIENT_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
+endif()
+
 target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
-target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE ThirdParty ThirdParty/Lua/src ThirdParty/miniz)
+target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE
+	ThirdParty
+	ThirdParty/Lua/src
+	ThirdParty/miniz
+	ThirdParty/tracy/public
+)
 
 target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
 

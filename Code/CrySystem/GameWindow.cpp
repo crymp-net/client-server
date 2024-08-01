@@ -1,10 +1,12 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
 #include "CryCommon/CryInput/IInput.h"
 #include "CryGame/Game.h"
 #include "CryGame/Menus/OptionsManager.h"
@@ -19,6 +21,16 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 {
 	switch (msg)
 	{
+		case WM_PAINT:
+		{
+			if (g_pGame)
+			{
+				//Fixes cursor moving outside window (after you alt tab to another window
+				//and click on show desktop, then open crysis window)
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
+			break;
+		}
 		case WM_MOVE:  // 0x3
 		{
 			int x = GET_X_LPARAM(lParam);
@@ -34,6 +46,11 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 			int h = GET_Y_LPARAM(lParam);
 
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, w, h);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
 
 			break;
 		}
@@ -184,7 +201,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_EXITMENULOOP:  // 0x212
 		case WM_EXITSIZEMOVE:  // 0x232
 		{
-			if (g_pGame && !g_pGame->GetMenu())
+			if (g_pGame && !g_pGame->IsMenuActive())
 			{
 				g_pGame->ShowMousePointer(false);
 			}
@@ -198,11 +215,22 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case EVENT_SYSTEM_MENUPOPUPSTART:
 		{
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(false);
+			}
+
 			break;
 		}
 		case EVENT_SYSTEM_MENUPOPUPEND:
 		{
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
+
+			if (g_pGame)
+			{
+				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
+			}
 			break;
 		}
 		default:
@@ -251,6 +279,8 @@ void GameWindow::Init()
 
 bool GameWindow::OnUpdate()
 {
+	ZoneScoped;
+
 	MSG msg;
 
 	if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))

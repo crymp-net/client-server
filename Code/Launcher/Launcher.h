@@ -12,10 +12,12 @@ public:
 		// do not try to unload these DLLs as it might crash
 		void* pCry3DEngine = nullptr;
 		void* pCryAction = nullptr;
+		void* pCryAISystem = nullptr;
 		void* pCryNetwork = nullptr;
 		void* pCrySystem = nullptr;
 		void* pCryRenderD3D9 = nullptr;
 		void* pCryRenderD3D10 = nullptr;
+		void* pFmodEx = nullptr;
 	};
 
 private:

@@ -2,7 +2,7 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CryCore/StlUtils.h"
 
 #include "HUD.h"
@@ -89,7 +89,7 @@ void CHUD::HandleFSCommandPDA(const char *strCommand,const char *strArgs)
 	{
 		if(m_pHUDPowerStruggle)
 		{
-			m_pHUDPowerStruggle->UpdateBuyList(strArgs);
+			m_pHUDPowerStruggle->UpdateBuyList(strArgs, true);
 			HUD_CALL_LISTENERS(OnShowBuyMenuPage(m_pHUDPowerStruggle->m_eCurBuyMenuPage));
 		}
 	}

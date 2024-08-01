@@ -11,7 +11,7 @@ History:
 - 12:12:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "CryGame/StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryGame/Game.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"

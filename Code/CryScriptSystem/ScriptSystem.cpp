@@ -9,8 +9,11 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <tracy/Tracy.hpp>
+
+#include "CryCommon/CryCore/CryMalloc.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CryAISystem/IAISystem.h"
@@ -26,6 +29,7 @@ extern "C"
 
 ScriptSystem::ScriptSystem()
 {
+	m_scripts.reserve(128);
 }
 
 ScriptSystem::~ScriptSystem()
@@ -58,7 +62,8 @@ void *ScriptSystem::Allocate(size_t size)
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	// TODO: optimized memory allocator
-	void *block = malloc(size);
+	void *block = CryMalloc(size);
+	TracyAllocN(block, size, "ScriptSystem");
 
 	// we never fail
 	if (!block)
@@ -74,7 +79,8 @@ void ScriptSystem::Deallocate(void *block)
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
-	free(block);
+	TracyFreeN(block, "ScriptSystem");
+	CryFree(block);
 }
 
 void ScriptSystem::PushAny(const ScriptAnyValue & any)
@@ -440,56 +446,55 @@ void ScriptSystem::SetGCFrequency(const float rate)
 
 bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool forceReload)
 {
-	const std::string scriptName = SanitizeScriptFileName(fileName);
+	const bool isNew = this->AddToScripts(fileName);
 
-	bool isNew = false;
-	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
-
-	if (it == m_scripts.end() || it->name != scriptName)
+	if (forceReload)
 	{
-		isNew = true;
-		it = m_scripts.emplace(it);
-		it->name = scriptName;
-		it->prettyName = fileName;
+		m_nestedForceReload++;
 	}
 
-	if (isNew || forceReload)
+	bool success = true;
+
+	if (isNew || forceReload || m_nestedForceReload > 0)
 	{
-		bool success = false;
-
-		CCryFile file;
-
 		// try to load and execute the script file
-		if (file.Open(fileName, "rb"))
+		if (CryFile file(fileName, "rb"); file)
 		{
 			std::vector<char> content;
 
 			// read script file content
-			content.resize(file.GetLength());
+			content.resize(file.GetSize());
 			content.resize(file.ReadRaw(content.data(), content.size()));
 
 			// use script file path as its description
-			// TODO: maybe use real path from CryPak instead?
 			const char *description = fileName;
 
 			// execute the file
 			success = ExecuteBuffer(content.data(), content.size(), description);
 		}
+		else
+		{
+			success = false;
+		}
 
 		if (!success)
 		{
-			if (raiseError)
+			// always log failed script execution
+			//if (raiseError)
 			{
 				CryLogErrorAlways("[Script] Failed to load %s", fileName);
 			}
 
-			m_scripts.erase(it);
-
-			return false;
+			this->RemoveFromScripts(fileName);
 		}
 	}
 
-	return true;
+	if (forceReload)
+	{
+		m_nestedForceReload--;
+	}
+
+	return success;
 }
 
 bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const char *bufferDescription)
@@ -512,14 +517,7 @@ bool ScriptSystem::ExecuteBuffer(const char *buffer, size_t bufferSize, const ch
 
 void ScriptSystem::UnloadScript(const char *fileName)
 {
-	const std::string scriptName = SanitizeScriptFileName(fileName);
-
-	const auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), scriptName, GetScriptNameCompare());
-
-	if (it != m_scripts.end() && it->name == scriptName)
-	{
-		m_scripts.erase(it);
-	}
+	this->RemoveFromScripts(fileName);
 }
 
 void ScriptSystem::UnloadScripts()
@@ -529,20 +527,18 @@ void ScriptSystem::UnloadScripts()
 
 bool ScriptSystem::ReloadScript(const char *fileName, bool raiseError)
 {
-	const bool forceReload = gEnv->pSystem->IsDevMode();
+	const bool forceReload = false;
 
 	return ExecuteFile(fileName, raiseError, forceReload);
 }
 
 bool ScriptSystem::ReloadScripts()
 {
-	const bool raiseError = true;
-
 	bool status = true;
 
 	for (const Script& script : m_scripts)
 	{
-		if (!ReloadScript(script.prettyName.c_str(), raiseError))
+		if (!ReloadScript(script.prettyName.c_str()))
 		{
 			status = false;
 		}
@@ -580,7 +576,7 @@ int ScriptSystem::BeginCall(HSCRIPTFUNCTION func)
 	lua_getref(m_L, funcHandle);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%d): Function not found", funcHandle);
+		CryLogWarning("ScriptSystem::BeginCall(%d): Not a function", funcHandle);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -597,7 +593,7 @@ int ScriptSystem::BeginCall(const char *funcName)
 	lua_getglobal(m_L, funcName);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s): Function not found", funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -614,7 +610,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Table not found", tableName, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -624,7 +620,7 @@ int ScriptSystem::BeginCall(const char *tableName, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(%s, %s): Function not found", tableName, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(%s.%s): Not a function", tableName, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -645,7 +641,7 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 	lua_remove(m_L, -2);  // remove global table
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarningAlways("ScriptSystem::BeginCall(0x%p, %s): Function not found", pTable, funcName);
+		CryLogWarning("ScriptSystem::BeginCall(0x%p, %s): Not a function", pTable, funcName);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -657,38 +653,33 @@ int ScriptSystem::BeginCall(IScriptTable *pTable, const char *funcName)
 
 bool ScriptSystem::EndCall()
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, 0);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, 0) : false;
 }
 
 bool ScriptSystem::EndCallAny(ScriptAnyValue & any)
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, 1) && PopAny(any);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, 1) && PopAny(any) : false;
 }
 
 bool ScriptSystem::EndCallAnyN(int resultCount, ScriptAnyValue *anys)
 {
-	if (m_funcParamCount >= 0)
-		return LuaCall(m_funcParamCount, resultCount) && PopAnys(anys, resultCount);
-	else
-		return false;
+	return (m_funcParamCount >= 0) ? LuaCall(m_funcParamCount, resultCount) && PopAnys(anys, resultCount) : false;
 }
 
 HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *funcName)
 {
 	lua_getglobal(m_L, funcName);
-	if (lua_isnil(m_L, -1) || !lua_isfunction(m_L, -1))
+	if (!lua_isfunction(m_L, -1))
 	{
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s): Not a function", funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
 
-	return reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	lua_pop(m_L, 1);
+
+	return result;
 }
 
 HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *funcName)
@@ -696,20 +687,24 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *
 	lua_getglobal(m_L, tableName);
 	if (!lua_istable(m_L, -1))
 	{
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s.%s): Not a table", tableName, funcName);
 		lua_pop(m_L, 1);
 		return nullptr;
 	}
 
 	lua_pushstring(m_L, funcName);
 	lua_gettable(m_L, -2);
-	lua_remove(m_L, -2);  // remove global table
-	if (lua_isnil(m_L, -1) || !lua_isfunction(m_L, -1))
+	if (!lua_isfunction(m_L, -1))
 	{
-		lua_pop(m_L, 1);
+		CryLogWarning("ScriptSystem::GetFunctionPtr(%s.%s): Not a function", tableName, funcName);
+		lua_pop(m_L, 2);
 		return nullptr;
 	}
 
-	return reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	lua_pop(m_L, 2);
+
+	return result;
 }
 
 void ScriptSystem::ReleaseFunc(HSCRIPTFUNCTION func)
@@ -731,14 +726,117 @@ void ScriptSystem::PushFuncParamAny(const ScriptAnyValue & any)
 
 void ScriptSystem::SetGlobalAny(const char *key, const ScriptAnyValue & any)
 {
-	PushAny(any);
-	lua_setglobal(m_L, key);
+	const size_t key_length = strlen(key);
+
+	char key_buffer[256];
+	if (key_length >= sizeof(key_buffer))
+	{
+		CryLogError("ScriptSystem::SetGlobalAny(%s): Too long key", key);
+		return;
+	}
+
+	memcpy(key_buffer, key, key_length + 1);
+	char* current_key = key_buffer;
+
+	bool success = false;
+	bool is_nested = false;
+	ScriptAnyValue nested_any;
+	for (; char* dot = strchr(current_key, '.'); current_key = dot + 1)
+	{
+		*dot = '\0';
+
+		if (!is_nested)
+		{
+			is_nested = true;
+			lua_getglobal(m_L, current_key);
+			success = PopAny(nested_any);
+		}
+		else
+		{
+			ScriptAnyValue temp;
+			success = nested_any.table->GetValueAny(current_key, temp);
+			nested_any.Swap(temp);
+		}
+
+		if (!success || nested_any.type != ANY_TTABLE)
+		{
+			CryLogWarning("ScriptSystem::SetGlobalAny(%s): %s is not a table", key, current_key);
+			return;
+		}
+	}
+
+	if (is_nested)
+	{
+		nested_any.table->SetValueAny(current_key, any);
+	}
+	else
+	{
+		PushAny(any);
+		lua_setglobal(m_L, current_key);
+	}
 }
 
 bool ScriptSystem::GetGlobalAny(const char *key, ScriptAnyValue & any)
 {
-	lua_getglobal(m_L, key);
-	return PopAny(any);
+	const size_t key_length = strlen(key);
+
+	char key_buffer[256];
+	if (key_length >= sizeof(key_buffer))
+	{
+		CryLogError("ScriptSystem::GetGlobalAny(%s): Too long key", key);
+		return false;
+	}
+
+	memcpy(key_buffer, key, key_length + 1);
+	char* current_key = key_buffer;
+
+	bool success = false;
+	bool is_nested = false;
+	ScriptAnyValue nested_any;
+	for (; char* dot = strchr(current_key, '.'); current_key = dot + 1)
+	{
+		*dot = '\0';
+
+		if (!is_nested)
+		{
+			is_nested = true;
+			lua_getglobal(m_L, current_key);
+			success = PopAny(nested_any);
+		}
+		else
+		{
+			ScriptAnyValue temp;
+			success = nested_any.table->GetValueAny(current_key, temp);
+			nested_any.Swap(temp);
+		}
+
+		if (!success || nested_any.type != ANY_TTABLE)
+		{
+			CryLogWarning("ScriptSystem::GetGlobalAny(%s): %s is not a table", key, current_key);
+			return false;
+		}
+	}
+
+	if (is_nested)
+	{
+		success = nested_any.table->GetValueAny(current_key, any);
+	}
+	else
+	{
+		lua_getglobal(m_L, current_key);
+		success = PopAny(any);
+	}
+
+	if (!success)
+	{
+		CryLogWarning("ScriptSystem::GetGlobalAny(%s): Failed", key);
+	}
+	else if (any.type == ANY_TNIL)
+	{
+		CryLogWarning("ScriptSystem::GetGlobalAny(%s): Nil value", key);
+	}
+
+	return success;
 }
 
 void ScriptSystem::SetGlobalToNull(const char *key)
@@ -886,7 +984,7 @@ bool ScriptSystem::LuaCall(int paramCount, int resultCount)
 	return (status == 0);
 }
 
-std::string ScriptSystem::SanitizeScriptFileName(const char *fileName)
+static std::string SanitizeScriptFileName(const char *fileName)
 {
 	std::string result;
 
@@ -901,15 +999,45 @@ std::string ScriptSystem::SanitizeScriptFileName(const char *fileName)
 				// convert backslashes to normal slashes
 				ch = '/';
 			}
-			else if (ch >= 'A' && ch <= 'Z')
-			{
-				// convert to lowercase
-				ch += ('a' - 'A');
-			}
+
+			// convert to lowercase
+			ch |= (ch >= 'A' && ch <= 'Z') << 5;
 		}
 	}
 
 	return result;
+}
+
+bool ScriptSystem::AddToScripts(const char *fileName)
+{
+	const std::string sanitizedName = SanitizeScriptFileName(fileName);
+
+	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), sanitizedName);
+	if (it != m_scripts.end() && it->sanitizedName == sanitizedName)
+	{
+		return false;
+	}
+
+	it = m_scripts.emplace(it);
+	it->sanitizedName = sanitizedName;
+	it->prettyName = fileName;
+
+	return true;
+}
+
+bool ScriptSystem::RemoveFromScripts(const char *fileName)
+{
+	const std::string sanitizedName = SanitizeScriptFileName(fileName);
+
+	auto it = std::lower_bound(m_scripts.begin(), m_scripts.end(), sanitizedName);
+	if (it == m_scripts.end() || it->sanitizedName != sanitizedName)
+	{
+		return false;
+	}
+
+	m_scripts.erase(it);
+
+	return true;
 }
 
 int ScriptSystem::ErrorHandler(lua_State *L)
@@ -944,33 +1072,29 @@ int ScriptSystem::PanicHandler(lua_State *L)
 	return 0;
 }
 
-void *ScriptSystem::LuaAllocator(void *userData, void *originalBlock, size_t originalSize, size_t newSize)
+void* ScriptSystem::LuaAllocator(void* userData, void* originalBlock, size_t originalSize, size_t newSize)
 {
 	ScriptSystem *self = static_cast<ScriptSystem*>(userData);
 
-	if (newSize)
-	{
-		if (newSize <= originalSize)
-		{
-			return originalBlock;
-		}
-		else
-		{
-			// always succeeds
-			void *newBlock = self->Allocate(newSize);
-
-			if (originalSize > 0)
-				memcpy(newBlock, originalBlock, originalSize);
-
-			return newBlock;
-		}
-	}
-	else
+	if (!newSize)
 	{
 		self->Deallocate(originalBlock);
-
 		return nullptr;
 	}
+
+	if (newSize <= originalSize)
+	{
+		return originalBlock;
+	}
+
+	// always succeeds
+	void *newBlock = self->Allocate(newSize);
+
+	memcpy(newBlock, originalBlock, originalSize);
+
+	self->Deallocate(originalBlock);
+
+	return newBlock;
 }
 
 void ScriptSystem::OnDumpStateCmd(IConsoleCmdArgs *pArgs)
