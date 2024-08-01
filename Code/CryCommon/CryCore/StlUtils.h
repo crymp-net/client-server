@@ -19,7 +19,7 @@
 #include <map>
 #include <vector>
 
-#include "platform.h"
+#include "platform.h"  // string
 
 // auto-cleaner: upon destruction, calls the clear() method
 template <class T>
