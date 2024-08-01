@@ -19,12 +19,8 @@ History:
 
 //------------------------------------------------------------------------
 CItemScheduler::CItemScheduler(CItem *item)
-: m_busy(false),
-	m_pTimer(0),
-	m_pItem(item),
-	m_locked(false)
+: m_pItem(item)
 {
-	m_pTimer = gEnv->pTimer;
 }
 
 //------------------------------------------------------------------------
@@ -36,32 +32,40 @@ CItemScheduler::~CItemScheduler()
 //------------------------------------------------------------------------
 void CItemScheduler::Reset(bool keepPersistent)
 {
-	for (TTimerActionVector::iterator it = m_timers.begin(); it != m_timers.end();)
-	{
-		if (!it->persist || !keepPersistent)
-		{
-			it->action->destroy();
-			it = m_timers.erase(it);
-		}
-		else
-			it++;
-	}
+	m_timers.erase(
+		std::remove_if(m_timers.begin(), m_timers.end(),
+			[keepPersistent](auto& timer) 
+			{
+				if (!timer.persist || !keepPersistent) 
+				{
+					timer.action->destroy();
+					return true;
+				}
+				return false;
+			}),
+		m_timers.end()
+	);
 
-	for (TScheduledActionVector::iterator it = m_schedule.begin(); it != m_schedule.end();)
-	{
-		if (!it->persist || !keepPersistent)
-		{
-			it->action->destroy();
-			it = m_schedule.erase(it);
-		}
-		else
-			it++;
-	}
+	m_schedule.erase(
+		std::remove_if(m_schedule.begin(), m_schedule.end(),
+			[keepPersistent](auto& scheduled) 
+			{
+				if (!scheduled.persist || !keepPersistent)
+				{
+					scheduled.action->destroy();
+					return true;
+				}
+				return false;
+			}),
+		m_schedule.end()
+	);
 
 	if (m_timers.empty() && m_schedule.empty())
+	{
 		m_pItem->EnableUpdate(false, eIUS_Scheduler);
+	}
 
-  SetBusy(false);
+	SetBusy(false);
 }
 
 //------------------------------------------------------------------------
@@ -75,7 +79,7 @@ void CItemScheduler::Update(float frameTime)
 		while(!m_schedule.empty() && !m_busy)
 		{
 			SScheduledAction &action = *m_schedule.begin();
-			ISchedulerAction *pAction= action.action;
+			ISchedulerAction *pAction = action.action;
 			m_schedule.erase(m_schedule.begin());
 
 			pAction->execute(m_pItem);
@@ -88,14 +92,14 @@ void CItemScheduler::Update(float frameTime)
 		unsigned int count=0;
 		m_actives.swap(m_timers);
 
-		for (TTimerActionVector::iterator it = m_actives.begin(); it != m_actives.end(); it++)
+		for (auto &active : m_actives)
 		{
-			STimerAction &action = *it;
-			action.time -= frameTime;
-			if (action.time <= 0.0f)
+			ISchedulerAction* pAction = active.action;
+			active.time -= frameTime;
+			if (active.time <= 0.0f)
 			{
-				action.action->execute(m_pItem);
-				action.action->destroy();
+				pAction->execute(m_pItem);
+				pAction->destroy();
 				++count;
 			}
 		}
@@ -105,8 +109,8 @@ void CItemScheduler::Update(float frameTime)
 
 		if (!m_timers.empty())
 		{
-			for (TTimerActionVector::iterator it=m_timers.begin(); it!=m_timers.end(); ++it)
-				m_actives.push_back(*it);
+			for (const auto &timer : m_timers) 
+				m_actives.push_back(timer);
 
 			std::sort(m_actives.begin(), m_actives.end(), compare_timers());
 		}
@@ -141,20 +145,44 @@ void CItemScheduler::ScheduleAction(ISchedulerAction *action, bool persistent)
 }
 
 //------------------------------------------------------------------------
-void CItemScheduler::TimerAction(unsigned int time, ISchedulerAction *action, bool persistent)
+unsigned int CItemScheduler::TimerAction(unsigned int time, ISchedulerAction *action, bool persistent)
 {
 	if (m_locked)
-		return;
+		return 0;
 
 	STimerAction timerAction;
 	timerAction.action = action;
 	timerAction.time = (float)time/1000.0f;
 	timerAction.persist = persistent;
 
+	++m_timerIdGen;
+	if (m_timerIdGen > 1000)
+		m_timerIdGen = 1;
+
+	timerAction.id = m_timerIdGen;
+
 	m_timers.push_back(timerAction);
 	std::sort(m_timers.begin(), m_timers.end(), compare_timers());
 
 	m_pItem->EnableUpdate(true, eIUS_Scheduler);
+
+	return timerAction.id;
+}
+
+//------------------------------------------------------------------------
+void CItemScheduler::KillTimer(unsigned int timerId)
+{
+	std::erase_if(m_timers,
+		[timerId](auto& timer)
+		{
+			if (timer.id == timerId)
+			{
+				timer.action->destroy();
+				return true;
+			}
+			return false;
+		}
+	);
 }
 
 //------------------------------------------------------------------------

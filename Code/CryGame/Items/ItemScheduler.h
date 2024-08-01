@@ -54,7 +54,10 @@ public:
 		return new (m_alloc.Allocate()) CSchedulerAction(from);
 	}
 
-	void execute(CItem * _this) { m_impl.execute(_this); }
+	void execute(CItem * _this) 
+	{ 
+		m_impl.execute(_this); 
+	}
 	void destroy() 
 	{ 
 		this->~CSchedulerAction();
@@ -67,7 +70,9 @@ private:
 
 	CSchedulerAction() {}
 	CSchedulerAction( const T& from ) : m_impl(from) {}
-	~CSchedulerAction() {}
+	~CSchedulerAction() 
+	{
+	}
 };
 
 template <class T>
@@ -78,14 +83,15 @@ class CItemScheduler
 {
 	struct SScheduledAction
 	{
-		ISchedulerAction	*action;
-		bool							persist;
+		ISchedulerAction* action = nullptr;
+		bool persist = false;
 	};
 	struct STimerAction
 	{
-		ISchedulerAction	*action;
-		float							time;
-		bool							persist;
+		ISchedulerAction* action = nullptr;
+		float time = 0.0f;
+		bool persist = false;
+		int id = 0;
 	};
 
 	typedef std::vector<STimerAction>									TTimerActionVector;
@@ -104,7 +110,8 @@ public:
 	virtual ~CItemScheduler();
 	void Reset(bool keepPersistent=false);
 	void Update(float frameTime);
-	void TimerAction(unsigned int time, ISchedulerAction *action, bool persistent=false);
+	unsigned int TimerAction(unsigned int time, ISchedulerAction *action, bool persistent=false);
+	void KillTimer(unsigned int timerId);
 	void ScheduleAction(ISchedulerAction *action, bool persistent=false);
 	void GetMemoryStatistics(ICrySizer * s);
 
@@ -115,10 +122,12 @@ public:
 	bool IsLocked();
 
 private:
-	bool				m_locked;
-	bool				m_busy;
-	ITimer			*m_pTimer;
-	CItem				*m_pItem;
+	bool m_locked = false;
+	bool m_busy = false;
+	ITimer* m_pTimer = gEnv->pTimer;
+	CItem* m_pItem = nullptr;
+
+	int m_timerIdGen = 0;
 
 	TTimerActionVector				m_timers;
 	TTimerActionVector				m_actives;
