@@ -47,6 +47,7 @@ public:
 	virtual void Activate(bool activate);
 
 	void StartTimers();
+	void KillTimers();
 
 	void ShowFlashAnimation(bool enable);
 
@@ -195,6 +196,9 @@ protected:
 
 	float m_fPulse = 0.0f;
 	bool m_rTop = false;
+	unsigned int m_delayTimerId = 0;
+	unsigned int m_durationTimerId = 0;
+	unsigned int m_scanTimerId = 0;
 
 public:
 

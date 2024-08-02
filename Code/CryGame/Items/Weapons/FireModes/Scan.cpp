@@ -77,9 +77,9 @@ const char *CScan::GetType() const
 //------------------------------------------------------------------------
 void CScan::Activate(bool activate)
 {
-	m_scanning=false;
+	m_scanning = false;
 
-	m_pWeapon->GetScheduler()->Reset(); //reset timers here
+	KillTimers();
 
 	if (m_scanLoopId != INVALID_SOUNDID)
 	{
@@ -152,11 +152,19 @@ struct CScan::DurationTimer
 //------------------------------------------------------------------------
 void CScan::StartTimers()
 {
-	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.tagDelay * 1000.f), 
+	m_delayTimerId = m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.tagDelay * 1000.f),
 		CSchedulerAction<TagEntitiesDelay>::Create(this), false);
 
-	m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.duration * 1000.f), 
+	m_durationTimerId = m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.duration * 1000.f),
 		CSchedulerAction<DurationTimer>::Create(this), false);
+}
+
+//------------------------------------------------------------------------
+void CScan::KillTimers()
+{
+	m_pWeapon->GetScheduler()->KillTimer(m_delayTimerId);
+	m_pWeapon->GetScheduler()->KillTimer(m_durationTimerId);
+	m_pWeapon->GetScheduler()->KillTimer(m_scanTimerId);
 }
 
 //------------------------------------------------------------------------
@@ -211,7 +219,7 @@ void CScan::StartFire()
 			{
 				ShowFlashAnimation(true);
 
-				m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.delay * 1000.f), 
+				m_scanTimerId = m_pWeapon->GetScheduler()->TimerAction(static_cast<uint32>(m_scanparams.delay * 1000.f),
 					CSchedulerAction<DelayTimer>::Create(this), false);
 			}
 
@@ -237,7 +245,7 @@ void CScan::StopFire()
 	m_pWeapon->SetBusy(false);
 	m_pWeapon->RequestStopFire();
 
-	m_pWeapon->GetScheduler()->Reset();
+	KillTimers();
 
 	if (m_scanLoopId != INVALID_SOUNDID)
 	{
