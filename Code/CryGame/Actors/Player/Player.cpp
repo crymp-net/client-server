@@ -732,6 +732,15 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	if (pEnt->IsHidden() && !(GetEntity()->GetFlags() & ENTITY_FLAG_UPDATE_HIDDEN))
 		return;
 
+	const float frameTime = ctx.fFrameTime;
+
+	if (IsClient())
+	{
+		UpdateScreenFrost();
+		UpdateScreenEffects(frameTime);
+		UpdateDraw(); 
+	}
+
 	if (gEnv->bServer && !IsClient() && IsPlayer())
 	{
 		if (INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(GetChannelId()))
@@ -803,8 +812,6 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	}
 
 	CActor::Update(ctx, updateSlot);
-
-	const float frameTime = ctx.fFrameTime;
 
 	bool client(IsClient() || IsFpSpectatorTarget()); //CryMP FP Spec
 
@@ -7465,4 +7472,441 @@ void CPlayer::SetPainEffect(float progress /* = 0.0f */)
 		pEngine->SetPostEffectParam("ScreenCondensation_CenterAmount", 1.0f);
 	}
 
+}
+
+void CPlayer::UpdateDraw()
+{
+	 const std::vector<std::string> deadAttachments = { "head", "helmet" };
+	// AI or third person, show all
+	if (m_stats.isHidden || GetSpectatorMode() != 0)
+	{
+		DrawSlot(0, 0);
+	}
+	else if (!IsClient() || IsThirdPerson() || m_stats.isOnLadder)
+	{
+		DrawSlot(0, 1);
+		// Show all
+		HideAllAttachments(0, false, false);
+		// Hide head if we are on a ladder and third person is not set
+		if (IsClient() && m_stats.isOnLadder && !IsThirdPerson())
+		{
+			for (const auto& attachment : deadAttachments)
+			{
+				HideAttachment(0, attachment.c_str(), true, false);
+			}
+		}
+	}
+	else
+	{
+		const bool ghostPit = IsGhostPit();
+
+		if (m_hideActor)
+		{
+			DrawSlot(0, 0);
+		}
+		else if (m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))
+		{
+			DrawSlot(0, 1);
+			// First show all
+			HideAllAttachments(0, false, false);
+			// Then hide the necessary
+			for (const auto& attachment : deadAttachments)
+			{
+				HideAttachment(0, attachment.c_str(), true, false);
+			}
+		}
+		else if ((m_stats.firstPersonBody > 0) && !ghostPit)
+		{
+			const int draw = IsFp3pModel();
+			DrawSlot(0, draw);
+			// Hide attachments for the body first person model
+			HideAllAttachments(0, true, false);
+		}
+		else
+		{
+			DrawSlot(0, 0);
+		}
+	}
+}
+
+void CPlayer::UpdateScreenFrost()
+{
+	// Get the frozen amount
+	const float frozenAmount = GetFrozenAmount();
+	// Determine if we should apply frost
+	bool doFrost = m_stats.isFrozen || (frozenAmount > 0.05f && !gEnv->bMultiplayer);
+	bool isClient = IsClient();
+
+	if (doFrost && frozenAmount < 1.0f)
+	{
+		if (gEnv->bMultiplayer)
+		{
+			doFrost = false;
+		}
+	}
+
+	if (doFrost)
+	{
+		if (m_stats.isFrozen)
+		{
+			m_params.speedMultiplier = 1.0f - frozenAmount;
+		}
+
+		if (isClient)
+		{
+			// Set screen effects for frost
+			gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_CenterAmount", 1.0f);
+			gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_Amount", std::min(1.0f, 1.5f * frozenAmount));
+		}
+	}
+	else if (isClient && m_prevFrozenAmount > 0.1f && frozenAmount <= 0.1f)
+	{
+		// Clear screen effects for frost
+		gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_CenterAmount", 0.0f);
+		gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_Amount", 0.0f);
+	}
+
+	// Update previous frozen amount
+	m_prevFrozenAmount = frozenAmount;
+}
+
+void CPlayer::UpdateScreenEffects(float frameTime)
+{
+	// Temperature camo effect
+	float frostScale = 1.0f;
+	if (!m_camoState)
+		frostScale = -1.0f;
+
+	if (m_camoFading)
+	{
+		float curFrost = 0.0f;
+		gEnv->p3DEngine->GetPostEffectParam("ScreenFrost_Amount", curFrost);
+
+		const float maxFrost = 0.5f;
+		const float frostRate = maxFrost / 2.0f * frostScale;
+		const float frostDelta = frostRate * frameTime;
+		curFrost += frostDelta;
+		curFrost = std::clamp(curFrost, 0.0f, 1.0f);
+
+		if (curFrost <= 0.01f)
+			curFrost = 0.0f;
+
+		gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_Amount", curFrost);
+		gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_CenterAmount", 1.0f - curFrost);
+
+		if (curFrost == 0.0f || curFrost == 1.0f)
+		{
+			m_camoFading = false;
+			if (curFrost == 0.0f)
+				gEnv->p3DEngine->SetPostEffectParam("ScreenFrost_Amount", 0.0f);
+		}
+	}
+
+	m_blurType = gEnv->pConsole->GetCVar("cl_motionBlur")->GetIVal();
+
+	float speed = m_stats.speedFlat;
+	float minSpeed = GetStanceInfo(STANCE_STAND)->maxSpeed;
+
+	float viewBlur = m_viewBlur;
+	viewBlur = max(0.0f, viewBlur - frameTime);
+	m_viewBlur = viewBlur;
+
+	if (viewBlur > 0.001f)
+	{
+		float blurAmount = m_viewBlurAmt;
+		SetMotionFxMask(nullptr);
+		SetMotionFxAmount(blurAmount, 2.5f);
+	}
+	else if (m_stats.onGround > 0.1f && speed > minSpeed)
+	{
+		float maxSpeed = minSpeed * m_params.sprintMultiplier;
+		float blurAmount = (speed - minSpeed) / (maxSpeed - minSpeed) * gEnv->pConsole->GetCVar("cl_sprintBlur")->GetFVal();
+		SetMotionFxMask("textures/player/motionblur_mask.dds");
+		SetMotionFxAmount(blurAmount, 2.5f);
+	}
+	else
+	{
+		SetMotionFxAmount(0.0f, 4.0f);
+	}
+
+	UpdateDofFx(frameTime);
+	UpdateMotionFx(frameTime);
+}
+
+void CPlayer::SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed)
+{
+	if (speed > 0.0f)
+	{
+		m_dof_distance_speed = speed;
+		m_target_dof_min = focusmin;
+		m_target_dof_max = focusmax;
+		m_target_dof_lim = focuslim;
+	}
+	else
+	{
+		m_dof_distance_speed = 0.0f;
+		m_current_dof_min = focusmin;
+		m_current_dof_max = focusmax;
+		m_current_dof_lim = focuslim;
+		m_target_dof_min = focusmin;
+		m_target_dof_max = focusmax;
+		m_target_dof_lim = focuslim;
+		gEnv->p3DEngine->SetPostEffectParam("Dof_FocusRange", -1);
+		gEnv->p3DEngine->SetPostEffectParam("Dof_FocusMin", focusmin);
+		gEnv->p3DEngine->SetPostEffectParam("Dof_FocusMax", focusmax);
+		gEnv->p3DEngine->SetPostEffectParam("Dof_FocusLimit", focuslim);
+	}
+}
+
+void CPlayer::SetDofFxMask(const char* texName)
+{
+	if (texName)
+	{
+		gEnv->p3DEngine->SetPostEffectParam("Dof_UseMask", 1);
+		gEnv->p3DEngine->SetPostEffectParamString("Dof_MaskTexName", texName);
+	}
+	else
+	{
+		gEnv->p3DEngine->SetPostEffectParam("Dof_UseMask", 0);
+	}
+}
+
+void CPlayer::SetDofFxAmount(float amount, float speed)
+{
+	if (speed > 0.0f)
+	{
+		m_dof_amount_speed = speed;
+		m_target_dof_amount = amount;
+	}
+	else
+	{
+		m_dof_amount_speed = 0.0f;
+		m_current_dof_amount = amount;
+		m_target_dof_amount = amount;
+	}
+
+	gEnv->p3DEngine->SetPostEffectParam("Dof_BlurAmount", amount);
+
+	if (amount <= 0.075f)
+	{
+		gEnv->p3DEngine->SetPostEffectParam("Dof_Active", 0);
+	}
+	else
+	{
+		gEnv->p3DEngine->SetPostEffectParam("Dof_Active", 1);
+	}
+}
+
+void CPlayer::ResetDofFx(float speed)
+{
+	if (speed)
+	{
+		m_dof_amount_speed = speed;
+		m_dof_distance_speed = speed;
+		m_target_dof_min = 0.0f;
+		m_target_dof_max = 2000;
+		m_target_dof_lim = 2500;
+		m_target_dof_amount = 0.0f;
+	}
+	else
+	{
+		m_dof_amount_speed = 0.0f;
+		m_dof_distance_speed = 0.0f;
+		m_target_dof_min = 0.0f;
+		m_target_dof_max = 2000.f;
+		m_target_dof_lim = 2500.f;
+		m_target_dof_amount = 0.0f;
+		m_current_dof_min = 0.0f;
+		m_current_dof_max = 2000.0f;
+		m_current_dof_lim = 2500.0f;
+		m_current_dof_amount = 0.0f;
+
+		SetDofFxLimits(m_current_dof_min, m_current_dof_max, m_current_dof_lim);
+		SetDofFxAmount(0.0f);
+	}
+}
+
+void CPlayer::UpdateDofFx(float frameTime)
+{
+	if (m_dof_amount_speed <= 0.0f)
+	{
+		ResetDofFx();
+	}
+
+	// Update dof amount
+	float curr_dof_amt = m_current_dof_amount;
+	float target_dof_amt = m_target_dof_amount;
+
+	if (curr_dof_amt != target_dof_amt)
+	{
+		m_current_dof_amount = DofInterpolate(curr_dof_amt, target_dof_amt, m_dof_amount_speed, frameTime);
+		SetDofFxAmount(m_current_dof_amount);
+	}
+
+	// Update dof distances
+	bool changelimits = false;
+
+	float curr_dof_min = m_current_dof_min;
+	float target_dof_min = m_target_dof_min;
+
+	float curr_dof_max = m_current_dof_max;
+	float target_dof_max = m_target_dof_max;
+
+	float curr_dof_lim = m_current_dof_lim;
+	float target_dof_lim = m_target_dof_lim;
+
+	if (curr_dof_min != target_dof_min)
+	{
+		m_current_dof_min = DofInterpolate(curr_dof_min, target_dof_min, m_dof_distance_speed, frameTime);
+		changelimits = true;
+	}
+
+	if (curr_dof_max != target_dof_max)
+	{
+		m_current_dof_max = DofInterpolate(curr_dof_max, target_dof_max, m_dof_distance_speed, frameTime);
+		changelimits = true;
+	}
+
+	if (curr_dof_lim != target_dof_lim)
+	{
+		m_current_dof_lim = DofInterpolate(curr_dof_lim, target_dof_lim, m_dof_distance_speed, frameTime);
+		changelimits = true;
+	}
+
+	if (changelimits)
+	{
+		SetDofFxLimits(m_current_dof_min, m_current_dof_max, m_current_dof_lim);
+	}
+}
+
+void CPlayer::SetMotionFxAmount(float amount, float speed)
+{
+	if (m_blurType == 0)
+	{
+		gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Active", 0);
+	}
+
+	// Accumulation based
+	if (m_blurType == 1)
+	{
+		gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Type", 0);
+		if (speed > 0)
+		{
+			m_mblur_amount_speed = speed;
+			m_target_mblur_amount = amount;
+		}
+		else
+		{
+			m_mblur_amount_speed = 0;
+			m_current_mblur_amount = amount;
+			m_target_mblur_amount = amount;
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Amount", amount);
+		}
+
+		if (amount < 0.075f)
+		{
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Active", 0);
+		}
+		else
+		{
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Active", 1);
+		}
+	}
+
+	// Velocity based
+	if (m_blurType == 2)
+	{
+		amount = std::clamp(amount, 0.0f, 1.0f);
+		amount *= amount;
+		gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Type", 1);
+		gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Quality", 2);
+
+		if (speed > 0.0f)
+		{
+			m_mblur_amount_speed = speed;
+			m_target_mblur_amount = amount;
+		}
+		else
+		{
+			m_mblur_amount_speed = 0.0f;
+			m_current_mblur_amount = amount;
+			m_target_mblur_amount = amount;
+
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_CameraSphereScale", 2.0f * amount);
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_VectorsScale", 1.5f * amount);
+		}
+	}
+}
+
+void CPlayer::SetMotionFxMask(const char* texName)
+{
+	if (m_blurType == 1)
+	{
+		if (texName)
+		{
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_UseMask", 1);
+			gEnv->p3DEngine->SetPostEffectParamString("MotionBlur_MaskTexName", texName);
+		}
+		else
+		{
+			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_UseMask", 0);
+		}
+	}
+}
+
+void CPlayer::ResetMotionFx()
+{
+	m_viewBlur = 0.0f;
+	m_viewBlurAmt = 0.0f;
+
+	m_mblur_amount_speed = 0.0f;
+	m_target_mblur_amount = 0.0f;
+	m_current_mblur_amount = 0.0f;
+	SetMotionFxAmount(0.0f);
+	gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Active", 0);
+}
+
+void CPlayer::UpdateMotionFx(float frameTime)
+{
+	if (m_mblur_amount_speed <= 0.0f)
+	{
+		ResetMotionFx();
+	}
+
+	// Update motion blur amount
+	float curr_mblur_amt = m_current_mblur_amount;
+	float target_mblur_amt = m_target_mblur_amount;
+
+	if (curr_mblur_amt != target_mblur_amt)
+	{
+		m_current_mblur_amount = MBlurInterpolate(curr_mblur_amt, target_mblur_amt, m_mblur_amount_speed, frameTime);
+		SetMotionFxAmount(m_current_mblur_amount);
+	}
+}
+
+// Helper functions for interpolation
+float CPlayer::DofInterpolate(float curr, float target, float speed, float frameTime)
+{
+	float dt = target - curr;
+	if (fabs(dt) > 0.005f)
+	{
+		return curr + min(frameTime * speed, 1.0f) * dt;
+	}
+	else
+	{
+		return target;
+	}
+}
+
+float CPlayer::MBlurInterpolate(float curr, float target, float speed, float frameTime)
+{
+	float dt = target - curr;
+	if (fabs(dt) > 0.005f)
+	{
+		return curr + min(frameTime * speed, 1.0f) * dt;
+	}
+	else
+	{
+		return target;
+	}
 }

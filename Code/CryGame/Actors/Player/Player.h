@@ -887,10 +887,11 @@ public:
 //CryMP 
 //////////////////////////////////////////////////////////////////////////////////
 
-protected:
+private:
 
 	float m_tpLeanOffset = 0.0f;
 	float m_tpProneOffset = 0.0f;
+	float m_prevFrozenAmount = 0.0f;
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
@@ -901,6 +902,49 @@ protected:
 	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
 
 	PlayerView m_PlayerView = PlayerView(*this);
+
+	void UpdateDraw();
+	void UpdateScreenFrost();
+	void UpdateScreenEffects(float frameTime);
+	void SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed = 0);
+	void SetDofFxMask(const char* texName);
+	void SetDofFxAmount(float amount, float speed = 0);
+	void ResetDofFx(float speed = 0);
+	void UpdateDofFx(float frameTime);
+	void SetMotionFxAmount(float amount, float speed = 0);
+	void SetMotionFxMask(const char* texName);
+	void ResetMotionFx();
+	void UpdateMotionFx(float frameTime);
+
+	float DofInterpolate(float curr, float target, float speed, float frameTime);
+	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
+
+	// Member variables
+	bool m_camoState = false;
+	bool m_camoFading = false;
+
+	float m_viewBlur = 0.0f;
+	float m_viewBlurAmt = 0.0f;
+
+	int m_blurType = 0;
+
+	// Depth of Field (DoF) related variables
+	float m_dof_amount_speed = 0.0f;
+	float m_dof_distance_speed = 0.0f;
+	float m_target_dof_min = 0.0f;
+	float m_target_dof_max = 2000.0f;
+	float m_target_dof_lim = 2500.0f;
+	float m_target_dof_amount = 0.0f;
+	float m_current_dof_min = 0.0f;
+	float m_current_dof_max = 2000.0f;
+	float m_current_dof_lim = 2500.0f;
+	float m_current_dof_amount = 0.0f;
+
+	// Motion Blur related variables
+	float m_mblur_amount_speed = 0.0f;
+	float m_target_mblur_amount = 0.0f;
+	float m_current_mblur_amount = 0.0f;
+
 
 public:
 
