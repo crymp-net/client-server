@@ -283,12 +283,13 @@ function Player:UpdateSounds(frameTime)
 	self:UpdateAISounds(frameTime);
 end
 
+--[[
 function Player.Client:OnUpdate(frameTime)
 	BasicActor.Client.OnUpdate(self,frameTime);
 	--if (self.inventory) then
 		--self.inventory:Validate();
 	--end
-	
+	  System.LogAlways(self:GetName().." Player.Client:OnUpdate");
 	local item = self.inventory:GetCurrentItem();
 	if (item) then
 		if (self.hide_fp_item or self:IsHidden()) then
@@ -302,6 +303,7 @@ function Player.Client:OnUpdate(frameTime)
 	--FIXME:move to c++	
 	self:UpdateDraw();
 end
+]]
 
 function Player.Server:OnUpdate(frameTime)
 	BasicActor.Server.OnUpdate(self,frameTime);

@@ -1094,7 +1094,7 @@ function BasicActor:ShutDown()
 	--self:DestroyAttachment(0,"mouth");
 end
 
-
+--[[
 function BasicActor.Client:OnUpdate(frameTime)
   
   -- update screen frost. 
@@ -1126,8 +1126,10 @@ function BasicActor.Client:OnUpdate(frameTime)
 	end
 	
 	self.prevFrozenAmount = frozenAmount;
+	
+	System.LogAlways("BasicActor.Client OnUpdate "..self:GetName());
 end
-
+]]
 
 function BasicActor.Server:OnUpdate(frameTime)
 	if (not self:IsDead()) then
