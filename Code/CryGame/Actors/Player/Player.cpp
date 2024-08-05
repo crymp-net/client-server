@@ -3634,6 +3634,8 @@ void CPlayer::EnableThirdPerson(bool enable)
 		GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) & (~ENTITY_SLOT_RENDER));
 		m_stats.isHidden = true;
 	}
+	
+	ResetOpacity(); 
 }
 
 void CPlayer::CheckCurrentWeapon(bool thirdperson)
@@ -3641,13 +3643,6 @@ void CPlayer::CheckCurrentWeapon(bool thirdperson)
 	CWeapon* pWeapon = GetCurrentWeapon(false);
 	if (pWeapon)
 	{
-		//CryMP: Reset Hurricane model
-		if (!thirdperson && pWeapon->GetEntity()->GetClass() == CItem::sHurricaneClass)
-		{
-			pWeapon->Select(false);
-			pWeapon->Select(true);
-		}
-
 		//Update player model for Shitens etc
 		if (pWeapon->IsUsed())
 		{

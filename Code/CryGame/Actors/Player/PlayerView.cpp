@@ -565,10 +565,18 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 	if (pRenderProxy)
 	{
-		m_player.m_targetOpacity = std::min(1.0f, m_ColDistance-0.2f);
+		if (m_ColDistance < 1.0f)
+		{
+			m_player.m_targetOpacity = std::clamp(m_player.m_targetOpacity, 0.0f, 0.3f); //0.3 -> 1.0 flickers too much
+		}
+		else
+		{
+			m_player.m_targetOpacity = m_player.m_smoothedOpacity = 1.0f;
+		}
+
 		Interpolate(m_player.m_smoothedOpacity, m_player.m_targetOpacity, 5.f, deltaTime);
 
-		pRenderProxy->SetOpacity(m_player.m_targetOpacity);
+		pRenderProxy->SetOpacity(m_player.m_smoothedOpacity);
 	}
 
 	Vec3 customOrigin = origin;
