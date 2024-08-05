@@ -77,6 +77,7 @@ private:
 	Matrix33 m_headMtxLocal = Matrix33(IDENTITY);
 	IVehicle *m_pVehicle = nullptr;
 	ICharacterInstance *m_pCharacter = nullptr;
+	float m_fastCameraCorrectionMode = 0.0f;
 
 protected:
 
@@ -99,6 +100,10 @@ protected:
 	void ViewExternalControlPostProcess(SViewParams &viewParams);
 	public:
 	void FirstPersonWeaponPostProcess(SViewParams &viewParams);
+	void SetFastCameraCorrectionMode(float seconds)
+	{
+		m_fastCameraCorrectionMode = seconds;
+	}
 	protected:
 	void ViewShakePostProcess(SViewParams &viewParams);
 	void HandsPostProcess(SViewParams &viewParams);
