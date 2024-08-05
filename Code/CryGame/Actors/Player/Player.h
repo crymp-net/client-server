@@ -543,7 +543,8 @@ public:
 	//stances
 	virtual Vec3	GetStanceViewOffset(EStance stance, float* pLeanAmt = NULL, bool withY = false) const;
 	virtual bool IsThirdPerson() const;
-	virtual void StanceChanged(EStance last);
+	virtual void StanceChanged(EStance lastStance, EStance newStance);
+	void StanceChangeSound(EStance lastStance, EStance newStance);
 	//virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
 
 	virtual void ResetAnimGraph();

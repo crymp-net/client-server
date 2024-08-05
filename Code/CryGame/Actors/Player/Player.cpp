@@ -2228,14 +2228,14 @@ void CPlayer::SetViewInVehicle(Quat viewRotation)
 	GetGameObject()->ChangedNetworkState(IPlayerInput::INPUT_ASPECT);
 }
 
-void CPlayer::StanceChanged(EStance last)
+void CPlayer::StanceChanged(EStance lastStance, EStance newStance)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	CHECKQNAN_VEC(m_modelOffset);
 	if (IsPlayer())
 	{
-		float delta(GetStanceInfo(last)->modelOffset.z - GetStanceInfo(m_stance)->modelOffset.z);
+		float delta(GetStanceInfo(lastStance)->modelOffset.z - GetStanceInfo(newStance)->modelOffset.z);
 		if (delta > 0.0f)
 			m_modelOffset.z -= delta;
 	}
@@ -2261,15 +2261,13 @@ void CPlayer::StanceChanged(EStance last)
 			if (pLeader == GetEntity()->GetAI()) // if the leader is changing stance
 			{
 				IAISignalExtraData* pData = gEnv->pAISystem->CreateSignalExtraData();
-				pData->iValue = m_stance;
+				pData->iValue = newStance;
 				gEnv->pAISystem->SendSignal(SIGNALFILTER_LEADER, 1, "OnChangeStance", pLeader, pData);
 			}
 		}
 	}
 
-	bool player(IsPlayer());
-
-	CALL_PLAYER_EVENT_LISTENERS(OnStanceChanged(this, m_stance));
+	CALL_PLAYER_EVENT_LISTENERS(OnStanceChanged(this, newStance));
 
 	// lets stop upper-body animations (reloading, etc) when changing stance
 	// to fix bug pointing weapon up when prone-reload, standUp while reloading

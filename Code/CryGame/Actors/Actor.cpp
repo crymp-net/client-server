@@ -1560,7 +1560,7 @@ bool CActor::UpdateStance()
 		if (!TrySetStance(m_desiredStance))
 			return false;
 
-		StanceChanged(m_stance);
+		StanceChanged(m_stance, m_desiredStance);
 
 		m_stance = m_desiredStance;
 

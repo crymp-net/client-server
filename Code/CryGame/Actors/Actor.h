@@ -1087,7 +1087,7 @@ public:
 
 	//stances
 	virtual void	SetStance(EStance stance);
-	virtual void  StanceChanged(EStance last) {};
+	virtual void	StanceChanged(EStance lastStance, EStance newStance) {};
 	virtual bool	TrySetStance(EStance stance); // Shared between humans and aliens.
 	  //
 

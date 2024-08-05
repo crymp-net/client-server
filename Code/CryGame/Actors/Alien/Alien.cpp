@@ -2476,9 +2476,9 @@ Ang3 CAlien::GetAngles()
 	return angles;
 }
 
-void CAlien::StanceChanged(EStance last)
+void CAlien::StanceChanged(EStance lastStance, EStance newStance)
 {
-	float delta(GetStanceInfo(last)->modelOffset.z - GetStanceInfo(m_stance)->modelOffset.z);
+	float delta(GetStanceInfo(lastStance)->modelOffset.z - GetStanceInfo(newStance)->modelOffset.z);
 	if (delta > 0.0f)
 		m_modelOffset.z -= delta;
 }
