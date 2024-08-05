@@ -734,11 +734,14 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 	const float frameTime = ctx.fFrameTime;
 
-	if (IsClient())
+	if (gEnv->bClient)
 	{
-		UpdateScreenFrost();
-		UpdateScreenEffects(frameTime);
-		UpdateDraw(); 
+		if (IsClient()) //only local
+		{
+			UpdateScreenFrost();
+			UpdateScreenEffects(frameTime);
+		}
+		UpdateDraw();
 	}
 
 	if (gEnv->bServer && !IsClient() && IsPlayer())
@@ -7474,9 +7477,9 @@ void CPlayer::SetPainEffect(float progress /* = 0.0f */)
 
 void CPlayer::UpdateDraw()
 {
-	 const std::vector<std::string> deadAttachments = { "head", "helmet" };
+	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
-	if (m_stats.isHidden || GetSpectatorMode() != 0)
+	if (m_stats.isHidden || GetSpectatorMode() != eASM_None)
 	{
 		DrawSlot(0, 0);
 	}
@@ -7490,7 +7493,7 @@ void CPlayer::UpdateDraw()
 		{
 			for (const auto& attachment : deadAttachments)
 			{
-				HideAttachment(0, attachment.c_str(), true, false);
+				HideAttachment(0, attachment.data(), true, false);
 			}
 		}
 	}
@@ -7510,7 +7513,7 @@ void CPlayer::UpdateDraw()
 			// Then hide the necessary
 			for (const auto& attachment : deadAttachments)
 			{
-				HideAttachment(0, attachment.c_str(), true, false);
+				HideAttachment(0, attachment.data(), true, false);
 			}
 		}
 		else if ((m_stats.firstPersonBody > 0) && !ghostPit)
@@ -7600,7 +7603,10 @@ void CPlayer::UpdateScreenEffects(float frameTime)
 		}
 	}
 
-	m_blurType = gEnv->pConsole->GetCVar("cl_motionBlur")->GetIVal();
+	static ICVar* pMotionBlurCVar = gEnv->pConsole->GetCVar("cl_motionBlur");
+	static ICVar* pSprintBlurCVar = gEnv->pConsole->GetCVar("cl_sprintBlur");
+
+	m_blurType = pMotionBlurCVar->GetIVal();
 
 	float speed = m_stats.speedFlat;
 	float minSpeed = GetStanceInfo(STANCE_STAND)->maxSpeed;
@@ -7618,7 +7624,7 @@ void CPlayer::UpdateScreenEffects(float frameTime)
 	else if (m_stats.onGround > 0.1f && speed > minSpeed)
 	{
 		float maxSpeed = minSpeed * m_params.sprintMultiplier;
-		float blurAmount = (speed - minSpeed) / (maxSpeed - minSpeed) * gEnv->pConsole->GetCVar("cl_sprintBlur")->GetFVal();
+		float blurAmount = (speed - minSpeed) / (maxSpeed - minSpeed) * pSprintBlurCVar->GetFVal();
 		SetMotionFxMask("textures/player/motionblur_mask.dds");
 		SetMotionFxAmount(blurAmount, 2.5f);
 	}
@@ -7702,8 +7708,8 @@ void CPlayer::ResetDofFx(float speed)
 		m_dof_amount_speed = speed;
 		m_dof_distance_speed = speed;
 		m_target_dof_min = 0.0f;
-		m_target_dof_max = 2000;
-		m_target_dof_lim = 2500;
+		m_target_dof_max = 2000.f;
+		m_target_dof_lim = 2500.f;
 		m_target_dof_amount = 0.0f;
 	}
 	else
@@ -7715,8 +7721,8 @@ void CPlayer::ResetDofFx(float speed)
 		m_target_dof_lim = 2500.f;
 		m_target_dof_amount = 0.0f;
 		m_current_dof_min = 0.0f;
-		m_current_dof_max = 2000.0f;
-		m_current_dof_lim = 2500.0f;
+		m_current_dof_max = 2000.f;
+		m_current_dof_lim = 2500.f;
 		m_current_dof_amount = 0.0f;
 
 		SetDofFxLimits(m_current_dof_min, m_current_dof_max, m_current_dof_lim);
@@ -7795,7 +7801,7 @@ void CPlayer::SetMotionFxAmount(float amount, float speed)
 		}
 		else
 		{
-			m_mblur_amount_speed = 0;
+			m_mblur_amount_speed = 0.0f;
 			m_current_mblur_amount = amount;
 			m_target_mblur_amount = amount;
 			gEnv->p3DEngine->SetPostEffectParam("MotionBlur_Amount", amount);
