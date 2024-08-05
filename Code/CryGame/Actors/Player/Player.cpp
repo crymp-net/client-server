@@ -3955,9 +3955,10 @@ bool CPlayer::IsMaterialBootable(int matId) const
 
 Vec3 CPlayer::GetStanceViewOffset(EStance stance, float* pLeanAmt, bool withY) const
 {
-	if ((m_stats.inFreefall == 1) || (m_isClient && m_stats.isGrabbed))
+	if ((m_stats.inFreefall == 1) || (m_isClient && m_stats.isGrabbed) || m_stats.mountedWeaponID)
+	{
 		return GetLocalEyePos2();
-
+	}
 	Vec3 offset(GetStanceInfo(m_stance)->viewOffset);
 
 	//apply leaning
@@ -5787,6 +5788,12 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 	{
 		m_stats.spectatorTarget = targetId;
 		m_stats.spectatorMode = mode;
+
+		CPlayer *pTarget = CPlayer::FromIActor(m_pGameFramework->GetIActorSystem()->GetActor(targetId));
+		if (pTarget)
+		{
+			pTarget->m_PlayerView.Reset(); //CryMP reset this just in case
+		}
 
 		if (server)
 		{

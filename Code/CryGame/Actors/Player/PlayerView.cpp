@@ -55,6 +55,46 @@ PlayerView::~PlayerView()
 {
 }
 
+void PlayerView::Reset()
+{
+	m_lastPos = Vec3(ZERO);
+	m_lastQuat = Quat(IDENTITY);
+	m_lastSeatId = 0;
+	m_ColDistance = 0.0f;
+	m_defaultFov = 0.0f;
+	m_frameTime = 0.0f;
+	m_health = 0.0f;
+	m_smoothViewZ = 0.0f;
+	m_smoothZType = 0.0f;
+	m_bIsGrabbing = false;
+	m_bUsePivot = false;
+	m_landed = false;
+	m_jumped = false;
+	m_vehicleReverseView = false;
+	m_bobMul = 0.0f;
+	m_bobCycle = 0.0f;
+	m_standSpeed = 0.0f;
+	m_standSpeedMax = 0.0f;
+	m_viewQuatForWeapon = Quat(IDENTITY);
+	m_eyeOffsetViewGoal = Vec3(ZERO);
+	m_wAngles = Ang3(ZERO);
+	m_viewQuatFinal = Quat(IDENTITY);
+	m_viewQuat = Quat(IDENTITY);
+	m_baseQuat = Quat(IDENTITY);
+	m_eyeOffsetView = Vec3(ZERO);
+	m_localEyePos = (ZERO);
+	m_worldEyePos = (ZERO);
+	m_entityWorldPos = Vec3(ZERO);
+	m_vFPWeaponAngleOffset = Ang3(ZERO);
+	m_vFPWeaponLastDirVec = Vec3(ZERO);
+	m_vFPWeaponOffset = Vec3(ZERO);
+	m_bobOffset = Vec3(ZERO);
+	m_angleOffset = Ang3(ZERO);
+	m_viewAngleOffset = Ang3(ZERO);
+	m_entityWorldMatrix = Matrix34(IDENTITY);
+	m_headMtxLocal = Matrix33(IDENTITY);
+}
+
 void PlayerView::Update(SViewParams& viewParams)
 {
 	ViewPreProcess(viewParams);

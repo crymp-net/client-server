@@ -28,6 +28,8 @@ public:
 
 	explicit PlayerView(CPlayer& player);
 	~PlayerView();
+
+	void Reset();
 	
 	void Update(SViewParams &viewParams);
 	void OnExitVehicle();
