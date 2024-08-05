@@ -1157,6 +1157,11 @@ bool CPlayerInput::OnActionRotateYaw(EntityId entityId, const ActionId& actionId
 {
 	m_deltaRotation.z -= value;
 
+	if (m_pPlayer->IsThirdPerson() && fabs(value) > 60.f)
+	{
+		m_pPlayer->m_PlayerView.SetFastCameraCorrectionMode(0.3f);
+	}
+
 	if ((m_actions & ACTION_SPRINT) && g_pGameCVars->g_enableSpeedLean)
 	{
 		if (value < 0 && m_speedLean > 0)
@@ -1180,6 +1185,11 @@ bool CPlayerInput::OnActionRotateYaw(EntityId entityId, const ActionId& actionId
 
 bool CPlayerInput::OnActionRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
+	if (m_pPlayer->IsThirdPerson() && fabs(value) > 60.f)
+	{
+		m_pPlayer->m_PlayerView.SetFastCameraCorrectionMode(0.3f);
+	}
+
 	/*if(m_pPlayer->GetActorStats()->inZeroG)	//check for flip over in zeroG .. this makes no sense
 	{
 	SPlayerStats *stats = static_cast<SPlayerStats*> (m_pPlayer->GetActorStats());

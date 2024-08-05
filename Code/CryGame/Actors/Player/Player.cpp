@@ -3618,6 +3618,8 @@ void CPlayer::EnableThirdPerson(bool enable)
 		{
 			pIAttachmentManager->RemoveAttachmentByName("wound");
 		}
+
+		m_PlayerView.SetFastCameraCorrectionMode(1.0f);
 	}
 
 	m_stats.isThirdPerson = enable;

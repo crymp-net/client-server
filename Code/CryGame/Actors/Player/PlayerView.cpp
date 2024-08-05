@@ -517,10 +517,24 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	const auto previous = m_ColDistance;
 
 	const float deltaTime = gEnv->pTimer->GetFrameTime();
-	if (currentColDist < previous)
-		Interpolate(m_ColDistance, currentColDist, 15.0f, deltaTime);
+
+	const float speedSmooth = 8.0f;
+	const float speedFast = 15.0f;
+	const float speedSuperFast = 22.0f;
+
+	if (m_fastCameraCorrectionMode > 0.0f) //If we switch view or move mouse quickly, we want fast corrections to avoid clipping
+	{
+		Interpolate(m_ColDistance, currentColDist, speedSuperFast, deltaTime);
+		m_fastCameraCorrectionMode -= deltaTime;
+	}
+	else if (currentColDist < previous)
+	{
+		Interpolate(m_ColDistance, currentColDist, speedFast, deltaTime);
+	}
 	else
-		Interpolate(m_ColDistance, currentColDist, 8.0f, deltaTime);
+	{
+		Interpolate(m_ColDistance, currentColDist, speedSmooth, deltaTime);
+	}
 
 	IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pActor->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
 	if (pRenderProxy)
