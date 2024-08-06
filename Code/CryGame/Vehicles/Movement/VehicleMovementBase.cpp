@@ -17,7 +17,7 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryInput/IInput.h"

@@ -17,6 +17,8 @@ History:
 
 #pragma once
 
+#include <cstdint>
+
 #include "IGameObject.h"
 #include "IItem.h"
 #include "IWeapon.h"
@@ -197,7 +199,7 @@ struct IInventory: public IGameObjectExtension
 	virtual int GetCount() const = 0;
 	virtual int GetCountOfClass(const char *className) const = 0;
 	virtual int GetCountOfCategory(const char *categoryName) const = 0;
-	virtual int GetCountOfUniqueId(uint8 uniqueId) const = 0;
+	virtual int GetCountOfUniqueId(std::uint8_t uniqueId) const = 0;
 
 	virtual EntityId GetItem(int slotId) const = 0;
 	virtual EntityId GetItemByClass(IEntityClass *pClass, IItem *pIgnoreItem = NULL) const = 0;
@@ -294,9 +296,9 @@ struct IItemSystem
 	virtual const IItemParamsNode *GetItemParams(const char *itemName) const = 0;
 	virtual int GetItemParamsCount() const = 0;
 	virtual const char* GetItemParamName(int index) const = 0;
-	virtual uint8 GetItemPriority(const char *item) const = 0;
+	virtual std::uint8_t GetItemPriority(const char *item) const = 0;
 	virtual const char *GetItemCategory(const char *item) const = 0;
-	virtual uint8 GetItemUniqueId(const char *item) const = 0;
+	virtual std::uint8_t GetItemUniqueId(const char *item) const = 0;
 
 	virtual bool IsItemClass(const char *name) const = 0;
 

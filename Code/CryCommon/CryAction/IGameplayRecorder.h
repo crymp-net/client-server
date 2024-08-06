@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CrySystem/TimeValue.h"
+
+struct IEntity;
 
 enum EGameplayEvent
 {

@@ -15,7 +15,7 @@ History:
 #include "Bullet.h"
 #include "CryGame/GameRules.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "../AmmoParams.h"
 
 

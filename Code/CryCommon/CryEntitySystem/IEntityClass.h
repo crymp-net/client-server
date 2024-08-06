@@ -17,6 +17,8 @@
 #define __IEntityClass_h__
 #pragma once
 
+#include <cstdint>
+
 struct IEntity;
 struct IEntityProxy;
 struct SEntitySpawnParams;
@@ -53,13 +55,13 @@ struct IEntityClass
 	//    Returns entity class flags.
 	// See Also:
 	//    EEntityClassFlags
-	virtual uint32 GetFlags() const = 0;
+	virtual std::uint32_t GetFlags() const = 0;
 
 	// Description:
 	//    Set entity class flags.
 	// See Also:
 	//    EEntityClassFlags
-	virtual void SetFlags( uint32 nFlags ) = 0;
+	virtual void SetFlags( std::uint32_t nFlags ) = 0;
 
 	// Description:
 	//    Returns the Lua script file name.

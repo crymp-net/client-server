@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 // FIXME: Cell SDK GCC bug workaround.
 #ifndef __IGAMEOBJECTSYSTEM_H__
 #include "IGameObjectSystem.h"
@@ -211,9 +213,9 @@ public:
 	// bind this entity to the network system (it gets synchronized then...)
 	virtual bool BindToNetwork(EBindToNetworkMode mode = eBTNM_Normal) = 0;
 	// flag that we have changed the state of the game object aspect
-	virtual void ChangedNetworkState( uint8 aspects ) = 0;
+	virtual void ChangedNetworkState(std::uint8_t aspects) = 0;
 	// enable/disable network aspects on game object
-	virtual void EnableAspect(uint8 aspects, bool enable) = 0;
+	virtual void EnableAspect(std::uint8_t aspects, bool enable) = 0;
 	// query extension. returns 0 if extension is not there.
 	virtual IGameObjectExtension *QueryExtension(const char *name) const= 0;
 	// set extension parameters
@@ -226,24 +228,24 @@ public:
 	virtual void ForceUpdate(bool force) = 0;
 	virtual void ForceUpdateExtension( IGameObjectExtension * pGOE, int slot ) = 0;
 	// get/set network channel
-	virtual uint16 GetChannelId() const = 0;
-	virtual void SetChannelId( uint16 ) = 0;
+	virtual std::uint16_t GetChannelId() const = 0;
+	virtual void SetChannelId(std::uint16_t channelId) = 0;
 	virtual INetChannel *GetNetChannel() const = 0;
 	// serialize some aspects of the game object
 	virtual void FullSerialize( TSerialize ser ) = 0;
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int pflags ) = 0;
+	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int pflags ) = 0;
 	// in case things have to be set after serialization
 	virtual void PostSerialize() = 0;
 	// is the game object probably visible?
 	virtual bool IsProbablyVisible() = 0;
 	virtual bool IsProbablyDistant() = 0;
 	// change the profile of an aspect
-	virtual bool SetAspectProfile( EEntityAspects aspect, uint8 profile, bool fromNetwork = false ) = 0;
-	virtual uint8 GetAspectProfile( EEntityAspects aspect ) = 0;
+	virtual bool SetAspectProfile(EEntityAspects aspect, std::uint8_t profile, bool fromNetwork = false) = 0;
+	virtual std::uint8_t GetAspectProfile(EEntityAspects aspect) = 0;
 	virtual IGameObjectExtension * GetExtensionWithRMIBase( const void * pBase ) = 0;
 	virtual void EnablePrePhysicsUpdate( EPrePhysicsUpdate updateRule ) = 0;
 	virtual void SetNetworkParent( EntityId id ) = 0;
-	virtual void Pulse( uint32 pulse ) = 0;
+	virtual void Pulse(std::uint32_t pulse) = 0;
 	virtual void RegisterAsPredicted() = 0;
 	virtual void RegisterAsValidated(IGameObject* pGO, int predictionHandle) = 0;
 	virtual int GetPredictionHandle() = 0;
@@ -261,7 +263,7 @@ public:
 	virtual bool ShouldUpdate( ) = 0;
 
 	// register a partial update in the netcode without actually serializing - useful only for working around other bugs
-	virtual void RequestRemoteUpdate( uint8 aspectMask ) = 0;
+	virtual void RequestRemoteUpdate(std::uint8_t aspectMask) = 0;
 
 	// WARNING: there *MUST* be at least one frame between spawning ent and using this function to send an RMI if
 	// that RMI is _FAST, otherwise the dependent entity is ignored
@@ -313,7 +315,7 @@ public:
 	virtual void ReleaseProfileManager( IGameObjectProfileManager * pPH ) = 0;
 	virtual void EnableUpdateSlot( IGameObjectExtension * pExtension, int slot ) = 0;
 	virtual void DisableUpdateSlot( IGameObjectExtension * pExtension, int slot ) = 0;
-  virtual uint8 GetUpdateSlotEnables( IGameObjectExtension * pExtension, int slot ) = 0;
+	virtual std::uint8_t GetUpdateSlotEnables( IGameObjectExtension * pExtension, int slot ) = 0;
 	virtual void EnablePostUpdates( IGameObjectExtension * pExtension ) = 0;
 	virtual void DisablePostUpdates( IGameObjectExtension * pExtension ) = 0;
 	virtual void SetUpdateSlotEnableCondition( IGameObjectExtension * pExtension, int slot, EUpdateEnableCondition condition ) = 0;
@@ -379,7 +381,7 @@ public:
 			}
 			else
 			{
-				snprintf(msg, sizeof(msg), "Game object extension with base %.8x for entity %s for RMI %s not found", (uint32)m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
+				snprintf(msg, sizeof(msg), "Game object extension with base %p for entity %s for RMI %s not found", m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
 				CryLogWarning("%s", msg);
 			}
 		}
@@ -600,8 +602,8 @@ struct IGameObjectView
 
 struct IGameObjectProfileManager
 {
-	virtual bool SetAspectProfile( EEntityAspects aspect, uint8 profile ) = 0;
-	virtual uint8 GetDefaultProfile( EEntityAspects aspect ) = 0;
+	virtual bool SetAspectProfile( EEntityAspects aspect, std::uint8_t profile ) = 0;
+	virtual std::uint8_t GetDefaultProfile( EEntityAspects aspect ) = 0;
 };
 
 // Summary
@@ -667,7 +669,7 @@ struct IGameObjectExtension
 	// See Also
 	//   ISerialize
 	virtual void FullSerialize( TSerialize ser ) = 0;
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int pflags ) = 0;
+	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int pflags ) = 0;
 	
 	// Summary
 	//   Performs post serialization fixes
@@ -708,7 +710,7 @@ struct IGameObjectExtension
 
 	virtual void GetMemoryStatistics(ICrySizer * s) = 0;
 
-	virtual void SetChannelId(uint16 id) = 0;
+	virtual void SetChannelId(std::uint16_t id) = 0;
 	virtual void SetAuthority( bool auth ) = 0;
 
 	// Summary

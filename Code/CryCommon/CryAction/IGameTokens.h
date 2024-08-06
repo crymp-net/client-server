@@ -17,7 +17,7 @@
 #define _IGameTokens_h_
 #pragma once
 
-#include "CryCommon/CryAction/IFlowSystem.h"
+#include "IFlowSystem.h"
 
 enum EGameTokenFlags
 {
