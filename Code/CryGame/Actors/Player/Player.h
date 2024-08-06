@@ -321,6 +321,10 @@ public:
 		ESound_ParachuteStart,
 		ESound_ParachuteRun,
 		ESound_ParachuteStop,
+		ESound_ProneOn,
+		ESound_ProneOff,
+		ESound_CrouchOn,
+		ESound_CrouchOff,
 		ESound_Player_Last
 	};
 
@@ -544,7 +548,7 @@ public:
 	virtual Vec3	GetStanceViewOffset(EStance stance, float* pLeanAmt = NULL, bool withY = false) const;
 	virtual bool IsThirdPerson() const;
 	virtual void StanceChanged(EStance lastStance, EStance newStance);
-	void StanceChangeSound(EStance lastStance, EStance newStance);
+	void StanceSound(EStance lastStance, EStance newStance);
 	//virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
 
 	virtual void ResetAnimGraph();
@@ -676,7 +680,7 @@ public:
 	void UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMovement, float mult);
 
 	void SpawnParticleEffect(const char* effectName, const Vec3& pos, const Vec3& dir);
-	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = NULL, float paramValue = 0.0f);
+	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = nullptr, float paramValue = 0.0f);
 	virtual void SendMusicLogicEvent(EMusicLogicEvents event);
 
 	//Ladders
@@ -945,7 +949,6 @@ private:
 	float m_mblur_amount_speed = 0.0f;
 	float m_target_mblur_amount = 0.0f;
 	float m_current_mblur_amount = 0.0f;
-
 
 public:
 

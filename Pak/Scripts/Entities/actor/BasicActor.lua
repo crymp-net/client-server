@@ -900,7 +900,6 @@ end
 --TODO/FIXME:there should be BasicHuman and BasicAlien derived from BasicActor that inherit the Reset function, not this..
 function BasicActor:ResetCommon()
 	--self:Hide(0);
-	
 	--revive it
 	self.actor:Revive();
 
@@ -936,13 +935,15 @@ function BasicActor:ResetCommon()
 	self:KillTimer(BLOOD_POOL_TIMER);
 	self.painSoundTriggered = nil;
 	
+	--[[ C++
 	--to save some performace, the effects timer for AI will be different.
 	if (self.actor:IsPlayer()) then
 		self:SetTimer(ACTOREFFECTS_TIMER, 100);
 	else
 		self:SetTimer(ACTOREFFECTS_TIMER, 500);
 	end
-			
+	]]
+
 	if (self.lastSpawnPoint) then
 		self.lastSpawnPoint = 0;
 	end
@@ -1094,7 +1095,7 @@ function BasicActor:ShutDown()
 	--self:DestroyAttachment(0,"mouth");
 end
 
---[[
+--[[ C++
 function BasicActor.Client:OnUpdate(frameTime)
   
   -- update screen frost. 
@@ -1143,6 +1144,7 @@ function GetRangeRatio(num,min,max)
 	return (math.min(1.0,math.max(0,(num-min)/delta)));
 end
 
+--[[
 function BasicActor:UpdateSounds(frameTime)
 	local aStats = self.actorStats;
 	
@@ -1173,6 +1175,7 @@ function BasicActor:UpdateSounds(frameTime)
 	
 	aStats.oldStance = newStance;
 end
+]]
 
 function BasicActor:WallBloodSplat(hit)
 	local blood = tonumber(System.GetCVar("g_blood"));
@@ -2604,12 +2607,14 @@ function BasicActor.Client:OnTimer(timerId,mSec)
 		end
 	elseif (timerId == COLLISION_TIMER) then
 		self.AI.Colliding = false;
-	elseif (timerId == ACTOREFFECTS_TIMER) then
+	--[[
+	elseif (timerId == ACTOREFFECTS_TIMER) then	
 		self:UpdateSounds(mSec*0.001);
 		--if the actor is dead, dont loop
 		if (not self:IsDead()) then
 			self:SetTimer(ACTOREFFECTS_TIMER,mSec);
 		end
+	]]
 	elseif (timerId == BLOOD_POOL_TIMER) then
 	  self:DoBloodPool();
 	end

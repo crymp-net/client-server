@@ -2281,6 +2281,35 @@ void CPlayer::StanceChanged(EStance lastStance, EStance newStance)
 		if (pSkeletonAnim)
 			pSkeletonAnim->StopAnimationInLayer(1, .1f);
 	}
+
+	StanceSound(lastStance, newStance);
+}
+
+void CPlayer::StanceSound(EStance lastStance, EStance newStance)
+{
+	if (lastStance == STANCE_NULL)
+		return;
+	
+	if (newStance == STANCE_CROUCH || newStance == STANCE_STEALTH)
+	{
+		PlaySound(ESound_CrouchOn);
+	}
+	else if (newStance == STANCE_PRONE)
+	{
+		PlaySound(ESound_ProneOn);
+	}
+	else
+	{
+		// standup
+		if (lastStance == STANCE_PRONE)
+		{
+			PlaySound(ESound_ProneOff);
+		}
+		else
+		{
+			PlaySound(ESound_CrouchOff);
+		}
+	}
 }
 
 float CPlayer::CalculatePseudoSpeed(bool wantSprint) const
@@ -5980,18 +6009,13 @@ void CPlayer::SpawnParticleEffect(const char* effectName, const Vec3& pos, const
 	pEffect->Spawn(true, IParticleEffect::ParticleLoc(pos, dir, 1.0f));
 }
 
-void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, const char* paramName /*=NULL*/, float paramValue /*=0.0f*/)
+void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, const char* paramName /*=nullptr*/, float paramValue /*=0.0f*/)
 {
 	if (!gEnv->pSoundSystem)
 		return;
 
-	if (!IsFpSpectatorTarget()) //CryMP play sounds for Fp spectator
-	{
-		if (!IsClient()) //currently this is only supposed to be heared by the client (not 3D, not MP)
-			return;
-	}
-
 	bool repeating = false;
+	bool playForAll = false;
 	uint32 nFlags = 0;
 
 	ESoundSemantic soundSemantic = eSoundSemantic_Player_Foley;
@@ -6011,17 +6035,20 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 	case ESound_Jump:
 		soundName = "Sounds/physics:player_foley:jump_feedback";
 		soundSemantic = eSoundSemantic_Player_Foley_Voice;
-		if (gEnv->pInput && play) gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.05f, 0.05f, 0.1f));
+		if (IsClient() && gEnv->pInput && play)
+			gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.05f, 0.05f, 0.1f));
 		break;
 	case ESound_Fall_Drop:
 		soundName = "Sounds/physics:player_foley:bodyfall_feedback";
 		soundSemantic = eSoundSemantic_Player_Foley_Voice;
-		if (gEnv->pInput && play) gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.2f, 0.3f, 0.2f));
+		if (IsClient() && gEnv->pInput && play)
+			gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.2f, 0.3f, 0.2f));
 		break;
 	case ESound_Melee:
 		soundName = "Sounds/physics:player_foley:melee_feedback";
 		soundSemantic = eSoundSemantic_Player_Foley_Voice;
-		if (gEnv->pInput && play) gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.15f, 0.6f, 0.2f));
+		if (IsClient() && gEnv->pInput && play)
+			gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.15f, 0.6f, 0.2f));
 		break;
 	case ESound_Fear:
 		soundName = "Sounds/physics:player_foley:alien_feedback";
@@ -6123,6 +6150,34 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 		nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
 		break;
+	case ESound_ProneOn:
+		soundName = "sounds/physics:player_foley:prone_on";
+		soundSemantic = eSoundSemantic_Physics_Footstep;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		playForAll = true;
+		break;
+	case ESound_ProneOff:
+		soundName = "sounds/physics:player_foley:prone_off";
+		soundSemantic = eSoundSemantic_Physics_Footstep;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		playForAll = true;
+		break;
+	case ESound_CrouchOn:
+		soundName = "sounds/physics:player_foley:crouch_on";
+		soundSemantic = eSoundSemantic_Physics_Footstep;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		playForAll = true;
+		break;
+	case ESound_CrouchOff:
+		soundName = "sounds/physics:player_foley:crouch_off";
+		soundSemantic = eSoundSemantic_Physics_Footstep;
+		nFlags |= FLAG_SOUND_RELATIVE;
+		repeating = false;
+		playForAll = true;
+		break;
 	default:
 		break;
 	}
@@ -6130,21 +6185,35 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 	if (!soundName)
 		return;
 
+	if (!playForAll) 
+	{
+		if (!IsClient() && !IsFpSpectatorTarget()) //currently this is only supposed to be heared by the client (not 3D, not MP)
+		{
+			return;
+		}
+	}
+
 	if (play)
 	{
 		// don't play voice-type foley sounds
 		if (soundSemantic == eSoundSemantic_Player_Foley_Voice && m_bVoiceSoundPlaying)
 			return;
 
-		ISound* pSound = NULL;
+		ISound* pSound = nullptr;
 		if (repeating && m_sounds[sound])
+		{
 			if (pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]))
+			{
 				if (pSound->IsPlaying())
 				{
 					if (param)
+					{
 						pSound->SetParam(paramName, paramValue);
+					}
 					return;
 				}
+			}
+		}
 
 		if (!pSound)
 			pSound = gEnv->pSoundSystem->CreateSound(soundName, nFlags);
@@ -6158,19 +6227,14 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 				m_sounds[sound] = pSound->GetId();
 			}
 
-			IEntity* pEntity = GetEntity();
-			assert(pEntity);
-
-			if (pEntity)
+			IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*)GetEntity()->CreateProxy(ENTITY_PROXY_SOUND);
+			if (param)
 			{
-				IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*)pEntity->CreateProxy(ENTITY_PROXY_SOUND);
-				assert(pSoundProxy);
-
-				if (param)
-					pSound->SetParam(paramName, paramValue);
-
-				if (pSoundProxy)
-					pSoundProxy->PlaySound(pSound);
+				pSound->SetParam(paramName, paramValue);
+			}
+			if (pSoundProxy)
+			{
+				pSoundProxy->PlaySound(pSound);
 			}
 		}
 	}
@@ -6178,7 +6242,9 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 	{
 		ISound* pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
 		if (pSound)
+		{
 			pSound->Stop();
+		}
 		m_sounds[sound] = 0;
 	}
 }
