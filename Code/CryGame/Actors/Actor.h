@@ -1087,7 +1087,7 @@ public:
 
 	//stances
 	virtual void	SetStance(EStance stance);
-	virtual void  StanceChanged(EStance last) {};
+	virtual void	StanceChanged(EStance lastStance, EStance newStance) {};
 	virtual bool	TrySetStance(EStance stance); // Shared between humans and aliens.
 	  //
 
@@ -1301,6 +1301,7 @@ public:
 	void HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow);
 
 	void DrawSlot(int nSlot, int nEnable);
+	bool IsFp3pModel() const;
 
 	std::string GetCleanNick()
 	{
@@ -1320,6 +1321,8 @@ public:
 	{
 		return static_cast<CActor*>(m_pGameFramework->GetIActorSystem()->GetActorByChannelId(actorId));
 	}
+
+	bool m_hideActor = false;
 
 private:
 

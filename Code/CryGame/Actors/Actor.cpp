@@ -1560,7 +1560,7 @@ bool CActor::UpdateStance()
 		if (!TrySetStance(m_desiredStance))
 			return false;
 
-		StanceChanged(m_stance);
+		StanceChanged(m_stance, m_desiredStance);
 
 		m_stance = m_desiredStance;
 
@@ -4303,4 +4303,19 @@ void CActor::DrawSlot(int nSlot, int nEnable)
 	{
 		GetEntity()->SetSlotFlags(nSlot, GetEntity()->GetSlotFlags(nSlot) & ~(ENTITY_SLOT_RENDER | ENTITY_SLOT_RENDER_NEAREST));
 	}
+}
+
+bool CActor::IsFp3pModel() const
+{
+	SEntitySlotInfo slotInfo;
+	if (GetEntity()->GetSlotInfo(0, slotInfo) && slotInfo.pCharacter)
+	{
+		IAttachmentManager* pMan = slotInfo.pCharacter->GetIAttachmentManager();
+		IAttachment* pAttachment = pMan->GetInterfaceByName("upper_body");
+		if (pAttachment)
+		{
+			return true;
+		}
+	}
+	return false;
 }
