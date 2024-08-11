@@ -16,7 +16,7 @@ namespace MemoryPatch
 
 	namespace CryAISystem
 	{
-		void DisableMPChecksInAI(void* pCryAISystem);
+		void AllowMultiplayerAI(void* pCryAISystem);
 	}
 
 	namespace CryNetwork
@@ -84,7 +84,7 @@ namespace MemoryPatch
 		void MakeDX9Default(void* pCrySystem);
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
-		void EnablePhysicsThread(void* pCrySystem);
+		void EnableServerPhysicsThread(void* pCrySystem);
 	}
 
 	namespace FMODEx

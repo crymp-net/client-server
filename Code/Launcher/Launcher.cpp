@@ -839,7 +839,7 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCryAISystem)
 	{
-		MemoryPatch::CryAISystem::DisableMPChecksInAI(m_dlls.pCryAISystem);
+		MemoryPatch::CryAISystem::AllowMultiplayerAI(m_dlls.pCryAISystem);
 	}
 
 	if (m_dlls.pCryNetwork)
@@ -862,7 +862,7 @@ void Launcher::PatchEngine()
 		//MemoryPatch::CrySystem::MakeDX9Default(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::RemoveSecuROM(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::UnhandledExceptions(m_dlls.pCrySystem);
-		MemoryPatch::CrySystem::EnablePhysicsThread(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::EnableServerPhysicsThread(m_dlls.pCrySystem);
 
 		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{

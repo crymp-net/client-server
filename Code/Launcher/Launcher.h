@@ -6,7 +6,6 @@ class CGame;
 
 class Launcher final : public ISystemUserCallback
 {
-public:
 	struct DLLs
 	{
 		// do not try to unload these DLLs as it might crash
@@ -20,7 +19,6 @@ public:
 		void* pFmodEx = nullptr;
 	};
 
-private:
 	DLLs m_dlls;
 	SSystemInitParams m_params;
 

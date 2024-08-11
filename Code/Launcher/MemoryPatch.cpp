@@ -48,6 +48,53 @@ void MemoryPatch::CryAction::DisableBreakLog(void* pCryAction)
 #endif
 }
 
+/**
+ * Disables the lower limit of ToD length.
+ */
+void MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(void* pCryAction)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCryAction, 0x302F28, 0x1A);
+#else
+	FillNop(pCryAction, 0x20C9E4, 0x23);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CryAISystem
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Disables the multiplayer check in AI system.
+ */
+void MemoryPatch::CryAISystem::AllowMultiplayerAI(void* pCryAISystem)
+{
+	const unsigned char code[] = {
+#ifdef BUILD_64BIT
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0xEB, 0x0E,  // jmp [rip+0x0E]
+#else
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0xEB, 0x1F,  // jmp [eip+0x1F]
+#endif
+	};
+
+#ifdef BUILD_64BIT
+	FillMem(pCryAISystem, 0x1C8740, code, sizeof(code));
+#else
+	FillMem(pCryAISystem, 0x17504B, code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryNetwork
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,9 +129,9 @@ void MemoryPatch::CryNetwork::EnablePreordered(void* pCryNetwork)
 	};
 
 #ifdef BUILD_64BIT
-	FillMem(pCryNetwork, 0x17C377, code, sizeof code);
+	FillMem(pCryNetwork, 0x17C377, code, sizeof(code));
 #else
-	FillMem(pCryNetwork, 0x43188, code, sizeof code);
+	FillMem(pCryNetwork, 0x43188, code, sizeof(code));
 #endif
 }
 
@@ -129,18 +176,18 @@ void MemoryPatch::CryNetwork::FixFileCheckCrash(void* pCryNetwork)
 
 #ifdef BUILD_64BIT
 	// client
-	FillMem(pCryNetwork, 0x14F5B1, codeA, sizeof codeA);
-	FillMem(pCryNetwork, 0x14F5C9, codeB, sizeof codeB);
+	FillMem(pCryNetwork, 0x14F5B1, codeA, sizeof(codeA));
+	FillMem(pCryNetwork, 0x14F5C9, codeB, sizeof(codeB));
 	// server
-	FillMem(pCryNetwork, 0x14F8E1, codeA, sizeof codeA);
-	FillMem(pCryNetwork, 0x14F8F9, codeB, sizeof codeB);
+	FillMem(pCryNetwork, 0x14F8E1, codeA, sizeof(codeA));
+	FillMem(pCryNetwork, 0x14F8F9, codeB, sizeof(codeB));
 #else
 	// client
 	FillNop(pCryNetwork, 0x4A34F, 0xC);
-	FillMem(pCryNetwork, 0x4A39E, clientCode, sizeof clientCode);
+	FillMem(pCryNetwork, 0x4A39E, clientCode, sizeof(clientCode));
 	// server
 	FillNop(pCryNetwork, 0x49F68, 0xC);
-	FillMem(pCryNetwork, 0x30E7B, serverCode, sizeof serverCode);
+	FillMem(pCryNetwork, 0x30E7B, serverCode, sizeof(serverCode));
 #endif
 }
 
@@ -305,7 +352,7 @@ static void HookWindowName(void* pCryRender, std::size_t offset, const char* nam
 	std::memcpy(&code[14], &pSetFunc, 4);
 #endif
 
-	FillMem(pCryRender, offset, code, sizeof code);
+	FillMem(pCryRender, offset, code, sizeof(code));
 }
 
 /**
@@ -551,9 +598,9 @@ void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPU
 #endif
 
 #ifdef BUILD_64BIT
-	FillMem(pCrySystem, 0xA7E0, &code, sizeof code);
+	FillMem(pCrySystem, 0xA7E0, &code, sizeof(code));
 #else
-	FillMem(pCrySystem, 0xA380, &code, sizeof code);
+	FillMem(pCrySystem, 0xA380, &code, sizeof(code));
 #endif
 }
 
@@ -595,9 +642,9 @@ void MemoryPatch::CrySystem::HookError(void* pCrySystem, void (*handler)(const c
 #endif
 
 #ifdef BUILD_64BIT
-	FillMem(pCrySystem, 0x52D00, &code, sizeof code);
+	FillMem(pCrySystem, 0x52D00, &code, sizeof(code));
 #else
-	FillMem(pCrySystem, 0x63290, &code, sizeof code);
+	FillMem(pCrySystem, 0x63290, &code, sizeof(code));
 #endif
 }
 
@@ -641,6 +688,18 @@ void MemoryPatch::CrySystem::UnhandledExceptions(void* pCrySystem)
 #endif
 }
 
+/**
+ * Enables physics thread on server.
+ */
+void MemoryPatch::CrySystem::EnableServerPhysicsThread(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0x36CD6, 0x11);
+#else
+	FillNop(pCrySystem, 0x4CBC1, 0xD);
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FMODEx
 ////////////////////////////////////////////////////////////////////////////////
@@ -662,43 +721,5 @@ void MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(void* pFMODEx)
 
 	FillMem(pFMODEx, 0x482DA, &code, sizeof(code) - 6);
 	FillMem(pFMODEx, 0x486B7, &code, sizeof(code));
-#endif
-}
-
-/**
- * Disables some MP checks in AI
- */
-void MemoryPatch::CryAISystem::DisableMPChecksInAI(void* pCryAISystem)
-{
-#ifdef BUILD_64BIT
-	FillNop(pCryAISystem, 0x1C8740, 0x9);
-#else
-	FillNop(pCryAISystem, 0x17504B, 0x6);
-#endif
-}
-
-/**
- * Enables physics thread on server
- */
-void MemoryPatch::CrySystem::EnablePhysicsThread(void* pCrySystem)
-{
-#ifdef BUILD_64BIT
-	FillNop(pCrySystem, 0x36CD6, 0x11);
-#else
-	FillNop(pCrySystem, 0x4CBC1, 0xD);
-#endif
-
-	//CryLogAlways("$3[CryMP] Enabled Physics Thread");
-}
-
-/**
- * Disable Time of Day Length lower limit
- */
-void MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(void* pCryAction)
-{
-#ifdef BUILD_64BIT
-	FillNop(pCryAction, 0x302F28, 0x1A);
-#else
-	FillNop(pCryAction, 0x20C9E4, 0x23);
 #endif
 }
