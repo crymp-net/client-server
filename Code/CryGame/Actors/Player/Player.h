@@ -321,6 +321,10 @@ public:
 		ESound_ParachuteStart,
 		ESound_ParachuteRun,
 		ESound_ParachuteStop,
+		ESound_ProneOn,
+		ESound_ProneOff,
+		ESound_CrouchOn,
+		ESound_CrouchOff,
 		ESound_Player_Last
 	};
 
@@ -543,7 +547,8 @@ public:
 	//stances
 	virtual Vec3	GetStanceViewOffset(EStance stance, float* pLeanAmt = NULL, bool withY = false) const;
 	virtual bool IsThirdPerson() const;
-	virtual void StanceChanged(EStance last);
+	virtual void StanceChanged(EStance lastStance, EStance newStance);
+	void StanceSound(EStance lastStance, EStance newStance);
 	//virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
 
 	virtual void ResetAnimGraph();
@@ -675,7 +680,7 @@ public:
 	void UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMovement, float mult);
 
 	void SpawnParticleEffect(const char* effectName, const Vec3& pos, const Vec3& dir);
-	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = NULL, float paramValue = 0.0f);
+	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = nullptr, float paramValue = 0.0f);
 	virtual void SendMusicLogicEvent(EMusicLogicEvents event);
 
 	//Ladders
@@ -887,10 +892,11 @@ public:
 //CryMP 
 //////////////////////////////////////////////////////////////////////////////////
 
-protected:
+private:
 
 	float m_tpLeanOffset = 0.0f;
 	float m_tpProneOffset = 0.0f;
+	float m_prevFrozenAmount = 0.0f;
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
@@ -902,7 +908,49 @@ protected:
 
 	PlayerView m_PlayerView = PlayerView(*this);
 
+	void UpdateDraw();
+	void UpdateScreenFrost();
+	void UpdateScreenEffects(float frameTime);
+	void SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed = 0);
+	void SetDofFxMask(const char* texName);
+	void SetDofFxAmount(float amount, float speed = 0);
+	void ResetDofFx(float speed = 0);
+	void UpdateDofFx(float frameTime);
+	void SetMotionFxAmount(float amount, float speed = 0);
+	void SetMotionFxMask(const char* texName);
+	void ResetMotionFx();
+	void UpdateMotionFx(float frameTime);
+
+	float DofInterpolate(float curr, float target, float speed, float frameTime);
+	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
+
+	float m_viewBlur = 0.0f;
+	float m_viewBlurAmt = 0.0f;
+
+	int m_blurType = 0;
+
+	// Depth of Field (DoF) related variables
+	float m_dof_amount_speed = 0.0f;
+	float m_dof_distance_speed = 0.0f;
+	float m_target_dof_min = 0.0f;
+	float m_target_dof_max = 2000.0f;
+	float m_target_dof_lim = 2500.0f;
+	float m_target_dof_amount = 0.0f;
+	float m_current_dof_min = 0.0f;
+	float m_current_dof_max = 2000.0f;
+	float m_current_dof_lim = 2500.0f;
+	float m_current_dof_amount = 0.0f;
+
+	// Motion Blur related variables
+	float m_mblur_amount_speed = 0.0f;
+	float m_target_mblur_amount = 0.0f;
+	float m_current_mblur_amount = 0.0f;
+
 public:
+
+	// Member variables
+	bool m_camoState = false;
+	bool m_camoFading = false;
 
 	//First Person Spectator
 	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
