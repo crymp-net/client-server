@@ -924,10 +924,6 @@ private:
 	float DofInterpolate(float curr, float target, float speed, float frameTime);
 	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
 
-	// Member variables
-	bool m_camoState = false;
-	bool m_camoFading = false;
-
 	float m_viewBlur = 0.0f;
 	float m_viewBlurAmt = 0.0f;
 
@@ -951,6 +947,10 @@ private:
 	float m_current_mblur_amount = 0.0f;
 
 public:
+
+	// Member variables
+	bool m_camoState = false;
+	bool m_camoFading = false;
 
 	//First Person Spectator
 	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }

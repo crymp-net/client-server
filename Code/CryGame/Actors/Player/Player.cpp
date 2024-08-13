@@ -2345,6 +2345,10 @@ void CPlayer::SetParams(SmartScriptTable& rTable, bool resetFirst)
 	}
 
 	CScriptSetGetChain params(rTable);
+
+	params.GetValue("camoFading", m_camoFading);
+	params.GetValue("camoState", m_camoState);
+
 	if (ShouldUseMPParams())
 	{
 		params.GetValue("speedMultiplier", m_params.speedMultiplier);
@@ -7317,7 +7321,10 @@ void CPlayer::StagePlayer(bool bStage, SStagingParams* pStagingParams /* = 0 */)
 
 void CPlayer::ResetScreenFX()
 {
-	if (GetScreenEffects() && IsClient())
+	if (!IsClient())
+		return;
+
+	if (GetScreenEffects())
 	{
 		GetScreenEffects()->ClearBlendGroup(14, true);
 		//CPostProcessEffect *blend = new CPostProcessEffect(GetEntity()->GetId(), "WaterDroplets_Amount", 0.0f);
@@ -7334,6 +7341,9 @@ void CPlayer::ResetScreenFX()
 		//gEnv->p3DEngine->SetPostEffectParam("FilterBlurring_Amount", 0.0f);
 		SAFE_HUD_FUNC(ShowDeathFX(0));
 	}
+
+	ResetDofFx();
+	ResetMotionFx();
 }
 
 void CPlayer::ResetFPView()

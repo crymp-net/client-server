@@ -2790,10 +2790,15 @@ function BasicActor:OnCloaking(state)
 			self:PlaySoundEvent("Sounds/interface:suit:suit_deep_freeze", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
 			self:PlaySoundEvent("Sounds/interface:suit:breathing_in_mask_cold_oneshot", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
 						
-			if (self.actor:GetChannel()>0) then
+			if (self.actor:IsPlayer()) then
 				--System.SetScreenFx("ScreenFrost_Amount", 0);
-				self.camoFading = true;
-				self.camoState = true;
+
+				--self.camoFading = true;
+				--self.camoState = true;
+				self.actor:SetParams({
+					camoFading = true,
+					camoState = true,
+				});
 			end
 		end
 
@@ -2802,9 +2807,13 @@ function BasicActor:OnCloaking(state)
 	else
 		local lastState = self.lastCloakState or 1;
 		if (lastState == 3) then
-			if (self.actor:GetChannel()>0) then
-				self.camoFading = true;
-				self.camoState = false;
+			if (self.actor:IsPlayer()) then
+				--self.camoFading = true;
+				--self.camoState = false;
+				self.actor:SetParams({
+					camoFading = true,
+					camoState = false,
+				});
 			end
 		end
 

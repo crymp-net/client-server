@@ -247,8 +247,8 @@ end
 
 
 function Player.Client:Revive()
-	self:ResetDofFx();
-	self:ResetMotionFx();
+	--self:ResetDofFx();
+	--self:ResetMotionFx();
 
 	self.actor:Revive();
 end
@@ -359,10 +359,10 @@ function Player:OnReset()
 	self.thrusterVolume = nil;
 	self:StopThrusterSounds();
 	
-	if (self == g_localActor) then
-		self:ResetDofFx();
-		self:ResetMotionFx();
-	end
+	--if (self == g_localActor) then
+	--	self:ResetDofFx();
+	--	self:ResetMotionFx();
+	--end
 
 	mergef(Player.SignalData,g_SignalData,1);
 	
@@ -373,8 +373,12 @@ function Player:OnReset()
 	--self.actor:ChangeAnimGraph(self.AnimationGraph);
 	
 	-- Reset temperature camoflage.
-	self.camoState = false;
-	self.camoFading = false;
+	--self.camoState = false;
+	--self.camoFading = false;
+	self.actor:SetParams({
+		camoFading = false,
+		camoState = false,
+	});
 
 	self.Properties.species = 0;
 	-- Reset all properties to editor set values.
