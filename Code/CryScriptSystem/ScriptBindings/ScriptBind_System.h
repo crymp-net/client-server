@@ -93,4 +93,10 @@ public:
 	int SetSkyHighlight(IFunctionHandler *pH, SmartScriptTable params);
 	int GetSkyHighlight(IFunctionHandler *pH, SmartScriptTable params);
 	int LoadLocalizationXml(IFunctionHandler *pH, const char *filename);
+	int GetActors(IFunctionHandler* pH);
+	int GetActorsByClass(IFunctionHandler* pH, const char* entityClass);
+	int GetPlayers(IFunctionHandler* pH);
+	int GetVehicles(IFunctionHandler* pH);
+	int GetVehiclesByClass(IFunctionHandler* pH, const char* entityClass);
+	int IsClassValid(IFunctionHandler* pH, const char* entityClass);
 };
