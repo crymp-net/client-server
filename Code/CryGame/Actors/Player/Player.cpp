@@ -1243,7 +1243,7 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	const bool Client(IsClient());
+	const bool Client = IsClient() || IsFpSpectatorTarget();
 	if (Client || (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead))
 	{
 		IEntity* pEnt = GetEntity();
@@ -1405,7 +1405,7 @@ void CPlayer::PrePhysicsUpdate()
 		}
 	}
 
-	bool client(IsClient());
+	const bool client = IsClient() || IsFpSpectatorTarget();
 	float frameTime = gEnv->pTimer->GetFrameTime();
 
 	//FIXME:
@@ -1432,7 +1432,7 @@ void CPlayer::PrePhysicsUpdate()
 	else
 		params.flags |= eACF_ImmediateStance | eACF_PerAnimGraph | eACF_UseHumanBlending | eACF_ConstrainDesiredSpeedToXY;
 
-	const bool firstperson = IsClient() && !TP;
+	const bool firstperson = (IsClient() || IsFpSpectatorTarget()) && !TP;
 	if (firstperson)
 	{
 		params.flags &= ~(eACF_AlwaysAnimation | eACF_PerAnimGraph);
@@ -1815,8 +1815,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 
 		pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 
-		//Hide TP model or not
-		pTarget->m_stats.isHidden = pVehicle ? false : true;
+		pTarget->m_stats.isHidden = false;
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -7559,11 +7558,11 @@ void CPlayer::UpdateDraw()
 {
 	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
-	if (m_stats.isHidden || GetSpectatorMode() != eASM_None)
+	if (!IsFpSpectatorTarget() && (m_stats.isHidden || GetSpectatorMode() != eASM_None))
 	{
 		DrawSlot(0, 0);
 	}
-	else if (!IsClient() || IsThirdPerson() || m_stats.isOnLadder)
+	else if ((!IsClient() && !IsFpSpectatorTarget()) || IsThirdPerson() || m_stats.isOnLadder)
 	{
 		DrawSlot(0, 1);
 		// Show all
