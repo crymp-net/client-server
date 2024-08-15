@@ -16,6 +16,8 @@
 #include "CryCommon/CryMath/Cry_Camera.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 
 #include "ScriptBind_System.h"
 
@@ -125,6 +127,12 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(GetSkyHighlight, "");
 	SCRIPT_REG_TEMPLFUNC(LoadLocalizationXml, "filename");
 	SCRIPT_REG_FUNC(GetFrameID);
+	SCRIPT_REG_FUNC(GetActors);
+	SCRIPT_REG_TEMPLFUNC(GetActorsByClass, "class");
+	SCRIPT_REG_FUNC(GetPlayers);
+	SCRIPT_REG_FUNC(GetVehicles);
+	SCRIPT_REG_TEMPLFUNC(GetVehiclesByClass, "class");
+	SCRIPT_REG_TEMPLFUNC(IsClassValid, "class");
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -1692,4 +1700,116 @@ int ScriptBind_System::GetFrameID(IFunctionHandler *pH)
 	SCRIPT_CHECK_PARAMETERS(0);
 
 	return pH->EndFunction(gEnv->pRenderer->GetFrameID());
+}
+
+int ScriptBind_System::GetActors(IFunctionHandler *pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while (pActor = pActorIterator->Next())
+	{
+		pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetActorsByClass(IFunctionHandler* pH, const char *entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while (pActor = pActorIterator->Next())
+	{
+		if (pActor->GetEntity()->GetClass() == pClass)
+		{
+			pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetPlayers(IFunctionHandler* pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while (pActor = pActorIterator->Next())
+	{
+		if (!pActor->IsPlayer())
+		{
+			continue;
+		}
+		pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehicles(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IVehicleIteratorPtr pVehicleIterator = pVehicleSystem->CreateVehicleIterator();
+	IVehicle* pVehicle = nullptr;
+	int k = 1;
+
+	while (pVehicle = pVehicleIterator->Next())
+	{
+		if (pVehicle->GetEntity()->GetScriptTable())
+		{
+			pObj->SetAt(k++, pVehicle->GetEntity()->GetScriptTable());
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehiclesByClass(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+
+	SmartScriptTable pObj(m_pSS);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IVehicleIteratorPtr pVehicleIterator = pVehicleSystem->CreateVehicleIterator();
+	IVehicle* pVehicle = nullptr;
+	int k = 1;
+
+	while (pVehicle = pVehicleIterator->Next())
+	{
+		if (pVehicle->GetEntity()->GetClass() == pClass)
+		{
+			if (pVehicle->GetEntity()->GetScriptTable())
+			{
+				pObj->SetAt(k++, pVehicle->GetEntity()->GetScriptTable());
+			}
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::IsClassValid(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (pClass)
+	{
+		return pH->EndFunction(true);
+	}
+	return pH->EndFunction(false);
 }
