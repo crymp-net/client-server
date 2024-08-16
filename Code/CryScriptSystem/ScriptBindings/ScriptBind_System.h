@@ -99,4 +99,5 @@ public:
 	int GetVehicles(IFunctionHandler* pH);
 	int GetVehiclesByClass(IFunctionHandler* pH, const char* entityClass);
 	int IsClassValid(IFunctionHandler* pH, const char* entityClass);
+	int GetEntityScriptFilePath(IFunctionHandler* pH, const char* entityClass);
 };

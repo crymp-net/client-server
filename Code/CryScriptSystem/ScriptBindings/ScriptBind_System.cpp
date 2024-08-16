@@ -133,6 +133,7 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_FUNC(GetVehicles);
 	SCRIPT_REG_TEMPLFUNC(GetVehiclesByClass, "class");
 	SCRIPT_REG_TEMPLFUNC(IsClassValid, "class");
+	SCRIPT_REG_TEMPLFUNC(GetEntityScriptFilePath, "class");
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -1812,4 +1813,14 @@ int ScriptBind_System::IsClassValid(IFunctionHandler* pH, const char* entityClas
 		return pH->EndFunction(true);
 	}
 	return pH->EndFunction(false);
+}
+
+int ScriptBind_System::GetEntityScriptFilePath(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (pClass)
+	{
+		return pH->EndFunction();
+	}
+	return pH->EndFunction(pClass->GetScriptFile());
 }
