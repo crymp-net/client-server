@@ -1818,7 +1818,7 @@ int ScriptBind_System::IsClassValid(IFunctionHandler* pH, const char* entityClas
 int ScriptBind_System::GetEntityScriptFilePath(IFunctionHandler* pH, const char* entityClass)
 {
 	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
-	if (pClass)
+	if (!pClass)
 	{
 		return pH->EndFunction();
 	}
