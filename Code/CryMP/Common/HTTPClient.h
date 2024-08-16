@@ -23,7 +23,6 @@ struct HTTPClientRequest
 	std::string data;
 	std::map<std::string, std::string> headers;
 	std::function<void(HTTPClientResult&)> callback;
-	int timeout = 4000;
 };
 
 class HTTPClient

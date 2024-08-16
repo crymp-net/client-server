@@ -84,7 +84,6 @@ struct FileDownloaderTask : public IExecutorTask
 				request.url,
 				{},  // data
 				{},  // headers
-				request.timeout,
 				[this, &file](uint64_t contentLength, const WinAPI::HTTPRequestReader & reader)
 				{
 					// content length is zero if not provided by the server

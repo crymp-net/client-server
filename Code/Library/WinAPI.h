@@ -270,7 +270,6 @@ namespace WinAPI
 		const std::string_view & url,
 		const std::string_view & data,
 		const std::map<std::string, std::string> & headers,
-		int timeout,
 		HTTPRequestCallback callback
 	);
 
