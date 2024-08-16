@@ -32,7 +32,6 @@ struct FileDownloaderRequest
 	std::filesystem::path filePath;
 	std::function<bool(FileDownloaderProgress&)> onProgress;  // return false to cancel download
 	std::function<void(FileDownloaderResult&)> onComplete;
-	int timeout = 4000;
 };
 
 class FileDownloader

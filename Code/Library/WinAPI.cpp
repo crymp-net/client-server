@@ -870,7 +870,6 @@ int WinAPI::HTTPRequest(
 	const std::string_view & url,
 	const std::string_view & data,
 	const std::map<std::string, std::string> & headers,
-	int timeout,
 	HTTPRequestCallback callback
 ){
 	std::wstring urlW;
@@ -895,11 +894,6 @@ int WinAPI::HTTPRequest(
 	if (!hSession)
 	{
 		throw StringTools::SysErrorFormat("WinHttpOpen");
-	}
-
-	if (!WinHttpSetTimeouts(hSession, timeout, timeout, timeout, timeout))
-	{
-		throw StringTools::SysErrorFormat("WinHttpSetTimeouts");
 	}
 
 	const std::wstring serverNameW(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
