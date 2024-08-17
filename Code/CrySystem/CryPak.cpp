@@ -1122,7 +1122,8 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 	adjusted.reserve(260);
 	adjusted = path;
 
-	const unsigned int supportedFlags = FLAGS_ADD_TRAILING_SLASH | FLAGS_NO_FULL_PATH | FLAGS_FOR_WRITING;
+	const unsigned int supportedFlags = FLAGS_ADD_TRAILING_SLASH | FLAGS_NO_FULL_PATH
+		| FLAGS_NO_MASTER_FOLDER_MAPPING | FLAGS_FOR_WRITING;
 	const unsigned int garbageFlags = 0x1 | 0x2 | FLAGS_PATH_REAL;
 
 	if (flags & ~(supportedFlags | garbageFlags))
@@ -1147,7 +1148,7 @@ std::string CryPak::AdjustFileNameImplWithoutRedirect(std::string_view path, uns
 	// check the original path because Normalize removes the "./" prefix
 	const bool noFullPath = path.length() >= 2 && path[0] == '.' && (path[1] == '/' || path[1] == '\\');
 
-	if (!noFullPath && !(flags & FLAGS_NO_FULL_PATH)
+	if (!noFullPath && !(flags & (FLAGS_NO_FULL_PATH | FLAGS_NO_MASTER_FOLDER_MAPPING))
 	 && !PathTools::IsAbsolutePath(adjusted)
 	 && !PathTools::StartsWith(adjusted, "Game/")
 	 && !PathTools::StartsWith(adjusted, "Editor/")
