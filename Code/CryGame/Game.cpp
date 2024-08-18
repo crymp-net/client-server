@@ -835,6 +835,8 @@ void CGame::CheckReloadLevel()
 	levelstart.append("_crysis.crysisjmsf");
 	GetIGameFramework()->LoadGame(levelstart.c_str(), true, true);
 	//**********
+	IActor* pPlayerActor = this->GetIGameFramework()->GetIActorSystem()->GetActor(playerID);
+	this->InitHUD(pPlayerActor);
 	pLevelSystem->OnLoadingComplete(pLevel);
 	GetMenu()->OnActionEvent(SActionEvent(eAE_inGame));	//reset the menu
 	m_bReload = false;	//if m_bReload is true - load at levelstart
