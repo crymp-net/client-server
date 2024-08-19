@@ -117,7 +117,7 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 	bool isClient = false;
 
 	CActor* pActor = static_cast<CActor*> (g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId()));
-	if (pActor != 0 && pActor->IsClient())
+	if (pActor && pActor->IsClient())
 	{
 		isClient = true;
 	}
@@ -137,11 +137,21 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 				ICharacterInstance* pCharInstance = pAttachmentObj->GetICharacterInstance();
 				if (pCharInstance)
 				{
+					// CryMP: temporary code
+					if (std::string_view(pCharInstance->GetFilePath()) != "objects/characters/human/us/nanosuit/nanosuit_us_fp3p.chr"
+						&& std::string_view(pCharInstance->GetFilePath()) != "objects/characters/human/asian/nanosuit/nanosuit_asian_fp3p.chr")
+					{
+						isClient = false;
+					}
 					// needed to support "fp3p"
 					if (isClient)
+					{
 						pCharInstance->SetMaterial(pNanoMat->arms);
+					}
 					else
+					{
 						pCharInstance->SetMaterial(pNanoMat->body);
+					}
 				}
 			}
 		}

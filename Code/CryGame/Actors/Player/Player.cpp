@@ -3688,11 +3688,14 @@ void CPlayer::CheckCurrentWeapon(bool thirdperson)
 		//Update player model for Shitens etc
 		if (pWeapon->IsUsed())
 		{
+			/* now handled in UpdateDraw()
 			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 			if (pCharacter)
 			{
 				pCharacter->HideMaster(thirdperson ? 0 : 1);
 			}
+			*/
+			m_hideMaster = !thirdperson;
 		}
 	}
 }
@@ -3766,6 +3769,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 	DeployParachute(false, false);
 
+	m_hideMaster = false;
 	m_bSwimming = false;
 	m_actions = 0;
 	m_forcedRotation = false;
@@ -7556,6 +7560,8 @@ void CPlayer::SetPainEffect(float progress /* = 0.0f */)
 
 void CPlayer::UpdateDraw()
 {
+	bool hideMaster = m_hideMaster;
+
 	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
 	if (!IsFpSpectatorTarget() && (m_stats.isHidden || GetSpectatorMode() != eASM_None))
@@ -7567,6 +7573,7 @@ void CPlayer::UpdateDraw()
 		DrawSlot(0, 1);
 		// Show all
 		HideAllAttachments(0, false, false);
+
 		// Hide head if we are on a ladder and third person is not set
 		if (IsClient() && m_stats.isOnLadder && !IsThirdPerson())
 		{
@@ -7597,8 +7604,14 @@ void CPlayer::UpdateDraw()
 		}
 		else if ((m_stats.firstPersonBody > 0) && !ghostPit)
 		{
-			const int draw = IsFp3pModel();
-			DrawSlot(0, draw);
+			DrawSlot(0, 1);
+
+			const bool isFp3p = IsFp3pModel();
+			if (!isFp3p)
+			{
+				hideMaster = true;
+			}
+
 			// Hide attachments for the body first person model
 			HideAllAttachments(0, true, false);
 		}
@@ -7606,6 +7619,11 @@ void CPlayer::UpdateDraw()
 		{
 			DrawSlot(0, 0);
 		}
+	}
+
+	if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+	{
+		pCharacter->HideMaster(hideMaster ? 1 : 0);
 	}
 }
 

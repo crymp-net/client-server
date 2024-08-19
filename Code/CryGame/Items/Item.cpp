@@ -2145,9 +2145,7 @@ void CItem::StartUse(EntityId userId)
 	//Don't draw legs for the FP player (prevents legs clipping in the view)
 	if (pOwner->IsClient() && !pOwner->IsThirdPerson())
 	{
-		ICharacterInstance* pChar = pOwner->GetEntity()->GetCharacter(0);
-		if (pChar)
-			pChar->HideMaster(1);
+		pOwner->m_hideMaster = true;
 	}
 
 	if (pOwner->GetAnimatedCharacter())
@@ -2170,9 +2168,7 @@ void CItem::StopUse(EntityId userId)
 	//Draw legs again for the FP player
 	if (pActor->IsClient())
 	{
-		ICharacterInstance* pChar = pActor->GetEntity()->GetCharacter(0);
-		if (pChar)
-			pChar->HideMaster(0);
+		pActor->m_hideMaster = false;
 	}
 
 	if (pActor->GetHealth() > 0)
