@@ -1243,7 +1243,7 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	const bool Client(IsClient());
+	const bool Client = IsClient() || IsFpSpectatorTarget();
 	if (Client || (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead))
 	{
 		IEntity* pEnt = GetEntity();
@@ -1405,7 +1405,7 @@ void CPlayer::PrePhysicsUpdate()
 		}
 	}
 
-	bool client(IsClient());
+	const bool client = IsClient() || IsFpSpectatorTarget();
 	float frameTime = gEnv->pTimer->GetFrameTime();
 
 	//FIXME:
@@ -1432,7 +1432,7 @@ void CPlayer::PrePhysicsUpdate()
 	else
 		params.flags |= eACF_ImmediateStance | eACF_PerAnimGraph | eACF_UseHumanBlending | eACF_ConstrainDesiredSpeedToXY;
 
-	const bool firstperson = IsClient() && !TP;
+	const bool firstperson = (IsClient() || IsFpSpectatorTarget()) && !TP;
 	if (firstperson)
 	{
 		params.flags &= ~(eACF_AlwaysAnimation | eACF_PerAnimGraph);
@@ -1815,8 +1815,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 
 		pTarget->m_PlayerView.Update(m_FirstPersonSpectatorParams);
 
-		//Hide TP model or not
-		pTarget->m_stats.isHidden = pVehicle ? false : true;
+		pTarget->m_stats.isHidden = false;
 
 		m_viewBlending = false;	// only disable blending for one frame
 
@@ -3689,11 +3688,14 @@ void CPlayer::CheckCurrentWeapon(bool thirdperson)
 		//Update player model for Shitens etc
 		if (pWeapon->IsUsed())
 		{
+			/* now handled in UpdateDraw()
 			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 			if (pCharacter)
 			{
 				pCharacter->HideMaster(thirdperson ? 0 : 1);
 			}
+			*/
+			m_hideMaster = !thirdperson;
 		}
 	}
 }
@@ -3767,6 +3769,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 	DeployParachute(false, false);
 
+	m_hideMaster = false;
 	m_bSwimming = false;
 	m_actions = 0;
 	m_forcedRotation = false;
@@ -7557,17 +7560,20 @@ void CPlayer::SetPainEffect(float progress /* = 0.0f */)
 
 void CPlayer::UpdateDraw()
 {
+	bool hideMaster = m_hideMaster;
+
 	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
-	if (m_stats.isHidden || GetSpectatorMode() != eASM_None)
+	if (!IsFpSpectatorTarget() && (m_stats.isHidden || GetSpectatorMode() != eASM_None))
 	{
 		DrawSlot(0, 0);
 	}
-	else if (!IsClient() || IsThirdPerson() || m_stats.isOnLadder)
+	else if ((!IsClient() && !IsFpSpectatorTarget()) || IsThirdPerson() || m_stats.isOnLadder)
 	{
 		DrawSlot(0, 1);
 		// Show all
 		HideAllAttachments(0, false, false);
+
 		// Hide head if we are on a ladder and third person is not set
 		if (IsClient() && m_stats.isOnLadder && !IsThirdPerson())
 		{
@@ -7598,8 +7604,14 @@ void CPlayer::UpdateDraw()
 		}
 		else if ((m_stats.firstPersonBody > 0) && !ghostPit)
 		{
-			const int draw = IsFp3pModel();
-			DrawSlot(0, draw);
+			DrawSlot(0, 1);
+
+			const bool isFp3p = IsFp3pModel();
+			if (!isFp3p)
+			{
+				hideMaster = true;
+			}
+
 			// Hide attachments for the body first person model
 			HideAllAttachments(0, true, false);
 		}
@@ -7607,6 +7619,11 @@ void CPlayer::UpdateDraw()
 		{
 			DrawSlot(0, 0);
 		}
+	}
+
+	if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+	{
+		pCharacter->HideMaster(hideMaster ? 1 : 0);
 	}
 }
 
