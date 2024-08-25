@@ -1,5 +1,5 @@
 <CharacterDefinition>
- <Model File="objects/characters/human/us/nanosuit/nanosuit_us.chr"/>
+ <Model File="objects/characters/human/us/nanosuit/nanosuit_us_lower.chr"/>
  <AttachmentList>
   <Attachment AName="head" Type="CA_SKIN" Rotation="1,0,0,0" Position="0,0,0" BoneName="" Binding="objects/characters/heads/story/michael_sykes/sykes.chr" Flags="0" Material="Objects/Characters/Heads/Story/Michael_Sykes/sykes_helmetshadow" HingeIdx="0" HingeLimit="0" HingeDamping="0"/>
   <Attachment AName="helmet" Type="CA_BONE" Rotation="-0.70640039,0.031598538,0.70640057,-0.031597573" Position="2.3308772e-007,-0.01712268,1.605448" BoneName="Bip01 Head" Binding="objects/characters/heads/story/michael_sykes/nanosuit_helm_head_sykes.cgf" Flags="0"/>
