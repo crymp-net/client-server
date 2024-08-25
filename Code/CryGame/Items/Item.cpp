@@ -1497,7 +1497,8 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 
 	CopyRenderFlags(GetOwner());
 
-	Hide(true);
+	//Hide(true); //CryMP: Causes weapon to be hidden after sv_restart in mp
+
 	m_stats.dropped = false;
 	m_stats.brandnew = false;
 
