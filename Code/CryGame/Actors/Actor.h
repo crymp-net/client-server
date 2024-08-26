@@ -1323,6 +1323,7 @@ public:
 	}
 
 	bool m_hideActor = false;
+	bool m_hideMaster = false;
 
 private:
 

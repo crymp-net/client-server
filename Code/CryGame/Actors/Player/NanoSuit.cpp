@@ -114,13 +114,6 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 {
 	bool bSuccess = false;
 	SEntitySlotInfo slotInfo;
-	bool isClient = false;
-
-	CActor* pActor = static_cast<CActor*> (g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId()));
-	if (pActor != 0 && pActor->IsClient())
-	{
-		isClient = true;
-	}
 
 	if (pNanoMat && pEntity->GetSlotInfo(0, slotInfo) && slotInfo.pCharacter != 0)
 	{
@@ -137,11 +130,7 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 				ICharacterInstance* pCharInstance = pAttachmentObj->GetICharacterInstance();
 				if (pCharInstance)
 				{
-					// needed to support "fp3p"
-					if (isClient)
-						pCharInstance->SetMaterial(pNanoMat->arms);
-					else
-						pCharInstance->SetMaterial(pNanoMat->body);
+					pCharInstance->SetMaterial(pNanoMat->body);
 				}
 			}
 		}
