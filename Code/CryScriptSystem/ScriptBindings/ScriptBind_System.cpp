@@ -18,6 +18,7 @@
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h" // <== GetItemClasses
 
 #include "ScriptBind_System.h"
 
@@ -134,6 +135,9 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(GetVehiclesByClass, "class");
 	SCRIPT_REG_TEMPLFUNC(IsClassValid, "class");
 	SCRIPT_REG_TEMPLFUNC(GetEntityScriptFilePath, "class");
+
+	SCRIPT_REG_FUNC(GetVehicleClasses);
+	SCRIPT_REG_FUNC(GetItemClasses);
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -1823,4 +1827,46 @@ int ScriptBind_System::GetEntityScriptFilePath(IFunctionHandler* pH, const char*
 		return pH->EndFunction();
 	}
 	return pH->EndFunction(pClass->GetScriptFile());
+}
+
+int ScriptBind_System::GetItemClasses(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	int k = 1;
+
+	IItemSystem* pItemSystem = gEnv->pGame->GetIGameFramework()->GetIItemSystem();
+	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
+	IEntityClass* pClass;
+
+	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
+	{
+		if (pClass) {
+			if (pItemSystem->IsItemClass(pClass->GetName()))
+				pObj->SetAt(k++, pClass->GetName());
+
+		}
+	}
+
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehicleClasses(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	int k = 1;
+
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
+	IEntityClass* pClass;
+
+	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
+	{
+		if (pClass) {
+			if (pVehicleSystem->IsVehicleClass(pClass->GetName()))
+				pObj->SetAt(k++, pClass->GetName());
+
+		}
+	}
+
+	return pH->EndFunction(*pObj);
 }
