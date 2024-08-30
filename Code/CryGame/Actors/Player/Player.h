@@ -633,7 +633,7 @@ public:
 	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
 	void DeployParachute(bool show, bool sound);
-	void UpdateFreefallAnimationInputs(bool force = false);
+	void UpdateFreefallAnimationInputs(bool force = false, bool parachuteActive = false);
 
 	void ProcessCharacterOffset(float frameTime);
 

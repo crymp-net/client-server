@@ -5408,9 +5408,11 @@ void CPlayer::ChangeParachuteState(int8 newState)
 			break;
 		}
 
+		const bool parachuteActive = (m_stats.inFreefall.Value() >= 2);
+
 		m_stats.inFreefall = newState;
 
-		UpdateFreefallAnimationInputs();
+		UpdateFreefallAnimationInputs(false, parachuteActive);
 	}
 }
 
@@ -5492,20 +5494,37 @@ void CPlayer::DeployParachute(bool deploy, bool sound)
 	}
 }
 
-void CPlayer::UpdateFreefallAnimationInputs(bool force/* =false */)
+void CPlayer::UpdateFreefallAnimationInputs(bool force/* =false */, bool parachuteActive/* =false */)
 {
-	if (force)
+ 	if (force)
 	{
 		SetAnimationInput("Action", "idle");
 		GetAnimationGraphState()->Update();
 	}
 
 	if (m_stats.inFreefall.Value() == 1)
+	{
 		SetAnimationInput("Action", "freefall");
+	}
 	else if ((m_stats.inFreefall.Value() == 3) || (m_stats.inFreefall.Value() == 2)) //3 means opening, 2 already opened
-		SetAnimationInput("Action", "parachute");
+	{
+			SetAnimationInput("Action", "parachute");
+	}
 	else if (m_stats.inFreefall.Value() == 0)
+	{
+		if (parachuteActive)
+		{
+			//Stop parachute animation
+			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+			ISkeletonAnim* pSkeletonAnim = pCharacter ? pCharacter->GetISkeletonAnim() : nullptr;
+			if (pSkeletonAnim)
+			{
+				pSkeletonAnim->StopAnimationInLayer(0, .1f);
+			}
+		}
+
 		SetAnimationInput("Action", "idle");
+	}
 }
 
 
