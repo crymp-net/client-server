@@ -664,7 +664,7 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 					currentItem->PlayAction(g_pItemStrings->deselect, CItem::eIPAF_FirstPerson, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
 				// schedule to start swimming after deselection is finished
 				pFists->EnableAnimations(false);
-				gEnv->pGame->GetIGameFramework()->GetIItemSystem()->SetActorItem(this, pFists->GetEntityId());
+				SelectItem(pFists->GetEntityId(), true);
 				pFists->EnableAnimations(true);
 				//fists->SetBusy(true);
 			}
