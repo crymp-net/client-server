@@ -132,12 +132,10 @@ void PlayerView::ViewPreProcess(SViewParams& viewParams)
 
 	m_entityWorldPos = m_player.GetEntity()->GetWorldPos();
 
-	if (m_player.IsFpSpectatorTarget())
-	{
-		if (m_pVehicle)
-			stats.followCharacterHead = 1;
+	//if (m_player.IsFpSpectatorTarget())
+	//{
 		//m_entityWorldPos = m_player.GetEntity()->GetLocalTM().GetTranslation();
-	}
+	//}
 
 	if (m_player.IsClient())
 	{
@@ -969,7 +967,7 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 
 					m_lastSeatId = pSeat->GetSeatId();
 				}
-				if (IVehicleView* pView = (m_lastSeatId < 3) ? pSeat->GetView(currSeatViewId) : nullptr)
+				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
 				{
 					pView->UpdateView(viewParams, m_playerId);
 

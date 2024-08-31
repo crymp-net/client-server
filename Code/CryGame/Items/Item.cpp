@@ -2143,11 +2143,13 @@ void CItem::StartUse(EntityId userId)
 	pOwner->LinkToMountedWeapon(GetEntityId());
 	SAFE_HUD_FUNC(GetCrosshair()->SetUsability(0));
 
+	/* Handled in UpdateDraw() now
 	//Don't draw legs for the FP player (prevents legs clipping in the view)
 	if (pOwner->IsClient() && !pOwner->IsThirdPerson())
 	{
 		pOwner->m_hideMaster = true;
 	}
+	*/
 
 	if (pOwner->GetAnimatedCharacter())
 		pOwner->GetAnimatedCharacter()->SetNoMovementOverride(true);
@@ -2166,11 +2168,13 @@ void CItem::StopUse(EntityId userId)
 	if (!pActor)
 		return;
 
+	/* Handled in UpdateDraw() now 
 	//Draw legs again for the FP player
 	if (pActor->IsClient())
 	{
 		pActor->m_hideMaster = false;
 	}
+	*/
 
 	if (pActor->GetHealth() > 0)
 		pActor->SelectLastItem(true);
