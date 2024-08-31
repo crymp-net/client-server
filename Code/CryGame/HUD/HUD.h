@@ -419,6 +419,7 @@ public:
 	//interface effects
 	void IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle = false);
 	void IndicateHit(bool enemyIndicator = false,IEntity *pEntity = NULL, bool explosionFeedback = false);
+	void ShowHitIndicator();
 	void UpdateHitIndicator();
 	void ShowKillAreaWarning(bool active, int timer);
 	void ShowTargettingAI(EntityId id);

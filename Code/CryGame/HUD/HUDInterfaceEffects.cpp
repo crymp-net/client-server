@@ -646,11 +646,7 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	{
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 
-		if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
-		{
-			m_animHitIndicatorPlayer.Invoke("indicateHit");
-			m_hitIndicatorPlayerTimer = 1.0f;
-		}
+		ShowHitIndicator();
 	}
 	else
 	{
@@ -658,6 +654,8 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 		if (pSeat && !pSeat->IsDriver())
 		{
 			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
+
+			ShowHitIndicator();
 		}
 		else
 		{
@@ -686,6 +684,15 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 					m_pHUDSilhouettes->SetSilhouette(pVehicle,r,g,b,1.0f,5.0f);
 			}
 		}
+	}
+}
+
+void CHUD::ShowHitIndicator()
+{
+	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
+	{
+		m_animHitIndicatorPlayer.Invoke("indicateHit");
+		m_hitIndicatorPlayerTimer = 1.0f;
 	}
 }
 
