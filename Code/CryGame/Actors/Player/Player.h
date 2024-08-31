@@ -633,7 +633,7 @@ public:
 	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
 	void DeployParachute(bool show, bool sound);
-	void UpdateFreefallAnimationInputs(bool force = false);
+	void UpdateFreefallAnimationInputs(bool force = false, bool parachuteActive = false);
 
 	void ProcessCharacterOffset(float frameTime);
 
@@ -851,8 +851,8 @@ protected:
 	float m_stickySurfaceTimer;
 
 	// used by parachute. 
-	int			m_nParachuteSlot;
-	float		m_fParachuteMorph; //0..1 to play morph targets
+	bool m_ParachuteOpen = false;
+	float m_fParachuteMorph = 0.0f; //0..1 to play morph targets
 	bool		m_parachuteEnabled;
 	float		m_openParachuteTimer;
 	bool    m_openingParachute;
@@ -893,6 +893,8 @@ public:
 //////////////////////////////////////////////////////////////////////////////////
 
 private:
+
+	static constexpr std::string_view m_parachuteAttachmentName = "parachute_attach";
 
 	float m_tpLeanOffset = 0.0f;
 	float m_tpProneOffset = 0.0f;
@@ -964,9 +966,9 @@ public:
 	float m_targetOpacity = 1.0f;
 	float m_smoothedOpacity = 1.0f;
 
-	bool IsParachuteMorphActive()
+	bool IsParachuteActive()
 	{
-		return m_fParachuteMorph > 0.0f;
+		return m_ParachuteOpen;
 	}
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }

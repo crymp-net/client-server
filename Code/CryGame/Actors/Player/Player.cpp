@@ -178,10 +178,6 @@ CPlayer::CPlayer()
 	m_bDemoModeSpectator = false;
 
 	m_pNanoSuit = NULL;
-
-	m_nParachuteSlot = 0;
-	m_fParachuteMorph = 0.f;
-
 	m_pVehicleClient = 0;
 
 	m_pVoiceListener = NULL;
@@ -668,7 +664,7 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 					currentItem->PlayAction(g_pItemStrings->deselect, CItem::eIPAF_FirstPerson, false, CItem::eIPAF_Default | CItem::eIPAF_RepeatLastFrame);
 				// schedule to start swimming after deselection is finished
 				pFists->EnableAnimations(false);
-				gEnv->pGame->GetIGameFramework()->GetIItemSystem()->SetActorItem(this, pFists->GetEntityId());
+				SelectItem(pFists->GetEntityId(), true);
 				pFists->EnableAnimations(true);
 				//fists->SetBusy(true);
 			}
@@ -952,16 +948,21 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 			UpdateFirstPersonEffects(frameTime);
 		}
 
-		UpdateParachute(frameTime);
-
 		//Vec3 camPos(pEnt->GetSlotWorldTM(0) * GetStanceViewOffset(GetStance()));
 		//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(camPos, 0.05f, ColorB(0,255,0,255) );
+	}
+
+	if (gEnv->bClient)
+	{
+		UpdateParachute(frameTime);
 	}
 
 	// need to create this even when player is dead, otherwise spectators don't see tank turrets rotate etc until they spawn in.
 
 	if (IsClient()) //CryMP - this should be called on client only
+	{
 		GetGameObject()->AttachDistanceChecker();
+	}
 
 	if (m_pPlayerInput)
 	{
@@ -1128,16 +1129,46 @@ void CPlayer::UpdateParachute(float frameTime)
 	}
 
 	//remove the parachute, if one was loaded. additional sounds should go in here
-	if (m_nParachuteSlot && m_stats.inFreefall.Value() <= 0)
+	if (m_ParachuteOpen && m_stats.inFreefall.Value() <= 0)
 	{
-		if (m_fParachuteMorph > 0.0f)
-		{
+		//if (m_fParachuteMorph > 0.6f)
+		//{
 			// update parachute morph (closing)
-			UpdateParachuteMorph(frameTime);
-		}
-		else
-		{
+			//UpdateParachuteMorph(frameTime);
+		//}
+		//else
+		//{
 			DeployParachute(false, true);
+		//}
+	}
+
+	if (m_ParachuteOpen)
+	{
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+		IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+		IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
+		if (pIAttachment)
+		{
+			 const Vec3 parachutePos = pIAttachment->GetAttWorldAbsolute().t;
+
+			// Define offsets in the local space (relative to the parachute or spine)
+			static Vec3 leftHandOffset = Vec3(-0.55f, 0.0f, 2.3f); 
+			static Vec3 rightHandOffset = Vec3(0.55f, 0.0f, 2.3f);
+
+			Quat attachmentRotation = pIAttachment->GetAttWorldAbsolute().q;
+			Vec3 rotatedLeftHandOffset = attachmentRotation * leftHandOffset;
+			Vec3 rotatedRightHandOffset = attachmentRotation * rightHandOffset; 
+
+			Vec3 worldPos1 = parachutePos + rotatedLeftHandOffset;
+			Vec3 worldPos2 = parachutePos + rotatedRightHandOffset;
+
+			SetIKPos("leftArm", worldPos1, 1);
+			SetIKPos("rightArm", worldPos2, 1);
+
+			//static ColorF leftColor(1, 1, 1, 1);
+			//static ColorF rightColor(0, 0.5f, 1, 1);
+			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos1, 0.1f, leftColor);
+			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos2, 0.1f, rightColor);
 		}
 	}
 }
@@ -1145,23 +1176,33 @@ void CPlayer::UpdateParachute(float frameTime)
 void CPlayer::UpdateParachuteMorph(float frameTime)
 {
 	const bool open = m_stats.inFreefall.Value() == 2;
+	const float speed = (frameTime * 0.3f);
 	// update parachute 
 	if (open)
 	{
-		m_fParachuteMorph += frameTime;
+		m_fParachuteMorph += speed;
 		if (m_fParachuteMorph > 1.0f)
 			m_fParachuteMorph = 1.0f;
 	}
 	else
 	{
-		m_fParachuteMorph -= frameTime;
+		m_fParachuteMorph -= speed;
 	}
-	if (m_nParachuteSlot)
+	if (m_ParachuteOpen)
 	{
-		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(m_nParachuteSlot);
-		if (pCharacter)
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+		IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+		IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
+		if (pIAttachment)
 		{
-			pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+			CCHRAttachment* pCharacterAttachment = static_cast<CCHRAttachment*>(pIAttachment->GetIAttachmentObject());
+			if (pCharacterAttachment)
+			{
+				if (ICharacterInstance* pInstance = pCharacterAttachment->GetICharacterInstance())
+				{
+					pInstance->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
+				}
+			}
 		}
 	}
 }
@@ -1385,7 +1426,7 @@ void CPlayer::PrePhysicsUpdate()
 
 	Debug();
 
-	const bool TP(IsThirdPerson());
+	const bool TP = IsThirdPerson();
 
 	if (m_pMovementController && !gEnv->bMultiplayer) //CryMP: Ghost Bug Fix #2, disable this in mp for now
 	{
@@ -5367,40 +5408,68 @@ void CPlayer::ChangeParachuteState(int8 newState)
 			break;
 		}
 
+		const bool parachuteActive = (m_stats.inFreefall.Value() >= 2);
+
 		m_stats.inFreefall = newState;
 
-		UpdateFreefallAnimationInputs();
+		UpdateFreefallAnimationInputs(false, parachuteActive);
 	}
 }
 
 void CPlayer::DeployParachute(bool deploy, bool sound)
 {
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+	if (!pCharacter)
+		return;
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+	if (!pIAttachmentManager)
+		return;
+
 	if (deploy)
 	{
-		IEntity* pEnt = GetEntity();
-		// load and draw the parachute
-		if (!m_nParachuteSlot)
+		IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
+		if (!pIAttachment)
 		{
-			m_nParachuteSlot = pEnt->LoadCharacter(10, "Objects/Vehicles/Parachute/parachute_opening.chr");
+			pIAttachment = pIAttachmentManager->CreateAttachment(m_parachuteAttachmentName.data(), CA_BONE, "Bip01 Spine");
+
+			if (pIAttachment)
+			{
+				CCHRAttachment* pCharacterAttachment = new CCHRAttachment();
+
+				pCharacterAttachment->m_pCharInstance = gEnv->pCharacterManager->CreateInstance("Objects/Vehicles/Parachute/parachute_opening.chr");
+
+				pIAttachment->ProjectAttachment();
+				pIAttachment->AlignBoneAttachment(1);
+				pIAttachment->AddBinding(pCharacterAttachment);
+				//CryLogAlways("Creating parachute attachment.");
+
+				QuatT lm = pIAttachment->GetAttRelativeDefault();
+				lm.t = Vec3(-1.08f, 0.0f, 0.0f);
+
+				Vec3 fwdDir = GetEntity()->GetWorldTM().TransformVector(Vec3(0, 1, 0));
+				Quat rot = Quat::CreateRotationVDir(fwdDir);
+
+				// worldspace -> bonespace
+				Quat rotCharInv = Quat(GetEntity()->GetSlotWorldTM(0)).GetInverted();
+				Quat rotBoneInv = pCharacter->GetISkeletonPose()->GetAbsJointByID(pIAttachment->GetBoneID()).q.GetInverted();
+				rot = rotBoneInv * rotCharInv * rot;
+				lm.q = rot;
+
+				pIAttachment->SetAttRelativeDefault(lm);
+			}
 		}
 
-		if (m_nParachuteSlot && !(pEnt->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)) // check if it was correctly loaded...dont wanna modify another character slot
+		if (pIAttachment)
 		{
-			m_fParachuteMorph = 0.0f;
-	
-			const int flags = pEnt->GetSlotFlags(m_nParachuteSlot) | ENTITY_SLOT_RENDER;
-			pEnt->SetSlotFlags(m_nParachuteSlot, flags);
+			pIAttachment->HideAttachment(0);
+			m_ParachuteOpen = true;
+			m_fParachuteMorph = 0.6f;
+		}
 
-			ICharacterInstance* pCharacter = pEnt->GetCharacter(m_nParachuteSlot);
-			if (pCharacter)
-			{
-				pCharacter->GetIMorphing()->SetLinearMorphSequence(m_fParachuteMorph);
-			}
-
-			if (sound)
-			{
-				PlaySound(ESound_ParachuteStart);
-			}
+		if (sound)
+		{
+			PlaySound(ESound_ParachuteStart);
 		}
 	}
 	else
@@ -5411,11 +5480,12 @@ void CPlayer::DeployParachute(bool deploy, bool sound)
 			PlaySound(ESound_ParachuteRun, false);
 		}
 
-		if (GetEntity()->GetSlotFlags(m_nParachuteSlot) & ENTITY_SLOT_RENDER)
+		IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
+		if (pIAttachment && !pIAttachment->IsAttachmentHidden())
 		{
-			int flags = GetEntity()->GetSlotFlags(m_nParachuteSlot) & ~ENTITY_SLOT_RENDER;
-			GetEntity()->SetSlotFlags(m_nParachuteSlot, flags);
+			m_ParachuteOpen = false;
 
+			pIAttachment->HideAttachment(1);
 			if (sound)
 			{
 				PlaySound(ESound_ParachuteStop);
@@ -5424,20 +5494,37 @@ void CPlayer::DeployParachute(bool deploy, bool sound)
 	}
 }
 
-void CPlayer::UpdateFreefallAnimationInputs(bool force/* =false */)
+void CPlayer::UpdateFreefallAnimationInputs(bool force/* =false */, bool parachuteActive/* =false */)
 {
-	if (force)
+ 	if (force)
 	{
 		SetAnimationInput("Action", "idle");
 		GetAnimationGraphState()->Update();
 	}
 
 	if (m_stats.inFreefall.Value() == 1)
+	{
 		SetAnimationInput("Action", "freefall");
+	}
 	else if ((m_stats.inFreefall.Value() == 3) || (m_stats.inFreefall.Value() == 2)) //3 means opening, 2 already opened
-		SetAnimationInput("Action", "parachute");
+	{
+			SetAnimationInput("Action", "parachute");
+	}
 	else if (m_stats.inFreefall.Value() == 0)
+	{
+		if (parachuteActive)
+		{
+			//Stop parachute animation
+			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+			ISkeletonAnim* pSkeletonAnim = pCharacter ? pCharacter->GetISkeletonAnim() : nullptr;
+			if (pSkeletonAnim)
+			{
+				pSkeletonAnim->StopAnimationInLayer(0, .1f);
+			}
+		}
+
 		SetAnimationInput("Action", "idle");
+	}
 }
 
 
@@ -7625,6 +7712,9 @@ void CPlayer::UpdateDraw()
 	{
 		pCharacter->HideMaster(hideMaster ? 1 : 0);
 	}
+
+	const bool hide = !m_ParachuteOpen;
+	HideAttachment(0, m_parachuteAttachmentName.data(), hide, hide);
 }
 
 void CPlayer::UpdateScreenFrost()

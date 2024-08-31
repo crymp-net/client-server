@@ -133,14 +133,18 @@ void CPlayerRotation::Commit(CPlayer& player)
 	player.m_linkStats.baseQuatLinked = m_baseQuatLinked.GetNormalized();
 	player.m_linkStats.viewQuatLinked = m_viewQuatLinked.GetNormalized();
 
+	if (player.IsClient())
+	{
+		player.m_stats.angularImpulseTime = m_angularImpulseTime;
+		player.m_stats.angularImpulse = m_angularImpulse;
+		player.m_stats.angularVel = m_angularVel;
+	}
+
 	player.m_viewRoll = m_viewRoll;
 	player.m_upVector = m_upVector;
 	player.m_viewAnglesOffset = m_viewAnglesOffset;
 	player.m_stats.leanAmount = m_leanAmount;
-	player.m_stats.angularImpulseTime = m_angularImpulseTime;
-	player.m_stats.angularImpulse = m_angularImpulse;
-	player.m_stats.angularVel = m_angularVel;
-
+	
 	player.m_stats.forceLookVector.zero();
 
 	if (m_absRoll > 0.01f)
