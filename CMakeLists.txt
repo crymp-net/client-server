@@ -322,6 +322,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/GameActions.h
 	Code/CryGame/GameCVars.cpp
 	Code/CryGame/GameCVars.h
+	Code/CryGame/GameCVarsLib.h
 	Code/CryGame/GameFactory.cpp
 	Code/CryGame/GameFactory.h
 	Code/CryGame/GameRules.cpp

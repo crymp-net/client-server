@@ -199,39 +199,10 @@ protected:
 	virtual void CheckReloadLevel();
 
 	// These funcs live in GameCVars.cpp
-	virtual void RegisterConsoleVars();
-	virtual void RegisterConsoleCommands();
-	virtual void UnregisterConsoleCommands();
 
 	virtual void RegisterGameObjectEvents();
 
-	// marcok: this is bad and evil ... should be removed soon
-	static void CmdRestartGame(IConsoleCmdArgs *pArgs);
-
-	static void CmdDumpSS(IConsoleCmdArgs *pArgs);
-
-	static void CmdLastInv(IConsoleCmdArgs *pArgs);
-	static void CmdName(IConsoleCmdArgs *pArgs);
-	static void CmdTeam(IConsoleCmdArgs *pArgs);
-	static void CmdLoadLastSave(IConsoleCmdArgs *pArgs);
-	static void CmdSpectator(IConsoleCmdArgs *pArgs);
-	static void CmdJoinGame(IConsoleCmdArgs *pArgs);
-	static void CmdKill(IConsoleCmdArgs *pArgs);
-  static void CmdVehicleKill(IConsoleCmdArgs *pArgs);
-	static void CmdRestart(IConsoleCmdArgs *pArgs);
-	static void CmdSay(IConsoleCmdArgs *pArgs);
-	static void CmdReloadItems(IConsoleCmdArgs *pArgs);
 	static void CmdLoadActionmap(IConsoleCmdArgs *pArgs);
-  static void CmdReloadGameRules(IConsoleCmdArgs *pArgs);
-  static void CmdNextLevel(IConsoleCmdArgs* pArgs);
-  static void CmdStartKickVoting(IConsoleCmdArgs* pArgs);
-  static void CmdStartNextMapVoting(IConsoleCmdArgs* pArgs);
-  static void CmdVote(IConsoleCmdArgs* pArgs);
-	static void CmdListPlayers(IConsoleCmdArgs* pArgs);
-
-  static void CmdQuickGame(IConsoleCmdArgs* pArgs);
-  static void CmdQuickGameStop(IConsoleCmdArgs* pArgs);
-  static void CmdBattleDustReload(IConsoleCmdArgs* pArgs);
 
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;
