@@ -537,8 +537,6 @@ public:
 	virtual void ToggleThirdPerson();
 	void EnableThirdPerson(bool enable);
 
-	void CheckCurrentWeapon(bool thirdperson);
-
 	virtual int  IsGod();
 
 	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);

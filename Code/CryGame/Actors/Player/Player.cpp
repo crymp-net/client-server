@@ -724,6 +724,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	{
 		PrePhysicsUpdate();
 	}
+
 	IEntity* pEnt = GetEntity();
 	if (pEnt->IsHidden() && !(GetEntity()->GetFlags() & ENTITY_FLAG_UPDATE_HIDDEN))
 		return;
@@ -734,9 +735,9 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 	{
 		if (IsClient()) //only local
 		{
-			UpdateScreenFrost();
 			UpdateScreenEffects(frameTime);
 		}
+		UpdateScreenFrost();
 		UpdateDraw();
 	}
 
@@ -1882,8 +1883,6 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 				pWeapon->PostFilterView(viewParams);
 
 				viewParams.viewID = 0; //CryMP: This has to be 0 otherwise blank screen
-
-				pTarget->m_stats.isHidden = true; //Also hide the TP body, otherwise double arms...
 			}
 		}
 		else if (pItem)
@@ -2188,9 +2187,6 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 
 	m_stats.isThirdPerson = !activate;
 
-	//lua stuff..
-	m_stats.isHidden = activate;
-
 	m_netAimDirSmooth = m_netAimDir;
 
 	CItem* pItem = static_cast<CItem*>(GetCurrentItem());
@@ -2200,8 +2196,6 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 
 		SAFE_HUD_FUNC(UpdateCrosshair());
 	}
-
-	CheckCurrentWeapon(m_stats.isThirdPerson);
 
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
 	if (pOffHand)
@@ -3707,8 +3701,6 @@ void CPlayer::EnableThirdPerson(bool enable)
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
-	CheckCurrentWeapon(enable);
-
 	if (m_stats.isShattered)
 	{
 		//CryMP: Fix visible model on shatter
@@ -3719,26 +3711,6 @@ void CPlayer::EnableThirdPerson(bool enable)
 	}
 	
 	ResetOpacity(); 
-}
-
-void CPlayer::CheckCurrentWeapon(bool thirdperson)
-{
-	CWeapon* pWeapon = GetCurrentWeapon(false);
-	if (pWeapon)
-	{
-		//Update player model for Shitens etc
-		if (pWeapon->IsUsed())
-		{
-			/* now handled in UpdateDraw()
-			ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
-			if (pCharacter)
-			{
-				pCharacter->HideMaster(thirdperson ? 0 : 1);
-			}
-			*/
-			m_hideMaster = !thirdperson;
-		}
-	}
 }
 
 int CPlayer::IsGod()
@@ -7648,6 +7620,28 @@ void CPlayer::SetPainEffect(float progress /* = 0.0f */)
 void CPlayer::UpdateDraw()
 {
 	bool hideMaster = m_hideMaster;
+	bool hideActor = m_hideActor;
+
+	if (m_stats.isThirdPerson)
+	{
+		hideMaster = false;
+		hideActor = false;
+	}
+	else
+	{
+		CWeapon* pWeapon = GetCurrentWeapon(!IsClient()); //on remote players we need to check vehicleweapon too
+		if (pWeapon)
+		{
+			if (IsClient())
+			{
+				hideMaster = pWeapon->IsUsed();
+			}
+			else
+			{
+				hideActor = pWeapon->IsUsed(); 
+			}
+		}
+	}
 
 	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
@@ -7674,7 +7668,7 @@ void CPlayer::UpdateDraw()
 	{
 		const bool ghostPit = IsGhostPit();
 
-		if (m_hideActor)
+		if (hideActor)
 		{
 			DrawSlot(0, 0);
 		}
