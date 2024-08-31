@@ -1220,7 +1220,7 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 
 	Ang3 worldAngles = Ang3::GetAnglesXYZ(Matrix33(worldTM));
 
-	static float defaultOffset = 0.75f;
+	const float defaultOffset = 0.75f;
 	float distance = 3.0f;
 	float offset = defaultOffset;
 	if (pActor)
