@@ -19,18 +19,10 @@ GameWindow GameWindow::s_globalInstance;
 
 static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static bool mouseCounterIncremented = false;
+
 	switch (msg)
 	{
-		case WM_PAINT:
-		{
-			if (g_pGame)
-			{
-				//Fixes cursor moving outside window (after you alt tab to another window
-				//and click on show desktop, then open crysis window)
-				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
-			}
-			break;
-		}
 		case WM_MOVE:  // 0x3
 		{
 			int x = GET_X_LPARAM(lParam);
@@ -47,28 +39,17 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, w, h);
 
-			if (g_pGame)
-			{
-				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
-			}
-
 			break;
 		}
 		case WM_CLOSE:  // 0x10
 		{
 			gEnv->pSystem->Quit();
 
-			return 0;
+			break;
 		}
 		case WM_INPUTLANGCHANGE:  // 0x51
 		{
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LANGUAGE_CHANGE, wParam, lParam);
-
-			break;
-		}
-		case WM_STYLECHANGED:  // 0x7D
-		{
-			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
 
 			break;
 		}
@@ -191,19 +172,27 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_ENTERMENULOOP:  // 0x211
 		case WM_ENTERSIZEMOVE:  // 0x231
 		{
-			if (g_pGame)
+			if (gEnv->pHardwareMouse && !mouseCounterIncremented)
 			{
-				g_pGame->ShowMousePointer(true);
+				gEnv->pHardwareMouse->IncrementCounter();
+				mouseCounterIncremented = true;
 			}
 
 			return 0;
 		}
 		case WM_EXITMENULOOP:  // 0x212
 		case WM_EXITSIZEMOVE:  // 0x232
+		case WM_CAPTURECHANGED:  // workaround for missing WM_EXITSIZEMOVE
 		{
-			if (g_pGame && !g_pGame->IsMenuActive())
+			if (gEnv->pHardwareMouse && mouseCounterIncremented)
 			{
-				g_pGame->ShowMousePointer(false);
+				gEnv->pHardwareMouse->DecrementCounter();
+				mouseCounterIncremented = false;
+			}
+
+			if (msg == WM_CAPTURECHANGED)
+			{
+				break;
 			}
 
 			return 0;
@@ -212,25 +201,23 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		{
 			return MA_ACTIVATEANDEAT;
 		}
-		case EVENT_SYSTEM_MENUPOPUPSTART:
+		case WM_ACTIVATE:
 		{
-			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS,
+				LOWORD(wParam) != WA_INACTIVE, 0);
 
-			if (g_pGame)
-			{
-				g_pGame->ConfineCursor(false);
-			}
-
-			break;
+			return 0;
 		}
-		case EVENT_SYSTEM_MENUPOPUPEND:
+		case WM_SETFOCUS:
 		{
 			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 1, 0);
 
-			if (g_pGame)
-			{
-				g_pGame->ConfineCursor(!g_pGame->IsMenuActive());
-			}
+			break;
+		}
+		case WM_KILLFOCUS:
+		{
+			gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_CHANGE_FOCUS, 0, 0);
+
 			break;
 		}
 		default:

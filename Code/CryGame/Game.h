@@ -188,16 +188,6 @@ public:
 
   ILINE SCVars *GetCVars() {return m_pCVars;}
 
-
-    bool IsMenuActive() const;
-    bool ShowMousePointer(bool show);
-    void ConfineCursor(bool confine);
-
-	bool IsMousePointerVisible() const
-	{
-		return m_isMousePointerVisible;
-	}
-
 protected:
 	virtual void LoadActionMaps(const char* filename = "libs/config/defaultProfile.xml");
 
@@ -287,16 +277,9 @@ protected:
 
 	typedef std::map<string, string, stl::less__stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
-
-private:
-	bool m_isMousePointerVisible;
 };
 
 extern CGame *g_pGame;
-
-#define SAFE_HARDWARE_MOUSE_FUNC(func)\
-	if(gEnv->pHardwareMouse)\
-		gEnv->pHardwareMouse->func
 
 #define SAFE_MENU_FUNC(func)\
 	{	if(g_pGame && g_pGame->GetMenu()) g_pGame->GetMenu()->func; }
