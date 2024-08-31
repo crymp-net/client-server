@@ -2091,7 +2091,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 	else if (action == rGameActions.xi_rotatepitch || action == rGameActions.xi_v_rotatepitch)
 	{
-		if (g_pGame->IsMousePointerVisible())
+		if (m_cursorVisibilityCounter > 0)
 		{
 			m_fAutosnapCursorControllerY = value * value * (-value);
 		}
@@ -2104,7 +2104,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if (action == rGameActions.xi_rotateyaw || action == rGameActions.xi_v_rotateyaw)
 	{
-		if (g_pGame->IsMousePointerVisible())
+		if (m_cursorVisibilityCounter > 0)
 		{
 			m_fAutosnapCursorControllerX = value * value * value;
 		}
@@ -2860,7 +2860,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 
 void CHUD::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
-	if (!g_pGame->IsMousePointerVisible())
+	if (m_cursorVisibilityCounter <= 0)
 	{
 		return;
 	}

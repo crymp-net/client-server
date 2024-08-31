@@ -97,6 +97,8 @@ protected:
 	float					m_fLastGodModeUpdate;
 	char					m_strGODMode[32];
 
+	int m_cursorVisibilityCounter = 0;
+
 	// Cached sizes
 	int						m_width;
 	int						m_height;
