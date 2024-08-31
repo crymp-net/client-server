@@ -132,12 +132,10 @@ void PlayerView::ViewPreProcess(SViewParams& viewParams)
 
 	m_entityWorldPos = m_player.GetEntity()->GetWorldPos();
 
-	if (m_player.IsFpSpectatorTarget())
-	{
-		if (m_pVehicle)
-			stats.followCharacterHead = 1;
+	//if (m_player.IsFpSpectatorTarget())
+	//{
 		//m_entityWorldPos = m_player.GetEntity()->GetLocalTM().GetTranslation();
-	}
+	//}
 
 	if (m_player.IsClient())
 	{
@@ -496,7 +494,7 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	const EStance stance = m_player.GetStance();
 	const bool freeFall = stats.inFreefall.Value() == 1;
 	//const bool parachute = m_player.GetPlayerStats() ? m_player.GetPlayerStats()->inFreefall == 2 : false;
-	const bool inFreeFalllOrPara = (stats.inFreefall.Value() > 0 || m_player.IsParachuteMorphActive());
+	const bool inFreeFalllOrPara = (stats.inFreefall.Value() > 0 || m_player.IsParachuteActive());
 
 	float distanceOffsetPara = -8.f;
 
@@ -969,7 +967,7 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 
 					m_lastSeatId = pSeat->GetSeatId();
 				}
-				if (IVehicleView* pView = (m_lastSeatId < 3) ? pSeat->GetView(currSeatViewId) : nullptr)
+				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
 				{
 					pView->UpdateView(viewParams, m_playerId);
 
@@ -1219,8 +1217,34 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	worldPos.z += 1.5f;
 
 	Ang3 worldAngles = Ang3::GetAnglesXYZ(Matrix33(worldTM));
+
+	const float defaultOffset = 0.75f;
+	float distance = 3.0f;
+	float offset = defaultOffset;
+	if (pActor)
+	{
+		if (pActor->GetLinkedVehicle())
+			offset = 2.0f;
+		else
+		{
+			SActorStats* pStats = pActor->GetActorStats();
+			if (pStats)
+			{
+				if (pStats->inFreefall.Value() == 2)
+				{
+					offset -= 2.0f;
+					distance += 5.0f;
+				}
+				else if (pStats->inFreefall.Value() == 1 || pStats->inFreefall.Value() == 3)
+				{
+					offset = 10.0f;
+					worldPos.z -= 10.f;
+				}
+			}
+		}
+	}
+
 	float rot = worldAngles.z;// + m_rot;
-	float distance = 3;//(m_defaultDistance != 0) ? m_defaultDistance : m_distance;
 
 	if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 	{
@@ -1240,21 +1264,6 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 	AABB targetBounds;
 	pEntity->GetLocalBounds(targetBounds);
 	goal.z = targetBounds.max.z;
-	static float defaultOffset = 0.75f;
-	float offset = defaultOffset;
-	if (pActor)
-	{
-		if (pActor->GetLinkedVehicle())
-			offset = 2.0f;
-		else
-		{
-			SActorStats* pStats = pActor->GetActorStats();
-			if (pStats && pStats->inFreefall > 0)
-			{
-				offset = -10.0f;
-			}
-		}
-	}
 	goal.z += pEntity->GetWorldPos().z + offset;
 
 	// store / interpolate the offset, not the world pos (reduces percieved jitter in vehicles)
