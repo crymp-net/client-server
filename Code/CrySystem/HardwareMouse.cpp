@@ -94,6 +94,12 @@ void HardwareMouse::IncrementCounter()
 
 void HardwareMouse::DecrementCounter()
 {
+	if (m_counter <= 0)
+	{
+		CryLogErrorAlways("%s: Too many decrements!", __FUNCTION__);
+		return;
+	}
+
 	m_counter--;
 
 	if (m_counter == 0)
@@ -159,6 +165,7 @@ void HardwareMouse::Reset(bool visibleByDefault)
 	m_acceleration = 1;
 	m_hasFocus = true;
 	m_cursorReleased = false;
+	m_cursorConfineDisabled = false;
 
 	if (!visibleByDefault)
 	{
@@ -168,6 +175,13 @@ void HardwareMouse::Reset(bool visibleByDefault)
 
 void HardwareMouse::ConfineCursor(bool confine)
 {
+	m_cursorConfined = confine;
+
+	if (confine && m_cursorConfineDisabled)
+	{
+		return;
+	}
+
 	const bool isEditor = gEnv->pSystem->IsEditor();
 
 	void* window = isEditor ? gEnv->pRenderer->GetCurrentContextHWND() : gEnv->pRenderer->GetHWND();
@@ -295,6 +309,21 @@ bool HardwareMouse::OnInputEventUI(const SInputEvent& event)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void HardwareMouse::DisableConfineCursor(bool disable)
+{
+	if (m_cursorConfineDisabled == disable)
+	{
+		return;
+	}
+
+	m_cursorConfineDisabled = disable;
+
+	if (m_cursorConfined)
+	{
+		this->ConfineCursor(!disable);
+	}
+}
 
 void HardwareMouse::ShowCursor(bool show)
 {

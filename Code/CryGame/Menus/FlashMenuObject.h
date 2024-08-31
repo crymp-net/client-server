@@ -336,6 +336,7 @@ private:
 	ButtonPosMap::iterator FindButton(const char* shortcut);
 
 	bool ShouldIgnoreInGameEvent();
+	void ShowMouseCursor(bool show);
 
 	int m_iMaxProgress;
 
@@ -363,6 +364,7 @@ private:
 	bool m_bInLoading;
 	bool m_bLoadingDone;
 	bool m_bTutorialVideo;
+	bool m_isMouseCursorVisible = true;
 	int m_nBlackGraceFrames;
 	int m_nLastFrameUpdateID;
 	int m_iGamepadsConnected;

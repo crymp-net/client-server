@@ -109,8 +109,6 @@ CGame::CGame()
 	m_pDefaultAM = 0;
 	m_pMultiplayerAM = 0;
 
-	m_isMousePointerVisible = true;
-
 	GetISystem()->SetIGame(this);
 }
 
@@ -632,8 +630,6 @@ void CGame::InitHUD(IActor* pActor)
 void CGame::DestroyHUD()
 {
 	SAFE_DELETE(m_pHUD);
-
-	g_pGame->ShowMousePointer(true); //CryMP making sure pointer is visible after disco..
 }
 
 void CGame::BlockingProcess(BlockingConditionFunction f)
@@ -682,61 +678,6 @@ CFlashMenuObject* CGame::GetMenu() const
 COptionsManager* CGame::GetOptions() const
 {
 	return m_pOptionsManager;
-}
-
-bool CGame::IsMenuActive() const
-{
-	return GetMenu() && GetMenu()->IsActive();
-}
-
-bool CGame::ShowMousePointer(bool show)
-{
-	if (show == m_isMousePointerVisible)
-	{
-		return false;
-	}
-
-	if (m_isMousePointerVisible)
-	{
-		// hide mouse cursor
-
-		if (gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->DecrementCounter();
-		}
-
-		m_isMousePointerVisible = false;
-	}
-	else
-	{
-		// show mouse cursor
-
-		if (gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->IncrementCounter();
-		}
-
-		m_isMousePointerVisible = true;
-	}
-
-	return true;
-}
-
-void CGame::ConfineCursor(bool confine)
-{
-	if (gEnv->pHardwareMouse)
-	{
-		int fullscreen = 0;
-		if (ICVar* pFullscreenCVar = gEnv->pConsole->GetCVar("r_Fullscreen"))
-		{
-			fullscreen = pFullscreenCVar->GetIVal();
-		}
-
-		if (!fullscreen)
-		{
-			gEnv->pHardwareMouse->ConfineCursor(confine);
-		}
-	}
 }
 
 void CGame::LoadActionMaps(const char* filename)

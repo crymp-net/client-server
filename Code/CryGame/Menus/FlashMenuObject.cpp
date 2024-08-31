@@ -48,6 +48,7 @@ History:
 #include "CryMP/Client/ServerBrowser.h"
 #include "CryMP/Client/ServerConnector.h"
 #include "Library/StringTools.h"
+#include "CrySystem/HardwareMouse.h"
 #include "CrySystem/LocalizationManager.h"
 
 #define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"
@@ -177,7 +178,7 @@ CFlashMenuObject::CFlashMenuObject()
 	m_tempWidth = gEnv->pRenderer->GetWidth();
 	m_tempHeight = gEnv->pRenderer->GetHeight();
 
-	SAFE_HARDWARE_MOUSE_FUNC(AddListener(this));
+	HardwareMouse::GetInstance().AddListener(this);
 
 	if (gEnv->pInput) gEnv->pInput->AddEventListener(this);
 
@@ -249,7 +250,7 @@ CFlashMenuObject::~CFlashMenuObject()
 
 	if (gEnv->pInput) gEnv->pInput->RemoveEventListener(this);
 
-	SAFE_HARDWARE_MOUSE_FUNC(RemoveListener(this));
+	HardwareMouse::GetInstance().RemoveListener(this);
 
 	DestroyStartMenu();
 	DestroyIngameMenu();
@@ -534,7 +535,7 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 	{
 		if (rInputEvent.deviceId == eDI_Keyboard || rInputEvent.deviceId == eDI_Mouse)
 		{
-			g_pGame->ShowMousePointer(true);
+			this->ShowMouseCursor(true);
 			m_bVirtualKeyboardFocus = false;
 			//user is using keyboard, we don't need the virtual keyboard anymore
 			m_pCurrentFlashMenuScreen->Invoke("enableVirtualKeyboard", false);
@@ -823,8 +824,9 @@ bool CFlashMenuObject::OnInputEvent(const SInputEvent& rInputEvent)
 			//PushButton(m_currentButtons.find(m_sCurrentButton), rInputEvent.state == eIS_Pressed, false);
 #if !defined(PS3)
 			float x, y;
-			SAFE_HARDWARE_MOUSE_FUNC(GetHardwareMouseClientPosition(&x, &y));
-			SAFE_HARDWARE_MOUSE_FUNC(Event((int)x, (int)y, rInputEvent.state == eIS_Pressed ? HARDWAREMOUSEEVENT_LBUTTONDOWN : HARDWAREMOUSEEVENT_LBUTTONUP));
+			HardwareMouse::GetInstance().GetHardwareMouseClientPosition(&x, &y);
+			HardwareMouse::GetInstance().Event(static_cast<int>(x), static_cast<int>(y),
+				rInputEvent.state == eIS_Pressed ? HARDWAREMOUSEEVENT_LBUTTONDOWN : HARDWAREMOUSEEVENT_LBUTTONUP);
 
 
 #endif
@@ -969,7 +971,7 @@ void CFlashMenuObject::OnLoadingStart(ILevelInfo* pLevel)
 	if (m_stateEntryMovies != eEMS_Done)
 	{
 		if (m_stateEntryMovies < eEMS_Done)
-			g_pGame->ShowMousePointer(true);
+			this->ShowMouseCursor(true);
 		m_stateEntryMovies = eEMS_Done;
 	}
 
@@ -1128,6 +1130,26 @@ bool CFlashMenuObject::ShouldIgnoreInGameEvent()
 	return !gEnv->pSystem->IsEditor() && !gEnv->bMultiplayer && m_apFlashMenuScreens[MENUSCREEN_FRONTENDLOADING]->IsLoaded() && gEnv->pSystem->IsSerializingFile() != 1 && !g_pGame->IsReloading() && g_pGameCVars->hud_startPaused;
 }
 
+void CFlashMenuObject::ShowMouseCursor(bool show)
+{
+	if (show)
+	{
+		if (!m_isMouseCursorVisible)
+		{
+			HardwareMouse::GetInstance().IncrementCounter();
+			m_isMouseCursorVisible = true;
+		}
+	}
+	else
+	{
+		if (m_isMouseCursorVisible)
+		{
+			HardwareMouse::GetInstance().DecrementCounter();
+			m_isMouseCursorVisible = false;
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------------------------------
 
 void CFlashMenuObject::OnLoadingComplete(ILevel* pLevel)
@@ -1159,7 +1181,7 @@ void CFlashMenuObject::OnLoadingComplete(ILevel* pLevel)
 	//CryMP : Stop loading music
 	m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
 
-	g_pGame->ShowMousePointer(false);
+	this->ShowMouseCursor(false);
 
 	m_bInLoading = false;
 }
@@ -1563,7 +1585,7 @@ void CFlashMenuObject::PlayTutorialVideo()
 {
 	if (PlayVideo("Localized/Video/PS_Tutorial.sfd", false, 0, CFlashMenuObject::VIDEOPLAYER_LOCALIZED_AUDIOCHANNEL, -1, true, true))
 	{
-		g_pGame->ShowMousePointer(false);
+		this->ShowMouseCursor(false);
 		if (m_pMusicSystem)
 			m_pMusicSystem->EndTheme(EThemeFade_FadeOut, 0, true);
 		PlaySound(ESound_MenuAmbience, false);
@@ -1577,7 +1599,7 @@ bool CFlashMenuObject::StopTutorialVideo()
 {
 	if (m_bTutorialVideo)
 	{
-		g_pGame->ShowMousePointer(true);
+		this->ShowMouseCursor(true);
 		StopVideo();
 		PlayVideo("Localized/Video/bg.sfd", false, IVideoPlayer::LOOP_PLAYBACK);
 		if (m_pMusicSystem)
@@ -1913,7 +1935,7 @@ void CFlashMenuObject::HighlightButton(ButtonPosMap::iterator button)
 	GetButtonClientPos(button, pos);
 
 #if !defined(PS3)
-	SAFE_HARDWARE_MOUSE_FUNC(SetHardwareMouseClientPosition(pos.x, pos.y));
+	HardwareMouse::GetInstance().SetHardwareMouseClientPosition(pos.x, pos.y);
 
 
 #endif
@@ -1932,7 +1954,8 @@ void CFlashMenuObject::PushButton(ButtonPosMap::iterator button, bool press, boo
 	if (!force)
 	{
 #if !defined(PS3)
-		SAFE_HARDWARE_MOUSE_FUNC(Event((int)pos.x, (int)pos.y, press ? HARDWAREMOUSEEVENT_LBUTTONDOWN : HARDWAREMOUSEEVENT_LBUTTONUP));
+		HardwareMouse::GetInstance().Event(static_cast<int>(pos.x), static_cast<int>(pos.y),
+			press ? HARDWAREMOUSEEVENT_LBUTTONDOWN : HARDWAREMOUSEEVENT_LBUTTONUP);
 
 
 #endif
@@ -2222,7 +2245,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 		m_bVirtualKeyboardFocus = strcmp(szArgs, "On") ? false : true;
 		if (m_bVirtualKeyboardFocus != prevVal)
 		{
-			g_pGame->ShowMousePointer(!m_bVirtualKeyboardFocus);
+			this->ShowMouseCursor(!m_bVirtualKeyboardFocus);
 		}
 		if (!m_bVirtualKeyboardFocus && m_pCurrentFlashMenuScreen)
 		{
@@ -2250,7 +2273,7 @@ void CFlashMenuObject::HandleFSCommand(const char* szCommand, const char* szArgs
 	{
 		if (m_bVirtualKeyboardFocus)
 		{
-			g_pGame->ShowMousePointer(true);
+			this->ShowMouseCursor(true);
 		}
 
 		gEnv->pConsole->EnableActivationKey(true);
@@ -2765,7 +2788,7 @@ void CFlashMenuObject::InitStartMenu()
 
 	SetProfile();
 
-	g_pGame->ConfineCursor(false);
+	HardwareMouse::GetInstance().DisableConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2777,7 +2800,7 @@ void CFlashMenuObject::DestroyStartMenu()
 		if (m_multiplayerMenu)
 			m_multiplayerMenu->SetCurrentFlashScreen(0, false);
 
-		g_pGame->ShowMousePointer(false);
+		this->ShowMouseCursor(false);
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDSTART]->Unload();
 	}
 
@@ -2786,7 +2809,7 @@ void CFlashMenuObject::DestroyStartMenu()
 	m_bIgnoreEsc = false;
 	m_bDestroyStartMenuPending = false;
 
-	g_pGame->ConfineCursor(true);
+	HardwareMouse::GetInstance().DisableConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2803,9 +2826,8 @@ void CFlashMenuObject::InitIngameMenu()
 
 	if (!m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 	{
-		g_pGame->ShowMousePointer(true);
-
-		g_pGame->ConfineCursor(false);
+		this->ShowMouseCursor(true);
+		HardwareMouse::GetInstance().DisableConfineCursor(true);
 
 #ifdef CRYSIS_BETA
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Load("Libs/UI/Menus_IngameMenu_Beta.gfx");
@@ -2881,13 +2903,13 @@ void CFlashMenuObject::DestroyIngameMenu()
 		if (m_multiplayerMenu)
 			m_multiplayerMenu->SetCurrentFlashScreen(0, true);
 
-		g_pGame->ShowMousePointer(false);
+		this->ShowMouseCursor(false);
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Unload();
 	}
 	if (g_pGame->GetIGameFramework()->IsGameStarted())
 		ReloadHUDMovies();
 
-	g_pGame->ConfineCursor(true);
+	HardwareMouse::GetInstance().DisableConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -3055,7 +3077,7 @@ void CFlashMenuObject::OnPostUpdate(float fDeltaTime)
 	if (m_stateEntryMovies == eEMS_Stop)
 	{
 		m_stateEntryMovies = eEMS_Done;
-		g_pGame->ShowMousePointer(true);
+		this->ShowMouseCursor(true);
 		const char* movie = VALUE_BY_KEY(m_stateEntryMovies, gMovies);
 		if (movie)
 			PlayVideo(movie, false, IVideoPlayer::LOOP_PLAYBACK);

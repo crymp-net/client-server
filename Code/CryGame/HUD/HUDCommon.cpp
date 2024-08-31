@@ -118,12 +118,11 @@ CHUDCommon::CHUDCommon()
 
 CHUDCommon::~CHUDCommon()
 {
-	if (g_pGame->ShowMousePointer(false))
+	if (m_cursorVisibilityCounter > 0)
 	{
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
-		{
-			g_pGameActions->FilterNoMouse()->Enable(false);
-		}
+		m_cursorVisibilityCounter = 1;
+
+		this->CursorDecrementCounter();
 	}
 
 	if (gEnv->pHardwareMouse)
@@ -177,13 +176,19 @@ void CHUDCommon::SetGODMode(uint8 ucGodMode, bool forceUpdate)
 
 void CHUDCommon::CursorIncrementCounter()
 {
-	if (g_pGame->ShowMousePointer(true))
+	m_cursorVisibilityCounter++;
+
+	if (m_cursorVisibilityCounter == 1)
 	{
+		if (gEnv->pHardwareMouse)
+		{
+			gEnv->pHardwareMouse->IncrementCounter();
+		}
+
 		if (g_pGameActions && g_pGameActions->FilterNoMouse())
 		{
 			g_pGameActions->FilterNoMouse()->Enable(true);
 		}
-		//UpdateCrosshairVisibility();
 	}
 }
 
@@ -191,13 +196,25 @@ void CHUDCommon::CursorIncrementCounter()
 
 void CHUDCommon::CursorDecrementCounter()
 {
-	if (g_pGame->ShowMousePointer(false))
+	if (m_cursorVisibilityCounter <= 0)
 	{
+		CryLogError("%s: Too many decrements!", __FUNCTION__);
+		return;
+	}
+
+	m_cursorVisibilityCounter--;
+
+	if (m_cursorVisibilityCounter == 0)
+	{
+		if (gEnv->pHardwareMouse)
+		{
+			gEnv->pHardwareMouse->DecrementCounter();
+		}
+
 		if (g_pGameActions && g_pGameActions->FilterNoMouse())
 		{
 			g_pGameActions->FilterNoMouse()->Enable(false);
 		}
-		//UpdateCrosshairVisibility();
 	}
 }
 
