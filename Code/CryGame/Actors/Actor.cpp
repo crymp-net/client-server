@@ -3975,7 +3975,7 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 			}
 			else
 			{
-				if (IsClient())
+				if (IsClient() && GetHealth() > 0.0f)
 				{
 					SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
 				}
