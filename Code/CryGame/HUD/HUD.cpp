@@ -536,7 +536,8 @@ bool CHUD::Init(IActor* pActor)
 	m_animDownloadEntities.Load("Libs/UI/HUD_DownloadEntities.gfx");
 
 	//CryMP
-	m_animHitIndicator.Load("Libs/UI/HUD_HitIndicator.gfx", eFD_Center, eFAF_Visible);
+	m_animHitIndicatorPlayer.Load("Libs/UI/HUD_HitIndicatorPlayer.gfx", eFD_Center, eFAF_Visible);
+	m_animHitIndicatorVehicle.Load("Libs/UI/HUD_HitIndicatorVehicle.gfx", eFD_Center, eFAF_Visible);
 
 	// these are delay-loaded elsewhere!!!
 	if (loadEverything)

@@ -641,23 +641,33 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	if(explosionFeedback)
 		PlaySound(ESound_SpecialHitFeedback);
 
-	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
-	{
-		m_animHitIndicator.Invoke("indicateHit");
-		m_hitIndicatorTimer = 1.0f;
-	}
-
 	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
 	if (!pVehicle)
+	{
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
+
+		ShowHitIndicator();
+	}
 	else
 	{
 		IVehicleSeat *pSeat = pVehicle->GetSeatForPassenger(m_pClientActor->GetEntityId());
-		if(pSeat && !pSeat->IsDriver())
+		if (pSeat && !pSeat->IsDriver())
+		{
 			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
+
+			ShowHitIndicator();
+		}
 		else
 		{
-			m_pHUDVehicleInterface->m_animMainWindow.Invoke("indicateHit", enemyIndicator);
+			if (enemyIndicator)
+			{
+				m_pHUDVehicleInterface->m_animMainWindow.Invoke("indicateHit", enemyIndicator);
+			}
+			else
+			{
+				m_animHitIndicatorVehicle.Invoke("indicateHit");
+				m_hitIndicatorVehicleTimer = 1.0f;
+			}
 
 			if(pEntity && !gEnv->bMultiplayer)
 			{
@@ -677,23 +687,42 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 	}
 }
 
+void CHUD::ShowHitIndicator()
+{
+	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
+	{
+		m_animHitIndicatorPlayer.Invoke("indicateHit");
+		m_hitIndicatorPlayerTimer = 1.0f;
+	}
+}
+
 void CHUD::UpdateHitIndicator()
 {
-	//CryMP hit indicator
-	bool bVisible = m_hitIndicatorTimer > 0.0f;
-	if (g_pGameCVars->mp_hitIndicator || bVisible)
+	//CryMP player hit indicator
+	bool visible = m_hitIndicatorPlayerTimer > 0.0f;
+	if (g_pGameCVars->mp_hitIndicator || visible)
 	{
-		if (bVisible)
+		if (visible)
 		{
-			m_hitIndicatorTimer -= gEnv->pTimer->GetRealFrameTime();
-			bVisible = m_hitIndicatorTimer >= 0.0f;
+			m_hitIndicatorPlayerTimer -= gEnv->pTimer->GetRealFrameTime();
+			visible = m_hitIndicatorPlayerTimer >= 0.0f;
 		}
-		if (m_animHitIndicator.GetVisible() != bVisible)
+		if (m_animHitIndicatorPlayer.GetVisible() != visible)
 		{
-			m_animHitIndicator.SetVisible(bVisible);
+			m_animHitIndicatorPlayer.SetVisible(visible);
 		}
 	}
-
+	//CryMP vehicle hit indicator
+	bool visible_v = m_hitIndicatorVehicleTimer > 0.0f;
+	if (visible_v)
+	{
+		m_hitIndicatorVehicleTimer -= gEnv->pTimer->GetRealFrameTime();
+		visible_v = m_hitIndicatorVehicleTimer >= 0.0f;
+	}
+	if (m_animHitIndicatorVehicle.GetVisible() != visible_v)
+	{
+		m_animHitIndicatorVehicle.SetVisible(visible_v);
+	}
 }
 
 void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
