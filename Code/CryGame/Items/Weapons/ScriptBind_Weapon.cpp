@@ -256,6 +256,19 @@ int CScriptBind_Weapon::GetCrosshairVisibility(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
+int CScriptBind_Weapon::GetCurrentFireMode(IFunctionHandler* pH)
+{
+	CWeapon* pWeapon = GetWeapon(pH);
+	if (!pWeapon)
+		return pH->EndFunction();
+
+	if (IFireMode* pFM = pWeapon->GetActiveFireMode())
+		return pH->EndFunction(pFM->GetName());
+
+	return pH->EndFunction();
+}
+
+//------------------------------------------------------------------------
 int CScriptBind_Weapon::SetCurrentFireMode(IFunctionHandler* pH, const char* name)
 {
 	CWeapon* pWeapon = GetWeapon(pH);
@@ -582,14 +595,14 @@ void CScriptBind_Weapon::RegisterMethods()
 #define SCRIPT_REG_CLASSNAME &CScriptBind_Weapon::
 
 	SCRIPT_REG_TEMPLFUNC(SetAmmoCount, "")
-		SCRIPT_REG_TEMPLFUNC(GetAmmoCount, "")
-		SCRIPT_REG_TEMPLFUNC(GetClipSize, "")
-		SCRIPT_REG_TEMPLFUNC(IsZoomed, "")
-		SCRIPT_REG_TEMPLFUNC(IsZooming, "")
-		SCRIPT_REG_TEMPLFUNC(GetDamage, "")
-		SCRIPT_REG_TEMPLFUNC(GetAmmoType, "")
+	SCRIPT_REG_TEMPLFUNC(GetAmmoCount, "")
+	SCRIPT_REG_TEMPLFUNC(GetClipSize, "")
+	SCRIPT_REG_TEMPLFUNC(IsZoomed, "")
+	SCRIPT_REG_TEMPLFUNC(IsZooming, "")
+	SCRIPT_REG_TEMPLFUNC(GetDamage, "")
+	SCRIPT_REG_TEMPLFUNC(GetAmmoType, "")
 
-		SCRIPT_REG_TEMPLFUNC(GetRecoil, "");
+	SCRIPT_REG_TEMPLFUNC(GetRecoil, "");
 	SCRIPT_REG_TEMPLFUNC(GetSpread, "");
 	SCRIPT_REG_TEMPLFUNC(GetCrosshair, "");
 	SCRIPT_REG_TEMPLFUNC(GetCrosshairOpacity, "");
@@ -606,14 +619,16 @@ void CScriptBind_Weapon::RegisterMethods()
 
 	SCRIPT_REG_TEMPLFUNC(IsFiring, "");
 
-	SCRIPT_REG_TEMPLFUNC(SetCurrentFireMode, "name")
-		SCRIPT_REG_TEMPLFUNC(SetCurrentZoomMode, "name")
+	SCRIPT_REG_FUNC(GetCurrentFireMode)
 
-		SCRIPT_REG_TEMPLFUNC(AutoShoot, "nshots, autoReload");
+	SCRIPT_REG_TEMPLFUNC(SetCurrentFireMode, "name")
+	SCRIPT_REG_TEMPLFUNC(SetCurrentZoomMode, "name")
+
+	SCRIPT_REG_TEMPLFUNC(AutoShoot, "nshots, autoReload");
 
 	SCRIPT_REG_TEMPLFUNC(Reload, "")
 
-		SCRIPT_REG_TEMPLFUNC(ActivateLamLaser, "activate");
+	SCRIPT_REG_TEMPLFUNC(ActivateLamLaser, "activate");
 	SCRIPT_REG_TEMPLFUNC(ActivateLamLight, "activate");
 }
 

@@ -63,6 +63,8 @@ public:
 
 	int IsFiring(IFunctionHandler* pH);
 
+	// CryMP
+	int GetCurrentFireMode(IFunctionHandler* pH);
 
 	int SetCurrentFireMode(IFunctionHandler* pH, const char* name);
 	int SetCurrentZoomMode(IFunctionHandler* pH, const char* name);
