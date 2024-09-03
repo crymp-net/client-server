@@ -1840,11 +1840,11 @@ int ScriptBind_System::GetItemClasses(IFunctionHandler * pH)
 
 	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
 	{
-		if (pClass) {
-			if (pItemSystem->IsItemClass(pClass->GetName()))
-				pObj->SetAt(k++, pClass->GetName());
-
+		if (pItemSystem->IsItemClass(pClass->GetName()))
+		{
+			pObj->SetAt(k++, pClass->GetName());
 		}
+
 	}
 
 	return pH->EndFunction(*pObj);
@@ -1861,9 +1861,8 @@ int ScriptBind_System::GetVehicleClasses(IFunctionHandler * pH)
 
 	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
 	{
-		if (pClass) {
-			if (pVehicleSystem->IsVehicleClass(pClass->GetName()))
-				pObj->SetAt(k++, pClass->GetName());
+		if (pVehicleSystem->IsVehicleClass(pClass->GetName())) {
+			pObj->SetAt(k++, pClass->GetName());
 
 		}
 	}
