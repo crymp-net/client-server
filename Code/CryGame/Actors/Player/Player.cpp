@@ -3815,9 +3815,15 @@ void CPlayer::Revive(ReasonForRevive reason)
 	const EntityId spectatorId = m_stats.spectatorTarget;
 	const uint8 fpSpectator = m_stats.fpSpectator;
 	const uint8 fpSpectatorTarget = m_stats.fpSpectatorTarget;
+	const bool thirdPerson = m_stats.isThirdPerson;	
 	m_stats = SPlayerStats();
 	m_stats.spectatorMode = spectator;
 	m_stats.fpSpectator = fpSpectator;
+
+	if (reason == ReasonForRevive::SCRIPT_BIND)
+	{
+		m_stats.isThirdPerson = thirdPerson;
+	}
 
 	if (fpSpectatorTarget)
 	{
@@ -3829,15 +3835,18 @@ void CPlayer::Revive(ReasonForRevive reason)
 		//Check if Client has respawned, remove old FP target if necessary
 		UpdateFpSpectator(spectatorId, 0);
 
-		//Restore Third person mode settings
-		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
-		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-		if (!g_pGameCVars->mp_thirdPerson)
+		if (reason != ReasonForRevive::SCRIPT_BIND)
 		{
-			shouldStayInTp = false;
-		}
+			//Restore Third person mode settings
+			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+			bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+			if (!g_pGameCVars->mp_thirdPerson && !GetLinkedVehicle())
+			{
+				shouldStayInTp = false;
+			}
 
-		EnableThirdPerson(shouldStayInTp);
+			EnableThirdPerson(shouldStayInTp);
+		}
 	}
 
 	m_headAngles.Set(0, 0, 0);

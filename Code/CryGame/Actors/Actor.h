@@ -791,7 +791,9 @@ public:
 	virtual void  SerializeLevelToLevel(TSerialize& ser);
 	virtual IInventory* GetInventory() const;
 
-	virtual bool IsClient() const;
+	bool IsClient() const override;
+	bool IsRemote() const;
+
 	virtual IMaterial* GetReplacementMaterial() { return m_pReplacementMaterial; };
 
 	virtual bool Init(IGameObject* pGameObject);
@@ -1145,8 +1147,6 @@ protected:
 
 	virtual void SetMaterialRecursive(ICharacterInstance* charInst, bool undo, IMaterial* newMat = 0);
 
-	void DisplayDebugInfo();
-
 	virtual void UpdateAnimGraph(IAnimationGraphState* pState);
 
 	//movement
@@ -1297,11 +1297,17 @@ public:
 
 	bool IsGhostPit();
 
+	IAttachment* CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName);
+
 	void HideAllAttachments(int characterSlot, bool hide, bool hideShadow);
 	void HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow);
 
 	void DrawSlot(int nSlot, int nEnable);
 	bool IsFp3pModel() const;
+
+	void CacheIKLimbs();
+	void CacheFileModels();
+	void CallCreateAttachments();
 
 	std::string GetCleanNick()
 	{
@@ -1325,7 +1331,32 @@ public:
 	bool m_hideActor = false;
 	bool m_hideMaster = false;
 
+	void SetFileModel(std::string_view model)
+	{
+		m_fileModel = model.data();
+	}
+	void SetFrozenModel(std::string_view model)
+	{
+		m_frozenModel = model.data();
+	}
+	void SetFpItemHandsModel(std::string_view model)
+	{
+		m_fpItemHandsModel = model.data();
+	}
+
 private:
+
+	struct IKLimb
+	{
+		int slot;
+		std::string limbName;
+		std::string rootBone;
+		std::string midBone;
+		std::string endBone;
+		int flags;
+	};
+
+	std::vector<IKLimb> m_cachedIKLimbs;
 
 	std::string m_playerNameClean = "";
 	bool m_isPlayerClass = false;

@@ -40,8 +40,11 @@
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
 #include "Library/Util.h"
+#include "Library/StringTools.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
+#include "CryCommon/CrySystem/CryFile.h"
+#include "CryCommon/CrySystem/CryPath.h"
 
 IItemSystem* CActor::m_pItemSystem = 0;
 IGameFramework* CActor::m_pGameFramework = 0;
@@ -406,6 +409,10 @@ void CActor::PostInit(IGameObject* pGameObject)
 	}
 
 	InitActorAttachments();
+
+	CacheIKLimbs();
+
+	CacheFileModels();
 }
 
 //----------------------------------------------------------------------
@@ -803,9 +810,83 @@ void CActor::Physicalize(EStance stance)
 //
 void CActor::SetActorModel()
 {
-	// this should be pure-virtual, but for the moment to support alien scripts
-	if (IScriptTable* pScriptTable = GetEntity()->GetScriptTable())
-		Script::CallMethod(pScriptTable, "SetActorModel", IsClient());
+	IVehicle* pCurrVehicle = GetLinkedVehicle();
+
+	if (gEnv->bMultiplayer)
+	{
+		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		{
+			pGameRules->OnSetActorModel(this, m_teamId);
+		}
+	}
+
+	GetEntity()->KillTimer(Timers::UNRAGDOLL);
+
+	bool changed = false;
+
+	if (m_currFileModel != m_fileModel)
+	{
+		changed = true;
+
+		m_currFileModel = m_fileModel;
+
+		GetEntity()->LoadCharacter(EntitySlot::CHARACTER, m_fileModel.c_str());
+
+		// Initialize animation events and IK limbs
+		//InitAnimationEvents(); OLD CODE, NOT NEEEDED?
+
+		// Use the cached IK limbs to set up IK
+		for (const auto& limb : m_cachedIKLimbs)
+		{
+			CreateIKLimb(limb.slot, limb.limbName.c_str(), limb.rootBone.c_str(), limb.midBone.c_str(), limb.endBone.c_str(), limb.flags);
+		}
+
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(EntitySlot::CHARACTER);
+		if (pCharacter)
+		{
+			ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose();
+			if (pSkeletonPose)
+			{
+				pSkeletonPose->SetForceSkeletonUpdate(0);
+			}
+		}
+
+		// Load frozen model if specified
+		if (m_frozenModel.length() > 0)
+		{
+			//entity:LoadObject
+			const char* ext = CryPath::GetExt(m_frozenModel.c_str());
+			if (stricmp(ext, CRY_CHARACTER_FILE_EXT) == 0 ||
+				stricmp(ext, CRY_CHARACTER_DEFINITION_FILE_EXT) == 0 ||
+				stricmp(ext, CRY_ANIM_GEOMETRY_FILE_EXT) == 0)
+			{
+				GetEntity()->LoadCharacter(EntitySlot::FROZEN, m_frozenModel.c_str());
+			}
+			else
+			{
+				GetEntity()->LoadGeometry(EntitySlot::FROZEN, m_frozenModel.c_str());
+			}
+
+			DrawSlot(EntitySlot::FROZEN, 0);
+		}
+
+		CreateBoneAttachment(EntitySlot::CHARACTER, "weapon_bone", "right_item_attachment");
+		CreateBoneAttachment(EntitySlot::CHARACTER, "alt_weapon_bone01", "left_item_attachment");
+		CreateBoneAttachment(EntitySlot::CHARACTER, "weapon_bone", "laser_attachment");
+
+		// Additional attachments if defined
+		CallCreateAttachments();
+	}
+
+	if (m_currfpItemHandsModel != m_fpItemHandsModel)
+	{
+		GetEntity()->LoadCharacter(EntitySlot::FPITEMHANDS, m_fpItemHandsModel.c_str());
+		DrawSlot(EntitySlot::FPITEMHANDS, 0);
+		GetEntity()->LoadCharacter(EntitySlot::FPITEMHANDS_SECONDARY, m_fpItemHandsModel.c_str());
+		DrawSlot(EntitySlot::FPITEMHANDS_SECONDARY, 0);
+
+		m_currfpItemHandsModel = m_fpItemHandsModel;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -2020,6 +2101,11 @@ void CActor::SetParams(SmartScriptTable& rTable, bool resetFirst)
 bool CActor::IsClient() const
 {
 	return m_isClient;
+}
+
+bool CActor::IsRemote() const
+{
+	return !m_isClient;
 }
 
 bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
@@ -4242,6 +4328,25 @@ bool CActor::IsGhostPit()
 	return false;
 }
 
+IAttachment* CActor::CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName)
+{
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
+
+	if (!pCharacter)
+	{
+		return nullptr;
+	}
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(attachmentName);
+	if (!pIAttachment)
+	{
+		pIAttachment = pIAttachmentManager->CreateAttachment(attachmentName, CA_BONE, boneName);
+	}
+
+	return pIAttachment;
+}
+
 void CActor::HideAllAttachments(int characterSlot, bool hide, bool hideShadow)
 {
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
@@ -4318,4 +4423,113 @@ bool CActor::IsFp3pModel() const
 		}
 	}
 	return false;
+}
+
+void CActor::CacheIKLimbs()
+{
+	m_cachedIKLimbs.clear();
+
+	SmartScriptTable ikLimbs;
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (pScriptTable && pScriptTable->GetValue("IKLimbs", ikLimbs))
+	{
+		IScriptTable::Iterator it = ikLimbs->BeginIteration();
+		while (ikLimbs->MoveNext(it))
+		{
+			SmartScriptTable limb;
+			if (it.value.CopyTo(limb))
+			{
+				IKLimb cachedLimb;
+
+				const char* limbName = nullptr;
+				const char* rootBone = nullptr;
+				const char* midBone = nullptr;
+				const char* endBone = nullptr;
+				limb->GetAt(1, cachedLimb.slot);
+
+				if (limb->GetAt(2, limbName)
+					&& limb->GetAt(3, rootBone)
+					&& limb->GetAt(4, midBone)
+					&& limb->GetAt(5, endBone))
+				{
+					cachedLimb.limbName = limbName;
+					cachedLimb.rootBone = rootBone;
+					cachedLimb.midBone = midBone;
+					cachedLimb.endBone = endBone;
+				}
+				limb->GetAt(6, cachedLimb.flags);
+
+				m_cachedIKLimbs.push_back(cachedLimb);
+			}
+		}
+		ikLimbs->EndIteration(it);
+	}
+
+	//CryLogAlways("[%s] Cached %d IK limbs", GetEntity()->GetName(), m_cachedIKLimbs.size());
+}
+
+void CActor::CacheFileModels()
+{
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (!pScriptTable)
+		return;
+
+	// Retrieve the Properties and PropertiesInstance tables from Lua
+	SmartScriptTable properties, propertiesInstance;
+	if (pScriptTable->GetValue("Properties", properties))
+	{
+		const char* model = nullptr;
+		properties->GetValue("fileModel", model);
+
+		m_fileModel = model;
+
+		// Handle model variations
+		int nModelVariations = 0;
+		if (properties->GetValue("nModelVariations", nModelVariations) && nModelVariations > 0)
+		{
+			if (pScriptTable->GetValue("PropertiesInstance", propertiesInstance))
+			{
+				int nVariation = 0;
+				if (propertiesInstance->GetValue("nVariation", nVariation))
+				{
+					nVariation = max(1, min(nVariation, nModelVariations));
+					std::string sVariation = StringTools::Format("%.2d", nVariation);
+					std::string modelStr = model;
+					std::string oldPattern = "_%d%d";
+					std::string newPattern = "_" + sVariation;
+
+					size_t pos = modelStr.find(oldPattern);
+
+					if (pos != std::string::npos)
+					{
+						modelStr.replace(pos, oldPattern.length(), newPattern);
+					}
+
+					m_fileModel = modelStr;
+				}
+			}
+		}
+		const char* frozenModel = nullptr;
+		if (properties->GetValue("objFrozenModel", frozenModel))
+		{
+			m_frozenModel = frozenModel;
+		}
+		const char* fpItemHandsModel = nullptr;
+		if (properties->GetValue("fpItemHandsModel", fpItemHandsModel))
+		{
+			m_fpItemHandsModel = fpItemHandsModel;
+		}
+	}
+}
+
+void CActor::CallCreateAttachments()
+{
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (pScriptTable)
+	{
+		if (pScriptTable->GetValueType("CreateAttachments") == svtFunction)
+		{
+			Script::CallMethod(pScriptTable, "CreateAttachments");
+		}
+	}
 }

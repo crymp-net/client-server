@@ -257,6 +257,7 @@ public:
 	bool IsSameTeam(EntityId firstId, EntityId secondId) const { return GetTeam(firstId) == GetTeam(secondId); };
 	bool IsNeutral(EntityId entityId) const { return GetTeam(entityId) == 0; };
 	bool IsHostile(EntityId firstId, EntityId secondId) const { return (!IsSameTeam(firstId, secondId) || GetTeamCount() < 2); };
+	void OnSetActorModel(CActor* pActor, int teamId);
 
 	//------------------------------------------------------------------------
 	// player

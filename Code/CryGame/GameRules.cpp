@@ -4100,3 +4100,44 @@ bool CGameRules::OnEndCutScene(IAnimSequence* pSeq)
 
 	return true;
 }
+
+void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
+{
+	if (!pActor)
+		return;
+
+	const EntityId playerId = pActor->GetEntityId();
+	const int KEY_MODEL = 1000;
+	//const int currTeamId = GetTeam(playerId);
+	const int CURR_KEY_MODEL = KEY_MODEL + currTeamId;
+	const int TEAM_ID_NK = 1;
+
+	string model;
+	if (GetSynchedEntityValue(playerId, CURR_KEY_MODEL, model) && model.length() > 0)
+	{
+		pActor->SetFileModel(model.c_str());
+	}
+	else
+	{
+		if (currTeamId == TEAM_ID_NK) 
+		{
+			pActor->SetFileModel("objects/characters/human/asian/nanosuit/nanosuit_asian_multiplayer.cdf");
+		}
+		else
+		{
+			pActor->SetFileModel("objects/characters/human/us/nanosuit/nanosuit_us_multiplayer.cdf");
+		}
+
+	}
+
+	if (currTeamId == TEAM_ID_NK)
+	{
+		pActor->SetFrozenModel("objects/characters/human/asian/nanosuit/nanosuit_asian_frozen_scatter.cgf");
+		pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_asian.chr");
+	}
+	else
+	{
+		pActor->SetFrozenModel("objects/characters/human/us/nanosuit/nanoSuit_us_frozen_scatter.cgf");
+		pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_us.chr");
+	}
+}
