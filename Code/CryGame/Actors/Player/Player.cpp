@@ -336,6 +336,7 @@ void CPlayer::BindInputs(IAnimationGraphState* pAGState)
 		m_inputAiming = pAGState->GetInputId("Aiming");
 		m_inputVehicleName = pAGState->GetInputId("Vehicle");
 		m_inputVehicleSeat = pAGState->GetInputId("VehicleSeat");
+		m_inputPseudoSpeed = pAGState->GetInputId("PseudoSpeed");
 	}
 
 	ResetAnimGraph();
@@ -739,6 +740,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		}
 		UpdateScreenFrost();
 		UpdateDraw();
+		UpdateModelChangeInVehicle();
 	}
 
 	if (gEnv->bServer && !IsClient() && IsPlayer())
@@ -7714,10 +7716,32 @@ void CPlayer::UpdateDraw()
 	if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
 	{
 		pCharacter->HideMaster(hideMaster ? 1 : 0);
+
+		UpdateCharacter(pCharacter);
 	}
 
 	const bool hide = !m_ParachuteOpen;
 	HideAttachment(0, m_parachuteAttachmentName.data(), hide, hide);
+}
+
+void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter)
+{
+	IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+	if (!pIAttachmentManager)
+		return;
+
+	const int attachmentCount = pIAttachmentManager->GetAttachmentCount();
+	if (attachmentCount != m_lastAttachmentCount)
+	{
+		m_lastAttachmentCount = attachmentCount;
+
+		IAnimationGraphState* pGraphState = GetAnimationGraphState();
+		if (pGraphState)
+		{
+			pGraphState->SetInput(m_inputPseudoSpeed, 0.0f);
+			pGraphState->Update();
+		}
+	}
 }
 
 void CPlayer::UpdateScreenFrost()
