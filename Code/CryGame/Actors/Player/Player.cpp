@@ -1287,7 +1287,6 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	{
 	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
 	{
 		const bool Client = IsClient() || IsFpSpectatorTarget();
