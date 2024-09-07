@@ -1147,23 +1147,8 @@ void CItem::Select(bool select)
 
 		if (!m_stats.mounted && GetOwner())
 			GetEntity()->SetWorldTM(GetOwner()->GetWorldTM());	// move somewhere near the owner so the sound can play
-		float speedOverride = -1.0f;
-
-		if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pOwner))
-		{
-			ENanoMode curMode = pNanoSuit->GetMode();
-			if (curMode == NANOMODE_SPEED)
-				speedOverride = 1.75f;
-		}
-
-		// only LAW has 2 different select animations
-		const ItemString& select_animation = (m_params.has_first_select && m_stats.first_selection)
-			? g_pItemStrings->first_select : g_pItemStrings->select;
-
-		if (speedOverride > 0.0f)
-			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend, speedOverride);
-		else
-			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend);
+		
+		PlaySelectAnimation(pOwner);
 
 		//ForceSkinning(true);
 		unsigned int selectBusyTimer = 0;
@@ -1255,6 +1240,28 @@ void CItem::Select(bool select)
 
 	OnSelected(select);
 }
+
+void CItem::PlaySelectAnimation(CActor *pOwner)
+{
+	float speedOverride = -1.0f;
+
+	if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pOwner))
+	{
+		ENanoMode curMode = pNanoSuit->GetMode();
+		if (curMode == NANOMODE_SPEED)
+			speedOverride = 1.75f;
+	}
+
+	// only LAW has 2 different select animations
+	const ItemString& select_animation = (m_params.has_first_select && m_stats.first_selection)
+		? g_pItemStrings->first_select : g_pItemStrings->select;
+
+	if (speedOverride > 0.0f)
+		PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend, speedOverride);
+	else
+		PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend);
+}
+
 //------------------------------------------------------------------------
 void CItem::Drop(float impulseScale, bool selectNext, bool byDeath)
 {

@@ -895,6 +895,10 @@ void CActor::SetActorModel()
 		{
 			SetVehicleRelinkUpdateId(pVehicle->GetEntityId());
 		}
+		else
+		{
+			GetEntity()->SetTimer(Timers::ITEM_RESELECT, 1);
+		}
 	}
 }
 
@@ -1366,6 +1370,18 @@ void CActor::ProcessEvent(SEntityEvent& event)
 {
 	switch (event.event)
 	{
+	case ENTITY_EVENT_TIMER:
+	{
+		if (event.nParam[0] == Timers::ITEM_RESELECT)
+		{
+			CWeapon* pWeapon = GetCurrentWeapon(false);
+			if (pWeapon && pWeapon->IsSelected())
+			{
+				pWeapon->PlaySelectAnimation(this);
+			}
+		}
+	}
+	break;
 	case ENTITY_EVENT_HIDE:
 	case ENTITY_EVENT_INVISIBLE:
 	{
