@@ -887,6 +887,15 @@ void CActor::SetActorModel()
 
 		m_currfpItemHandsModel = m_fpItemHandsModel;
 	}
+
+	if (changed)
+	{
+		IVehicle* pVehicle = GetLinkedVehicle();
+		if (pVehicle)
+		{
+			SetVehicleRelinkUpdateId(pVehicle->GetEntityId());
+		}
+	}
 }
 
 //------------------------------------------------------------------------

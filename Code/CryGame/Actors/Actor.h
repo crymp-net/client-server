@@ -1308,6 +1308,7 @@ public:
 	void CacheIKLimbs();
 	void CacheFileModels();
 	void CallCreateAttachments();
+	void UpdateModelChangeInVehicle();
 
 	std::string GetCleanNick()
 	{
@@ -1344,6 +1345,15 @@ public:
 		m_fpItemHandsModel = model.data();
 	}
 
+	void SetVehicleRelinkUpdateId(EntityId vehicleId)
+	{
+		m_vehicleRelinkUpdateId = vehicleId;
+	}
+	EntityId GetVehicleRelinkUpdateId() const
+	{
+		return m_vehicleRelinkUpdateId;
+	}
+
 private:
 
 	struct IKLimb
@@ -1360,6 +1370,23 @@ private:
 
 	std::string m_playerNameClean = "";
 	bool m_isPlayerClass = false;
+
+	std::string m_currFileModel;
+	std::string m_fileModel;
+	std::string m_currfpItemHandsModel;
+	std::string m_frozenModel;
+	std::string m_fpItemHandsModel;
+
+	EntityId m_vehicleRelinkUpdateId = 0;
+
+	enum EntitySlot
+	{
+		CHARACTER,
+		FROZEN,
+		UNUSED,
+		FPITEMHANDS,
+		FPITEMHANDS_SECONDARY
+	};
 };
 
 #endif //__Actor_H__

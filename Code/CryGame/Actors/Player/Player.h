@@ -924,6 +924,8 @@ private:
 	float DofInterpolate(float curr, float target, float speed, float frameTime);
 	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
 
+	void UpdateModelChangeInVehicle();
+
 	float m_viewBlur = 0.0f;
 	float m_viewBlurAmt = 0.0f;
 

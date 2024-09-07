@@ -8104,3 +8104,28 @@ float CPlayer::MBlurInterpolate(float curr, float target, float speed, float fra
 		return target;
 	}
 }
+
+void CPlayer::UpdateModelChangeInVehicle()
+{
+	const EntityId vehicleId = GetVehicleRelinkUpdateId();
+	if (vehicleId)
+	{
+		LinkToVehicle(vehicleId);
+
+		IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(vehicleId);
+		if (pVehicle)
+		{
+			IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId());
+			if (pSeat)
+			{
+				pSeat->ForceAnimGraphInputs();
+
+				HolsterItem(false);
+				HolsterItem(true);
+
+			}
+		}
+
+		SetVehicleRelinkUpdateId(0);
+	}
+}
