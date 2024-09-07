@@ -1287,9 +1287,11 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	const bool Client = IsClient() || IsFpSpectatorTarget();
-	if (Client || (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead))
 	{
+	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
+	{
+		const bool Client = IsClient() || IsFpSpectatorTarget();
+
 		IEntity* pEnt = GetEntity();
 
 		if (Client && !IsThirdPerson() && !m_stats.isOnLadder)
@@ -7683,7 +7685,7 @@ void CPlayer::UpdateDraw()
 		{
 			DrawSlot(0, 0);
 		}
-		else if (m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))
+		else if (!IsFpSpectatorTarget() && ((m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))))
 		{
 			DrawSlot(0, 1);
 			// First show all
