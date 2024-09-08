@@ -118,12 +118,7 @@ CHUDCommon::CHUDCommon()
 
 CHUDCommon::~CHUDCommon()
 {
-	if (m_cursorVisibilityCounter > 0)
-	{
-		m_cursorVisibilityCounter = 1;
-
-		this->CursorDecrementCounter();
-	}
+	this->ShowMouseCursor(false);
 
 	if (gEnv->pHardwareMouse)
 	{
@@ -174,47 +169,32 @@ void CHUDCommon::SetGODMode(uint8 ucGodMode, bool forceUpdate)
 //-- Cursor handling
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDCommon::CursorIncrementCounter()
+void CHUDCommon::ShowMouseCursor(bool show)
 {
-	m_cursorVisibilityCounter++;
-
-	if (m_cursorVisibilityCounter == 1)
+	if (m_isMouseCursorVisible == show)
 	{
-		if (gEnv->pHardwareMouse)
-		{
-			gEnv->pHardwareMouse->IncrementCounter();
-		}
-
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
-		{
-			g_pGameActions->FilterNoMouse()->Enable(true);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void CHUDCommon::CursorDecrementCounter()
-{
-	if (m_cursorVisibilityCounter <= 0)
-	{
-		CryLogError("%s: Too many decrements!", __FUNCTION__);
 		return;
 	}
 
-	m_cursorVisibilityCounter--;
+	m_isMouseCursorVisible = show;
 
-	if (m_cursorVisibilityCounter == 0)
+	if (gEnv->pHardwareMouse)
 	{
-		if (gEnv->pHardwareMouse)
+		CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
+
+		if (show)
+		{
+			gEnv->pHardwareMouse->IncrementCounter();
+		}
+		else
 		{
 			gEnv->pHardwareMouse->DecrementCounter();
 		}
+	}
 
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
-		{
-			g_pGameActions->FilterNoMouse()->Enable(false);
-		}
+	if (g_pGameActions && g_pGameActions->FilterNoMouse())
+	{
+		g_pGameActions->FilterNoMouse()->Enable(show);
 	}
 }
 

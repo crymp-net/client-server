@@ -301,8 +301,5 @@ namespace WinAPI
 	{
 		void ConvertPosToWindow(void* window, long& x, long& y);
 		void ConvertPosToScreen(void* window, long& x, long& y);
-
-		bool IsFocused(void* window);
-		bool IsForeground(void* window);
 	}
 }

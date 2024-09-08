@@ -14,10 +14,7 @@ class HardwareMouse : public IHardwareMouse, public ISystemEventListener, public
 	float m_incrementX = 0;
 	float m_incrementY = 0;
 	float m_acceleration = 1;
-	bool m_hasFocus = true;
-	bool m_cursorReleased = false;
-	bool m_cursorConfined = false;
-	bool m_cursorConfineDisabled = false;
+	bool m_lostFocus = false;
 
 	std::vector<IHardwareMouseEventListener*> m_listeners;
 
@@ -77,8 +74,6 @@ public:
 	bool OnInputEventUI(const SInputEvent& event) override;
 
 	////////////////////////////////////////////////////////////////////////////////
-
-	void DisableConfineCursor(bool disable);
 
 private:
 	void ShowCursor(bool show);

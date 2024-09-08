@@ -882,12 +882,12 @@ void CHUD::SwitchToModalHUD(CGameFlashAnimation* pModalHUD, bool bNeedMouse)
 	{
 		if (bNeedMouse)
 		{
-			CursorIncrementCounter();
+			this->ShowMouseCursor(true);
 		}
 	}
 	else
 	{
-		CursorDecrementCounter();
+		this->ShowMouseCursor(false);
 	}
 	m_pModalHUD = pModalHUD;
 }
@@ -1018,7 +1018,7 @@ void CHUD::Serialize(TSerialize ser)
 		// Reset cursor
 		m_bScoreboardCursor = false;
 		m_pSwitchScoreboardHUD = NULL;
-		CursorDecrementCounter();
+		this->ShowMouseCursor(false);
 		if (IPlayerInput* pInput = m_pClientActor->GetPlayerInput())
 			pInput->DisableXI(false);
 		g_pGameActions->FilterNoMouse()->Enable(false);
@@ -2090,7 +2090,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 	else if (action == rGameActions.xi_rotatepitch || action == rGameActions.xi_v_rotatepitch)
 	{
-		if (m_cursorVisibilityCounter > 0)
+		if (m_isMouseCursorVisible)
 		{
 			m_fAutosnapCursorControllerY = value * value * (-value);
 		}
@@ -2103,7 +2103,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if (action == rGameActions.xi_rotateyaw || action == rGameActions.xi_v_rotateyaw)
 	{
-		if (m_cursorVisibilityCounter > 0)
+		if (m_isMouseCursorVisible)
 		{
 			m_fAutosnapCursorControllerX = value * value * value;
 		}
@@ -2318,7 +2318,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 			if (activationMode == eIS_Pressed)
 			{
 				m_bScoreboardCursor = true;
-				CursorIncrementCounter();
+				this->ShowMouseCursor(true);
 				g_pGameActions->FilterNoMove()->Enable(true);
 
 				m_pClientActor->GetPlayerInput()->DisableXI(true);
@@ -2328,7 +2328,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				if (m_bScoreboardCursor)
 				{
 					m_bScoreboardCursor = false;
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 					g_pGameActions->FilterNoMove()->Enable(false);
 
 					m_pClientActor->GetPlayerInput()->DisableXI(false);
@@ -2349,7 +2349,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				{
 					// We don't want to have the cursor already active in the scoreboard
 					// The player HAS to hit the spacebar to activate the mouse!
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 				}
 				SwitchToModalHUD(&m_animScoreBoard, false);
 				PlaySound(ESound_MapOpen);
@@ -2382,7 +2382,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				if (m_bScoreboardCursor)
 				{
 					m_bScoreboardCursor = false;
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 					g_pGameActions->FilterNoMove()->Enable(false);
 
 					m_pClientActor->GetPlayerInput()->DisableXI(false);
@@ -2391,7 +2391,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				{
 					// Restore the mouse if we were coming from a modal hud
 					// Seems that only the quick menu does not use the mouse
-					CursorIncrementCounter();
+					this->ShowMouseCursor(true);
 				}
 				SwitchToModalHUD(m_pSwitchScoreboardHUD, (m_pSwitchScoreboardHUD != &m_animQuickMenu) ? true : false);
 				PlaySound(ESound_MapClose);
@@ -2859,7 +2859,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 
 void CHUD::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
-	if (m_cursorVisibilityCounter <= 0)
+	if (!m_isMouseCursorVisible)
 	{
 		return;
 	}
