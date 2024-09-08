@@ -1136,6 +1136,7 @@ void CFlashMenuObject::ShowMouseCursor(bool show)
 	{
 		if (!m_isMouseCursorVisible)
 		{
+			CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
 			HardwareMouse::GetInstance().IncrementCounter();
 			m_isMouseCursorVisible = true;
 		}
@@ -1144,6 +1145,7 @@ void CFlashMenuObject::ShowMouseCursor(bool show)
 	{
 		if (m_isMouseCursorVisible)
 		{
+			CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
 			HardwareMouse::GetInstance().DecrementCounter();
 			m_isMouseCursorVisible = false;
 		}
@@ -2787,8 +2789,6 @@ void CFlashMenuObject::InitStartMenu()
 	SetAntiAliasingModes();
 
 	SetProfile();
-
-	HardwareMouse::GetInstance().DisableConfineCursor(true);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2808,8 +2808,6 @@ void CFlashMenuObject::DestroyStartMenu()
 
 	m_bIgnoreEsc = false;
 	m_bDestroyStartMenuPending = false;
-
-	HardwareMouse::GetInstance().DisableConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -2827,7 +2825,6 @@ void CFlashMenuObject::InitIngameMenu()
 	if (!m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->IsLoaded())
 	{
 		this->ShowMouseCursor(true);
-		HardwareMouse::GetInstance().DisableConfineCursor(true);
 
 #ifdef CRYSIS_BETA
 		m_apFlashMenuScreens[MENUSCREEN_FRONTENDINGAME]->Load("Libs/UI/Menus_IngameMenu_Beta.gfx");
@@ -2908,8 +2905,6 @@ void CFlashMenuObject::DestroyIngameMenu()
 	}
 	if (g_pGame->GetIGameFramework()->IsGameStarted())
 		ReloadHUDMovies();
-
-	HardwareMouse::GetInstance().DisableConfineCursor(false);
 }
 
 //-----------------------------------------------------------------------------------------------------

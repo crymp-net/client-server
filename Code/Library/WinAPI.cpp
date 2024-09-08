@@ -1097,13 +1097,3 @@ void WinAPI::Window::ConvertPosToScreen(void* window, long& x, long& y)
 	x = point.x;
 	y = point.y;
 }
-
-bool WinAPI::Window::IsFocused(void* window)
-{
-	return GetFocus() == static_cast<HWND>(window);
-}
-
-bool WinAPI::Window::IsForeground(void* window)
-{
-	return GetForegroundWindow() == static_cast<HWND>(window);
-}
