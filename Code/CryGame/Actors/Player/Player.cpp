@@ -4204,16 +4204,15 @@ void CPlayer::PostPhysicalize()
 				}
 				pRenderNode->SetViewDistUnlimited();
 			}
-			if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+			if (!((pCharacter->GetFlags() & CS_FLAG_UPDATE_ALWAYS) == CS_FLAG_UPDATE_ALWAYS))
 			{
-				if (!((pCharacter->GetFlags() & CS_FLAG_UPDATE_ALWAYS) == CS_FLAG_UPDATE_ALWAYS))
-				{
-					//CryMP: Added CS_FLAG_UPDATE_ALWAYS
-					pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
-				}
+				//CryMP: Added CS_FLAG_UPDATE_ALWAYS
+				pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
 			}
 		}
 	}
+
+	UpdateCharacter(pCharacter, true);
 }
 
 void CPlayer::UpdateAnimGraph(IAnimationGraphState* pState)
@@ -7725,7 +7724,7 @@ void CPlayer::UpdateDraw()
 	HideAttachment(0, m_parachuteAttachmentName.data(), hide, hide);
 }
 
-void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter)
+void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter, bool characterLoad)
 {
 	IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
 	if (!pIAttachmentManager)
@@ -7735,6 +7734,9 @@ void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter)
 	if (attachmentCount != m_lastAttachmentCount)
 	{
 		m_lastAttachmentCount = attachmentCount;
+
+		if (characterLoad)
+			return;
 
 		IAnimationGraphState* pGraphState = GetAnimationGraphState();
 		if (pGraphState)

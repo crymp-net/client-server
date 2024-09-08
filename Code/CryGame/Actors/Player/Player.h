@@ -910,7 +910,7 @@ private:
 	PlayerView m_PlayerView = PlayerView(*this);
 
 	void UpdateDraw();
-	void UpdateCharacter(ICharacterInstance* pCharacter);
+	void UpdateCharacter(ICharacterInstance* pCharacter, bool characterLoad = false);
 	void UpdateScreenFrost();
 	void UpdateScreenEffects(float frameTime);
 	void SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed = 0);
