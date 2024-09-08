@@ -4484,7 +4484,7 @@ void CActor::CacheIKLimbs()
 				}
 				limb->GetAt(6, cachedLimb.flags);
 
-				m_cachedIKLimbs.push_back(cachedLimb);
+				m_cachedIKLimbs.push_back(std::move(cachedLimb));
 			}
 		}
 		ikLimbs->EndIteration(it);
@@ -4506,7 +4506,7 @@ void CActor::CacheFileModels()
 		const char* model = nullptr;
 		properties->GetValue("fileModel", model);
 
-		m_fileModel = model;
+		m_fileModel = StringTools::SafeView(model);
 
 		// Handle model variations
 		int nModelVariations = 0;
@@ -4518,19 +4518,13 @@ void CActor::CacheFileModels()
 				if (propertiesInstance->GetValue("nVariation", nVariation))
 				{
 					nVariation = max(1, min(nVariation, nModelVariations));
-					std::string sVariation = StringTools::Format("%.2d", nVariation);
-					std::string modelStr = model;
-					std::string oldPattern = "_%d%d";
-					std::string newPattern = "_" + sVariation;
+					const std::string newPattern = StringTools::Format("_%.2d", nVariation);
+					const std::string_view oldPattern = "_%d%d";
 
-					size_t pos = modelStr.find(oldPattern);
-
-					if (pos != std::string::npos)
+					if (size_t pos = m_fileModel.find(oldPattern); pos != std::string::npos)
 					{
-						modelStr.replace(pos, oldPattern.length(), newPattern);
+						m_fileModel.replace(pos, oldPattern.length(), newPattern);
 					}
-
-					m_fileModel = modelStr;
 				}
 			}
 		}

@@ -1334,15 +1334,15 @@ public:
 
 	void SetFileModel(std::string_view model)
 	{
-		m_fileModel = model.data();
+		m_fileModel = model;
 	}
 	void SetFrozenModel(std::string_view model)
 	{
-		m_frozenModel = model.data();
+		m_frozenModel = model;
 	}
 	void SetFpItemHandsModel(std::string_view model)
 	{
-		m_fpItemHandsModel = model.data();
+		m_fpItemHandsModel = model;
 	}
 
 	void SetVehicleRelinkUpdateId(EntityId vehicleId)
@@ -1358,17 +1358,17 @@ private:
 
 	struct IKLimb
 	{
-		int slot;
+		int slot = 0;
 		std::string limbName;
 		std::string rootBone;
 		std::string midBone;
 		std::string endBone;
-		int flags;
+		int flags = 0;
 	};
 
 	std::vector<IKLimb> m_cachedIKLimbs;
 
-	std::string m_playerNameClean = "";
+	std::string m_playerNameClean;
 	bool m_isPlayerClass = false;
 
 	std::string m_currFileModel;
