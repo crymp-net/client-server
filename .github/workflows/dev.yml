@@ -1,13 +1,14 @@
 ################################################################################
-# Push workflow running on a push to any branch
+# Developer workflow running on pushes to the master branch and pull requests
 ################################################################################
 
-name: Push
+name: Dev
 
 on:
   push:
     branches:
-      - '**'
+      - master
+  pull_request:
 
 jobs:
   build_32:
@@ -27,7 +28,7 @@ jobs:
       sign: true
 
   upload:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && github.repository_owner == 'crymp-net'
     needs:
       - build_32
       - build_64

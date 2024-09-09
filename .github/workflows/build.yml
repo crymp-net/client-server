@@ -67,8 +67,8 @@ jobs:
           cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
           $exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
-          $exe_hash = (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower()
-          'artifact_name=CryMP-Client${{ inputs.bits }}-' + $exe_hash >> $env:GITHUB_OUTPUT
+          $version = git describe --dirty --tags --match 'v*'
+          'artifact_name=CryMP-Client${{ inputs.bits }}-' + $version >> $env:GITHUB_OUTPUT
 
       - name: Sign
         if: inputs.sign
