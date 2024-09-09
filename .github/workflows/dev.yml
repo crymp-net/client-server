@@ -1,5 +1,5 @@
 ################################################################################
-# Push workflow running on a push to any branch
+# Developer workflow running on pushes to the master branch and pull requests
 ################################################################################
 
 name: Push
@@ -7,7 +7,8 @@ name: Push
 on:
   push:
     branches:
-      - '**'
+      - master
+  pull_request:
 
 jobs:
   build_32:
