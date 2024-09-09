@@ -2,7 +2,7 @@
 # Developer workflow running on pushes to the master branch and pull requests
 ################################################################################
 
-name: Push
+name: Dev
 
 on:
   push:
