@@ -19,7 +19,7 @@ GameWindow GameWindow::s_globalInstance;
 
 static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static bool mouseCounterIncremented = false;
+	static bool cursorCounterIncremented = false;
 
 	switch (msg)
 	{
@@ -172,10 +172,11 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_ENTERMENULOOP:  // 0x211
 		case WM_ENTERSIZEMOVE:  // 0x231
 		{
-			if (gEnv->pHardwareMouse && !mouseCounterIncremented)
+			if (gEnv->pHardwareMouse && !cursorCounterIncremented)
 			{
+				CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
 				gEnv->pHardwareMouse->IncrementCounter();
-				mouseCounterIncremented = true;
+				cursorCounterIncremented = true;
 			}
 
 			return 0;
@@ -184,10 +185,11 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM wParam, LPARAM 
 		case WM_EXITSIZEMOVE:  // 0x232
 		case WM_CAPTURECHANGED:  // workaround for missing WM_EXITSIZEMOVE
 		{
-			if (gEnv->pHardwareMouse && mouseCounterIncremented)
+			if (gEnv->pHardwareMouse && cursorCounterIncremented)
 			{
+				CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
 				gEnv->pHardwareMouse->DecrementCounter();
-				mouseCounterIncremented = false;
+				cursorCounterIncremented = false;
 			}
 
 			if (msg == WM_CAPTURECHANGED)

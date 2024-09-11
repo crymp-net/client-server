@@ -67,8 +67,7 @@ public:
 	void Show(bool bShow);
 
 	// Cursor handling
-	void CursorIncrementCounter();
-	void CursorDecrementCounter();
+	void ShowMouseCursor(bool show);
 
 	bool IsVisible() { return m_bShow; }
 
@@ -97,7 +96,7 @@ protected:
 	float					m_fLastGodModeUpdate;
 	char					m_strGODMode[32];
 
-	int m_cursorVisibilityCounter = 0;
+	bool m_isMouseCursorVisible = false;
 
 	// Cached sizes
 	int						m_width;

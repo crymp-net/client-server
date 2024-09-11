@@ -81,6 +81,7 @@ jobs:
           asset_content_type: application/zip
 
   upload:
+    if: github.repository_owner == 'crymp-net'
     needs:
       - build_32
       - build_64

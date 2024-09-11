@@ -72,6 +72,8 @@ void HardwareMouse::RemoveListener(IHardwareMouseEventListener* listener)
 
 void HardwareMouse::SetGameMode(bool gameMode)
 {
+	CryLogComment("%s(%d)", __FUNCTION__, static_cast<int>(gameMode));
+
 	if (gameMode)
 	{
 		this->DecrementCounter();
@@ -84,6 +86,8 @@ void HardwareMouse::SetGameMode(bool gameMode)
 
 void HardwareMouse::IncrementCounter()
 {
+	CryLogComment("%s: m_counter=%d", __FUNCTION__, m_counter);
+
 	m_counter++;
 
 	if (m_counter == 1)
@@ -94,6 +98,8 @@ void HardwareMouse::IncrementCounter()
 
 void HardwareMouse::DecrementCounter()
 {
+	CryLogComment("%s: m_counter=%d", __FUNCTION__, m_counter);
+
 	if (m_counter <= 0)
 	{
 		CryLogErrorAlways("%s: Too many decrements!", __FUNCTION__);
@@ -158,14 +164,13 @@ void HardwareMouse::SetHardwareMouseClientPosition(float x, float y)
 
 void HardwareMouse::Reset(bool visibleByDefault)
 {
+	CryLogComment("%s(%d)", __FUNCTION__, static_cast<int>(visibleByDefault));
+
 	m_counter = visibleByDefault ? 1 : 0;
 	this->GetHardwareMousePosition(&m_positionX, &m_positionY);
 	m_incrementX = 0;
 	m_incrementY = 0;
 	m_acceleration = 1;
-	m_hasFocus = true;
-	m_cursorReleased = false;
-	m_cursorConfineDisabled = false;
 
 	if (!visibleByDefault)
 	{
@@ -175,12 +180,7 @@ void HardwareMouse::Reset(bool visibleByDefault)
 
 void HardwareMouse::ConfineCursor(bool confine)
 {
-	m_cursorConfined = confine;
-
-	if (confine && m_cursorConfineDisabled)
-	{
-		return;
-	}
+	CryLogComment("%s(%d)", __FUNCTION__, static_cast<int>(confine));
 
 	const bool isEditor = gEnv->pSystem->IsEditor();
 
@@ -190,10 +190,7 @@ void HardwareMouse::ConfineCursor(bool confine)
 		return;
 	}
 
-	const bool hasFocus = WinAPI::Window::IsFocused(window);
-	const bool isForeground = WinAPI::Window::IsForeground(window) || isEditor;
-
-	if (confine && hasFocus && isForeground && !gEnv->pSystem->IsEditorMode())
+	if (confine && !gEnv->pSystem->IsEditorMode())
 	{
 		WinAPI::Cursor::Clip(window);
 	}
@@ -211,34 +208,45 @@ void HardwareMouse::OnSystemEvent(ESystemEvent event, UINT_PTR wParam, UINT_PTR 
 {
 	if (event == ESYSTEM_EVENT_CHANGE_FOCUS)
 	{
-		m_hasFocus = wParam != 0;
+		const bool hasFocus = wParam != 0;
 
-		if (m_hasFocus)
+		CryLogComment("%s: ESYSTEM_EVENT_CHANGE_FOCUS %d", __FUNCTION__, static_cast<int>(hasFocus));
+
+		if (hasFocus)
 		{
-			if (!gEnv->pSystem->IsEditorMode() && m_cursorReleased)
+			if (!gEnv->pSystem->IsEditorMode() && m_lostFocus)
 			{
-				m_cursorReleased = false;
+				m_lostFocus = false;
 				this->DecrementCounter();
 			}
 
-			if (this->IsFullscreen() || !gEnv->pSystem->IsDevMode())
+			if (this->IsFullscreen())
 			{
 				this->ConfineCursor(true);
 			}
 		}
-		else if (!gEnv->pSystem->IsEditorMode())
+		else
 		{
-			if (m_counter == 0)
+			if (!gEnv->pSystem->IsEditorMode() && !m_lostFocus)
 			{
-				m_cursorReleased = true;
+				m_lostFocus = true;
 				this->IncrementCounter();
 			}
-
-			this->ConfineCursor(false);
 		}
 	}
-	else if (event == ESYSTEM_EVENT_MOVE || event == ESYSTEM_EVENT_RESIZE)
+	else if (event == ESYSTEM_EVENT_MOVE)
 	{
+		CryLogComment("%s: ESYSTEM_EVENT_MOVE", __FUNCTION__);
+
+		if (this->IsFullscreen() || m_counter == 0)
+		{
+			this->ConfineCursor(true);
+		}
+	}
+	else if (event == ESYSTEM_EVENT_RESIZE)
+	{
+		CryLogComment("%s: ESYSTEM_EVENT_RESIZE", __FUNCTION__);
+
 		if (this->IsFullscreen() || m_counter == 0)
 		{
 			this->ConfineCursor(true);
@@ -246,9 +254,11 @@ void HardwareMouse::OnSystemEvent(ESystemEvent event, UINT_PTR wParam, UINT_PTR 
 	}
 	else if (event == ESYSTEM_EVENT_TOGGLE_FULLSCREEN)
 	{
-		const bool fullscreen = wParam != 0;
+		const bool isFullscreen = wParam != 0;
 
-		if (fullscreen || m_counter == 0)
+		CryLogComment("%s: ESYSTEM_EVENT_TOGGLE_FULLSCREEN %d", __FUNCTION__, static_cast<int>(isFullscreen));
+
+		if (isFullscreen || m_counter == 0)
 		{
 			this->ConfineCursor(true);
 		}
@@ -310,23 +320,10 @@ bool HardwareMouse::OnInputEventUI(const SInputEvent& event)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void HardwareMouse::DisableConfineCursor(bool disable)
-{
-	if (m_cursorConfineDisabled == disable)
-	{
-		return;
-	}
-
-	m_cursorConfineDisabled = disable;
-
-	if (m_cursorConfined)
-	{
-		this->ConfineCursor(!disable);
-	}
-}
-
 void HardwareMouse::ShowCursor(bool show)
 {
+	CryLogComment("%s(%d)", __FUNCTION__, static_cast<int>(show));
+
 	if (show)
 	{
 		this->SetHardwareMousePosition(m_positionX, m_positionY);
@@ -338,7 +335,7 @@ void HardwareMouse::ShowCursor(bool show)
 
 	WinAPI::Cursor::Show(show);
 
-	this->ConfineCursor(!show || this->IsFullscreen() || !gEnv->pSystem->IsDevMode());
+	this->ConfineCursor(!show || this->IsFullscreen());
 
 	gEnv->pInput->SetExclusiveMode(eDI_Mouse, false);
 }
