@@ -593,6 +593,7 @@ void CHUDRadar::Update(float fDeltaTime)
 			numOfValues += ::FillUpDoubleArray(&entityValues, temp.m_id, 6 /*sound*/, (fX - lowerBoundX) / dimX, (fY - lowerBoundY) / dimY, 0.0f, 0, size * 10.0f, (1.0f - (0.5f * diffTime)) * 100.0f);
 		}
 	}
+
 	//render the mini map
 	if (m_renderMiniMap)
 		RenderMapOverlay();
@@ -1844,6 +1845,58 @@ void CHUDRadar::RenderMapOverlay()
 		}
 	}
 
+	if (isMultiplayer)
+	{
+		//now spawn points
+		std::vector<EntityId> locations;
+		m_pGameRules->GetSpawnGroups(locations);
+		for (int i = 0; i < locations.size(); ++i)
+		{
+			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(locations[i]);
+			if (!pEntity)
+				continue;
+			if (pEntity)
+			{
+				IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(pEntity->GetId());
+				bool isVehicle = (pVehicle) ? true : false;
+				if (GetPosOnMap(pEntity, fX, fY))
+				{
+					int friendly = FriendOrFoe(isMultiplayer, team, pEntity, m_pGameRules);
+					if (isVehicle /*&& !stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false)*/)
+					{
+						if (friendly == EFriend)
+						{
+							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnTruck, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i]);
+							drawnVehicles[pVehicle->GetEntityId()] = true;
+						}
+					}
+					else
+					{
+						bool underAttack = m_pHUD->IsUnderAttack(pEntity) && friendly == EFriend;
+						if (friendly != 2)
+						{
+							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
+							m_possibleOnScreenObjectives.push_back(pEntity->GetId());
+						}
+						else
+						{
+							SmartScriptTable props;
+							if (pEntity->GetScriptTable() && pEntity->GetScriptTable()->GetValue("Properties", props))
+							{
+								int capturable = 0;
+								if (props->GetValue("bCapturable", capturable) && capturable)
+								{
+									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
+									m_possibleOnScreenObjectives.push_back(pEntity->GetId());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	//we need he players position later int the code
 	Vec2 vPlayerPos(0.5f, 0.5f);
 
@@ -2088,58 +2141,6 @@ void CHUDRadar::RenderMapOverlay()
 		}
 	}
 
-	if (isMultiplayer)
-	{
-		//now spawn points
-		std::vector<EntityId> locations;
-		m_pGameRules->GetSpawnGroups(locations);
-		for (int i = 0; i < locations.size(); ++i)
-		{
-			IEntity* pEntity = gEnv->pEntitySystem->GetEntity(locations[i]);
-			if (!pEntity)
-				continue;
-			if (pEntity)
-			{
-				IVehicle* pVehicle = m_pVehicleSystem->GetVehicle(pEntity->GetId());
-				bool isVehicle = (pVehicle) ? true : false;
-				if (GetPosOnMap(pEntity, fX, fY))
-				{
-					int friendly = FriendOrFoe(isMultiplayer, team, pEntity, m_pGameRules);
-					if (isVehicle /*&& !stl::find_in_map(drawnVehicles, pVehicle->GetEntityId(), false)*/)
-					{
-						if (friendly == EFriend)
-						{
-							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnTruck, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i]);
-							drawnVehicles[pVehicle->GetEntityId()] = true;
-						}
-					}
-					else
-					{
-						bool underAttack = m_pHUD->IsUnderAttack(pEntity) && friendly == EFriend;
-						if (friendly != 2)
-						{
-							numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
-							m_possibleOnScreenObjectives.push_back(pEntity->GetId());
-						}
-						else
-						{
-							SmartScriptTable props;
-							if (pEntity->GetScriptTable() && pEntity->GetScriptTable()->GetValue("Properties", props))
-							{
-								int capturable = 0;
-								if (props->GetValue("bCapturable", capturable) && capturable)
-								{
-									numOfValues += FillUpDoubleArray(&entityValues, pEntity->GetId(), ESpawnPoint, fX, fY, 270.0f - RAD2DEG(pEntity->GetWorldAngles().z), friendly, 100, 100, iOnScreenObjective == locations[i], iCurrentSpawnPoint == locations[i], underAttack);
-									m_possibleOnScreenObjectives.push_back(pEntity->GetId());
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	//draw player position
 	if (pActor)
 	{
@@ -2169,7 +2170,6 @@ void CHUDRadar::RenderMapOverlay()
 			}
 		}
 	}
-
 
 	ComputePositioning(vPlayerPos, &entityValues);
 
