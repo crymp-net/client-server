@@ -336,6 +336,7 @@ void CPlayer::BindInputs(IAnimationGraphState* pAGState)
 		m_inputAiming = pAGState->GetInputId("Aiming");
 		m_inputVehicleName = pAGState->GetInputId("Vehicle");
 		m_inputVehicleSeat = pAGState->GetInputId("VehicleSeat");
+		m_inputPseudoSpeed = pAGState->GetInputId("PseudoSpeed");
 	}
 
 	ResetAnimGraph();
@@ -739,6 +740,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		}
 		UpdateScreenFrost();
 		UpdateDraw();
+		UpdateModelChangeInVehicle();
 	}
 
 	if (gEnv->bServer && !IsClient() && IsPlayer())
@@ -1285,9 +1287,10 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	const bool Client = IsClient() || IsFpSpectatorTarget();
-	if (Client || (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead))
+	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
 	{
+		const bool Client = IsClient() || IsFpSpectatorTarget();
+
 		IEntity* pEnt = GetEntity();
 
 		if (Client && !IsThirdPerson() && !m_stats.isOnLadder)
@@ -3815,9 +3818,15 @@ void CPlayer::Revive(ReasonForRevive reason)
 	const EntityId spectatorId = m_stats.spectatorTarget;
 	const uint8 fpSpectator = m_stats.fpSpectator;
 	const uint8 fpSpectatorTarget = m_stats.fpSpectatorTarget;
+	const bool thirdPerson = m_stats.isThirdPerson;	
 	m_stats = SPlayerStats();
 	m_stats.spectatorMode = spectator;
 	m_stats.fpSpectator = fpSpectator;
+
+	if (reason == ReasonForRevive::SCRIPT_BIND)
+	{
+		m_stats.isThirdPerson = thirdPerson;
+	}
 
 	if (fpSpectatorTarget)
 	{
@@ -3829,15 +3838,18 @@ void CPlayer::Revive(ReasonForRevive reason)
 		//Check if Client has respawned, remove old FP target if necessary
 		UpdateFpSpectator(spectatorId, 0);
 
-		//Restore Third person mode settings
-		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
-		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-		if (!g_pGameCVars->mp_thirdPerson)
+		if (reason != ReasonForRevive::SCRIPT_BIND)
 		{
-			shouldStayInTp = false;
-		}
+			//Restore Third person mode settings
+			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+			bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+			if (!g_pGameCVars->mp_thirdPerson && !GetLinkedVehicle())
+			{
+				shouldStayInTp = false;
+			}
 
-		EnableThirdPerson(shouldStayInTp);
+			EnableThirdPerson(shouldStayInTp);
+		}
 	}
 
 	m_headAngles.Set(0, 0, 0);
@@ -4192,16 +4204,15 @@ void CPlayer::PostPhysicalize()
 				}
 				pRenderNode->SetViewDistUnlimited();
 			}
-			if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
+			if (!((pCharacter->GetFlags() & CS_FLAG_UPDATE_ALWAYS) == CS_FLAG_UPDATE_ALWAYS))
 			{
-				if (!((pCharacter->GetFlags() & CS_FLAG_UPDATE_ALWAYS) == CS_FLAG_UPDATE_ALWAYS))
-				{
-					//CryMP: Added CS_FLAG_UPDATE_ALWAYS
-					pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
-				}
+				//CryMP: Added CS_FLAG_UPDATE_ALWAYS
+				pCharacter->SetFlags(pCharacter->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
 			}
 		}
 	}
+
+	UpdateCharacter(pCharacter, true);
 }
 
 void CPlayer::UpdateAnimGraph(IAnimationGraphState* pState)
@@ -7672,7 +7683,7 @@ void CPlayer::UpdateDraw()
 		{
 			DrawSlot(0, 0);
 		}
-		else if (m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))
+		else if (!IsFpSpectatorTarget() && ((m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))))
 		{
 			DrawSlot(0, 1);
 			// First show all
@@ -7705,10 +7716,37 @@ void CPlayer::UpdateDraw()
 	if (ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0))
 	{
 		pCharacter->HideMaster(hideMaster ? 1 : 0);
+
+		UpdateCharacter(pCharacter);
 	}
 
 	const bool hide = !m_ParachuteOpen;
 	HideAttachment(0, m_parachuteAttachmentName.data(), hide, hide);
+}
+
+void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter, bool characterLoad)
+{
+	IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+	if (!pIAttachmentManager)
+		return;
+
+	const int attachmentCount = pIAttachmentManager->GetAttachmentCount();
+	if (attachmentCount != m_lastAttachmentCount)
+	{
+		m_lastAttachmentCount = attachmentCount;
+
+		if (characterLoad || GetPhysicsProfile() != eAP_Alive)
+		{
+			return;
+		}
+
+		IAnimationGraphState* pGraphState = GetAnimationGraphState();
+		if (pGraphState)
+		{
+			pGraphState->SetInput(m_inputPseudoSpeed, 0.0f);
+			pGraphState->Update();
+		}
+	}
 }
 
 void CPlayer::UpdateScreenFrost()
@@ -8093,5 +8131,30 @@ float CPlayer::MBlurInterpolate(float curr, float target, float speed, float fra
 	else
 	{
 		return target;
+	}
+}
+
+void CPlayer::UpdateModelChangeInVehicle()
+{
+	const EntityId vehicleId = GetVehicleRelinkUpdateId();
+	if (vehicleId)
+	{
+		LinkToVehicle(vehicleId);
+
+		IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(vehicleId);
+		if (pVehicle)
+		{
+			IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId());
+			if (pSeat)
+			{
+				pSeat->ForceAnimGraphInputs();
+
+				HolsterItem(false);
+				HolsterItem(true);
+
+			}
+		}
+
+		SetVehicleRelinkUpdateId(0);
 	}
 }

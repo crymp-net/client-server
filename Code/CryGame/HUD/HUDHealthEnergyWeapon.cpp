@@ -178,38 +178,50 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::ModeChanged(ENanoMode mode)
+void CHUD::ModeChanged(ENanoMode mode, bool suitModeChanged)
 {
-	IAISignalExtraData* pData = NULL;
-	CPlayer* pPlayer = NULL;
+	IAISignalExtraData* pData = nullptr;
+	CPlayer* pPlayer = nullptr;
 	switch (mode)
 	{
 	case NANOMODE_SPEED:
 		m_animPlayerStats.Invoke("setMode", "Speed");
-		m_fSpeedTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fSpeedTimer;
+		if (suitModeChanged)
+		{
+			m_fSpeedTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fSpeedTimer;
+		}
 		break;
 	case NANOMODE_STRENGTH:
 		m_animPlayerStats.Invoke("setMode", "Strength");
-		m_fStrengthTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fStrengthTimer;
+		if (suitModeChanged)
+		{
+			m_fStrengthTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fStrengthTimer;
+		}
 		break;
 	case NANOMODE_DEFENSE:
 		m_animPlayerStats.Invoke("setMode", "Armor");
-		m_fDefenseTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fDefenseTimer;
+		if (suitModeChanged)
+		{
+			m_fDefenseTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fDefenseTimer;
+		}
 		break;
 	case NANOMODE_CLOAK:
 		m_animPlayerStats.Invoke("setMode", "Cloak");
 
-		PlaySound(ESound_PresetNavigationBeep);
-		if (m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_SPEED, true) != 50 ||
-			m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_MEDICAL, true) != 50)
+		if (suitModeChanged)
 		{
-			TextMessage("suit_modification_engaged");
-		}
+			PlaySound(ESound_PresetNavigationBeep);
+			if (m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_SPEED, true) != 50 ||
+				m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_MEDICAL, true) != 50)
+			{
+				TextMessage("suit_modification_engaged");
+			}
 
-		m_fSuitChangeSoundTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+		}
 
 		if (gEnv->pAISystem)
 		{

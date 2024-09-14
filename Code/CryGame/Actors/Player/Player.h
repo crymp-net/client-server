@@ -833,6 +833,7 @@ protected:
 	IAnimationGraph::InputID m_inputAiming;
 	IAnimationGraph::InputID m_inputVehicleName;
 	IAnimationGraph::InputID m_inputVehicleSeat;
+	IAnimationGraph::InputID m_inputPseudoSpeed;
 
 	// probably temporary, feel free to figure out better place
 	float m_lastAnimControlled;
@@ -909,6 +910,7 @@ private:
 	PlayerView m_PlayerView = PlayerView(*this);
 
 	void UpdateDraw();
+	void UpdateCharacter(ICharacterInstance* pCharacter, bool characterLoad = false);
 	void UpdateScreenFrost();
 	void UpdateScreenEffects(float frameTime);
 	void SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed = 0);
@@ -923,6 +925,8 @@ private:
 
 	float DofInterpolate(float curr, float target, float speed, float frameTime);
 	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
+
+	void UpdateModelChangeInVehicle();
 
 	float m_viewBlur = 0.0f;
 	float m_viewBlurAmt = 0.0f;
@@ -945,6 +949,8 @@ private:
 	float m_mblur_amount_speed = 0.0f;
 	float m_target_mblur_amount = 0.0f;
 	float m_current_mblur_amount = 0.0f;
+
+	int m_lastAttachmentCount = 0;
 
 public:
 

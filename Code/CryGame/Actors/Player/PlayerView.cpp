@@ -969,7 +969,9 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 				}
 				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
 				{
-					pView->UpdateView(viewParams, m_playerId);
+					//CryMP: This probably needs a fix in CryAction
+					//so that we see the view direction changes in non driver/gunner seats
+					pView->UpdateView(viewParams, m_playerId); 
 
 					//viewParams.viewID = 2;
 				}

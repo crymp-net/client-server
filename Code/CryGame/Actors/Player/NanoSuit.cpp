@@ -236,7 +236,7 @@ void CNanoSuit::Reset(CPlayer* owner)
 	m_pendingAction = eNA_None;
 	m_bWasSprinting = false;
 	m_bSprintUnderwater = false;
-	m_energy = 0.0f;
+	m_energy = NANOSUIT_ENERGY; // CryMP: was 0.0f, but we always spawn with full energy anyway
 
 	m_bNightVisionEnabled = false;
 
@@ -837,14 +837,10 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 	}
 
 	// call listeners on nano mode change
-	if (m_listeners.empty() == false)
+
+	for (INanoSuitListener* listener : m_listeners)
 	{
-		std::vector<INanoSuitListener*>::iterator iter = m_listeners.begin();
-		while (iter != m_listeners.end())
-		{
-			(*iter)->ModeChanged(mode);
-			++iter;
-		}
+		listener->ModeChanged(mode, lastMode != m_currentMode);
 	}
 
 	SelectSuitMaterial();

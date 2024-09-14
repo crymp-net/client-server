@@ -144,7 +144,7 @@ public:
 					CNanoSuit* pSuit = pPlayer->GetNanoSuit();
 					if(pSuit)
 					{
-						ModeChanged(pSuit->GetMode());
+						ModeChanged(pSuit->GetMode(), false);
 						EnergyChanged(pSuit->GetSuitEnergy());
 					}
 				}
@@ -186,7 +186,7 @@ public:
 	}
 
 	// INanoSuitListener
-	void ModeChanged(ENanoMode mode)
+	void ModeChanged(ENanoMode mode, bool forceChanged)
 	{
 		if (mode == NANOMODE_CLOAK)
 			ActivateOutput(&m_actInfo, EOP_Cloak, true);

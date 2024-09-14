@@ -749,6 +749,7 @@ public:
 	virtual void SetHand(int hand);
 	virtual void Use(EntityId userId);
 	virtual void Select(bool select);
+	void PlaySelectAnimation(CActor* pOwner);
 	virtual void Drop(float impulseScale=1.0f, bool selectNext=true, bool byDeath=false);
 	virtual void PickUp(EntityId pickerId, bool sound, bool select=true, bool keepHistory=true);
 	virtual void Physicalize(bool enable, bool rigid);
@@ -1395,6 +1396,11 @@ public:
 	static IEntityClass*    sUS_tank;
 	static IEntityClass*    sUS_trolley;
 	static IEntityClass*	sUS_vtol;
+
+	void ForceReselect()
+	{
+		m_stats.selected = false;
+	}
 };
 
 

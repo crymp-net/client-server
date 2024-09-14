@@ -204,7 +204,7 @@ public:
 	// ~IWeaponEventListener
 
 	// INanoSuitListener
-	virtual void ModeChanged(ENanoMode mode);     // nanomode
+	virtual void ModeChanged(ENanoMode mode, bool suitModeChanged);     // nanomode
 	virtual void EnergyChanged(float energy);     // energy
 	// ~INanoSuitListener
 

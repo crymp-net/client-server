@@ -180,7 +180,7 @@ class CNanoSuit
 public:
 	struct INanoSuitListener
 	{
-		virtual void ModeChanged(ENanoMode mode) = 0;     // nanomode
+		virtual void ModeChanged(ENanoMode mode, bool suitModeChanged) = 0;     // nanomode
 		virtual void EnergyChanged(float energy) = 0;     // energy
 	};
 

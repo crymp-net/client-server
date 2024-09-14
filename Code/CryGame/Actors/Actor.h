@@ -791,7 +791,9 @@ public:
 	virtual void  SerializeLevelToLevel(TSerialize& ser);
 	virtual IInventory* GetInventory() const;
 
-	virtual bool IsClient() const;
+	bool IsClient() const override;
+	bool IsRemote() const;
+
 	virtual IMaterial* GetReplacementMaterial() { return m_pReplacementMaterial; };
 
 	virtual bool Init(IGameObject* pGameObject);
@@ -1145,8 +1147,6 @@ protected:
 
 	virtual void SetMaterialRecursive(ICharacterInstance* charInst, bool undo, IMaterial* newMat = 0);
 
-	void DisplayDebugInfo();
-
 	virtual void UpdateAnimGraph(IAnimationGraphState* pState);
 
 	//movement
@@ -1297,11 +1297,18 @@ public:
 
 	bool IsGhostPit();
 
+	IAttachment* CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName);
+
 	void HideAllAttachments(int characterSlot, bool hide, bool hideShadow);
 	void HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow);
 
 	void DrawSlot(int nSlot, int nEnable);
 	bool IsFp3pModel() const;
+
+	void CacheIKLimbs();
+	void CacheFileModels();
+	void CallCreateAttachments();
+	void UpdateModelChangeInVehicle();
 
 	std::string GetCleanNick()
 	{
@@ -1325,10 +1332,83 @@ public:
 	bool m_hideActor = false;
 	bool m_hideMaster = false;
 
+	void SetFileModel(std::string_view model)
+	{
+		m_fileModel = model;
+	}
+	void SetFrozenModel(std::string_view model)
+	{
+		m_frozenModel = model;
+	}
+	void SetFpItemHandsModel(std::string_view model)
+	{
+		m_fpItemHandsModel = model;
+	}
+
+	void SetVehicleRelinkUpdateId(EntityId vehicleId)
+	{
+		m_vehicleRelinkUpdateId = vehicleId;
+	}
+	EntityId GetVehicleRelinkUpdateId() const
+	{
+		return m_vehicleRelinkUpdateId;
+	}
+
 private:
 
-	std::string m_playerNameClean = "";
+	struct IKLimb
+	{
+		int slot = 0;
+		std::string limbName;
+		std::string rootBone;
+		std::string midBone;
+		std::string endBone;
+		int flags = 0;
+	};
+
+	std::vector<IKLimb> m_cachedIKLimbs;
+
+	std::string m_playerNameClean;
 	bool m_isPlayerClass = false;
+
+	std::string m_currFileModel;
+	std::string m_fileModel;
+	std::string m_currfpItemHandsModel;
+	std::string m_frozenModel;
+	std::string m_fpItemHandsModel;
+
+	EntityId m_vehicleRelinkUpdateId = 0;
+
+	enum EntitySlot
+	{
+		CHARACTER,
+		FROZEN,
+		UNUSED,
+		FPITEMHANDS,
+		FPITEMHANDS_SECONDARY
+	};
+
+	enum Timers			          //Converted from BasicActor.lua
+	{
+		DEAD = 1,                 // DEAD_TIMER (lua)
+		DEADANIM = 2,             // DEADANIM_TIMER
+		THROWOBJECT = 3,          // THROWOBJECT_TIMER
+		EQUIP = 4,                // EQUIP_TIMER
+		ACTOREFFECTS = 5,         // ACTOREFFECTS_TIMER
+		BLEED = 9,                // BLEED_TIMER
+		PAIN = 10,                // PAIN_TIMER
+		NANOSUIT_MODE = 11,       // NANOSUIT_MODE_TIMER
+		NANOSUIT_CLOAK = 12,      // NANOSUIT_CLOAK_TIMER
+		NANOSUIT_UNCLOAK = 13,    // NANOSUIT_UNCLOAK_TIMER
+		DEATH_REIMPULSE = 14,     // DEATH_REIMPULSE_TIMER
+		COLLISION = 15,           // COLLISION_TIMER
+		UNRAGDOLL = 16,           // UNRAGDOLL_TIMER 
+		HOSTAGE_COWER = 17,       // HOSTAGE_COWER_TIMER
+		SWITCH_WEAPON = 18,       // SWITCH_WEAPON_TIMER
+		BLOOD_POOL = 19,          // BLOOD_POOL_TIMER
+		ITEM_RESELECT = 20         // new	
+	};
+
 };
 
 #endif //__Actor_H__
