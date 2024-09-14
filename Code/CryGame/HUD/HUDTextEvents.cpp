@@ -981,7 +981,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 
 	CActor* pTarget = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(targetId));
 
-	const bool freezeKill = pTarget && pTarget->GetActorStats() && pTarget->GetActorStats()->isShattered;
+	const bool freezeKill = pTarget && pTarget->GetActorStats() && pTarget->GetActorStats()->isShattered.Value();
 	const bool isVehicleClass = g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName);
 	bool skipShooter = false;
 

@@ -1651,7 +1651,7 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 
 		if (select)
 		{
-			if (!pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder))
+			if (!pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder.Value()))
 			{
 				if (CanSelect() && !slave)
 					m_pItemSystem->SetActorItem(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);

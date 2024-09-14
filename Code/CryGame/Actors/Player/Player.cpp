@@ -615,7 +615,7 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 
 	//update freefall/parachute effects
 	bool freefallChanged(m_stats.inFreefallLast != m_stats.inFreefall.Value());
-	if (m_stats.inFreefall && pFists)
+	if (m_stats.inFreefall.Value() && pFists)
 	{
 		bool freeFall = false;
 		char buff[32];
@@ -684,7 +684,7 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 		pFists->SetDefaultIdleAnimation(CItem::eIGS_FirstPerson, actionName);
 		pFists->PlayAction(actionName);
 	}
-	else if (freefallChanged && !m_stats.inFreefall && pFists)
+	else if (freefallChanged && !m_stats.inFreefall.Value() && pFists)
 	{
 		//fists->SetBusy(false);
 
@@ -702,7 +702,7 @@ void CPlayer::UpdateFirstPersonEffects(float frameTime)
 			pFists->GetScheduler()->Reset();
 			pFists->EnterFreeFall(false);
 
-			if (lastItemId && lastItem && lastItemId != pFists->GetEntityId() && !GetInventory()->GetCurrentItem() && !m_stats.isOnLadder)
+			if (lastItemId && lastItem && lastItemId != pFists->GetEntityId() && !GetInventory()->GetCurrentItem() && !m_stats.isOnLadder.Value())
 			{
 				lastItem->ResetAnimation();
 				COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
@@ -837,7 +837,7 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		ChangeParachuteState(0);
 	}
 
-	if (!m_stats.isRagDoll && GetHealth() > 0 && !m_stats.isFrozen)
+	if (!m_stats.isRagDoll && GetHealth() > 0 && !m_stats.isFrozen.Value())
 	{
 		if (m_pNanoSuit)
 			m_pNanoSuit->Update(frameTime);
@@ -1287,13 +1287,13 @@ bool CPlayer::ShouldUsePhysicsMovement()
 
 void CPlayer::ProcessCharacterOffset(float frameTime)
 {
-	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead)
+	if (m_linkStats.CanMoveCharacter() && !m_stats.followCharacterHead.Value())
 	{
 		const bool Client = IsClient() || IsFpSpectatorTarget();
 
 		IEntity* pEnt = GetEntity();
 
-		if (Client && !IsThirdPerson() && !m_stats.isOnLadder)
+		if (Client && !IsThirdPerson() && !m_stats.isOnLadder.Value())
 		{
 			float lookDown(m_viewQuatFinal.GetColumn1() * m_baseQuat.GetColumn2());
 			float offsetZ(m_modelOffset.z);
@@ -1310,7 +1310,7 @@ void CPlayer::ProcessCharacterOffset(float frameTime)
 
 						//FIXME:this is unavoidable, the character offset must be adjusted for every stance/situation.
 						//more elegant ways to do this (like check if the hip bone position is inside the view) apparently dont work, its easier to just tweak the offset manually.
-			if (m_stats.inFreefall)
+			if (m_stats.inFreefall.Value())
 			{
 				m_modelOffset.y -= max(-lookDown, 0.0f) * 0.4f;
 			}
@@ -2702,7 +2702,7 @@ bool CPlayer::ShouldSwim()
 	if (GetLinkedVehicle() != NULL)
 		return false;
 
-	if (m_stats.isOnLadder)
+	if (m_stats.isOnLadder.Value())
 		return false;
 
 	return true;
@@ -3115,7 +3115,7 @@ void CPlayer::UpdateStats(float frameTime)
 
 		bool shouldReturn = false;
 
-		if (!m_stats.isOnLadder && !IsFrozen())  //Underwater ladders ... 8$
+		if (!m_stats.isOnLadder.Value() && !IsFrozen())  //Underwater ladders ... 8$
 		{
 			/*
 						// We should not clear any of these. They should be maintained properly.
@@ -3130,7 +3130,7 @@ void CPlayer::UpdateStats(float frameTime)
 		}
 		else
 		{
-			if (m_stats.isOnLadder)
+			if (m_stats.isOnLadder.Value())
 			{
 				assert((m_stats.ladderTop - m_stats.ladderBottom).GetLengthSquared() > 0.0001f);
 				m_stats.upVector = (m_stats.ladderTop - m_stats.ladderBottom).GetNormalized();
@@ -3357,7 +3357,7 @@ void CPlayer::UpdateStats(float frameTime)
 		else
 		{
 			//no freefalling in zeroG
-			if (!InZeroG() && !m_stats.inFreefall && (m_stats.fallSpeed > (g_pGameCVars->pl_fallDamage_Normal_SpeedFatal - 1.0f))) //looks better if happening earlier
+			if (!InZeroG() && !m_stats.inFreefall.Value() && (m_stats.fallSpeed > (g_pGameCVars->pl_fallDamage_Normal_SpeedFatal - 1.0f))) //looks better if happening earlier
 			{
 				float terrainHeight = gEnv->p3DEngine->GetTerrainZ((int)GetEntity()->GetWorldPos().x, (int)GetEntity()->GetWorldPos().y);
 				float playerHeight = GetEntity()->GetWorldPos().z;
@@ -3376,7 +3376,7 @@ void CPlayer::UpdateStats(float frameTime)
 			if (m_stats.inAir > minTimeForOffGround || isPlayer)
 				m_stats.onGround = 0.0f;
 
-			if (m_stats.isOnLadder)
+			if (m_stats.isOnLadder.Value())
 				m_stats.inAir = 0.0f;
 		}
 	}
@@ -3391,7 +3391,7 @@ void CPlayer::UpdateStats(float frameTime)
 			bool landed = false;
 			// Requiring a jump to land prevents landing when simply falling of a cliff.
 			// Keep commented until when the reason for putting the jump condition in reappears.
-			if (/*m_stats.jumped &&*/ (m_stats.inAir > 0.0f) && onGround && !m_stats.isOnLadder)
+			if (/*m_stats.jumped &&*/ (m_stats.inAir > 0.0f) && onGround && !m_stats.isOnLadder.Value())
 				landed = true;
 
 			// This is needed when jumping while standing directly under something that causes an immediate land,
@@ -3571,11 +3571,11 @@ void CPlayer::UpdateStats(float frameTime)
 
 	//calculate the flatspeed from the player ground orientation
 	Vec3 flatVel(m_baseQuat.GetInverted() * m_stats.velocity);
-	if (!m_stats.isOnLadder)
+	if (!m_stats.isOnLadder.Value())
 		flatVel.z = 0;
 	m_stats.speedFlat = flatVel.len();
 
-	if (m_stats.inAir && m_stats.velocity * m_stats.gravity > 0.0f && (m_stats.inWaterTimer <= 0.0f) && !m_stats.isOnLadder)
+	if (m_stats.inAir && m_stats.velocity * m_stats.gravity > 0.0f && (m_stats.inWaterTimer <= 0.0f) && !m_stats.isOnLadder.Value())
 	{
 		if (!m_stats.fallSpeed)
 			CreateScriptEvent("fallStart", 0);
@@ -3656,9 +3656,9 @@ void CPlayer::UpdateStats(float frameTime)
 
 	pe_player_dynamics simParSet;
 	bool shouldSwim = ShouldSwim();
-	simParSet.bSwimming = (m_stats.spectatorMode || m_stats.flyMode || shouldSwim || (InZeroG() && !bootableSurface) || m_stats.isOnLadder);
+	simParSet.bSwimming = (m_stats.spectatorMode || m_stats.flyMode || shouldSwim || (InZeroG() && !bootableSurface) || m_stats.isOnLadder.Value());
 	//set gravity to 0 in water
-	if ((shouldSwim && m_stats.relativeWaterLevel <= 0.0f) || m_stats.isOnLadder)
+	if ((shouldSwim && m_stats.relativeWaterLevel <= 0.0f) || m_stats.isOnLadder.Value())
 		simParSet.gravity.zero();
 
 	pPhysEnt->SetParams(&simParSet);
@@ -3704,7 +3704,7 @@ void CPlayer::EnableThirdPerson(bool enable)
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
-	if (m_stats.isShattered)
+	if (m_stats.isShattered.Value())
 	{
 		//CryMP: Fix visible model on shatter
 		//Following is already done OnShatter, but we have to do it here as well incase we switch to ThirdPerson
@@ -4021,7 +4021,7 @@ bool CPlayer::IsMaterialBootable(int matId) const
 
 Vec3 CPlayer::GetStanceViewOffset(EStance stance, float* pLeanAmt, bool withY) const
 {
-	if ((m_stats.inFreefall == 1) || (m_isClient && m_stats.isGrabbed) || m_stats.mountedWeaponID)
+	if ((m_stats.inFreefall.Value() == 1) || (m_isClient && m_stats.isGrabbed) || m_stats.mountedWeaponID)
 	{
 		return GetLocalEyePos2();
 	}
@@ -4376,7 +4376,7 @@ void CPlayer::SetHealth(int health)
 		ResetAnimations();
 		SetDeathTimer();
 
-		if (m_stats.isOnLadder)
+		if (m_stats.isOnLadder.Value())
 			RequestLeaveLadder(eLAT_Die);
 
 		if (IsClient())
@@ -4458,7 +4458,7 @@ void CPlayer::Freeze(bool freeze)
 {
 	//CryLogAlways("%s::Freeze(%s) was: %s", GetEntity()->GetName(), freeze?"true":"false", m_stats.isFrozen?"true":"false");
 
-	if (m_stats.isFrozen == freeze && !gEnv->pSystem->IsSerializingFile())
+	if (m_stats.isFrozen.Value() == freeze && !gEnv->pSystem->IsSerializingFile())
 		return;
 
 	SActorStats* pStats = GetActorStats();
@@ -4501,7 +4501,7 @@ void CPlayer::Freeze(bool freeze)
 		ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose();
 		pSkeletonPose->DestroyCharacterPhysics();
 
-		bool zeroMass = m_stats.isOnLadder || (m_linkStats.GetLinkedVehicle() != 0);
+		bool zeroMass = m_stats.isOnLadder.Value() || (m_linkStats.GetLinkedVehicle() != 0);
 
 		SEntityPhysicalizeParams params;
 		params.nSlot = 0;
@@ -4517,7 +4517,7 @@ void CPlayer::Freeze(bool freeze)
 		flags.flagsOR = pef_log_collisions;
 		pPhysicalEntity->SetParams(&flags);
 
-		if (m_stats.isOnLadder)
+		if (m_stats.isOnLadder.Value())
 		{
 			pe_simulation_params sp;
 			sp.gravity = ZERO;
@@ -4630,7 +4630,7 @@ void CPlayer::Freeze(bool freeze)
 		{
 			RequestLeaveLadder(eLAT_ReachedEnd);
 		}
-		else if (m_stats.isOnLadder)
+		else if (m_stats.isOnLadder.Value())
 		{
 			// HAX: this will make sure the input changes are noticed by the animation graph,
 			// and the animations will be re-started...
@@ -4718,7 +4718,7 @@ void CPlayer::AddAngularImpulse(const Ang3& angular, float deceleration, float d
 
 void CPlayer::SelectNextItem(int direction, bool keepHistory, const char* category)
 {
-	if (m_health && m_stats.animationControlled || ShouldSwim() || /*m_bSprinting || */m_stats.inFreefall)
+	if (m_health && m_stats.animationControlled || ShouldSwim() || /*m_bSprinting || */m_stats.inFreefall.Value())
 		return;
 
 	COffHand* pOffHand = static_cast<COffHand*>(GetWeaponByClass(CItem::sOffHandClass));
@@ -4824,7 +4824,7 @@ bool CPlayer::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile,
 	if (aspect == ASPECT_HEALTH)
 	{
 		ser.Value("health", m_health, 'hlth');
-		bool isFrozen = m_stats.isFrozen;
+		bool isFrozen = m_stats.isFrozen.Value();
 		ser.Value("frozen", isFrozen, 'bool');
 		ser.Value("frozenAmount", m_frozenAmount, 'frzn');
 	}
@@ -5026,7 +5026,7 @@ void SPlayerStats::Serialize(TSerialize ser, unsigned aspects)
 		ser.Value("onGround", onGround);
 		inFreefall.Serialize(ser, "inFreefall");
 		if (ser.IsReading())
-			inFreefallLast = !inFreefall;
+			inFreefallLast = !inFreefall.Value();
 		ser.Value("landed", landed);
 		ser.Value("jumped", jumped);
 		ser.Value("inMovement", inMovement);
@@ -5105,7 +5105,7 @@ bool CPlayer::CreateCodeEvent(SmartScriptTable& rTable)
 
 		if (m_pAnimatedCharacter)
 		{
-			if (m_stats.isOnLadder)
+			if (m_stats.isOnLadder.Value())
 				m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Disabled, eColliderModeLayer_Game, "Player::CreateCodeEvent");
 			else
 				m_pAnimatedCharacter->RequestPhysicalColliderMode(eColliderMode_Undefined, eColliderModeLayer_Game, "Player::CreateCodeEvent");
@@ -6600,7 +6600,7 @@ IMPLEMENT_RMI(CPlayer, SvRequestGrabOnLadder)
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CPlayer, SvRequestLeaveLadder)
 {
-	if (m_stats.isOnLadder)
+	if (m_stats.isOnLadder.Value())
 	{
 		if (m_stats.ladderTop.IsEquivalent(params.topPos) && m_stats.ladderBottom.IsEquivalent(params.bottomPos))
 		{
@@ -6638,7 +6638,7 @@ IMPLEMENT_RMI(CPlayer, ClGrabOnLadder)
 IMPLEMENT_RMI(CPlayer, ClLeaveLadder)
 {
 	// probably not worth checking the positions here - just get off the ladder whatever.
-	if (m_stats.isOnLadder)
+	if (m_stats.isOnLadder.Value())
 	{
 		LeaveLadder(static_cast<ELadderActionType>(params.reason));
 	}
@@ -7015,7 +7015,7 @@ void CPlayer::UpdateFirstPersonSwimming()
 	if (ShouldSwim())
 		swimming = true;
 
-	if (m_stats.isOnLadder)
+	if (m_stats.isOnLadder.Value())
 	{
 		UpdateFirstPersonSwimmingEffects(false, 0.0f);
 		return;
@@ -7133,7 +7133,7 @@ void CPlayer::UpdateFirstPersonSwimmingEffects(bool exitWater, float velSqr)
 //------------------------------------------------------------------------
 void CPlayer::UpdateFirstPersonFists()
 {
-	if (m_stats.inFreefall)
+	if (m_stats.inFreefall.Value())
 	{
 		return;
 	}
@@ -7656,18 +7656,18 @@ void CPlayer::UpdateDraw()
 
 	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
 	// AI or third person, show all
-	if (!IsFpSpectatorTarget() && (m_stats.isHidden || GetSpectatorMode() != eASM_None))
+	if (!IsFpSpectatorTarget() && (m_stats.isHidden.Value() || GetSpectatorMode() != eASM_None))
 	{
 		DrawSlot(0, 0);
 	}
-	else if ((!IsClient() && !IsFpSpectatorTarget()) || IsThirdPerson() || m_stats.isOnLadder)
+	else if ((!IsClient() && !IsFpSpectatorTarget()) || IsThirdPerson() || m_stats.isOnLadder.Value())
 	{
 		DrawSlot(0, 1);
 		// Show all
 		HideAllAttachments(0, false, false);
 
 		// Hide head if we are on a ladder and third person is not set
-		if (IsClient() && m_stats.isOnLadder && !IsThirdPerson())
+		if (IsClient() && m_stats.isOnLadder.Value() && !IsThirdPerson())
 		{
 			for (const auto& attachment : deadAttachments)
 			{
@@ -7694,7 +7694,7 @@ void CPlayer::UpdateDraw()
 				HideAttachment(0, attachment.data(), true, false);
 			}
 		}
-		else if ((m_stats.firstPersonBody > 0) && !ghostPit)
+		else if ((m_stats.firstPersonBody.Value() > 0) && !ghostPit)
 		{
 			DrawSlot(0, 1);
 
@@ -7754,7 +7754,7 @@ void CPlayer::UpdateScreenFrost()
 	// Get the frozen amount
 	const float frozenAmount = GetFrozenAmount();
 	// Determine if we should apply frost
-	bool doFrost = m_stats.isFrozen || (frozenAmount > 0.05f && !gEnv->bMultiplayer);
+	bool doFrost = m_stats.isFrozen.Value() || (frozenAmount > 0.05f && !gEnv->bMultiplayer);
 	bool isClient = IsClient();
 
 	if (doFrost && frozenAmount < 1.0f)
@@ -7767,7 +7767,7 @@ void CPlayer::UpdateScreenFrost()
 
 	if (doFrost)
 	{
-		if (m_stats.isFrozen)
+		if (m_stats.isFrozen.Value())
 		{
 			m_params.speedMultiplier = 1.0f - frozenAmount;
 		}

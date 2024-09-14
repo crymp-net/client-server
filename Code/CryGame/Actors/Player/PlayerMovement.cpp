@@ -68,7 +68,7 @@ void CPlayerMovement::Process(CPlayer& player)
 
 	if (m_stats.spectatorMode || m_stats.flyMode)
 		ProcessFlyMode();
-	else if (m_stats.isOnLadder)
+	else if (m_stats.isOnLadder.Value())
 		ProcessMovementOnLadder(player);
 	else if (/*m_stats.inAir &&*/ m_stats.inZeroG)
 		ProcessFlyingZeroG();
@@ -143,7 +143,7 @@ void CPlayerMovement::Commit(CPlayer& player)
 
 	if (!player.m_stats.bIgnoreSprinting)
 		player.m_stats.bSprinting = ((m_stats.onGround > 0.1f || (m_stats.inWaterTimer > 0.0f)) && m_stats.inMovement > 0.1f && m_actions & ACTION_SPRINT);
-	if (player.m_stats.isOnLadder)
+	if (player.m_stats.isOnLadder.Value())
 		player.m_stats.bSprinting = ((m_actions & ACTION_SPRINT) && (m_movement.desiredVelocity.len2() > 0.0f));
 }
 
@@ -1460,7 +1460,7 @@ void CPlayerMovement::AdjustMovementForEnvironment(Vec3& move, bool sprinting)
 //-----------------------------------------------------------------------------------------------
 void CPlayerMovement::ProcessTurning()
 {
-	if (m_stats.isRagDoll || (m_player.m_stats.isFrozen.Value() || m_stats.isOnLadder/*&& !m_player.IsPlayer()*/))
+	if (m_stats.isRagDoll || (m_player.m_stats.isFrozen.Value() || m_stats.isOnLadder.Value() /*&& !m_player.IsPlayer()*/))
 		return;
 
 	static const bool ROTATION_AFFECTS_THIRD_PERSON_MODEL = true;
