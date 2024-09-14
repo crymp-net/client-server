@@ -217,7 +217,7 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 	}
 	// Externally controlled first person view e.g. by animation
 	else if ((!stats.isRagDoll || stats.isFrozen.Value() || stats.isStandingUp) 
-		&& !stats.isThirdPerson && !stats.isOnLadder && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value() == 1))
+		&& !stats.isThirdPerson && !stats.isOnLadder && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value() > 0))
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}

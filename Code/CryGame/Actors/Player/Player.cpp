@@ -7683,7 +7683,7 @@ void CPlayer::UpdateDraw()
 		{
 			DrawSlot(0, 0);
 		}
-		else if (!IsFpSpectatorTarget() && ((m_stats.followCharacterHead == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))))
+		else if (!IsFpSpectatorTarget() && ((m_stats.followCharacterHead.Value() == 1 || (m_pGrabHandler && m_pGrabHandler->GetStats() && m_pGrabHandler->GetStats()->grabId) || (GetLinkedVehicle() && !ghostPit))))
 		{
 			DrawSlot(0, 1);
 			// First show all
