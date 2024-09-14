@@ -3561,7 +3561,9 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 	if (IVehicle* pVehicle = GetLinkedVehicle())
 	{
 		if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId()))
+		{
 			pSeat->Exit(false);
+		}
 	}
 
 	// stop using any mounted weapons before reviving
@@ -3571,7 +3573,7 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 		if (pItem->IsMounted())
 		{
 			pItem->StopUse(GetEntityId());
-			pItem = 0;
+			pItem = nullptr;
 		}
 	}
 
@@ -3585,21 +3587,21 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), rot, pos));
 
 	// This will cover the case when the ClPickup RMI comes in before we're revived
+	if (m_netLastSelectablePickedUp)
 	{
-		if (m_netLastSelectablePickedUp)
-			pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
+		pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
 		m_netLastSelectablePickedUp = 0;
+	}
 
-		if (pItem)
-		{
-			bool soundEnabled = pItem->IsSoundEnabled();
-			pItem->EnableSound(false);
-			pItem->Select(false);
-			pItem->EnableSound(soundEnabled);
+	if (pItem)
+	{
+		const bool soundEnabled = pItem->IsSoundEnabled();
+		pItem->EnableSound(false);
+		pItem->Select(false);
+		pItem->EnableSound(soundEnabled);
 
-			m_pItemSystem->SetActorItem(this, (EntityId)0);
-			SelectItem(pItem->GetEntityId(), true);
-		}
+		m_pItemSystem->SetActorItem(this, (EntityId)0);
+		SelectItem(pItem->GetEntityId(), true);
 	}
 
 	if (IsClient())
@@ -3624,39 +3626,46 @@ void CActor::NetReviveInVehicle(EntityId vehicleId, int seatId, int teamId)
 		if (pItem->IsMounted())
 		{
 			pItem->StopUse(GetEntityId());
-			pItem = 0;
+			pItem = nullptr;
 		}
 	}
 
 	SetHealth(GetMaxHealth());
 
 	m_teamId = teamId;
+
 	g_pGame->GetGameRules()->OnReviveInVehicle(this, vehicleId, seatId, m_teamId);
 
 	Revive(ReasonForRevive::SPAWN);
 
 	// fix our physicalization, since it's need for some vehicle stuff, and it will be set correctly before the end of the frame
 	// make sure we are alive, for when we transition from ragdoll to linked...
-	if (!GetEntity()->GetPhysics() || GetEntity()->GetPhysics()->GetType() != PE_LIVING)
+	IPhysicalEntity *pPhysics = GetEntity()->GetPhysics();
+	if (!pPhysics || pPhysics->GetType() != PE_LIVING)
+	{
 		Physicalize();
+	}
 
 	IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(vehicleId);
-	assert(pVehicle);
 	if (pVehicle)
 	{
 		IVehicleSeat* pSeat = pVehicle->GetSeatById(seatId);
 		if (pSeat && (!pSeat->GetPassenger() || pSeat->GetPassenger() == GetEntityId()))
+		{
 			pSeat->Enter(GetEntityId(), false);
+		}
 	}
 
 	// This will cover the case when the ClPickup RMI comes in before we're revived
 	if (m_netLastSelectablePickedUp)
+	{
 		pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
-	m_netLastSelectablePickedUp = 0;
+		m_netLastSelectablePickedUp = 0;
+	}
 
 	if (pItem)
 	{
-		bool soundEnabled = pItem->IsSoundEnabled();
+		const bool soundEnabled = pItem->IsSoundEnabled();
 		pItem->EnableSound(false);
 		pItem->Select(false);
 		pItem->EnableSound(soundEnabled);

@@ -7735,8 +7735,10 @@ void CPlayer::UpdateCharacter(ICharacterInstance *pCharacter, bool characterLoad
 	{
 		m_lastAttachmentCount = attachmentCount;
 
-		if (characterLoad)
+		if (characterLoad || GetPhysicsProfile() != eAP_Alive)
+		{
 			return;
+		}
 
 		IAnimationGraphState* pGraphState = GetAnimationGraphState();
 		if (pGraphState)
