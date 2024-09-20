@@ -726,7 +726,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 		CPlayer* pPlayer = CPlayer::FromActor(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder.Value();
 
 		const int canGrab = CanPerformPickUp(pActor, NULL);
 
@@ -827,7 +827,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 	{
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder.Value();
 
 		IMovementController* pMC = pPlayer->GetMovementController();
 		if (!pMC)
@@ -1623,7 +1623,7 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 		if (!m_mainHand)
 		{
 			SActorStats* pStats = GetOwnerActor()->GetActorStats();
-			if (!GetOwnerActor()->ShouldSwim() && !m_bCutscenePlaying && (pStats && !pStats->inFreefall))
+			if (!GetOwnerActor()->ShouldSwim() && !m_bCutscenePlaying && (pStats && !pStats->inFreefall.Value()))
 				GetOwnerActor()->HolsterItem(false);
 		}
 		else if (!m_mainHandIsDualWield && !m_prevMainHandId)

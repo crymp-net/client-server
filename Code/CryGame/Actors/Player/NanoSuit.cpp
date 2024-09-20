@@ -478,9 +478,9 @@ void CNanoSuit::Update(float frameTime)
 	if (m_cloak.m_active)
 	{
 		float energyCost = m_cloak.m_energyCost * g_pGameCVars->g_suitCloakEnergyDrainAdjuster;
-		if (stats.inFreefall)
+		if (stats.inFreefall.Value())
 			recharge = min(recharge - max(1.0f, energyCost * 8.0f), -max(1.0f, energyCost * 8.0f));
-		else if (stats.isOnLadder)
+		else if (stats.isOnLadder.Value())
 			recharge = min(recharge - max(1.0f, energyCost * stats.speedFlat), -max(1.0f, energyCost * stats.speedFlat));
 		else
 			recharge = min(recharge - max(1.0f, energyCost * (stats.speedFlat * 0.5f)), -max(1.0f, energyCost * (stats.speedFlat * 0.5f)));

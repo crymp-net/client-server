@@ -217,7 +217,7 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 	}
 	// Externally controlled first person view e.g. by animation
 	else if ((!stats.isRagDoll || stats.isFrozen.Value() || stats.isStandingUp) 
-		&& !stats.isThirdPerson && !stats.isOnLadder && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value() == 1))
+		&& !stats.isThirdPerson && !stats.isOnLadder.Value() && m_pCharacter && (stats.firstPersonBody.Value() == 1 || stats.followCharacterHead.Value() > 0))
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}
@@ -229,7 +229,7 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 	{
 		ViewVehicle(viewParams);
 	}
-	else if (stats.isOnLadder)
+	else if (stats.isOnLadder.Value())
 	{
 		ViewFirstThirdSharedPre(viewParams);
 
@@ -330,7 +330,7 @@ void PlayerView::ViewFirstThirdSharedPre(SViewParams& viewParams)
 
 	viewParams.viewID = 0;
 
-	m_bUsePivot = (m_player.m_params.viewPivot.len2() > 0) && !stats.isThirdPerson && !stats.isOnLadder;
+	m_bUsePivot = (m_player.m_params.viewPivot.len2() > 0) && !stats.isThirdPerson && !stats.isOnLadder.Value();
 	viewParams.position = m_bUsePivot ? m_player.m_params.viewPivot : m_entityWorldPos;
 
 	m_viewQuatForWeapon = m_viewQuatFinal;
