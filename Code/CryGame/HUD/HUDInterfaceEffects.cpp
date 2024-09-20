@@ -754,9 +754,12 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 			float r = 0.8f;
 			float g = 0.8f;
 			float b = 1.0f;
-			//VTOL lockons
-			//CryMP lets add different colors according to team as well, like we did for binoculars ages ago :)
-			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_entityTargetAutoaimId))
+			//CryMP: Custom colors for VTOL lockons
+			//Neutral: White
+			//Team: Blue
+			//Enemy: Orange-Red
+			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId())
+				&& (!m_pGameRules->IsNeutral(m_entityTargetAutoaimId) || m_pGameRules->GetTeamCount() < 2))
 			{
 				r = 1.0f;
 				g = 0.1f;

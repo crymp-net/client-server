@@ -1278,7 +1278,8 @@ void CHUDRadar::UpdateScanner(float frameTime)
 				//Enemy: Orange-Red
 				if (gEnv->bMultiplayer)
 				{
-					if (m_pGameRules->IsHostile(m_scannerObjectID, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_scannerObjectID))
+					if (m_pGameRules->IsHostile(m_scannerObjectID, m_pClientActor->GetEntityId()) 
+						&& (!m_pGameRules->IsNeutral(m_scannerObjectID) || m_pGameRules->GetTeamCount() < 2))
 					{
 						//ColorF V(0.8f, 0.498039f, 0.196078f);
 						r = 1.0f;
