@@ -425,7 +425,7 @@ void CHUDTagNames::Update()
 
 	m_nameTags.clear();
 
-	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
+	const int clientTeamId = pGameRules->GetTeam(pClientActor->GetEntityId());
 
 	// previous approach didn't work in IA as there are no teams.
 	IActorIteratorPtr it = pActorSystem->CreateActorIterator();
@@ -451,8 +451,8 @@ void CHUDTagNames::Update()
 		}
 		// Skip enemies, they need to be added only when shot
 		// (except in spectator mode when we display everyone)
-		int iTeam = pGameRules->GetTeam(pActor->GetEntityId());
-		if ((iTeam == iClientTeam && iTeam != 0) || (pClientActor->GetSpectatorMode() != CActor::eASM_None))
+		const int teamId = pGameRules->GetTeam(pActor->GetEntityId());
+		if ((pActor->IsClient() || (teamId == clientTeamId && teamId != 0)) || (pClientActor->GetSpectatorMode() != CActor::eASM_None))
 		{
 			// never display other spectators
 			if (static_cast<CActor*>(pActor)->GetSpectatorMode() != CActor::eASM_None)
@@ -490,14 +490,14 @@ void CHUDTagNames::Update()
 
 			EntityId uiEntityId = pVehicleSeat->GetPassenger();
 
-			if (0 == iClientTeam)
+			if (0 == clientTeamId)
 			{
 				if (uiEntityId && IsFriendlyToClient(uiEntityId))
 				{
 					bEnemyVehicle = false;
 				}
 			}
-			else if (uiEntityId && pGameRules->GetTeam(uiEntityId) == iClientTeam)
+			else if (uiEntityId && pGameRules->GetTeam(uiEntityId) == clientTeamId)
 			{
 				bEnemyVehicle = false;
 			}
