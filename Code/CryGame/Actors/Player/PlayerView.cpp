@@ -526,8 +526,8 @@ void PlayerView::ViewThirdPerson(SViewParams& viewParams)
 	Vec3 offsetY = m_viewQuatFinal.GetColumn1() * viewOffset.y;
 	Vec3 offsetZ = m_viewQuatFinal.GetColumn2() * viewOffset.z;
 
-	float* noLean = nullptr;
-	Vec3 origin(m_player.GetEntity()->GetWorldPos() + m_baseQuat * m_player.GetStanceViewOffset(m_player.GetStance(), noLean));
+	float noLean = 0.0f;
+	Vec3 origin = m_player.GetEntity()->GetWorldPos() + m_baseQuat * m_player.GetStanceViewOffset(m_player.GetStance(), &noLean);
 	Vec3 transformPos = origin + offsetX + offsetY + offsetZ;
 	Vec3 occRay = transformPos - origin;
 
