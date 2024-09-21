@@ -124,18 +124,25 @@ static float	m_merciTimeLastHit = 0.0f;
 
 //--------------------
 //this function will be called from the engine at the right time, since bones editing must be placed at the right time.
-int PlayerProcessBones(ICharacterInstance* pCharacter, void* pPlayer)
+int PlayerProcessBones(ICharacterInstance* pCharacter, void* player)
 {
 	//	return 1; //freezing and bone processing is not working very well.
+	CPlayer* pPlayer = static_cast<CPlayer*>(player);
+	const uint8 profile = pPlayer->GetPhysicsProfile();
+	if (pPlayer->GetEntity()->IsHidden() || profile == eAP_Ragdoll) //CryMP: IK not working with ragdolls, can be skipped
+	{
+		return 1;
+	}
 
-		//FIXME: do something to remove gEnv->pTimer->GetFrameTime()
-		//process bones specific stuff (IK, torso rotation, etc)
-	float timeFrame = gEnv->pTimer->GetFrameTime();
+	const float timeFrame = gEnv->pTimer->GetFrameTime();
 
 	ISkeletonAnim* pISkeletonAnim = pCharacter->GetISkeletonAnim();
-	uint32 numAnim = pISkeletonAnim->GetNumAnimsInFIFO(0);
+	const uint32 numAnim = pISkeletonAnim->GetNumAnimsInFIFO(0);
 	if (numAnim)
-		((CPlayer*)pPlayer)->ProcessBonesRotation(pCharacter, timeFrame);
+	{
+		//process bones specific stuff (IK, torso rotation, etc)
+		pPlayer->ProcessBonesRotation(pCharacter, timeFrame);
+	}
 
 	return 1;
 }
@@ -1144,35 +1151,38 @@ void CPlayer::UpdateParachute(float frameTime)
 			DeployParachute(false, true);
 		//}
 	}
+}
 
-	if (m_ParachuteOpen)
+void CPlayer::UpdateParachuteIK()
+{
+	if (!m_ParachuteOpen)
+		return;
+
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
+	IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
+	IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
+	if (pIAttachment)
 	{
-		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
-		IAttachmentManager* pIAttachmentManager = pCharacter ? pCharacter->GetIAttachmentManager() : nullptr;
-		IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(m_parachuteAttachmentName.data());
-		if (pIAttachment)
-		{
-			 const Vec3 parachutePos = pIAttachment->GetAttWorldAbsolute().t;
+		const Vec3 parachutePos = pIAttachment->GetAttWorldAbsolute().t;
 
-			// Define offsets in the local space (relative to the parachute or spine)
-			static Vec3 leftHandOffset = Vec3(-0.55f, 0.0f, 2.3f); 
-			static Vec3 rightHandOffset = Vec3(0.55f, 0.0f, 2.3f);
+		// Define offsets in the local space (relative to the parachute or spine)
+		static Vec3 leftHandOffset = Vec3(-0.55f, 0.0f, 2.3f);
+		static Vec3 rightHandOffset = Vec3(0.55f, 0.0f, 2.3f);
 
-			Quat attachmentRotation = pIAttachment->GetAttWorldAbsolute().q;
-			Vec3 rotatedLeftHandOffset = attachmentRotation * leftHandOffset;
-			Vec3 rotatedRightHandOffset = attachmentRotation * rightHandOffset; 
+		Quat attachmentRotation = pIAttachment->GetAttWorldAbsolute().q;
+		Vec3 rotatedLeftHandOffset = attachmentRotation * leftHandOffset;
+		Vec3 rotatedRightHandOffset = attachmentRotation * rightHandOffset;
 
-			Vec3 worldPos1 = parachutePos + rotatedLeftHandOffset;
-			Vec3 worldPos2 = parachutePos + rotatedRightHandOffset;
+		Vec3 worldPos1 = parachutePos + rotatedLeftHandOffset;
+		Vec3 worldPos2 = parachutePos + rotatedRightHandOffset;
 
-			SetIKPos("leftArm", worldPos1, 1);
-			SetIKPos("rightArm", worldPos2, 1);
+		SetIKPos("leftArm", worldPos1, 1);
+		SetIKPos("rightArm", worldPos2, 1);
 
-			//static ColorF leftColor(1, 1, 1, 1);
-			//static ColorF rightColor(0, 0.5f, 1, 1);
-			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos1, 0.1f, leftColor);
-			//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos2, 0.1f, rightColor);
-		}
+		//static ColorF leftColor(1, 1, 1, 1);
+		//static ColorF rightColor(0, 0.5f, 1, 1);
+		//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos1, 0.1f, leftColor);
+		//gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldPos2, 0.1f, rightColor);
 	}
 }
 
@@ -4169,6 +4179,7 @@ void CPlayer::PostPhysicalize()
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
 	if (!pCharacter)
 		return;
+
 	pCharacter->GetISkeletonPose()->SetPostProcessCallback0(PlayerProcessBones, this);
 	pe_simulation_params sim;
 	sim.maxLoggedCollisions = 5;
@@ -5323,6 +5334,17 @@ float CPlayer::GetActorStrength() const
 
 void CPlayer::ProcessBonesRotation(ICharacterInstance* pCharacter, float frameTime)
 {
+	CWeapon *pWeapon = GetCurrentWeapon(true);
+	if (pWeapon && pWeapon->IsMounted())
+	{
+		//CryMP: Fetch the IK pos data at the ideal time
+		pWeapon->OnPreProcessBonesRotation(this, frameTime);
+	}
+	else
+	{
+		UpdateParachuteIK();
+	}
+
 	CActor::ProcessBonesRotation(pCharacter, frameTime);
 }
 

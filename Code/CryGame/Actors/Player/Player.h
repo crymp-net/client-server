@@ -628,6 +628,7 @@ public:
 	virtual bool CanSleep() { return true; }
 
 	void UpdateParachute(float frameTime);
+	void UpdateParachuteIK();
 	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
 	void DeployParachute(bool show, bool sound);

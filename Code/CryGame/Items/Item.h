@@ -946,7 +946,8 @@ public:
 	// view
 	bool IsOwnerFP();
 	bool IsCurrentItem();
-	void UpdateMounted(float frameTime);  
+	void UpdateMounted(float frameTime);
+	void OnPreProcessBonesRotation(IActor* pActor, const float frameTime);
 	void CheckViewChange();
 	void SetViewMode(int mode);
 	void CopyRenderFlags(IEntity *pOwner);
