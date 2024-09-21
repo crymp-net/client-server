@@ -1504,7 +1504,10 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 
 	CopyRenderFlags(GetOwner());
 
-	//Hide(true); //CryMP: Causes weapon to be hidden after sv_restart in mp
+	if (!gEnv->bMultiplayer) //CryMP: Causes weapon to be hidden after sv_restart in mp
+	{
+		Hide(true);
+	}
 
 	m_stats.dropped = false;
 	m_stats.brandnew = false;
