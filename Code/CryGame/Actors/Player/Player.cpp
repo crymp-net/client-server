@@ -1412,8 +1412,11 @@ void CPlayer::PrePhysicsUpdate()
 {
 	if (!IsClient())
 	{
-		if (GetPhysicsProfile() == eAP_Ragdoll || GetPhysicsProfile() == eAP_Spectator)
-			return;
+		const bool mpServer = gEnv->bServer && gEnv->bMultiplayer;
+		if (!mpServer && (GetPhysicsProfile() == eAP_Ragdoll || GetPhysicsProfile() == eAP_Spectator))
+		{
+			return; //CryMP skip updates for ragdolls and spectators
+		}
 	}
 
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
