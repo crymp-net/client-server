@@ -1,8 +1,13 @@
+#include <tracy/Tracy.hpp>
+
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/HTTPClient.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
+#include "Library/StringTools.h"
+#include "Library/WinAPI.h"
 
 #include "Server.h"
 
@@ -23,10 +28,30 @@ void Server::Init(IGameFramework* pGameFramework)
 
 	pGameFramework->RegisterListener(this, "crymp-server", FRAMEWORKLISTENERPRIORITY_DEFAULT);
 
+	if (WinAPI::CmdLine::HasArg("-oldgame"))
+	{
+		void* pCryGame = WinAPI::DLL::Load("CryGame.dll");
+		if (!pCryGame)
+		{
+			throw StringTools::SysErrorFormat("Failed to load the CryGame DLL!");
+		}
+
+		auto entry = static_cast<IGame::TEntryFunction>(WinAPI::DLL::GetSymbol(pCryGame, "CreateGame"));
+		if (!entry)
+		{
+			throw StringTools::ErrorFormat("The CryGame DLL is not valid!");
+		}
+
+		this->pGame = entry(pGameFramework);
+	}
+	else
+	{
+		this->pGame = new CGame();
+	}
+
 	// initialize the game
 	// mods are not supported
-	g_pGame = new CGame();
-	g_pGame->Init(pGameFramework);
+	this->pGame->Init(pGameFramework);
 }
 
 void Server::UpdateLoop()
@@ -36,8 +61,9 @@ void Server::UpdateLoop()
 	const bool haveFocus = true;
 	const unsigned int updateFlags = 0;
 
-	while (g_pGame->Update(haveFocus, updateFlags))
+	while (this->pGame->Update(haveFocus, updateFlags))
 	{
+		FrameMark;
 	}
 }
 

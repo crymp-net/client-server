@@ -2476,7 +2476,10 @@ void CActor::HandleEvent(const SGameObjectEvent& event)
 		//Init HUD
 		g_pGame->InitHUD((IActor*)(this));
 
-		gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
+		if (gClient)
+		{
+			gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
+		}
 	}
 }
 

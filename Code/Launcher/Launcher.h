@@ -16,6 +16,7 @@ class Launcher final : public ISystemUserCallback
 		void* pCrySystem = nullptr;
 		void* pCryRenderD3D9 = nullptr;
 		void* pCryRenderD3D10 = nullptr;
+		void* pCryRenderNULL = nullptr;
 		void* pFmodEx = nullptr;
 	};
 

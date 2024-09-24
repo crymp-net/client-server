@@ -22,6 +22,7 @@ namespace MemoryPatch
 	namespace CryNetwork
 	{
 		void AllowSameCDKeys(void* pCryNetwork);
+		void DisableServerProfile(void* pCryNetwork);
 		void EnablePreordered(void* pCryNetwork);
 		void FixFileCheckCrash(void* pCryNetwork);
 		void FixInternetConnect(void* pCryNetwork);
@@ -71,6 +72,11 @@ namespace MemoryPatch
 		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D10);
 		void HookWindowNameD3D10(void* pCryRenderD3D10, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D10, void (*handler)(AdapterInfo* info));
+	}
+
+	namespace CryRenderNULL
+	{
+		void DisableDebugRenderer(void* pCryRenderNULL);
 	}
 
 	namespace CrySystem
