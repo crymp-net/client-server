@@ -63,13 +63,67 @@ static void OnD3D10Info(MemoryPatch::CryRenderD3D10::AdapterInfo* info)
 	LogBytes("D3D10 Adapter: Shared system memory = ", info->shared_system_memory);
 }
 
+static void EarlyEngineInitHook(ISystem* pSystem, IConsole* pConsole, ISystemUserCallback* pUserCallback)
+{
+	gEnv = pSystem->GetGlobalEnvironment();
+	gEnv->pConsole = pConsole;
+
+	if (pUserCallback)
+	{
+		// dedicated server console
+		pUserCallback->OnInit(pSystem);
+	}
+
+	gLauncher->OnEarlyEngineInit(pSystem);
+}
+
+static void InstallEarlyEngineInitHook(void* pCrySystem)
+{
+	void* pHook = &EarlyEngineInitHook;
+
+#ifdef BUILD_64BIT
+	const std::size_t codeOffset = 0x462F3;
+	const std::size_t codeSize = 0x19;
+
+	unsigned char code[] = {
+		0x48, 0x8B, 0xD0,                                            // mov rdx, rax
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x00
+		0x48, 0x8B, 0xCD,                                            // mov rcx, rbp
+		0x4C, 0x8B, 0x85, 0x30, 0x0C, 0x00, 0x00,                    // mov r8, qword ptr ss:[rbp+0xC30]
+		0xFF, 0xD0,                                                  // call rax
+	};
+
+	std::memcpy(&code[5], &pHook, 8);
+#else
+	const std::size_t codeOffset = 0x59B3E;
+	const std::size_t codeSize = 0xF;
+
+	unsigned char code[] = {
+		0x51,                          // push ecx
+		0x50,                          // push eax
+		0x55,                          // push ebp
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x0C,              // add esp, 0xC
+		0x90,                          // nop
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[4], &pHook, 4);
+#endif
+
+	static_assert(sizeof(code) == codeSize);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
+}
+
 struct CryPakConfig
 {
 };
 
 static ICryPak* CreateNewCryPak(ISystem* pSystem, CryPakConfig* config, bool lvlRes, bool gameFolderWritable)
 {
-	// earlier than Launcher::OnInit
+	// earlier than EarlyEngineInitHook
 	gEnv = pSystem->GetGlobalEnvironment();
 
 	// dropped because neither log file nor console are available at this point
@@ -884,6 +938,8 @@ void Launcher::PatchEngine()
 			ReplaceScriptSystem(m_dlls.pCrySystem);
 		}
 
+		InstallEarlyEngineInitHook(m_dlls.pCrySystem);
+
 		ReplaceCryPak(m_dlls.pCrySystem);
 		ReplaceStreamEngine(m_dlls.pCrySystem);
 		ReplaceHardwareMouse(m_dlls.pCrySystem);
@@ -943,7 +999,7 @@ void Launcher::StartEngine()
 	GameWindow::GetInstance().Init();
 
 	// initialize CryEngine
-	// Launcher::OnInit is called here
+	// Launcher::OnEarlyEngineInit is called here
 	if (!pGameFramework->Init(m_params))
 	{
 		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
@@ -972,34 +1028,14 @@ void Launcher::StartEngine()
 
 Launcher::Launcher()
 {
-	std::memset(&m_params, 0, sizeof(m_params));
 }
 
 Launcher::~Launcher()
 {
 }
 
-bool Launcher::OnError(const char* error)
+void Launcher::OnEarlyEngineInit(ISystem* pSystem)
 {
-	return true;
-}
-
-void Launcher::OnSaveDocument()
-{
-}
-
-void Launcher::OnProcessSwitch()
-{
-}
-
-void Launcher::OnInitProgress(const char* message)
-{
-}
-
-void Launcher::OnInit(ISystem* pSystem)
-{
-	gEnv = pSystem->GetGlobalEnvironment();
-
 	const std::filesystem::path mainDirPath = std::filesystem::current_path();
 	const std::filesystem::path userDirPath = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%"));
 	const std::filesystem::path rootDirPath = std::filesystem::canonical(gEnv->pSystem->GetRootFolder());
@@ -1050,23 +1086,9 @@ void Launcher::OnInit(ISystem* pSystem)
 	});
 }
 
-void Launcher::OnShutdown()
-{
-}
-
-void Launcher::OnUpdate()
-{
-	Logger::GetInstance().OnUpdate();
-}
-
-void Launcher::GetMemoryUsage(ICrySizer* pSizer)
-{
-}
-
 void Launcher::Run()
 {
 	m_params.hInstance = WinAPI::DLL::Get(nullptr);  // EXE handle
-	m_params.pUserCallback = this;
 	m_params.pLog = &Logger::GetInstance();
 	m_params.isDedicatedServer = WinAPI::CmdLine::HasArg("-dedicated");
 
