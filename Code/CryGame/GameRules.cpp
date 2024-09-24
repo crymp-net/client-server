@@ -211,7 +211,10 @@ void CGameRules::PostInit(IGameObject* pGameObject)
 	RegisterConsoleCommands(pConsole);
 	RegisterConsoleVars(pConsole);
 
-	gClient->GetScriptCallbacks()->OnGameRulesCreated(GetEntityId());
+	if (gClient)
+	{
+		gClient->GetScriptCallbacks()->OnGameRulesCreated(GetEntityId());
+	}
 }
 
 //------------------------------------------------------------------------

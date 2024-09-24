@@ -10,6 +10,7 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryMP/Client/Client.h"
+#include "CryMP/Server/Server.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CPUInfo.h"
 #include "CrySystem/CryMemoryManager.h"
@@ -263,6 +264,11 @@ static void ReplaceScriptSystem(void* pCrySystem)
 
 static IHardwareMouse* CreateNewHardwareMouse()
 {
+	if (gEnv->pSystem->IsDedicated())
+	{
+		return nullptr;
+	}
+
 	CryLogAlways("$3[CryMP] Initializing Hardware Mouse");
 
 	HardwareMouse* pHardwareMouse = &HardwareMouse::GetInstance();
@@ -793,7 +799,15 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the Cry3DEngine DLL!");
 	}
 
-	if (!m_params.isDedicatedServer && !WinAPI::CmdLine::HasArg("-dedicated"))
+	if (m_params.isDedicatedServer)
+	{
+		m_dlls.pCryRenderNULL = WinAPI::DLL::Load("CryRenderNULL.dll");
+		if (!m_dlls.pCryRenderNULL)
+		{
+			throw StringTools::SysErrorFormat("Failed to load the CryRenderNULL DLL!");
+		}
+	}
+	else
 	{
 		if (!WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater()))
 		{
@@ -845,6 +859,7 @@ void Launcher::PatchEngine()
 	if (m_dlls.pCryNetwork)
 	{
 		MemoryPatch::CryNetwork::AllowSameCDKeys(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::DisableServerProfile(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::EnablePreordered(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
@@ -900,6 +915,11 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
 	}
 
+	if (m_dlls.pCryRenderNULL)
+	{
+		MemoryPatch::CryRenderNULL::DisableDebugRenderer(m_dlls.pCryRenderNULL);
+	}
+
 	if (m_dlls.pFmodEx)
 	{
 		MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(m_dlls.pFmodEx);
@@ -933,7 +953,14 @@ void Launcher::StartEngine()
 	TracyHookEngineProfiler();
 #endif
 
-	gClient->Init(pGameFramework);
+	if (gClient)
+	{
+		gClient->Init(pGameFramework);
+	}
+	else if (gServer)
+	{
+		gServer->Init(pGameFramework);
+	}
 
 	if (!pGameFramework->CompleteInit())
 	{
@@ -1041,6 +1068,7 @@ void Launcher::Run()
 	m_params.hInstance = WinAPI::DLL::Get(nullptr);  // EXE handle
 	m_params.pUserCallback = this;
 	m_params.pLog = &Logger::GetInstance();
+	m_params.isDedicatedServer = WinAPI::CmdLine::HasArg("-dedicated");
 
 	this->SetCmdLine();
 
@@ -1054,11 +1082,6 @@ void Launcher::Run()
 		throw StringTools::ErrorFormat("Mods are not supported!");
 	}
 
-	if (WinAPI::CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
-	{
-		throw StringTools::ErrorFormat("Running as a dedicated server is not supported!");
-	}
-
 	this->InitWorkingDirectory();
 
 	this->LoadEngine();
@@ -1066,10 +1089,22 @@ void Launcher::Run()
 
 	RandomGenerator::Init();
 
-	Client client;
-	gClient = &client;
+	if (m_params.isDedicatedServer)
+	{
+		Server server;
+		gServer = &server;
 
-	this->StartEngine();
+		this->StartEngine();
 
-	gClient->UpdateLoop();
+		gServer->UpdateLoop();
+	}
+	else
+	{
+		Client client;
+		gClient = &client;
+
+		this->StartEngine();
+
+		gClient->UpdateLoop();
+	}
 }

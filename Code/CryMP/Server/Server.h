@@ -10,6 +10,7 @@ class HTTPClient;
 class Server : public IGameFrameworkListener
 {
 public:
+	IGame *pGame = nullptr;
 	IGameFramework* pGameFramework = nullptr;
 
 	std::unique_ptr<Executor> pExecutor;
