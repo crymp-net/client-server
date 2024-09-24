@@ -2,9 +2,7 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 
-class CGame;
-
-class Launcher final : public ISystemUserCallback
+class Launcher
 {
 	struct DLLs
 	{
@@ -21,7 +19,7 @@ class Launcher final : public ISystemUserCallback
 	};
 
 	DLLs m_dlls;
-	SSystemInitParams m_params;
+	SSystemInitParams m_params = {};
 
 	void SetCmdLine();
 	void InitWorkingDirectory();
@@ -33,21 +31,7 @@ public:
 	Launcher();
 	~Launcher();
 
-	////////////////////////////////////////////////////////////////////////////////
-	// ISystemUserCallback
-	////////////////////////////////////////////////////////////////////////////////
-
-	bool OnError(const char* error) override;
-	void OnSaveDocument() override;
-	void OnProcessSwitch() override;
-	void OnInitProgress(const char* message) override;
-	void OnInit(ISystem* pSystem) override;
-	void OnShutdown() override;
-	void OnUpdate() override;
-
-	void GetMemoryUsage(ICrySizer* pSizer) override;
-
-	////////////////////////////////////////////////////////////////////////////////
+	void OnEarlyEngineInit(ISystem* pSystem);
 
 	const DLLs& GetDLLs()
 	{

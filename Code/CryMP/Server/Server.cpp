@@ -6,6 +6,7 @@
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryGame/Game.h"
+#include "CrySystem/Logger.h"
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
@@ -63,6 +64,8 @@ void Server::UpdateLoop()
 
 	while (this->pGame->Update(haveFocus, updateFlags))
 	{
+		Logger::GetInstance().OnUpdate();
+
 		FrameMark;
 	}
 }
