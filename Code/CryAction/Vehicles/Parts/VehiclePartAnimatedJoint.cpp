@@ -1,11 +1,13 @@
 #include "VehiclePartAnimatedJoint.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartAnimatedJoint::VehiclePartAnimatedJoint()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3054eaa0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x4eaa0;
 #else
-	std::uintptr_t ctor = 0x3053ac10;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x3ac10;
 #endif
 
 	(this->*reinterpret_cast<void(VehiclePartAnimatedJoint::*&)()>(ctor))();
@@ -201,8 +203,8 @@ void VehiclePartAnimatedJoint::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x309235f4) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x4235f4) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a4b74) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a4b74) = id;
 #endif
 }

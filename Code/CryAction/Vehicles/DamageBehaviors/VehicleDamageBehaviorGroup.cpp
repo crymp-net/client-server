@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorGroup.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorGroup::VehicleDamageBehaviorGroup()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x30843d48;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x343d48;
 #else
-	std::uintptr_t vtable = 0x30760fe8;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x260fe8;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorGroup::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928da8) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428da8) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa364) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa364) = id;
 #endif
 }

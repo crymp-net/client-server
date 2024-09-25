@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorSpawnDebris.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorSpawnDebris::VehicleDamageBehaviorSpawnDebris()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305b3880;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xb3880;
 #else
-	std::uintptr_t ctor = 0x30581ce0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x81ce0;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleDamageBehaviorSpawnDebris::*&)()>(ctor))();
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorSpawnDebris::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928dc0) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428dc0) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa37c) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa37c) = id;
 #endif
 }

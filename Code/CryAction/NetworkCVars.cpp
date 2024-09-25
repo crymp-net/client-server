@@ -1,14 +1,18 @@
+#include <cstdint>
+
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 
 #include "NetworkCVars.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 NetworkCVars::NetworkCVars()
 {
 #ifdef BUILD_64BIT
-	*reinterpret_cast<NetworkCVars**>(0x3095f6e8) = this;
+	*reinterpret_cast<NetworkCVars**>(CRYACTION_BASE + 0x45f6e8) = this;
 #else
-	*reinterpret_cast<NetworkCVars**>(0x307d6644) = this;
+	*reinterpret_cast<NetworkCVars**>(CRYACTION_BASE + 0x2d6644) = this;
 #endif
 
 	IConsole* pConsole = gEnv->pConsole;

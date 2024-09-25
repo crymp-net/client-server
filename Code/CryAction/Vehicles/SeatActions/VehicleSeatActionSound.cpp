@@ -1,11 +1,13 @@
 #include "VehicleSeatActionSound.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionSound::VehicleSeatActionSound()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x308440f8;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x3440f8;
 #else
-	std::uintptr_t vtable = 0x30761194;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x261194;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -82,8 +84,8 @@ void VehicleSeatActionSound::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x3092737c) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x42737c) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a8684) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a8684) = id;
 #endif
 }

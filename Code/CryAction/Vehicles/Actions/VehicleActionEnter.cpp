@@ -1,11 +1,13 @@
 #include "VehicleActionEnter.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleActionEnter::VehicleActionEnter()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x30844228;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x344228;
 #else
-	std::uintptr_t vtable = 0x30761218;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x261218;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -68,8 +70,8 @@ void VehicleActionEnter::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928650) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428650) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a9c40) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a9c40) = id;
 #endif
 }

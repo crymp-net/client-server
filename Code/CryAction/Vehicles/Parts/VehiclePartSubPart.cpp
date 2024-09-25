@@ -1,13 +1,15 @@
 #include "VehiclePartSubPart.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartSubPart::VehiclePartSubPart()
 {
 	m_type = eVPT_SubPart;
 
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x308439c8;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x3439c8;
 #else
-	std::uintptr_t vtable = 0x30760e38;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x260e38;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -20,8 +22,8 @@ void VehiclePartSubPart::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30924c80) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x424c80) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a6138) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a6138) = id;
 #endif
 }

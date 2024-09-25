@@ -2,12 +2,14 @@
 
 #include "UIDraw.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 UIDraw::UIDraw()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307801e0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2801e0;
 #else
-	std::uintptr_t ctor = 0x306b85b0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1b85b0;
 #endif
 
 	(this->*reinterpret_cast<void(UIDraw::*&)()>(ctor))();

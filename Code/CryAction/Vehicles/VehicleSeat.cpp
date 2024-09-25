@@ -1,11 +1,13 @@
 #include "VehicleSeat.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeat::VehicleSeat()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30597010;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x97010;
 #else
-	std::uintptr_t ctor = 0x3056d910;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x6d910;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleSeat::*&)()>(ctor))();

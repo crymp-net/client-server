@@ -1,11 +1,13 @@
 #include "VehiclePartLight.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartLight::VehiclePartLight()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3055c940;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x5c940;
 #else
-	std::uintptr_t ctor = 0x30545f80;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x45f80;
 #endif
 
 	(this->*reinterpret_cast<void(VehiclePartLight::*&)()>(ctor))();
@@ -201,8 +203,8 @@ void VehiclePartLight::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30924c4c) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x424c4c) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a6104) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a6104) = id;
 #endif
 }

@@ -2,12 +2,14 @@
 
 #include "PersistantDebug.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 PersistantDebug::PersistantDebug()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30784670;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x284670;
 #else
-	std::uintptr_t ctor = 0x306ba8d0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1ba8d0;
 #endif
 
 	(this->*reinterpret_cast<void(PersistantDebug::*&)()>(ctor))();

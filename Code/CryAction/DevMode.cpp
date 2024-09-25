@@ -4,13 +4,15 @@
 
 #include "DevMode.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 DevMode::DevMode()
 {
-	static constinit std::uintptr_t vtable[2] = {
+	static std::uintptr_t vtable[2] = {
 #ifdef BUILD_64BIT
-		0x3082bfd0, 0x306a79c0,
+		CRYACTION_BASE + 0x32bfd0, CRYACTION_BASE + 0x1a79c0,
 #else
-		0x30749e80, 0x305f9740,
+		CRYACTION_BASE + 0x249e80, CRYACTION_BASE + 0xf9740,
 #endif
 	};
 

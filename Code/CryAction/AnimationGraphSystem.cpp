@@ -2,12 +2,14 @@
 
 #include "AnimationGraphSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 AnimationGraphSystem::AnimationGraphSystem()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x306f46c0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1f46c0;
 #else
-	std::uintptr_t ctor = 0x30655ff0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x155ff0;
 #endif
 
 	(this->*reinterpret_cast<void(AnimationGraphSystem::*&)()>(ctor))();
@@ -16,9 +18,9 @@ AnimationGraphSystem::AnimationGraphSystem()
 void AnimationGraphSystem::RegisterFactories(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x306f9b60;
+	std::uintptr_t func = CRYACTION_BASE + 0x1f9b60;
 #else
-	std::uintptr_t func = 0x306590e0;
+	std::uintptr_t func = CRYACTION_BASE + 0x1590e0;
 #endif
 
 	(this->*reinterpret_cast<void(AnimationGraphSystem::*&)(IGameFramework*)>(func))(pGameFramework);
@@ -27,9 +29,9 @@ void AnimationGraphSystem::RegisterFactories(IGameFramework* pGameFramework)
 IAnimationGraphPtr AnimationGraphSystem::LoadGraph(const char* filename, bool reload, bool loadBinary)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x306f53f0;
+	std::uintptr_t func = CRYACTION_BASE + 0x1f53f0;
 #else
-	std::uintptr_t func = 0x30656430;
+	std::uintptr_t func = CRYACTION_BASE + 0x156430;
 #endif
 
 	return (this->*reinterpret_cast<

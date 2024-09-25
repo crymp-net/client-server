@@ -1,11 +1,13 @@
 #include "VehiclePartDetached.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartDetached::VehiclePartDetached()
 {
 #ifdef BUILD_64BIT
-	auto vtable = reinterpret_cast<void*>(0x30843fe8);
+	auto vtable = reinterpret_cast<void*>(CRYACTION_BASE + 0x343fe8);
 #else
-	auto vtable = reinterpret_cast<void*>(0x30761118);
+	auto vtable = reinterpret_cast<void*>(CRYACTION_BASE + 0x261118);
 #endif
 
 	*reinterpret_cast<void**>(this) = vtable;

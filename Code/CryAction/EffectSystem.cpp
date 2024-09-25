@@ -2,12 +2,14 @@
 
 #include "EffectSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 EffectSystem::EffectSystem()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3077d390;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x27d390;
 #else
-	std::uintptr_t ctor = 0x306b6280;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1b6280;
 #endif
 
 	(this->*reinterpret_cast<void(EffectSystem::*&)()>(ctor))();

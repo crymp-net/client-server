@@ -2,12 +2,14 @@
 
 #include "GameplayRecorder.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameplayRecorder::GameplayRecorder(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307f3dc0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2f3dc0;
 #else
-	std::uintptr_t ctor = 0x30703160;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x203160;
 #endif
 
 	(this->*reinterpret_cast<void(GameplayRecorder::*&)(IGameFramework*)>(ctor))(pGameFramework);
@@ -20,9 +22,9 @@ GameplayRecorder::~GameplayRecorder()
 void GameplayRecorder::Update(float frameTime)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x307f3960;
+	std::uintptr_t func = CRYACTION_BASE + 0x2f3960;
 #else
-	std::uintptr_t func = 0x30702970;
+	std::uintptr_t func = CRYACTION_BASE + 0x202970;
 #endif
 
 	(this->*reinterpret_cast<void(GameplayRecorder::*&)(float)>(func))(frameTime);

@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorIndicator.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorIndicator::VehicleDamageBehaviorIndicator()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305b1fb0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xb1fb0;
 #else
-	std::uintptr_t ctor = 0x30580cc0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x80cc0;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleDamageBehaviorIndicator::*&)()>(ctor))();
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorIndicator::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928db4) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428db4) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa370) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa370) = id;
 #endif
 }

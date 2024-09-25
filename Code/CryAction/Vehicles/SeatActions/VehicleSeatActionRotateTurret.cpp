@@ -1,11 +1,13 @@
 #include "VehicleSeatActionRotateTurret.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionRotateTurret::VehicleSeatActionRotateTurret()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x30844088;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x344088;
 #else
-	std::uintptr_t vtable = 0x30761164;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x261164;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -82,8 +84,8 @@ void VehicleSeatActionRotateTurret::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30926fd4) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x426fd4) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a82f8) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a82f8) = id;
 #endif
 }

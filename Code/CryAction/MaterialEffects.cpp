@@ -2,12 +2,14 @@
 
 #include "MaterialEffects.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 MaterialEffects::MaterialEffects()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30764160;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x264160;
 #else
-	std::uintptr_t ctor = 0x306a0620;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1a0620;
 #endif
 
 	(this->*reinterpret_cast<void(MaterialEffects::*&)()>(ctor))();
@@ -16,9 +18,9 @@ MaterialEffects::MaterialEffects()
 bool MaterialEffects::Load(const char* fileName)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x307654f0;
+	std::uintptr_t func = CRYACTION_BASE + 0x2654f0;
 #else
-	std::uintptr_t func = 0x306a0f50;
+	std::uintptr_t func = CRYACTION_BASE + 0x1a0f50;
 #endif
 
 	return (this->*reinterpret_cast<bool(MaterialEffects::*&)(const char*)>(func))(fileName);
@@ -27,9 +29,9 @@ bool MaterialEffects::Load(const char* fileName)
 bool MaterialEffects::LoadFlowGraphLibs()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x3075e8a0;
+	std::uintptr_t func = CRYACTION_BASE + 0x25e8a0;
 #else
-	std::uintptr_t func = 0x3069f140;
+	std::uintptr_t func = CRYACTION_BASE + 0x19f140;
 #endif
 
 	return (this->*reinterpret_cast<bool(MaterialEffects::*&)()>(func))();
@@ -38,9 +40,9 @@ bool MaterialEffects::LoadFlowGraphLibs()
 void MaterialEffects::Update(float frameTime)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x30762890;
+	std::uintptr_t func = CRYACTION_BASE + 0x262890;
 #else
-	std::uintptr_t func = 0x306a0240;
+	std::uintptr_t func = CRYACTION_BASE + 0x1a0240;
 #endif
 
 	(this->*reinterpret_cast<void(MaterialEffects::*&)(float)>(func))(frameTime);

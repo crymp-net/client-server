@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorDetachPart.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorDetachPart::VehicleDamageBehaviorDetachPart()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305af530;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xaf530;
 #else
-	std::uintptr_t ctor = 0x3057ef70;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x7ef70;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleDamageBehaviorDetachPart::*&)()>(ctor))();
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorDetachPart::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928da0) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428da0) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa35c) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa35c) = id;
 #endif
 }

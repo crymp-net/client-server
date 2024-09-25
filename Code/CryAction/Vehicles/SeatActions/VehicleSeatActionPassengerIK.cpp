@@ -1,11 +1,13 @@
 #include "VehicleSeatActionPassengerIK.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionPassengerIK::VehicleSeatActionPassengerIK()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x308442e8;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x3442e8;
 #else
-	std::uintptr_t vtable = 0x30761268;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x261268;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -82,8 +84,8 @@ void VehicleSeatActionPassengerIK::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30926fd0) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x426fd0) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a82f4) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a82f4) = id;
 #endif
 }

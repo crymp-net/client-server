@@ -1,11 +1,13 @@
 #include "VehiclePartTread.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartTread::VehiclePartTread()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305630e0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x630e0;
 #else
-	std::uintptr_t ctor = 0x3054a890;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x4a890;
 #endif
 
 	(this->*reinterpret_cast<void(VehiclePartTread::*&)()>(ctor))();
@@ -201,8 +203,8 @@ void VehiclePartTread::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30924c88) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x424c88) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a6140) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a6140) = id;
 #endif
 }

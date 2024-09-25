@@ -2,12 +2,14 @@
 
 #include "SubtitleManager.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 SubtitleManager::SubtitleManager()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307aae80;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2aae80;
 #else
-	std::uintptr_t ctor = 0x306d0670;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1d0670;
 #endif
 
 	(this->*reinterpret_cast<void(SubtitleManager::*&)()>(ctor))();

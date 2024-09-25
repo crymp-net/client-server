@@ -1,11 +1,13 @@
 #include "VehicleDamagesTemplateRegistry.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamagesTemplateRegistry::VehicleDamagesTemplateRegistry()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x30843900;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x343900;
 #else
-	std::uintptr_t vtable = 0x30760d94;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x260d94;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;

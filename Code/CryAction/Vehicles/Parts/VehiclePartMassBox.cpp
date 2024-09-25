@@ -1,11 +1,13 @@
 #include "VehiclePartMassBox.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehiclePartMassBox::VehiclePartMassBox()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3055cf40;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x5cf40;
 #else
-	std::uintptr_t ctor = 0x305464c0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x464c0;
 #endif
 
 	(this->*reinterpret_cast<void(VehiclePartMassBox::*&)()>(ctor))();
@@ -201,8 +203,8 @@ void VehiclePartMassBox::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30924c78) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x424c78) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a6130) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a6130) = id;
 #endif
 }

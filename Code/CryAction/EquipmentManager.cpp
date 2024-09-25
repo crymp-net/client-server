@@ -2,12 +2,14 @@
 
 #include "EquipmentManager.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 EquipmentManager::EquipmentManager(ItemSystem* pItemSystem)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3051e8a0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1e8a0;
 #else
-	std::uintptr_t ctor = 0x3051ae40;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1ae40;
 #endif
 
 	(this->*reinterpret_cast<void(EquipmentManager::*&)(ItemSystem*)>(ctor))(pItemSystem);
@@ -16,9 +18,9 @@ EquipmentManager::EquipmentManager(ItemSystem* pItemSystem)
 void EquipmentManager::OnBeginGiveEquipmentPack()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x3051d690;
+	std::uintptr_t func = CRYACTION_BASE + 0x1d690;
 #else
-	std::uintptr_t func = 0x3051a470;
+	std::uintptr_t func = CRYACTION_BASE + 0x1a470;
 #endif
 
 	(this->*reinterpret_cast<void(EquipmentManager::*&)()>(func))();
@@ -27,9 +29,9 @@ void EquipmentManager::OnBeginGiveEquipmentPack()
 void EquipmentManager::OnEndGiveEquipmentPack()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x3051d6d0;
+	std::uintptr_t func = CRYACTION_BASE + 0x1d6d0;
 #else
-	std::uintptr_t func = 0x3051a4a0;
+	std::uintptr_t func = CRYACTION_BASE + 0x1a4a0;
 #endif
 
 	(this->*reinterpret_cast<void(EquipmentManager::*&)()>(func))();

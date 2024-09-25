@@ -56,14 +56,16 @@
 #include "Vehicles/VehicleSystem.h"
 #include "ViewSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 static void RegisterInventoryFactory(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(0x309651a8);
-	auto* vtable = reinterpret_cast<void*>(0x3088c968);
+	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(CRYACTION_BASE + 0x4651a8);
+	auto* vtable = reinterpret_cast<void*>(CRYACTION_BASE + 0x38c968);
 #else
-	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(0x307db8dc);
-	auto* vtable = reinterpret_cast<void*>(0x30798bd4);
+	auto* pInventoryCreator = reinterpret_cast<IGameFramework::IGameObjectExtensionCreator*>(CRYACTION_BASE + 0x2db8dc);
+	auto* vtable = reinterpret_cast<void*>(CRYACTION_BASE + 0x298bd4);
 #endif
 
 	// construct
@@ -75,9 +77,9 @@ static void RegisterInventoryFactory(IGameFramework* pGameFramework)
 static void RegisterSomeExtensions(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x307bb6d0;
+	std::uintptr_t func = CRYACTION_BASE + 0x2bb6d0;
 #else
-	std::uintptr_t func = 0x306dbcb0;
+	std::uintptr_t func = CRYACTION_BASE + 0x1dbcb0;
 #endif
 
 	reinterpret_cast<void(*)(IGameFramework*)>(func)(pGameFramework);
@@ -85,35 +87,35 @@ static void RegisterSomeExtensions(IGameFramework* pGameFramework)
 
 GameFramework::GameFramework()
 {
-	static constinit std::uintptr_t vtable[97] = {
+	static std::uintptr_t vtable[97] = {
 #ifdef BUILD_64BIT
-		0x30819390, 0x30819380, 0x30819370, 0x30819360, 0x308191f0, 0x308191e0, 0x3081d250, 0x308286d0,
-		0x3081cbb0, 0x308252a0, 0x30824700, 0x30818bb0, 0x3081b040, 0x30818bc0, 0x30818d60, 0x3081a260,
-		0x30785590, 0x3081afa0, 0x308193c0, 0x30819450, 0x308193d0, 0x308193e0, 0x308193f0, 0x308193b0,
-		0x30819420, 0x30819430, 0x30819410, 0x30819440, 0x30819090, 0x30819460, 0x30819470, 0x30819480,
-		0x30819490, 0x308194a0, 0x3081b020, 0x30819900, 0x3081b110, 0x3081a2c0, 0x3081b230, 0x3081b030,
-		0x3081a280, 0x3081a2a0, 0x30818d90, 0x30818de0, 0x308190a0, 0x30819150, 0x3081a3b0, 0x3081a3d0,
-		0x3081a400, 0x3081a430, 0x30819290, 0x30819320, 0x308192d0, 0x30819200, 0x3081d000, 0x3081d150,
-		0x30819250, 0x30825600, 0x30818e00, 0x3081a2e0, 0x3081afb0, 0x3081a630, 0x3081a650, 0x308199e0,
-		0x3081afc0, 0x3081afd0, 0x30819a00, 0x30819a60, 0x308195f0, 0x308194f0, 0x3081a4f0, 0x30819620,
-		0x30819630, 0x3081afe0, 0x3081aff0, 0x30827e60, 0x308249a0, 0x3081a670, 0x308198c0, 0x3081b000,
-		0x3081a690, 0x30821a50, 0x308198f0, 0x30821fc0, 0x308285e0, 0x30823e60, 0x3081b010, 0x3081a6b0,
-		0x3081d860, 0x30819810, 0x30819840, 0x3081b580, 0x308197f0, 0x30819800, 0x3082a300, 0x3081d800,
-		0x3081a370,
+		CRYACTION_BASE + 0x319390, CRYACTION_BASE + 0x319380, CRYACTION_BASE + 0x319370, CRYACTION_BASE + 0x319360, CRYACTION_BASE + 0x3191f0, CRYACTION_BASE + 0x3191e0, CRYACTION_BASE + 0x31d250, CRYACTION_BASE + 0x3286d0,
+		CRYACTION_BASE + 0x31cbb0, CRYACTION_BASE + 0x3252a0, CRYACTION_BASE + 0x324700, CRYACTION_BASE + 0x318bb0, CRYACTION_BASE + 0x31b040, CRYACTION_BASE + 0x318bc0, CRYACTION_BASE + 0x318d60, CRYACTION_BASE + 0x31a260,
+		CRYACTION_BASE + 0x285590, CRYACTION_BASE + 0x31afa0, CRYACTION_BASE + 0x3193c0, CRYACTION_BASE + 0x319450, CRYACTION_BASE + 0x3193d0, CRYACTION_BASE + 0x3193e0, CRYACTION_BASE + 0x3193f0, CRYACTION_BASE + 0x3193b0,
+		CRYACTION_BASE + 0x319420, CRYACTION_BASE + 0x319430, CRYACTION_BASE + 0x319410, CRYACTION_BASE + 0x319440, CRYACTION_BASE + 0x319090, CRYACTION_BASE + 0x319460, CRYACTION_BASE + 0x319470, CRYACTION_BASE + 0x319480,
+		CRYACTION_BASE + 0x319490, CRYACTION_BASE + 0x3194a0, CRYACTION_BASE + 0x31b020, CRYACTION_BASE + 0x319900, CRYACTION_BASE + 0x31b110, CRYACTION_BASE + 0x31a2c0, CRYACTION_BASE + 0x31b230, CRYACTION_BASE + 0x31b030,
+		CRYACTION_BASE + 0x31a280, CRYACTION_BASE + 0x31a2a0, CRYACTION_BASE + 0x318d90, CRYACTION_BASE + 0x318de0, CRYACTION_BASE + 0x3190a0, CRYACTION_BASE + 0x319150, CRYACTION_BASE + 0x31a3b0, CRYACTION_BASE + 0x31a3d0,
+		CRYACTION_BASE + 0x31a400, CRYACTION_BASE + 0x31a430, CRYACTION_BASE + 0x319290, CRYACTION_BASE + 0x319320, CRYACTION_BASE + 0x3192d0, CRYACTION_BASE + 0x319200, CRYACTION_BASE + 0x31d000, CRYACTION_BASE + 0x31d150,
+		CRYACTION_BASE + 0x319250, CRYACTION_BASE + 0x325600, CRYACTION_BASE + 0x318e00, CRYACTION_BASE + 0x31a2e0, CRYACTION_BASE + 0x31afb0, CRYACTION_BASE + 0x31a630, CRYACTION_BASE + 0x31a650, CRYACTION_BASE + 0x3199e0,
+		CRYACTION_BASE + 0x31afc0, CRYACTION_BASE + 0x31afd0, CRYACTION_BASE + 0x319a00, CRYACTION_BASE + 0x319a60, CRYACTION_BASE + 0x3195f0, CRYACTION_BASE + 0x3194f0, CRYACTION_BASE + 0x31a4f0, CRYACTION_BASE + 0x319620,
+		CRYACTION_BASE + 0x319630, CRYACTION_BASE + 0x31afe0, CRYACTION_BASE + 0x31aff0, CRYACTION_BASE + 0x327e60, CRYACTION_BASE + 0x3249a0, CRYACTION_BASE + 0x31a670, CRYACTION_BASE + 0x3198c0, CRYACTION_BASE + 0x31b000,
+		CRYACTION_BASE + 0x31a690, CRYACTION_BASE + 0x321a50, CRYACTION_BASE + 0x3198f0, CRYACTION_BASE + 0x321fc0, CRYACTION_BASE + 0x3285e0, CRYACTION_BASE + 0x323e60, CRYACTION_BASE + 0x31b010, CRYACTION_BASE + 0x31a6b0,
+		CRYACTION_BASE + 0x31d860, CRYACTION_BASE + 0x319810, CRYACTION_BASE + 0x319840, CRYACTION_BASE + 0x31b580, CRYACTION_BASE + 0x3197f0, CRYACTION_BASE + 0x319800, CRYACTION_BASE + 0x32a300, CRYACTION_BASE + 0x31d800,
+		CRYACTION_BASE + 0x31a370,
 #else
-		0x3071cd60, 0x3071cd50, 0x3071cd30, 0x3071cd20, 0x3071cbf0, 0x3071cbd0, 0x3071f760, 0x30743ab0,
-		0x3071eff0, 0x30742570, 0x307415f0, 0x3071c600, 0x3071f400, 0x3071c610, 0x3071c780, 0x3071e030,
-		0x306b2d50, 0x307450c0, 0x3071cd90, 0x3071ce20, 0x3071cda0, 0x3071cdb0, 0x3071cdc0, 0x3071cd80,
-		0x3071cdf0, 0x3071ce00, 0x3071cde0, 0x3071ce10, 0x3071ca30, 0x3071ce30, 0x3071ce40, 0x3071ce50,
-		0x3071ce60, 0x3071ce70, 0x30745140, 0x3071d250, 0x3071f4c0, 0x3071e070, 0x3071f580, 0x30745150,
-		0x3071e050, 0x3071e060, 0x3071c7b0, 0x3071c7f0, 0x3071ca80, 0x3071cb20, 0x3071e1b0, 0x3071e1c0,
-		0x3071e1e0, 0x3071e220, 0x3071cc80, 0x3071ccf0, 0x3071ccb0, 0x3071cc10, 0x3071f660, 0x3071f6b0,
-		0x3071cc50, 0x30742850, 0x3071c810, 0x3071e090, 0x307450d0, 0x3071e3c0, 0x3071e3e0, 0x3071d300,
-		0x307450e0, 0x307450f0, 0x3071d320, 0x3071d370, 0x3071cf90, 0x3071cec0, 0x3071e2c0, 0x3071cfc0,
-		0x3071cfd0, 0x30745100, 0x30745110, 0x30742c70, 0x30741840, 0x3071e430, 0x3071d200, 0x30745120,
-		0x3071e440, 0x3072f840, 0x3071d230, 0x3072fc30, 0x30743a50, 0x3073f150, 0x30745130, 0x3071e460,
-		0x3071fa50, 0x3071d160, 0x3071d180, 0x3071fa90, 0x3071d130, 0x3071d140, 0x30749310, 0x3071fa00,
-		0x3071e190,
+		CRYACTION_BASE + 0x21cd60, CRYACTION_BASE + 0x21cd50, CRYACTION_BASE + 0x21cd30, CRYACTION_BASE + 0x21cd20, CRYACTION_BASE + 0x21cbf0, CRYACTION_BASE + 0x21cbd0, CRYACTION_BASE + 0x21f760, CRYACTION_BASE + 0x243ab0,
+		CRYACTION_BASE + 0x21eff0, CRYACTION_BASE + 0x242570, CRYACTION_BASE + 0x2415f0, CRYACTION_BASE + 0x21c600, CRYACTION_BASE + 0x21f400, CRYACTION_BASE + 0x21c610, CRYACTION_BASE + 0x21c780, CRYACTION_BASE + 0x21e030,
+		CRYACTION_BASE + 0x1b2d50, CRYACTION_BASE + 0x2450c0, CRYACTION_BASE + 0x21cd90, CRYACTION_BASE + 0x21ce20, CRYACTION_BASE + 0x21cda0, CRYACTION_BASE + 0x21cdb0, CRYACTION_BASE + 0x21cdc0, CRYACTION_BASE + 0x21cd80,
+		CRYACTION_BASE + 0x21cdf0, CRYACTION_BASE + 0x21ce00, CRYACTION_BASE + 0x21cde0, CRYACTION_BASE + 0x21ce10, CRYACTION_BASE + 0x21ca30, CRYACTION_BASE + 0x21ce30, CRYACTION_BASE + 0x21ce40, CRYACTION_BASE + 0x21ce50,
+		CRYACTION_BASE + 0x21ce60, CRYACTION_BASE + 0x21ce70, CRYACTION_BASE + 0x245140, CRYACTION_BASE + 0x21d250, CRYACTION_BASE + 0x21f4c0, CRYACTION_BASE + 0x21e070, CRYACTION_BASE + 0x21f580, CRYACTION_BASE + 0x245150,
+		CRYACTION_BASE + 0x21e050, CRYACTION_BASE + 0x21e060, CRYACTION_BASE + 0x21c7b0, CRYACTION_BASE + 0x21c7f0, CRYACTION_BASE + 0x21ca80, CRYACTION_BASE + 0x21cb20, CRYACTION_BASE + 0x21e1b0, CRYACTION_BASE + 0x21e1c0,
+		CRYACTION_BASE + 0x21e1e0, CRYACTION_BASE + 0x21e220, CRYACTION_BASE + 0x21cc80, CRYACTION_BASE + 0x21ccf0, CRYACTION_BASE + 0x21ccb0, CRYACTION_BASE + 0x21cc10, CRYACTION_BASE + 0x21f660, CRYACTION_BASE + 0x21f6b0,
+		CRYACTION_BASE + 0x21cc50, CRYACTION_BASE + 0x242850, CRYACTION_BASE + 0x21c810, CRYACTION_BASE + 0x21e090, CRYACTION_BASE + 0x2450d0, CRYACTION_BASE + 0x21e3c0, CRYACTION_BASE + 0x21e3e0, CRYACTION_BASE + 0x21d300,
+		CRYACTION_BASE + 0x2450e0, CRYACTION_BASE + 0x2450f0, CRYACTION_BASE + 0x21d320, CRYACTION_BASE + 0x21d370, CRYACTION_BASE + 0x21cf90, CRYACTION_BASE + 0x21cec0, CRYACTION_BASE + 0x21e2c0, CRYACTION_BASE + 0x21cfc0,
+		CRYACTION_BASE + 0x21cfd0, CRYACTION_BASE + 0x245100, CRYACTION_BASE + 0x245110, CRYACTION_BASE + 0x242c70, CRYACTION_BASE + 0x241840, CRYACTION_BASE + 0x21e430, CRYACTION_BASE + 0x21d200, CRYACTION_BASE + 0x245120,
+		CRYACTION_BASE + 0x21e440, CRYACTION_BASE + 0x22f840, CRYACTION_BASE + 0x21d230, CRYACTION_BASE + 0x22fc30, CRYACTION_BASE + 0x243a50, CRYACTION_BASE + 0x23f150, CRYACTION_BASE + 0x245130, CRYACTION_BASE + 0x21e460,
+		CRYACTION_BASE + 0x21fa50, CRYACTION_BASE + 0x21d160, CRYACTION_BASE + 0x21d180, CRYACTION_BASE + 0x21fa90, CRYACTION_BASE + 0x21d130, CRYACTION_BASE + 0x21d140, CRYACTION_BASE + 0x249310, CRYACTION_BASE + 0x21fa00,
+		CRYACTION_BASE + 0x21e190,
 #endif
 	};
 
@@ -138,9 +140,9 @@ GameFramework::GameFramework()
 
 	// set global instance pointer inside CryAction DLL
 #ifdef BUILD_64BIT
-	*reinterpret_cast<GameFramework**>(0x30964b40) = this;
+	*reinterpret_cast<GameFramework**>(CRYACTION_BASE + 0x464b40) = this;
 #else
-	*reinterpret_cast<GameFramework**>(0x307db0ac) = this;
+	*reinterpret_cast<GameFramework**>(CRYACTION_BASE + 0x2db0ac) = this;
 #endif
 }
 
@@ -196,16 +198,16 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 
 	// set gEnv inside CryAction DLL
 #ifdef BUILD_64BIT
-	*reinterpret_cast<SSystemGlobalEnvironment**>(0x30964ae0) = m_pSystem->GetGlobalEnvironment();
+	*reinterpret_cast<SSystemGlobalEnvironment**>(CRYACTION_BASE + 0x464ae0) = m_pSystem->GetGlobalEnvironment();
 #else
-	*reinterpret_cast<SSystemGlobalEnvironment**>(0x307db06c) = m_pSystem->GetGlobalEnvironment();
+	*reinterpret_cast<SSystemGlobalEnvironment**>(CRYACTION_BASE + 0x2db06c) = m_pSystem->GetGlobalEnvironment();
 #endif
 
 	// register CryAction's global system event listener
 #ifdef BUILD_64BIT
-	m_pSystem->GetISystemEventDispatcher()->RegisterListener(reinterpret_cast<ISystemEventListener*>(0x30920bb0));
+	m_pSystem->GetISystemEventDispatcher()->RegisterListener(reinterpret_cast<ISystemEventListener*>(CRYACTION_BASE + 0x420bb0));
 #else
-	m_pSystem->GetISystemEventDispatcher()->RegisterListener(reinterpret_cast<ISystemEventListener*>(0x307a15e4));
+	m_pSystem->GetISystemEventDispatcher()->RegisterListener(reinterpret_cast<ISystemEventListener*>(CRYACTION_BASE + 0x2a15e4));
 #endif
 
 	m_pNetwork = m_pSystem->GetINetwork();
@@ -912,9 +914,9 @@ void GameFramework::UnknownFunction2()
 void GameFramework::DispatchActionEvent(const SActionEvent& event)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x30824ea0;
+	std::uintptr_t func = CRYACTION_BASE + 0x324ea0;
 #else
-	std::uintptr_t func = 0x30741b00;
+	std::uintptr_t func = CRYACTION_BASE + 0x241b00;
 #endif
 
 	(this->*reinterpret_cast<void(GameFramework::*&)(const SActionEvent&)>(func))(event);
@@ -923,9 +925,9 @@ void GameFramework::DispatchActionEvent(const SActionEvent& event)
 void GameFramework::RegisterConsoleVariables()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x308212a0;
+	std::uintptr_t func = CRYACTION_BASE + 0x3212a0;
 #else
-	std::uintptr_t func = 0x30721ab0;
+	std::uintptr_t func = CRYACTION_BASE + 0x221ab0;
 #endif
 
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
@@ -934,9 +936,9 @@ void GameFramework::RegisterConsoleVariables()
 void GameFramework::RegisterConsoleCommands()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x308277a0;
+	std::uintptr_t func = CRYACTION_BASE + 0x3277a0;
 #else
-	std::uintptr_t func = 0x30743600;
+	std::uintptr_t func = CRYACTION_BASE + 0x243600;
 #endif
 
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
@@ -960,9 +962,9 @@ void GameFramework::RegisterScriptBindings()
 void GameFramework::CheckEndLevelSchedule()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x30824a50;
+	std::uintptr_t func = CRYACTION_BASE + 0x324a50;
 #else
-	std::uintptr_t func = 0x307418e0;
+	std::uintptr_t func = CRYACTION_BASE + 0x2418e0;
 #endif
 
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();

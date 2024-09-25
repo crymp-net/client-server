@@ -2,12 +2,14 @@
 
 #include "GameRulesSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameRulesSystem::GameRulesSystem(ISystem* pSystem, IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x306b7f60;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1b7f60;
 #else
-	std::uintptr_t ctor = 0x30631b00;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x131b00;
 #endif
 
 	(this->*reinterpret_cast<void(GameRulesSystem::*&)(ISystem*, IGameFramework*)>(ctor))(pSystem, pGameFramework);

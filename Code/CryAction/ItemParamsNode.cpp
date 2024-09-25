@@ -2,12 +2,14 @@
 
 #include "ItemParamsNode.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ItemParamsNode::ItemParamsNode()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305277b0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x277b0;
 #else
-	std::uintptr_t ctor = 0x3051f5f0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1f5f0;
 #endif
 
 	(this->*reinterpret_cast<void(ItemParamsNode::*&)()>(ctor))();

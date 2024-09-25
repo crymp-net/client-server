@@ -1,11 +1,13 @@
 #include "VehicleSeatSerializer.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatSerializer::VehicleSeatSerializer()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305b4e40;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xb4e40;
 #else
-	std::uintptr_t ctor = 0x30582cc0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x82cc0;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleSeatSerializer::*&)()>(ctor))();

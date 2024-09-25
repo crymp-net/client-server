@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorHitPassenger.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorHitPassenger::VehicleDamageBehaviorHitPassenger()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305b0dc0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xb0dc0;
 #else
-	std::uintptr_t ctor = 0x3057fe50;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x7fe50;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleDamageBehaviorHitPassenger::*&)()>(ctor))();
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorHitPassenger::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928dac) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428dac) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa368) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa368) = id;
 #endif
 }

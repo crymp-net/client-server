@@ -2,12 +2,14 @@
 
 #include "GameStatsConfig.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameStatsConfig::GameStatsConfig()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307e2a90;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2e2a90;
 #else
-	std::uintptr_t ctor = 0x306f56b0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1f56b0;
 #endif
 
 	(this->*reinterpret_cast<void(GameStatsConfig::*&)()>(ctor))();
@@ -20,9 +22,9 @@ GameStatsConfig::~GameStatsConfig()
 void GameStatsConfig::Init()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x307e2cf0;
+	std::uintptr_t func = CRYACTION_BASE + 0x2e2cf0;
 #else
-	std::uintptr_t func = 0x306f5740;
+	std::uintptr_t func = CRYACTION_BASE + 0x1f5740;
 #endif
 
 	(this->*reinterpret_cast<void(GameStatsConfig::*&)()>(func))();

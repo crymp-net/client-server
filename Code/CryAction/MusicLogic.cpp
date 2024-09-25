@@ -2,12 +2,14 @@
 
 #include "MusicLogic.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 MusicLogic::MusicLogic(IAnimationGraphState* pMusicGraphState)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30800960;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x300960;
 #else
-	std::uintptr_t ctor = 0x3070a440;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x20a440;
 #endif
 
 	(this->*reinterpret_cast<void(MusicLogic::*&)(IAnimationGraphState*)>(ctor))(pMusicGraphState);

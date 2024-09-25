@@ -1,11 +1,13 @@
 #include "VehicleViewActionThirdPerson.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleViewActionThirdPerson::VehicleViewActionThirdPerson()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30543c00;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x43c00;
 #else
-	std::uintptr_t ctor = 0x30531e80;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x31e80;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleViewActionThirdPerson::*&)()>(ctor))();
@@ -120,8 +122,8 @@ void VehicleViewActionThirdPerson::Register(IVehicleSystem *pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x309235d0) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x4235d0) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a4b58) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a4b58) = id;
 #endif
 }

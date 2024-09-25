@@ -1,11 +1,13 @@
 #include "VehicleAnimation.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleAnimation::VehicleAnimation()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3058bf10;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x8bf10;
 #else
-	std::uintptr_t ctor = 0x30563f60;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x63f60;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleAnimation::*&)()>(ctor))();

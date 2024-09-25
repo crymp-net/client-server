@@ -1,11 +1,13 @@
 #include "VehicleDamageBehaviorMovementNotification.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleDamageBehaviorMovementNotification::VehicleDamageBehaviorMovementNotification()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305b2720;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xb2720;
 #else
-	std::uintptr_t ctor = 0x305810f0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x810f0;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleDamageBehaviorMovementNotification::*&)()>(ctor))();
@@ -70,8 +72,8 @@ void VehicleDamageBehaviorMovementNotification::Register(IVehicleSystem* pVehicl
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30928db8) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x428db8) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307aa374) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2aa374) = id;
 #endif
 }

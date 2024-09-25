@@ -1,11 +1,13 @@
 #include "VehicleSeatActionAnimation.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionAnimation::VehicleSeatActionAnimation()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3059d7f0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x9d7f0;
 #else
-	std::uintptr_t ctor = 0x30572570;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x72570;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleSeatActionAnimation::*&)()>(ctor))();
@@ -82,8 +84,8 @@ void VehicleSeatActionAnimation::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30926fc4) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x426fc4) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a82e8) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a82e8) = id;
 #endif
 }

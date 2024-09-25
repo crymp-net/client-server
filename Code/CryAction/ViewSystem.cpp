@@ -2,12 +2,14 @@
 
 #include "ViewSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ViewSystem::ViewSystem(ISystem* pSystem)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3051d330;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1d330;
 #else
-	std::uintptr_t ctor = 0x30519bc0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x19bc0;
 #endif
 
 	(this->*reinterpret_cast<void(IViewSystem::*&)(ISystem*)>(ctor))(pSystem);
@@ -16,9 +18,9 @@ ViewSystem::ViewSystem(ISystem* pSystem)
 void ViewSystem::Update(float frameTime)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x3051c340;
+	std::uintptr_t func = CRYACTION_BASE + 0x1c340;
 #else
-	std::uintptr_t func = 0x30518fe0;
+	std::uintptr_t func = CRYACTION_BASE + 0x18fe0;
 #endif
 
 	(this->*reinterpret_cast<void(IViewSystem::*&)(float)>(func))(frameTime);

@@ -2,12 +2,14 @@
 
 #include "LevelSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 LevelSystem::LevelSystem(ISystem* pSystem, const char* levelsFolder)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3050f6b0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x0f6b0;
 #else
-	std::uintptr_t ctor = 0x3050d740;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x0d740;
 #endif
 
 	(this->*reinterpret_cast<void(ILevelSystem::*&)(ISystem*, const char*)>(ctor))(pSystem, levelsFolder);

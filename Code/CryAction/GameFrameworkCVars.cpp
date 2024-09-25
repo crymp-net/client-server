@@ -1,14 +1,18 @@
+#include <cstdint>
+
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 
 #include "GameFrameworkCVars.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameFrameworkCVars::GameFrameworkCVars()
 {
 #ifdef BUILD_64BIT
-	*reinterpret_cast<GameFrameworkCVars**>(0x30965268) = this;
+	*reinterpret_cast<GameFrameworkCVars**>(CRYACTION_BASE + 0x465268) = this;
 #else
-	*reinterpret_cast<GameFrameworkCVars**>(0x307e1c9c) = this;
+	*reinterpret_cast<GameFrameworkCVars**>(CRYACTION_BASE + 0x2e1c9c) = this;
 #endif
 
 	IConsole* pConsole = gEnv->pConsole;

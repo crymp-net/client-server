@@ -2,12 +2,14 @@
 
 #include "ActionMapManager.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ActionMapManager::ActionMapManager(IInput* pInput)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305171e0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x171e0;
 #else
-	std::uintptr_t ctor = 0x30514df0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x14df0;
 #endif
 
 	(this->*reinterpret_cast<void(IActionMapManager::*&)(IInput*)>(ctor))(pInput);

@@ -1,11 +1,13 @@
 #include "VehicleSeatActionSteeringWheel.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionSteeringWheel::VehicleSeatActionSteeringWheel()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x305a25d0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xa25d0;
 #else
-	std::uintptr_t ctor = 0x30576ca0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x76ca0;
 #endif
 
 	(this->*reinterpret_cast<void(VehicleSeatActionSteeringWheel::*&)()>(ctor))();
@@ -82,8 +84,8 @@ void VehicleSeatActionSteeringWheel::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30927380) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x427380) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a8688) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a8688) = id;
 #endif
 }

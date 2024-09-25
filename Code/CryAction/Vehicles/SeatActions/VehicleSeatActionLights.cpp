@@ -1,11 +1,13 @@
 #include "VehicleSeatActionLights.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 VehicleSeatActionLights::VehicleSeatActionLights()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t vtable = 0x30844278;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x344278;
 #else
-	std::uintptr_t vtable = 0x30761238;
+	std::uintptr_t vtable = CRYACTION_BASE + 0x261238;
 #endif
 
 	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
@@ -82,8 +84,8 @@ void VehicleSeatActionLights::Register(IVehicleSystem* pVehicleSystem)
 	const TVehicleObjectId id = pVehicleSystem->AssignVehicleObjectId();
 
 #ifdef BUILD_64BIT
-	*reinterpret_cast<TVehicleObjectId*>(0x30926fc8) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x426fc8) = id;
 #else
-	*reinterpret_cast<TVehicleObjectId*>(0x307a82ec) = id;
+	*reinterpret_cast<TVehicleObjectId*>(CRYACTION_BASE + 0x2a82ec) = id;
 #endif
 }

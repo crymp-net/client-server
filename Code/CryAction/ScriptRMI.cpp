@@ -5,12 +5,14 @@
 
 #include "ScriptRMI.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ScriptRMI::ScriptRMI()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307c9870;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2c9870;
 #else
-	std::uintptr_t ctor = 0x306e4190;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1e4190;
 #endif
 
 	(this->*reinterpret_cast<void(ScriptRMI::*&)()>(ctor))();
@@ -23,9 +25,9 @@ void ScriptRMI::RegisterCVars()
 		ICVar* pDisconnectOnRMIErrorCVar;
 	} *pCVars = reinterpret_cast<decltype(pCVars)>(
 #ifdef BUILD_64BIT
-		0x30961068
+		CRYACTION_BASE + 0x461068
 #else
-		0x307d79a8
+		CRYACTION_BASE + 0x2d79a8
 #endif
 	);
 

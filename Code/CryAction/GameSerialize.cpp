@@ -2,6 +2,8 @@
 
 #include "GameSerialize.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameSerialize::GameSerialize()
 {
 	// TODO: this is not good, implement this class ASAP
@@ -23,9 +25,9 @@ GameSerialize::GameSerialize()
 void GameSerialize::RegisterFactories(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x306a3510;
+	std::uintptr_t func = CRYACTION_BASE + 0x1a3510;
 #else
-	std::uintptr_t func = 0x30624170;
+	std::uintptr_t func = CRYACTION_BASE + 0x124170;
 #endif
 
 	(this->*reinterpret_cast<void(GameSerialize::*&)(IGameFramework*)>(func))(pGameFramework);

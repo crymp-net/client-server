@@ -1,7 +1,11 @@
+#include <cstdint>
+
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 
 #include "GameObject.h"
+
+extern std::uintptr_t CRYACTION_BASE;
 
 void GameObject::RegisterCVars()
 {
@@ -13,9 +17,9 @@ void GameObject::RegisterCVars()
 		ICVar* pVisibilityTimeoutTimeCVar;
 	} *pCVars = reinterpret_cast<decltype(pCVars)>(
 #ifdef BUILD_64BIT
-		0x30941ad8
+		CRYACTION_BASE + 0x441ad8
 #else
-		0x307b9028
+		CRYACTION_BASE + 0x2b9028
 #endif
 	);
 

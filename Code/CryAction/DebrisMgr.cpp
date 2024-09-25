@@ -2,12 +2,14 @@
 
 #include "DebrisMgr.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 DebrisMgr::DebrisMgr()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x307fad80;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2fad80;
 #else
-	std::uintptr_t ctor = 0x30707080;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x207080;
 #endif
 
 	(this->*reinterpret_cast<void(DebrisMgr::*&)()>(ctor))();

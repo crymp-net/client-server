@@ -2,12 +2,14 @@
 
 #include "FlowSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 FlowSystem::FlowSystem()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30619fd0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x119fd0;
 #else
-	std::uintptr_t ctor = 0x305bef80;
+	std::uintptr_t ctor = CRYACTION_BASE + 0xbef80;
 #endif
 
 	(this->*reinterpret_cast<void(FlowSystem::*&)()>(ctor))();

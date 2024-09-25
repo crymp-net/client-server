@@ -2,12 +2,14 @@
 
 #include "TimeOfDayScheduler.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 TimeOfDayScheduler::TimeOfDayScheduler()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30830ad0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x330ad0;
 #else
-	std::uintptr_t ctor = 0x3074cff0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x24cff0;
 #endif
 
 	(this->*reinterpret_cast<void(TimeOfDayScheduler::*&)()>(ctor))();

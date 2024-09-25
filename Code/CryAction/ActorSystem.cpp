@@ -2,12 +2,14 @@
 
 #include "ActorSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ActorSystem::ActorSystem(ISystem* pSystem, IEntitySystem* pEntitySystem)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30510ee0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x10ee0;
 #else
-	std::uintptr_t ctor = 0x30510660;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x10660;
 #endif
 
 	(this->*reinterpret_cast<void(ActorSystem::*&)(ISystem*, IEntitySystem*)>(ctor))(pSystem, pEntitySystem);

@@ -2,12 +2,14 @@
 
 #include "GameObjectSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameObjectSystem::GameObjectSystem()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30827630;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x327630;
 #else
-	std::uintptr_t ctor = 0x30749040;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x249040;
 #endif
 
 	(this->*reinterpret_cast<void(GameObjectSystem::*&)()>(ctor))();
@@ -16,9 +18,9 @@ GameObjectSystem::GameObjectSystem()
 bool GameObjectSystem::Init()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x306b3360;
+	std::uintptr_t func = CRYACTION_BASE + 0x1b3360;
 #else
-	std::uintptr_t func = 0x3062e080;
+	std::uintptr_t func = CRYACTION_BASE + 0x12e080;
 #endif
 
 	return (this->*reinterpret_cast<bool(GameObjectSystem::*&)()>(func))();
@@ -27,9 +29,9 @@ bool GameObjectSystem::Init()
 void GameObjectSystem::RegisterFactories(IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x306b3e60;
+	std::uintptr_t func = CRYACTION_BASE + 0x1b3e60;
 #else
-	std::uintptr_t func = 0x3062f040;
+	std::uintptr_t func = CRYACTION_BASE + 0x12f040;
 #endif
 
 	(this->*reinterpret_cast<void(GameObjectSystem::*&)(IGameFramework*)>(func))(pGameFramework);

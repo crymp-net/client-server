@@ -2,12 +2,14 @@
 
 #include "ScriptBind_Vehicle.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 ScriptBind_Vehicle::ScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGameFramework)
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30540730;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x40730;
 #else
-	std::uintptr_t ctor = 0x3052ebf0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x2ebf0;
 #endif
 
 	(this->*reinterpret_cast<void(ScriptBind_Vehicle::*&)(ISystem*, IGameFramework*)>(ctor))(pSystem, pGameFramework);

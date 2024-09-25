@@ -2,12 +2,14 @@
 
 #include "GameTokenSystem.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 GameTokenSystem::GameTokenSystem()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x3077bb70;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x27bb70;
 #else
-	std::uintptr_t ctor = 0x306b3ef0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1b3ef0;
 #endif
 
 	(this->*reinterpret_cast<void(GameTokenSystem::*&)()>(ctor))();

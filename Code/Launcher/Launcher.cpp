@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
@@ -31,6 +32,8 @@
 #include "Resources.h"
 
 #include "config.h"
+
+std::uintptr_t CRYACTION_BASE = 0;
 
 static void InitCrySystem(void* pCrySystem, SSystemInitParams& params)
 {
@@ -851,6 +854,8 @@ void Launcher::LoadEngine()
 	{
 		throw StringTools::SysErrorFormat("Failed to load the CryAction DLL!");
 	}
+
+	CRYACTION_BASE = reinterpret_cast<std::uintptr_t>(m_dlls.pCryAction);
 
 	m_dlls.pCryAISystem = WinAPI::DLL::Load("CryAISystem.dll");
 	if (!m_dlls.pCryAISystem)

@@ -2,6 +2,8 @@
 
 #include "PlayerProfileManager.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 PlayerProfileManager::PlayerProfileManager()
 {
 	struct Something
@@ -11,9 +13,9 @@ PlayerProfileManager::PlayerProfileManager()
 		Something()
 		{
 #ifdef BUILD_64BIT
-			std::uintptr_t ctor = 0x30787c90;
+			std::uintptr_t ctor = CRYACTION_BASE + 0x287c90;
 #else
-			std::uintptr_t ctor = 0x306bcf20;
+			std::uintptr_t ctor = CRYACTION_BASE + 0x1bcf20;
 #endif
 
 			(this->*reinterpret_cast<void(Something::*&)()>(ctor))();
@@ -21,9 +23,9 @@ PlayerProfileManager::PlayerProfileManager()
 	};
 
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30798820;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x298820;
 #else
-	std::uintptr_t ctor = 0x306c5010;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x1c5010;
 #endif
 
 	(this->*reinterpret_cast<void(PlayerProfileManager::*&)(Something*)>(ctor))(new Something());

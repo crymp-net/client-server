@@ -2,12 +2,14 @@
 
 #include "CallbackTimer.h"
 
+extern std::uintptr_t CRYACTION_BASE;
+
 CallbackTimer::CallbackTimer()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t ctor = 0x30816e70;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x316e70;
 #else
-	std::uintptr_t ctor = 0x3071a3c0;
+	std::uintptr_t ctor = CRYACTION_BASE + 0x21a3c0;
 #endif
 
 	(this->*reinterpret_cast<void(CallbackTimer::*&)()>(ctor))();
@@ -16,9 +18,9 @@ CallbackTimer::CallbackTimer()
 void CallbackTimer::UpdateTimer()
 {
 #ifdef BUILD_64BIT
-	std::uintptr_t func = 0x308172f0;
+	std::uintptr_t func = CRYACTION_BASE + 0x3172f0;
 #else
-	std::uintptr_t func = 0x3071a580;
+	std::uintptr_t func = CRYACTION_BASE + 0x21a580;
 #endif
 
 	(this->*reinterpret_cast<void(CallbackTimer::*&)()>(func))();
