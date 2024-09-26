@@ -3,7 +3,7 @@
 US_hovercraft::US_hovercraft()
 {
 	// enable US_hovercraft::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_hovercraft::~US_hovercraft()

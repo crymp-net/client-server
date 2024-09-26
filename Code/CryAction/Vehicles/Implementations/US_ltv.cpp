@@ -3,7 +3,7 @@
 US_ltv::US_ltv()
 {
 	// enable US_ltv::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_ltv::~US_ltv()

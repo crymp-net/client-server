@@ -3,7 +3,7 @@
 Civ_car1::Civ_car1()
 {
 	// enable Civ_car1::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Civ_car1::~Civ_car1()

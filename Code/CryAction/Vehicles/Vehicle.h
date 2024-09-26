@@ -204,6 +204,24 @@ public:
 
 	const char* GetModification() const override;
 
+	// we need vtable of the same size for now
+	virtual void SomeFunc1() {}
+	virtual void SomeFunc2() {}
+	virtual void SomeFunc3() {}
+	virtual void SomeFunc4() {}
+	virtual void SomeFunc5() {}
+	virtual void SomeFunc6() {}
+	virtual void SomeFunc7() {}
+	virtual void SomeFunc8() {}
+	virtual void SomeFunc9() {}
+	virtual void SomeFunc10() {}
+	virtual void SomeFunc11() {}
+	virtual void SomeFunc12() {}
+	virtual void SomeFunc13() {}
+	virtual void SomeFunc14() {}
+	virtual void SomeFunc15() {}
+	virtual void SomeFunc16() {}
+
 	////////////////////////////////////////////////////////////////////////////////
 	// IGameObjectProfileManager
 	////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +234,7 @@ public:
 	static void GetGameObjectExtensionRMIData(void** ppRMI, size_t* count);
 
 protected:
-	void PatchVTable();
+	bool PatchVTable();
 
 	using ComponentParts = StlportVector_CryAction<std::pair<IVehiclePart*, CryStringT<char>>>;
 

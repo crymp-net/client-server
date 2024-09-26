@@ -3,7 +3,7 @@
 US_trolley::US_trolley()
 {
 	// enable US_trolley::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_trolley::~US_trolley()

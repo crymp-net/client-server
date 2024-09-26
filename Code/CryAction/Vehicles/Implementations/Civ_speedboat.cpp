@@ -3,7 +3,7 @@
 Civ_speedboat::Civ_speedboat()
 {
 	// enable Civ_speedboat::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Civ_speedboat::~Civ_speedboat()

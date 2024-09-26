@@ -3,7 +3,7 @@
 Asian_ltv::Asian_ltv()
 {
 	// enable Asian_ltv::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_ltv::~Asian_ltv()

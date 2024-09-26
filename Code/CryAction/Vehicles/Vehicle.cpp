@@ -5,6 +5,7 @@
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CrySystem/CryLog.h"
+#include "Library/WinAPI.h"
 
 #include "Vehicle.h"
 
@@ -647,9 +648,9 @@ void Vehicle::GetGameObjectExtensionRMIData(void** ppRMI, size_t* count)
 	*count = 7;
 }
 
-void Vehicle::PatchVTable()
+bool Vehicle::PatchVTable()
 {
-	static std::uintptr_t vtable[101] = {
+	std::uintptr_t vtable[101] = {
 #ifdef BUILD_64BIT
 		CRYACTION_BASE + 0x84BC0, CRYACTION_BASE + 0x6BFC0, CRYACTION_BASE + 0x22A50, CRYACTION_BASE + 0x63A00, CRYACTION_BASE + 0x81180, CRYACTION_BASE + 0x7B5C0, CRYACTION_BASE + 0x7E6C0, CRYACTION_BASE + 0x67BB0,
 		CRYACTION_BASE + 0x72910, CRYACTION_BASE + 0x6BD70, CRYACTION_BASE + 0x712A0, CRYACTION_BASE + 0x74A80, CRYACTION_BASE + 0x74A10, CRYACTION_BASE + 0x6D850, CRYACTION_BASE + 0x22A50, CRYACTION_BASE + 0x7F950,
@@ -681,12 +682,14 @@ void Vehicle::PatchVTable()
 #endif
 	};
 
-	const std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
+	std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
 
 	// use original IGameObjectExtension and IVehicle functions from CryAction DLL except the following
 	vtable[0] = current_vtable[0];  // Vehicle::Init
 
-	*reinterpret_cast<std::uintptr_t**>(this) = vtable;
+	WinAPI::FillMem(current_vtable, vtable, sizeof(vtable));
+
+	return true;
 }
 
 void Vehicle::InitActions(const SmartScriptTable& table)

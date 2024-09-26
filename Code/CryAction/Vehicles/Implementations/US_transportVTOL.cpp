@@ -3,7 +3,7 @@
 US_transportVTOL::US_transportVTOL()
 {
 	// enable US_transportVTOL::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_transportVTOL::~US_transportVTOL()

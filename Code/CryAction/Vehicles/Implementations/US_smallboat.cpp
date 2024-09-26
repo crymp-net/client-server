@@ -3,7 +3,7 @@
 US_smallboat::US_smallboat()
 {
 	// enable US_smallboat::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_smallboat::~US_smallboat()

@@ -3,7 +3,7 @@
 Alien_warrior::Alien_warrior()
 {
 	// enable Alien_warrior::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Alien_warrior::~Alien_warrior()

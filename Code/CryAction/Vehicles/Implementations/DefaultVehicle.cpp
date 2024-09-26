@@ -3,7 +3,7 @@
 DefaultVehicle::DefaultVehicle()
 {
 	// enable DefaultVehicle::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 DefaultVehicle::~DefaultVehicle()

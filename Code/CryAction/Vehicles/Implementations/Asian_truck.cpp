@@ -3,7 +3,7 @@
 Asian_truck::Asian_truck()
 {
 	// enable Asian_truck::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_truck::~Asian_truck()

@@ -307,7 +307,7 @@ class VehicleConverter:
 			self._write(f'{vehicle_name}::{vehicle_name}()')
 			self._begin_block()
 			self._write(f'// enable {vehicle_name}::Init function')
-			self._write('this->Vehicle::PatchVTable();')
+			self._write('static const bool patched = this->Vehicle::PatchVTable();')
 			self._end_block()
 			self._write('')
 			self._write(f'{vehicle_name}::~{vehicle_name}()')

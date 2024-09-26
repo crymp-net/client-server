@@ -3,7 +3,7 @@
 Asian_aaa::Asian_aaa()
 {
 	// enable Asian_aaa::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_aaa::~Asian_aaa()

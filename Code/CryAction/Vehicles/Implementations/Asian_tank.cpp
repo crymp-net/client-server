@@ -3,7 +3,7 @@
 Asian_tank::Asian_tank()
 {
 	// enable Asian_tank::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_tank::~Asian_tank()

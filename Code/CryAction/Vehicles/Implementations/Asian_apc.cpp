@@ -3,7 +3,7 @@
 Asian_apc::Asian_apc()
 {
 	// enable Asian_apc::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_apc::~Asian_apc()

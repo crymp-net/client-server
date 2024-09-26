@@ -3,7 +3,7 @@
 US_apc::US_apc()
 {
 	// enable US_apc::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 US_apc::~US_apc()

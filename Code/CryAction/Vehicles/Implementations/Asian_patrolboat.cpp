@@ -3,7 +3,7 @@
 Asian_patrolboat::Asian_patrolboat()
 {
 	// enable Asian_patrolboat::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_patrolboat::~Asian_patrolboat()

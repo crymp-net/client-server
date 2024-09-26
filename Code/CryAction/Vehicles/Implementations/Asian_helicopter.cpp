@@ -3,7 +3,7 @@
 Asian_helicopter::Asian_helicopter()
 {
 	// enable Asian_helicopter::Init function
-	this->Vehicle::PatchVTable();
+	static const bool patched = this->Vehicle::PatchVTable();
 }
 
 Asian_helicopter::~Asian_helicopter()
