@@ -16,43 +16,43 @@ class Vehicle : public IVehicle, public IGameObjectProfileManager
 protected:
 	void* m_reserved1[13] = {};
 	unsigned int m_reserved2[8] = {};
-	IVehicleSystem* m_pVehicleSystem = nullptr;                                   // 0xb0, 0x68
-	IInventory* m_pInventory = nullptr;                                           // 0xb8, 0x6c
-	SEntityPhysicalizeParams m_physicalizeParams;                                 // 0xc0, 0x70
-	IVehicleMovement* m_pMovement = nullptr;                                      // 0x120, 0xb0
+	IVehicleSystem* m_pVehicleSystem = nullptr;                                             // 0xb0, 0x68
+	IInventory* m_pInventory = nullptr;                                                     // 0xb8, 0x6c
+	SEntityPhysicalizeParams m_physicalizeParams;                                           // 0xc0, 0x70
+	IVehicleMovement* m_pMovement = nullptr;                                                // 0x120, 0xb0
 	unsigned int m_reserved3[13] = {};
 	bool m_reserved4 = false;
 	bool m_reserved5 = false;
-	bool m_engineSlotBySpeed = false;                                             // 0x15e, 0xea
+	bool m_engineSlotBySpeed = false;                                                       // 0x15e, 0xea
 	unsigned int m_reserved6[2] = {};
-	StlportVector<std::pair<CryStringT<char>, VehicleSeat*>> m_seats;             // 0x168, 0xf4
-	StlportVector<VehicleSeatGroup*> m_seatGroups;                                // 0x180, 0x100
-	DynArray<DynArray<TVehicleSeatId>> m_seatTransitions;                         // 0x188, 0x104
-	StlportVector<VehicleComponent*> m_components;                                // 0x1a0, 0x110
-	StlportVector<std::pair<CryStringT<char>, IVehiclePart*>> m_parts;            // 0x1b8, 0x11c
+	StlportVector_CryAction<std::pair<CryStringT<char>, VehicleSeat*>> m_seats;             // 0x168, 0xf4
+	StlportVector_CryAction<VehicleSeatGroup*> m_seatGroups;                                // 0x180, 0x100
+	DynArray<DynArray<TVehicleSeatId>> m_seatTransitions;                                   // 0x188, 0x104
+	StlportVector_CryAction<VehicleComponent*> m_components;                                // 0x1a0, 0x110
+	StlportVector_CryAction<std::pair<CryStringT<char>, IVehiclePart*>> m_parts;            // 0x1b8, 0x11c
 	void* m_reserved7[12] = {};
-	pe_params_buoyancy m_buoyancy;                                                // 0x230, 0x158
-	pe_simulation_params m_physics;                                               // 0x278, 0x1a0
-	pe_params_flags m_physicsParams;                                              // 0x2c4, 0x1ec
-	bool m_isDestroyed = false;                                                   // 0x2d4, 0x1fc
-	float m_mass = 0;                                                             // 0x2d8, 0x200
+	pe_params_buoyancy m_buoyancy;                                                          // 0x230, 0x158
+	pe_simulation_params m_physics;                                                         // 0x278, 0x1a0
+	pe_params_flags m_physicsParams;                                                        // 0x2c4, 0x1ec
+	bool m_isDestroyed = false;                                                             // 0x2d4, 0x1fc
+	float m_mass = 0;                                                                       // 0x2d8, 0x200
 	void* m_reserved8[29] = {};
 	unsigned int m_reserved9[21] = {};
-	StlportVector<std::pair<CryStringT<char>, IVehicleAnimation*>> m_animations;  // 0x420, 0x2cc
+	StlportVector_CryAction<std::pair<CryStringT<char>, IVehicleAnimation*>> m_animations;  // 0x420, 0x2cc
 	void* m_reserved10[2] = {};
 	unsigned int m_reserved11 = 0;
-	IEntitySoundProxy* m_pSoundProxy = nullptr;                                   // 0x450, 0x2e4
+	IEntitySoundProxy* m_pSoundProxy = nullptr;                                             // 0x450, 0x2e4
 	void* m_reserved12[3] = {};
-	bool m_retainGravity = false;                                                 // 0x470, 0x2f4
-	Vec3 m_gravity = {};                                                          // 0x474, 0x2f8
+	bool m_retainGravity = false;                                                           // 0x470, 0x2f4
+	Vec3 m_gravity = {};                                                                    // 0x474, 0x2f8
 	unsigned int m_reserved13[5] = {};
-	CryStringT<char> m_modName;                                                   // 0x498, 0x318
-	CryStringT<char> m_paintName;                                                 // 0x4a0, 0x31c
+	CryStringT<char> m_modName;                                                             // 0x498, 0x318
+	CryStringT<char> m_paintName;                                                           // 0x4a0, 0x31c
 	unsigned int m_reserved14 = 0;
-	float m_totalMaxDamage = 0;                                                   // 0x4ac, 0x324
-	float m_majorComponentMaxDamage = 0;                                          // 0x4b0, 0x328
+	float m_totalMaxDamage = 0;                                                             // 0x4ac, 0x324
+	float m_majorComponentMaxDamage = 0;                                                    // 0x4b0, 0x328
 	unsigned int m_reserved15 = 0;
-	CryStringT<char> m_actionMapName;                                             // 0x4b8, 0x330
+	CryStringT<char> m_actionMapName;                                                       // 0x4b8, 0x330
 	void* m_reserved16[18] = {};
 
 public:
@@ -218,7 +218,7 @@ public:
 protected:
 	void PatchVTable();
 
-	using ComponentParts = StlportVector<std::pair<IVehiclePart*, CryStringT<char>>>;
+	using ComponentParts = StlportVector_CryAction<std::pair<IVehiclePart*, CryStringT<char>>>;
 
 	void InitActions(const SmartScriptTable& table);
 	void InitDamages(const SmartScriptTable& table);

@@ -1,11 +1,65 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 
+extern std::uintptr_t CRYACTION_BASE;
+
+void* CryMalloc(std::size_t size);
+void CryFree(void* ptr);
+
 template<class T>
-class StlportVector
+class NodeAlloc_CryAction
+{
+public:
+	T* allocate(std::size_t n)
+	{
+		using AllocFunc = void* (*)(std::size_t bytes);
+
+		const std::size_t bytes = n * sizeof(T);
+
+#ifdef BUILD_64BIT
+		AllocFunc alloc = reinterpret_cast<AllocFunc>(CRYACTION_BASE + 0x34F0);
+
+		void *p = alloc(bytes);
+#else
+		// _M_allocate instead of allocate
+		AllocFunc alloc = reinterpret_cast<AllocFunc>(CRYACTION_BASE + 0x73A0);
+
+		void *p = (bytes > 0x200) ? CryMalloc(bytes) : alloc(bytes);
+#endif
+
+		if (!p)
+		{
+			std::abort();
+		}
+
+		return static_cast<T*>(p);
+	}
+
+	void deallocate(T* p, std::size_t n)
+	{
+		using DeallocFunc = void (*)(void* p, std::size_t bytes);
+
+		const std::size_t bytes = n * sizeof(T);
+
+#ifdef BUILD_64BIT
+		DeallocFunc dealloc = reinterpret_cast<DeallocFunc>(CRYACTION_BASE + 0x1A90);
+
+		dealloc(p, n * sizeof(T));
+#else
+		// _M_deallocate instead of deallocate
+		DeallocFunc dealloc = reinterpret_cast<DeallocFunc>(CRYACTION_BASE + 0x6C30);
+
+		(bytes > 0x200) ? CryFree(p) : dealloc(p, bytes);
+#endif
+	}
+};
+
+template<class T, class Allocator>
+class StlportVector : private Allocator
 {
 	T* m_begin = nullptr;
 	T* m_end = nullptr;
@@ -22,8 +76,7 @@ public:
 
 	~StlportVector()
 	{
-		std::destroy(m_begin, m_end);
-		std::free(m_begin);
+		this->release();
 	}
 
 	bool empty() const { return m_begin == m_end; }
@@ -65,19 +118,26 @@ public:
 private:
 	void reallocate(std::size_t new_capacity)
 	{
-		T* new_buffer = static_cast<T*>(std::malloc(sizeof(T) * new_capacity));
-		if (!new_buffer)
-		{
-			// STLport used by the engine does this because exceptions are disabled
-			std::abort();
-		}
+		T* new_buffer = this->allocate(new_capacity);
 
 		std::uninitialized_move(m_begin, m_end, new_buffer);
-		std::destroy(m_begin, m_end);
-		std::free(m_begin);
+		this->release();
 
 		m_end_of_storage = new_buffer + new_capacity;
 		m_end = new_buffer + this->size();
 		m_begin = new_buffer;
 	}
+
+	void release()
+	{
+		std::destroy(m_begin, m_end);
+
+		if (m_begin)
+		{
+			this->deallocate(m_begin, this->capacity());
+		}
+	}
 };
+
+template<class T>
+using StlportVector_CryAction = StlportVector<T, NodeAlloc_CryAction<T>>;
