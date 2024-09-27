@@ -19,7 +19,7 @@ History:
 #include "CryGame/GameCVars.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/IWorldQuery.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryGame/GameActions.h"
 
 #include "CryGame/HUD/HUD.h"

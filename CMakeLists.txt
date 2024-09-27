@@ -83,6 +83,226 @@ message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
+	Code/CryAction/ActionMapManager.cpp
+	Code/CryAction/ActionMapManager.h
+	Code/CryAction/ActorSystem.cpp
+	Code/CryAction/ActorSystem.h
+	Code/CryAction/AnimationGraphSystem.cpp
+	Code/CryAction/AnimationGraphSystem.h
+	Code/CryAction/CallbackTimer.cpp
+	Code/CryAction/CallbackTimer.h
+	Code/CryAction/DebrisMgr.cpp
+	Code/CryAction/DebrisMgr.h
+	Code/CryAction/DevMode.cpp
+	Code/CryAction/DevMode.h
+	Code/CryAction/DialogSystem.cpp
+	Code/CryAction/DialogSystem.h
+	Code/CryAction/EffectSystem.cpp
+	Code/CryAction/EffectSystem.h
+	Code/CryAction/EquipmentManager.cpp
+	Code/CryAction/EquipmentManager.h
+	Code/CryAction/FlowSystem.cpp
+	Code/CryAction/FlowSystem.h
+	Code/CryAction/GameFramework.cpp
+	Code/CryAction/GameFramework.h
+	Code/CryAction/GameFrameworkCVars.cpp
+	Code/CryAction/GameFrameworkCVars.h
+	Code/CryAction/GameObjectSystem.cpp
+	Code/CryAction/GameObjectSystem.h
+	Code/CryAction/GameplayAnalyst.cpp
+	Code/CryAction/GameplayAnalyst.h
+	Code/CryAction/GameplayRecorder.cpp
+	Code/CryAction/GameplayRecorder.h
+	Code/CryAction/GameObject.cpp
+	Code/CryAction/GameObject.h
+	Code/CryAction/GameRulesSystem.cpp
+	Code/CryAction/GameRulesSystem.h
+	Code/CryAction/GameSerialize.cpp
+	Code/CryAction/GameSerialize.h
+	Code/CryAction/GameStatsConfig.cpp
+	Code/CryAction/GameStatsConfig.h
+	Code/CryAction/GameTokenSystem.cpp
+	Code/CryAction/GameTokenSystem.h
+	Code/CryAction/ItemParamsNode.cpp
+	Code/CryAction/ItemParamsNode.h
+	Code/CryAction/ItemSystem_XMLData.cpp
+	Code/CryAction/ItemSystem.cpp
+	Code/CryAction/ItemSystem.h
+	Code/CryAction/LevelSystem.cpp
+	Code/CryAction/LevelSystem.h
+	Code/CryAction/MaterialEffects.cpp
+	Code/CryAction/MaterialEffects.h
+	Code/CryAction/MusicLogic.cpp
+	Code/CryAction/MusicLogic.h
+	Code/CryAction/NetworkCVars.cpp
+	Code/CryAction/NetworkCVars.h
+	Code/CryAction/PersistantDebug.cpp
+	Code/CryAction/PersistantDebug.h
+	Code/CryAction/PlayerProfileManager.cpp
+	Code/CryAction/PlayerProfileManager.h
+	Code/CryAction/ScriptBind_ActionMapManager.cpp
+	Code/CryAction/ScriptBind_ActionMapManager.h
+	Code/CryAction/ScriptBind_Actor.cpp
+	Code/CryAction/ScriptBind_Actor.h
+	Code/CryAction/ScriptBind_AI.cpp
+	Code/CryAction/ScriptBind_AI.h
+	Code/CryAction/ScriptBind_CryAction.cpp
+	Code/CryAction/ScriptBind_CryAction.h
+	Code/CryAction/ScriptBind_DialogSystem.cpp
+	Code/CryAction/ScriptBind_DialogSystem.h
+	Code/CryAction/ScriptBind_Inventory.cpp
+	Code/CryAction/ScriptBind_Inventory.h
+	Code/CryAction/ScriptBind_ItemSystem.cpp
+	Code/CryAction/ScriptBind_ItemSystem.h
+	Code/CryAction/ScriptBind_MaterialEffects.cpp
+	Code/CryAction/ScriptBind_MaterialEffects.h
+	Code/CryAction/ScriptBind_Network.cpp
+	Code/CryAction/ScriptBind_Network.h
+	Code/CryAction/ScriptBind_Vehicle.cpp
+	Code/CryAction/ScriptBind_Vehicle.h
+	Code/CryAction/ScriptBind_VehicleSeat.cpp
+	Code/CryAction/ScriptBind_VehicleSeat.h
+	Code/CryAction/ScriptBind_VehicleSystem.cpp
+	Code/CryAction/ScriptBind_VehicleSystem.h
+	Code/CryAction/ScriptRMI.cpp
+	Code/CryAction/ScriptRMI.h
+	Code/CryAction/SubtitleManager.cpp
+	Code/CryAction/SubtitleManager.h
+	Code/CryAction/TimeDemoRecorder.cpp
+	Code/CryAction/TimeDemoRecorder.h
+	Code/CryAction/TimeOfDayScheduler.cpp
+	Code/CryAction/TimeOfDayScheduler.h
+	Code/CryAction/UIDraw.cpp
+	Code/CryAction/UIDraw.h
+	Code/CryAction/Vehicles/Actions/VehicleActionEnter.cpp
+	Code/CryAction/Vehicles/Actions/VehicleActionEnter.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorAISignal.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorAISignal.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDestroy.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDestroy.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDetachPart.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDetachPart.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorEffect.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorEffect.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorGroup.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorGroup.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorHitPassenger.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorHitPassenger.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorImpulse.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorImpulse.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorIndicator.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorIndicator.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorMovementNotification.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorMovementNotification.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSink.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSink.h
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.cpp
+	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.h
+	Code/CryAction/Vehicles/Implementations/Alien_warrior.cpp
+	Code/CryAction/Vehicles/Implementations/Alien_warrior.h
+	Code/CryAction/Vehicles/Implementations/Asian_aaa.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_aaa.h
+	Code/CryAction/Vehicles/Implementations/Asian_apc.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_apc.h
+	Code/CryAction/Vehicles/Implementations/Asian_helicopter.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_helicopter.h
+	Code/CryAction/Vehicles/Implementations/Asian_ltv.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_ltv.h
+	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.h
+	Code/CryAction/Vehicles/Implementations/Asian_tank.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_tank.h
+	Code/CryAction/Vehicles/Implementations/Asian_truck.cpp
+	Code/CryAction/Vehicles/Implementations/Asian_truck.h
+	Code/CryAction/Vehicles/Implementations/Civ_car1.cpp
+	Code/CryAction/Vehicles/Implementations/Civ_car1.h
+	Code/CryAction/Vehicles/Implementations/Civ_speedboat.cpp
+	Code/CryAction/Vehicles/Implementations/Civ_speedboat.h
+	Code/CryAction/Vehicles/Implementations/DefaultVehicle.cpp
+	Code/CryAction/Vehicles/Implementations/DefaultVehicle.h
+	Code/CryAction/Vehicles/Implementations/US_apc.cpp
+	Code/CryAction/Vehicles/Implementations/US_apc.h
+	Code/CryAction/Vehicles/Implementations/US_hovercraft.cpp
+	Code/CryAction/Vehicles/Implementations/US_hovercraft.h
+	Code/CryAction/Vehicles/Implementations/US_ltv.cpp
+	Code/CryAction/Vehicles/Implementations/US_ltv.h
+	Code/CryAction/Vehicles/Implementations/US_smallboat.cpp
+	Code/CryAction/Vehicles/Implementations/US_smallboat.h
+	Code/CryAction/Vehicles/Implementations/US_tank.cpp
+	Code/CryAction/Vehicles/Implementations/US_tank.h
+	Code/CryAction/Vehicles/Implementations/US_transportVTOL.cpp
+	Code/CryAction/Vehicles/Implementations/US_transportVTOL.h
+	Code/CryAction/Vehicles/Implementations/US_trolley.cpp
+	Code/CryAction/Vehicles/Implementations/US_trolley.h
+	Code/CryAction/Vehicles/Implementations/US_vtol.cpp
+	Code/CryAction/Vehicles/Implementations/US_vtol.h
+	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.h
+	Code/CryAction/Vehicles/Parts/VehiclePartAnimatedJoint.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartAnimatedJoint.h
+	Code/CryAction/Vehicles/Parts/VehiclePartBase.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartBase.h
+	Code/CryAction/Vehicles/Parts/VehiclePartEntityAttachment.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartEntityAttachment.h
+	Code/CryAction/Vehicles/Parts/VehiclePartLight.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartLight.h
+	Code/CryAction/Vehicles/Parts/VehiclePartMassBox.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartMassBox.h
+	Code/CryAction/Vehicles/Parts/VehiclePartStatic.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartStatic.h
+	Code/CryAction/Vehicles/Parts/VehiclePartSubPart.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartSubPart.h
+	Code/CryAction/Vehicles/Parts/VehiclePartSubPartWheel.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartSubPartWheel.h
+	Code/CryAction/Vehicles/Parts/VehiclePartTread.cpp
+	Code/CryAction/Vehicles/Parts/VehiclePartTread.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionAnimation.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionAnimation.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionLights.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionLights.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionMovement.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionMovement.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionPassengerIK.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionPassengerIK.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionRotateTurret.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionRotateTurret.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSound.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSound.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSteeringWheel.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSteeringWheel.h
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionWeapons.cpp
+	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionWeapons.h
+	Code/CryAction/Vehicles/Views/VehicleViewActionThirdPerson.cpp
+	Code/CryAction/Vehicles/Views/VehicleViewActionThirdPerson.h
+	Code/CryAction/Vehicles/Views/VehicleViewFirstPerson.cpp
+	Code/CryAction/Vehicles/Views/VehicleViewFirstPerson.h
+	Code/CryAction/Vehicles/Views/VehicleViewThirdPerson.cpp
+	Code/CryAction/Vehicles/Views/VehicleViewThirdPerson.h
+	Code/CryAction/Vehicles/Vehicle.cpp
+	Code/CryAction/Vehicles/Vehicle.h
+	Code/CryAction/Vehicles/VehicleAnimation.cpp
+	Code/CryAction/Vehicles/VehicleAnimation.h
+	Code/CryAction/Vehicles/VehicleComponent.cpp
+	Code/CryAction/Vehicles/VehicleComponent.h
+	Code/CryAction/Vehicles/VehicleCVars.cpp
+	Code/CryAction/Vehicles/VehicleCVars.h
+	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry_XMLData.cpp
+	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.cpp
+	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.h
+	Code/CryAction/Vehicles/VehicleIterator.cpp
+	Code/CryAction/Vehicles/VehicleIterator.h
+	Code/CryAction/Vehicles/VehiclePartDetached.cpp
+	Code/CryAction/Vehicles/VehiclePartDetached.h
+	Code/CryAction/Vehicles/VehicleSeat.cpp
+	Code/CryAction/Vehicles/VehicleSeat.h
+	Code/CryAction/Vehicles/VehicleSeatGroup.cpp
+	Code/CryAction/Vehicles/VehicleSeatGroup.h
+	Code/CryAction/Vehicles/VehicleSeatSerializer.cpp
+	Code/CryAction/Vehicles/VehicleSeatSerializer.h
+	Code/CryAction/Vehicles/VehicleSystem.cpp
+	Code/CryAction/Vehicles/VehicleSystem.h
+	Code/CryAction/ViewSystem.cpp
+	Code/CryAction/ViewSystem.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
 	Code/CryCommon/Cry3DEngine/CGF/CryCompiledFile.h
 	Code/CryCommon/Cry3DEngine/CGF/CryHeaders.h
@@ -125,6 +345,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryAction/IGameObject.h
 	Code/CryCommon/CryAction/IGameObjectSystem.h
 	Code/CryCommon/CryAction/IGameRulesSystem.h
+	Code/CryCommon/CryAction/IGameTokens.h
 	Code/CryCommon/CryAction/IGameplayRecorder.h
 	Code/CryCommon/CryAction/IInteractor.h
 	Code/CryCommon/CryAction/IItem.h
@@ -186,7 +407,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryGame/IGame.h
 	Code/CryCommon/CryGame/IGameRef.h
 	Code/CryCommon/CryGame/IGameStartup.h
-	Code/CryCommon/CryGame/IGameTokens.h
 	Code/CryCommon/CryInput/IInput.h
 	Code/CryCommon/CryMath/AABBSV.h
 	Code/CryCommon/CryMath/Cry_Camera.h
@@ -484,6 +704,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Items/Weapons/WeaponClientServer.cpp
 	Code/CryGame/Items/Weapons/WeaponEvent.cpp
 	Code/CryGame/Items/Weapons/WeaponInput.cpp
+	Code/CryGame/Items/Weapons/WeaponSystem_XMLData.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.cpp
 	Code/CryGame/Items/Weapons/WeaponSystem.h
 	Code/CryGame/Items/Weapons/ZoomModes/IronSight.cpp
@@ -699,10 +920,12 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/CPUID.h
 	Code/Library/CrashLogger.cpp
 	Code/Library/CrashLogger.h
+	Code/Library/DigitCount.h
 	Code/Library/PathTools.cpp
 	Code/Library/PathTools.h
 	Code/Library/PathTree.h
 	Code/Library/SlotVector.h
+	Code/Library/StlportVector.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h
 	Code/Library/Util.cpp

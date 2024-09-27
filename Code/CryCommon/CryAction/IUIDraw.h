@@ -14,6 +14,8 @@ History:
 #ifndef __IUIDRAW_H__
 #define __IUIDRAW_H__
 
+#include <cstdint>
+
 struct IFFont;
 
 //-----------------------------------------------------------------------------------------------------
@@ -43,7 +45,7 @@ struct IUIDraw
 
 	// TODO: uintARGB or float,float,float,float ?
 
-	virtual unsigned int GetColorARGB(uint8 ucAlpha,uint8 ucRed,uint8 ucGreen,uint8 ucBlue) = 0;
+	virtual unsigned int GetColorARGB(std::uint8_t alpha, std::uint8_t red, std::uint8_t green, std::uint8_t blue) = 0;
 
 	virtual int CreateTexture(const char *strName) = 0;
 

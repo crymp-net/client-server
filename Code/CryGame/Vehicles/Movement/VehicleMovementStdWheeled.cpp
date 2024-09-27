@@ -23,7 +23,7 @@ History:
 #include "CryCommon/CryAction/Network/NetActionSync.h"
 #include "CryCommon/CryAISystem/IAgent.h"
 #include "CryCommon/CryGame/GameUtils.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryGame/Actors/Player/Player.h"
 
 #include "CryGame/NetInputChainDebug.h"

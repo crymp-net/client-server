@@ -226,7 +226,7 @@ struct IPersistantDebug
 	virtual void AddQuat( const Vec3& pos, const Quat& q, float r, ColorF clr, float timeout ) = 0;
 };
 
-// when you add stuff here, also update in CCryAction::Init
+// when you add stuff here, also update in GameFramework::Init
 enum EGameFrameworkEvent
 {
 	eGFE_PauseGame,
