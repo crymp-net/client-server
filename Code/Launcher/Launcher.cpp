@@ -1,15 +1,18 @@
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
 #include <tracy/Tracy.hpp>
 
 #include "Cry3DEngine/TimeOfDay.h"
+#include "CryAction/GameFramework.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CrySystem/FrameProfiler.h"
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryMP/Client/Client.h"
+#include "CryMP/Server/Server.h"
 #include "CryScriptSystem/ScriptSystem.h"
 #include "CrySystem/CPUInfo.h"
 #include "CrySystem/CryMemoryManager.h"
@@ -29,6 +32,24 @@
 #include "Resources.h"
 
 #include "config.h"
+
+std::uintptr_t CRYACTION_BASE = 0;
+
+static void InitCrySystem(void* pCrySystem, SSystemInitParams& params)
+{
+	using CrySystemEntry = ISystem* (*)(SSystemInitParams&);
+
+	auto entry = static_cast<CrySystemEntry>(WinAPI::DLL::GetSymbol(pCrySystem, "CreateSystemInterface"));
+	if (!entry)
+	{
+		throw StringTools::ErrorFormat("The CrySystem DLL is not valid!");
+	}
+
+	if (!entry(params))
+	{
+		throw StringTools::ErrorFormat("CrySystem initialization failed!");
+	}
+}
 
 static void LogBytes(const char* message, std::size_t bytes)
 {
@@ -62,13 +83,67 @@ static void OnD3D10Info(MemoryPatch::CryRenderD3D10::AdapterInfo* info)
 	LogBytes("D3D10 Adapter: Shared system memory = ", info->shared_system_memory);
 }
 
+static void EarlyEngineInitHook(ISystem* pSystem, IConsole* pConsole, ISystemUserCallback* pUserCallback)
+{
+	gEnv = pSystem->GetGlobalEnvironment();
+	gEnv->pConsole = pConsole;
+
+	if (pUserCallback)
+	{
+		// dedicated server console
+		pUserCallback->OnInit(pSystem);
+	}
+
+	gLauncher->OnEarlyEngineInit(pSystem);
+}
+
+static void InstallEarlyEngineInitHook(void* pCrySystem)
+{
+	void* pHook = &EarlyEngineInitHook;
+
+#ifdef BUILD_64BIT
+	const std::size_t codeOffset = 0x462F3;
+	const std::size_t codeSize = 0x19;
+
+	unsigned char code[] = {
+		0x48, 0x8B, 0xD0,                                            // mov rdx, rax
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x00
+		0x48, 0x8B, 0xCD,                                            // mov rcx, rbp
+		0x4C, 0x8B, 0x85, 0x30, 0x0C, 0x00, 0x00,                    // mov r8, qword ptr ss:[rbp+0xC30]
+		0xFF, 0xD0,                                                  // call rax
+	};
+
+	std::memcpy(&code[5], &pHook, 8);
+#else
+	const std::size_t codeOffset = 0x59B3E;
+	const std::size_t codeSize = 0xF;
+
+	unsigned char code[] = {
+		0x51,                          // push ecx
+		0x50,                          // push eax
+		0x55,                          // push ebp
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xD0,                    // call eax
+		0x83, 0xC4, 0x0C,              // add esp, 0xC
+		0x90,                          // nop
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[4], &pHook, 4);
+#endif
+
+	static_assert(sizeof(code) == codeSize);
+
+	WinAPI::FillMem(WinAPI::RVA(pCrySystem, codeOffset), code, sizeof(code));
+}
+
 struct CryPakConfig
 {
 };
 
 static ICryPak* CreateNewCryPak(ISystem* pSystem, CryPakConfig* config, bool lvlRes, bool gameFolderWritable)
 {
-	// earlier than Launcher::OnInit
+	// earlier than EarlyEngineInitHook
 	gEnv = pSystem->GetGlobalEnvironment();
 
 	// dropped because neither log file nor console are available at this point
@@ -263,6 +338,11 @@ static void ReplaceScriptSystem(void* pCrySystem)
 
 static IHardwareMouse* CreateNewHardwareMouse()
 {
+	if (gEnv->pSystem->IsDedicated())
+	{
+		return nullptr;
+	}
+
 	CryLogAlways("$3[CryMP] Initializing Hardware Mouse");
 
 	HardwareMouse* pHardwareMouse = &HardwareMouse::GetInstance();
@@ -775,6 +855,8 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the CryAction DLL!");
 	}
 
+	CRYACTION_BASE = reinterpret_cast<std::uintptr_t>(m_dlls.pCryAction);
+
 	m_dlls.pCryAISystem = WinAPI::DLL::Load("CryAISystem.dll");
 	if (!m_dlls.pCryAISystem)
 	{
@@ -793,7 +875,15 @@ void Launcher::LoadEngine()
 		throw StringTools::SysErrorFormat("Failed to load the Cry3DEngine DLL!");
 	}
 
-	if (!m_params.isDedicatedServer && !WinAPI::CmdLine::HasArg("-dedicated"))
+	if (m_params.isDedicatedServer)
+	{
+		m_dlls.pCryRenderNULL = WinAPI::DLL::Load("CryRenderNULL.dll");
+		if (!m_dlls.pCryRenderNULL)
+		{
+			throw StringTools::SysErrorFormat("Failed to load the CryRenderNULL DLL!");
+		}
+	}
+	else
 	{
 		if (!WinAPI::CmdLine::HasArg("-dx9") && (WinAPI::CmdLine::HasArg("-dx10") || WinAPI::IsVistaOrLater()))
 		{
@@ -845,6 +935,7 @@ void Launcher::PatchEngine()
 	if (m_dlls.pCryNetwork)
 	{
 		MemoryPatch::CryNetwork::AllowSameCDKeys(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::DisableServerProfile(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::EnablePreordered(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
@@ -868,6 +959,8 @@ void Launcher::PatchEngine()
 		{
 			ReplaceScriptSystem(m_dlls.pCrySystem);
 		}
+
+		InstallEarlyEngineInitHook(m_dlls.pCrySystem);
 
 		ReplaceCryPak(m_dlls.pCrySystem);
 		ReplaceStreamEngine(m_dlls.pCrySystem);
@@ -900,6 +993,11 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryRenderD3D10::HookAdapterInfo(m_dlls.pCryRenderD3D10, &OnD3D10Info);
 	}
 
+	if (m_dlls.pCryRenderNULL)
+	{
+		MemoryPatch::CryRenderNULL::DisableDebugRenderer(m_dlls.pCryRenderNULL);
+	}
+
 	if (m_dlls.pFmodEx)
 	{
 		MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(m_dlls.pFmodEx);
@@ -908,32 +1006,67 @@ void Launcher::PatchEngine()
 
 void Launcher::StartEngine()
 {
-	auto entry = static_cast<IGameFramework::TEntryFunction>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
-	if (!entry)
-	{
-		throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
-	}
+	const bool oldAction = WinAPI::CmdLine::HasArg("-oldaction");
 
-	IGameFramework* pGameFramework = entry();
-	if (!pGameFramework)
+	IGameFramework* pGameFramework = nullptr;
+
+	if (oldAction)
 	{
-		throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
+		using CryActionEntry = IGameFramework::TEntryFunction;
+
+		auto entry = static_cast<CryActionEntry>(WinAPI::DLL::GetSymbol(m_dlls.pCryAction, "CreateGameFramework"));
+		if (!entry)
+		{
+			throw StringTools::ErrorFormat("The CryAction DLL is not valid!");
+		}
+
+		pGameFramework = entry();
+		if (!pGameFramework)
+		{
+			throw StringTools::ErrorFormat("Failed to create the GameFramework Interface!");
+		}
+	}
+	else
+	{
+		pGameFramework = GameFramework::GetInstance();
 	}
 
 	GameWindow::GetInstance().Init();
 
-	// initialize CryEngine
-	// Launcher::OnInit is called here
-	if (!pGameFramework->Init(m_params))
+	if (oldAction)
 	{
-		throw StringTools::ErrorFormat("CryENGINE initialization failed!");
+		// initialize CryEngine
+		// Launcher::OnEarlyEngineInit is called here
+		if (!pGameFramework->Init(m_params))
+		{
+			throw StringTools::ErrorFormat("CryENGINE initialization failed!");
+		}
+	}
+	else
+	{
+		// initialize CryEngine without CryAction
+		// Launcher::OnEarlyEngineInit is called here
+		InitCrySystem(m_dlls.pCrySystem, m_params);
+
+		// initialize our CryAction
+		if (!pGameFramework->Init(m_params))
+		{
+			throw StringTools::ErrorFormat("CryAction initialization failed!");
+		}
 	}
 
 #ifdef CRYMP_TRACY_ENABLED
 	TracyHookEngineProfiler();
 #endif
 
-	gClient->Init(pGameFramework);
+	if (gClient)
+	{
+		gClient->Init(pGameFramework);
+	}
+	else if (gServer)
+	{
+		gServer->Init(pGameFramework);
+	}
 
 	if (!pGameFramework->CompleteInit())
 	{
@@ -945,34 +1078,14 @@ void Launcher::StartEngine()
 
 Launcher::Launcher()
 {
-	std::memset(&m_params, 0, sizeof(m_params));
 }
 
 Launcher::~Launcher()
 {
 }
 
-bool Launcher::OnError(const char* error)
+void Launcher::OnEarlyEngineInit(ISystem* pSystem)
 {
-	return true;
-}
-
-void Launcher::OnSaveDocument()
-{
-}
-
-void Launcher::OnProcessSwitch()
-{
-}
-
-void Launcher::OnInitProgress(const char* message)
-{
-}
-
-void Launcher::OnInit(ISystem* pSystem)
-{
-	gEnv = pSystem->GetGlobalEnvironment();
-
 	const std::filesystem::path mainDirPath = std::filesystem::current_path();
 	const std::filesystem::path userDirPath = std::filesystem::canonical(gEnv->pCryPak->GetAlias("%USER%"));
 	const std::filesystem::path rootDirPath = std::filesystem::canonical(gEnv->pSystem->GetRootFolder());
@@ -1023,24 +1136,11 @@ void Launcher::OnInit(ISystem* pSystem)
 	});
 }
 
-void Launcher::OnShutdown()
-{
-}
-
-void Launcher::OnUpdate()
-{
-	Logger::GetInstance().OnUpdate();
-}
-
-void Launcher::GetMemoryUsage(ICrySizer* pSizer)
-{
-}
-
 void Launcher::Run()
 {
 	m_params.hInstance = WinAPI::DLL::Get(nullptr);  // EXE handle
-	m_params.pUserCallback = this;
 	m_params.pLog = &Logger::GetInstance();
+	m_params.isDedicatedServer = WinAPI::CmdLine::HasArg("-dedicated");
 
 	this->SetCmdLine();
 
@@ -1054,11 +1154,6 @@ void Launcher::Run()
 		throw StringTools::ErrorFormat("Mods are not supported!");
 	}
 
-	if (WinAPI::CmdLine::HasArg("-dedicated") || m_params.isDedicatedServer)
-	{
-		throw StringTools::ErrorFormat("Running as a dedicated server is not supported!");
-	}
-
 	this->InitWorkingDirectory();
 
 	this->LoadEngine();
@@ -1066,10 +1161,22 @@ void Launcher::Run()
 
 	RandomGenerator::Init();
 
-	Client client;
-	gClient = &client;
+	if (m_params.isDedicatedServer)
+	{
+		Server server;
+		gServer = &server;
 
-	this->StartEngine();
+		this->StartEngine();
 
-	gClient->UpdateLoop();
+		gServer->UpdateLoop();
+	}
+	else
+	{
+		Client client;
+		gClient = &client;
+
+		this->StartEngine();
+
+		gClient->UpdateLoop();
+	}
 }

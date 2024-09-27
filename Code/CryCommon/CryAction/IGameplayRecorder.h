@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "CryCommon/CrySystem/TimeValue.h"
+
+struct IEntity;
 
 enum EGameplayEvent
 {
@@ -63,10 +67,10 @@ enum EGameplayEvent
 struct GameplayEvent
 {
 	GameplayEvent(): event(0), description(0), value(0) {};
-	GameplayEvent(uint8 evt, const char *desc=0, float val=0.0f, void *xtra=0)
+	GameplayEvent(std::uint8_t evt, const char *desc=0, float val=0.0f, void *xtra=0)
 		: event(evt), description(desc), value(val), extra(xtra) {};
 
-	uint8				event;
+	std::uint8_t				event;
 	const char *description;
 	float				value;
 	void				*extra;

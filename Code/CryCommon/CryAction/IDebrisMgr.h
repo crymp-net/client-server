@@ -15,6 +15,8 @@ History:
 #ifndef __IDEBRIS_MGR_H__
 #define __IDEBRIS_MGR_H__
 
+#include "CryCommon/CryEntitySystem/EntityId.h"
+
 struct IEntity;
 class ICrySizer;
 

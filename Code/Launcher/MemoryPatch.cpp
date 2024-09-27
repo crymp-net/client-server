@@ -114,6 +114,18 @@ void MemoryPatch::CryNetwork::AllowSameCDKeys(void* pCryNetwork)
 }
 
 /**
+ * Disables creation of "server_profile.txt" file.
+ */
+void MemoryPatch::CryNetwork::DisableServerProfile(void* pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	// already disabled in 64-bit version
+#else
+	FillNop(pCryNetwork, 0x9BE2E, 0x5);
+#endif
+}
+
+/**
  * Unlocks advantages of pre-ordered version for everyone.
  *
  * This is both server-side and client-side patch.
@@ -514,6 +526,79 @@ void MemoryPatch::CryRenderD3D10::HookAdapterInfo(void* pCryRenderD3D10, void (*
 	FillNop(pCryRenderD3D10, 0x98268, 0xC8);
 	FillMem(pCryRenderD3D10, 0x98268, &code, sizeof(code));
 #endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CryRenderNULL
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Disables the debug renderer in CryRenderNULL DLL.
+ *
+ * This patch gets rid of the wasteful debug renderer with its hidden window and OpenGL context.
+ *
+ * The 1st FillNop disables debug renderer stuff in CNULLRenderAuxGeom constructor.
+ * The 2nd FillNop disables debug renderer stuff in CNULLRenderAuxGeom destructor.
+ * The 3rd FillMem disables the CNULLRenderAuxGeom::BeginFrame call in CNULLRenderer::BeginFrame.
+ * The 4th FillMem disables the CNULLRenderAuxGeom::EndFrame call in CNULLRenderer::EndFrame.
+ */
+void MemoryPatch::CryRenderNULL::DisableDebugRenderer(void* pCryRenderNULL)
+{
+	const unsigned char code[] = {
+		0xC3,  // ret
+#ifdef BUILD_64BIT
+		0x90,  // nop
+#endif
+		0x90,  // nop
+		0x90,  // nop
+		0x90,  // nop
+		0x90,  // nop
+		0x90   // nop
+	};
+
+	unsigned int renderAuxGeomVTableOffset = 0;
+
+#ifdef BUILD_64BIT
+	FillNop(pCryRenderNULL, 0xD379, 0x175);
+	FillNop(pCryRenderNULL, 0xD533, 0x35);
+	FillMem(pCryRenderNULL, 0x16CE, code, sizeof(code));
+	FillMem(pCryRenderNULL, 0x16E0, code, sizeof(code));
+	renderAuxGeomVTableOffset = 0x97588;
+#else
+	FillNop(pCryRenderNULL, 0x1CEE6, 0x101);
+	FillNop(pCryRenderNULL, 0x1CFF9, 0xE);
+	FillMem(pCryRenderNULL, 0x1895, code, sizeof(code));
+	FillMem(pCryRenderNULL, 0x18A9, code, sizeof(code));
+	renderAuxGeomVTableOffset = 0xA778C;
+#endif
+
+	if (renderAuxGeomVTableOffset)
+	{
+		void** oldVTable = reinterpret_cast<void**>(
+			static_cast<unsigned char*>(pCryRenderNULL) + renderAuxGeomVTableOffset
+		);
+
+		// CNULLRenderAuxGeom::SetRenderFlags is empty and returns nothing
+		void* emptyFunc = oldVTable[0];
+
+		// create a new CNULLRenderAuxGeom vtable
+		void* newVTable[27] = {};
+
+		// keep CNULLRenderAuxGeom::SetRenderFlags
+		// keep CNULLRenderAuxGeom::GetRenderFlags
+		newVTable[0] = oldVTable[0];
+		newVTable[1] = oldVTable[1];
+
+		// make the rest of CNULLRenderAuxGeom functions empty
+		// note that all the functions return nothing
+		for (int i = 2; i < 27; i++)
+		{
+			newVTable[i] = emptyFunc;
+		}
+
+		// install the new vtable
+		FillMem(pCryRenderNULL, renderAuxGeomVTableOffset, newVTable, sizeof(newVTable));
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
 #include "CrySystem/GameWindow.h"
+#include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/StringTools.h"
@@ -280,6 +281,8 @@ void Client::UpdateLoop()
 
 	while (GameWindow::GetInstance().OnUpdate() && m_pGame->Update(haveFocus, updateFlags))
 	{
+		Logger::GetInstance().OnUpdate();
+
 		FrameMark;
 	}
 
