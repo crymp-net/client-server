@@ -14,7 +14,7 @@ class AmmoConverter:
 	def _write(self, line: str) -> None:
 		self.output.write(f'{line}\n')
 
-	def run(self) -> None:
+	def convert(self) -> None:
 		self._write('#include "WeaponSystem.h"')
 		self._write('')
 		self._write('void CWeaponSystem::RegisterXMLData()')
@@ -112,7 +112,7 @@ def main() -> int:
 	args = parse_command_line()
 	output_file_path = Path(__file__).parent / '..' / 'Code/CryGame/Items/Weapons/WeaponSystem_XMLData.cpp'
 	with output_file_path.open(mode='w', encoding='utf-8') as output_file:
-		AmmoConverter(args.path, output_file).run()
+		AmmoConverter(args.path, output_file).convert()
 	return 0
 
 if __name__ == '__main__':

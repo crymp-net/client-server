@@ -1,28 +1,9 @@
-#include "VehicleDamagesTemplateRegistry.h"
+#include "CrySystem/CryLog.h"
 
-extern std::uintptr_t CRYACTION_BASE;
+#include "VehicleDamagesTemplateRegistry.h"
 
 VehicleDamagesTemplateRegistry::VehicleDamagesTemplateRegistry()
 {
-#ifdef BUILD_64BIT
-	std::uintptr_t vtable = CRYACTION_BASE + 0x343900;
-#else
-	std::uintptr_t vtable = CRYACTION_BASE + 0x260d94;
-#endif
-
-	*reinterpret_cast<std::uintptr_t*>(this) = vtable;
-
-	// TODO: this is not good, implement this class ASAP
-	// probably some C++ allocator stuff
-#ifdef BUILD_64BIT
-	void* magicValue = reinterpret_cast<void*>(0x10);
-#else
-	void* magicValue = reinterpret_cast<void*>(0x0d);
-#endif
-
-	m_reserved2[5] = &m_reserved2[3];
-	m_reserved2[6] = &m_reserved2[3];
-	m_reserved2[8] = magicValue;
 }
 
 VehicleDamagesTemplateRegistry::~VehicleDamagesTemplateRegistry()
@@ -35,21 +16,30 @@ VehicleDamagesTemplateRegistry::~VehicleDamagesTemplateRegistry()
 
 bool VehicleDamagesTemplateRegistry::Init(const string& defaultDefFilename, const string& damagesTemplatesPath)
 {
-	return {};
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
+	return false;
 }
 
 void VehicleDamagesTemplateRegistry::Release()
 {
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 bool VehicleDamagesTemplateRegistry::RegisterTemplates(const string& filename, const string& defFilename)
 {
-	return {};
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
+	return false;
 }
 
 bool VehicleDamagesTemplateRegistry::UseTemplate(const string& templateName, IVehicleDamagesGroup* pDamagesGroup)
 {
-	return {};
+	const auto it = m_groups.find(std::string_view(templateName.c_str(), templateName.length()));
+	if (it == m_groups.end())
+	{
+		return false;
+	}
+
+	return pDamagesGroup->ParseDamagesGroup(it->second);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

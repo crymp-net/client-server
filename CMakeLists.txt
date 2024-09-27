@@ -286,6 +286,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/Vehicles/VehicleComponent.h
 	Code/CryAction/Vehicles/VehicleCVars.cpp
 	Code/CryAction/Vehicles/VehicleCVars.h
+	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry_XMLData.cpp
 	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.cpp
 	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.h
 	Code/CryAction/Vehicles/VehicleIterator.cpp

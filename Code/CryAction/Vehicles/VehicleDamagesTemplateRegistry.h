@@ -1,15 +1,21 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <string_view>
+
 #include "CryCommon/CryAction/IVehicleSystem.h"
 
 class VehicleDamagesTemplateRegistry : public IVehicleDamagesTemplateRegistry
 {
-	CryStringT<char> m_reserved1;
-	void* m_reserved2[9] = {};
+	std::map<std::string, SmartScriptTable, std::less<void>> m_groups;
 
 public:
 	VehicleDamagesTemplateRegistry();
-	virtual ~VehicleDamagesTemplateRegistry();
+	~VehicleDamagesTemplateRegistry();
+
+	// VehicleDamagesTemplateRegistry_XMLData.cpp
+	void InitDefaults();
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IVehicleDamagesTemplateRegistry
@@ -23,9 +29,3 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////
 };
-
-#ifdef BUILD_64BIT
-static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x58);
-#else
-static_assert(sizeof(VehicleDamagesTemplateRegistry) == 0x2c);
-#endif

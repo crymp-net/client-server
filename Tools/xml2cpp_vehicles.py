@@ -266,6 +266,97 @@ SEAT_ACTION_WEAPONS_SCHEMA = {
 	},
 }
 
+# def_vehicledamages.xml
+DAMAGE_GROUP_SCHEMA = {
+	'_type': SchemaType.TABLE,
+	'_strings': { 'name', 'useTemplate' },
+
+	'DamagesSubGroups': {
+		'_type': SchemaType.ARRAY,
+
+		'DamagesSubGroup': {
+			'_type': SchemaType.TABLE,
+			'_floats': { 'delay', 'randomness' },
+
+			'DamageBehaviors': {
+				'_type': SchemaType.ARRAY,
+
+				'DamageBehavior': {
+					'_type': SchemaType.TABLE,
+					'_strings': { 'class' },
+					'_floats': { 'damageRatioMin', 'damageRatioMax' },
+					'_bools': { 'ignoreVehicleDestruction' },
+
+					'AISignal': {
+						'_type': SchemaType.TABLE,
+						'_ints': { 'signalId' },
+						'_strings': { 'signalText' },
+					},
+
+					'Burn': {
+						'_type': SchemaType.TABLE,
+						'_strings': { 'helper' },
+						'_floats': { 'damage', 'selfDamage', 'radius', 'interval' },
+					},
+
+					'Destroy': {
+						'_type': SchemaType.TABLE,
+						'_bools': { 'placeholder' },
+					},
+
+					'Effect': {
+						'_type': SchemaType.TABLE,
+						'_strings': { 'effect' },
+						'_bools': { 'disableAfterExplosion' },
+					},
+
+					'Explosion': {
+						'_type': SchemaType.TABLE,
+						'_strings': { 'helper' },
+						'_floats': { 'damage', 'radius', 'pressure' },
+					},
+
+					'Group': {
+						'_type': SchemaType.TABLE,
+						'_strings': { 'name' },
+					},
+
+					'Impulse': {
+						'_type': SchemaType.TABLE,
+						'_floats': { 'forceMin', 'forceMax' },
+						'_vec3s': { 'direction', 'momentum', 'helper' },
+					},
+
+					'MovementNotification': {
+						'_type': SchemaType.TABLE,
+						'_bools': { 'isSteering', 'isFatal' },
+					},
+
+					'DetachPart': {
+						'_type': SchemaType.TABLE,
+						'_strings': { 'part' },
+						'_vec3s': { 'baseForce' },
+					},
+
+					'BlowTire': {
+						'_type': SchemaType.TABLE,
+					},
+
+					'Indicator': {
+						'_type': SchemaType.TABLE,
+
+						'Light': {
+							'_type': SchemaType.TABLE,
+							'_strings': { 'material', 'sound', 'helper' },
+							'_floats': { 'soundRatioMin' },
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
 class VehicleConverter:
 	def __init__(self, xml_root: ET.Element, xml_name: str, output_path: Path):
 		self.xml_root = xml_root
@@ -275,7 +366,7 @@ class VehicleConverter:
 		self.indentation_level = 0
 		self.mods = {}
 
-	def run(self):
+	def convert_vehicle_implementations(self):
 		if self.xml_root.tag != 'Vehicle':
 			print(f'{self.xml_name}: Ignoring unknown root tag "{self.xml_root.tag}"', file=sys.stderr)
 			return
@@ -316,10 +407,26 @@ class VehicleConverter:
 			self._write('')
 			self._write(f'bool {vehicle_name}::Init(IGameObject* pGameObject)')
 			self._begin_block()
-			self._write_init()
+			self._write_vehicle_init()
 			self._end_block()
 
-	def _write_init(self):
+	def convert_damages_templates(self):
+		if self.xml_root.tag != 'VehicleDamagesTemplates':
+			print(f'{self.xml_name}: Ignoring unknown root tag "{self.xml_root.tag}"', file=sys.stderr)
+			return
+
+		output_file_path = Path(self.output_path, f'../VehicleDamagesTemplateRegistry_XMLData.cpp')
+
+		with output_file_path.open(mode='w', encoding='utf-8') as file:
+			self.output_file = file
+			self._write('#include "VehicleDamagesTemplateRegistry.h"')
+			self._write('')
+			self._write('void VehicleDamagesTemplateRegistry::InitDefaults()')
+			self._begin_block()
+			self._write_damages_groups()
+			self._end_block()
+
+	def _write_vehicle_init(self):
 		self._write('if (!this->Vehicle::Init(pGameObject))')
 		self._begin_block()
 		self._write('return false;')
@@ -424,6 +531,11 @@ class VehicleConverter:
 		self._write('')
 
 		self._write('return this->BindVehicleToNetwork();')
+
+	def _write_damages_groups(self):
+		for groups in self.xml_root.findall('./DamagesGroups'):
+			for group in groups.findall('./DamagesGroup'):
+				self._process_damages_group(group)
 
 	def _write(self, line: str):
 		line = ('\t' * self.indentation_level) + line if line else ''
@@ -1522,6 +1634,18 @@ class VehicleConverter:
 		self._write('this->InitDamages(table);')
 		self._end_block()
 
+	################################################################################
+	# DamagesGroup
+	################################################################################
+
+	def _process_damages_group(self, group: ET.Element):
+		self._begin_block()
+		self._write_table(group, DAMAGE_GROUP_SCHEMA, 'group')
+		self._write('')
+		name = group.attrib['name']
+		self._write(f'm_groups["{name}"] = group;')
+		self._end_block()
+
 ################################################################################
 # Main
 ################################################################################
@@ -1537,13 +1661,24 @@ def parse_command_line() -> argparse.Namespace:
 	parser.add_argument('path', type=dir_path, help='path to extracted GameData.pak and ZPatch1.pak')
 	return parser.parse_args()
 
+def generate_vehicle_implementations(input_path: Path, output_path: Path) -> None:
+	for xml_path in Path(input_path, 'Scripts/Entities/Vehicles/Implementations/Xml').glob('**/*.xml'):
+		xml_root = ET.parse(xml_path).getroot()
+		xml_name = xml_path.relative_to(input_path)
+		VehicleConverter(xml_root, xml_name, output_path).convert_vehicle_implementations()
+
+def generate_damages_templates(input_path: Path, output_path: Path) -> None:
+	xml_name = 'Scripts/Entities/Vehicles/DamagesTemplates/DefaultVehicleDamages.xml'
+	xml_path = Path(input_path, xml_name)
+	xml_root = ET.parse(xml_path).getroot()
+	VehicleConverter(xml_root, xml_name, output_path).convert_damages_templates()
+
 def main() -> int:
 	args = parse_command_line()
+	input_path = args.path
 	output_path = Path(__file__).parent / '..' / 'Code/CryAction/Vehicles/Implementations'
-	for xml_path in Path(args.path, 'Scripts/Entities/Vehicles/Implementations/Xml').glob('**/*.xml'):
-		xml_root = ET.parse(xml_path).getroot()
-		xml_name = xml_path.relative_to(args.path)
-		VehicleConverter(xml_root, xml_name, output_path).run()
+	generate_vehicle_implementations(input_path, output_path)
+	generate_damages_templates(input_path, output_path)
 	return 0
 
 if __name__ == '__main__':

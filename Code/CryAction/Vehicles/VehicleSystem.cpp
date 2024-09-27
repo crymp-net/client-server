@@ -123,7 +123,7 @@ void VehicleSystem::RegisterVehicleFactory(const char* name, IGameFramework::IVe
 
 void VehicleSystem::Reload()
 {
-	this->InitDamagesTemplateRegistry();
+	m_pDamagesTemplateRegistry->InitDefaults();
 	this->InitLightDefaults();
 }
 
@@ -165,7 +165,7 @@ bool VehicleSystem::Init()
 {
 	m_nextVehicleObjectId = 1;
 
-	this->InitDamagesTemplateRegistry();
+	m_pDamagesTemplateRegistry->InitDefaults();
 	this->InitLightDefaults();
 
 	return true;
@@ -491,13 +491,6 @@ void VehicleSystem::RegisterVehicleClient(IVehicleClient* pVehicleClient)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void VehicleSystem::InitDamagesTemplateRegistry()
-{
-	m_pDamagesTemplateRegistry->Init(
-		"Scripts/Entities/Vehicles/DamagesTemplates/def_vehicledamages.xml",
-		"Scripts/Entities/Vehicles/DamagesTemplates/");
-}
 
 void VehicleSystem::InitLightDefaults()
 {

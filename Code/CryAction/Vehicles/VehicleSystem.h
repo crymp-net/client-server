@@ -11,7 +11,8 @@
 struct ISystem;
 struct IEntitySystem;
 
-struct VehicleCVars;
+class VehicleCVars;
+class VehicleDamagesTemplateRegistry;
 
 class VehicleSystem : public IVehicleSystem
 {
@@ -28,7 +29,7 @@ class VehicleSystem : public IVehicleSystem
 
 	std::map<EntityId, IVehicle*> m_vehicles;
 
-	std::unique_ptr<IVehicleDamagesTemplateRegistry> m_pDamagesTemplateRegistry;
+	std::unique_ptr<VehicleDamagesTemplateRegistry> m_pDamagesTemplateRegistry;
 	std::unique_ptr<VehicleCVars> m_pCVars;
 
 	IGameFramework* m_pGameFramework = nullptr;
@@ -111,6 +112,5 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 private:
-	void InitDamagesTemplateRegistry();
 	void InitLightDefaults();
 };

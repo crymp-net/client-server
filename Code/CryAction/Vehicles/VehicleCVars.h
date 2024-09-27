@@ -1,9 +1,10 @@
 #pragma once
 
-struct VehicleCVars
+class VehicleCVars
 {
-	unsigned char data[0x88] = {};
+	unsigned char m_data[0x88] = {};
 
+public:
 	VehicleCVars();
 };
 
