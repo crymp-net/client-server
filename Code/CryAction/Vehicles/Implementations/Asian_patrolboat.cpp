@@ -17,6 +17,8 @@ bool Asian_patrolboat::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Asian_patrolboat.xml
+
 	m_actionMapName = "seavehicle";
 
 	// Physics

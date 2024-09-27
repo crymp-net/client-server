@@ -17,6 +17,8 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Asian_truck.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

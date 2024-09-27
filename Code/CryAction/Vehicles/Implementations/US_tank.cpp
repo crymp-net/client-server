@@ -17,6 +17,8 @@ bool US_tank::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/US_tank.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

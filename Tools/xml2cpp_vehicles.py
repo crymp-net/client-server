@@ -432,6 +432,8 @@ class VehicleConverter:
 		self._write('return false;')
 		self._end_block()
 		self._write('')
+		self._write(f'// {self.xml_name}')
+		self._write('')
 
 		if 'actionMap' in self.xml_root.attrib:
 			action_map = self.xml_root.attrib['actionMap']
@@ -533,6 +535,8 @@ class VehicleConverter:
 		self._write('return this->BindVehicleToNetwork();')
 
 	def _write_damages_groups(self):
+		self._write(f'// {self.xml_name}')
+		self._write('')
 		for groups in self.xml_root.findall('./DamagesGroups'):
 			for group in groups.findall('./DamagesGroup'):
 				self._process_damages_group(group)

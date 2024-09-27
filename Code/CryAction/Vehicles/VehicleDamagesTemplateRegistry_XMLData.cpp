@@ -2,6 +2,8 @@
 
 void VehicleDamagesTemplateRegistry::InitDefaults()
 {
+	// Scripts/Entities/Vehicles/DamagesTemplates/DefaultVehicleDamages.xml
+
 	{
 		SmartScriptTable group(gEnv->pScriptSystem);
 		group->SetValue("name", "VehicleDestroy");

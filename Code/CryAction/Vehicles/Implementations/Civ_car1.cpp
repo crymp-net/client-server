@@ -17,6 +17,8 @@ bool Civ_car1::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Civ_car1.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

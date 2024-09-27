@@ -17,6 +17,8 @@ bool US_apc::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/US_apc.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

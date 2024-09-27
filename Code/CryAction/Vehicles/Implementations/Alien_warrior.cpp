@@ -17,6 +17,8 @@ bool Alien_warrior::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Alien_warrior.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

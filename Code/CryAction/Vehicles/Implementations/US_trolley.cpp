@@ -17,6 +17,8 @@ bool US_trolley::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/US_trolley.xml
+
 	m_actionMapName = "landvehicle";
 
 	// Physics

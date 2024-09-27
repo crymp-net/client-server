@@ -17,6 +17,8 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Asian_helicopter.xml
+
 	m_actionMapName = "helicopter";
 
 	// Physics

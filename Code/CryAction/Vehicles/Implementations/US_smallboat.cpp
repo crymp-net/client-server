@@ -17,6 +17,8 @@ bool US_smallboat::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/US_smallboat.xml
+
 	m_actionMapName = "seavehicle";
 
 	// Physics

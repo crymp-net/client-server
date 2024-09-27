@@ -17,6 +17,8 @@ bool US_transportVTOL::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/US_transportVTOL.xml
+
 	m_actionMapName = "vtol";
 
 	// Physics

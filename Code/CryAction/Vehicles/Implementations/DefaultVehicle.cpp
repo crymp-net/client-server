@@ -17,6 +17,8 @@ bool DefaultVehicle::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/DefaultVehicle.xml
+
 	// Physics
 	// Unknown attribute collDamageThreshold="0"
 	m_buoyancy.waterDensity = 0.0f;

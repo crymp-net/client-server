@@ -17,6 +17,8 @@ bool Civ_speedboat::Init(IGameObject* pGameObject)
 		return false;
 	}
 
+	// Scripts/Entities/Vehicles/Implementations/Xml/Civ_speedboat.xml
+
 	m_actionMapName = "seavehicle";
 
 	// Physics
