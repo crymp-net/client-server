@@ -999,8 +999,10 @@ void CHUDVehicleInterface::ShowVehicleInterface(EVehicleHud type, bool forceFlas
 							if (duration != m_iLastReloadBarValue2)
 							{
 								g_pAmmo->Invoke("setReloadDuration2", duration);
-								if (g_pGameCVars->hud_showBigVehicleReload && m_hasMainHUD[m_eCurVehicleHUD])
+								if (g_pGameCVars->hud_showBigVehicleReload && HasMainHUD())
+								{
 									m_animMainWindow.Invoke("setReloadDuration2", duration);
+								}
 								m_iLastReloadBarValue2 = duration;
 							}
 						}
@@ -1027,6 +1029,13 @@ void CHUDVehicleInterface::ShowVehicleInterface(EVehicleHud type, bool forceFlas
 		SFlashVarValue args[10] = { (int)fPosHeading, szN, szW, szAltitude, fAltitude, (int)(sMovementState.eyeDirection.z * 90.0), szSpeed, (int)fSpeed, (int)fAngle, szDistance };
 		m_animMainWindow.Invoke("setVehicleValues", args, 10);
 	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+bool CHUDVehicleInterface::HasMainHUD() const
+{
+	return m_hasMainHUD[m_eCurVehicleHUD];
 }
 
 //-----------------------------------------------------------------------------------------------------

@@ -638,38 +638,34 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 
 void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedback)
 {
-	if(explosionFeedback)
+	if (explosionFeedback)
+	{
 		PlaySound(ESound_SpecialHitFeedback);
+	}
 
-	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
-	if (!pVehicle)
+	if (m_pHUDCrosshair->GetFlashAnim()->GetVisible())
 	{
 		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 
-		ShowHitIndicator();
+		ShowPlayerHitIndicator();
 	}
-	else
+
+	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
+	if (pVehicle)
 	{
 		IVehicleSeat *pSeat = pVehicle->GetSeatForPassenger(m_pClientActor->GetEntityId());
-		if (pSeat && !pSeat->IsDriver())
-		{
-			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
-
-			ShowHitIndicator();
-		}
-		else
+		if (!pSeat || pSeat->IsDriver())
 		{
 			if (enemyIndicator)
 			{
 				m_pHUDVehicleInterface->m_animMainWindow.Invoke("indicateHit", enemyIndicator);
 			}
-			else
+			else if (m_pHUDVehicleInterface->HasMainHUD())
 			{
-				m_animHitIndicatorVehicle.Invoke("indicateHit");
-				m_hitIndicatorVehicleTimer = 1.0f;
+				ShowVehicleHitIndicator();
 			}
 
-			if(pEntity && !gEnv->bMultiplayer)
+			if (pEntity && !gEnv->bMultiplayer)
 			{
 				const auto ct = g_pGameCVars->hud_colorLine;
 				const float r = ((ct >> 16) & 0xFF) / 255.0f;
@@ -678,22 +674,37 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 
 				// It should be useless to test if pEntity is an enemy (it's already done by caller func)
 				IActor *pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
-				if(pActor)
-					m_pHUDSilhouettes->SetSilhouette(pActor,r,g,b,1.0f,5.0f,true);
-				else if(IVehicle *pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId()))
-					m_pHUDSilhouettes->SetSilhouette(pVehicle,r,g,b,1.0f,5.0f);
+				if (pActor)
+				{
+					m_pHUDSilhouettes->SetSilhouette(pActor, r, g, b, 1.0f, 5.0f, true);
+				}
+				else if (IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId()))
+				{
+					m_pHUDSilhouettes->SetSilhouette(pVehicle, r, g, b, 1.0f, 5.0f);
+				}
 			}
+		}
+
+		if (m_pHUDCrosshair->GetFlashAnim()->GetVisible())
+		{
+			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 		}
 	}
 }
 
-void CHUD::ShowHitIndicator()
+void CHUD::ShowPlayerHitIndicator()
 {
 	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
 	{
 		m_animHitIndicatorPlayer.Invoke("indicateHit");
 		m_hitIndicatorPlayerTimer = 1.0f;
 	}
+}
+
+void CHUD::ShowVehicleHitIndicator()
+{
+	m_animHitIndicatorVehicle.Invoke("indicateHit");
+	m_hitIndicatorVehicleTimer = 1.0f;
 }
 
 void CHUD::UpdateHitIndicator()
@@ -713,10 +724,15 @@ void CHUD::UpdateHitIndicator()
 		}
 	}
 	//CryMP vehicle hit indicator
-	bool visible_v = m_hitIndicatorVehicleTimer > 0.0f;
+	bool visible_v = m_hitIndicatorVehicleTimer > 0.0f; //only visible when main vehicle HUD visible
 	if (visible_v)
 	{
 		m_hitIndicatorVehicleTimer -= gEnv->pTimer->GetRealFrameTime();
+		if (!m_pHUDVehicleInterface->HasMainHUD())
+		{
+			m_hitIndicatorVehicleTimer = 0.0f;
+		}
+
 		visible_v = m_hitIndicatorVehicleTimer >= 0.0f;
 	}
 	if (m_animHitIndicatorVehicle.GetVisible() != visible_v)
