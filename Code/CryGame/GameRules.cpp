@@ -4109,6 +4109,7 @@ void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 	if (!pActor)
 		return;
 
+	const bool isPlayer = pActor->IsPlayer();
 	const EntityId playerId = pActor->GetEntityId();
 	const int KEY_MODEL = 1000;
 	//const int currTeamId = GetTeam(playerId);
@@ -4120,7 +4121,7 @@ void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 	{
 		pActor->SetFileModel(model.c_str());
 	}
-	else
+	else if (isPlayer)
 	{
 		if (currTeamId == TEAM_ID_NK) 
 		{
@@ -4130,17 +4131,17 @@ void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 		{
 			pActor->SetFileModel("objects/characters/human/us/nanosuit/nanosuit_us_multiplayer.cdf");
 		}
-
 	}
 
-	if (currTeamId == TEAM_ID_NK)
+	if (isPlayer)
 	{
-		pActor->SetFrozenModel("objects/characters/human/asian/nanosuit/nanosuit_asian_frozen_scatter.cgf");
-		pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_asian.chr");
-	}
-	else
-	{
-		pActor->SetFrozenModel("objects/characters/human/us/nanosuit/nanoSuit_us_frozen_scatter.cgf");
-		pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_us.chr");
+		if (currTeamId == TEAM_ID_NK)
+		{
+			pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_asian.chr");
+		}
+		else
+		{
+			pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_us.chr");
+		}
 	}
 }

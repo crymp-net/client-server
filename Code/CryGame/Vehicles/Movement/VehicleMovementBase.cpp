@@ -519,9 +519,6 @@ void CVehicleMovementBase::Update(const float deltaTime)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateRunSound(const float deltaTime)
 {
-	if (!IsSoundWithinReach(eSID_Run))
-		return;
-
 	float soundSpeedRatio = ENGINESOUND_IDLE_RATIO + (1.f - ENGINESOUND_IDLE_RATIO) * m_speedRatio;
 	SetSoundParam(eSID_Run, "speed", soundSpeedRatio);
 	SetSoundParam(eSID_Ambience, "speed", soundSpeedRatio);
@@ -571,9 +568,6 @@ bool CVehicleMovementBase::IsSoundWithinReach(EVehicleMovementSound soundId)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateDamageSound()
 {
-	if (!CanUpdateDamageSound() || !IsSoundWithinReach(eSID_Damage))
-		return;
-
 	//IVehicleComponent* pEngine = m_pVehicle->GetComponent("Engine");
 	//if (!pEngine)
 	//	pEngine = m_pVehicle->GetComponent("engine");
@@ -582,6 +576,9 @@ void CVehicleMovementBase::UpdateDamageSound()
 
 	if (damage > 0.1f && !m_pVehicle->IsDestroyed())
 	{
+		if (!CanUpdateDamageSound() || !IsSoundWithinReach(eSID_Damage))
+			return;
+
 		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
 		{
 			if (static_cast<int>(damage * 100.f) != m_lastSoundDamage)

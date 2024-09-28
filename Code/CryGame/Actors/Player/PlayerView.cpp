@@ -221,7 +221,7 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}
-	else if (stats.followCharacterHead.Value() == 2 && stats.isThirdPerson)
+	else if (stats.followCharacterHead.Value() && stats.isThirdPerson)
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}
@@ -1513,9 +1513,7 @@ void PlayerView::ViewExternalControlPostProcess(SViewParams& viewParams)
 
 void PlayerView::ViewFirstPersonOnLadder(SViewParams& viewParams)
 {
-	if (!m_player.IsFpSpectatorTarget())
-		viewParams.viewID = 3;
-
+	viewParams.viewID = 0;
 	viewParams.nearplane = 0.12f;
 	viewParams.position = m_entityWorldMatrix * (m_localEyePos + Vec3(0.02f, 0.0f, 0.05f));// * (m_localEyePos+Vec3(0.1f,0.0f,0.0f));
 
