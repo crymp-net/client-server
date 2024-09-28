@@ -3723,7 +3723,6 @@ void CPlayer::EnableThirdPerson(bool enable)
 		//Following is already done OnShatter, but we have to do it here as well incase we switch to ThirdPerson
 		//Gets reset OnRevive
 		GetEntity()->SetSlotFlags(0, GetEntity()->GetSlotFlags(0) & (~ENTITY_SLOT_RENDER));
-		m_stats.isHidden = true;
 	}
 	
 	ResetOpacity(); 
@@ -4083,7 +4082,16 @@ void CPlayer::RagDollize(bool fallAndPlay)
 
 	CActor::RagDollize(fallAndPlay);
 
-	m_stats.followCharacterHead = 1;
+	if (gEnv->bMultiplayer && !IsThirdPerson() && (IsClient() || IsFpSpectatorTarget()))
+	{
+		//CryMP
+		EnableThirdPerson(true);
+	}
+	else
+	{
+		//original code
+		m_stats.followCharacterHead = 1;
+	}
 
 	IPhysicalEntity* pPhysEnt = GetEntity()->GetPhysics();
 
@@ -7658,7 +7666,9 @@ void CPlayer::UpdateDraw()
 	bool hideMaster = m_hideMaster;
 	bool hideActor = m_hideActor;
 
-	if (m_stats.isThirdPerson)
+	const bool thirdPersonMode = m_stats.isThirdPerson;
+
+	if (thirdPersonMode)
 	{
 		hideMaster = false;
 		hideActor = false;
@@ -7679,20 +7689,20 @@ void CPlayer::UpdateDraw()
 		}
 	}
 
-	static constexpr std::string_view deadAttachments[] = { "head", "helmet" };
+	static constexpr std::string_view deadAttachments[] = { "head", "helmet", "eye_left", "eye_right", "glasses"};
 	// AI or third person, show all
 	if (!IsFpSpectatorTarget() && (m_stats.isHidden.Value() || GetSpectatorMode() != eASM_None))
 	{
 		DrawSlot(0, 0);
 	}
-	else if ((!IsClient() && !IsFpSpectatorTarget()) || IsThirdPerson() || m_stats.isOnLadder.Value())
+	else if ((!IsClient() && !IsFpSpectatorTarget()) || thirdPersonMode || m_stats.isOnLadder.Value())
 	{
 		DrawSlot(0, 1);
 		// Show all
 		HideAllAttachments(0, false, false);
 
 		// Hide head if we are on a ladder and third person is not set
-		if (IsClient() && m_stats.isOnLadder.Value() && !IsThirdPerson())
+		if (IsClient() && m_stats.isOnLadder.Value() && !thirdPersonMode)
 		{
 			for (const auto& attachment : deadAttachments)
 			{
@@ -7721,16 +7731,18 @@ void CPlayer::UpdateDraw()
 		}
 		else if ((m_stats.firstPersonBody.Value() > 0) && !ghostPit)
 		{
-			DrawSlot(0, 1);
-
 			const bool isFp3p = IsFp3pModel();
 			if (!isFp3p)
 			{
-				hideMaster = true;
+				DrawSlot(0, 0); //hide actor
 			}
+			else
+			{
+				DrawSlot(0, 1);
 
-			// Hide attachments for the body first person model
-			HideAllAttachments(0, true, false);
+				// Hide attachments for the body first person model
+				HideAllAttachments(0, true, false);
+			}
 		}
 		else
 		{

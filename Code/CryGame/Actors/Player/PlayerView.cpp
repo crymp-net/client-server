@@ -221,7 +221,7 @@ void PlayerView::ViewProcess(SViewParams& viewParams)
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}
-	else if (stats.followCharacterHead.Value() == 2 && stats.isThirdPerson)
+	else if (stats.followCharacterHead.Value() && stats.isThirdPerson)
 	{
 		ViewFollowCharacterFirstPerson(viewParams);
 	}

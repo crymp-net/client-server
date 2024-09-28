@@ -1308,7 +1308,6 @@ public:
 	void CacheIKLimbs();
 	void CacheFileModels();
 	void CallCreateAttachments();
-	void UpdateModelChangeInVehicle();
 
 	std::string GetCleanNick()
 	{
@@ -1408,6 +1407,32 @@ private:
 		BLOOD_POOL = 19,          // BLOOD_POOL_TIMER
 		ITEM_RESELECT = 20         // new	
 	};
+
+
+public:
+
+	template<class... Args>
+	void DrawLog(const char* msg, Args... args)
+	{
+		int index = 1;
+		IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+		IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+		IActor* pActor = nullptr;
+		int k = 1;
+
+		while (pActor = pActorIterator->Next())
+		{
+			if (pActor == this)
+			{
+				index = k;
+				break;
+			}
+			++k;
+		}
+		f32 fColor[4] = { 1,1,0,1 };
+		f32 g_YLine = 60.0f + (k * 20.f);
+		gEnv->pRenderer->Draw2dLabel(1, g_YLine, 1.3f, fColor, false, msg, args...);
+	}
 
 };
 

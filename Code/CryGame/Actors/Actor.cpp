@@ -379,6 +379,10 @@ bool CActor::Init(IGameObject* pGameObject)
 
 	m_isPlayerClass = GetEntity()->GetClass() == gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
 
+	CacheIKLimbs();
+
+	CacheFileModels();
+
 	return true;
 }
 
@@ -409,10 +413,6 @@ void CActor::PostInit(IGameObject* pGameObject)
 	}
 
 	InitActorAttachments();
-
-	CacheIKLimbs();
-
-	CacheFileModels();
 }
 
 //----------------------------------------------------------------------
