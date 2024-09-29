@@ -213,10 +213,6 @@ void CWeapon::RequestShoot(IEntityClass* pAmmoType, const Vec3 &pos, const Vec3 
 			else
 				GetGameObject()->InvokeRMI(CWeapon::SvRequestShoot(), SvRequestShootParams(pos, dir, hit, predictionHandle, seq, seqr), eRMI_ToServer);
 		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestShoot (%s)", GetEntity()->GetName());
-		}
 	}
 	else if (!IsClient() && IsServer())
 	{
@@ -243,10 +239,6 @@ void CWeapon::RequestMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &
 		{
 			GetGameObject()->InvokeRMI(CWeapon::SvRequestMeleeAttack(), RequestMeleeAttackParams(weaponMelee, pos, dir, seq), eRMI_ToServer);
 		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestMeleeAttack (%s)", GetEntity()->GetName());
-		}
 	}
 	else if (!IsClient() && IsServer())
 	{
@@ -265,10 +257,6 @@ void CWeapon::RequestStartFire()
 		{
 			GetGameObject()->InvokeRMI(CWeapon::SvRequestStartFire(), EmptyParams(), eRMI_ToServer);
 		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestStartFire (%s)", GetEntity()->GetName());
-		}
 	}
 	else if (!IsClient() && IsServer())
 	{
@@ -285,10 +273,6 @@ void CWeapon::RequestStartMeleeAttack(bool weaponMelee)
 		if (pOwner)
 		{
 			GetGameObject()->InvokeRMI(CWeapon::SvRequestStartMeleeAttack(), RequestStartMeleeAttackParams(weaponMelee), eRMI_ToServer);
-		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestStartMeleeAttack (%s)", GetEntity()->GetName());
 		}
 	}
 	else if (!IsClient() && IsServer())
@@ -307,10 +291,6 @@ void CWeapon::RequestZoom(float fov)
 		if (pOwner)
 		{
 			GetGameObject()->InvokeRMI(CWeapon::SvRequestZoom(), ZoomParams(fov), eRMI_ToServer);
-		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestZoom (%s)", GetEntity()->GetName());
 		}
 	}
 	else if (!IsClient() && IsServer())
@@ -331,10 +311,6 @@ void CWeapon::RequestStopFire()
 		{
 			GetGameObject()->InvokeRMI(CWeapon::SvRequestStopFire(), EmptyParams(), eRMI_ToServer);
 		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestStopFire (%s)", GetEntity()->GetName());
-		}
 	}
 
 	else if (!IsClient() && IsServer())
@@ -351,10 +327,6 @@ void CWeapon::RequestReload()
 		{
 			GetGameObject()->InvokeRMI(SvRequestReload(), EmptyParams(), eRMI_ToServer);
 		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestReload (%s)", GetEntity()->GetName());
-		}
 	}
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClReload(), EmptyParams(), eRMI_ToAllClients);
@@ -369,10 +341,6 @@ void CWeapon::RequestCancelReload()
 		if (pOwner)
 		{
 			GetGameObject()->InvokeRMI(SvRequestCancelReload(), EmptyParams(), eRMI_ToServer);
-		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestCancelReload (%s)", GetEntity()->GetName());
 		}
 	}
 	else if (!IsClient() && IsServer())
@@ -394,10 +362,6 @@ void CWeapon::RequestFireMode(int fmId)
 			if (pOwner)
 			{
 				GetGameObject()->InvokeRMI(SvRequestFireMode(), SvRequestFireModeParams(fmId), eRMI_ToServer);
-			}
-			else
-			{
-				CryLogAlways("Discarding bogus weapon action RequestFireMode (%s)", GetEntity()->GetName());
 			}
 		}
 	}
@@ -422,10 +386,6 @@ void CWeapon::RequestLock(EntityId id, int partId)
 			{
 				GetGameObject()->InvokeRMI(SvRequestLock(), LockParams(id, partId), eRMI_ToServer);
 			}
-			else
-			{
-				CryLogAlways("Discarding bogus weapon action RequestLock (%s)", GetEntity()->GetName());
-			}
 		}
 	}
 }
@@ -439,10 +399,6 @@ void CWeapon::RequestUnlock()
 		if (pOwner)
 		{
 			GetGameObject()->InvokeRMI(SvRequestUnlock(), EmptyParams(), eRMI_ToServer);
-		}
-		else
-		{
-			CryLogAlways("Discarding bogus weapon action RequestUnlock (%s)", GetEntity()->GetName());
 		}
 	}
 }
