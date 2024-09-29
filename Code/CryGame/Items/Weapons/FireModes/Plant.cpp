@@ -119,6 +119,10 @@ void CPlant::NetShootEx(const Vec3 &pos, const Vec3 &dir, const Vec3 &vel, const
 	{
 		const bool fpSpecTarget = pActor->IsFpSpectatorTarget();
 		unsigned int flags = CItem::eIPAF_Default;
+		if (!fpSpecTarget)
+		{
+			flags = flags & ~(CItem::eIPAF_Sound); //Currently no 3D sound for 3rd person planting
+		}
 		m_pWeapon->PlayAction(ItemString(m_plantactions.plant.c_str()), 0, false, flags, fpSpecTarget ? 2.0f : 1.0f);
 		m_pWeapon->HideItem(false);
 	}

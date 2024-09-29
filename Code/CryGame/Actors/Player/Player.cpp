@@ -6266,31 +6266,27 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 		break;
 	case ESound_ProneOn:
 		soundName = "sounds/physics:player_foley:prone_on";
-		soundSemantic = eSoundSemantic_Physics_Footstep;
-		nFlags |= FLAG_SOUND_RELATIVE;
+		if (!IsThirdPerson())
+			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
-		playForAll = true;
 		break;
 	case ESound_ProneOff:
 		soundName = "sounds/physics:player_foley:prone_off";
-		soundSemantic = eSoundSemantic_Physics_Footstep;
-		nFlags |= FLAG_SOUND_RELATIVE;
+		if (!IsThirdPerson())
+			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
-		playForAll = true;
 		break;
 	case ESound_CrouchOn:
 		soundName = "sounds/physics:player_foley:crouch_on";
-		soundSemantic = eSoundSemantic_Physics_Footstep;
-		nFlags |= FLAG_SOUND_RELATIVE;
+		if (!IsThirdPerson())
+			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
-		playForAll = true;
 		break;
 	case ESound_CrouchOff:
 		soundName = "sounds/physics:player_foley:crouch_off";
-		soundSemantic = eSoundSemantic_Physics_Footstep;
-		nFlags |= FLAG_SOUND_RELATIVE;
+		if (!IsThirdPerson())
+			nFlags |= FLAG_SOUND_RELATIVE;
 		repeating = false;
-		playForAll = true;
 		break;
 	default:
 		break;
