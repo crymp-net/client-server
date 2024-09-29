@@ -1289,6 +1289,7 @@ public:
 	//First Person Spectators
 	virtual bool IsFpSpectator() const { return false; }
 	virtual bool IsFpSpectatorTarget() const { return false; }
+	virtual bool IsTpSpectatorTarget() const { return false; }
 
 	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
 	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }

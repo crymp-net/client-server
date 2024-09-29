@@ -2188,6 +2188,21 @@ void CPlayer::SufferingHighLatency(bool highLatency)
 	m_sufferingHighLatency = highLatency;
 }
 
+bool CPlayer::IsTpSpectatorTarget() const
+{
+	if (IsClient())
+	{
+		return false;
+	}
+
+	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
+	if (pPlayer)
+	{
+		return (!IsFpSpectatorTarget() && pPlayer->GetSpectatorTarget() == GetEntityId());
+	}
+	return false;
+}
+
 void CPlayer::SetFpSpectatorTarget(bool activate)
 {
 	if (IsClient())

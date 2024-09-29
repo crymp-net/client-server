@@ -959,6 +959,8 @@ public:
 	bool m_camoState = false;
 	bool m_camoFading = false;
 
+	virtual bool IsTpSpectatorTarget() const override;
+
 	//First Person Spectator
 	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
 	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
