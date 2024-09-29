@@ -25,7 +25,7 @@ CSoundMoods::CSoundMoods()
 	m_pSoundMoodManager = NULL;
 
 	// Note: there is no sound system in a dedicated server
-	if(gEnv->pSoundSystem)
+	if (gEnv->pSoundSystem)
 	{
 		m_pSoundMoodManager = gEnv->pSoundSystem->GetIMoodManager();
 		assert(m_pSoundMoodManager);
@@ -42,55 +42,51 @@ CSoundMoods::~CSoundMoods()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CSoundMoods::AddSoundMood(const char *szSoundMood,uint32 uiFadeIn,float fDuration,uint32 uiFadeOut,float fFade)
+void CSoundMoods::AddSoundMood(std::string_view szSoundMood, uint32_t uiFadeIn, float fDuration, uint32_t uiFadeOut, float fFade)
 {
-	if(!m_pSoundMoodManager)
+	if (!m_pSoundMoodManager)
 		return;
 
-	SSoundMood *pSoundMood = NULL;
+	SSoundMood* pSoundMood = nullptr;
 
 	// First pass: we don't want to play the same sound mood twice
-	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
+	for (auto& iterSoundMood : m_vecSoundMoods)
 	{
-		SSoundMood *pIterSoundMood = &(*iter);
-		if(pIterSoundMood->strSoundMood == szSoundMood)
+		if (iterSoundMood.strSoundMood == szSoundMood)
 		{
-			pSoundMood = pIterSoundMood;
+			pSoundMood = &iterSoundMood;
 			break;
 		}
 	}
 
-	if(!pSoundMood)
+	if (!pSoundMood)
 	{
 		// Second pass: create it if not already in our vector
-		for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
+		for (auto& iterSoundMood : m_vecSoundMoods)
 		{
-			SSoundMood *pIterSoundMood = &(*iter);
-			if(!pIterSoundMood->bValid)
+			if (!iterSoundMood.bValid)
 			{
-				pSoundMood = pIterSoundMood;
+				pSoundMood = &iterSoundMood;
 				break;
 			}
 		}
 	}
 
-	assert(pSoundMood);  // Vector size should be increased !
-
-	if(pSoundMood)
+	if (pSoundMood)
 	{
-		if(pSoundMood->bValid)
+		if (pSoundMood->bValid)
 		{
-			m_pSoundMoodManager->UpdateSoundMood(szSoundMood,0.0f,0);
+			m_pSoundMoodManager->UpdateSoundMood(szSoundMood.data(), 0.0f, 0);
 		}
 
-		pSoundMood->strSoundMood	= szSoundMood;
-		pSoundMood->uiFadeOutTime	= (uint32)(gEnv->pTimer->GetCurrTime() + (uiFadeIn + fDuration) / 1000.0f);
-		pSoundMood->uiFadeOut			= uiFadeOut;
-		pSoundMood->bValid				=	true;
-		pSoundMood->bUnlimited		= fDuration == -1.0f ? true : false;
-
-		m_pSoundMoodManager->RegisterSoundMood(szSoundMood);
-		m_pSoundMoodManager->UpdateSoundMood(szSoundMood,fFade,uiFadeIn);
+		pSoundMood->strSoundMood = szSoundMood;
+		pSoundMood->uiFadeOutTime = static_cast<uint32_t>(gEnv->pTimer->GetCurrTime() + (uiFadeIn + fDuration) / 1000.0f);
+		pSoundMood->uiFadeOut = uiFadeOut;
+		pSoundMood->bValid = true;
+		pSoundMood->bUnlimited = fDuration == -1.0f;
+C
+		m_pSoundMoodManager->RegisterSoundMood(szSoundMood.data());
+		m_pSoundMoodManager->UpdateSoundMood(szSoundMood.data(), fFade, uiFadeIn);
 	}
 }
 
@@ -141,18 +137,35 @@ void CSoundMoods::AddSoundMood(ESOUNDMOOD eSoundMood,float fPercent)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CSoundMoods::RemoveSoundMood(const char *szSoundMood,float fFade,uint32 uiFadeOut)
+void CSoundMoods::DisableAllSoundMoods()
 {
-	if(!m_pSoundMoodManager)
+	if (!m_pSoundMoodManager)
 		return;
 
-	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
+	for (auto& soundMood : m_vecSoundMoods)
 	{
-		SSoundMood *pSoundMood = &(*iter);
-		if(pSoundMood->bValid && pSoundMood->strSoundMood == szSoundMood)
+		if (soundMood.bValid)
 		{
-			m_pSoundMoodManager->UpdateSoundMood(szSoundMood,fFade,uiFadeOut);
-			pSoundMood->bValid = false;
+			m_pSoundMoodManager->UpdateSoundMood(soundMood.strSoundMood.c_str(), 0.0f, 1000.f);
+			soundMood.bValid = false;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CSoundMoods::RemoveSoundMood(std::string_view szSoundMood, float fFade, uint32_t uiFadeOut)
+{
+	if (!m_pSoundMoodManager)
+		return;
+
+	for (auto& soundMood : m_vecSoundMoods)
+	{
+		if (soundMood.bValid && soundMood.strSoundMood == szSoundMood)
+		{
+			m_pSoundMoodManager->UpdateSoundMood(szSoundMood.data(), fFade, uiFadeOut);
+
+			soundMood.bValid = false;
 			return;
 		}
 	}
@@ -162,20 +175,30 @@ void CSoundMoods::RemoveSoundMood(const char *szSoundMood,float fFade,uint32 uiF
 
 void CSoundMoods::Serialize(TSerialize ser)
 {
-	if(!m_pSoundMoodManager)
+	if (!m_pSoundMoodManager)
 		return;
 
 	unsigned int uiSoundMood = 0;
-	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter,++uiSoundMood)
+	for (auto& soundMood : m_vecSoundMoods)
 	{
-		SSoundMood *pSoundMood = &(*iter);
-
 		char szTemp[256];
-		sprintf(szTemp,"strSoundMood_%d",	uiSoundMood);	ser.Value(szTemp,pSoundMood->strSoundMood);
-		sprintf(szTemp,"uiFadeOutTime_%d",uiSoundMood);	ser.Value(szTemp,pSoundMood->uiFadeOutTime);
-		sprintf(szTemp,"uiFadeOut_%d",		uiSoundMood);	ser.Value(szTemp,pSoundMood->uiFadeOut);
-		sprintf(szTemp,"bValid_%d",				uiSoundMood);	ser.Value(szTemp,pSoundMood->bValid);
-		sprintf(szTemp,"bUnlimited_%d",		uiSoundMood);	ser.Value(szTemp,pSoundMood->bUnlimited);
+
+		sprintf(szTemp, "strSoundMood_%d", uiSoundMood);
+		ser.Value(szTemp, soundMood.strSoundMood);
+
+		sprintf(szTemp, "uiFadeOutTime_%d", uiSoundMood);
+		ser.Value(szTemp, soundMood.uiFadeOutTime);
+
+		sprintf(szTemp, "uiFadeOut_%d", uiSoundMood);
+		ser.Value(szTemp, soundMood.uiFadeOut);
+
+		sprintf(szTemp, "bValid_%d", uiSoundMood);
+		ser.Value(szTemp, soundMood.bValid);
+
+		sprintf(szTemp, "bUnlimited_%d", uiSoundMood);
+		ser.Value(szTemp, soundMood.bUnlimited);
+
+		++uiSoundMood;
 	}
 }
 
@@ -183,19 +206,17 @@ void CSoundMoods::Serialize(TSerialize ser)
 
 void CSoundMoods::Update()
 {
-	if(!m_pSoundMoodManager)
+	if (!m_pSoundMoodManager)
 		return;
 
-	float fTime = gEnv->pTimer->GetCurrTime();
+	const float fTime = gEnv->pTimer->GetCurrTime();
 
-	for(TVectorSoundMoods::iterator iter=m_vecSoundMoods.begin(); iter!=m_vecSoundMoods.end(); ++iter)
+	for (auto& soundMood : m_vecSoundMoods)
 	{
-		SSoundMood *pSoundMood = &(*iter);
-		if(pSoundMood->bValid && fTime >= pSoundMood->uiFadeOutTime && !pSoundMood->bUnlimited)
+		if (soundMood.bValid && fTime >= soundMood.uiFadeOutTime && !soundMood.bUnlimited)
 		{
-			// Sound mood will be automatically unregistered after fade out
-			m_pSoundMoodManager->UpdateSoundMood(pSoundMood->strSoundMood.c_str(),0.0f,pSoundMood->uiFadeOut);
-			pSoundMood->bValid = false;
+			m_pSoundMoodManager->UpdateSoundMood(soundMood.strSoundMood.c_str(), 0.0f, soundMood.uiFadeOut);
+			soundMood.bValid = false;
 		}
 	}
 }
