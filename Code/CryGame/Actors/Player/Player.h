@@ -993,7 +993,7 @@ public:
 	}
 	void SetSpectatorTargetType(SpectatorTargetType type);
 
-	IActor* GetSpectatorTargetPlayer();
+	IActor* GetSpectatorTargetActor();
 
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }

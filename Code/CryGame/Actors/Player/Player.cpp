@@ -1822,7 +1822,7 @@ bool CPlayer::UpdateFpSpectatorView(SViewParams& viewParams)
 
 	const auto frameTime = viewParams.frameTime;
 
-	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetPlayer());
+	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetActor());
 	if (pTarget && pTarget->IsFpSpectatorTarget())
 	{
 		CItem* pItem = static_cast<CItem*>(pTarget->GetCurrentItem(true));
@@ -5860,7 +5860,7 @@ void CPlayer::SetSpectatorTargetType(SpectatorTargetType type)
 	}
 }
 
-IActor* CPlayer::GetSpectatorTargetPlayer()
+IActor* CPlayer::GetSpectatorTargetActor()
 {
 	const EntityId sTargetId = GetSpectatorTarget();
 	if (sTargetId && GetPhysicsProfile() == eAP_Spectator)
@@ -6043,7 +6043,7 @@ void CPlayer::SetSpectatorHealth(int health)
 {
 	m_stats.spectatorHealth = health;
 
-	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetPlayer());
+	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetActor());
 	if (pTarget)
 	{
 		pTarget->OnHealthChanged(health);

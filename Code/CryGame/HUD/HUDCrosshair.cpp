@@ -82,7 +82,7 @@ void CHUDCrosshair::Update(float fDeltaTime)
 	IItemSystem* pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
 
 	if (pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
 
 	if (!pPlayer)
 		return;
@@ -387,7 +387,7 @@ void CHUDCrosshair::UpdateCrosshair()
 
 	//CryMP: Fp spec support
 	if (pPlayer && pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
 
 	if (!pPlayer)
 		return;
@@ -510,7 +510,7 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 
 	//CryMP: Fp spec support
 	if (pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
 
 	if (!pPlayer)
 	{
@@ -608,7 +608,7 @@ bool CHUD::ShouldRenderCrosshair() const
 
 	CPlayer* pPlayer = m_pClientActor;
 
-	if (IActor* pSpec = pPlayer->GetSpectatorTargetPlayer())
+	if (IActor* pSpec = pPlayer->GetSpectatorTargetActor())
 	{
 		pPlayer = CPlayer::FromIActor(pSpec);
 		if (!pPlayer)

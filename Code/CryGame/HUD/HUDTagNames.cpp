@@ -301,7 +301,7 @@ void CHUDTagNames::DrawTagName(IVehicle* pVehicle)
 	bool bDrawSeatTagNames = false;
 	if (pClientActor->GetSpectatorMode() == CActor::eASM_Follow)
 	{
-		IActor* pFollowedActor = pClientActor->GetSpectatorTargetPlayer();
+		IActor* pFollowedActor = pClientActor->GetSpectatorTargetActor();
 		if (pFollowedActor)
 			bDrawSeatTagNames = (pVehicle == pFollowedActor->GetLinkedVehicle());
 	}

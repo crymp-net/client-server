@@ -282,7 +282,7 @@ void CHUDScopes::DisplayScope(CPlayer* pPlayerActor)
 		EntityId entityId = pPlayerActor->GetSpectatorTarget();
 		if (entityId)
 		{
-			CPlayer* pSpec = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+			CPlayer* pSpec = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetActor());
 			if (pSpec)
 			{
 				pPlayerActor = pSpec;
@@ -324,7 +324,7 @@ void CHUDScopes::DisplayScope(CPlayer* pPlayerActor)
 	//CryMP: Fp spec support
 	if (pPlayerActor->IsFpSpectator())
 	{
-		CPlayer *pTarget = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetPlayer());
+		CPlayer *pTarget = static_cast<CPlayer*>(pPlayerActor->GetSpectatorTargetActor());
 		if (pTarget && pTarget->IsFpSpectatorTarget())
 			pPlayerActor = pTarget;
 	}
