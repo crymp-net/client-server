@@ -848,7 +848,7 @@ void CHUD::PlayerIdSet(EntityId playerId)
 
 IActor* CHUD::GetSpectatorTarget()
 {
-	return m_pClientActor->GetSpectatorTargetPlayer();
+	return m_pClientActor->GetSpectatorTargetActor();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -3380,7 +3380,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			const uint8 specMode = m_pClientActor->GetSpectatorMode();
 			if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
 			{
-				CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetPlayer());
+				CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetActor());
 				CheckSpectatorTarget(pSpectatorTarget, frameTime);
 
 				m_animSpectate.GetFlashPlayer()->Advance(frameTime);

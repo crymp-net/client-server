@@ -47,19 +47,20 @@ public:
 	~	CSoundMoods();
 
 	void AddSoundMood(ESOUNDMOOD eSoundMood,float fPercent=0.0f);
+	void DisableAllSoundMoods();
 	void Serialize(TSerialize ser);
 	void Update();
 
 private:
 
-	void AddSoundMood(const char *szSoundMood,uint32 uiFadeIn,float fDuration,uint32 fFadeOut,float fFade);
-	void RemoveSoundMood(const char *szSoundMood,float fFade,uint32 uiFadeOut);
+	void AddSoundMood(std::string_view,uint32 uiFadeIn,float fDuration,uint32 fFadeOut,float fFade);
+	void RemoveSoundMood(std::string_view szSoundMood,float fFade,uint32 uiFadeOut);
 
 	ISoundMoodManager *m_pSoundMoodManager;
 
 	struct SSoundMood
 	{
-		string strSoundMood;
+		std::string strSoundMood;
 		uint32 uiFadeOutTime;
 		uint32 uiFadeOut;
 		bool bValid;

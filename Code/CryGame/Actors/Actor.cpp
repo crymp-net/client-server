@@ -4022,9 +4022,10 @@ IMPLEMENT_RMI(CActor, ClSetSpectatorMode)
 }
 
 //------------------------------------------------------------------------
-IMPLEMENT_RMI(CActor, ClSetSpectatorHealth)
+IMPLEMENT_RMI(CActor, ClSetSpectatorHealth) //called on client
 {
-	SetSpectatorHealth(params.health);
+	SetSpectatorHealth(params.health); 
+
 	return true;
 }
 

@@ -197,7 +197,7 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 	CPlayer *pPlayer = m_pClientActor;
 	
 	//CryMP: Spectator check 
-	IActor* pTarget = m_pClientActor->GetSpectatorTargetPlayer();
+	IActor* pTarget = m_pClientActor->GetSpectatorTargetActor();
 	if (pTarget)
 	{
 		pPlayer = CPlayer::FromIActor(pTarget);
@@ -389,7 +389,7 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 	//CryMP track projectiles in Fp Spec
 	if (pPlayerActor && pPlayerActor->IsFpSpectator())
 	{
-		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetPlayer());
+		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetActor());
 	}
 
 	if (!pPlayerActor)
@@ -982,7 +982,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 
 		CPlayer* pCurrentPlayer = m_pClientActor;
 		//CryMP: Show explosives icons in spectator mode
-		IActor* pTarget = m_pClientActor->GetSpectatorTargetPlayer();
+		IActor* pTarget = m_pClientActor->GetSpectatorTargetActor();
 		if (pTarget)
 		{
 			pCurrentPlayer = CPlayer::FromIActor(pTarget);

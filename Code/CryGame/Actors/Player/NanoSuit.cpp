@@ -899,30 +899,28 @@ void CNanoSuit::SetCloak(bool on, bool force)
 			if (!force && on)
 			{
 				PlaySound(ESound_SuitCloakActivate);
-				if (!m_pOwner->IsClient())
-					PlaySound(ESound_SuitCloakFeedback);
-				else
+				
+				if (m_pOwner->IsClient() || m_pOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE)
 				{
 					m_pOwner->SendMusicLogicEvent(eMUSICLOGICEVENT_CLOAKMODE_ENTER);
+					SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_CLOAK));
+				}
+				if (m_pOwner->IsRemote())
+				{
+					PlaySound(ESound_SuitCloakFeedback);
 				}
 			}
 			else if (!on)
 			{
-				if (!m_pOwner->IsClient())
-					PlaySound(ESound_SuitCloakFeedback, 1, true);
-				else
+				if (m_pOwner->IsClient() || m_pOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE)
 				{
 					m_pOwner->SendMusicLogicEvent(eMUSICLOGICEVENT_CLOAKMODE_LEAVE);
+					SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_CLOAK));
 				}
-			}
-
-			if (on)
-			{
-				SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_CLOAK));
-			}
-			else
-			{
-				SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_CLOAK));
+				if (m_pOwner->IsRemote())
+				{
+					PlaySound(ESound_SuitCloakFeedback, 1, true);
+				}
 			}
 
 			ENanoCloakMode cloakMode = m_cloak.GetType();
@@ -1058,7 +1056,7 @@ void CNanoSuit::DeactivateSuit(float time)
 
 void CNanoSuit::PlaySound(ENanoSound sound, float param, bool stopSound)
 {
-	if (!gEnv->pSoundSystem || !m_pOwner || !m_active)
+	if (!gEnv->pSoundSystem || !m_pOwner || !m_active || gEnv->pSystem->IsDedicated())
 		return;
 
 	int soundFlag = 0; //localActor will get 2D sounds
