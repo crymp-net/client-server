@@ -84,7 +84,6 @@ void CSoundMoods::AddSoundMood(std::string_view szSoundMood, uint32_t uiFadeIn, 
 		pSoundMood->uiFadeOut = uiFadeOut;
 		pSoundMood->bValid = true;
 		pSoundMood->bUnlimited = fDuration == -1.0f;
-C
 		m_pSoundMoodManager->RegisterSoundMood(szSoundMood.data());
 		m_pSoundMoodManager->UpdateSoundMood(szSoundMood.data(), fFade, uiFadeIn);
 	}

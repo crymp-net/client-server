@@ -1049,12 +1049,15 @@ void CPlayer::Update(SEntityUpdateContext& ctx, int updateSlot)
 		}
 	}
 
-	UpdateSounds(ctx.fFrameTime);
+	if (gEnv->bClient)
+	{
+		UpdateSounds(ctx.fFrameTime);
+	}
 }
 
 void CPlayer::UpdateSounds(float fFrameTime)
 {
-	if (IsClient())
+	if (IsClient() || GetSpectatorTargetType() != SpectatorTargetType::NONE)
 	{
 		bool bConcentration = false;
 		if (STANCE_CROUCH == m_stance || STANCE_PRONE == m_stance || m_stats.inRest > 8.0f)
@@ -2188,22 +2191,7 @@ void CPlayer::SufferingHighLatency(bool highLatency)
 	m_sufferingHighLatency = highLatency;
 }
 
-bool CPlayer::IsTpSpectatorTarget() const
-{
-	if (IsClient())
-	{
-		return false;
-	}
-
-	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (pPlayer)
-	{
-		return (!IsFpSpectatorTarget() && pPlayer->GetSpectatorTarget() == GetEntityId());
-	}
-	return false;
-}
-
-void CPlayer::SetFpSpectatorTarget(bool activate)
+void CPlayer::EnableFpSpectatorTarget(bool activate)
 {
 	if (IsClient())
 		return;
@@ -2214,7 +2202,7 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 		pPlayer->SetFpSpectator(activate);
 	}
 
-	m_stats.fpSpectatorTarget = activate;
+	m_stats.spectatorTargetType = activate ? SpectatorTargetType::FIRST_PERSON : SpectatorTargetType::NONE;
 
 	m_stats.isThirdPerson = !activate;
 
@@ -2236,7 +2224,7 @@ void CPlayer::SetFpSpectatorTarget(bool activate)
 
 	CALL_PLAYER_EVENT_LISTENERS(OnToggleThirdPerson(this, m_stats.isThirdPerson));
 
-	CWeapon* pWeapon = static_cast<CWeapon*>(pItem ? pItem->GetIWeapon() : 0);
+	CWeapon* pWeapon = static_cast<CWeapon*>(pItem ? pItem->GetIWeapon() : nullptr);
 	if (pWeapon)
 	{
 		IZoomMode* pZoomMode = pWeapon->GetActiveZoomMode();
@@ -3844,7 +3832,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 	const uint8 spectator = m_stats.spectatorMode;
 	const EntityId spectatorId = m_stats.spectatorTarget;
 	const uint8 fpSpectator = m_stats.fpSpectator;
-	const uint8 fpSpectatorTarget = m_stats.fpSpectatorTarget;
+	const SpectatorTargetType spectatorTargetType = m_stats.spectatorTargetType;
 	const bool thirdPerson = m_stats.isThirdPerson;	
 	m_stats = SPlayerStats();
 	m_stats.spectatorMode = spectator;
@@ -3855,15 +3843,22 @@ void CPlayer::Revive(ReasonForRevive reason)
 		m_stats.isThirdPerson = thirdPerson;
 	}
 
-	if (fpSpectatorTarget)
+	if (spectatorTargetType != SpectatorTargetType::NONE)
 	{
-		SetFpSpectatorTarget(true);
+		if (spectatorTargetType == SpectatorTargetType::FIRST_PERSON)
+		{
+			EnableFpSpectatorTarget(true);
+		}
+		else
+		{
+			SetSpectatorTargetType(spectatorTargetType);
+		}
 	}
 
 	if (IsClient())
 	{
 		//Check if Client has respawned, remove old FP target if necessary
-		UpdateFpSpectator(spectatorId, 0);
+		UpdateSpectator(spectatorId, 0);
 
 		if (reason != ReasonForRevive::SCRIPT_BIND)
 		{
@@ -4359,17 +4354,11 @@ void CPlayer::ResetAnimations()
 	}
 }
 
-void CPlayer::SetHealth(int health)
+void CPlayer::OnHealthChanged(const int health)
 {
-	if (m_stats.isGrabbed)
-		health -= 1;  //Trigger automatic thrown
-
-	float oldHealth = m_health;
-	CActor::SetHealth(health);
-
-	if (IsClient())
+	if (IsClient() || IsFpSpectatorTarget()) //CryMP: FP spec support
 	{
-		float fHealth = m_health / m_maxHealth * 100.0f + 1.0f;
+		const float fHealth = static_cast<float>(health) / m_maxHealth * 100.0f + 1.0f;
 
 		const float fMinThreshold = 20.0f;
 		const float fMaxThreshold = 30.0f;
@@ -4389,6 +4378,17 @@ void CPlayer::SetHealth(int health)
 			m_fLowHealthSoundMood = 0.0f;
 		}
 	}
+}
+
+void CPlayer::SetHealth(int health)
+{
+	if (m_stats.isGrabbed)
+		health -= 1;  //Trigger automatic thrown
+
+	float oldHealth = m_health;
+	CActor::SetHealth(health);
+
+	OnHealthChanged(health);
 
 	if (health <= 0)
 	{
@@ -4586,7 +4586,7 @@ void CPlayer::Freeze(bool freeze)
 		// frozen guys shouldn't blink
 		pCharacter->EnableProceduralFacialAnimation(false);
 
-		if (IsClient())
+		if (IsClient() || GetSpectatorTargetType() != SpectatorTargetType::NONE) //CryMP: Spec support
 		{
 			SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_FREEZE));
 		}
@@ -4607,7 +4607,7 @@ void CPlayer::Freeze(bool freeze)
 		// start blinking again
 		pCharacter->EnableProceduralFacialAnimation(true);
 
-		if (IsClient())
+		if (IsClient() || GetSpectatorTargetType() != SpectatorTargetType::NONE) //CryMP: Spec support
 		{
 			SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_FREEZE));
 		}
@@ -5851,6 +5851,15 @@ void CPlayer::ActivateNanosuit(bool active)
 	}
 }
 
+void CPlayer::SetSpectatorTargetType(SpectatorTargetType type)
+{
+	m_stats.spectatorTargetType = type;
+	if (type == SpectatorTargetType::NONE)
+	{
+		SAFE_SOUNDMOODS_FUNC(DisableAllSoundMoods());
+	}
+}
+
 IActor* CPlayer::GetSpectatorTargetPlayer()
 {
 	const EntityId sTargetId = GetSpectatorTarget();
@@ -5916,7 +5925,7 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 
 		Draw(false);
 
-		m_stats.spectatorTarget = targetId;
+		SetSpectatorTarget(targetId);
 		m_stats.spectatorMode = mode;
 		m_stats.inAir = 0.0f;
 		m_stats.onGround = 0.0f;
@@ -5938,14 +5947,14 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 
 		Draw(true);
 
-		m_stats.spectatorTarget = 0;
+		SetSpectatorTarget(0);
 		m_stats.spectatorMode = mode;
 		m_stats.inAir = 0.0f;
 		m_stats.onGround = 0.0f;
 	}
 	else if (oldSpectatorMode != mode || m_stats.spectatorTarget != targetId)
 	{
-		m_stats.spectatorTarget = targetId;
+		SetSpectatorTarget(targetId);
 		m_stats.spectatorMode = mode;
 
 		CPlayer *pTarget = CPlayer::FromIActor(m_pGameFramework->GetIActorSystem()->GetActor(targetId));
@@ -5969,7 +5978,7 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 	{
 		SAFE_HUD_FUNC(SetSpectatorMode(mode, oldSpectatorTarget, m_stats.spectatorTarget));
 
-		UpdateFpSpectator(oldSpectatorTarget, m_stats.spectatorTarget);
+		UpdateSpectator(oldSpectatorTarget, m_stats.spectatorTarget);
 
 		if (mode)
 		{
@@ -5980,7 +5989,7 @@ void CPlayer::SetSpectatorMode(uint8 mode, EntityId targetId)
 	}
 }
 
-void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
+void CPlayer::UpdateSpectator(EntityId oldTargetId, EntityId newTargetId)
 {
 	if (!IsClient())
 		return;
@@ -5989,9 +5998,14 @@ void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
 	{
 		//Leaving spectator target
 		CPlayer* pOldTarget = CPlayer::FromIActor(m_pGameFramework->GetIActorSystem()->GetActor(oldTargetId));
-		if (pOldTarget && pOldTarget->IsFpSpectatorTarget())
+		if (pOldTarget)
 		{
-			pOldTarget->SetFpSpectatorTarget(false);
+			if (pOldTarget->IsFpSpectatorTarget())
+			{
+				pOldTarget->EnableFpSpectatorTarget(false);
+			}
+
+			pOldTarget->SetSpectatorTargetType(SpectatorTargetType::NONE);
 		}
 	}
 
@@ -6008,15 +6022,32 @@ void CPlayer::UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId)
 			const bool keepFpSpec = pPlayerInput ? pPlayerInput->ShouldKeepFpSpectator() : false;
 			if (keepFpSpec)
 			{
-				pNewTarget->SetFpSpectatorTarget(true);
+				pNewTarget->EnableFpSpectatorTarget(true);
 				foundNew = true;
+			}
+			else
+			{
+				pNewTarget->SetSpectatorTargetType(SpectatorTargetType::THIRD_PERSON);
 			}
 		}
 	}
 
 	//Haven't found a new target, turn of FP spec mode untill we find a new target
 	if (!foundNew)
+	{
 		SetFpSpectator(false);
+	}
+}
+
+void CPlayer::SetSpectatorHealth(int health)
+{
+	m_stats.spectatorHealth = health;
+
+	CPlayer* pTarget = CPlayer::FromIActor(GetSpectatorTargetPlayer());
+	if (pTarget)
+	{
+		pTarget->OnHealthChanged(health);
+	}
 }
 
 void CPlayer::MoveToSpectatorTargetPosition()

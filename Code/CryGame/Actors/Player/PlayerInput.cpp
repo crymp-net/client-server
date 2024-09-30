@@ -551,7 +551,7 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 					{
 						const bool bEnableSpectator(!m_pPlayer->IsFpSpectator());
 
-						pTarget->SetFpSpectatorTarget(bEnableSpectator);
+						pTarget->EnableFpSpectatorTarget(bEnableSpectator);
 
 						m_KeepFPSpectatorMode = bEnableSpectator;
 					}

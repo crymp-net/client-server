@@ -33,6 +33,13 @@ class CVehicleClient;
 struct IDebugHistory;
 struct IDebugHistoryManager;
 
+enum class SpectatorTargetType
+{
+	NONE,
+	FIRST_PERSON,
+	THIRD_PERSON
+};
+
 struct SPlayerStats : public SActorStats
 {
 	float onGroundWBoots;
@@ -142,7 +149,7 @@ struct SPlayerStats : public SActorStats
 
 	//CryMP FP Spec
 	bool fpSpectator;
-	bool fpSpectatorTarget;
+	SpectatorTargetType spectatorTargetType;
 
 	SPlayerStats()
 	{
@@ -196,7 +203,7 @@ struct SPlayerStats : public SActorStats
 
 		//CryMP FP spec
 		fpSpectator = false,
-		fpSpectatorTarget = false;
+		spectatorTargetType = SpectatorTargetType::NONE;
 	}
 
 	void Serialize(TSerialize ser, unsigned aspects);
@@ -562,7 +569,7 @@ public:
 	virtual void SetDeathCamTarget(EntityId targetId) { m_stats.deathCamTarget = targetId; };
 	virtual EntityId GetSpectatorTarget() const { return m_stats.spectatorTarget; };
 	virtual EntityId GetDeathCamTarget() const { return m_stats.deathCamTarget; };
-	virtual void SetSpectatorHealth(int health) { m_stats.spectatorHealth = health; };
+	virtual void SetSpectatorHealth(int health) override;
 	virtual int GetSpectatorHealth() const { return m_stats.spectatorHealth; };
 	virtual void ChangeSpectatorZoom(int zoomChange) { m_stats.spectatorZoom = CLAMP(m_stats.spectatorZoom + zoomChange, 2, 8); }
 	virtual int GetSpectatorZoom() const { return m_stats.spectatorZoom; }
@@ -596,6 +603,7 @@ public:
 	virtual bool NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags);
 	virtual void PostSerialize();
 	//set/get actor params
+	void OnHealthChanged(const int health);
 	virtual void SetHealth(int health);
 	virtual SActorStats* GetActorStats() { return &m_stats; };
 	virtual const SActorStats* GetActorStats() const { return &m_stats; };
@@ -906,7 +914,7 @@ private:
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
-	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
+	void UpdateSpectator(EntityId oldTargetId, EntityId newTargetId);
 
 	PlayerView m_PlayerView = PlayerView(*this);
 
@@ -959,14 +967,34 @@ public:
 	bool m_camoState = false;
 	bool m_camoFading = false;
 
-	virtual bool IsTpSpectatorTarget() const override;
+	virtual bool IsSpectatorTarget() const { return m_stats.spectatorTarget; }
 
-	//First Person Spectator
-	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
-	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
-	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
-	void SetFpSpectatorTarget(bool activate);
+	//First/Third Person Spectator
+	virtual bool IsFpSpectator() const 
+	{ 
+		return m_stats.fpSpectator; 
+	}
+	virtual bool IsFpSpectatorTarget() const override
+	{
+		return m_stats.spectatorTargetType == SpectatorTargetType::FIRST_PERSON;
+	}
+	virtual bool IsTpSpectatorTarget() const override
+	{
+		return m_stats.spectatorTargetType == SpectatorTargetType::THIRD_PERSON;
+	}
+	void SetFpSpectator(bool activate) 
+	{
+		m_stats.fpSpectator = activate; 
+	}
+	void EnableFpSpectatorTarget(bool activate);
+	SpectatorTargetType GetSpectatorTargetType() const
+	{
+		return m_stats.spectatorTargetType;
+	}
+	void SetSpectatorTargetType(SpectatorTargetType type);
+
 	IActor* GetSpectatorTargetPlayer();
+
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
