@@ -814,9 +814,9 @@ void CAlien::Update(SEntityUpdateContext& ctx, int updateSlot)
 				m_pGroundEffect->Update();
 			}
 
-			if (m_pTrailAttachment)
+			if (m_pTrailAttachment && m_pTrailAttachment->GetType() == IAttachmentObject::EType::eAttachment_Effect)
 			{
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pTrailAttachment->GetIAttachmentObject();
+				CEffectAttachment* pEffectAttachment = static_cast<CEffectAttachment*>(m_pTrailAttachment->GetIAttachmentObject());
 				if (pEffectAttachment)
 				{
 					float goalspeed = max(0.f, m_stats.speed - m_params.trailEffectMinSpeed);
@@ -833,9 +833,9 @@ void CAlien::Update(SEntityUpdateContext& ctx, int updateSlot)
 				}
 			}
 
-			if (m_pHealthTrailAttachment)
+			if (m_pHealthTrailAttachment && m_pHealthTrailAttachment->GetType() == IAttachmentObject::EType::eAttachment_Effect)
 			{
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pHealthTrailAttachment->GetIAttachmentObject();
+				CEffectAttachment* pEffectAttachment = static_cast<CEffectAttachment*>(m_pHealthTrailAttachment->GetIAttachmentObject());
 				if (pEffectAttachment)
 				{
 					float goal = 1.0f - ((float)GetHealth() / (float)max(1, GetMaxHealth()));
