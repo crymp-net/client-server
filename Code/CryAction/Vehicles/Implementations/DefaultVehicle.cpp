@@ -153,6 +153,12 @@ bool DefaultVehicle::Init(IGameObject* pGameObject)
 	// SeatTransitions
 	this->InitSeatTransitions();
 
+	// Damages
+	{
+		SmartScriptTable table(gEnv->pScriptSystem);
+		this->InitDamages(table);
+	}
+
 	this->InitMaxDamage();
 	this->AttachScriptBindToSeats();
 
