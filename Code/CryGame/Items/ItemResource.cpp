@@ -410,10 +410,14 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 	case eIGS_ThirdPerson:
 	default:
 	{
-		if (name.empty() || forceReload)
+		if (forceReload)
 		{
 			GetEntity()->FreeSlot(slot);
 			m_geometry[slot].clear();
+		}
+		else if (name.empty())
+		{
+			DrawSlot(slot, false); //CryMP: Hide unused slot instead of clearing it
 		}
 
 		DestroyAttachmentHelpers(slot);
