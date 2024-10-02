@@ -1111,10 +1111,13 @@ void CItem::Select(bool select)
 		select = false;
 	
 	if (!pOwner || !m_ownerId || m_stats.selected == select)
-	//CryMP: don't proceed...
+	{
+		//CryMP: don't proceed...
 		return;
+	}
 
-	SAFE_HUD_FUNC(GetCrosshair()->Fade(0, 1.0f, WEAPON_FADECROSSHAIR_SELECT));
+	CPlayer* pPlayerOwner = CPlayer::FromActor(pOwner);
+	const bool updateHUD = pPlayerOwner && (pPlayerOwner->IsClient() || pPlayerOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE);
 
 	m_stats.selected = select;
 
@@ -1132,10 +1135,15 @@ void CItem::Select(bool select)
 
 	IAISystem* pAISystem = gEnv->pAISystem;
 
-	CWeaponAttachmentManager* pWAM = pOwner ? pOwner->GetWeaponAttachmentManager() : NULL;
+	CWeaponAttachmentManager* pWAM = pOwner ? pOwner->GetWeaponAttachmentManager() : nullptr;
 
 	if (select)
 	{
+		if (updateHUD)
+		{
+			SAFE_HUD_FUNC(GetCrosshair()->Fade(0.0f, 1.0f, WEAPON_FADECROSSHAIR_SELECT));
+		}
+
 		if (IsDualWield())
 		{
 			//SetActionSuffix(m_params.dual_wield_suffix.c_str());
@@ -1233,11 +1241,10 @@ void CItem::Select(bool select)
 	else
 		CloakEnable(false, false);
 
-	if (pOwner)
+	if (updateHUD)
 	{
-		//CryMP: Fp spec support
-		if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
-			SAFE_HUD_FUNC(UpdateCrosshair(select ? this : NULL));	//crosshair might change
+		//CryMP: Spectator support
+		SAFE_HUD_FUNC(UpdateCrosshair(select ? this : nullptr));	//crosshair might change
 	}
 
 	OnSelected(select);

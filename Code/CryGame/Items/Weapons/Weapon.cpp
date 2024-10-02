@@ -1091,7 +1091,6 @@ void CWeapon::Select(bool select)
 	}
 
 	RestorePlayerSprintingStats();
-	FadeCrosshair(0, 1.0f, WEAPON_FADECROSSHAIR_SELECT);
 
 	if (!select)
 		SetNextShotTime(false);
