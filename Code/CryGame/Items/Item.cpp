@@ -1114,6 +1114,8 @@ void CItem::Select(bool select)
 	//CryMP: don't proceed...
 		return;
 
+	SAFE_HUD_FUNC(GetCrosshair()->Fade(0, 1.0f, WEAPON_FADECROSSHAIR_SELECT));
+
 	m_stats.selected = select;
 
 	CheckViewChange();
@@ -2151,7 +2153,11 @@ void CItem::StartUse(EntityId userId)
 	pOwner->GetGameObject()->SetExtensionParams("Interactor", locker);
 
 	pOwner->LinkToMountedWeapon(GetEntityId());
-	SAFE_HUD_FUNC(GetCrosshair()->SetUsability(0));
+
+	if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
+	{
+		SAFE_HUD_FUNC(GetCrosshair()->SetUsability(0));
+	}
 
 	/* Handled in UpdateDraw() now
 	//Don't draw legs for the FP player (prevents legs clipping in the view)

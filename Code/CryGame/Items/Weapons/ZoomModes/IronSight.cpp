@@ -17,6 +17,8 @@ History:
 #include "../FireModes/Single.h"
 #include "CryGame/BulletTime.h"
 #include "CryGame/Actors/Player/IPlayerInput.h"
+#include "CryGame/HUD/HUD.h"
+#include "CryGame/HUD/HUDCrosshair.h"
 
 #define PHYS_FOREIGN_ID_DOF_QUERY PHYS_FOREIGN_ID_USER+3
 
@@ -447,7 +449,9 @@ void CIronSight::EnterZoom(float time, const char* zoom_layer, bool smooth, int 
 
 	// marcok: please leave goc alone
 	if (!UseAlternativeIronSight() && !g_pGameCVars->goc_tpcrosshair)
-		m_pWeapon->FadeCrosshair(1.0f, 0.0f, WEAPON_FADECROSSHAIR_ZOOM);
+	{
+		SAFE_HUD_FUNC(GetCrosshair()->Fade(1.0f, 0.0f, WEAPON_FADECROSSHAIR_ZOOM));
+	}
 
 	float oFoV = GetZoomFoVScale(0);
 	float tFoV = GetZoomFoVScale(zoomStep);
@@ -473,9 +477,13 @@ void CIronSight::LeaveZoom(float time, bool smooth)
 
 	// marcok: please leave goc alone
 	if (!UseAlternativeIronSight() && !g_pGameCVars->goc_tpcrosshair)
-		m_pWeapon->FadeCrosshair(0.0f, 1.0f, WEAPON_FADECROSSHAIR_ZOOM);
+	{
+		SAFE_HUD_FUNC(GetCrosshair()->Fade(0.0f, 1.0f, WEAPON_FADECROSSHAIR_ZOOM));
+	}
 	else if (UseAlternativeIronSight())
-		m_pWeapon->FadeCrosshair(1.0f, 1.0f, 0.1f);
+	{
+		SAFE_HUD_FUNC(GetCrosshair()->Fade(1.0f, 1.0f, 0.1f));
+	}
 
 	float oFoV = GetZoomFoVScale(0);
 	float tFoV = GetZoomFoVScale(1);

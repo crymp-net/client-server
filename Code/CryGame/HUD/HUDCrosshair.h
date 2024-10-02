@@ -17,6 +17,7 @@ History:
 
 # pragma once
 
+#define WEAPON_FADECROSSHAIR_FRIENDLYCROSS		(0.200f)
 
 #include "HUDObject.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
@@ -40,19 +41,34 @@ public:
 
 	//use-icon
 	void SetUsability(int usable, const char* actionLabel = NULL, const char* paramA = NULL, const char* paramB = NULL);
+	void HandleUsability(int objId, const char* message);
 	bool GetUsability() const;
 	//show enemy hit in crosshair
 	void CrosshairHit();
 	//choose and set crosshair design 
 	void SelectCrosshair(IItem *pItem = NULL);
-	// set opacity of crosshair (0 is invisible, 1 is fully visible)
-	void SetOpacity(float opacity);
 	void SetCrosshair(int iCrosshair);
 	//get crosshair flash movie
 	CGameFlashAnimation *GetFlashAnim() {return &m_animCrossHair;}
 	bool IsFriendlyEntity(IEntity *pEntity);
 
+	bool IsFriendlyCrossVisible() const
+	{
+		return m_animFriendCross.GetVisible();
+	}
+
 	void Break(bool state);
+	
+	//Fading
+	void SetVisibility(bool visible);
+	bool GetVisibility() const;
+	void SetOpacity(float opacity);
+	float GetOpacity() const;
+	void Fade(float from, float to, float time);
+	void UpdateOpacity(float frameTime);
+
+	void OnLookatEntityChangeTeam(EntityId entityId);
+
 	ILINE int GetCrosshairType() const { return m_iCrosshair; }
 
 	void Reset();
@@ -68,6 +84,8 @@ private:
 
 	//update function
 	void UpdateCrosshair();
+
+	void SetFlashOpacity(float opacity);
 
 	//the main HUD
 	CHUD* m_pHUD = nullptr;
@@ -97,6 +115,20 @@ private:
 	
 	//CryMP
 	float m_fDamageIndicatorTimer = 0.0f;
+
+	struct Fading
+	{
+		bool fading = false;
+		bool visible = true;
+		float fadefrom = 1.0f;
+		float fadeto = 1.0f;
+		float fadetime = 0.0f;
+		float fadetimer = 0.0f;
+		float opacity = 0.0f;
+	};
+
+	Fading m_fading;
+
 };
 
 #endif

@@ -1578,21 +1578,6 @@ void CGameRules::SetTeam(int teamId, EntityId id)
 		}
 	}
 
-	if (IActor* pClient = m_pGameFramework->GetClientActor())
-	{
-		if (GetTeam(pClient->GetEntityId()) == teamId)
-		{
-			if (id == pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId())
-			{
-				if (g_pGame->GetHUD())
-				{
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(0);
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(1);
-				}
-			}
-		}
-	}
-
 	if (isplayer)
 	{
 		ReconfigureVoiceGroups(id, oldTeam, teamId);

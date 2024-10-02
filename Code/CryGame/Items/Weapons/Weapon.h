@@ -59,27 +59,6 @@ protected:
 
 	typedef std::vector<SListenerInfo>					TEventListenerVector;
 
-	struct SWeaponCrosshairStats
-	{
-		SWeaponCrosshairStats() :
-			fading(false),
-			visible(true),
-			fadefrom(1.0f),
-			fadeto(1.0f),
-			fadetime(0.0f),
-			fadetimer(0.0f),
-			opacity(1.0f)
-		{
-		}
-
-		bool fading;
-		bool visible;
-		float fadefrom;
-		float fadeto;
-		float fadetime;
-		float fadetimer;
-		float opacity;
-	};
 public:
 	CWeapon();
 	virtual ~CWeapon();
@@ -226,11 +205,9 @@ public:
 	virtual void EnableZoomMode(int idx, bool enable);
 	virtual void RestartZoom(bool force = false);
 
-	virtual void SetCrosshairVisibility(bool visible);
-	virtual bool GetCrosshairVisibility() const;
-	virtual void SetCrosshairOpacity(float opacity);
-	virtual float GetCrosshairOpacity() const;
-	virtual void FadeCrosshair(float from, float to, float time);
+	virtual bool GetCrosshairVisibility() const override;
+	virtual float GetCrosshairOpacity() const override;
+
 	virtual void UpdateCrosshair(float frameTime);
 
 	virtual void AccessoriesChanged();
@@ -673,9 +650,6 @@ protected:
 
 
 	int										m_forcedHitMaterial;
-
-	SWeaponCrosshairStats	m_crosshairstats;
-
 
 	float	m_dofValue;
 	float	m_dofSpeed;
