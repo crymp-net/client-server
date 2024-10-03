@@ -94,6 +94,7 @@ public:
 		{
 		case eFE_Initialize:
 			m_actInfo = *pActInfo;  // fall through and enable/disable listener
+			[[fallthrough]];
 		case eFE_Activate:
 			if (IsPortActive(pActInfo, EIP_Enable))
 			{
@@ -274,6 +275,7 @@ public:
 		{
 		case eFE_Initialize:
 			m_actInfo = *pActInfo;  // fall through and enable/disable listener
+			[[fallthrough]];
 		case eFE_Activate:
 			if (IsPortActive(pActInfo, EIP_Enable))
 			{

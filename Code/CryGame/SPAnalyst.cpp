@@ -190,6 +190,7 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			WriteValue("PlayerDeath", int(eGE_Death));
 		}
+		break;
 	case eGE_Disconnected:
 		{
 			WriteValue("GameDisconnected", int(eGE_Disconnected));
@@ -227,6 +228,7 @@ void CSPAnalyst::ProcessPlayerEvent(IEntity* pEntity, const GameplayEvent& event
 	case eGE_Death:
 		if (PlayerAnalysis* pA = GetPlayer(entityId))
 			++pA->deaths;
+		break;
 	default:
 		break;
 	}

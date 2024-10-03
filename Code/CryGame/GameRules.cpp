@@ -2819,23 +2819,17 @@ void CGameRules::ChatLog(EChatMessageType type, EntityId sourceId, EntityId targ
 
 	char tempBuffer[64];
 
-	switch (type)
+	if (type == eChatToTeam && teamId)
 	{
-	case eChatToTeam:
-		if (teamId)
-		{
-			IActor* pClientActor = m_pGameFramework->GetClientActor();
-			if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
-				return;
-			targetName = tempBuffer;
-			sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
-		}
-		else
-		{
-	case eChatToAll:
+		IActor* pClientActor = m_pGameFramework->GetClientActor();
+		if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
+			return;
+		targetName = tempBuffer;
+		sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
+	}
+	else
+	{
 		targetName = "ALL";
-		}
-		break;
 	}
 
 	CryLogAlways("CHAT %s to %s:", sourceName, targetName);

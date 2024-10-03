@@ -6727,7 +6727,7 @@ bool CPlayer::UpdateLadderAnimation(ELadderState eLS, ELadderDirection eLDIR, fl
 	{
 	case eLS_ExitTop:
 		m_pAnimatedCharacter->GetAnimationGraphState()->SetInput("Signal", "exit_ladder_top");
-		//break;
+		[[fallthrough]];
 
 	case eLS_Exit:
 		m_pAnimatedCharacter->GetAnimationGraphState()->SetInput("Action", "idle");
