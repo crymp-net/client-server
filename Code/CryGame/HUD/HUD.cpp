@@ -997,7 +997,7 @@ void CHUD::Serialize(TSerialize ser)
 		BreakHUD(m_iBreakHUD);
 		m_pHUDCrosshair->GetFlashAnim()->Reload(true); // only to make sure damage indicator won't be shown at next weapon switch
 		m_pHUDCrosshair->Reset(); //reset crosshair
-		m_pHUDCrosshair->SetUsability(false); //sometimes the scripts don't update the usability after loading from mounted gun for example
+		m_pHUDCrosshair->SetUsability(0); //sometimes the scripts don't update the usability after loading from mounted gun for example
 
 		m_bMiniMapZooming = false;
 
@@ -4201,11 +4201,6 @@ void CHUD::ActorDeath(IActor* pActor)
 	// for MP and for SP local player
 	// remove any progress bar and close suit menu if it was open
 
-	if (m_pClientActor->IsFpSpectatorTarget())
-	{
-		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
-	}
-
 	if (pActor->IsClient())
 	{
 		ShowProgress(); // hide any leftover progress bar
@@ -4243,6 +4238,10 @@ void CHUD::ActorDeath(IActor* pActor)
 		ShowKillAreaWarning(false, 0);
 
 		m_listBoughtItems.clear();
+	}
+	else if (static_cast<CActor*>(pActor)->IsFpSpectatorTarget())
+	{
+		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 	}
 }
 
@@ -4337,7 +4336,11 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 		{
 			CNanoSuit* pOldSuit = pOldTarget->GetNanoSuit();
 			if (pOldSuit)
+			{
 				pOldSuit->RemoveListener(this);
+			}
+
+			m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 		}
 	}
 	if (newTargetid)
@@ -4350,8 +4353,6 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 			{
 				pNewSuit->AddListener(this);
 				EnergyChanged(pNewSuit->GetSuitEnergy());
-
-				m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 			}
 		}
 	}

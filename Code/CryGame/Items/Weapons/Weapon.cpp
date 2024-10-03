@@ -636,16 +636,6 @@ void CWeapon::FullSerialize(TSerialize ser)
 	}
 	ser.EndGroup();
 
-	ser.BeginGroup("CrossHairStats");
-	ser.Value("CHVisible", m_crosshairstats.visible);
-	ser.Value("CHOpacity", m_crosshairstats.opacity);
-	ser.Value("CHFading", m_crosshairstats.fading);
-	ser.Value("CHFadeFrom", m_crosshairstats.fadefrom);
-	ser.Value("CHFadeTo", m_crosshairstats.fadeto);
-	ser.Value("CHFadeTime", m_crosshairstats.fadetime);
-	ser.Value("CHFadeTimer", m_crosshairstats.fadetimer);
-	ser.EndGroup();
-
 	if (GetOwnerId())
 	{
 		ser.BeginGroup("WeaponStats");
@@ -990,6 +980,7 @@ void CWeapon::UpdateFPView(float frameTime)
 	UpdateWeaponLowering(frameTime);
 
 	UpdateCrosshair(frameTime);
+
 	if (m_fm)
 		m_fm->UpdateFPView(frameTime);
 	if (m_zm)
@@ -1055,7 +1046,7 @@ void CWeapon::Select(bool select)
 	if (select && (IsDestroyed() || (pOwner && pOwner->GetHealth() <= 0)))
 		return;
 
-	bool isClient = pOwner ? pOwner->IsClient() : false;
+	const bool isClient = pOwner ? pOwner->IsClient() : false;
 
 	//If actor is grabbed by player, don't let him select weapon
 	if (select && pOwner && pOwner->GetActorStats() && pOwner->GetActorStats()->isGrabbed)
@@ -1100,7 +1091,6 @@ void CWeapon::Select(bool select)
 	}
 
 	RestorePlayerSprintingStats();
-	FadeCrosshair(0, 1.0f, WEAPON_FADECROSSHAIR_SELECT);
 
 	if (!select)
 		SetNextShotTime(false);
@@ -1707,6 +1697,20 @@ void CWeapon::RestartZoom(bool force)
 }
 
 //------------------------------------------------------------------------
+bool CWeapon::GetCrosshairVisibility() const
+{
+	const bool visible = SAFE_HUD_FUNC_RET(GetCrosshair()->GetVisibility());
+	return visible ? visible : false;
+}
+
+//------------------------------------------------------------------------
+float CWeapon::GetCrosshairOpacity() const
+{
+	const float opacity = SAFE_HUD_FUNC_RET(GetCrosshair()->GetOpacity());
+	return opacity ? opacity : 0.0f;
+}
+
+//------------------------------------------------------------------------
 void CWeapon::MountAt(const Vec3& pos)
 {
 	CItem::MountAt(pos);
@@ -2170,83 +2174,15 @@ CProjectile* CWeapon::SpawnAmmo(IEntityClass* pAmmoType, bool remote)
 }
 
 //------------------------------------------------------------------------
-void CWeapon::SetCrosshairVisibility(bool visible)
-{
-	m_crosshairstats.visible = visible;
-}
-
-//------------------------------------------------------------------------
-bool CWeapon::GetCrosshairVisibility() const
-{
-	return m_crosshairstats.visible;
-}
-
-//------------------------------------------------------------------------
-void CWeapon::SetCrosshairOpacity(float opacity)
-{
-	m_crosshairstats.opacity = opacity;
-}
-
-//------------------------------------------------------------------------
-float CWeapon::GetCrosshairOpacity() const
-{
-	return m_crosshairstats.opacity;
-}
-
-//------------------------------------------------------------------------
-void CWeapon::FadeCrosshair(float from, float to, float time)
-{
-	m_crosshairstats.fading = true;
-	m_crosshairstats.fadefrom = from;
-	m_crosshairstats.fadeto = to;
-	m_crosshairstats.fadetime = MAX(0, time);
-	m_crosshairstats.fadetimer = m_crosshairstats.fadetime;
-
-	SetCrosshairOpacity(from);
-}
-
-//------------------------------------------------------------------------
 void CWeapon::UpdateCrosshair(float frameTime)
 {
-	if (m_crosshairstats.fading)
-	{
-		if (m_crosshairstats.fadetimer > 0.0f)
-		{
-			m_crosshairstats.fadetimer -= frameTime;
-			if (m_crosshairstats.fadetimer < 0.0f)
-				m_crosshairstats.fadetimer = 0.0f;
-
-			float t = (m_crosshairstats.fadetime - m_crosshairstats.fadetimer) / m_crosshairstats.fadetime;
-			float d = (m_crosshairstats.fadeto - m_crosshairstats.fadefrom);
-
-			if (t >= 1.0f)
-				m_crosshairstats.fading = false;
-
-			if (d < 0.0f)
-				t = 1.0f - t;
-
-			if (m_crosshairstats.fadefrom == m_crosshairstats.fadeto)
-				m_crosshairstats.opacity = m_crosshairstats.fadeto;
-			else
-				m_crosshairstats.opacity = fabsf(t * d);
-		}
-		else
-		{
-			m_crosshairstats.opacity = m_crosshairstats.fadeto;
-			m_crosshairstats.fading = false;
-		}
-	}
-
-	auto* pOwner = GetOwnerActor();
+	CActor* pOwner = GetOwnerActor();
 	const bool bUpdateHUD = IsSelected() && pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget());
 
-	if (bUpdateHUD)
-	{
-		SAFE_HUD_FUNC(GetCrosshair()->SetOpacity(m_crosshairstats.opacity));
-	}
-
 	if (m_restartZoom)
+	{
 		RestartZoom();
+	}
 
 	if (bUpdateHUD && !IsDualWieldSlave())
 	{

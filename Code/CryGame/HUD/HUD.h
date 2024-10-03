@@ -428,7 +428,6 @@ public:
 	void FakeDeath(bool revive = false);
 	ILINE bool IsFakeDead() { return (m_fPlayerRespawnTimer)?true:false; }
 	void ShowDataUpload(bool active);
-	void ShowSpectate(bool active);
 	void ShowWeaponsOnGround();
 	void FireModeSwitch(bool grenades = false);
 	ILINE int GetSelectedFiremode() const { return m_curFireMode; }

@@ -188,61 +188,8 @@ int CScriptBind_HUD::SetUsability(IFunctionHandler* pH, int objId, const char* m
 	if (!pHUD)
 		return pH->EndFunction();
 
-	int usable = (gEnv->pEntitySystem->GetEntity(objId)) ? 1 : 0;
-	string textLabel;
-	bool gotMessage = (message && strlen(message) != 0);
-	if (gotMessage)
-		textLabel = message;
-	string param;
-	if (usable == 1)
-	{
-		if (IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(objId))
-		{
-			textLabel = "@use_vehicle";
-			if (IActor* pActor = g_pGame->GetIGameFramework()->GetClientActor())
-			{
-				int pteamId = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-				int vteamId = g_pGame->GetGameRules()->GetTeam(objId);
+	pHUD->GetCrosshair()->HandleUsability(objId, message);
 
-				if (vteamId && vteamId != pteamId)
-				{
-					usable = 2;
-					textLabel = "@use_vehicle_locked";
-				}
-			}
-		}
-		else if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(objId))
-		{
-			CActor* pActor = (CActor*)(gEnv->pGame->GetIGameFramework()->GetClientActor());
-			if (pActor)
-			{
-				if (!gotMessage)
-					return pH->EndFunction();
-				//Offhand controls pick up messages
-				/*if(!pActor->CheckInventoryRestrictions(pItem->GetEntity()->GetClass()->GetName()))
-				{
-					usable = 2;
-					textLabel = "@inventory_full";
-				}
-				else
-				{
-					if(!gotMessage)
-						return pH->EndFunction();
-				}*/
-			}
-		}
-		else
-		{
-			if (gEnv->bMultiplayer && !gotMessage)
-				usable = 0;
-			else if (!gotMessage)
-				textLabel = "@pick_object";
-		}
-	}
-	else
-		textLabel = ""; //turn off text
-
-	pHUD->GetCrosshair()->SetUsability(usable, textLabel.c_str(), (param.empty()) ? NULL : param.c_str());
 	return pH->EndFunction();
 }
 

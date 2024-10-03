@@ -691,7 +691,7 @@ void COffHand::UpdateFPView(float frameTime)
 		if (m_usable)
 		{
 			if (g_pGame->GetHUD())
-				g_pGame->GetHUD()->GetCrosshair()->SetUsability(false, "");
+				g_pGame->GetHUD()->GetCrosshair()->SetUsability(0, "");
 			m_usable = false;
 		}
 
@@ -769,7 +769,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
 						{
 							if (pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
-								pHUDCrosshair->SetUsability(true, "@game_take_ammo_from", itemName.c_str());
+								pHUDCrosshair->SetUsability(1, "@game_take_ammo_from", itemName.c_str());
 							else
 								pHUDCrosshair->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
 						}
@@ -781,7 +781,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 								IItem* pExchangedItem = GetExchangeItem(pPlayer);
 								if (pExchangedItem)
 								{
-									pHUDCrosshair->SetUsability(true, "@game_exchange_weapon",
+									pHUDCrosshair->SetUsability(1, "@game_exchange_weapon",
 										pExchangedItem->GetEntity()->GetClass()->GetName(), itemName.c_str());
 								}
 								else
@@ -789,7 +789,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 							}
 							else
 							{
-								pHUDCrosshair->SetUsability(true, "@pick_weapon", itemName.c_str());
+								pHUDCrosshair->SetUsability(1, "@pick_weapon", itemName.c_str());
 							}
 						}
 					}
@@ -908,7 +908,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 		else if (m_usable)
 		{
 			if (g_pGame->GetHUD())
-				g_pGame->GetHUD()->GetCrosshair()->SetUsability(false, "");
+				g_pGame->GetHUD()->GetCrosshair()->SetUsability(0, "");
 			m_usable = false;
 		}
 	}

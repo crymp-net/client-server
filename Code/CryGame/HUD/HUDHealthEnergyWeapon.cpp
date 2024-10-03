@@ -105,10 +105,12 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 	{
 		if (!pItem)
 		{
-			auto* Target = GetSpectatorTarget();
-			CActor* pActor = static_cast<CActor*>(Target ? Target : m_pClientActor);
+			IActor* pTarget = GetSpectatorTarget();
+			CActor* pActor = static_cast<CActor*>(pTarget ? pTarget : m_pClientActor);
 			if (pActor)
+			{
 				pItem = pActor->GetCurrentItem(true);
+			}
 			if (!pItem)
 				return;
 		}
@@ -156,11 +158,13 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 		if (m_animProgressLocking.GetVisible())
 			ShowProgress(-1);
 	}
-
+	
 	if (pItem->GetIWeapon() && pItem->GetIWeapon()->IsZoomed() && !g_pGameCVars->g_enableAlternateIronSight)
 	{
 		if (m_pHUDCrosshair->GetCrosshairType() != 0)
+		{
 			m_pHUDCrosshair->SetCrosshair(0);
+		}
 	}
 	else if (m_pHUDCrosshair->GetCrosshairType() == 0 && (g_pGameCVars->g_difficultyLevel < 4 || gEnv->bMultiplayer))
 	{

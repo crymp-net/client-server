@@ -907,16 +907,10 @@ IMPLEMENT_RMI(CGameRules, ClSetTeam)
 
 	if (IActor* pClient = m_pGameFramework->GetClientActor())
 	{
-		if (GetTeam(pClient->GetEntityId()) == params.teamId)
+		const EntityId lookAtEntId = pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId();
+		if (m_lastUsabilityEntityId = lookAtEntId)
 		{
-			if (params.entityId == pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId())
-			{
-				if (g_pGame->GetHUD())
-				{
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(0);
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(1);
-				}
-			}
+			SAFE_HUD_FUNC(GetCrosshair()->OnLookatEntityChangeTeam(params.entityId));
 		}
 	}
 
