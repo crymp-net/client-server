@@ -68,6 +68,7 @@ static void BroadcastChangeSafeMode(ICVar*)
 	}
 }
 
+/*
 static void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
 {
 	g_pGameCVars->goc_enable = 0;
@@ -100,6 +101,7 @@ static void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
 		pPlayer->ToggleThirdPerson();
 	}
 }
+*/
 
 SCVars::SCVars()
 {

@@ -144,7 +144,7 @@ void ServerPAK::ResetSubSystems()
 	pClassRegistry->IteratorMoveFirst();
 	IEntityClass* pEntityClass = nullptr;
 	int counter = 0;
-	while (pEntityClass = pClassRegistry->IteratorNext())
+	while ((pEntityClass = pClassRegistry->IteratorNext()) != nullptr)
 	{
 		const char* file = pEntityClass->GetScriptFile();
 		if (strlen(file) > 0)

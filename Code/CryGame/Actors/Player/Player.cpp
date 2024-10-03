@@ -223,10 +223,9 @@ CPlayer::CPlayer()
 
 CPlayer::~CPlayer()
 {
-	if (m_pDebugHistoryManager != NULL)
+	if (m_pDebugHistoryManager)
 	{
 		m_pDebugHistoryManager->Release();
-		delete m_pDebugHistoryManager;
 	}
 
 	StopLoopingSounds();
@@ -321,13 +320,13 @@ void CPlayer::InitInterference()
 	IEntityClassRegistry* pRegistry = gEnv->pEntitySystem->GetClassRegistry();
 	IEntityClass* pClass = 0;
 
-	if (pClass = pRegistry->FindClass("Trooper"))
+	if ((pClass = pRegistry->FindClass("Trooper")) != nullptr)
 		m_interferenceParams.insert(std::make_pair(pClass, SAlienInterferenceParams(5.f)));
 
-	if (pClass = pRegistry->FindClass("Scout"))
+	if ((pClass = pRegistry->FindClass("Scout")) != nullptr)
 		m_interferenceParams.insert(std::make_pair(pClass, SAlienInterferenceParams(20.f)));
 
-	if (pClass = pRegistry->FindClass("Hunter"))
+	if ((pClass = pRegistry->FindClass("Hunter")) != nullptr)
 		m_interferenceParams.insert(std::make_pair(pClass, SAlienInterferenceParams(40.f)));
 }
 
@@ -448,8 +447,8 @@ void CPlayer::ProcessEvent(SEntityEvent& event)
 
 	if (event.event == ENTITY_EVENT_PRE_SERIALIZE)
 	{
-		SEntityEvent event(ENTITY_EVENT_RESET);
-		ProcessEvent(event);
+		SEntityEvent newEvent(ENTITY_EVENT_RESET);
+		ProcessEvent(newEvent);
 	}
 }
 
@@ -6358,7 +6357,8 @@ void CPlayer::PlaySound(EPlayerSounds sound, bool play, bool param /*= false*/, 
 		ISound* pSound = nullptr;
 		if (repeating && m_sounds[sound])
 		{
-			if (pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]))
+			pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
+			if (pSound)
 			{
 				if (pSound->IsPlaying())
 				{
@@ -6431,7 +6431,7 @@ bool CPlayer::IsLadderUsable()
 	}
 
 	//Is it a ladder?
-	if (pPhysicalEntity && pRay->surface_idx == CPlayer::s_ladderMaterial)
+	if (pPhysicalEntity && static_cast<unsigned int>(pRay->surface_idx) == CPlayer::s_ladderMaterial)
 	{
 		IStatObj* staticLadder = NULL;
 		Matrix34 worldTM;

@@ -2298,12 +2298,12 @@ int COffHand::CheckItemsInProximity(Vec3 pos, Vec3 dir, bool getEntityInfo)
 		AABB bbox;
 		pEntity->GetWorldBounds(bbox);
 		Vec3 itemPos = bbox.GetCenter();
-		Vec3 dir = (pos - itemPos);
+		Vec3 newDir = (pos - itemPos);
 
 		IPhysicalEntity* phys = pEntity->GetPhysics();
 
 		ray_hit hit;
-		if (!gEnv->pPhysicalWorld->RayWorldIntersection(itemPos, dir, ent_static | ent_rigid | ent_sleeping_rigid,
+		if (!gEnv->pPhysicalWorld->RayWorldIntersection(itemPos, newDir, ent_static | ent_rigid | ent_sleeping_rigid,
 			rwi_stop_at_pierceable | rwi_ignore_back_faces, &hit, 1, phys ? &phys : NULL, phys ? 1 : 0))
 		{
 			//If nothing in between...
@@ -3223,17 +3223,26 @@ void COffHand::PlaySound(EOffHandSounds sound, bool play)
 	{
 		ISound* pSound = NULL;
 		if (repeating && m_sounds[sound])
-			if (pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]))
-				if (pSound->IsPlaying())
-					return;
+		{
+			pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
+			if (pSound && pSound->IsPlaying())
+			{
+				return;
+			}
+		}
 
 		if (!pSound)
+		{
 			pSound = gEnv->pSoundSystem->CreateSound(soundName, 0);
+		}
+
 		if (pSound)
 		{
 			pSound->SetSemantic(eSoundSemantic_Player_Foley);
 			if (repeating)
+			{
 				m_sounds[sound] = pSound->GetId();
+			}
 			pSound->Play();
 		}
 	}
@@ -3241,7 +3250,9 @@ void COffHand::PlaySound(EOffHandSounds sound, bool play)
 	{
 		ISound* pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
 		if (pSound)
+		{
 			pSound->Stop();
+		}
 		m_sounds[sound] = 0;
 	}
 
@@ -3343,10 +3354,10 @@ int COffHand::CanExchangeWeapons(IItem* pItem, IItem** pExchangeItem)
 	if (!pPlayer->CheckInventoryRestrictions(pItem->GetEntity()->GetClass()->GetName()))
 	{
 		//Can not carry more heavy/medium weapons
-		IItem* pItem = GetExchangeItem(pPlayer);
-		if (pItem)
+		IItem* pNewItem = GetExchangeItem(pPlayer);
+		if (pNewItem)
 		{
-			*pExchangeItem = pItem;
+			*pExchangeItem = pNewItem;
 			//can replace medium or heavy weapon
 			return ITEM_CAN_EXCHANGE;
 		}

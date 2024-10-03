@@ -3144,7 +3144,8 @@ bool CActor::PickUpItem(EntityId itemId, bool sound)
 			}
 		}
 
-		m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemPickedUp, 0, 0, (void*)pItem->GetEntityId()));
+		void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(pItem->GetEntityId()));
+		m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemPickedUp, 0, 0, extra));
 	}
 	else
 	{
@@ -3192,7 +3193,10 @@ bool CActor::DropItem(EntityId itemId, float impulseScale, bool selectNext, bool
 			pItem->Drop(impulseScale, selectNext, bydeath);
 
 			if (!bydeath)
-				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, (void*)itemId));
+			{
+				void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(itemId));
+				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, extra));
+			}
 		}
 		else
 		{
@@ -3225,7 +3229,8 @@ void CActor::DropAttachedItems()
 			if (pItemBack)
 			{
 				pItemBack->Drop(1.0f, false, true);
-				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, (void*)pItemBack->GetEntityId()));
+				void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(pItemBack->GetEntityId()));
+				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, extra));
 			}
 
 			it++;

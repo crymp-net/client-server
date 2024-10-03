@@ -1111,9 +1111,8 @@ void CWeapon::Drop(float impulseScale, bool selectNext, bool byDeath)
 	CActor* pOwner = GetOwnerActor();
 	if (pOwner && !pOwner->IsPlayer())
 	{
-		for (TFireModeVector::iterator it = m_firemodes.begin(); it != m_firemodes.end(); ++it)
+		for (IFireMode* fm : m_firemodes)
 		{
-			IFireMode* fm = *it;
 			if (!fm)
 				continue;
 
@@ -2000,7 +1999,10 @@ bool CWeapon::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			m_fm->Activate(true);
 
 			if (IsServer() && GetOwnerId())
-				m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponFireModeChanged, m_fm->GetName(), profile, (void*)GetEntityId()));
+			{
+				void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+				m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponFireModeChanged, m_fm->GetName(), profile, extra));
+			}
 		}
 
 		return true;
@@ -2048,7 +2050,7 @@ int CWeapon::GetNextFireMode(int currMode) const
 	int t = currMode;
 	do {
 		t++;
-		if (t == m_firemodes.size())
+		if (static_cast<size_t>(t) == m_firemodes.size())
 			t = 0;
 		if (IFireMode* pFM = GetFireMode(t))
 			if (pFM->IsEnabled())
@@ -2134,7 +2136,7 @@ void CWeapon::ChangeZoomMode()
 	int t = m_zmId;
 	do {
 		t++;
-		if (t == m_zoommodes.size())
+		if (static_cast<size_t>(t) == m_zoommodes.size())
 			t = 0;
 		if (GetZoomMode(t)->IsEnabled())
 			SetCurrentZoomMode(t);
@@ -2517,8 +2519,6 @@ bool CWeapon::PredictProjectileHit(IPhysicalEntity* pShooter, const Vec3& pos, c
 
 		if (pTrajectory && n < maxSize)
 		{
-			pe_status_pos	statusPos;
-			pProjectilePhysEntity->GetStatus(&statusPos);
 			pTrajectory[n++] = statusPos.pos;
 		}
 	}

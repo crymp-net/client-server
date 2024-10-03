@@ -18,8 +18,8 @@
 // The return should also be between 0 and 1.
 struct IBlendType
 {
+	virtual ~IBlendType() = default;
 	virtual float Blend(float progress) = 0;
-	virtual void Release() { delete this; };
 };
 
 // Standard linear blend
@@ -28,7 +28,6 @@ class CLinearBlend : public IBlendType
 public:
 	CLinearBlend(float slope) { m_slope = slope; };
 	CLinearBlend() { m_slope = 1.0f; };
-	virtual ~CLinearBlend() {};
 
 	virtual float Blend(float progress) {
 		return (m_slope * progress);
@@ -42,7 +41,6 @@ class CWaveBlend : public IBlendType
 {
 public:
 	CWaveBlend() {};
-	virtual ~CWaveBlend() {};
 	virtual float Blend(float progress) {
 		return ((cos((progress * g_PI) - g_PI) + 1.0f)/2.0f);
 	}
@@ -52,10 +50,9 @@ public:
 // BlendedEffect interface, derive from this.
 struct IBlendedEffect 
 {
-public:
+	virtual ~IBlendedEffect() = default;
 	virtual void Init() {}; // called when the effect actually starts rather than when it is created.
 	virtual void Update(float point) = 0; // point is from 0 to 1 and is the "amount" of effect to use.
-	virtual void Release() { delete this; };
 };
 
 // FOV effect
@@ -63,7 +60,6 @@ class CFOVEffect : public IBlendedEffect
 {
 public:
 	CFOVEffect(EntityId ownerID, float goalFOV);
-	virtual ~CFOVEffect() {};
 	virtual void Init();
 	virtual void Update(float point);
 private:
@@ -78,7 +74,6 @@ class CPostProcessEffect : public IBlendedEffect
 {
 public:
 	CPostProcessEffect(EntityId ownerID, string paramName, float goalVal);
-	virtual ~CPostProcessEffect() {};
 	virtual void Init();
 	virtual void Update(float point);
 private:
@@ -112,10 +107,10 @@ struct SBlendJobNode
 	~SBlendJobNode()
 	{
 		if (blendType)
-			blendType->Release();
+			delete this->blendType;
 
 		if (myEffect)
-			myEffect->Release();
+			delete this->myEffect;
 	}
 	void Update(float frameTime)
 	{

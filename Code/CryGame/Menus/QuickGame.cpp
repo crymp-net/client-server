@@ -200,7 +200,8 @@ struct CQuickGame::SQGServerList : public IServerListener
 		{
 			for (int i = 0; i < m_favorites.size(); ++i)
 			{
-				if (info->m_publicIP == m_favorites[i].ip && info->m_hostPort == m_favorites[i].port)
+				if (static_cast<int>(info->m_publicIP) == m_favorites[i].ip
+				 && static_cast<int>(info->m_hostPort) == m_favorites[i].port)
 				{
 					srv.fav = true;
 					break;

@@ -1433,9 +1433,8 @@ inline CryStackStringT<T,S>& CryStackStringT<T,S>::insert( size_type nIndex,cons
 		{
 			value_type* pOldData = m_str;
 			size_type nOldLength = m_nLength;
-			const_str pstr = m_str;
 			_AllocData(nNewLength);
-			CharTraits<T>::_copy( m_str, pstr,(nOldLength+1) );
+			CharTraits<T>::_copy( m_str, pOldData,(nOldLength+1) );
 			_FreeData(pOldData);
 		}
 
@@ -1532,7 +1531,6 @@ inline CryStackStringT<T,S>& CryStackStringT<T,S>::replace( const_str strOld,con
 		if (capacity() < nNewLength)
 		{
 			value_type* pOldData = m_str;
-			size_type nOldLength = m_nLength;
 			const_str pstr = m_str;
 			_AllocData(nNewLength);
 			CharTraits<T>::_copy( m_str, pstr, nOldLength );

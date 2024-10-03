@@ -41,7 +41,7 @@ private:
   
   typedef std::pair<string, float> TFmPair;
   std::vector<TFmPair> m_fireModes;    
-  int m_fireMode;
+  size_t m_fireMode;
 };
 
 #endif // __DebugGun_H__

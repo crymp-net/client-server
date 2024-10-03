@@ -175,7 +175,7 @@ void CItemScheduler::KillTimer(unsigned int timerId)
 	std::erase_if(m_timers,
 		[timerId](auto& timer)
 		{
-			if (timer.id == timerId)
+			if (static_cast<unsigned int>(timer.id) == timerId)
 			{
 				timer.action->destroy();
 				return true;

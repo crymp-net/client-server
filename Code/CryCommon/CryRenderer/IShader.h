@@ -259,7 +259,7 @@ struct SShaderParam
         break;
       }
     }
-    if (i == Params->size())
+    if (i == static_cast<unsigned int>(Params->size()))
       return false;
     return true;
   }

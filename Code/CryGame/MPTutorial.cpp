@@ -619,7 +619,7 @@ void CMPTutorial::CreateTextChunks(const wstring& localizedString)
 	size_t startPos = 0;
 	size_t pos = localizedString.find(token, 0);
 	m_currentEvent.m_numChunks = 0;
-	size_t MAX_CHUNKS = SCurrentlyPlayingEvent::eMAX_TEXT_CHUNKS;
+	const int MAX_CHUNKS = SCurrentlyPlayingEvent::eMAX_TEXT_CHUNKS;
 
 	while (pos != wstring::npos)
 	{

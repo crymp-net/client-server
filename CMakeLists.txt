@@ -378,7 +378,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CryCore/CrySizer.h
 	Code/CryCommon/CryCore/CryString.h
 	Code/CryCommon/CryCore/Endian.h
-	Code/CryCommon/CryCore/MSVCspecific.h
 	Code/CryCommon/CryCore/MiniQueue.h
 	Code/CryCommon/CryCore/MultiThread.h
 	Code/CryCommon/CryCore/PoolAllocator.h
@@ -1073,7 +1072,21 @@ endif()
 
 target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
 
-target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W3)
+target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W4
+	/wd4018  # Disable 'token' : signed/unsigned mismatch
+	/wd4100  # Disable 'identifier' : unreferenced formal parameter
+	/wd4127  # Disable conditional expression is constant
+	/wd4189  # Disable 'identifier' : local variable is initialized but not referenced
+	/wd4201  # Disable nonstandard extension used : nameless struct/union
+	/wd4244  # Disable 'conversion' : conversion from 'type1' to 'type2', possible loss of data
+	/wd4245  # Disable 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
+	/wd4267  # Disable 'var' : conversion from 'size_t' to 'type', possible loss of data
+	/wd4305  # Disable 'conversion': truncation from 'type1' to 'type2'
+	/wd4456  # Disable declaration of 'identifier' hides previous local declaration
+	/wd4458  # Disable declaration of 'identifier' hides class member
+	/wd4702  # Disable unreachable code
+	/wd5054  # Disable operator 'operator-name': deprecated between enumerations of different types
+)
 
 target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
 target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE

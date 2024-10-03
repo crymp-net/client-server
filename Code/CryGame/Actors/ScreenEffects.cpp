@@ -68,9 +68,9 @@ void CScreenEffects::StartBlend(IBlendedEffect *effect, IBlendType *blendType, f
 	if (!m_enableBlends || (found && !m_enabledGroups[blendGroup]))
 	{
 		if (effect)
-			effect->Release();
+			delete effect;
 		if (blendType)
-			blendType->Release();
+			delete blendType;
 		return;
 	}
 

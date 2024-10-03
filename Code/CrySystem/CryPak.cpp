@@ -90,6 +90,16 @@ public:
 	}
 };
 
+static FILE* ToDirtyHandle(const SlotVectorHandle& handle)
+{
+	return reinterpret_cast<FILE*>(static_cast<std::uintptr_t>(handle.GetValue()));
+}
+
+static SlotVectorHandle FromDirtyHandle(FILE* handle)
+{
+	return SlotVectorHandle(static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(handle)));
+}
+
 CryPak::CryPak()
 {
 	m_resourceList_EngineStartup = ResourceList::Create();
@@ -431,7 +441,7 @@ FILE* CryPak::FOpen(const char* name, const char* mode, unsigned int flags)
 		return nullptr;
 	}
 
-	FILE* handle = reinterpret_cast<FILE*>(m_files.SlotToHandle(file.get()).GetValue());
+	FILE* handle = ToDirtyHandle(m_files.SlotToHandle(file.get()));
 
 	if (file->pakHandle)
 	{
@@ -461,7 +471,7 @@ size_t CryPak::FReadRaw(void* data, size_t elementSize, size_t elementCount, FIL
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -475,7 +485,7 @@ size_t CryPak::FReadRawAll(void* data, size_t fileSize, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -499,7 +509,7 @@ void* CryPak::FGetCachedFileData(FILE* handle, size_t& fileSize)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -513,7 +523,7 @@ size_t CryPak::FWrite(const void* data, size_t elementSize, size_t elementCount,
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -527,7 +537,7 @@ int CryPak::FPrintf(FILE* handle, const char* format, ...)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -546,7 +556,7 @@ char* CryPak::FGets(char* buffer, int bufferSize, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -560,7 +570,7 @@ int CryPak::Getc(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -574,7 +584,7 @@ size_t CryPak::FGetSize(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -588,7 +598,7 @@ int CryPak::Ungetc(int ch, FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -602,7 +612,7 @@ bool CryPak::IsInPak(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -656,7 +666,7 @@ size_t CryPak::FSeek(FILE* handle, long seek, int mode)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -670,7 +680,7 @@ long CryPak::FTell(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -691,7 +701,7 @@ int CryPak::FClose(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -709,7 +719,7 @@ int CryPak::FEof(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -723,7 +733,7 @@ int CryPak::FError(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -742,7 +752,7 @@ int CryPak::FFlush(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -836,7 +846,7 @@ ICryPak::FileTime CryPak::GetModificationTime(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);
@@ -907,7 +917,7 @@ const char* CryPak::GetFileArchivePath(FILE* handle)
 {
 	std::lock_guard lock(m_mutex);
 
-	FileSlot* file = m_files.HandleToSlot(SlotVectorHandle(reinterpret_cast<std::uint32_t>(handle)));
+	FileSlot* file = m_files.HandleToSlot(FromDirtyHandle(handle));
 	if (!file)
 	{
 		CryLogErrorAlways("%s(0x%p): Invalid handle!", __FUNCTION__, handle);

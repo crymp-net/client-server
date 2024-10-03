@@ -12,6 +12,8 @@
 #ifndef _PARTICLEPARAMS_H_
 #define _PARTICLEPARAMS_H_ 1
 
+#include <cstdint>
+
 #include "ISplines.h"
 #include "CryCommon/CryMath/Cry_Color.h"
 
@@ -85,7 +87,7 @@ public:
 	}
 	CChaosKey Jumble(void const* ptr) const
 	{
-		return CChaosKey( Jumble(m_Key ^ (uint32)ptr) );
+		return CChaosKey( Jumble(m_Key ^ static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(ptr))) );
 	}
 
 	// Scale input range.

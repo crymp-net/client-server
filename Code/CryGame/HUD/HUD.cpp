@@ -1327,14 +1327,11 @@ void CHUD::ShowInventoryOverview(const char* curCategory, const char* curItem, b
 		COffHand* pOffHand = static_cast<COffHand*>(m_pClientActor->GetWeaponByClass(CItem::sOffHandClass));
 		if (pOffHand)
 		{
-			std::vector<string> grenades;
-			pOffHand->GetAvailableGrenades(grenades);
-			std::vector<string>::const_iterator it = grenades.begin();
-			std::vector<string>::const_iterator end = grenades.end();
-			int count = sizeof(grenades);
-			for (; it != end; ++it)
+			std::vector<string> grenadeNames;
+			pOffHand->GetAvailableGrenades(grenadeNames);
+			for (const auto& grenadeName : grenadeNames)
 			{
-				SFlashVarValue args[2] = { it->c_str(), (*it) == curItem };
+				SFlashVarValue args[2] = { grenadeName.c_str(), grenadeName == curItem };
 				m_animWeaponSelection.Invoke("addLog", args, 2);
 			}
 		}
@@ -4362,7 +4359,7 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 
 void CHUD::UpdateObjective(CHUDMissionObjective* pObjective)
 {
-	const char* status;
+	const char* status = "";
 	int colorStatus = 0;
 	bool active = false;
 

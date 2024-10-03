@@ -402,7 +402,7 @@ int ScriptBind_System::GetEntities(IFunctionHandler *pH)
 	IEntityItPtr pIIt = gEnv->pEntitySystem->GetEntityIterator();
 	IEntity *pEntity = nullptr;
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if (radius)
 		{
@@ -440,7 +440,7 @@ int ScriptBind_System::GetEntitiesByClass(IFunctionHandler *pH, const char *enti
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if (pEntity->GetClass() == pClass)
 		{
@@ -463,7 +463,7 @@ int ScriptBind_System::GetEntitiesInSphere(IFunctionHandler *pH, Vec3 center, fl
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if ((pEntity->GetWorldPos() - center).len2() <= radius  *radius)
 		{
@@ -495,7 +495,7 @@ int ScriptBind_System::GetEntitiesInSphereByClass(IFunctionHandler *pH, Vec3 cen
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if ((pEntity->GetClass() == pClass) && ((pEntity->GetWorldPos() - center).len2() <= radius  *radius))
 		{
@@ -507,21 +507,6 @@ int ScriptBind_System::GetEntitiesInSphereByClass(IFunctionHandler *pH, Vec3 cen
 	}
 
 	return pH->EndFunction(*pObj);
-}
-
-static bool Filter(struct __finddata64_t& fd, int nScanMode)
-{
-	if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-		return false;
-
-	switch (nScanMode)
-	{
-		case SCANDIR_ALL:     return true;
-		case SCANDIR_SUBDIRS: return 0 != (fd.attrib & _A_SUBDIR);
-		case SCANDIR_FILES:   return 0 == (fd.attrib & _A_SUBDIR);
-	}
-
-	return false;
 }
 
 static bool Filter(const CryFindEntry& entry, int scanMode)
@@ -1715,7 +1700,7 @@ int ScriptBind_System::GetActors(IFunctionHandler *pH)
 	IActor* pActor = nullptr;
 	int k = 1;
 
-	while (pActor = pActorIterator->Next())
+	while ((pActor = pActorIterator->Next()) != nullptr)
 	{
 		pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
 	}
@@ -1735,7 +1720,7 @@ int ScriptBind_System::GetActorsByClass(IFunctionHandler* pH, const char *entity
 	IActor* pActor = nullptr;
 	int k = 1;
 
-	while (pActor = pActorIterator->Next())
+	while ((pActor = pActorIterator->Next()) != nullptr)
 	{
 		if (pActor->GetEntity()->GetClass() == pClass)
 		{
@@ -1753,7 +1738,7 @@ int ScriptBind_System::GetPlayers(IFunctionHandler* pH)
 	IActor* pActor = nullptr;
 	int k = 1;
 
-	while (pActor = pActorIterator->Next())
+	while ((pActor = pActorIterator->Next()) != nullptr)
 	{
 		if (!pActor->IsPlayer())
 		{
@@ -1772,7 +1757,7 @@ int ScriptBind_System::GetVehicles(IFunctionHandler * pH)
 	IVehicle* pVehicle = nullptr;
 	int k = 1;
 
-	while (pVehicle = pVehicleIterator->Next())
+	while ((pVehicle = pVehicleIterator->Next()) != nullptr)
 	{
 		if (pVehicle->GetEntity()->GetScriptTable())
 		{
@@ -1796,7 +1781,7 @@ int ScriptBind_System::GetVehiclesByClass(IFunctionHandler* pH, const char* enti
 	IVehicle* pVehicle = nullptr;
 	int k = 1;
 
-	while (pVehicle = pVehicleIterator->Next())
+	while ((pVehicle = pVehicleIterator->Next()) != nullptr)
 	{
 		if (pVehicle->GetEntity()->GetClass() == pClass)
 		{
@@ -1838,7 +1823,7 @@ int ScriptBind_System::GetItemClasses(IFunctionHandler * pH)
 	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
 	IEntityClass* pClass;
 
-	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
+	for (pEntityRegistry->IteratorMoveFirst(); (pClass = pEntityRegistry->IteratorNext()) != nullptr;)
 	{
 		if (pItemSystem->IsItemClass(pClass->GetName()))
 		{
@@ -1859,7 +1844,7 @@ int ScriptBind_System::GetVehicleClasses(IFunctionHandler * pH)
 	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
 	IEntityClass* pClass;
 
-	for (pEntityRegistry->IteratorMoveFirst(); pClass = pEntityRegistry->IteratorNext();)
+	for (pEntityRegistry->IteratorMoveFirst(); (pClass = pEntityRegistry->IteratorNext()) != nullptr;)
 	{
 		if (pVehicleSystem->IsVehicleClass(pClass->GetName())) {
 			pObj->SetAt(k++, pClass->GetName());
