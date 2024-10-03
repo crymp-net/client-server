@@ -225,10 +225,7 @@ void CItem::UpdateMounted(float frameTime)
 
 	//adjust the orientation of the gun based on the aim-direction
 
-	if (m_stats.fp)
-	{
-		UpdateFPCharacter(frameTime);
-	}
+	UpdateFPCharacter(frameTime); //CryMP: needs to be updated in ThirdPerson as well
 
 	if (ICharacterInstance* pCharInstance = pActor->GetEntity()->GetCharacter(0))
 	{
