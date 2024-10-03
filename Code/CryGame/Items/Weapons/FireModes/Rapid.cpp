@@ -313,6 +313,9 @@ void CRapid::OnEnterFirstPerson()
 
 	if (m_speed >= 0.00001f && m_soundId != INVALID_SOUNDID)
 	{
+		SetupEmitters(false);
+		SetupEmitters(true);
+
 		m_pWeapon->StopSound(m_soundId);
 
 		//CryMP: We might not be first person untill next frame, so need to force it with flag
@@ -328,6 +331,9 @@ void CRapid::OnEnterThirdPerson()
 
 	if (m_speed >= 0.00001f && m_soundId != INVALID_SOUNDID)
 	{
+		SetupEmitters(false);
+		SetupEmitters(true);
+
 		m_pWeapon->StopSound(m_soundId);
 
 		m_soundId = m_pWeapon->PlayAction(m_rapidactions.rapid_fire, 0, true, 
