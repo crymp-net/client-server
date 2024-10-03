@@ -14,7 +14,8 @@ struct IInventory;
 class Vehicle : public IVehicle, public IGameObjectProfileManager
 {
 protected:
-	void* m_reserved1[13] = {};
+	Vehicle* m_self = nullptr;                                                              // 0x28, 0x14
+	void* m_reserved1[12] = {};
 	unsigned int m_reserved2[8] = {};
 	IVehicleSystem* m_pVehicleSystem = nullptr;                                             // 0xb0, 0x68
 	IInventory* m_pInventory = nullptr;                                                     // 0xb8, 0x6c

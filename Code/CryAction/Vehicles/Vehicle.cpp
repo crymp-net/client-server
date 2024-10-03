@@ -72,6 +72,8 @@ Vehicle::Vehicle()
 #endif
 
 	(this->*reinterpret_cast<void(IVehicle::*&)()>(ctor))();
+
+	m_self = this;
 }
 
 Vehicle::~Vehicle()

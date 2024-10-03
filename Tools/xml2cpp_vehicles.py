@@ -521,21 +521,9 @@ class VehicleConverter:
 			self._process_actions(actions)
 			self._write('')
 
-		has_damages = False
 		for damages in self.xml_root.findall('./Damages'):
-			has_damages = True
 			self._write('// Damages')
 			self._process_damages(damages)
-			self._write('')
-
-		if not has_damages:
-			# emit empty damages to make sure Vehicle::InitDamages is always called
-			# we must call Vehicle::InitDamages always to avoid a null pointer crash in the original code
-			self._write('// Damages')
-			self._begin_block()
-			self._write('SmartScriptTable table(gEnv->pScriptSystem);')
-			self._write('this->InitDamages(table);')
-			self._end_block()
 			self._write('')
 
 		# TODO: dump animated parts when v_debugdraw cvar is set to 3
