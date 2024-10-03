@@ -1653,12 +1653,6 @@ bool Alien_warrior::Init(IGameObject* pGameObject)
 		this->InitActions(table);
 	}
 
-	// Damages
-	{
-		SmartScriptTable table(gEnv->pScriptSystem);
-		this->InitDamages(table);
-	}
-
 	this->InitMaxDamage();
 	this->AttachScriptBindToSeats();
 
