@@ -2205,7 +2205,7 @@ void CSingle::SetupEmitters(bool attach)
 {
 	if (attach)
 	{
-		int id = m_pWeapon->GetStats().fp ? 0 : 1;
+		const int id = m_pWeapon->GetStats().fp ? 0 : 1;
 		Vec3 offset(ZERO);
 
 		if (m_muzzleflash.helper[id].empty())
@@ -2217,15 +2217,10 @@ void CSingle::SetupEmitters(bool attach)
 				offset = m_pWeapon->GetEntity()->GetWorldTM().GetInvertedFast() * offset;
 		}
 
-		if (!m_muzzleflash.effect[0].empty())
+		if (!m_muzzleflash.effect[id].empty())
 		{
-			m_mfIds[m_barrelId].mfId[0] = m_pWeapon->AttachEffect(CItem::eIGS_FirstPerson, -1, true, m_muzzleflash.effect[0].c_str(),
-				m_muzzleflash.helper[0].c_str(), offset, Vec3Constants<float>::fVec3_OneY, 1.0f, false);
-		}
-		if (!m_muzzleflash.effect[1].empty())
-		{
-			m_mfIds[m_barrelId].mfId[1] = m_pWeapon->AttachEffect(CItem::eIGS_ThirdPerson, -1, true, m_muzzleflash.effect[1].c_str(),
-				m_muzzleflash.helper[1].c_str(), offset, Vec3Constants<float>::fVec3_OneY, 1.0f, false);
+			m_mfIds[m_barrelId].mfId[id] = m_pWeapon->AttachEffect(id, -1, true, m_muzzleflash.effect[id].c_str(),
+				m_muzzleflash.helper[id].c_str(), offset, Vec3Constants<float>::fVec3_OneY, 1.0f, false);
 		}
 	}
 	else

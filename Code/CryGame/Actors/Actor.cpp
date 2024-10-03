@@ -830,7 +830,20 @@ void CActor::SetActorModel()
 
 		m_currFileModel = m_fileModel;
 
-		GetEntity()->LoadCharacter(EntitySlot::CHARACTER, m_fileModel.c_str());
+		ICharacterInstance *pPreviousCharacter = GetEntity()->GetCharacter(EntitySlot::CHARACTER);
+		const char* previousModel = pPreviousCharacter ? pPreviousCharacter->GetFilePath() : "";
+
+		const int loaded = GetEntity()->LoadCharacter(EntitySlot::CHARACTER, m_fileModel.c_str());
+		if (loaded == -1)
+		{
+			CryLogWarningAlways("Failed to load character model '%s', reverting to '%s'", 
+				m_fileModel.c_str(), previousModel);
+
+			GetEntity()->LoadCharacter(EntitySlot::CHARACTER, previousModel);
+
+			m_currFileModel = previousModel;
+			return;
+		}
 
 		// Initialize animation events and IK limbs
 		//InitAnimationEvents(); OLD CODE, NOT NEEEDED?
