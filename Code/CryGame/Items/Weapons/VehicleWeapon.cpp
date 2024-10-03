@@ -165,6 +165,26 @@ void CVehicleWeapon::Update(SEntityUpdateContext& ctx, int update)
 }
 
 //------------------------------------------------------------------------
+void CVehicleWeapon::OnEnterFirstPerson()
+{
+	CWeapon::OnEnterFirstPerson();
+}
+
+//------------------------------------------------------------------------
+void CVehicleWeapon::OnEnterThirdPerson()
+{
+	//CryMP: VehicleWeapons (mounted) shouldn't call CItem::OnEnterThirdPerson
+
+	AttachArms(false, false);
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		pFM->OnEnterThirdPerson();
+	}
+}
+
+//------------------------------------------------------------------------
 bool CVehicleWeapon::CheckWaterLevel() const
 {
 	// if not submerged at all, skip water level check
