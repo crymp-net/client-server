@@ -225,10 +225,7 @@ void CItem::UpdateMounted(float frameTime)
 
 	//adjust the orientation of the gun based on the aim-direction
 
-	if (m_stats.fp)
-	{
-		UpdateFPCharacter(frameTime);
-	}
+	UpdateFPCharacter(frameTime); //CryMP: needs to be updated in ThirdPerson as well
 
 	if (ICharacterInstance* pCharInstance = pActor->GetEntity()->GetCharacter(0))
 	{
@@ -377,22 +374,6 @@ void CItem::CheckViewChange()
 	CActor* pOwner = GetOwnerActor();
 	const bool fp = pOwner ? !pOwner->IsThirdPerson() : false;
 
-	if (m_stats.mounted)
-	{
-
-		if (fp != m_stats.fp)
-		{
-			if (fp || !(m_stats.viewmode & eIVM_FirstPerson))
-				OnEnterFirstPerson();
-			else if (!fp)
-				AttachArms(false, false);
-		}
-
-		m_stats.fp = fp;
-
-		return;
-	}
-
 	if (fp)
 	{
 		if (!m_stats.fp || !(m_stats.viewmode & eIVM_FirstPerson))
@@ -403,7 +384,7 @@ void CItem::CheckViewChange()
 	}
 	else
 	{
-		if (m_stats.fp || !(m_stats.viewmode & eIVM_ThirdPerson))
+		if (m_stats.fp || (!m_stats.mounted && !(m_stats.viewmode & eIVM_ThirdPerson)))
 		{
 			OnEnterThirdPerson();
 			m_stats.fp = false;

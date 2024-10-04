@@ -49,11 +49,14 @@ public:
 
 	virtual void Update(SEntityUpdateContext& ctx, int update);
 
+	virtual void OnEnterFirstPerson() override;
+	virtual void OnEnterThirdPerson() override;
+
 	virtual void SetAmmoCount(IEntityClass* pAmmoType, int count);
 	virtual void SetInventoryAmmoCount(IEntityClass* pAmmoType, int count);
 
-	virtual bool GetAimBlending(OldBlendSpace& params);
-	virtual void UpdateIKMounted(IActor* pActor, const Vec3& vGunXAxis);
+	virtual bool GetAimBlending(OldBlendSpace& params) override;
+	virtual void UpdateIKMounted(IActor* pActor, const Vec3& vGunXAxis) override;
 	virtual void AttachArms(bool attach, bool shadow);
 	virtual bool CanZoom() const;
 

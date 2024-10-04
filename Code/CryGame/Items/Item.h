@@ -952,12 +952,8 @@ public:
 	void SetViewMode(int mode);
 	void CopyRenderFlags(IEntity *pOwner);
 	void ResetRenderFlags();
-  virtual void UseManualBlending(bool enable);
-  virtual bool GetAimBlending(OldBlendSpace& params);
-
-   void UpdateGunnerLocation(IEntity* pParent, const Vec3& bodyDirection);
-   Vec3 GetMountDirection(IEntity* pParent) const;
-   void Update(float frameTime);
+	virtual void UseManualBlending(bool enable);
+	virtual bool GetAimBlending(OldBlendSpace& params);
 
    int m_CheckFrames;
 
