@@ -810,6 +810,7 @@ public:
 	virtual void ExtendCombat();
 
 	virtual void SetIKPos(const char* pLimbName, const Vec3& goalPos, int priority);
+	void ClearIKPosBlending(const char* pLimbName);
 
 	virtual void HandleEvent(const SGameObjectEvent& event);
 	virtual void PostUpdate(float frameTime);
