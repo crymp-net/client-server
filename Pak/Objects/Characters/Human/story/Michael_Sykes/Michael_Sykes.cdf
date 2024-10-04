@@ -1,5 +1,5 @@
 <CharacterDefinition>
- <Model File="objects/characters/human/us/nanosuit/nanosuit_us_lower"/>
+ <Model File="objects/characters/human/us/nanosuit/nanosuit_us_lower.chr"/>
  <AttachmentList>
   <Attachment AName="head" Type="CA_SKIN" Rotation="1,0,0,0" Position="0,0,0" BoneName="" Binding="objects/characters/heads/story/michael_sykes/sykes.chr" Flags="0"/>
   <Attachment AName="neck" Type="CA_SKIN" Rotation="1,0,0,0" Position="0,0,0" BoneName="" Binding="objects/characters/heads/story/michael_sykes/nanosuit_helm_neck_sykes.chr" Flags="0"/>
