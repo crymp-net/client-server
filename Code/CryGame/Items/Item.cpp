@@ -1204,7 +1204,12 @@ void CItem::Select(bool select)
 		// set no-weapon pose on actor (except for the Offhand)
 
 		if (pOwner && (GetEntity()->GetClass() != CItem::sOffHandClass) && g_pItemStrings)
-			pOwner->PlayAction(g_pItemStrings->idle.c_str(), ITEM_DESELECT_POSE);
+		{
+			if (!m_stats.mounted)
+			{
+				pOwner->PlayAction(g_pItemStrings->idle.c_str(), ITEM_DESELECT_POSE);
+			}
+		}
 
 		EnableUpdate(false);
 
