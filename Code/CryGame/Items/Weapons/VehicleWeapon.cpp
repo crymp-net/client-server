@@ -106,6 +106,13 @@ void CVehicleWeapon::StopUse(EntityId userId)
 	if (m_ownerId && userId != m_ownerId)
 		return;
 
+	CActor* pActor = GetOwnerActor();
+	if (pActor)
+	{
+		pActor->ClearIKPosBlending("leftArm");
+		pActor->ClearIKPosBlending("rightArm");
+	}
+
 	SendMusicLogicEvent(eMUSICLOGICEVENT_WEAPON_UNMOUNT);
 
 	Select(false);
