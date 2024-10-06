@@ -365,6 +365,7 @@ ILINE static Quat GetTargetRotation(Vec3 oldTarget, Vec3 newTarget, Vec3 origin)
 		return Quat::CreateRotationV0V1(oldDir, newDir);
 }
 
+/*
 static void DrawArrow(Vec3 from, Vec3 to, float length, float* clr)
 {
 	float r = clr[0];
@@ -389,6 +390,7 @@ static float gain(float g, float t)
 	else
 		return 1.0f - bias(1.0f - g, 2.0f - 2.0f * t);
 }
+*/
 
 static float white[4] = { 1,1,1,1 };
 static float blue[4] = { 0,0,1,1 };
@@ -396,7 +398,7 @@ static float red[4] = { 1,0,0,1 };
 static float yellow[4] = { 1,1,0,1 };
 static float green[4] = { 0,1,0,1 };
 static CTimeValue lastTime;
-static int y = 100;
+static int debugTextY = 100;
 
 void CPlayerMovementController::BindInputs(IAnimationGraphState* pAGState)
 {
@@ -466,6 +468,7 @@ void CPlayerMovementController::CTargetInterpolator::TargetValue(
 		m_lastValue = now;
 }
 
+/*
 static Vec3 ClampDirectionToCone(const Vec3& dir, const Vec3& forward, float maxAngle)
 {
 	//	float angle = cry_acosf( dir.Dot(forward) );
@@ -484,6 +487,7 @@ static Vec3 FlattenVector(Vec3 x)
 	x.z = 0;
 	return x;
 }
+*/
 
 void CPlayerMovementController::CTargetInterpolator::Update(float frameTime)
 {
@@ -651,7 +655,7 @@ bool CPlayerMovementController::UpdateNormal(float frameTime, SActorFrameMovemen
 	{
 		if (pTimer->GetFrameStartTime() != lastTime)
 		{
-			y = 100;
+			debugTextY = 100;
 			lastTime = pTimer->GetFrameStartTime();
 		}
 	}
@@ -1210,15 +1214,15 @@ bool CPlayerMovementController::UpdateNormal(float frameTime, SActorFrameMovemen
 
 	if (g_pGame->GetCVars()->g_debugaimlook)
 	{
-		pRend->Draw2dLabel(10, y, 1.5f, white, false,
+		pRend->Draw2dLabel(10, debugTextY, 1.5f, white, false,
 			"%s:  body=%s   look=%s   aim=%s   rotik=%s   move=%s   delta ang=(%3.2f, %3.2f, %3.2f)",
 			pEntity->GetName(), bodyTargetType, aimType, lookType, ikType, moveTargetType,
 			params.deltaAngles.x, params.deltaAngles.y, params.deltaAngles.z);
-		y += 15;
+		debugTextY += 15;
 		if (m_state.GetDistanceToPathEnd() >= 0.0f)
 		{
-			pRend->Draw2dLabel(10, y, 1.5f, yellow, false, "distanceToEnd: %f (%f)", m_state.GetDistanceToPathEnd(), moveTarget.GetDistance(playerPos));
-			y += 15;
+			pRend->Draw2dLabel(10, debugTextY, 1.5f, yellow, false, "distanceToEnd: %f (%f)", m_state.GetDistanceToPathEnd(), moveTarget.GetDistance(playerPos));
+			debugTextY += 15;
 		}
 
 		if (m_state.HasAimTarget())

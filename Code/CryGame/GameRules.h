@@ -962,7 +962,7 @@ public:
 	typedef std::map<int, EntityId>				TTeamIdEntityIdMap;
 	typedef std::map<EntityId, int>				TEntityTeamIdMap;
 	typedef std::map<int, TPlayers>				TPlayerTeamIdMap;
-	typedef std::map<int, EntityId>				TChannelTeamIdMap;
+	typedef std::map<int, int>				TChannelTeamIdMap;
 	typedef std::map<string, int>					TTeamIdMap;
 
 	typedef std::map<int, int>						THitMaterialMap;

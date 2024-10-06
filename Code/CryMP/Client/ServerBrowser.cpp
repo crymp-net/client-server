@@ -342,7 +342,7 @@ void ServerBrowser::Update()
 	m_servers.clear();
 	m_pendingQueryCount = static_cast<unsigned int>(gClient->GetMasters().size());
 
-	int contractId = ++m_contract;
+	unsigned int contractId = ++m_contract;
 
 	for (const std::string& master : gClient->GetMasters())
 	{

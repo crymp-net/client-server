@@ -101,7 +101,8 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 	// use cam, no need for firing pos/dir
 	CCamera& cam = GetISystem()->GetViewCamera();
 
-	if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(cam.GetPosition() + cam.GetViewdir(), cam.GetViewdir() * HIT_RANGE, ent_all, flags, &rayhit, 1))
+	hits = gEnv->pPhysicalWorld->RayWorldIntersection(cam.GetPosition() + cam.GetViewdir(), cam.GetViewdir() * HIT_RANGE, ent_all, flags, &rayhit, 1);
+	if (hits)
 	{
 		IMaterialManager* pMatMan = gEnv->p3DEngine->GetMaterialManager();
 
@@ -271,7 +272,8 @@ void CDebugGun::Shoot(bool bPrimary)
 
 	IEntity* pEntity = 0;
 
-	if (hits = pWorld->RayWorldIntersection(pos, dir, ent_all, flags, &rayhit, 1, &pSkip, 1))
+	hits = pWorld->RayWorldIntersection(pos, dir, ent_all, flags, &rayhit, 1, &pSkip, 1);
+	if (hits)
 	{
 		pEntity = (IEntity*)rayhit.pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
 	}

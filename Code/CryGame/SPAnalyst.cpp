@@ -135,8 +135,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(entityId);
+				if (pItem)
 				{
 					if(event.event == eGE_ItemSelected)
 						WriteValue("event.itemSelected", string(pItem->GetEntity()->GetClass()->GetName()));
@@ -152,8 +153,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId);
+				if (pVehicle)
 					WriteValue("EnteredVehicle", pVehicle->GetEntity()->GetClass()->GetName());
 				else
 					WriteValue("EnteredVehicle", int(entityId));
@@ -164,8 +166,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId);
+				if (pVehicle)
 					WriteValue("EnteredVehicle", pVehicle->GetEntity()->GetClass()->GetName());
 				else
 					WriteValue("EnteredVehicle", int(entityId));
@@ -187,6 +190,7 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			WriteValue("PlayerDeath", int(eGE_Death));
 		}
+		break;
 	case eGE_Disconnected:
 		{
 			WriteValue("GameDisconnected", int(eGE_Disconnected));
@@ -224,6 +228,7 @@ void CSPAnalyst::ProcessPlayerEvent(IEntity* pEntity, const GameplayEvent& event
 	case eGE_Death:
 		if (PlayerAnalysis* pA = GetPlayer(entityId))
 			++pA->deaths;
+		break;
 	default:
 		break;
 	}

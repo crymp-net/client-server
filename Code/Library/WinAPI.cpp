@@ -387,8 +387,8 @@ bool WinAPI::HookIATByName(void *pDLL, const char *dllName, const char *funcName
 
 	for (; importDescriptor->Name && importDescriptor->FirstThunk; ++importDescriptor)
 	{
-		const char* dllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
-		if (_stricmp(dllName, dllName) != 0)
+		const char* currentDllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
+		if (_stricmp(currentDllName, dllName) != 0)
 		{
 			continue;
 		}

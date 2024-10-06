@@ -325,7 +325,7 @@ void CVehicleClient::OnEnterVehicleSeat(IVehicleSeat* pSeat)
 	TVehicleViewId viewId = InvalidVehicleViewId;
 	TVehicleViewId firstViewId = InvalidVehicleViewId;
 
-	while (viewId = pSeat->GetNextView(viewId))
+	while ((viewId = pSeat->GetNextView(viewId)) != 0)
 	{
 		if (viewId == firstViewId)
 			break;

@@ -22,7 +22,7 @@ void ParticleManager::CmdListEmitters(IConsoleCmdArgs* pArgs)
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		for (int i = 0; i < pEntity->GetSlotCount(); i++)
 		{

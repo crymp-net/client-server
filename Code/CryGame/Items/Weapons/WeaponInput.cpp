@@ -233,7 +233,7 @@ bool CWeapon::OnActionAttack(EntityId actorId, const ActionId& actionId, int act
 //---------------------------------------------------------
 bool CWeapon::OnActionReload(EntityId actorId, const ActionId& actionId, int activationMode, float value)
 {
-	if(activationMode=eAAM_OnPress)
+	if(activationMode==eAAM_OnPress)
 	{
 		COffHand * offHandWeapon = NULL;
 		bool isOffHandSelected = false;

@@ -723,7 +723,8 @@ void ItemSystem::SetActorItem(IActor* pActor, EntityId itemId, bool keepHistory)
 	pItem->SetHand(IItem::eIH_Right);
 	pItem->Select(true);
 
-	const GameplayEvent event(eGE_ItemSelected, nullptr, 0.0f, reinterpret_cast<void*>(itemId));
+	const GameplayEvent event(eGE_ItemSelected, nullptr, 0.0f,
+		reinterpret_cast<void*>(static_cast<std::uintptr_t>(itemId)));
 
 	m_pGameFramework->GetIGameplayRecorder()->Event(pActor->GetEntity(), event);
 }

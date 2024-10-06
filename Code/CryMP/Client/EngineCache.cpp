@@ -73,7 +73,7 @@ int EngineCache::ScanFolder(const char* folderName)
 		const char* ext = CryPath::GetExt(entry.name);
 
 		//supported file ext
-		if (stricmp(ext, "cdf") && stricmp(ext, "cgf") && stricmp(ext, "cga") && stricmp(ext, "chr"))
+		if (_stricmp(ext, "cdf") && _stricmp(ext, "cgf") && _stricmp(ext, "cga") && _stricmp(ext, "chr"))
 			continue;
 
 		//skip folders
@@ -100,7 +100,7 @@ bool EngineCache::Cache(string folder, string file)
 	//CryLogAlways("Caching %s... (%s)", file.c_str(), folder.c_str());
 
 	const char* ext = CryPath::GetExt(file.c_str());
-	if (!stricmp(ext, "cdf") || !stricmp(ext, "chr") || !stricmp(ext, "cga"))
+	if (!_stricmp(ext, "cdf") || !_stricmp(ext, "chr") || !_stricmp(ext, "cga"))
 	{
 		ICharacterInstance* pChar = gEnv->pCharacterManager->CreateInstance(file.c_str());
 		if (pChar && pChar->GetFilePath())
@@ -109,7 +109,7 @@ bool EngineCache::Cache(string folder, string file)
 			return true;
 		}
 	}
-	else if (!stricmp(ext, "cgf"))
+	else if (!_stricmp(ext, "cgf"))
 	{
 		IStatObj* pStatObj = gEnv->p3DEngine->LoadStatObj(file.c_str());
 		if (pStatObj && pStatObj->GetFilePath())
@@ -118,7 +118,7 @@ bool EngineCache::Cache(string folder, string file)
 			return true;
 		}
 	}
-	else if (!stricmp(ext, "mtl"))
+	else if (!_stricmp(ext, "mtl"))
 	{
 		IMaterial* pMat = gEnv->p3DEngine->GetMaterialManager()->LoadMaterial(file.c_str());
 		if (pMat)

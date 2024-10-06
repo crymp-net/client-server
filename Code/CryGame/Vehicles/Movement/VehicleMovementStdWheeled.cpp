@@ -778,7 +778,6 @@ void CVehicleMovementStdWheeled::DebugDrawMovement(const float deltaTime)
         float slip = ws.velSlip.len();
         if (ws.bSlip>0)
         {
-          IRenderAuxGeom* pGeom = gEnv->pRenderer->GetIRenderAuxGeom();
           pGeom->DrawLine(wp.pos, colRed, wp.pos+ws.velSlip, colRed);
         }
       }

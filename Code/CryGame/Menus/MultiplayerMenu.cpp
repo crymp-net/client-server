@@ -262,14 +262,14 @@ struct CMultiPlayerMenu::SGSBrowser : public IServerListener
 		for (int i = 0;i < m_menu->m_favouriteServers.size();++i)
 		{
 			SStoredServer& srv = m_menu->m_favouriteServers[i];
-			if (srv.ip == si.m_publicIP && srv.port == si.m_hostPort)
+			if (srv.ip == static_cast<int>(si.m_publicIP) && srv.port == static_cast<int>(si.m_hostPort))
 				si.m_favorite = true;
 		}
 
 		for (int i = 0;i < m_menu->m_recentServers.size();++i)
 		{
 			SStoredServer& srv = m_menu->m_recentServers[i];
-			if (srv.ip == si.m_publicIP && srv.port == si.m_hostPort)
+			if (srv.ip == static_cast<int>(si.m_publicIP) && srv.port == static_cast<int>(si.m_hostPort))
 				si.m_recent = true;
 		}
 

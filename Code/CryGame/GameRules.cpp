@@ -1122,7 +1122,10 @@ void CGameRules::KillPlayer(CActor* pActor, bool dropItem, bool ragdoll, EntityI
 	m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Death));
 	if (shooterId && shooterId != pActor->GetEntityId())
 		if (IActor* pShooter = m_pActorSystem->GetActor(shooterId))
-			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Kill, 0, 0, (void*)weaponId));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(weaponId));
+			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Kill, 0, 0, extra));
+		}
 }
 
 //------------------------------------------------------------------------
@@ -1648,7 +1651,8 @@ void CGameRules::AddObjective(int teamId, const char* objective, int status, Ent
 	if (!pObjectives)
 		m_objectives.insert(TTeamObjectiveMap::value_type(teamId, TObjectiveMap()));
 
-	if (pObjectives = GetTeamObjectives(teamId))
+	pObjectives = GetTeamObjectives(teamId);
+	if (pObjectives)
 	{
 		if (pObjectives->find(CONST_TEMP_STRING(objective)) == pObjectives->end())
 			pObjectives->insert(TObjectiveMap::value_type(objective, TObjective(status, entityId)));
@@ -2815,23 +2819,17 @@ void CGameRules::ChatLog(EChatMessageType type, EntityId sourceId, EntityId targ
 
 	char tempBuffer[64];
 
-	switch (type)
+	if (type == eChatToTeam && teamId)
 	{
-	case eChatToTeam:
-		if (teamId)
-		{
-			IActor* pClientActor = m_pGameFramework->GetClientActor();
-			if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
-				return;
-			targetName = tempBuffer;
-			sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
-		}
-		else
-		{
-	case eChatToAll:
+		IActor* pClientActor = m_pGameFramework->GetClientActor();
+		if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
+			return;
+		targetName = tempBuffer;
+		sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
+	}
+	else
+	{
 		targetName = "ALL";
-		}
-		break;
 	}
 
 	CryLogAlways("CHAT %s to %s:", sourceName, targetName);
@@ -4049,17 +4047,17 @@ bool CGameRules::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profi
 	{
 	case eEA_GameServerDynamic:
 	{
-		uint32 flags = 0;
+		uint32 todFlags = 0;
 		if (ser.IsReading())
 		{
-			flags |= ITimeOfDay::NETSER_COMPENSATELAG;
+			todFlags |= ITimeOfDay::NETSER_COMPENSATELAG;
 			if (!m_timeOfDayInitialized)
 			{
-				flags |= ITimeOfDay::NETSER_FORCESET;
+				todFlags |= ITimeOfDay::NETSER_FORCESET;
 				m_timeOfDayInitialized = true;
 			}
 		}
-		gEnv->p3DEngine->GetTimeOfDay()->NetSerialize(ser, 0.0f, flags);
+		gEnv->p3DEngine->GetTimeOfDay()->NetSerialize(ser, 0.0f, todFlags);
 	}
 	break;
 	case eEA_GameServerStatic:

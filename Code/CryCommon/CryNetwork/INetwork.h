@@ -1290,10 +1290,7 @@ struct IRMIMessageBody
 private:
 	volatile int m_cnt;
 
-	virtual void DeleteThis()
-	{
-		delete this;
-	}
+	virtual void DeleteThis() = 0;
 };
 
 // this class provides a mechanism for the network library to obtain information

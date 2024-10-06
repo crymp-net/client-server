@@ -564,7 +564,8 @@ void CVehicleMovementHovercraft::ProcessMovement(const float deltaTime)
 
           if (!(pThruster->cylinderRadius > 0.f))
           {
-            if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(thrusterPos, -m_thrusterMaxHeightCoeff*(hoverHeight/cosAngle)*thrusterDir, objTypes, flags, &hit, 1, pSkip))
+            hits = gEnv->pPhysicalWorld->RayWorldIntersection(thrusterPos, -m_thrusterMaxHeightCoeff*(hoverHeight/cosAngle)*thrusterDir, objTypes, flags, &hit, 1, pSkip);
+            if (hits)
             {
               pThruster->hit = true;
               // reset hit dist to vertical length

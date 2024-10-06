@@ -28,7 +28,7 @@
 
 static char g_fault_message[256];
 
-[[noreturn]] static void Die(const char* format, ...)
+[[noreturn]] [[maybe_unused]] static void Die(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);

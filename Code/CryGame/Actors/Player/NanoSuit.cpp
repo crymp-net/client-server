@@ -1196,6 +1196,7 @@ void CNanoSuit::PlaySound(ENanoSound sound, float param, bool stopSound)
 		soundName = "sounds/interface:suit:suit_grab_vs_throw";
 		eSemantic = eSoundSemantic_NanoSuit;
 		bAppendPostfix = false;
+		break;
 	default:
 		break;
 	}

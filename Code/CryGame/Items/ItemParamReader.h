@@ -67,8 +67,8 @@ public:
 		const IItemParamsNode *node = FindNode(name);
 		if (node)
 		{
-			const char *v;
-			if (v=node->GetAttribute("value"))
+			const char *v = node->GetAttribute("value");
+			if (v)
 				value=v;
 		}
 	}
@@ -78,8 +78,8 @@ public:
 		const IItemParamsNode *node = FindNode(name);
 		if (node)
 		{
-			const char *v;
-			if (v=node->GetAttribute("value"))
+			const char *v = node->GetAttribute("value");
+			if (v)
 				value=v;
 		}
 	}

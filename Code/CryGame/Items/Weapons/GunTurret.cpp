@@ -945,7 +945,8 @@ bool CGunTurret::RayCheck(IEntity* pTarget, const Vec3& pos, const Vec3& dir) co
 	//make sure you are not inside geometry when casting
 	Vec3 newPos = pos + 0.3f * dir;
 
-	if (hits = gEnv->pPhysicalWorld->RayWorldIntersection(newPos, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkip))
+	hits = gEnv->pPhysicalWorld->RayWorldIntersection(newPos, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkip);
+	if (hits)
 	{
 		if (rayhit.pCollider)
 		{
@@ -1420,7 +1421,7 @@ void CGunTurret::ChangeTargetTo(IEntity* pTarget)
 {
 	m_updateTargetTimer = 0.0f;
 	m_rayTimer = 0.f;
-	int new_id = pTarget ? pTarget->GetId() : 0;
+	EntityId new_id = pTarget ? pTarget->GetId() : 0;
 	if (new_id != m_targetId)
 	{
 		m_targetId = new_id;

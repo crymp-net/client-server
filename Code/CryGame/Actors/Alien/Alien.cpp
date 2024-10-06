@@ -402,7 +402,11 @@ CAlien::~CAlien()
 	SAFE_DELETE(m_pGroundEffect);
 
 	SAFE_DELETE(m_pBeamEffect);
-	SAFE_DELETE(m_pDebugHistoryManager);
+
+	if (m_pDebugHistoryManager)
+	{
+		m_pDebugHistoryManager->Release();
+	}
 }
 
 void CAlien::BindInputs(IAnimationGraphState* pAGState)
