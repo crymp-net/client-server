@@ -83,6 +83,8 @@ message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
 add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
+	Code/CryAction/ActionGame.cpp
+	Code/CryAction/ActionGame.h
 	Code/CryAction/ActionMapManager.cpp
 	Code/CryAction/ActionMapManager.h
 	Code/CryAction/ActorSystem.cpp
@@ -119,6 +121,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/GameRulesSystem.h
 	Code/CryAction/GameSerialize.cpp
 	Code/CryAction/GameSerialize.h
+	Code/CryAction/GameServerNub.cpp
+	Code/CryAction/GameServerNub.h
 	Code/CryAction/GameStatsConfig.cpp
 	Code/CryAction/GameStatsConfig.h
 	Code/CryAction/GameTokenSystem.cpp

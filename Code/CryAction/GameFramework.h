@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "Library/StlportVector.h"
+
+#include "ActionGame.h"
 
 struct ICVar;
 
@@ -13,10 +16,12 @@ class GameObjectSystem;
 class GameplayAnalyst;
 class GameplayRecorder;
 class GameSerialize;
+class GameServerNub;
 class GameStatsConfig;
 class ItemSystem;
 class MaterialEffects;
 class NetworkCVars;
+class PersistantDebug;
 class ScriptBind_ActionMapManager;
 class ScriptBind_Actor;
 class ScriptBind_AI;
@@ -37,15 +42,18 @@ class ViewSystem;
 
 class GameFramework : public IGameFramework
 {
+	// TODO: use std::unique_ptr instead of raw pointers
+
+	struct Listener
+	{
+		IGameFrameworkListener* pListener = nullptr;
+		CryStringT<char> name;
+		EFRAMEWORKLISTENERPRIORITY priority = FRAMEWORKLISTENERPRIORITY_DEFAULT;
+	};
+
 	struct SomeStrings
 	{
 		CryStringT<char> reserved[3];
-	};
-
-	struct Listeners
-	{
-		// probably std::vector<IGameFrameworkListener*>
-		void* reserved[3] = {};
 	};
 
 	// m_reserved_<32-bit-offset>_<64-bit-offset>
@@ -59,7 +67,7 @@ class GameFramework : public IGameFramework
 	ITimer* m_pTimer = nullptr;
 	ILog* m_pLog = nullptr;
 	void* m_reserved_0x24_0x48 = nullptr;
-	void* m_reserved_0x28_0x50 = nullptr;  // contains client actor and server net nub
+	_smart_ptr<ActionGame> m_pActionGame;  // m_reserved_0x28_0x50
 	char m_reserved_0x2c_0x58[1024] = {};
 	char m_guid[128] = "{00000000-0000-0000-0000-000000000000}";
 	ILevelSystem* m_pLevelSystem = nullptr;
@@ -104,7 +112,7 @@ class GameFramework : public IGameFramework
 	ScriptBind_DialogSystem* m_pScriptBind_DialogSystem = nullptr;  // m_reserved_0x548_0x610
 	ScriptBind_MaterialEffects* m_pScriptBind_MaterialEffects = nullptr;  // m_reserved_0x54c_0x618
 	TimeOfDayScheduler* m_pTimeOfDayScheduler = nullptr;  // m_reserved_0x550_0x620
-	IPersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
+	PersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
 	NetworkCVars* m_pNetworkCVars = nullptr;  // m_reserved_0x558_0x630
 	GameFrameworkCVars* m_pGameFrameworkCVars = nullptr;  // m_reserved_0x55c_0x638
 	void* m_reserved_0x560_0x640 = nullptr;
@@ -114,10 +122,11 @@ class GameFramework : public IGameFramework
 	void* m_reserved_0x570_0x660 = nullptr;
 	ICVar* m_pLanBrowserCVar = nullptr;  // m_reserved_0x574_0x668
 	bool m_isLanBrowserRunning = false;  // m_reserved_0x578_0x670
-	int m_reserved_0x57c_0x674[2] = {};
+	int m_reserved_0x57c_0x674 = 0;
+	ESaveGameReason m_reserved_0x580_0x678 = {};
 	SomeStrings* m_pSomeStrings = nullptr;  // m_reserved_0x584_0x680
-	Listeners* m_pListenersA = nullptr;  // m_reserved_0x588_0x688
-	Listeners* m_pListenersB = nullptr;  // m_reserved_0x58c_0x690
+	StlportVector_CryAction<Listener>* m_pListenersA = nullptr;  // m_reserved_0x588_0x688
+	StlportVector_CryAction<Listener>* m_pListenersB = nullptr;  // m_reserved_0x58c_0x690
 	int m_voiceRecording = 0;
 	bool m_unknownFlag1 = true;
 	bool m_unknownFlag2 = true;
@@ -270,7 +279,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////
 
 	virtual void UnknownFunction1();
-	virtual void UnknownFunction2();
+	virtual GameServerNub* GetGameServerNub();
 
 	void DispatchActionEvent(const SActionEvent& event);
 

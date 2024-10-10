@@ -25,3 +25,14 @@ void TimeDemoRecorder::PreUpdate()
 
 	(this->*reinterpret_cast<void(TimeDemoRecorder::*&)()>(func))();
 }
+
+void TimeDemoRecorder::Update()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x25D4C0;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x19CB50;
+#endif
+
+	(this->*reinterpret_cast<void(TimeDemoRecorder::*&)()>(func))();
+}

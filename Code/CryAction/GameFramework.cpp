@@ -27,6 +27,7 @@
 #include "GameplayRecorder.h"
 #include "GameRulesSystem.h"
 #include "GameSerialize.h"
+#include "GameServerNub.h"
 #include "GameStatsConfig.h"
 #include "GameTokenSystem.h"
 #include "ItemSystem.h"
@@ -127,7 +128,7 @@ GameFramework::GameFramework()
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[8] = current_vtable[8];    // GameFramework::CompleteInit
 	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
-	//vtable[10] = current_vtable[10];  // GameFramework::PostUpdate
+	vtable[10] = current_vtable[10];  // GameFramework::PostUpdate
 	vtable[11] = current_vtable[11];  // GameFramework::Shutdown
 	vtable[22] = current_vtable[22];  // GameFramework::GetIItemSystem
 	vtable[26] = current_vtable[26];  // GameFramework::GetIVehicleSystem
@@ -148,6 +149,7 @@ GameFramework::GameFramework()
 
 GameFramework::~GameFramework()
 {
+	// TODO
 }
 
 GameFramework* GameFramework::GetInstance()
@@ -305,8 +307,8 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	// skip instantiating CDownloadTask for downloading maps and stuff (m_reserved_0x51c_0x5b8)
 	// it is more harmful than useful and all accesses seem to be guarded by null checks making it optional
 
-	m_pListenersA = new Listeners();
-	m_pListenersB = new Listeners();
+	m_pListenersA = new StlportVector_CryAction<Listener>;
+	m_pListenersB = new StlportVector_CryAction<Listener>;
 
 	m_pNextFrameCommand = new CryStringT<char>();
 
@@ -502,8 +504,69 @@ void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 
 	m_pSystem->Render();
 
-	// TODO: call OnPostUpdate on listeners
-	// TODO
+	*m_pListenersB = *m_pListenersA;
+	for (Listener& listener : *m_pListenersB)
+	{
+		listener.pListener->OnPostUpdate(frameTime);
+	}
+
+	m_pPersistantDebug->PostUpdate(frameTime);
+	m_pGameObjectSystem->PostUpdate(frameTime);
+
+	m_pSystem->RenderEnd();
+
+	if (m_pActionGame)
+	{
+		if (m_pActionGame->Update())
+		{
+			m_pActionGame = nullptr;
+		}
+	}
+
+	GameServerNub* pGameServerNub = this->GetGameServerNub();
+	if (pGameServerNub)
+	{
+		pGameServerNub->Update();
+	}
+
+	if (!this->IsGamePaused())
+	{
+		m_pTimeDemoRecorder->Update();
+	}
+
+	if (!(updateFlags & ESYSUPDATE_EDITOR))
+	{
+		gEnv->pFrameProfileSystem->EndFrame();
+	}
+
+	if (m_reserved_0x57c_0x674 && m_pSomeStrings)
+	{
+		this->SaveGame(
+			m_pSomeStrings->reserved[0].c_str(),
+			m_reserved_0x57c_0x674 == 1,
+			true,
+			m_reserved_0x580_0x678,
+			false,
+			m_pSomeStrings->reserved[1].c_str()
+		);
+
+		m_reserved_0x57c_0x674 = 0;
+		m_pSomeStrings->reserved[0].clear();
+	}
+
+	ITextModeConsole* pTextModeConsole = m_pSystem->GetITextModeConsole();
+	if (pTextModeConsole)
+	{
+		pTextModeConsole->EndDraw();
+	}
+
+#ifdef BUILD_64BIT
+	std::uintptr_t someFunc = CRYACTION_BASE + 0x1AD1E0;
+#else
+	std::uintptr_t someFunc = CRYACTION_BASE + 0x12A480;
+#endif
+
+	reinterpret_cast<void(*)()>(someFunc)();
 }
 
 void GameFramework::Shutdown()
@@ -907,8 +970,9 @@ void GameFramework::UnknownFunction1()
 {
 }
 
-void GameFramework::UnknownFunction2()
+GameServerNub* GameFramework::GetGameServerNub()
 {
+	return nullptr;
 }
 
 void GameFramework::DispatchActionEvent(const SActionEvent& event)

@@ -14,4 +14,5 @@ public:
 	explicit TimeDemoRecorder(ISystem* pSystem);
 
 	void PreUpdate();
+	void Update();
 };

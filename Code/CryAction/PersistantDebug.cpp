@@ -15,6 +15,17 @@ PersistantDebug::PersistantDebug()
 	(this->*reinterpret_cast<void(PersistantDebug::*&)()>(ctor))();
 }
 
+void PersistantDebug::PostUpdate(float frameTime)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x280700;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x1b89d0;
+#endif
+
+	return (this->*reinterpret_cast<void(PersistantDebug::*&)(float)>(func))(frameTime);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IPersistantDebug
 ////////////////////////////////////////////////////////////////////////////////
