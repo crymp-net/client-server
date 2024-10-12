@@ -1513,7 +1513,16 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 	bool soundEnabled = IsSoundEnabled();
 	EnableSound(sound);
 
-	SetViewMode(0);
+	if (!IsSelected())
+	{
+		SetViewMode(0);
+	}
+	else
+	{
+		//CryLogWarningAlways("Item %s was already selected when picked up by %s", 
+		//	GetEntity()->GetName(), pActor->GetEntity()->GetName());
+	}
+
 	SetOwnerId(pickerId);
 
 	CopyRenderFlags(GetOwner());
