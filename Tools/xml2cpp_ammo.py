@@ -22,7 +22,7 @@ class AmmoConverter:
 
 		for xml_path in sorted(Path(self.path, 'Scripts/Entities/Items/XML/').glob('**/*.xml')):
 			xml_tree = ET.parse(xml_path)
-			xml_name = xml_path.relative_to(self.path)
+			xml_name = xml_path.relative_to(self.path).as_posix()
 			self._process_xml(xml_tree, xml_name)
 
 		self._write('}')

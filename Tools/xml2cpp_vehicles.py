@@ -1668,7 +1668,7 @@ def parse_command_line() -> argparse.Namespace:
 def generate_vehicle_implementations(input_path: Path, output_path: Path) -> None:
 	for xml_path in Path(input_path, 'Scripts/Entities/Vehicles/Implementations/Xml').glob('**/*.xml'):
 		xml_root = ET.parse(xml_path).getroot()
-		xml_name = xml_path.relative_to(input_path)
+		xml_name = xml_path.relative_to(input_path).as_posix()
 		VehicleConverter(xml_root, xml_name, output_path).convert_vehicle_implementations()
 
 def generate_damages_templates(input_path: Path, output_path: Path) -> None:
