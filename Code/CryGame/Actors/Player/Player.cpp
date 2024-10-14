@@ -2070,13 +2070,16 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 	}
 	else
 	{
-		CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
-		bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
-		if (!g_pGameCVars->mp_thirdPerson)
+		if (IsClient())
 		{
-			shouldStayInTp = false;
+			CPlayerInput* pPlayerInput = static_cast<CPlayerInput*>(GetPlayerInput());
+			bool shouldStayInTp = pPlayerInput ? pPlayerInput->ShouldKeepThirdPerson() : false;
+			if (!g_pGameCVars->mp_thirdPerson)
+			{
+				shouldStayInTp = false;
+			}
+			EnableThirdPerson(shouldStayInTp);
 		}
-		EnableThirdPerson(shouldStayInTp);
 
 		CALL_PLAYER_EVENT_LISTENERS(OnExitVehicle(this));
 		m_vehicleViewDir.Set(0, 1, 0);
@@ -2203,7 +2206,7 @@ void CPlayer::EnableFpSpectatorTarget(bool activate)
 
 	m_stats.spectatorTargetType = activate ? SpectatorTargetType::FIRST_PERSON : SpectatorTargetType::NONE;
 
-	m_stats.isThirdPerson = !activate;
+	EnableThirdPerson(!activate);
 
 	m_netAimDirSmooth = m_netAimDir;
 
@@ -3712,7 +3715,10 @@ void CPlayer::EnableThirdPerson(bool enable)
 			pIAttachmentManager->RemoveAttachmentByName("wound");
 		}
 
-		m_PlayerView.SetFastCameraCorrectionMode(1.0f);
+		if (IsClient())
+		{
+			m_PlayerView.SetFastCameraCorrectionMode(1.0f);
+		}
 	}
 
 	m_stats.isThirdPerson = enable;
@@ -3839,7 +3845,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 
 	if (reason == ReasonForRevive::SCRIPT_BIND)
 	{
-		m_stats.isThirdPerson = thirdPerson;
+		EnableThirdPerson(thirdPerson);
 	}
 
 	if (spectatorTargetType != SpectatorTargetType::NONE)
