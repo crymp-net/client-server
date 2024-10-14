@@ -653,7 +653,6 @@ public:
 	virtual float GetFrozenAmount(bool stages = false) const;
 	IPlayerInput* GetPlayerInput() const { return m_pPlayerInput.get(); }
 
-	virtual void SwitchDemoModeSpectator(bool activate);
 	bool IsTimeDemo() const { return m_timedemo; }
 	void ForceFreeFall() { m_stats.inFreefall = 1; }
 
@@ -829,9 +828,6 @@ protected:
 	bool m_viewBlending;
 	bool m_ignoreRecoil;
 	bool m_timedemo;
-
-	//Demo Mode
-	bool m_bDemoModeSpectator;
 
 	bool m_bRagDollHead;
 

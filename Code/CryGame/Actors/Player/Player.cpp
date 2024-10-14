@@ -182,8 +182,6 @@ CPlayer::CPlayer()
 	m_timedemo = false;
 	m_ignoreRecoil = false;
 
-	m_bDemoModeSpectator = false;
-
 	m_pNanoSuit = NULL;
 	m_pVehicleClient = 0;
 
@@ -5806,38 +5804,6 @@ void CPlayer::UpdateFootSteps(float frameTime)
 				gEnv->pAISystem->SoundEvent(GetEntity()->GetWorldPos(), footstepRadius, AISE_MOVEMENT, NULL);
 		}
 	}
-}
-
-void CPlayer::SwitchDemoModeSpectator(bool activate)
-{
-	if (!IsDemoPlayback())
-		return;
-
-	m_bDemoModeSpectator = activate;
-
-	m_stats.isThirdPerson = !activate;
-	if (activate)
-		m_stats.firstPersonBody = (uint8)g_pGameCVars->cl_fpBody;
-	CItem* pItem = GetItem(GetInventory()->GetCurrentItem());
-	if (pItem)
-		pItem->UpdateFPView(0);
-
-	IVehicle* pVehicle = GetLinkedVehicle();
-	if (pVehicle)
-	{
-		IVehicleSeat* pVehicleSeat = pVehicle->GetSeatForPassenger(GetEntityId());
-		if (pVehicleSeat)
-			pVehicleSeat->SetView(activate ? pVehicleSeat->GetNextView(InvalidVehicleViewId) : InvalidVehicleViewId);
-	}
-
-	if (activate)
-	{
-		IScriptSystem* pSS = gEnv->pScriptSystem;
-		pSS->SetGlobalValue("g_localActor", GetGameObject()->GetEntity()->GetScriptTable());
-		pSS->SetGlobalValue("g_localActorId", ScriptHandle(GetGameObject()->GetEntityId()));
-	}
-
-	m_isClient = activate;
 }
 
 void CPlayer::ActivateNanosuit(bool active)
