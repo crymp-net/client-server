@@ -158,12 +158,6 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/ScriptBind_MaterialEffects.h
 	Code/CryAction/ScriptBind_Network.cpp
 	Code/CryAction/ScriptBind_Network.h
-	Code/CryAction/ScriptBind_Vehicle.cpp
-	Code/CryAction/ScriptBind_Vehicle.h
-	Code/CryAction/ScriptBind_VehicleSeat.cpp
-	Code/CryAction/ScriptBind_VehicleSeat.h
-	Code/CryAction/ScriptBind_VehicleSystem.cpp
-	Code/CryAction/ScriptBind_VehicleSystem.h
 	Code/CryAction/ScriptRMI.cpp
 	Code/CryAction/ScriptRMI.h
 	Code/CryAction/SubtitleManager.cpp
@@ -174,110 +168,18 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/TimeOfDayScheduler.h
 	Code/CryAction/UIDraw.cpp
 	Code/CryAction/UIDraw.h
-	Code/CryAction/Vehicles/Actions/VehicleActionEnter.cpp
-	Code/CryAction/Vehicles/Actions/VehicleActionEnter.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorAISignal.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorAISignal.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDestroy.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDestroy.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDetachPart.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorDetachPart.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorEffect.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorEffect.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorGroup.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorGroup.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorHitPassenger.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorHitPassenger.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorImpulse.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorImpulse.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorIndicator.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorIndicator.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorMovementNotification.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorMovementNotification.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSink.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSink.h
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.cpp
-	Code/CryAction/Vehicles/DamageBehaviors/VehicleDamageBehaviorSpawnDebris.h
-	Code/CryAction/Vehicles/Implementations/Alien_warrior.cpp
-	Code/CryAction/Vehicles/Implementations/Alien_warrior.h
-	Code/CryAction/Vehicles/Implementations/Asian_aaa.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_aaa.h
-	Code/CryAction/Vehicles/Implementations/Asian_apc.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_apc.h
-	Code/CryAction/Vehicles/Implementations/Asian_helicopter.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_helicopter.h
-	Code/CryAction/Vehicles/Implementations/Asian_ltv.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_ltv.h
-	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_patrolboat.h
-	Code/CryAction/Vehicles/Implementations/Asian_tank.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_tank.h
-	Code/CryAction/Vehicles/Implementations/Asian_truck.cpp
-	Code/CryAction/Vehicles/Implementations/Asian_truck.h
-	Code/CryAction/Vehicles/Implementations/Civ_car1.cpp
-	Code/CryAction/Vehicles/Implementations/Civ_car1.h
-	Code/CryAction/Vehicles/Implementations/Civ_speedboat.cpp
-	Code/CryAction/Vehicles/Implementations/Civ_speedboat.h
-	Code/CryAction/Vehicles/Implementations/DefaultVehicle.cpp
-	Code/CryAction/Vehicles/Implementations/DefaultVehicle.h
-	Code/CryAction/Vehicles/Implementations/US_apc.cpp
-	Code/CryAction/Vehicles/Implementations/US_apc.h
-	Code/CryAction/Vehicles/Implementations/US_hovercraft.cpp
-	Code/CryAction/Vehicles/Implementations/US_hovercraft.h
-	Code/CryAction/Vehicles/Implementations/US_ltv.cpp
-	Code/CryAction/Vehicles/Implementations/US_ltv.h
-	Code/CryAction/Vehicles/Implementations/US_smallboat.cpp
-	Code/CryAction/Vehicles/Implementations/US_smallboat.h
-	Code/CryAction/Vehicles/Implementations/US_tank.cpp
-	Code/CryAction/Vehicles/Implementations/US_tank.h
-	Code/CryAction/Vehicles/Implementations/US_transportVTOL.cpp
-	Code/CryAction/Vehicles/Implementations/US_transportVTOL.h
-	Code/CryAction/Vehicles/Implementations/US_trolley.cpp
-	Code/CryAction/Vehicles/Implementations/US_trolley.h
-	Code/CryAction/Vehicles/Implementations/US_vtol.cpp
-	Code/CryAction/Vehicles/Implementations/US_vtol.h
-	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartAnimated.h
-	Code/CryAction/Vehicles/Parts/VehiclePartAnimatedJoint.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartAnimatedJoint.h
-	Code/CryAction/Vehicles/Parts/VehiclePartBase.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartBase.h
-	Code/CryAction/Vehicles/Parts/VehiclePartEntityAttachment.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartEntityAttachment.h
-	Code/CryAction/Vehicles/Parts/VehiclePartLight.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartLight.h
-	Code/CryAction/Vehicles/Parts/VehiclePartMassBox.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartMassBox.h
-	Code/CryAction/Vehicles/Parts/VehiclePartStatic.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartStatic.h
-	Code/CryAction/Vehicles/Parts/VehiclePartSubPart.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartSubPart.h
-	Code/CryAction/Vehicles/Parts/VehiclePartSubPartWheel.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartSubPartWheel.h
-	Code/CryAction/Vehicles/Parts/VehiclePartTread.cpp
-	Code/CryAction/Vehicles/Parts/VehiclePartTread.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionAnimation.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionAnimation.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionLights.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionLights.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionMovement.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionMovement.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionPassengerIK.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionPassengerIK.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionRotateTurret.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionRotateTurret.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSound.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSound.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSteeringWheel.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionSteeringWheel.h
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionWeapons.cpp
-	Code/CryAction/Vehicles/SeatActions/VehicleSeatActionWeapons.h
-	Code/CryAction/Vehicles/Views/VehicleViewActionThirdPerson.cpp
-	Code/CryAction/Vehicles/Views/VehicleViewActionThirdPerson.h
-	Code/CryAction/Vehicles/Views/VehicleViewFirstPerson.cpp
-	Code/CryAction/Vehicles/Views/VehicleViewFirstPerson.h
-	Code/CryAction/Vehicles/Views/VehicleViewThirdPerson.cpp
-	Code/CryAction/Vehicles/Views/VehicleViewThirdPerson.h
+
+	##Code/CryAction/ScriptBind_Vehicle.cpp
+	##Code/CryAction/ScriptBind_Vehicle.h
+	##Code/CryAction/ScriptBind_VehicleSeat.cpp
+	##Code/CryAction/ScriptBind_VehicleSeat.h
+
+	Code/CryAction/Vehicles/ScriptBind_Vehicle.cpp
+	Code/CryAction/Vehicles/ScriptBind_Vehicle.h
+	Code/CryAction/Vehicles/ScriptBind_VehicleSeat.cpp
+	Code/CryAction/Vehicles/ScriptBind_VehicleSeat.h
+	Code/CryAction/Vehicles/ScriptBind_VehicleSystem.cpp
+	Code/CryAction/Vehicles/ScriptBind_VehicleSystem.h
 	Code/CryAction/Vehicles/Vehicle.cpp
 	Code/CryAction/Vehicles/Vehicle.h
 	Code/CryAction/Vehicles/VehicleAnimation.cpp
@@ -286,21 +188,109 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/Vehicles/VehicleComponent.h
 	Code/CryAction/Vehicles/VehicleCVars.cpp
 	Code/CryAction/Vehicles/VehicleCVars.h
-	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry_XMLData.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorAISignal.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorAISignal.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorDestroy.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorDestroy.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorDetachPart.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorDetachPart.h
+	##Code/CryAction/Vehicles/VehicleDamageBehaviorDisableSeatAction.cpp
+	##Code/CryAction/Vehicles/VehicleDamageBehaviorDisableSeatAction.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorEffect.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorEffect.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorGroup.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorGroup.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorHitPassenger.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorHitPassenger.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorImpulse.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorImpulse.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorIndicator.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorIndicator.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorMovementNotification.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorMovementNotification.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorSink.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorSink.h
+	Code/CryAction/Vehicles/VehicleDamageBehaviorSpawnDebris.cpp
+	Code/CryAction/Vehicles/VehicleDamageBehaviorSpawnDebris.h
+	Code/CryAction/Vehicles/VehicleDamages.cpp
+	Code/CryAction/Vehicles/VehicleDamages.h
+	Code/CryAction/Vehicles/VehicleDamagesGroup.cpp
+	Code/CryAction/Vehicles/VehicleDamagesGroup.h
 	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.cpp
 	Code/CryAction/Vehicles/VehicleDamagesTemplateRegistry.h
-	Code/CryAction/Vehicles/VehicleIterator.cpp
-	Code/CryAction/Vehicles/VehicleIterator.h
-	Code/CryAction/Vehicles/VehiclePartDetached.cpp
-	Code/CryAction/Vehicles/VehiclePartDetached.h
+	Code/CryAction/Vehicles/VehicleHelper.cpp
+	Code/CryAction/Vehicles/VehicleHelper.h
+	Code/CryAction/Vehicles/VehicleModificationParams.cpp
+	Code/CryAction/Vehicles/VehicleModificationParams.h
+	Code/CryAction/Vehicles/VehicleParams.h
+	Code/CryAction/Vehicles/VehiclePartAnimated.cpp
+	Code/CryAction/Vehicles/VehiclePartAnimated.h
+	Code/CryAction/Vehicles/VehiclePartAnimatedJoint.cpp
+	Code/CryAction/Vehicles/VehiclePartAnimatedJoint.h
+	Code/CryAction/Vehicles/VehiclePartAttachment.cpp
+	Code/CryAction/Vehicles/VehiclePartAttachment.h
+	Code/CryAction/Vehicles/VehiclePartBase.cpp
+	Code/CryAction/Vehicles/VehiclePartBase.h
+	Code/CryAction/Vehicles/VehiclePartDetachedEntity.cpp
+	Code/CryAction/Vehicles/VehiclePartDetachedEntity.h
+	Code/CryAction/Vehicles/VehiclePartEntity.cpp
+	Code/CryAction/Vehicles/VehiclePartEntity.h
+	Code/CryAction/Vehicles/VehiclePartLight.cpp
+	Code/CryAction/Vehicles/VehiclePartLight.h
+	Code/CryAction/Vehicles/VehiclePartMassBox.cpp
+	Code/CryAction/Vehicles/VehiclePartMassBox.h
+	Code/CryAction/Vehicles/VehiclePartParticleEffect.cpp
+	Code/CryAction/Vehicles/VehiclePartParticleEffect.h
+	Code/CryAction/Vehicles/VehiclePartStatic.cpp
+	Code/CryAction/Vehicles/VehiclePartStatic.h
+	Code/CryAction/Vehicles/VehiclePartSubPart.cpp
+	Code/CryAction/Vehicles/VehiclePartSubPart.h
+	Code/CryAction/Vehicles/VehiclePartSubPartWheel.cpp
+	Code/CryAction/Vehicles/VehiclePartSubPartWheel.h
+	Code/CryAction/Vehicles/VehiclePartTread.cpp
+	Code/CryAction/Vehicles/VehiclePartTread.h
 	Code/CryAction/Vehicles/VehicleSeat.cpp
 	Code/CryAction/Vehicles/VehicleSeat.h
+	Code/CryAction/Vehicles/VehicleSeatActionAnimation.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionAnimation.h
+	Code/CryAction/Vehicles/VehicleSeatActionLights.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionLights.h
+	Code/CryAction/Vehicles/VehicleSeatActionMovement.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionMovement.h
+	Code/CryAction/Vehicles/VehicleSeatActionPassengerIK.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionPassengerIK.h
+	Code/CryAction/Vehicles/VehicleSeatActionRotateTurret.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionRotateTurret.h
+	Code/CryAction/Vehicles/VehicleSeatActionSound.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionSound.h
+	Code/CryAction/Vehicles/VehicleSeatActionSteeringWheel.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionSteeringWheel.h
+	Code/CryAction/Vehicles/VehicleSeatActionWeapons.cpp
+	Code/CryAction/Vehicles/VehicleSeatActionWeapons.h
 	Code/CryAction/Vehicles/VehicleSeatGroup.cpp
 	Code/CryAction/Vehicles/VehicleSeatGroup.h
 	Code/CryAction/Vehicles/VehicleSeatSerializer.cpp
 	Code/CryAction/Vehicles/VehicleSeatSerializer.h
 	Code/CryAction/Vehicles/VehicleSystem.cpp
 	Code/CryAction/Vehicles/VehicleSystem.h
+	Code/CryAction/Vehicles/VehicleSystem_FactoryRegistration.cpp
+	Code/CryAction/Vehicles/VehicleUsableActionEnter.cpp
+	Code/CryAction/Vehicles/VehicleUsableActionEnter.h
+	Code/CryAction/Vehicles/VehicleUsableActionFlip.cpp
+	Code/CryAction/Vehicles/VehicleUsableActionFlip.h
+	Code/CryAction/Vehicles/VehicleUtils.cpp
+	Code/CryAction/Vehicles/VehicleUtils.h
+	Code/CryAction/Vehicles/VehicleViewActionThirdPerson.cpp
+	Code/CryAction/Vehicles/VehicleViewActionThirdPerson.h
+	Code/CryAction/Vehicles/VehicleViewBase.cpp
+	Code/CryAction/Vehicles/VehicleViewBase.h
+	Code/CryAction/Vehicles/VehicleViewFirstPerson.cpp
+	Code/CryAction/Vehicles/VehicleViewFirstPerson.h
+	Code/CryAction/Vehicles/VehicleViewRoadThirdPerson.cpp
+	Code/CryAction/Vehicles/VehicleViewRoadThirdPerson.h
+	Code/CryAction/Vehicles/VehicleViewThirdPerson.cpp
+	Code/CryAction/Vehicles/VehicleViewThirdPerson.h
+
 	Code/CryAction/ViewSystem.cpp
 	Code/CryAction/ViewSystem.h
 	Code/CryCommon/Cry3DEngine/CGF/CGFContent.h
