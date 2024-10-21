@@ -26,12 +26,12 @@ class CVehicle;
 
 // <title VehicleSystem>
 // Syntax: VehicleSystem
-class CScriptBind_Vehicle :
+class ScriptBind_Vehicle :
 	public CScriptableBase
 {
 public:
-	CScriptBind_Vehicle( ISystem *pSystem, IGameFramework *pGameFW );
-	virtual ~CScriptBind_Vehicle();
+	ScriptBind_Vehicle( ISystem *pSystem, IGameFramework *pGameFW );
+	virtual ~ScriptBind_Vehicle();
 
 	void Release() { delete this; };
 

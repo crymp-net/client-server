@@ -40,7 +40,7 @@ History:
 	if (!pEntity) return pH->EndFunction();
 
 //------------------------------------------------------------------------
-CScriptBind_VehicleSeat::CScriptBind_VehicleSeat(ISystem *pSystem, IGameFramework *pGameFW)
+ScriptBind_VehicleSeat::ScriptBind_VehicleSeat(ISystem *pSystem, IGameFramework *pGameFW)
 {	
 	m_pVehicleSystem = pGameFW->GetIVehicleSystem();
 	
@@ -51,20 +51,20 @@ CScriptBind_VehicleSeat::CScriptBind_VehicleSeat(ISystem *pSystem, IGameFramewor
 }
 
 //------------------------------------------------------------------------
-CScriptBind_VehicleSeat::~CScriptBind_VehicleSeat()
+ScriptBind_VehicleSeat::~ScriptBind_VehicleSeat()
 {  
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_VehicleSeat::RegisterGlobals()
+void ScriptBind_VehicleSeat::RegisterGlobals()
 {
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_VehicleSeat::RegisterMethods()
+void ScriptBind_VehicleSeat::RegisterMethods()
 {
 #undef SCRIPT_REG_CLASSNAME
-#define SCRIPT_REG_CLASSNAME &CScriptBind_VehicleSeat::
+#define SCRIPT_REG_CLASSNAME &ScriptBind_VehicleSeat::
 
 	SCRIPT_REG_TEMPLFUNC(Reset, "");
 	SCRIPT_REG_TEMPLFUNC(SetPassenger, "passengerId, thirdPerson");
@@ -80,7 +80,7 @@ void CScriptBind_VehicleSeat::RegisterMethods()
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_VehicleSeat::AttachTo(IVehicle *pVehicle, TVehicleSeatId seatId)
+void ScriptBind_VehicleSeat::AttachTo(IVehicle *pVehicle, TVehicleSeatId seatId)
 {
   IScriptTable *pScriptTable = pVehicle->GetEntity()->GetScriptTable();
 
@@ -110,7 +110,7 @@ void CScriptBind_VehicleSeat::AttachTo(IVehicle *pVehicle, TVehicleSeatId seatId
 }
 
 //------------------------------------------------------------------------
-CVehicleSeat* CScriptBind_VehicleSeat::GetVehicleSeat(IFunctionHandler *pH)
+CVehicleSeat* ScriptBind_VehicleSeat::GetVehicleSeat(IFunctionHandler *pH)
 {
   ScriptHandle handle;
   int seatId = 0;
@@ -133,7 +133,7 @@ CVehicleSeat* CScriptBind_VehicleSeat::GetVehicleSeat(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::Reset(IFunctionHandler *pH)
+int ScriptBind_VehicleSeat::Reset(IFunctionHandler *pH)
 {
 	CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH);
 	
@@ -144,7 +144,7 @@ int CScriptBind_VehicleSeat::Reset(IFunctionHandler *pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::SetPassenger(IFunctionHandler* pH, ScriptHandle passengerHandle, bool isThirdPerson)
+int ScriptBind_VehicleSeat::SetPassenger(IFunctionHandler* pH, ScriptHandle passengerHandle, bool isThirdPerson)
 {
 	CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH);
 
@@ -153,7 +153,7 @@ int CScriptBind_VehicleSeat::SetPassenger(IFunctionHandler* pH, ScriptHandle pas
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::RemovePassenger(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::RemovePassenger(IFunctionHandler* pH)
 {
 	CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH);
 
@@ -162,7 +162,7 @@ int CScriptBind_VehicleSeat::RemovePassenger(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::GetWeaponId(IFunctionHandler* pH, int weaponIndex)
+int ScriptBind_VehicleSeat::GetWeaponId(IFunctionHandler* pH, int weaponIndex)
 {
 	// returns Weapon Id 02/11/05 Tetsuji
 	CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH);
@@ -194,7 +194,7 @@ int CScriptBind_VehicleSeat::GetWeaponId(IFunctionHandler* pH, int weaponIndex)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::GetWeaponCount(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::GetWeaponCount(IFunctionHandler* pH)
 {
 	CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH);
 	int weaponCount = 0;
@@ -215,11 +215,11 @@ int CScriptBind_VehicleSeat::GetWeaponCount(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::SetAIWeapon(IFunctionHandler* pH, ScriptHandle weaponHandle)
+int ScriptBind_VehicleSeat::SetAIWeapon(IFunctionHandler* pH, ScriptHandle weaponHandle)
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{
-		pVehicleSeat->m_aiWeaponId = (EntityId)weaponHandle.n;
+		//pVehicleSeat->m_aiWeaponId = (EntityId)weaponHandle.n; //CryMP: Fixme
 		return pH->EndFunction(true);
 	}
 
@@ -227,7 +227,7 @@ int CScriptBind_VehicleSeat::SetAIWeapon(IFunctionHandler* pH, ScriptHandle weap
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::IsFree(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::IsFree(IFunctionHandler* pH)
 {
   if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
   {
@@ -238,7 +238,7 @@ int CScriptBind_VehicleSeat::IsFree(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::IsDriver(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::IsDriver(IFunctionHandler* pH)
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{
@@ -249,7 +249,7 @@ int CScriptBind_VehicleSeat::IsDriver(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::IsGunner(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::IsGunner(IFunctionHandler* pH)
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{
@@ -260,7 +260,7 @@ int CScriptBind_VehicleSeat::IsGunner(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::IsLocked(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::IsLocked(IFunctionHandler* pH)
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{
@@ -271,7 +271,7 @@ int CScriptBind_VehicleSeat::IsLocked(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_VehicleSeat::GetPassengerId(IFunctionHandler* pH)
+int ScriptBind_VehicleSeat::GetPassengerId(IFunctionHandler* pH)
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{

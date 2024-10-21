@@ -38,7 +38,7 @@ History:
   if (!pEntity) return pH->EndFunction();
 
 //------------------------------------------------------------------------
-CScriptBind_Vehicle::CScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGameFW)
+ScriptBind_Vehicle::ScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGameFW)
 {
 	m_pVehicleSystem = pGameFW->GetIVehicleSystem();
 
@@ -54,10 +54,10 @@ CScriptBind_Vehicle::CScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGame
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_Vehicle::RegisterMethods()
+void ScriptBind_Vehicle::RegisterMethods()
 {
 #undef SCRIPT_REG_CLASSNAME
-#define SCRIPT_REG_CLASSNAME &CScriptBind_Vehicle::
+#define SCRIPT_REG_CLASSNAME &ScriptBind_Vehicle::
 
 	SCRIPT_REG_TEMPLFUNC(SetOwnerId, "ownerId");
 	SCRIPT_REG_TEMPLFUNC(GetOwnerId, "");
@@ -131,7 +131,7 @@ void CScriptBind_Vehicle::RegisterMethods()
 }
 
 //------------------------------------------------------------------------
-void CScriptBind_Vehicle::AttachTo(IVehicle* pVehicle)
+void ScriptBind_Vehicle::AttachTo(IVehicle* pVehicle)
 {
 	IScriptTable* pScriptTable = pVehicle->GetEntity()->GetScriptTable();
 
@@ -148,7 +148,7 @@ void CScriptBind_Vehicle::AttachTo(IVehicle* pVehicle)
 }
 
 //------------------------------------------------------------------------
-CVehicle* CScriptBind_Vehicle::GetVehicle(IFunctionHandler* pH)
+CVehicle* ScriptBind_Vehicle::GetVehicle(IFunctionHandler* pH)
 {
 	ScriptHandle handle;
 	SmartScriptTable table;
@@ -165,12 +165,12 @@ CVehicle* CScriptBind_Vehicle::GetVehicle(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-CScriptBind_Vehicle::~CScriptBind_Vehicle()
+ScriptBind_Vehicle::~ScriptBind_Vehicle()
 {
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::Reset(IFunctionHandler* pH)
+int ScriptBind_Vehicle::Reset(IFunctionHandler* pH)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 
@@ -181,7 +181,7 @@ int CScriptBind_Vehicle::Reset(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetOwnerId(IFunctionHandler* pH, ScriptHandle ownerId)
+int ScriptBind_Vehicle::SetOwnerId(IFunctionHandler* pH, ScriptHandle ownerId)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 
@@ -192,7 +192,7 @@ int CScriptBind_Vehicle::SetOwnerId(IFunctionHandler* pH, ScriptHandle ownerId)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetOwnerId(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetOwnerId(IFunctionHandler* pH)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 
@@ -203,7 +203,7 @@ int CScriptBind_Vehicle::GetOwnerId(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetVehiclePhysicsStatus(IFunctionHandler* pH, SmartScriptTable statusTable)
+int ScriptBind_Vehicle::GetVehiclePhysicsStatus(IFunctionHandler* pH, SmartScriptTable statusTable)
 {
 	IVehicle* vehicle = GetVehicle(pH);
 	if (!vehicle)
@@ -262,7 +262,7 @@ int CScriptBind_Vehicle::GetVehiclePhysicsStatus(IFunctionHandler* pH, SmartScri
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetPlayerToSit(IFunctionHandler* pH, ScriptHandle playerId, int flags)
+int ScriptBind_Vehicle::SetPlayerToSit(IFunctionHandler* pH, ScriptHandle playerId, int flags)
 {
 	IVehicle* vehicle = GetVehicle(pH);
 	if (!vehicle)
@@ -289,7 +289,7 @@ int CScriptBind_Vehicle::SetPlayerToSit(IFunctionHandler* pH, ScriptHandle playe
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsPartInsideRadius(IFunctionHandler* pH, int slot, Vec3 pos, float radius)
+int ScriptBind_Vehicle::IsPartInsideRadius(IFunctionHandler* pH, int slot, Vec3 pos, float radius)
 {
 	IVehicle* vehicle = GetVehicle(pH);
 
@@ -322,7 +322,7 @@ int CScriptBind_Vehicle::IsPartInsideRadius(IFunctionHandler* pH, int slot, Vec3
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsInsideRadius(IFunctionHandler* pH, Vec3 pos, float radius)
+int ScriptBind_Vehicle::IsInsideRadius(IFunctionHandler* pH, Vec3 pos, float radius)
 {
 	IVehicle* vehicle = GetVehicle(pH);
 
@@ -338,7 +338,7 @@ int CScriptBind_Vehicle::IsInsideRadius(IFunctionHandler* pH, Vec3 pos, float ra
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsEmpty(IFunctionHandler* pH)
+int ScriptBind_Vehicle::IsEmpty(IFunctionHandler* pH)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 
@@ -349,7 +349,7 @@ int CScriptBind_Vehicle::IsEmpty(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetRepairableDamage(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetRepairableDamage(IFunctionHandler* pH)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 
@@ -371,7 +371,7 @@ int CScriptBind_Vehicle::GetRepairableDamage(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::StartAbandonTimer(IFunctionHandler* pH)
+int ScriptBind_Vehicle::StartAbandonTimer(IFunctionHandler* pH)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle)
@@ -391,7 +391,7 @@ int CScriptBind_Vehicle::StartAbandonTimer(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::KillAbandonTimer(IFunctionHandler* pH)
+int ScriptBind_Vehicle::KillAbandonTimer(IFunctionHandler* pH)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle)
@@ -403,7 +403,7 @@ int CScriptBind_Vehicle::KillAbandonTimer(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::Destroy(IFunctionHandler* pH)
+int ScriptBind_Vehicle::Destroy(IFunctionHandler* pH)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle)
@@ -416,7 +416,7 @@ int CScriptBind_Vehicle::Destroy(IFunctionHandler* pH)
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::MultiplyWithEntityLocalTM(IFunctionHandler* pH, ScriptHandle entityHandle, Vec3 pos)
+int ScriptBind_Vehicle::MultiplyWithEntityLocalTM(IFunctionHandler* pH, ScriptHandle entityHandle, Vec3 pos)
 {
 	GET_ENTITY;
 
@@ -442,7 +442,7 @@ int CScriptBind_Vehicle::MultiplyWithEntityLocalTM(IFunctionHandler* pH, ScriptH
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::MultiplyWithWorldTM(IFunctionHandler* pH, Vec3 pos)
+int ScriptBind_Vehicle::MultiplyWithWorldTM(IFunctionHandler* pH, Vec3 pos)
 {
 	GET_ENTITY;
 
@@ -450,7 +450,7 @@ int CScriptBind_Vehicle::MultiplyWithWorldTM(IFunctionHandler* pH, Vec3 pos)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::UpdateVehicleAnimation(IFunctionHandler* pH, ScriptHandle entityHandle, int slot)
+int ScriptBind_Vehicle::UpdateVehicleAnimation(IFunctionHandler* pH, ScriptHandle entityHandle, int slot)
 {
 	GET_ENTITY;
 
@@ -470,7 +470,7 @@ int CScriptBind_Vehicle::UpdateVehicleAnimation(IFunctionHandler* pH, ScriptHand
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::RefreshPhysicsGeometry(IFunctionHandler* pH, ScriptHandle partHandle, int slot, int physIndex)
+int ScriptBind_Vehicle::RefreshPhysicsGeometry(IFunctionHandler* pH, ScriptHandle partHandle, int slot, int physIndex)
 {
 	GET_ENTITY;
 
@@ -498,7 +498,7 @@ int CScriptBind_Vehicle::RefreshPhysicsGeometry(IFunctionHandler* pH, ScriptHand
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::AddSeat(IFunctionHandler* pH, SmartScriptTable paramsTable)
+int ScriptBind_Vehicle::AddSeat(IFunctionHandler* pH, SmartScriptTable paramsTable)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 	if (pVehicle)
@@ -510,7 +510,7 @@ int CScriptBind_Vehicle::AddSeat(IFunctionHandler* pH, SmartScriptTable paramsTa
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetExtensionActivation(IFunctionHandler* pH, const char* extension, bool bActivated)
+int ScriptBind_Vehicle::SetExtensionActivation(IFunctionHandler* pH, const char* extension, bool bActivated)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 	bool ok = false;
@@ -530,7 +530,7 @@ int CScriptBind_Vehicle::SetExtensionActivation(IFunctionHandler* pH, const char
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
+int ScriptBind_Vehicle::SetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 	bool ok = false;
@@ -542,7 +542,7 @@ int CScriptBind_Vehicle::SetExtensionParams(IFunctionHandler* pH, const char* ex
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
+int ScriptBind_Vehicle::GetExtensionParams(IFunctionHandler* pH, const char* extension, SmartScriptTable params)
 {
 	IVehicle* pVehicle = GetVehicle(pH);
 	bool ok = false;
@@ -554,7 +554,7 @@ int CScriptBind_Vehicle::GetExtensionParams(IFunctionHandler* pH, const char* ex
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::HasHelper(IFunctionHandler* pH, const char* name)
+int ScriptBind_Vehicle::HasHelper(IFunctionHandler* pH, const char* name)
 {
 	if (IVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -566,7 +566,7 @@ int CScriptBind_Vehicle::HasHelper(IFunctionHandler* pH, const char* name)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetHelperPos(IFunctionHandler* pH, const char* name, bool isInVehicleSpace)
+int ScriptBind_Vehicle::GetHelperPos(IFunctionHandler* pH, const char* name, bool isInVehicleSpace)
 {
 	if (IVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -583,7 +583,7 @@ int CScriptBind_Vehicle::GetHelperPos(IFunctionHandler* pH, const char* name, bo
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetHelperDir(IFunctionHandler* pH, const char* name, bool isInVehicleSpace)
+int ScriptBind_Vehicle::GetHelperDir(IFunctionHandler* pH, const char* name, bool isInVehicleSpace)
 {
 	if (IVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -603,7 +603,7 @@ int CScriptBind_Vehicle::GetHelperDir(IFunctionHandler* pH, const char* name, bo
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetHelperWorldPos(IFunctionHandler* pH, const char* name)
+int ScriptBind_Vehicle::GetHelperWorldPos(IFunctionHandler* pH, const char* name)
 {
 	if (IVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -615,7 +615,7 @@ int CScriptBind_Vehicle::GetHelperWorldPos(IFunctionHandler* pH, const char* nam
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::EnableMovement(IFunctionHandler* pH, bool enable)
+int ScriptBind_Vehicle::EnableMovement(IFunctionHandler* pH, bool enable)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -627,7 +627,7 @@ int CScriptBind_Vehicle::EnableMovement(IFunctionHandler* pH, bool enable)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::DisableEngine(IFunctionHandler* pH, bool disable)
+int ScriptBind_Vehicle::DisableEngine(IFunctionHandler* pH, bool disable)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -639,7 +639,7 @@ int CScriptBind_Vehicle::DisableEngine(IFunctionHandler* pH, bool disable)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::OnHit(IFunctionHandler* pH, ScriptHandle targetId, ScriptHandle shooterId, float damage, Vec3 position, float radius, char* pHitClass, bool explosion)
+int ScriptBind_Vehicle::OnHit(IFunctionHandler* pH, ScriptHandle targetId, ScriptHandle shooterId, float damage, Vec3 position, float radius, char* pHitClass, bool explosion)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -650,7 +650,7 @@ int CScriptBind_Vehicle::OnHit(IFunctionHandler* pH, ScriptHandle targetId, Scri
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::ProcessPassengerDamage(IFunctionHandler* pH, ScriptHandle passengerHandle, float actorHealth, float damage, const char* pDamageClass, bool explosion)
+int ScriptBind_Vehicle::ProcessPassengerDamage(IFunctionHandler* pH, ScriptHandle passengerHandle, float actorHealth, float damage, const char* pDamageClass, bool explosion)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !passengerHandle.n)
@@ -666,7 +666,7 @@ int CScriptBind_Vehicle::ProcessPassengerDamage(IFunctionHandler* pH, ScriptHand
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::OnPassengerKilled(IFunctionHandler* pH, ScriptHandle passengerHandle)
+int ScriptBind_Vehicle::OnPassengerKilled(IFunctionHandler* pH, ScriptHandle passengerHandle)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !passengerHandle.n)
@@ -681,7 +681,7 @@ int CScriptBind_Vehicle::OnPassengerKilled(IFunctionHandler* pH, ScriptHandle pa
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsUsable(IFunctionHandler* pH, ScriptHandle userHandle)
+int ScriptBind_Vehicle::IsUsable(IFunctionHandler* pH, ScriptHandle userHandle)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !userHandle.n)
@@ -692,7 +692,7 @@ int CScriptBind_Vehicle::IsUsable(IFunctionHandler* pH, ScriptHandle userHandle)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::OnUsed(IFunctionHandler* pH, ScriptHandle userHandle, int index)
+int ScriptBind_Vehicle::OnUsed(IFunctionHandler* pH, ScriptHandle userHandle, int index)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !userHandle.n)
@@ -703,7 +703,7 @@ int CScriptBind_Vehicle::OnUsed(IFunctionHandler* pH, ScriptHandle userHandle, i
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::EnterVehicle(IFunctionHandler* pH, ScriptHandle actorHandle, int seatId, bool isAnimationEnabled)
+int ScriptBind_Vehicle::EnterVehicle(IFunctionHandler* pH, ScriptHandle actorHandle, int seatId, bool isAnimationEnabled)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !actorHandle.n)
@@ -720,7 +720,7 @@ int CScriptBind_Vehicle::EnterVehicle(IFunctionHandler* pH, ScriptHandle actorHa
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::ChangeSeat(IFunctionHandler* pH, ScriptHandle actorHandle, int seatId, bool isAnimationEnabled)
+int ScriptBind_Vehicle::ChangeSeat(IFunctionHandler* pH, ScriptHandle actorHandle, int seatId, bool isAnimationEnabled)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !actorHandle.n)
@@ -733,7 +733,7 @@ int CScriptBind_Vehicle::ChangeSeat(IFunctionHandler* pH, ScriptHandle actorHand
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::ExitVehicle(IFunctionHandler* pH, ScriptHandle actorHandle)
+int ScriptBind_Vehicle::ExitVehicle(IFunctionHandler* pH, ScriptHandle actorHandle)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 	if (!pVehicle || !actorHandle.n)
@@ -749,7 +749,7 @@ int CScriptBind_Vehicle::ExitVehicle(IFunctionHandler* pH, ScriptHandle actorHan
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetComponentDamageRatio(IFunctionHandler* pH, const char* pComponentName)
+int ScriptBind_Vehicle::GetComponentDamageRatio(IFunctionHandler* pH, const char* pComponentName)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 
@@ -763,7 +763,7 @@ int CScriptBind_Vehicle::GetComponentDamageRatio(IFunctionHandler* pH, const cha
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetCollisionDamageThreshold(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetCollisionDamageThreshold(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -774,7 +774,7 @@ int CScriptBind_Vehicle::GetCollisionDamageThreshold(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetSelfCollisionMult(IFunctionHandler* pH, Vec3 velocity, Vec3 normal, int partId, ScriptHandle colliderId)
+int ScriptBind_Vehicle::GetSelfCollisionMult(IFunctionHandler* pH, Vec3 velocity, Vec3 normal, int partId, ScriptHandle colliderId)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -785,7 +785,7 @@ int CScriptBind_Vehicle::GetSelfCollisionMult(IFunctionHandler* pH, Vec3 velocit
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetMovementDamageRatio(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetMovementDamageRatio(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -799,7 +799,7 @@ int CScriptBind_Vehicle::GetMovementDamageRatio(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsDestroyed(IFunctionHandler* pH)
+int ScriptBind_Vehicle::IsDestroyed(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -810,7 +810,7 @@ int CScriptBind_Vehicle::IsDestroyed(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsFlipped(IFunctionHandler* pH)
+int ScriptBind_Vehicle::IsFlipped(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -821,7 +821,7 @@ int CScriptBind_Vehicle::IsFlipped(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::IsSubmerged(IFunctionHandler* pH)
+int ScriptBind_Vehicle::IsSubmerged(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 		return pH->EndFunction(pVehicle->IsSubmerged());
@@ -830,7 +830,7 @@ int CScriptBind_Vehicle::IsSubmerged(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetAmmoCount(IFunctionHandler* pH, const char* name, int amount)
+int ScriptBind_Vehicle::SetAmmoCount(IFunctionHandler* pH, const char* name, int amount)
 {
 	CVehicle* pVehicle = GetVehicle(pH);
 
@@ -842,7 +842,7 @@ int CScriptBind_Vehicle::SetAmmoCount(IFunctionHandler* pH, const char* name, in
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetMovementMode(IFunctionHandler* pH, int mode)
+int ScriptBind_Vehicle::SetMovementMode(IFunctionHandler* pH, int mode)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -858,7 +858,7 @@ int CScriptBind_Vehicle::SetMovementMode(IFunctionHandler* pH, int mode)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetMovementType(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetMovementType(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -891,7 +891,7 @@ int CScriptBind_Vehicle::GetMovementType(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::GetFrozenAmount(IFunctionHandler* pH)
+int ScriptBind_Vehicle::GetFrozenAmount(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 		return pH->EndFunction(pVehicle->GetFrozenAmount());
@@ -900,7 +900,7 @@ int CScriptBind_Vehicle::GetFrozenAmount(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetFrozenAmount(IFunctionHandler* pH, float frost)
+int ScriptBind_Vehicle::SetFrozenAmount(IFunctionHandler* pH, float frost)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 		pVehicle->SetFrozenAmount(frost);
@@ -910,7 +910,7 @@ int CScriptBind_Vehicle::SetFrozenAmount(IFunctionHandler* pH, float frost)
 
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::OpenAutomaticDoors(IFunctionHandler* pH)
+int ScriptBind_Vehicle::OpenAutomaticDoors(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -922,7 +922,7 @@ int CScriptBind_Vehicle::OpenAutomaticDoors(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::CloseAutomaticDoors(IFunctionHandler* pH)
+int ScriptBind_Vehicle::CloseAutomaticDoors(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -934,7 +934,7 @@ int CScriptBind_Vehicle::CloseAutomaticDoors(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::ExtractGears(IFunctionHandler* pH)
+int ScriptBind_Vehicle::ExtractGears(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -946,7 +946,7 @@ int CScriptBind_Vehicle::ExtractGears(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::RetractGears(IFunctionHandler* pH)
+int ScriptBind_Vehicle::RetractGears(IFunctionHandler* pH)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -958,7 +958,7 @@ int CScriptBind_Vehicle::RetractGears(IFunctionHandler* pH)
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::BlockAutomaticDoors(IFunctionHandler* pH, bool isBlocked)
+int ScriptBind_Vehicle::BlockAutomaticDoors(IFunctionHandler* pH, bool isBlocked)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{
@@ -971,7 +971,7 @@ int CScriptBind_Vehicle::BlockAutomaticDoors(IFunctionHandler* pH, bool isBlocke
 }
 
 //------------------------------------------------------------------------
-int CScriptBind_Vehicle::SetMovementSoundVolume(IFunctionHandler* pH, float volume)
+int ScriptBind_Vehicle::SetMovementSoundVolume(IFunctionHandler* pH, float volume)
 {
 	if (CVehicle* pVehicle = GetVehicle(pH))
 	{

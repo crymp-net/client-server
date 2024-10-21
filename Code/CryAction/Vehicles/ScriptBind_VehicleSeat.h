@@ -19,6 +19,7 @@ History:
 #endif
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
 struct IVehicleSystem;
 struct IGameFramework;
@@ -26,13 +27,13 @@ class CVehicleSeat;
 
 // <title VehicleSeat>
 // Syntax: VehicleSeat
-class CScriptBind_VehicleSeat :
+class ScriptBind_VehicleSeat :
 	public CScriptableBase
 {
 public:
 
-	CScriptBind_VehicleSeat( ISystem *pSystem, IGameFramework *pGameFW );
-	virtual ~CScriptBind_VehicleSeat();
+	ScriptBind_VehicleSeat( ISystem *pSystem, IGameFramework *pGameFW );
+	virtual ~ScriptBind_VehicleSeat();
 
 	void AttachTo(IVehicle *pVehicle, TVehicleSeatId seatId);
 	void Release() { delete this; };

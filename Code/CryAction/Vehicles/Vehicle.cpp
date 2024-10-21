@@ -50,8 +50,8 @@ History:
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "CryCommon/CryCore/StlUtils.h"
 #include "CryAction/GameFramework.h"
-#include "CryAction/ScriptBind_Vehicle.h"
-#include "CryAction/ScriptBind_VehicleSeat.h"
+#include "ScriptBind_Vehicle.h"
+#include "ScriptBind_VehicleSeat.h"
 
 #define ENGINESLOT_MINSPEED 0.05f
 
