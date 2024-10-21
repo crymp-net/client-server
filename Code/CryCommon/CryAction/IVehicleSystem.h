@@ -32,6 +32,8 @@ History:
 #include "IMovementController.h"
 #include "IActionMapManager.h"
 
+#include "CryAction/Vehicles/VehicleParams.h"
+
 
 class CGameObject;
 struct SViewParams;
@@ -44,13 +46,22 @@ class CMovementRequest;
 struct SMovementState;
 struct IVehicleEventListener;
 struct SVehicleEventParams;
-struct IFireController;
+struct IFireController
+{
+	virtual bool RequestFire(bool bFire) = 0; //CryMP: Fixme: Added this function, but is it complete?
+};
 struct IVehicleSystem;
 struct IVehicleSeat;
 struct IVehicleAnimation;
 struct IVehicleHelper;
 struct IVehicleComponent;
 struct IVehicleClient;
+
+struct IVehicleUsageEventListener
+{
+	virtual void OnStartUse(const EntityId playerId, IVehicle* pVehicle) = 0;
+	virtual void OnEndUse(const EntityId playerId, IVehicle* pVehicle) = 0;
+};
 
 // Summary
 //   Type used to hold vehicle's ActionIds
@@ -533,7 +544,7 @@ enum EVehicleActionEvent
 struct IVehicleAction
 	: public IVehicleObject
 {
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table) = 0;
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) = 0;
 	virtual void Reset() = 0;
 	virtual void Release() = 0;
 
@@ -920,7 +931,7 @@ struct IVehicleMovement
 	// Parameters:
 	//   pVehicle - pointer to the vehicle which will uses this movement instance
 	//   table - table which hold all the movement parameters
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table) = 0;
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) = 0;
 
   // Summary:
   //   PostInit, e.g. for things that need full physicalization
@@ -1056,7 +1067,7 @@ struct IVehicleMovement
 struct IVehicleView
 	: public IVehicleObject
 {
-	virtual bool Init(CVehicleSeat* pSeat, const SmartScriptTable &table) = 0;
+	virtual bool Init(CVehicleSeat* pSeat, const CVehicleParams& table) = 0;
 	virtual void Reset() = 0;
 	virtual void Release() = 0;
 	virtual void ResetPosition() = 0;
@@ -1134,8 +1145,8 @@ struct IVehicleSeat
     eVT_RemoteUsage,
   };
 
-  virtual bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const SmartScriptTable &paramsTable) = 0;
-	virtual void PostInit(IVehicle* pVehicle, const SmartScriptTable &paramsTable) = 0;
+  virtual bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& table) = 0;
+	virtual void PostInit(IVehicle* pVehicle) = 0;
   virtual void Reset() = 0;
   virtual void Release() = 0;
 
@@ -1586,7 +1597,7 @@ struct IVehicleDamageBehavior
 	//   table - script table which hold all the parameters
 	// Return value:
 	//   A boolean which indicate if the function succeeded
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table) = 0;
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) = 0;
 
 	// Summary:
 	//   Resets the damage behavior
@@ -1631,7 +1642,7 @@ struct IVehicleDamageBehavior
 struct IVehicleSeatAction
 	: public IVehicleObject
 {
-	virtual bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const SmartScriptTable &table) = 0;
+	virtual bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& table) = 0;
 	virtual void Reset() = 0;
 	virtual void Release() = 0;
 
@@ -1653,7 +1664,7 @@ struct IVehicleSeatAction
 //   Handles animations on the vehicle model
 struct IVehicleAnimation
 {
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table) = 0;
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) = 0;
 	virtual void Reset() = 0;
 	virtual void Release() = 0;
 
@@ -1711,7 +1722,7 @@ struct IVehicleAnimation
 
 struct IVehicleDamagesGroup
 {
-	virtual bool ParseDamagesGroup(const SmartScriptTable& table) = 0;
+	virtual bool ParseDamagesGroup(const CVehicleParams& table) = 0;
 };
 
 struct IVehicleDamagesTemplateRegistry
@@ -1803,7 +1814,7 @@ struct IVehicleSystem
 
 	virtual IVehicleDamagesTemplateRegistry* GetDamagesTemplateRegistry() = 0;
   
-  virtual bool GetVehicleLightDefaults(const char* type, SmartScriptTable& table) = 0;
+	virtual bool GetVehicleLightDefaults(const char* type, SmartScriptTable& table) { return false; }; //CryMP: Fixme: not implemented
 
   virtual void GetVehicleImplementations(SVehicleImpls& impls) = 0;
   virtual bool GetOptionalScript(const char* vehicleName, char* buf, size_t len) = 0;
