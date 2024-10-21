@@ -26,30 +26,30 @@ CVehicleDamageBehaviorBurn::~CVehicleDamageBehaviorBurn()
 
 
 //------------------------------------------------------------------------
-bool CVehicleDamageBehaviorBurn::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleDamageBehaviorBurn::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 	m_isActive = false;
-  m_damageRatioMin = 1.f;
-  m_timerId = -1;
+	m_damageRatioMin = 1.f;
+	m_timerId = -1;
 
 	m_shooterId = 0;
 
-  table->GetValue("damageRatioMin", m_damageRatioMin);
+	table.getAttr("damageRatioMin", m_damageRatioMin);
 
-	SmartScriptTable burnParams;
-	if (table->GetValue("Burn", burnParams))
+	if (CVehicleParams burnTable = table.findChild("Burn"))
 	{
-		burnParams->GetValue("damage", m_damage);
-    burnParams->GetValue("selfDamage", m_selfDamage);
-		burnParams->GetValue("interval", m_interval);
-		burnParams->GetValue("radius", m_radius);
+		burnTable.getAttr("damage", m_damage);
+		burnTable.getAttr("selfDamage", m_selfDamage);
+		burnTable.getAttr("interval", m_interval);
+		burnTable.getAttr("radius", m_radius);
 
 		m_pHelper = NULL;
 
-		char* pHelperName = NULL;
-		if (burnParams->GetValue("helper", pHelperName))
-			m_pHelper = m_pVehicle->GetHelper(pHelperName);
+		if (burnTable.haveAttr("helper"))
+			m_pHelper = m_pVehicle->GetHelper(burnTable.getAttr("helper"));
+		else
+			m_pHelper = NULL;
 
 		return true;
 	}

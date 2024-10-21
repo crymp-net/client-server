@@ -25,7 +25,7 @@ public:
 	CVehicleDamageBehaviorBurn() {}
 	virtual ~CVehicleDamageBehaviorBurn();
 
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
 	virtual void Reset();
 	virtual void Release() { delete this; }
 

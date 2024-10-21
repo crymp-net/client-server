@@ -142,275 +142,272 @@ bool CVehicleMovementHovercraft::SetParams(const SmartScriptTable &table)
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementHovercraft::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementHovercraft::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-  if (!CVehicleMovementBase::Init(pVehicle, table))
-    return false;
+    if (!CVehicleMovementBase::Init(pVehicle, table))
+        return false;
 
-  MOVEMENT_VALUE("hoverHeight", m_hoverHeight);
-  MOVEMENT_VALUE("hoverVariance", m_hoverVariance);
-  MOVEMENT_VALUE("hoverFrequency", m_hoverFrequency);
-  table->GetValue("numThrusters", m_numThrusters);
-  MOVEMENT_VALUE("thrusterMaxHeightCoeff", m_thrusterMaxHeightCoeff);
-  MOVEMENT_VALUE("stiffness", m_stiffness);
-  MOVEMENT_VALUE("damping", m_damping);
-  MOVEMENT_VALUE("velMax", m_velMax);
-  MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);
-  MOVEMENT_VALUE("acceleration", m_accel);
-  MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);
-  table->GetValue("pushOffset", m_pushOffset);
-  MOVEMENT_VALUE("pushTilt", m_pushTilt);
-  MOVEMENT_VALUE("linearDamping", m_linearDamping);
-  MOVEMENT_VALUE("turnRateMax", m_turnRateMax);
-  MOVEMENT_VALUE("turnRateReverse", m_turnRateReverse);
-  MOVEMENT_VALUE("turnAccel", m_turnAccel);
-  MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);
-  table->GetValue("cornerOffset", m_cornerOffset);
-  MOVEMENT_VALUE("cornerTilt", m_cornerTilt);
-  MOVEMENT_VALUE("turnDamping", m_turnDamping);
-  MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff);
-  table->GetValue("bEngineAlwaysOn", m_bEngineAlwaysOn);
-  table->GetValue("retainGravity", m_bRetainGravity);
-  MOVEMENT_VALUE("dampingLimit", m_dampLimitCoeff);
-  table->GetValue("sampleByHelpers", m_bSampleByHelpers);
-  MOVEMENT_VALUE("thrusterHeightAdaption", m_thrusterHeightAdaption);
-  table->GetValue("thrusterUpdate", m_thrusterUpdate);
+    MOVEMENT_VALUE("hoverHeight", m_hoverHeight);
+    MOVEMENT_VALUE("hoverVariance", m_hoverVariance);
+    MOVEMENT_VALUE("hoverFrequency", m_hoverFrequency);
+    table.getAttr("numThrusters", m_numThrusters);
+    MOVEMENT_VALUE("thrusterMaxHeightCoeff", m_thrusterMaxHeightCoeff);
+    MOVEMENT_VALUE("stiffness", m_stiffness);
+    MOVEMENT_VALUE("damping", m_damping);
+    MOVEMENT_VALUE("velMax", m_velMax);
+    MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);
+    MOVEMENT_VALUE("acceleration", m_accel);
+    MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);
+    table.getAttr("pushOffset", m_pushOffset);
+    MOVEMENT_VALUE("pushTilt", m_pushTilt);
+    MOVEMENT_VALUE("linearDamping", m_linearDamping);
+    MOVEMENT_VALUE("turnRateMax", m_turnRateMax);
+    MOVEMENT_VALUE("turnRateReverse", m_turnRateReverse);
+    MOVEMENT_VALUE("turnAccel", m_turnAccel);
+    MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);
+    table.getAttr("cornerOffset", m_cornerOffset);
+    MOVEMENT_VALUE("cornerTilt", m_cornerTilt);
+    MOVEMENT_VALUE("turnDamping", m_turnDamping);
+    MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff);
+    table.getAttr("bEngineAlwaysOn", m_bEngineAlwaysOn);
+    table.getAttr("retainGravity", m_bRetainGravity);
+    MOVEMENT_VALUE("dampingLimit", m_dampLimitCoeff);
+    table.getAttr("sampleByHelpers", m_bSampleByHelpers);
+    MOVEMENT_VALUE("thrusterHeightAdaption", m_thrusterHeightAdaption);
+    table.getAttr("thrusterUpdate", m_thrusterUpdate);
 
-	m_movementTweaks.Init(table);
-  m_prevAction.Clear();
+    //m_movementTweaks.Init(table);
+    m_prevAction.Clear();
 
-  m_maxSpeed = m_velMax;
+    m_maxSpeed = m_velMax;
 
-  InitThrusters(table);
+    InitThrusters(table);
 
-  // AI related
-  // Initialise the direction PID.
-  m_direction = 0.0f;
-  m_dirPID.Reset();
-  m_dirPID.m_kP = 0.6f;
-  m_dirPID.m_kD = 0.1f;
-  m_dirPID.m_kI = 0.01f;
+    // AI related
+    // Initialise the direction PID.
+    m_direction = 0.0f;
+    m_dirPID.Reset();
+    m_dirPID.m_kP = 0.6f;
+    m_dirPID.m_kD = 0.1f;
+    m_dirPID.m_kI = 0.01f;
 
-  // Initialise the steering.
-  m_steering = 0.0f;
-  m_prevAngle = 0.0f;
+    // Initialise the steering.
+    m_steering = 0.0f;
+    m_prevAngle = 0.0f;
 
-  return true;
+    return true;
 }
 
 //--------------------------------------------------------------------------------
-bool CVehicleMovementHovercraft::InitThrusters(SmartScriptTable table)
+bool CVehicleMovementHovercraft::InitThrusters(const CVehicleParams& table)
 {
-  // init thrusters
-  // by default put 1 on each corner of bbox and 1 in center.
-  // (equal mass distribution should be given)
-  // if sampleByHelpers is used, thrusters are placed at specified helpers
+    // init thrusters
+    // by default put 1 on each corner of bbox and 1 in center. 
+    // (equal mass distribution should be given)
+    // if sampleByHelpers is used, thrusters are placed at specified helpers
 
-  AABB bbox;
-  if (IVehiclePart* massPart = m_pVehicle->GetPart("mass"))
-  {
-    bbox = massPart->GetLocalBounds();
-  }
-  else
-  {
-    CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
-    m_pEntity->GetLocalBounds(bbox);
-  }
-
-  const Vec3 thrusterDir(0,0,1);
-
-  std::for_each(m_vecThrusters.begin(), m_vecThrusters.end(), stl::container_object_deleter());
-  m_vecThrusters.clear();
-
-  SmartScriptTable thrusterTable;
-  if (m_bSampleByHelpers)
-  {
-    if (table->GetValue("Thrusters", thrusterTable))
-      m_numThrusters = thrusterTable->Count();
+    AABB bbox;
+    if (IVehiclePart* massPart = m_pVehicle->GetPart("mass"))
+    {
+        bbox = massPart->GetLocalBounds();
+    }
     else
-      m_bSampleByHelpers = false;
-  }
-
-  m_vecThrusters.reserve(m_numThrusters);
-
-  // center
-  Vec3 center = bbox.GetCenter();
-  center.z = bbox.min.z;
-
-  if (!m_bSampleByHelpers)
-  {
-    // distribute thrusters
-    assert(m_numThrusters >= 1 && m_numThrusters <= 9);
-
-    if (m_numThrusters >= 4)
     {
-      // min & max
-      m_vecThrusters.push_back( new SThruster( bbox.min, thrusterDir ));
-      m_vecThrusters.push_back( new SThruster( Vec3( bbox.max.x, bbox.max.y, bbox.min.z ), thrusterDir ));
-      // remaining corners
-      m_vecThrusters.push_back( new SThruster( Vec3( bbox.min.x, bbox.max.y, bbox.min.z ), thrusterDir ));
-      m_vecThrusters.push_back( new SThruster( Vec3( bbox.max.x, bbox.min.y, bbox.min.z ), thrusterDir ));
+        CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
+        m_pEntity->GetLocalBounds(bbox);
     }
 
-    if (m_numThrusters >= 8)
+    const Vec3 thrusterDir(0, 0, 1);
+
+    std::for_each(m_vecThrusters.begin(), m_vecThrusters.end(), stl::container_object_deleter());
+    m_vecThrusters.clear();
+
+    if (m_bSampleByHelpers)
     {
-      // center along left and right side
-      m_vecThrusters.push_back( new SThruster( Vec3( bbox.min.x, center.y, bbox.min.z ), thrusterDir ));
-      m_vecThrusters.push_back( new SThruster( Vec3( bbox.max.x, center.y, bbox.min.z ), thrusterDir ));
-      // middle along front and rear edge
-      m_vecThrusters.push_back( new SThruster( Vec3( center.x, bbox.max.y, bbox.min.z ), thrusterDir ));
-      m_vecThrusters.push_back( new SThruster( Vec3( center.x, bbox.min.y, bbox.min.z ), thrusterDir ));
+        if (CVehicleParams thrusterTable = table.findChild("Thrusters"))
+            m_numThrusters = thrusterTable.getChildCount();
+        else
+            m_bSampleByHelpers = false;
     }
 
-    // center thruster
-    if (m_numThrusters == 1 || m_numThrusters == 5 || m_numThrusters == 9)
-      m_vecThrusters.push_back( new SThruster( center, thrusterDir ));
+    m_vecThrusters.reserve(m_numThrusters);
 
-    for (int i=0; i<m_numThrusters; ++i)
+    // center
+    Vec3 center = bbox.GetCenter();
+    center.z = bbox.min.z;
+
+    if (!m_bSampleByHelpers)
     {
-      m_vecThrusters[i]->heightInitial = m_vecThrusters[i]->pos.z;
-      m_vecThrusters[i]->hoverHeight = m_hoverHeight;
-      m_vecThrusters[i]->hoverVariance = m_hoverVariance;
-      m_vecThrusters[i]->heightAdaption = 0.f;
-    }
-  }
-  else
-  {
-    // place thrusters at helpers
-    for (int i=0; i<m_numThrusters; ++i)
-    {
-      m_vecThrusters.push_back( new SThruster( Vec3(ZERO), thrusterDir ));
+        // distribute thrusters
+        assert(m_numThrusters >= 1 && m_numThrusters <= 9);
 
-      SmartScriptTable thruster;
-      if (thrusterTable->GetAt(i+1, thruster))
-      {
-				m_vecThrusters[i]->pHelper = NULL;
-				m_vecThrusters[i]->pos.zero();
-
-        const char* pHelperName;
-        if (thruster->GetValue("helper", pHelperName))
-				{
-					if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(pHelperName))
-					{
-						m_vecThrusters[i]->pHelper = pHelper;
-						m_vecThrusters[i]->pos = pHelper->GetVehicleTM().GetTranslation();
-					}
-				}
-
-        m_vecThrusters[i]->heightInitial = m_vecThrusters[i]->pos.z;
-
-        float hoverHeight = -1.f;
-        thruster->GetValue("hoverHeight", hoverHeight);
-        m_vecThrusters[i]->hoverHeight = (hoverHeight >= 0.f) ? hoverHeight : m_hoverHeight;
-
-        float variance = -1.f;
-        thruster->GetValue("hoverVariance", variance);
-        m_vecThrusters[i]->hoverVariance = (variance >= 0.f) ? variance : m_hoverVariance;
-
-        float heightAdaption = -1.f;
-        thruster->GetValue("heightAdaption", heightAdaption);
-        m_vecThrusters[i]->heightAdaption = (heightAdaption >= 0.f) ? heightAdaption : m_thrusterHeightAdaption;
-
-        thruster->GetValue("cylinder", m_vecThrusters[i]->cylinderRadius);
-
-        if (m_vecThrusters[i]->heightAdaption > 0.f)
+        if (m_numThrusters >= 4)
         {
-          IVehiclePart* pPart;
-					if (m_vecThrusters[i]->pHelper)
-						pPart = m_vecThrusters[i]->pHelper->GetParentPart();
-					else
-						pPart = NULL;
-
-          if (pPart)
-          {
-            IVehiclePart* pParent = pPart->GetParent();
-
-            if (pParent)
-            {
-              pPart->SetMoveable();
-              pParent->SetMoveable();
-
-              m_vecThrusters[i]->pPart = pPart;
-              m_vecThrusters[i]->pParentPart = pParent;
-
-              Vec3 partPos = pParent->GetLocalTM(false).GetTranslation();
-              m_vecThrusters[i]->levelOffsetInitial = partPos.z;
-            }
-          }
+            // min & max
+            m_vecThrusters.push_back(new SThruster(bbox.min, thrusterDir));
+            m_vecThrusters.push_back(new SThruster(Vec3(bbox.max.x, bbox.max.y, bbox.min.z), thrusterDir));
+            // remaining corners
+            m_vecThrusters.push_back(new SThruster(Vec3(bbox.min.x, bbox.max.y, bbox.min.z), thrusterDir));
+            m_vecThrusters.push_back(new SThruster(Vec3(bbox.max.x, bbox.min.y, bbox.min.z), thrusterDir));
         }
 
-        thruster->GetValue("pushing", m_vecThrusters[i]->pushing);
-      }
+        if (m_numThrusters >= 8)
+        {
+            // center along left and right side
+            m_vecThrusters.push_back(new SThruster(Vec3(bbox.min.x, center.y, bbox.min.z), thrusterDir));
+            m_vecThrusters.push_back(new SThruster(Vec3(bbox.max.x, center.y, bbox.min.z), thrusterDir));
+            // middle along front and rear edge
+            m_vecThrusters.push_back(new SThruster(Vec3(center.x, bbox.max.y, bbox.min.z), thrusterDir));
+            m_vecThrusters.push_back(new SThruster(Vec3(center.x, bbox.min.y, bbox.min.z), thrusterDir));
+        }
+
+        // center thruster
+        if (m_numThrusters == 1 || m_numThrusters == 5 || m_numThrusters == 9)
+            m_vecThrusters.push_back(new SThruster(center, thrusterDir));
+
+        for (int i = 0; i < m_numThrusters; ++i)
+        {
+            m_vecThrusters[i]->heightInitial = m_vecThrusters[i]->pos.z;
+            m_vecThrusters[i]->hoverHeight = m_hoverHeight;
+            m_vecThrusters[i]->hoverVariance = m_hoverVariance;
+            m_vecThrusters[i]->heightAdaption = 0.f;
+        }
     }
-
-    assert(m_vecThrusters.size() == m_numThrusters);
-  }
-
-  // tilt thruster direction to outside
-  if (table->GetValue("thrusterTilt", m_thrusterTilt)){
-    if (m_thrusterTilt > 0.f && m_thrusterTilt < 90.f)
+    else
     {
-      m_thrusterTilt = DEG2RAD(m_thrusterTilt);
-      for (int i=0; i<m_numThrusters; ++i)
-      {
-        // tilt towards center.. rays are shot to -dir later
-        if (m_vecThrusters[i]->pos == center){
-          continue;
+        // place thrusters at helpers 
+        CVehicleParams thrusterTable = table.findChild("Thrusters");
+        for (int i = 0; i < m_numThrusters; ++i)
+        {
+            m_vecThrusters.push_back(new SThruster(Vec3(ZERO), thrusterDir));
+
+            if (CVehicleParams thruster = thrusterTable.getChild(i))
+            {
+                m_vecThrusters[i]->pHelper = NULL;
+                m_vecThrusters[i]->pos.zero();
+
+                if (thruster.haveAttr("helper"))
+                {
+                    if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(thruster.getAttr("helper")))
+                    {
+                        m_vecThrusters[i]->pHelper = pHelper;
+                        m_vecThrusters[i]->pos = pHelper->GetVehicleTM().GetTranslation();
+                    }
+                }
+
+                m_vecThrusters[i]->heightInitial = m_vecThrusters[i]->pos.z;
+
+                float hoverHeight = -1.f;
+                thruster.getAttr("hoverHeight", hoverHeight);
+                m_vecThrusters[i]->hoverHeight = (hoverHeight >= 0.f) ? hoverHeight : m_hoverHeight;
+
+                float variance = -1.f;
+                thruster.getAttr("hoverVariance", variance);
+                m_vecThrusters[i]->hoverVariance = (variance >= 0.f) ? variance : m_hoverVariance;
+
+                float heightAdaption = -1.f;
+                thruster.getAttr("heightAdaption", heightAdaption);
+                m_vecThrusters[i]->heightAdaption = (heightAdaption >= 0.f) ? heightAdaption : m_thrusterHeightAdaption;
+
+                thruster.getAttr("cylinder", m_vecThrusters[i]->cylinderRadius);
+
+                if (m_vecThrusters[i]->heightAdaption > 0.f)
+                {
+                    IVehiclePart* pPart;
+                    if (m_vecThrusters[i]->pHelper)
+                        pPart = m_vecThrusters[i]->pHelper->GetParentPart();
+                    else
+                        pPart = NULL;
+
+                    if (pPart)
+                    {
+                        IVehiclePart* pParent = pPart->GetParent();
+
+                        if (pParent)
+                        {
+                            pPart->SetMoveable();
+                            pParent->SetMoveable();
+
+                            m_vecThrusters[i]->pPart = pPart;
+                            m_vecThrusters[i]->pParentPart = pParent;
+
+                            Vec3 partPos = pParent->GetLocalTM(false).GetTranslation();
+                            m_vecThrusters[i]->levelOffsetInitial = partPos.z;
+                        }
+                    }
+                }
+
+                thruster.getAttr("pushing", m_vecThrusters[i]->pushing);
+            }
         }
-        Vec3 axis = Vec3(m_vecThrusters[i]->pos - center).Cross( thrusterDir );
-        axis.Normalize();
-        m_vecThrusters[i]->dir = Quat_tpl<float>::CreateRotationAA( m_thrusterTilt, axis ) * m_vecThrusters[i]->dir;
-        m_vecThrusters[i]->tiltAngle = m_thrusterTilt;
-      }
+
+        assert(m_vecThrusters.size() == m_numThrusters);
     }
-  }
 
-  // add thruster offset (so they don't touch ground intially)
-  float thrusterBottomOffset = 0;
-  if (table->GetValue("thrusterBottomOffset", thrusterBottomOffset) && thrusterBottomOffset > 0.f)
-  {
-    for (int i=0; i<m_numThrusters; ++i){
-      m_vecThrusters[i]->pos.z += thrusterBottomOffset;
+    // tilt thruster direction to outside   
+    if (table.getAttr("thrusterTilt", m_thrusterTilt)) {
+        if (m_thrusterTilt > 0.f && m_thrusterTilt < 90.f)
+        {
+            m_thrusterTilt = DEG2RAD(m_thrusterTilt);
+            for (int i = 0; i < m_numThrusters; ++i)
+            {
+                // tilt towards center.. rays are shot to -dir later
+                if (m_vecThrusters[i]->pos == center) {
+                    continue;
+                }
+                Vec3 axis = Vec3(m_vecThrusters[i]->pos - center).Cross(thrusterDir);
+                axis.Normalize();
+                m_vecThrusters[i]->dir = Quat_tpl<float>::CreateRotationAA(m_thrusterTilt, axis) * m_vecThrusters[i]->dir;
+                m_vecThrusters[i]->tiltAngle = m_thrusterTilt;
+            }
+        }
     }
-    m_hoverHeight += thrusterBottomOffset;
-  }
 
-  float mass = m_pVehicle->GetMass();
+    // add thruster offset (so they don't touch ground intially)
+    float thrusterBottomOffset = 0;
+    if (table.getAttr("thrusterBottomOffset", thrusterBottomOffset) && thrusterBottomOffset > 0.f)
+    {
+        for (int i = 0; i < m_numThrusters; ++i) {
+            m_vecThrusters[i]->pos.z += thrusterBottomOffset;
+        }
+        m_hoverHeight += thrusterBottomOffset;
+    }
 
-  // compute inertia [assumes box]
-  float width = bbox.max.x - bbox.min.x;
-  float length = bbox.max.y - bbox.min.y;
-  float height = bbox.max.z - bbox.min.z;
-  m_Inertia.x = mass * (sqr(length)+ sqr(height)) / 12;
-  m_Inertia.y = mass * (sqr(width) + sqr(height)) / 12;
-  m_Inertia.z = mass * (sqr(width) + sqr(length)) / 12;
+    float mass = m_pVehicle->GetMass();
 
-  m_massOffset = bbox.GetCenter();
-  //CryLog("[Hovercraft movement]: got mass offset (%f, %f, %f)", m_massOffset.x, m_massOffset.y, m_massOffset.z);
+    // compute inertia [assumes box]
+    float width = bbox.max.x - bbox.min.x;
+    float length = bbox.max.y - bbox.min.y;
+    float height = bbox.max.z - bbox.min.z;
+    m_Inertia.x = mass * (sqr(length) + sqr(height)) / 12;
+    m_Inertia.y = mass * (sqr(width) + sqr(height)) / 12;
+    m_Inertia.z = mass * (sqr(width) + sqr(length)) / 12;
 
-  float gravity = m_gravity.IsZero() ? 9.81f : m_gravity.len();
-  m_liftForce = mass * gravity;
+    m_massOffset = bbox.GetCenter();
+    //CryLog("[Hovercraft movement]: got mass offset (%f, %f, %f)", m_massOffset.x, m_massOffset.y, m_massOffset.z);
 
-  assert(m_numThrusters == m_vecThrusters.size());
+    float gravity = m_gravity.IsZero() ? 9.81f : m_gravity.len();
+    m_liftForce = mass * gravity;
 
-  int pushingThrusters = 0;
-  for (int i=0; i<m_numThrusters; ++i)
-  {
-    if (m_vecThrusters[i]->pushing)
-      ++pushingThrusters;
-  }
+    assert(m_numThrusters == m_vecThrusters.size());
 
-  float fThrusterForce = (m_numThrusters > 0) ? m_liftForce/pushingThrusters : 0.f;
+    int pushingThrusters = 0;
+    for (int i = 0; i < m_numThrusters; ++i)
+    {
+        if (m_vecThrusters[i]->pushing)
+            ++pushingThrusters;
+    }
 
-  for (int i=0; i<m_numThrusters; ++i)
-  {
-    if (m_vecThrusters[i]->pushing)
-      m_vecThrusters[i]->maxForce = fThrusterForce;
-  }
+    float fThrusterForce = (m_numThrusters > 0) ? m_liftForce / pushingThrusters : 0.f;
 
-  return true;
+    for (int i = 0; i < m_numThrusters; ++i)
+    {
+        if (m_vecThrusters[i]->pushing)
+            m_vecThrusters[i]->maxForce = fThrusterForce;
+    }
+
+    return true;
 }
-
 
 //------------------------------------------------------------------------
 bool CVehicleMovementHovercraft::StartEngine(EntityId driverId)

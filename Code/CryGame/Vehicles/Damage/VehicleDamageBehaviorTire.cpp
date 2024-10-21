@@ -23,18 +23,13 @@ History:
 
 
 //------------------------------------------------------------------------
-bool CVehicleDamageBehaviorBlowTire::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleDamageBehaviorBlowTire::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;  
 	m_isActive = false;  
-  m_aiImmobilizedTimer = -1;
+    m_aiImmobilizedTimer = -1;
   
-	SmartScriptTable BlowTireParams;
-	if (table->GetValue("BlowTire", BlowTireParams))
-	{				
-	}
-
-  gEnv->p3DEngine->FindParticleEffect(TIRE_BLOW_EFFECT, "CVehicleDamageBehaviorBlowTire::Init");
+    gEnv->p3DEngine->FindParticleEffect(TIRE_BLOW_EFFECT, "CVehicleDamageBehaviorBlowTire::Init");
 
 	return true;
 }

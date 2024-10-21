@@ -47,30 +47,26 @@ CVehicleActionDeployRope::~CVehicleActionDeployRope()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleActionDeployRope::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const SmartScriptTable &table)
+bool CVehicleActionDeployRope::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 	m_seatId = seatId;
 
-	SmartScriptTable deployRopeTable;
-	if (!table->GetValue("DeployRope", deployRopeTable))
+	CVehicleParams deployRopeTable = table.findChild("DeployRope");
+	if (!deployRopeTable)
 		return false;
 
-	char* pHelperName;
-	if (deployRopeTable->GetValue("helper", pHelperName))
-		m_pRopeHelper = m_pVehicle->GetHelper(pHelperName);
+	if (deployRopeTable.haveAttr("helper"))
+		m_pRopeHelper = m_pVehicle->GetHelper(deployRopeTable.getAttr("helper"));
 
-	char* pAnimName;
-	if (deployRopeTable->GetValue("animation", pAnimName))
+	if (deployRopeTable.haveAttr("animation"))
 	{
-		m_pDeployAnim = m_pVehicle->GetAnimation(pAnimName);
-
-		if (m_pDeployAnim)
+		if (m_pDeployAnim = m_pVehicle->GetAnimation(deployRopeTable.getAttr("animation")))
 		{
 			m_deployAnimOpenedId = m_pDeployAnim->GetStateId("opened");
 			m_deployAnimClosedId = m_pDeployAnim->GetStateId("closed");
 
-			if (m_deployAnimOpenedId == InvalidVehicleAnimStateId 
+			if (m_deployAnimOpenedId == InvalidVehicleAnimStateId
 				|| m_deployAnimClosedId == InvalidVehicleAnimStateId)
 			{
 				m_pDeployAnim = NULL;

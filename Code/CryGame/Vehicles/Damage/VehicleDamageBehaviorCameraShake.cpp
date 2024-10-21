@@ -26,7 +26,7 @@ CVehicleDamageBehaviorCameraShake::CVehicleDamageBehaviorCameraShake()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleDamageBehaviorCameraShake::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleDamageBehaviorCameraShake::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 	

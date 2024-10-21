@@ -251,7 +251,7 @@ public:
   CVehicleMovementBase();
   virtual ~CVehicleMovementBase();
 
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
 	virtual void PostInit();
   virtual void Release();
 	virtual void Reset();
@@ -491,13 +491,13 @@ struct SPID
 };
 
 #define MOVEMENT_VALUE_OPT(name, var, t) \
-	if (t->GetValue(name, var)) \
+	if (t.getAttr(name, var)) \
 	{ \
 		m_movementTweaks.AddValue(name, &var); \
 	}
 
 #define MOVEMENT_VALUE_REQ(name, var, t) \
-	if (t->GetValue(name, var)) \
+	if (t.getAttr(name, var)) \
 { \
 	m_movementTweaks.AddValue(name, &var); \
 } \
@@ -508,7 +508,7 @@ struct SPID
 }
 
 #define MOVEMENT_VALUE(name, var) \
-	if (table->GetValue(name, var)) \
+	if (table.getAttr(name, var)) \
 { \
 	m_movementTweaks.AddValue(name, &var); \
 } \
@@ -517,7 +517,6 @@ struct SPID
 	CryLog("Movement Init (%s) - failed to init due to missing <%s> parameter", m_pVehicle->GetEntity()->GetClass()->GetName(), name); \
 	return false; \
 }
-
 
 #endif
 

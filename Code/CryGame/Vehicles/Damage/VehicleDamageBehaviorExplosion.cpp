@@ -19,34 +19,34 @@ History:
 #include "CryGame/Environment/BattleDust.h"
 
 //------------------------------------------------------------------------
-bool CVehicleDamageBehaviorExplosion::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleDamageBehaviorExplosion::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
-  m_exploded = false;
+	m_exploded = false;
 
-	SmartScriptTable explosionParams;
-	if (table->GetValue("Explosion", explosionParams))
-	{
-		explosionParams->GetValue("damage", m_damage);
-		explosionParams->GetValue("radius", m_radius);
-		if (!explosionParams->GetValue("minRadius", m_minRadius))
-			m_minRadius = m_radius/2.0f;
-		if (!explosionParams->GetValue("physRadius", m_physRadius))
-			m_physRadius = min(m_radius, 5.0f);
-		if (!explosionParams->GetValue("minPhysRadius", m_minPhysRadius))
-			m_minPhysRadius = m_physRadius/2.0f;
-		explosionParams->GetValue("pressure", m_pressure);
+	CVehicleParams explosionParams = table.findChild("Explosion");
+	if (!explosionParams)
+		return false;
 
+	explosionParams.getAttr("damage", m_damage);
+	explosionParams.getAttr("radius", m_radius);
+	explosionParams.getAttr("pressure", m_pressure);
+
+	if (!explosionParams.getAttr("minRadius", m_minRadius))
+		m_minRadius = m_radius / 2.0f;
+
+	if (!explosionParams.getAttr("physRadius", m_physRadius))
+		m_physRadius = min(m_radius, 5.0f);
+
+	if (!explosionParams.getAttr("minPhysRadius", m_minPhysRadius))
+		m_minPhysRadius = m_physRadius / 2.0f;
+
+	if (explosionParams.haveAttr("helper"))
+		m_pHelper = m_pVehicle->GetHelper(explosionParams.getAttr("helper"));
+	else
 		m_pHelper = NULL;
 
-		char* pHelperName = NULL;
-		if (explosionParams->GetValue("helper", pHelperName))
-			m_pHelper = m_pVehicle->GetHelper(pHelperName);
-
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 //------------------------------------------------------------------------

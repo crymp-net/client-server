@@ -93,154 +93,152 @@ CVehicleMovementStdWheeled::~CVehicleMovementStdWheeled()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementStdWheeled::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementStdWheeled::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-	if (!CVehicleMovementBase::Init(pVehicle, table))
-	{
-		assert(0);
-    return false;
-	}
+    if (!CVehicleMovementBase::Init(pVehicle, table))
+    {
+        assert(0);
+        return false;
+    }
 
-  m_carParams.enginePower = 0.f;
-  m_carParams.kStabilizer = 0.f;
-  m_carParams.engineIdleRPM = 0.f;
-  m_carParams.engineMinRPM = m_carParams.engineMaxRPM = 0.f;
-  m_carParams.engineShiftDownRPM = m_carParams.engineShiftUpRPM = 0.f;
-  m_carParams.steerTrackNeutralTurn = 0.f;
+    m_carParams.enginePower = 0.f;
+    m_carParams.kStabilizer = 0.f;
+    m_carParams.engineIdleRPM = 0.f;
+    m_carParams.engineMinRPM = m_carParams.engineMaxRPM = 0.f;
+    m_carParams.engineShiftDownRPM = m_carParams.engineShiftUpRPM = 0.f;
+    m_carParams.steerTrackNeutralTurn = 0.f;
 
-  MOVEMENT_VALUE_OPT("steerSpeed", m_steerSpeed, table);
-  MOVEMENT_VALUE_OPT("steerSpeedMin", m_steerSpeedMin, table);
-  MOVEMENT_VALUE_OPT("steerSpeedScale", m_steerSpeedScale, table);
-  MOVEMENT_VALUE_OPT("steerSpeedScaleMin", m_steerSpeedScaleMin, table);
-  MOVEMENT_VALUE_OPT("kvSteerMax", m_kvSteerMax, table);
-  MOVEMENT_VALUE_OPT("v0SteerMax", m_v0SteerMax, table);
-  MOVEMENT_VALUE_OPT("steerRelaxation", m_steerRelaxation, table);
-  MOVEMENT_VALUE_OPT("vMaxSteerMax", m_vMaxSteerMax, table);
-  MOVEMENT_VALUE_OPT("pedalLimitMax", m_pedalLimitMax, table);
+    MOVEMENT_VALUE_OPT("steerSpeed", m_steerSpeed, table);
+    MOVEMENT_VALUE_OPT("steerSpeedMin", m_steerSpeedMin, table);
+    MOVEMENT_VALUE_OPT("steerSpeedScale", m_steerSpeedScale, table);
+    MOVEMENT_VALUE_OPT("steerSpeedScaleMin", m_steerSpeedScaleMin, table);
+    MOVEMENT_VALUE_OPT("kvSteerMax", m_kvSteerMax, table);
+    MOVEMENT_VALUE_OPT("v0SteerMax", m_v0SteerMax, table);
+    MOVEMENT_VALUE_OPT("steerRelaxation", m_steerRelaxation, table);
+    MOVEMENT_VALUE_OPT("vMaxSteerMax", m_vMaxSteerMax, table);
+    MOVEMENT_VALUE_OPT("pedalLimitMax", m_pedalLimitMax, table);
 
-  table->GetValue("rpmRelaxSpeed", m_rpmRelaxSpeed);
-  table->GetValue("rpmInterpSpeed", m_rpmInterpSpeed);
-  table->GetValue("rpmGearShiftSpeed", m_rpmGearShiftSpeed);
+    table.getAttr("rpmRelaxSpeed", m_rpmRelaxSpeed);
+    table.getAttr("rpmInterpSpeed", m_rpmInterpSpeed);
+    table.getAttr("rpmGearShiftSpeed", m_rpmGearShiftSpeed);
 
-  SmartScriptTable soundParams;
-  if (table->GetValue("SoundParams", soundParams))
-  {
-    soundParams->GetValue("roadBumpMinSusp", m_bumpMinSusp);
-    soundParams->GetValue("roadBumpMinSpeed", m_bumpMinSpeed);
-    soundParams->GetValue("roadBumpIntensity", m_bumpIntensityMult);
-    soundParams->GetValue("airbrake", m_airbrakeTime);
-  }
+    if (CVehicleParams soundParams = table.findChild("SoundParams"))
+    {
+        soundParams.getAttr("roadBumpMinSusp", m_bumpMinSusp);
+        soundParams.getAttr("roadBumpMinSpeed", m_bumpMinSpeed);
+        soundParams.getAttr("roadBumpIntensity", m_bumpIntensityMult);
+        soundParams.getAttr("airbrake", m_airbrakeTime);
+    }
 
-	m_action.steer = 0.0f;
-	m_action.pedal = 0.0f;
-	m_action.dsteer = 0.0f;
+    m_action.steer = 0.0f;
+    m_action.pedal = 0.0f;
+    m_action.dsteer = 0.0f;
 
-	// Initialise the steering history.
-	m_prevAngle = 0.0f;
+    // Initialise the steering history.
+    m_prevAngle = 0.0f;
 
-	m_rpmScale = 0.0f;
-	m_currentGear = 0;
-  m_avgLateralSlip = 0.f;
-  m_compressionMax = 0.f;
-  m_avgWheelRot = 0.f;
-  m_wheelContacts = 0;
+    m_rpmScale = 0.0f;
+    m_currentGear = 0;
+    m_avgLateralSlip = 0.f;
+    m_compressionMax = 0.f;
+    m_avgWheelRot = 0.f;
+    m_wheelContacts = 0;
 
-	if (!InitPhysics(table))
-		return false;
+    if (!InitPhysics(table))
+        return false;
 
-	m_movementTweaks.Init(table);
-	return true;
+   // m_movementTweaks.Init(table);
+    return true;
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementStdWheeled::InitPhysics(const SmartScriptTable &table)
+bool CVehicleMovementStdWheeled::InitPhysics(const CVehicleParams& table)
 {
-	SmartScriptTable wheeledTable;
-	if (!table->GetValue("Wheeled", wheeledTable))
-    return false;
+    CVehicleParams wheeledTable = table.findChild("Wheeled");
+    if (!wheeledTable)
+        return false;
 
-  m_carParams.maxTimeStep = 0.02f;
+    m_carParams.maxTimeStep = 0.02f;
 
-	MOVEMENT_VALUE_REQ("axleFriction", m_axleFrictionMin, wheeledTable);
-	MOVEMENT_VALUE_OPT("axleFrictionMax", m_axleFrictionMax, wheeledTable);
-	MOVEMENT_VALUE_REQ("brakeTorque", m_carParams.brakeTorque, wheeledTable);
-	MOVEMENT_VALUE_REQ("clutchSpeed", m_carParams.clutchSpeed, wheeledTable);
-	MOVEMENT_VALUE_REQ("damping", m_carParams.damping, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineIdleRPM", m_carParams.engineIdleRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineMaxRPM", m_carParams.engineMaxRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineMinRPM", m_carParams.engineMinRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineShiftDownRPM", m_carParams.engineShiftDownRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineShiftUpRPM", m_carParams.engineShiftUpRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("engineStartRPM", m_carParams.engineStartRPM, wheeledTable);
-	wheeledTable->GetValue("integrationType", m_carParams.iIntegrationType);
-	MOVEMENT_VALUE_REQ("stabilizer", m_carParams.kStabilizer, wheeledTable);
-	MOVEMENT_VALUE_OPT("minBrakingFriction", m_carParams.minBrakingFriction, wheeledTable);
-	MOVEMENT_VALUE_REQ("maxSteer", m_carParams.maxSteer, wheeledTable);
-	wheeledTable->GetValue("maxTimeStep", m_carParams.maxTimeStep);
-	wheeledTable->GetValue("minEnergy", m_carParams.minEnergy);
-	MOVEMENT_VALUE_REQ("slipThreshold", m_carParams.slipThreshold, wheeledTable);
-	MOVEMENT_VALUE_REQ("gearDirSwitchRPM", m_carParams.gearDirSwitchRPM, wheeledTable);
-	MOVEMENT_VALUE_REQ("dynFriction", m_carParams.kDynFriction, wheeledTable);
-	MOVEMENT_VALUE_OPT("latFriction", m_latFriction, wheeledTable);
-	MOVEMENT_VALUE_OPT("steerTrackNeutralTurn", m_carParams.steerTrackNeutralTurn, wheeledTable);
-	MOVEMENT_VALUE_OPT("suspDampingMin", m_suspDampingMin, wheeledTable);
-	MOVEMENT_VALUE_OPT("suspDampingMax", m_suspDampingMax, wheeledTable);
-  MOVEMENT_VALUE_OPT("suspDampingMaxSpeed", m_suspDampingMaxSpeed, wheeledTable);
-  MOVEMENT_VALUE_OPT("stabiMin", m_stabiMin, wheeledTable);
-  MOVEMENT_VALUE_OPT("stabiMax", m_stabiMax, wheeledTable);
-	MOVEMENT_VALUE_OPT("maxSpeed", m_maxSpeed, wheeledTable);
-  MOVEMENT_VALUE_OPT("brakeImpulse", m_brakeImpulse, wheeledTable);
+    MOVEMENT_VALUE_REQ("axleFriction", m_axleFrictionMin, wheeledTable);
+    MOVEMENT_VALUE_OPT("axleFrictionMax", m_axleFrictionMax, wheeledTable);
+    MOVEMENT_VALUE_REQ("brakeTorque", m_carParams.brakeTorque, wheeledTable);
+    MOVEMENT_VALUE_REQ("clutchSpeed", m_carParams.clutchSpeed, wheeledTable);
+    MOVEMENT_VALUE_REQ("damping", m_carParams.damping, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineIdleRPM", m_carParams.engineIdleRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineMaxRPM", m_carParams.engineMaxRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineMinRPM", m_carParams.engineMinRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineShiftDownRPM", m_carParams.engineShiftDownRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineShiftUpRPM", m_carParams.engineShiftUpRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("engineStartRPM", m_carParams.engineStartRPM, wheeledTable);
+    wheeledTable.getAttr("integrationType", m_carParams.iIntegrationType);
+    MOVEMENT_VALUE_REQ("stabilizer", m_carParams.kStabilizer, wheeledTable);
+    MOVEMENT_VALUE_OPT("minBrakingFriction", m_carParams.minBrakingFriction, wheeledTable);
+    MOVEMENT_VALUE_REQ("maxSteer", m_carParams.maxSteer, wheeledTable);
+    wheeledTable.getAttr("maxTimeStep", m_carParams.maxTimeStep);
+    wheeledTable.getAttr("minEnergy", m_carParams.minEnergy);
+    MOVEMENT_VALUE_REQ("slipThreshold", m_carParams.slipThreshold, wheeledTable);
+    MOVEMENT_VALUE_REQ("gearDirSwitchRPM", m_carParams.gearDirSwitchRPM, wheeledTable);
+    MOVEMENT_VALUE_REQ("dynFriction", m_carParams.kDynFriction, wheeledTable);
+    MOVEMENT_VALUE_OPT("latFriction", m_latFriction, wheeledTable);
+    MOVEMENT_VALUE_OPT("steerTrackNeutralTurn", m_carParams.steerTrackNeutralTurn, wheeledTable);
+    MOVEMENT_VALUE_OPT("suspDampingMin", m_suspDampingMin, wheeledTable);
+    MOVEMENT_VALUE_OPT("suspDampingMax", m_suspDampingMax, wheeledTable);
+    MOVEMENT_VALUE_OPT("suspDampingMaxSpeed", m_suspDampingMaxSpeed, wheeledTable);
+    MOVEMENT_VALUE_OPT("stabiMin", m_stabiMin, wheeledTable);
+    MOVEMENT_VALUE_OPT("stabiMax", m_stabiMax, wheeledTable);
+    MOVEMENT_VALUE_OPT("maxSpeed", m_maxSpeed, wheeledTable);
+    MOVEMENT_VALUE_OPT("brakeImpulse", m_brakeImpulse, wheeledTable);
 
-  int maxGear = 0;
-  if (wheeledTable->GetValue("maxGear", maxGear) && maxGear>0)
-    m_carParams.maxGear = maxGear+1; // to zero-based indexing
+    int maxGear = 0;
+    if (wheeledTable.getAttr("maxGear", maxGear) && maxGear > 0)
+        m_carParams.maxGear = maxGear + 1; // to zero-based indexing
 
-  m_carParams.axleFriction = m_axleFrictionMin;
-  m_axleFriction = m_axleFrictionMin;
-  m_stabi = m_carParams.kStabilizer;
+    m_carParams.axleFriction = m_axleFrictionMin;
+    m_axleFriction = m_axleFrictionMin;
+    m_stabi = m_carParams.kStabilizer;
 
-	if (wheeledTable->GetValue("enginePower", m_carParams.enginePower))
-	{
-		m_carParams.enginePower *= 1000.0f;
-		m_movementTweaks.AddValue("enginePower", &m_carParams.enginePower, true);
-	}
-	else
-	{
-		CryLog("Movement Init (%s) - failed to init due to missing <%s> parameter", m_pVehicle->GetEntity()->GetClass()->GetName(), "enginePower");
-		return false;
-	}
+    if (wheeledTable.getAttr("enginePower", m_carParams.enginePower))
+    {
+        m_carParams.enginePower *= 1000.0f;
+        m_movementTweaks.AddValue("enginePower", &m_carParams.enginePower, true);
+    }
+    else
+    {
+        CryLog("Movement Init (%s) - failed to init due to missing <%s> parameter", m_pVehicle->GetEntity()->GetClass()->GetName(), "enginePower");
+        return false;
+    }
 
-	if (g_pGameCVars->pVehicleQuality->GetIVal()==1)
-    m_carParams.maxTimeStep = max(m_carParams.maxTimeStep, 0.04f);
+    if (g_pGameCVars->pVehicleQuality->GetIVal() == 1)
+        m_carParams.maxTimeStep = max(m_carParams.maxTimeStep, 0.04f);
 
-	// don't submit maxBrakingFriction or rearWheelBrakingFrictionMult to physics, it's controlled by gamecode
-	MOVEMENT_VALUE_OPT("maxBrakingFriction", m_maxBrakingFriction, wheeledTable);
-	MOVEMENT_VALUE_OPT("rearWheelBrakingFrictionMult", m_rearWheelBrakingFrictionMult, wheeledTable);
+    // don't submit maxBrakingFriction to physics, it's controlled by gamecode
+    MOVEMENT_VALUE_OPT("maxBrakingFriction", m_maxBrakingFriction, wheeledTable);
 
-  m_carParams.pullTilt = 0.f;
-  wheeledTable->GetValue("pullTilt", m_carParams.pullTilt);
-  m_carParams.pullTilt = DEG2RAD(m_carParams.pullTilt);
-  m_movementTweaks.AddValue("pullTilt", &m_carParams.pullTilt);
+    m_carParams.pullTilt = 0.f;
+    wheeledTable.getAttr("pullTilt", m_carParams.pullTilt);
+    m_carParams.pullTilt = DEG2RAD(m_carParams.pullTilt);
+    m_movementTweaks.AddValue("pullTilt", &m_carParams.pullTilt);
 
-	SmartScriptTable gearRatiosTable;
-	if (wheeledTable->GetValue("gearRatios", gearRatiosTable))
-	{
-		int count = min(gearRatiosTable->Count(), 16);
+    if (CVehicleParams gearRatiosTable = wheeledTable.findChild("gearRatios"))
+    {
+        int count = min(gearRatiosTable.getChildCount(), 16);
 
-		for (int i=0; i<count; ++i)
-		{
-			m_gearRatios[i] = 0.f;
-			gearRatiosTable->GetAt(i+1, m_gearRatios[i]);
-		}
+        for (int i = 0; i < count; ++i)
+        {
+            m_gearRatios[i] = 0.f;
+            if (CVehicleParams gearRef = gearRatiosTable.getChild(i))
+                gearRef.getAttr("value", m_gearRatios[i]);
+        }
 
-		m_carParams.nGears = count;
-		m_carParams.gearRatios = m_gearRatios;
-	}
+        m_carParams.nGears = count;
+        m_carParams.gearRatios = m_gearRatios;
+    }
 
-	if (!table->GetValue("isBreakingOnIdle", m_isBreakingOnIdle))
-		m_isBreakingOnIdle = false;
+    if (!table.getAttr("isBreakingOnIdle", m_isBreakingOnIdle))
+        m_isBreakingOnIdle = false;
 
-	return true;
+    return true;
 }
 
 //------------------------------------------------------------------------

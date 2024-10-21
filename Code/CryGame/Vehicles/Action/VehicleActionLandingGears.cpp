@@ -47,7 +47,7 @@ CVehicleActionLandingGears::~CVehicleActionLandingGears()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleActionLandingGears::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleActionLandingGears::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 	m_pLandingGearsAnim = m_pVehicle->GetAnimation("landingGears");
@@ -55,17 +55,15 @@ bool CVehicleActionLandingGears::Init(IVehicle* pVehicle, const SmartScriptTable
 	m_altitudeToRetractGears = 10.0f;
 	m_landingDamages = 0.0f;
 
-	SmartScriptTable landingGearsTable;
-	if (table->GetValue("LandingGears", landingGearsTable))
+	if (CVehicleParams landingGearsTable = table.findChild("LandingGears"))
 	{
-		landingGearsTable->GetValue("altitudeToRetractGears", m_altitudeToRetractGears);
-		landingGearsTable->GetValue("landingDamages", m_landingDamages);
-		landingGearsTable->GetValue("velocityMax", m_velocityMax);
-		
-		char* pPartName = NULL;
-		if (landingGearsTable->GetValue("blockPartRotation", pPartName))
+		landingGearsTable.getAttr("altitudeToRetractGears", m_altitudeToRetractGears);
+		landingGearsTable.getAttr("landingDamages", m_landingDamages);
+		landingGearsTable.getAttr("velocityMax", m_velocityMax);
+
+		if (landingGearsTable.haveAttr("blockPartRotation"))
 		{
-			m_pPartToBlockRotation = m_pVehicle->GetPart(pPartName);
+			m_pPartToBlockRotation = m_pVehicle->GetPart(landingGearsTable.getAttr("blockPartRotation"));
 
 			if (m_pPartToBlockRotation)
 			{
@@ -77,7 +75,7 @@ bool CVehicleActionLandingGears::Init(IVehicle* pVehicle, const SmartScriptTable
 			}
 		}
 
-		landingGearsTable->GetValue("isOnlyAutoForPlayer", m_isOnlyAutoForPlayer);
+		landingGearsTable.getAttr("isOnlyAutoForPlayer", m_isOnlyAutoForPlayer);
 	}
 
 	if (!m_pLandingGearsAnim)

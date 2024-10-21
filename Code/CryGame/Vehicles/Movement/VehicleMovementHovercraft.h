@@ -105,7 +105,7 @@ public:
   CVehicleMovementHovercraft();
   virtual ~CVehicleMovementHovercraft();
 
-  virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
+  virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
   virtual void Release();
   virtual void Reset();
 	virtual void Physicalize();
@@ -137,7 +137,7 @@ public:
 
 protected:
 
-  bool InitThrusters(SmartScriptTable table);
+    bool InitThrusters(const CVehicleParams& table);
 
   // thrusters
   typedef std::vector<SThruster*> TThrusters;

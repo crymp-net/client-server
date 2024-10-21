@@ -24,23 +24,19 @@ CVehicleDamageBehaviorCollisionEx::~CVehicleDamageBehaviorCollisionEx()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleDamageBehaviorCollisionEx::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleDamageBehaviorCollisionEx::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 
 	//<CollisionEx component="CollisionDamages" damages="500">
 
-	SmartScriptTable collisionParams;
-	if (!table->GetValue("CollisionEx", collisionParams))
+	CVehicleParams collisionParams = table.findChild("CollisionEx");
+	if (!collisionParams)
 		return false;
 
-	char* pComponentName;
-	if (!collisionParams->GetValue("component", pComponentName))
-		return false;
+	m_componentName = collisionParams.getAttr("component");
 
-	m_componentName = pComponentName;
-
-	if (!collisionParams->GetValue("damages", m_damages))
+	if (!collisionParams.getAttr("damages", m_damages))
 		return false;
 
 	m_pVehicle->RegisterVehicleEventListener(this, "CollisionEx");

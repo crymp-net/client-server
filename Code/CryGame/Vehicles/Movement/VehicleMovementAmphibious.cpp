@@ -34,11 +34,12 @@ CVehicleMovementAmphibious::~CVehicleMovementAmphibious()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementAmphibious::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementAmphibious::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-  SmartScriptTable stdWheeled, stdBoat;
-  if (!table->GetValue("StdWheeled", stdWheeled) || !table->GetValue("StdBoat", stdBoat))
-    return false;
+    CVehicleParams stdWheeled = table.findChild("StdWheeled");
+    CVehicleParams stdBoat = table.findChild("StdBoat");
+    if (!stdWheeled || !stdBoat)
+        return false;
 
   if (!CVehicleMovementStdWheeled::Init(pVehicle, stdWheeled))
     return false;

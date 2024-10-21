@@ -91,7 +91,7 @@ CVehicleMovementBase::~CVehicleMovementBase()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementBase::Init(IVehicle* pVehicle, const SmartScriptTable& table)
+bool CVehicleMovementBase::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 	m_pEntity = pVehicle->GetEntity();
@@ -107,44 +107,41 @@ bool CVehicleMovementBase::Init(IVehicle* pVehicle, const SmartScriptTable& tabl
 	for (int i = 0; i < eVMA_Max; ++i)
 		m_animations[i] = 0;
 
-	SmartScriptTable animsTable;
-	if (table->GetValue("Animations", animsTable))
+	if (CVehicleParams animsTable = table.findChild("Animations"))
 	{
-		const char* engineAnim = "";
-		if (animsTable->GetValue("engine", engineAnim))
-			m_animations[eVMA_Engine] = m_pVehicle->GetAnimation(engineAnim);
+		if (animsTable.haveAttr("engine"))
+			m_animations[eVMA_Engine] = m_pVehicle->GetAnimation(animsTable.getAttr("engine"));
 	}
 
 	m_isEnginePowered = false;
-
 	m_isEngineStarting = false;
 	m_isEngineGoingOff = false;
+
 	m_engineStartup = 0.0f;
 	m_damage = 0.0f;
 
-	if (!table->GetValue("engineIgnitionTime", m_engineIgnitionTime))
+	if (!table.getAttr("engineIgnitionTime", m_engineIgnitionTime))
 		m_engineIgnitionTime = 1.6f;
 
 	// Sound params
-	const char* eventGroupName = m_pEntity->GetClass()->GetName();
+	string eventGroupName = m_pEntity->GetClass()->GetName();
 
-	SmartScriptTable soundParams;
-	if (table->GetValue("SoundParams", soundParams))
+	if (CVehicleParams soundParams = table.findChild("SoundParams"))
 	{
-		soundParams->GetValue("eventGroup", eventGroupName);
+		if (soundParams.haveAttr("eventGroup"))
+			eventGroupName = soundParams.getAttr("eventGroup");
 
-		const char* pEngineSoundPosName;
-		if (soundParams->GetValue("engineSoundPosition", pEngineSoundPosName))
+		if (soundParams.haveAttr("engineSoundPosition"))
 		{
-			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(pEngineSoundPosName))
+			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(soundParams.getAttr("engineSoundPosition")))
 				m_enginePos = pHelper->GetVehicleTM().GetTranslation();
 			else
 				m_enginePos.zero();
 		}
 
-		soundParams->GetValue("rpmPitchSpeed", m_rpmPitchSpeed);
-		soundParams->GetValue("runSoundDelay", m_runSoundDelay);
-		soundParams->GetValue("maxSlipSpeed", m_maxSoundSlipSpeed);
+		soundParams.getAttr("rpmPitchSpeed", m_rpmPitchSpeed);
+		soundParams.getAttr("runSoundDelay", m_runSoundDelay);
+		soundParams.getAttr("maxSlipSpeed", m_maxSoundSlipSpeed);
 
 		if (m_runSoundDelay > 0.f)
 		{
@@ -154,7 +151,7 @@ bool CVehicleMovementBase::Init(IVehicle* pVehicle, const SmartScriptTable& tabl
 	}
 
 	// init sound names
-	if (eventGroupName[0])
+	if (!eventGroupName.empty())
 	{
 		string prefix("sounds/vehicles:");
 		prefix.append(eventGroupName);
@@ -175,7 +172,7 @@ bool CVehicleMovementBase::Init(IVehicle* pVehicle, const SmartScriptTable& tabl
 
 	m_pEntitySoundsProxy = (IEntitySoundProxy*)m_pEntity->CreateProxy(ENTITY_PROXY_SOUND);
 	assert(m_pEntitySoundsProxy);
-	if (gEnv->pSoundSystem && !GetSoundName(eSID_Run).empty())
+	if (!GetSoundName(eSID_Run).empty())
 	{
 		gEnv->pSoundSystem->Precache(GetSoundName(eSID_Run).c_str(), FLAG_SOUND_DEFAULT_3D, FLAG_SOUND_PRECACHE_EVENT_DEFAULT);
 	}
@@ -201,19 +198,17 @@ bool CVehicleMovementBase::Init(IVehicle* pVehicle, const SmartScriptTable& tabl
 	if (IVehicleComponent* pComp = m_pVehicle->GetComponent("Engine"))
 		m_damageComponents.push_back(pComp);
 
-	SmartScriptTable boostTable;
-	if (table->GetValue("Boost", boostTable))
+	if (CVehicleParams boostTable = table.findChild("Boost"))
 	{
-		boostTable->GetValue("endurance", m_boostEndurance);
-		boostTable->GetValue("regeneration", m_boostRegen);
-		boostTable->GetValue("strength", m_boostStrength);
+		boostTable.getAttr("endurance", m_boostEndurance);
+		boostTable.getAttr("regeneration", m_boostRegen);
+		boostTable.getAttr("strength", m_boostStrength);
 	}
 
-	SmartScriptTable airDampTable;
-	if (table->GetValue("AirDamp", airDampTable))
+	if (CVehicleParams airDampTable = table.findChild("AirDamp"))
 	{
-		airDampTable->GetValue("dampAngle", m_dampAngle);
-		airDampTable->GetValue("dampAngVel", m_dampAngVel);
+		airDampTable.getAttr("dampAngle", m_dampAngle);
+		airDampTable.getAttr("dampAngVel", m_dampAngVel);
 	}
 
 	ResetBoost();

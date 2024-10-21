@@ -26,7 +26,7 @@ public:
   CVehicleMovementAmphibious();
   virtual ~CVehicleMovementAmphibious();
 
-  virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
+  virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
   virtual void PostInit();
   virtual void Reset();  
   virtual void PostPhysicalize();

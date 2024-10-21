@@ -45,7 +45,7 @@ CVehicleMovementVTOL::CVehicleMovementVTOL()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementVTOL::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementVTOL::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	if (!CVehicleMovementHelicopter::Init(pVehicle, table))
 		return false;
@@ -71,12 +71,12 @@ bool CVehicleMovementVTOL::Init(IVehicle* pVehicle, const SmartScriptTable &tabl
 	m_wingHorizontalStateId = InvalidVehicleAnimStateId;
 	m_wingVerticalStateId = InvalidVehicleAnimStateId;
 
-	if (!table->GetValue("timeUntilWingsRotate", m_timeUntilWingsRotate))
+	if (!table.getAttr("timeUntilWingsRotate", m_timeUntilWingsRotate))
 		m_timeUntilWingsRotate = 0.65f;
 
 	m_engineUpDir.Set(0.0f, 0.0f, 1.0f);
 
-	if (!table->GetValue("wingsSpeed", m_wingsSpeed))
+	if (!table.getAttr("wingsSpeed", m_wingsSpeed))
 		m_wingsSpeed = 1.0f;
 
 	m_playerDampingBase *= 3.0f;

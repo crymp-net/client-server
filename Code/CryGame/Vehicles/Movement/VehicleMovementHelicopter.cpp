@@ -61,45 +61,45 @@ CVehicleMovementHelicopter::CVehicleMovementHelicopter()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementHelicopter::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementHelicopter::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	if (!CVehicleMovementBase::Init(pVehicle, table))
 		assert(0);
 
 	MOVEMENT_VALUE("engineWarmupDelay", m_engineWarmupDelay);
 
-  // heli abilities
-  MOVEMENT_VALUE("altitudeMax", m_altitudeMax);
-  MOVEMENT_VALUE("rotorDiskTiltScale", m_rotorDiskTiltScale);
-  MOVEMENT_VALUE("pitchResponsiveness", m_pitchResponsiveness);
-  MOVEMENT_VALUE("rollResponsiveness", m_rollResponsiveness);
+	// heli abilities
+	MOVEMENT_VALUE("altitudeMax", m_altitudeMax);
+	MOVEMENT_VALUE("rotorDiskTiltScale", m_rotorDiskTiltScale);
+	MOVEMENT_VALUE("pitchResponsiveness", m_pitchResponsiveness);
+	MOVEMENT_VALUE("rollResponsiveness", m_rollResponsiveness);
 	MOVEMENT_VALUE("yawResponsiveness", m_yawResponsiveness);
 	MOVEMENT_VALUE("enginePowerMax", m_enginePowerMax);
 	MOVEMENT_VALUE("rotationDamping", m_rotationDamping);
 	MOVEMENT_VALUE("yawPerRoll", m_yawPerRoll);
 
-  // high-level controller abilities
-  MOVEMENT_VALUE("maxYawRate", m_maxYawRate);
-  MOVEMENT_VALUE("maxFwdSpeed", m_maxFwdSpeed);
-  MOVEMENT_VALUE("maxLeftSpeed", m_maxLeftSpeed);
-  MOVEMENT_VALUE("maxUpSpeed", m_maxUpSpeed);
-  MOVEMENT_VALUE("basicSpeedFraction", m_basicSpeedFraction);
-  MOVEMENT_VALUE("yawDecreaseWithSpeed", m_yawDecreaseWithSpeed);
-  MOVEMENT_VALUE("tiltPerVelDifference", m_tiltPerVelDifference);
-  MOVEMENT_VALUE("maxTiltAngle", m_maxTiltAngle);
-  MOVEMENT_VALUE("extraRollForTurn", m_extraRollForTurn);
+	// high-level controller abilities
+	MOVEMENT_VALUE("maxYawRate", m_maxYawRate);
+	MOVEMENT_VALUE("maxFwdSpeed", m_maxFwdSpeed);
+	MOVEMENT_VALUE("maxLeftSpeed", m_maxLeftSpeed);
+	MOVEMENT_VALUE("maxUpSpeed", m_maxUpSpeed);
+	MOVEMENT_VALUE("basicSpeedFraction", m_basicSpeedFraction);
+	MOVEMENT_VALUE("yawDecreaseWithSpeed", m_yawDecreaseWithSpeed);
+	MOVEMENT_VALUE("tiltPerVelDifference", m_tiltPerVelDifference);
+	MOVEMENT_VALUE("maxTiltAngle", m_maxTiltAngle);
+	MOVEMENT_VALUE("extraRollForTurn", m_extraRollForTurn);
 	MOVEMENT_VALUE("rollForTurnForce", m_rollForTurnForce);
-  MOVEMENT_VALUE("yawPerRoll", m_yawPerRoll);
+	MOVEMENT_VALUE("yawPerRoll", m_yawPerRoll);
 	MOVEMENT_VALUE("pitchActionPerTilt", m_pitchActionPerTilt);
 	MOVEMENT_VALUE("pitchInputConst", m_pitchInputConst);
-  MOVEMENT_VALUE("powerInputConst", m_powerInputConst);
-  MOVEMENT_VALUE("powerInputDamping", m_powerInputDamping);
+	MOVEMENT_VALUE("powerInputConst", m_powerInputConst);
+	MOVEMENT_VALUE("powerInputDamping", m_powerInputDamping);
 	MOVEMENT_VALUE("relaxForce", m_relaxForce);
-  MOVEMENT_VALUE("yawInputConst", m_yawInputConst);
-  MOVEMENT_VALUE("yawInputDamping", m_yawInputDamping);
+	MOVEMENT_VALUE("yawInputConst", m_yawInputConst);
+	MOVEMENT_VALUE("yawInputDamping", m_yawInputDamping);
 	MOVEMENT_VALUE("maxRollAngle", m_maxRollAngle);
 
-	m_movementTweaks.Init(table);
+	//m_movementTweaks.Init(table);
 
 	// Initialise the power PID.
 	m_powerPID.Reset();
@@ -107,7 +107,7 @@ bool CVehicleMovementHelicopter::Init(IVehicle* pVehicle, const SmartScriptTable
 	m_powerPID.m_kD = 0.01f;
 	m_powerPID.m_kI = 0.0001f;
 
-  m_maxSpeed = 40.f; // empirically determined
+	m_maxSpeed = 40.f; // empirically determined
 
 	m_pRotorAnim = NULL;
 
@@ -125,20 +125,19 @@ bool CVehicleMovementHelicopter::Init(IVehicle* pVehicle, const SmartScriptTable
 	m_yawPID.m_kI = 0.0f;
 	m_yawPID.m_kD = 0.0f;
 
-  // high-level controller
+	// high-level controller
 	Ang3 angles = m_pEntity->GetWorldAngles();
-  m_desiredDir = angles.z;
+	m_desiredDir = angles.z;
 
-  m_desiredHeight = m_pEntity->GetWorldPos().z;
-  m_lastDir = m_desiredDir;
-  m_enginePower = 0.0f;
+	m_desiredHeight = m_pEntity->GetWorldPos().z;
+	m_lastDir = m_desiredDir;
+	m_enginePower = 0.0f;
 
 	m_isTouchingGround = false;
 	m_timeOnTheGround = 50.0f;
 
-	char* pRotorPartName = NULL;
-	if (table->GetValue("rotorPartName", pRotorPartName))
-		m_pRotorPart = m_pVehicle->GetPart(pRotorPartName);
+	if (table.haveAttr("rotorPartName"))
+		m_pRotorPart = m_pVehicle->GetPart(table.getAttr("rotorPartName"));
 	else
 		m_pRotorPart = NULL;
 

@@ -67,35 +67,35 @@ CVehicleMovementWarrior::~CVehicleMovementWarrior()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementWarrior::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementWarrior::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-  SmartScriptTable hovercraftTable;
-  if (!table->GetValue("Hovercraft", hovercraftTable))
-    return false;
+    CVehicleParams hovercraftTable = table.findChild("Hovercraft");
+    if (!hovercraftTable)
+        return false;
 
-  if (!CVehicleMovementHovercraft::Init(pVehicle, hovercraftTable))
-    return false;
+    if (!CVehicleMovementHovercraft::Init(pVehicle, hovercraftTable))
+        return false;
 
-  table->GetValue("maxThrustersDamaged", m_maxThrustersDamaged);
-  table->GetValue("collapsedFeetAngle", m_collapsedFeetAngle);
-  table->GetValue("collapsedLegAngle", m_collapsedLegAngle);
-  table->GetValue("recoverTime", m_recoverTime);
+    table.getAttr("maxThrustersDamaged", m_maxThrustersDamaged);
+    table.getAttr("collapsedFeetAngle", m_collapsedFeetAngle);
+    table.getAttr("collapsedLegAngle", m_collapsedLegAngle);
+    table.getAttr("recoverTime", m_recoverTime);
 
-  // save original thruster values
-  m_thrustersInit.reserve(m_vecThrusters.size());
+    // save original thruster values
+    m_thrustersInit.reserve(m_vecThrusters.size());
 
-  for (TThrusters::iterator it=m_vecThrusters.begin(); it!=m_vecThrusters.end(); ++it)
-  {
-    m_thrustersInit.push_back( new SThruster(**it) );
-  }
+    for (TThrusters::iterator it = m_vecThrusters.begin(); it != m_vecThrusters.end(); ++it)
+    {
+        m_thrustersInit.push_back(new SThruster(**it));
+    }
 
-  m_pTurret = m_pVehicle->GetPart("turret1");
-  m_pCannon = m_pVehicle->GetPart("cannon");
-  m_pWing   = m_pVehicle->GetPart("generator");
+    m_pTurret = m_pVehicle->GetPart("turret1");
+    m_pCannon = m_pVehicle->GetPart("cannon");
+    m_pWing = m_pVehicle->GetPart("generator");
 
-	m_pPlatformPos = m_pVehicle->GetHelper("platform_pos");
-  
-  return true;
+    m_pPlatformPos = m_pVehicle->GetHelper("platform_pos");
+
+    return true;
 }
 
 

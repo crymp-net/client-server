@@ -62,97 +62,95 @@ CVehicleMovementStdBoat::~CVehicleMovementStdBoat()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleMovementStdBoat::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleMovementStdBoat::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-  if (!CVehicleMovementBase::Init(pVehicle, table))
-    return false;
+    if (!CVehicleMovementBase::Init(pVehicle, table))
+        return false;
 
-  MOVEMENT_VALUE("velMax", m_velMax);
-  MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);
-  MOVEMENT_VALUE("acceleration", m_accel);
-  MOVEMENT_VALUE("accelerationVelMax", m_accelVelMax);
-  MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);
-  MOVEMENT_VALUE("pushTilt", m_pushTilt);
-  MOVEMENT_VALUE("turnRateMax", m_turnRateMax);
-  MOVEMENT_VALUE("turnAccel", m_turnAccel);
-  MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);
-  MOVEMENT_VALUE("cornerTilt", m_cornerTilt);
-  MOVEMENT_VALUE("turnDamping", m_turnDamping);
-  MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff);
-  MOVEMENT_VALUE_OPT("pedalLimitReverse", m_pedalLimitReverse, table);
-  MOVEMENT_VALUE_OPT("turnVelocityMult", m_turnVelocityMult, table);
-  MOVEMENT_VALUE_OPT("velLift", m_velLift, table);
+    MOVEMENT_VALUE("velMax", m_velMax);
+    MOVEMENT_VALUE("velMaxReverse", m_velMaxReverse);
+    MOVEMENT_VALUE("acceleration", m_accel);
+    MOVEMENT_VALUE("accelerationVelMax", m_accelVelMax);
+    MOVEMENT_VALUE("accelerationMultiplier", m_accelCoeff);
+    MOVEMENT_VALUE("pushTilt", m_pushTilt);
+    MOVEMENT_VALUE("turnRateMax", m_turnRateMax);
+    MOVEMENT_VALUE("turnAccel", m_turnAccel);
+    MOVEMENT_VALUE("cornerForce", m_cornerForceCoeff);
+    MOVEMENT_VALUE("cornerTilt", m_cornerTilt);
+    MOVEMENT_VALUE("turnDamping", m_turnDamping);
+    MOVEMENT_VALUE("turnAccelMultiplier", m_turnAccelCoeff);
+    MOVEMENT_VALUE_OPT("pedalLimitReverse", m_pedalLimitReverse, table);
+    MOVEMENT_VALUE_OPT("turnVelocityMult", m_turnVelocityMult, table);
+    MOVEMENT_VALUE_OPT("velLift", m_velLift, table);
 
-  table->GetValue("waveIdleStrength", m_waveIdleStrength);
-  table->GetValue("waveSpeedMult", m_waveSpeedMult);
+    table.getAttr("waveIdleStrength", m_waveIdleStrength);
+    table.getAttr("waveSpeedMult", m_waveSpeedMult);
 
-  const char* helper = "";
+    if (table.haveAttr("cornerHelper"))
+    {
+        if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(table.getAttr("cornerHelper")))
+            m_cornerOffset = pHelper->GetVehicleTM().GetTranslation();
+    }
 
-  if (table->GetValue("cornerHelper", helper))
-	{
-		if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(helper))
-			m_cornerOffset = pHelper->GetVehicleTM().GetTranslation();
-	}
+    if (table.haveAttr("pushHelper"))
+    {
+        if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(table.getAttr("pushHelper")))
+            m_pushOffset = pHelper->GetVehicleTM().GetTranslation();
+    }
 
-  if (table->GetValue("pushHelper", helper))
-	{
-		if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(helper))
-			m_pushOffset = pHelper->GetVehicleTM().GetTranslation();
-	}
+    //m_movementTweaks.Init(table);
 
-	m_movementTweaks.Init(table);
+    // compute inertia [assumes box]
+    AABB bbox;
 
-  // compute inertia [assumes box]
-  AABB bbox;
+    IVehiclePart* pMassPart = pVehicle->GetPart("mass");
+    if (!pMassPart)
+        pMassPart = pVehicle->GetPart("massBox");
 
-  IVehiclePart* pMassPart = pVehicle->GetPart("mass");
-  if (!pMassPart)
-    pMassPart = pVehicle->GetPart("massBox");
+    if (pMassPart)
+    {
+        bbox = pMassPart->GetLocalBounds();
+    }
+    else
+    {
+        CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
+        m_pEntity->GetLocalBounds(bbox);
+    }
 
-  if (pMassPart)
-	{
-		bbox = pMassPart->GetLocalBounds();
-	}
-	else
-	{
-		CryLogWarning("[CVehicleMovementStdBoat]: initialization: No \"mass\" geometry found!");
-		m_pEntity->GetLocalBounds(bbox);
-	}
+    m_maxSpeed = m_velMax;
+    float mass = pVehicle->GetMass();
 
-  m_maxSpeed = m_velMax;
-	float mass = pVehicle->GetMass();
+    float width = bbox.max.x - bbox.min.x;
+    float length = bbox.max.y - bbox.min.y;
+    float height = bbox.max.z - bbox.min.z;
+    m_Inertia.x = mass * (sqr(length) + sqr(height)) / 12;
+    m_Inertia.y = mass * (sqr(width) + sqr(height)) / 12;
+    m_Inertia.z = mass * (sqr(width) + sqr(length)) / 12;
 
-  float width = bbox.max.x - bbox.min.x;
-  float length = bbox.max.y - bbox.min.y;
-  float height = bbox.max.z - bbox.min.z;
-  m_Inertia.x = mass * (sqr(length)+ sqr(height)) / 12;
-  m_Inertia.y = mass * (sqr(width) + sqr(height)) / 12;
-  m_Inertia.z = mass * (sqr(width) + sqr(length)) / 12;
+    m_massOffset = bbox.GetCenter();
 
-  m_massOffset = bbox.GetCenter();
+    //CryLog("[StdBoat movement]: got mass offset (%f, %f, %f)", m_massOffset.x, m_massOffset.y, m_massOffset.z);
 
-  //CryLog("[StdBoat movement]: got mass offset (%f, %f, %f)", m_massOffset.x, m_massOffset.y, m_massOffset.z);
+    m_pSplashPos = m_pVehicle->GetHelper("splashPos");
 
-	m_pSplashPos = m_pVehicle->GetHelper("splashPos");
+    if (m_pSplashPos)
+        m_lastWakePos = m_pSplashPos->GetWorldTM().GetTranslation();
+    else
+        m_lastWakePos = m_pVehicle->GetEntity()->GetWorldTM().GetTranslation();
 
-	if (m_pSplashPos)
-		m_lastWakePos = m_pSplashPos->GetWorldTM().GetTranslation();
-	else
-		m_lastWakePos = m_pVehicle->GetEntity()->GetWorldTM().GetTranslation();
+    m_pWaveEffect = gEnv->p3DEngine->FindParticleEffect("vehicle_fx.vehicles_surface_fx.small_boat_hull", "MovementStdBoat");
 
-  m_pWaveEffect = gEnv->p3DEngine->FindParticleEffect("vehicle_fx.vehicles_surface_fx.small_boat_hull", "MovementStdBoat");
+    m_waveTimer = Random() * gf_PI;
+    m_diving = false;
+    m_wakeSlot = -1;
+    m_waveSoundPitch = 0.f;
+    m_rpmPitchDir = 0;
+    m_waveSoundAmount = 0.1f;
 
-  m_waveTimer = Random()*gf_PI;
-  m_diving = false;
-  m_wakeSlot = -1;
-  m_waveSoundPitch = 0.f;
-  m_rpmPitchDir = 0;
-  m_waveSoundAmount = 0.1f;
+    // AI related
+    m_prevAngle = 0.0f;
 
-  // AI related
-  m_prevAngle = 0.0f;
-
-  return true;
+    return true;
 }
 
 //------------------------------------------------------------------------

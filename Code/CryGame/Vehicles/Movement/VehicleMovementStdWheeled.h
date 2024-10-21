@@ -89,7 +89,7 @@ public:
 	~CVehicleMovementStdWheeled();
 
 	// IVehicleMovement
-	virtual bool Init(IVehicle* pVehicle, const SmartScriptTable &table);
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
   virtual void PostInit();
 	virtual void Reset();
 	virtual void Release();
@@ -133,7 +133,7 @@ public:
 
 protected:
 
-	virtual bool InitPhysics(const SmartScriptTable &table);
+	virtual bool InitPhysics(const CVehicleParams& table);
   virtual void InitSurfaceEffects();  
   
   virtual void UpdateSuspension(const float deltaTime);

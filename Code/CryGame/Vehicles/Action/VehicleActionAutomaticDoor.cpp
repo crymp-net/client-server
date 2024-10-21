@@ -48,19 +48,18 @@ CVehicleActionAutomaticDoor::~CVehicleActionAutomaticDoor()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleActionAutomaticDoor::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleActionAutomaticDoor::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 
-	SmartScriptTable autoDoorTable;
-	if (!table->GetValue("AutomaticDoor", autoDoorTable))
+	CVehicleParams autoDoorTable = table.findChild("AutomaticDoor");
+	if (!autoDoorTable)
 		return false;
 
-	char* pAnimName = 0;
-	if (autoDoorTable->GetValue("animation", pAnimName))
-		m_pDoorAnim = m_pVehicle->GetAnimation(pAnimName);
+	if (autoDoorTable.haveAttr("animation"))
+		m_pDoorAnim = m_pVehicle->GetAnimation(autoDoorTable.getAttr("animation"));
 
-	autoDoorTable->GetValue("timeMax", m_timeMax);
+	autoDoorTable.getAttr("timeMax", m_timeMax);
 
 	if (!m_pDoorAnim)
 		return false;
@@ -68,7 +67,7 @@ bool CVehicleActionAutomaticDoor::Init(IVehicle* pVehicle, const SmartScriptTabl
 	m_doorOpenedStateId = m_pDoorAnim->GetStateId("opened");
 	m_doorClosedStateId = m_pDoorAnim->GetStateId("closed");
 
-	autoDoorTable->GetValue("disabled", m_isDisabled);
+	autoDoorTable.getAttr("disabled", m_isDisabled);
 
 	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_AlwaysUpdate);
 
@@ -78,7 +77,7 @@ bool CVehicleActionAutomaticDoor::Init(IVehicle* pVehicle, const SmartScriptTabl
 	m_pDoorAnim->StartAnimation();
 	m_pDoorAnim->ToggleManualUpdate(true);
 
-	if(!m_isDisabled)
+	if (!m_isDisabled)
 		m_pDoorAnim->SetTime(DOOR_OPENED);
 	else
 	{

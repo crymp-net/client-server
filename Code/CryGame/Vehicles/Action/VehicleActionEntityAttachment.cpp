@@ -38,30 +38,27 @@ CVehicleActionEntityAttachment::~CVehicleActionEntityAttachment()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleActionEntityAttachment::Init(IVehicle* pVehicle, const SmartScriptTable &table)
+bool CVehicleActionEntityAttachment::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
 	m_pVehicle = pVehicle;
 
-	SmartScriptTable entityAttachmentTable;
-	if (!table->GetValue("EntityAttachment", entityAttachmentTable))
+	CVehicleParams entityAttachmentTable = table.findChild("EntityAttachment");
+	if (!entityAttachmentTable)
 		return false;
 
-	char* pHelperName;
-	if (entityAttachmentTable->GetValue("helper", pHelperName))
-		m_pHelper = m_pVehicle->GetHelper(pHelperName);
+	if (entityAttachmentTable.haveAttr("helper"))
+		m_pHelper = m_pVehicle->GetHelper(entityAttachmentTable.getAttr("helper"));
 
-	char* pEntityClassName;
-	if (entityAttachmentTable->GetValue("class", pEntityClassName))
+	if (entityAttachmentTable.haveAttr("class"))
 	{
 		IEntityClassRegistry* pClassRegistry = gEnv->pEntitySystem->GetClassRegistry();
 		assert(pClassRegistry);
 
-		if (IEntityClass* pEntityClass = pClassRegistry->FindClass(pEntityClassName))
+		m_entityClassName = entityAttachmentTable.getAttr("class");
+
+		if (IEntityClass* pEntityClass = pClassRegistry->FindClass(m_entityClassName.c_str()))
 		{
-			m_entityClassName = pEntityClassName;
-
 			SpawnEntity();
-
 			return true;
 		}
 	}
