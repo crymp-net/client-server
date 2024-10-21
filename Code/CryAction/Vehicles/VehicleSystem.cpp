@@ -178,7 +178,11 @@ void CVehicleSystem::AddVehicle(EntityId entityId, IVehicle* pProxy)
 //------------------------------------------------------------------------
 void CVehicleSystem::RemoveVehicle(EntityId entityId)
 {
-	//stl::find_and_erase(m_vehicles, entityId); //CryMP: fixme
+	auto it = m_vehicles.find(entityId);
+	if (it != m_vehicles.end())
+	{
+		m_vehicles.erase(it);
+	}
 }
 
 

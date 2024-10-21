@@ -330,7 +330,7 @@ bool CVehicleSeat::InitSeatActions(const CVehicleParams& seatTable)
 
 		if (!params.pClass)
 		{
-			//CryFatalError("VehicleSeatSerializer not registered in the entity system!");
+			CryLogWarningAlways("VehicleSeatSerializer not registered in the entity system!");
 			return false;
 		}
 
