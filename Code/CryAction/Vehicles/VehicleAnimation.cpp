@@ -1,88 +1,491 @@
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2006.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: 
+
+-------------------------------------------------------------------------
+History:
+- 22:03:2006: Created by Mathieu Pinard
+
+*************************************************************************/
+#include "StdAfx.h"
+#include "ICryAnimation.h"
+#include "IVehicleSystem.h"
+#include "VehiclePartAnimated.h"
 #include "VehicleAnimation.h"
 
-extern std::uintptr_t CRYACTION_BASE;
-
-VehicleAnimation::VehicleAnimation()
-{
-#ifdef BUILD_64BIT
-	std::uintptr_t ctor = CRYACTION_BASE + 0x8bf10;
-#else
-	std::uintptr_t ctor = CRYACTION_BASE + 0x63f60;
-#endif
-
-	(this->*reinterpret_cast<void(VehicleAnimation::*&)()>(ctor))();
-}
-
-VehicleAnimation::~VehicleAnimation()
+//------------------------------------------------------------------------
+CVehicleAnimation::CVehicleAnimation()
+: m_pPartAnimated(NULL)
 {
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// IVehicleAnimation
-////////////////////////////////////////////////////////////////////////////////
-
-bool VehicleAnimation::Init(IVehicle* pVehicle, const SmartScriptTable& table)
+//------------------------------------------------------------------------
+bool CVehicleAnimation::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-	return {};
+	m_currentAnimIsWaiting = false;
+
+	if (table.haveAttr("part"))
+	{
+		if (IVehiclePart* pPart = pVehicle->GetPart(table.getAttr("part")))
+			m_pPartAnimated = CAST_VEHICLEOBJECT(CVehiclePartAnimated, pPart);
+	}
+
+	if (!m_pPartAnimated)
+		return false;
+
+	if (CVehicleParams statesTable = table.findChild("States"))
+	{
+		int c = statesTable.getChildCount();
+		int i = 0;
+
+		m_animationStates.reserve(c);
+
+		for (; i < c; i++)
+		{
+			if (CVehicleParams stateTable = statesTable.getChild(i))
+				ParseState(stateTable, pVehicle);
+		}
+	}
+
+	if (m_animationStates.size() > 0)
+		m_currentStateId = 0;
+	else
+		m_currentStateId = InvalidVehicleAnimStateId;
+
+	m_layerId = m_pPartAnimated->AssignAnimationLayer();
+
+	return true;
 }
 
-void VehicleAnimation::Reset()
+//------------------------------------------------------------------------
+bool CVehicleAnimation::ParseState(const CVehicleParams& table, IVehicle* pVehicle)
 {
+	m_animationStates.resize(m_animationStates.size() + 1);
+	SAnimationState& animState = m_animationStates.back();
+
+	animState.name = table.getAttr("name");
+	animState.animation = table.getAttr("animation");
+	animState.sound = table.getAttr("sound");
+	animState.pSoundHelper = NULL;
+
+	if (table.haveAttr("sound"))
+		animState.pSoundHelper = pVehicle->GetHelper(table.getAttr("sound"));
+	else
+		animState.pSoundHelper = NULL;
+
+	animState.soundId = INVALID_SOUNDID;
+
+	table.getAttr("speedDefault", animState.speedDefault);
+	table.getAttr("speedMin", animState.speedMin);
+	table.getAttr("speedMax", animState.speedMax);
+	table.getAttr("isLooped", animState.isLooped);
+	animState.isLoopedEx = false;
+	table.getAttr("isLoopedEx", animState.isLoopedEx);
+
+	if (CVehicleParams materialsTable = table.findChild("Materials"))
+	{
+		int i = 0;
+		int c = materialsTable.getChildCount();
+
+		animState.materials.reserve(c);
+
+		for (; i < c; i++)
+		{
+			if (CVehicleParams materialTable = materialsTable.getChild(i))
+			{
+				animState.materials.resize(animState.materials.size() + 1);
+				SAnimationStateMaterial& stateMaterial = animState.materials.back();
+
+				stateMaterial.material = materialTable.getAttr("name");
+				stateMaterial.setting = materialTable.getAttr("setting");
+				materialTable.getAttr("invertValue", stateMaterial.invertValue);
+			}
+		}
+	}
+
+	return true;
 }
 
-void VehicleAnimation::Release()
+//------------------------------------------------------------------------
+void CVehicleAnimation::Reset()
 {
+	if (m_currentStateId != InvalidVehicleAnimStateId)
+	{
+		const SAnimationState& animState = m_animationStates[m_currentStateId];
+
+		if (IEntity* pEntity = m_pPartAnimated->GetEntity())
+		{
+			for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin(); 
+				ite != animState.materials.end(); ++ite)
+			{
+				const SAnimationStateMaterial& stateMaterial = *ite;
+
+				if (IMaterial* pMaterial = FindMaterial(stateMaterial, m_pPartAnimated->GetMaterial()))
+				{
+					float value = max(0.00f, min(1.0f, animState.speedDefault));
+
+					if (stateMaterial.invertValue)
+						value = 1.0f - value;
+
+					pMaterial->SetGetMaterialParamFloat(stateMaterial.setting, value, false);
+				}
+			}
+		}
+
+		if (m_currentStateId != 0)
+			ChangeState(0);
+	}
+
+	if (m_layerId > -1)
+		StopAnimation();
 }
 
-bool VehicleAnimation::StartAnimation()
+//------------------------------------------------------------------------
+bool CVehicleAnimation::StartAnimation()
 {
-	return {};
+	if (m_currentStateId == -1)
+		m_currentStateId = 0;
+
+	SAnimationState& animState = m_animationStates[m_currentStateId];
+
+	if (animState.materials.size() > 0) 
+	{
+		m_pPartAnimated->CloneMaterial();
+	}
+
+	if (IEntity* pEntity = m_pPartAnimated->GetEntity())
+	{
+		if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
+		{
+			ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+			CRY_ASSERT(pSkeletonAnim);
+
+			CryCharAnimationParams animParams;
+			animParams.m_nFlags = CA_FORCE_SKELETON_UPDATE;
+			animParams.m_nLayerID = m_layerId;
+
+			if (animState.isLooped)
+				animParams.m_nFlags |= CA_LOOP_ANIMATION;
+
+			if (animState.isLoopedEx)
+			{
+				animParams.m_nFlags |= CA_REPEAT_LAST_KEY;
+				uint32 numAnimsLayer0 = pSkeletonAnim->GetNumAnimsInFIFO(animParams.m_nLayerID);
+				if (numAnimsLayer0)
+				{
+					CAnimation& animation=pSkeletonAnim->GetAnimFromFIFO(animParams.m_nLayerID,numAnimsLayer0-1);
+					if ( animation.m_fAnimTime ==1.0f )
+						animation.m_fAnimTime = 0.0f;
+				}
+
+			}
+
+			// cope with empty animation names (for disabling some in certain vehicle modifications)
+			if(animState.animation.empty())
+				return false;
+
+			if (!pSkeletonAnim->StartAnimation(animState.animation, animParams))
+				return false;
+
+			if (!animState.sound.empty())
+			{
+				IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
+				CRY_ASSERT(pEntitySoundsProxy);
+
+				int soundFlags = FLAG_SOUND_DEFAULT_3D;
+				if (animState.isLooped)
+					soundFlags |= FLAG_SOUND_LOOP;
+
+				Vec3 pos;
+				if (animState.pSoundHelper)
+					pos = animState.pSoundHelper->GetVehicleTM().GetTranslation();
+				else
+					pos.zero();
+
+				animState.soundId = pEntitySoundsProxy->PlaySound(animState.sound.c_str(), pos, FORWARD_DIRECTION, soundFlags, eSoundSemantic_Vehicle);
+			}
+
+			pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, animState.speedDefault);
+			return true;
+		}
+	}
+
+	return true;
 }
 
-void VehicleAnimation::StopAnimation()
+//------------------------------------------------------------------------
+void CVehicleAnimation::StopAnimation()
 {
+	if (m_layerId < 0)
+		return;
+
+	if (IsUsingManualUpdates())
+		SetTime(0.0f);
+
+	IEntity* pEntity = m_pPartAnimated->GetEntity();
+	CRY_ASSERT(pEntity);
+
+	SAnimationState& animState = m_animationStates[m_currentStateId];
+
+	if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
+	{
+		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+		CRY_ASSERT(pSkeletonAnim);
+
+		pSkeletonAnim->StopAnimationInLayer(m_layerId,0.0f);
+	}
+
+	if (animState.soundId != INVALID_SOUNDID)
+	{
+		IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
+		CRY_ASSERT(pEntitySoundsProxy);
+
+		pEntitySoundsProxy->StopSound(animState.soundId);
+		animState.soundId = INVALID_SOUNDID;
+	}
+
+	m_currentAnimIsWaiting = false;
 }
 
-bool VehicleAnimation::ChangeState(TVehicleAnimStateId stateId)
+//------------------------------------------------------------------------
+TVehicleAnimStateId CVehicleAnimation::GetState()
 {
-	return {};
+	return m_currentStateId;
 }
 
-TVehicleAnimStateId VehicleAnimation::GetState()
+//------------------------------------------------------------------------
+bool CVehicleAnimation::ChangeState(TVehicleAnimStateId stateId)
 {
-	return {};
+	if (stateId <= InvalidVehicleAnimStateId || stateId > m_animationStates.size())
+		return false;
+
+	SAnimationState& animState = m_animationStates[stateId];
+
+	m_currentStateId = stateId;
+
+	if (IEntity* pEntity = m_pPartAnimated->GetEntity())
+	{
+		if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
+		{
+			ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+			CRY_ASSERT(pSkeletonAnim);
+
+			if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
+			{
+				CAnimation& anim = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+				if (anim.m_fAnimTime > 0.0f)
+				{
+					float speed = pSkeletonAnim->GetLayerUpdateMultiplier(m_layerId) * -1.0f;
+					pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, speed);
+				}
+				else
+					StopAnimation();
+			}
+			else
+				StartAnimation();
+		}
+	}
+
+	return true;
 }
 
-string VehicleAnimation::GetStateName(TVehicleAnimStateId stateId)
+//------------------------------------------------------------------------
+string CVehicleAnimation::GetStateName(TVehicleAnimStateId stateId)
 {
-	return {};
+	if (stateId <= InvalidVehicleAnimStateId || stateId > m_animationStates.size())
+		return "";
+
+	SAnimationState& animState = m_animationStates[stateId];
+	return animState.name;
 }
 
-TVehicleAnimStateId VehicleAnimation::GetStateId(const string& name)
+//------------------------------------------------------------------------
+TVehicleAnimStateId CVehicleAnimation::GetStateId(const string& name)
 {
-	return {};
+	TVehicleAnimStateId stateId = 0;
+
+	for (TAnimationStateVector::iterator ite = m_animationStates.begin(); ite != m_animationStates.end(); ++ite)
+	{
+		SAnimationState& animState = *ite;
+		if (animState.name == name)
+			return stateId;
+
+		stateId++;
+	}
+
+	return InvalidVehicleAnimStateId;
 }
 
-void VehicleAnimation::SetSpeed(float speed)
+//------------------------------------------------------------------------
+void CVehicleAnimation::SetSpeed(float speed)
 {
+	if (m_currentStateId == InvalidVehicleAnimStateId)
+		return;
+
+	const SAnimationState& animState = m_animationStates[m_currentStateId];
+
+	IEntity* pEntity = m_pPartAnimated->GetEntity();
+	CRY_ASSERT(pEntity);
+
+	ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot());
+	if (!pCharInstance)
+		return;
+
+	ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+	CRY_ASSERT(pSkeletonAnim);
+
+	pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, max(min(speed, animState.speedMax), animState.speedMin));
+
+	for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin(); 
+		ite != animState.materials.end(); ++ite)
+	{
+		const SAnimationStateMaterial& stateMaterial = *ite;
+
+		IMaterial* pPartMaterial = m_pPartAnimated->GetMaterial();
+		if(pPartMaterial)
+		{
+			if (IMaterial* pMaterial = FindMaterial(stateMaterial, pPartMaterial))
+			{
+				float value;
+				if (stateMaterial.invertValue)
+					value = 1.0f - speed;
+				else
+					value = speed;
+
+				value = max(0.001f, min(0.999f, value));
+
+				pMaterial->SetGetMaterialParamFloat(stateMaterial.setting, value, false);
+			}
+		}
+	}
 }
 
-float VehicleAnimation::GetAnimTime(bool raw)
+//------------------------------------------------------------------------
+IMaterial* CVehicleAnimation::FindMaterial(const SAnimationStateMaterial& animStateMaterial, IMaterial* pMaterial)
 {
-	return {};
+	CRY_ASSERT(pMaterial);
+	if (!pMaterial)
+		return NULL;
+
+	if (animStateMaterial.material == pMaterial->GetName())
+		return pMaterial;
+
+	for (int i = 0; i < pMaterial->GetSubMtlCount(); i++)
+	{
+		if (IMaterial* pSubMaterial = pMaterial->GetSubMtl(i))
+		{
+			if (IMaterial* pFoundSubMaterial = FindMaterial(animStateMaterial, pSubMaterial))
+				return pFoundSubMaterial;
+		}
+	}
+
+	return NULL;
 }
 
-void VehicleAnimation::ToggleManualUpdate(bool isEnabled)
+//------------------------------------------------------------------------
+void CVehicleAnimation::ToggleManualUpdate(bool isEnabled)
 {
+	if (m_layerId < 0 || !m_pPartAnimated)
+		return;
+
+	if (ICharacterInstance* pCharInstance = 
+		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
+	{
+		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+		CRY_ASSERT(pSkeletonAnim);
+
+    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
+    {
+		  CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+		
+		  if (isEnabled)
+			  animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
+		  else
+			  animation.m_AnimParams.m_nFlags &= ~CA_MANUAL_UPDATE;
+    }
+	}
 }
 
-bool VehicleAnimation::IsUsingManualUpdates()
+//------------------------------------------------------------------------
+float CVehicleAnimation::GetAnimTime(bool raw/*=false*/)
 {
-	return {};
+	if (m_layerId < 0 || !m_pPartAnimated)
+		return 0.0f;
+
+	if (ICharacterInstance* pCharInstance = 
+		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
+	{
+		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+		CRY_ASSERT(pSkeletonAnim);
+  
+		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
+		{    
+			CAnimation& anim = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+
+			if (!raw && anim.m_fAnimTime == 0.0f)
+				return 1.0f;
+
+			return max(0.0f, anim.m_fAnimTime);
+		}
+		else
+		{
+			return 1.0f;
+		}
+	}
+
+	return 0.0f;
 }
 
-void VehicleAnimation::SetTime(float time, bool force)
+//------------------------------------------------------------------------
+void CVehicleAnimation::SetTime(float time, bool force)
 {
+	if (m_layerId < 0 || !m_pPartAnimated)
+		return;
+
+	if (ICharacterInstance* pCharInstance = 
+		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
+	{
+		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+		CRY_ASSERT(pSkeletonAnim);
+
+    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
+    {
+		  CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+
+      if (force)
+        animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
+
+		  if (animation.m_AnimParams.m_nFlags&CA_MANUAL_UPDATE)
+			  animation.m_fAnimTime = time;
+
+			CRY_ASSERT(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
+
+		  //else
+			  //CryLogAlways("Error: can't use SetTime on a VehicleAnimation that wasn't set for manual updates.");
+    }
+	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------
+bool CVehicleAnimation::IsUsingManualUpdates()
+{
+	if (ICharacterInstance* pCharInstance = 
+		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
+	{
+		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+		CRY_ASSERT(pSkeletonAnim);
+
+    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
+    {
+      CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+      if (animation.m_AnimParams.m_nFlags & CA_MANUAL_UPDATE)
+        return true;
+    }
+	}
+
+	return false;
+}

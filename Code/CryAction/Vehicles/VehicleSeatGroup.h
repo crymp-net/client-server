@@ -1,25 +1,56 @@
-#pragma once
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2006.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: Implements a seat group
 
-struct IVehicle;
+-------------------------------------------------------------------------
+History:
+- 12:03:2006: Created by Mathieu Pinard
 
-class SmartScriptTable;
+*************************************************************************/
+#ifndef __VEHICLESEATGROUP_H__
+#define __VEHICLESEATGROUP_H__
 
-class VehicleSeatGroup
+#include "vector"
+
+class CVehicleSeat;
+
+class CVehicleSeatGroup
 {
-#ifdef BUILD_64BIT
-	unsigned char m_data[0x30] = {};
-#else
-	unsigned char m_data[0x18] = {};
-#endif
-
 public:
-	VehicleSeatGroup() = default;
 
-	bool Init(IVehicle* pVehicle, const SmartScriptTable& seatGroup);
+	bool Init(IVehicle* pVehicle, const CVehicleParams& paramsTable);
+	void Reset();
+	void Release() { delete this; }
+
+	void GetMemoryStatistics(ICrySizer * s);
+
+	unsigned int GetSeatCount() { return m_seats.size(); }
+	CVehicleSeat* GetSeatByIndex(unsigned int index);
+	CVehicleSeat* GetNextSeat(CVehicleSeat* pCurrentSeat);
+	CVehicleSeat* GetNextFreeSeat(CVehicleSeat* pCurrentSeat);
+
+	bool IsGroupEmpty();
+
+	void OnPassengerEnter(CVehicleSeat* pSeat, EntityId passengerId) {}
+	void OnPassengerExit(CVehicleSeat* pSeat, EntityId passengerId);
+	void OnPassengerChangeSeat(CVehicleSeat* pNewSeat, CVehicleSeat* pOldSeat);
+
+protected:
+
+	CVehicle* m_pVehicle;
+
+	bool m_isKeepingEngineWarm;
+
+	typedef std::vector <CVehicleSeat*> TVehicleSeatVector;
+	TVehicleSeatVector m_seats;
+
+	bool m_isSwitchingReverse;
+
+	friend class CVehicleSeat;
 };
 
-#ifdef BUILD_64BIT
-static_assert(sizeof(VehicleSeatGroup) == 0x30);
-#else
-static_assert(sizeof(VehicleSeatGroup) == 0x18);
 #endif

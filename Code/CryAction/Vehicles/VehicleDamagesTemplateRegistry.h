@@ -1,31 +1,54 @@
-#pragma once
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2006.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: Implements a registry for vehicle damages templates
+
+-------------------------------------------------------------------------
+History:
+- 18:07:2006: Created by Mathieu Pinard
+
+*************************************************************************/
+#ifndef __VEHICLEDAMAGESTEMPLATEREGISTRY_H__
+#define __VEHICLEDAMAGESTEMPLATEREGISTRY_H__
 
 #include <map>
-#include <string>
-#include <string_view>
+#include <vector>
 
-#include "CryCommon/CryAction/IVehicleSystem.h"
+class CVehicleDamagesGroup;
 
-class VehicleDamagesTemplateRegistry : public IVehicleDamagesTemplateRegistry
+class CVehicleDamagesTemplateRegistry
+	: public IVehicleDamagesTemplateRegistry
 {
-	std::map<std::string, SmartScriptTable, std::less<void>> m_groups;
-
 public:
-	VehicleDamagesTemplateRegistry();
-	~VehicleDamagesTemplateRegistry();
 
-	// VehicleDamagesTemplateRegistry_XMLData.cpp
-	void InitDefaults();
+	CVehicleDamagesTemplateRegistry() {}
+	virtual ~CVehicleDamagesTemplateRegistry() {}
 
-	////////////////////////////////////////////////////////////////////////////////
-	// IVehicleDamagesTemplateRegistry
-	////////////////////////////////////////////////////////////////////////////////
+	VIRTUAL bool Init(const string& defaultDefFilename, const string& damagesTemplatesPath);
+	virtual void Release() { delete this; }
 
-	bool Init(const string& defaultDefFilename, const string& damagesTemplatesPath) override;
-	void Release() override;
+	VIRTUAL bool RegisterTemplates(const string& filename, const string& defFilename);
+	VIRTUAL bool UseTemplate(const string& templateName, IVehicleDamagesGroup* pDamagesGroup);
 
-	bool RegisterTemplates(const string& filename, const string& defFilename) override;
-	bool UseTemplate(const string& templateName, IVehicleDamagesGroup* pDamagesGroup) override;
+protected:
 
-	////////////////////////////////////////////////////////////////////////////////
+	string m_defaultDefFilename;
+
+	struct STemplateFile
+	{
+		string filename;
+		string defFilename;
+		XmlNodeRef templateTable;
+	};
+
+	typedef std::vector<STemplateFile> TTemplateFileVector;
+	TTemplateFileVector m_templateFiles;
+
+	typedef std::map<string, XmlNodeRef> TTemplateMap;
+	TTemplateMap m_templates;
 };
+
+#endif

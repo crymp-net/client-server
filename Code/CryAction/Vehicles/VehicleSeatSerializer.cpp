@@ -1,118 +1,151 @@
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2005.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: Implements an entity class which can serialize vehicle parts
+
+-------------------------------------------------------------------------
+History:
+- 16:09:2005: Created by Mathieu Pinard
+
+*************************************************************************/
+#include "StdAfx.h"
 #include "VehicleSeatSerializer.h"
+#include "Vehicle.h"
+#include "VehicleSeat.h"
+#include "CryAction.h"
+#include "Network/GameContext.h"
 
-extern std::uintptr_t CRYACTION_BASE;
 
-VehicleSeatSerializer::VehicleSeatSerializer()
-{
-#ifdef BUILD_64BIT
-	std::uintptr_t ctor = CRYACTION_BASE + 0xb4e40;
-#else
-	std::uintptr_t ctor = CRYACTION_BASE + 0x82cc0;
-#endif
-
-	(this->*reinterpret_cast<void(VehicleSeatSerializer::*&)()>(ctor))();
-}
-
-VehicleSeatSerializer::~VehicleSeatSerializer()
+//------------------------------------------------------------------------
+CVehicleSeatSerializer::CVehicleSeatSerializer()
+: m_pVehicle(0),
+	m_pSeat(0)
 {
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// IGameObjectExtension
-////////////////////////////////////////////////////////////////////////////////
-
-bool VehicleSeatSerializer::Init(IGameObject* pGameObject)
-{
-	return {};
-}
-
-void VehicleSeatSerializer::PostInit(IGameObject* pGameObject)
+//------------------------------------------------------------------------
+CVehicleSeatSerializer::~CVehicleSeatSerializer()
 {
 }
 
-void VehicleSeatSerializer::InitClient(int channelId)
+//------------------------------------------------------------------------
+bool CVehicleSeatSerializer::Init(IGameObject * pGameObject)
+{
+	SetGameObject(pGameObject);
+	
+	if (m_pSeat) // needs to be done here since anywhere earlier, EntityId is not known
+		m_pSeat->SetSerializer(this);
+	else if (!gEnv->bServer)
+		return false;
+
+	if (0 == (GetEntity()->GetFlags() & (ENTITY_FLAG_CLIENT_ONLY | ENTITY_FLAG_SERVER_ONLY)))
+		if (!GetGameObject()->BindToNetwork())
+			return false;
+
+	GetEntity()->Activate(0);
+	GetEntity()->Hide(true);
+
+	if (gEnv->bServer && !IsDemoPlayback())
+	{
+		CVehicleSeat *pSeat=static_cast<CVehicleSystem *>(CCryAction::GetCryAction()->GetIVehicleSystem())->GetInitializingSeat();
+		CRY_ASSERT(pSeat);
+
+		pSeat->SetSerializer(this);
+		SetSeat(pSeat);
+		SetVehicle(static_cast<CVehicle *>(pSeat->GetVehicle()));
+	}
+
+	return true;
+}
+
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::InitClient(int channelId)
 {
 }
 
-void VehicleSeatSerializer::PostInitClient(int channelId)
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::FullSerialize( TSerialize ser )
 {
 }
 
-void VehicleSeatSerializer::Release()
+//------------------------------------------------------------------------
+bool CVehicleSeatSerializer::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags )
+{
+	if (m_pSeat)
+		m_pSeat->SerializeActions(ser, aspect);
+	return true;
+}
+
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::Update(SEntityUpdateContext& ctx, int)
 {
 }
 
-void VehicleSeatSerializer::FullSerialize(TSerialize ser)
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::HandleEvent(const SGameObjectEvent& event)
 {
 }
 
-bool VehicleSeatSerializer::NetSerialize(TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int flags)
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::SerializeSpawnInfo( TSerialize ser )
 {
-	return {};
+	EntityId vehicle;
+	TVehicleSeatId seatId;
+
+	ser.Value("vehicle", vehicle, 'eid');
+	ser.Value("seat", seatId, 'seat');
+
+	CRY_ASSERT(ser.IsReading());
+
+	// warning GameObject not set at this point
+	// GetGameObject calls will fail miserably
+
+	m_pVehicle = static_cast<CVehicle *>(CCryAction::GetCryAction()->GetIVehicleSystem()->GetVehicle(vehicle));
+	if (!m_pVehicle)
+		return;
+
+	CVehicleSeat *pSeat=static_cast<CVehicleSeat *>(m_pVehicle->GetSeatById(seatId));
+	m_pSeat=pSeat;
+
+	// the serializer is set on the seat in ::Init
 }
 
-void VehicleSeatSerializer::PostSerialize()
+//------------------------------------------------------------------------
+ISerializableInfoPtr CVehicleSeatSerializer::GetSpawnInfo()
 {
+	struct SInfo : public ISerializableInfo
+	{
+		EntityId vehicle;
+		TVehicleSeatId seatId;
+		void SerializeWith( TSerialize ser )
+		{
+			ser.Value("vehicle", vehicle, 'eid');
+			ser.Value("seat", seatId, 'seat');
+		}
+	};
+
+	SInfo * p = new SInfo;
+	p->vehicle = m_pVehicle->GetEntityId();
+	p->seatId = m_pSeat->GetSeatId();
+	return p;
 }
 
-void VehicleSeatSerializer::SerializeSpawnInfo(TSerialize ser)
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::SetVehicle(CVehicle *pVehicle)
 {
+	m_pVehicle = pVehicle;
+
+	if (pVehicle)
+		GetGameObject()->SetNetworkParent( pVehicle->GetEntityId() );
+	else
+		GetGameObject()->SetNetworkParent( 0 );
 }
 
-ISerializableInfoPtr VehicleSeatSerializer::GetSpawnInfo()
+//------------------------------------------------------------------------
+void CVehicleSeatSerializer::SetSeat(CVehicleSeat *pSeat)
 {
-	return {};
-}
-
-void VehicleSeatSerializer::Update(SEntityUpdateContext& context, int updateSlot)
-{
-}
-
-void VehicleSeatSerializer::HandleEvent(const SGameObjectEvent& event)
-{
-}
-
-void VehicleSeatSerializer::ProcessEvent(SEntityEvent& event)
-{
-}
-
-void VehicleSeatSerializer::GetMemoryStatistics(ICrySizer* s)
-{
-}
-
-void VehicleSeatSerializer::SetChannelId(std::uint16_t id)
-{
-}
-
-void VehicleSeatSerializer::SetAuthority(bool auth)
-{
-}
-
-const void* VehicleSeatSerializer::GetRMIBase() const
-{
-	return {};
-}
-
-void VehicleSeatSerializer::PostUpdate(float frameTime)
-{
-}
-
-void VehicleSeatSerializer::PostRemoteSpawn()
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void VehicleSeatSerializer::Register(IGameFramework* pGameFramework)
-{
-	IEntityClassRegistry::SEntityClassDesc entityClass;
-	entityClass.flags = ECLF_INVISIBLE;
-	entityClass.sName = "VehicleSeatSerializer";
-	entityClass.sScriptFile = "";
-	entityClass.pUserProxyCreateFunc = nullptr;
-	entityClass.pUserProxyData = nullptr;
-
-	static IGameFramework::CGameObjectExtensionCreator<VehicleSeatSerializer> creator;
-
-	pGameFramework->GetIGameObjectSystem()->RegisterExtension(entityClass.sName, &creator, &entityClass);
+	m_pSeat = pSeat;
 }

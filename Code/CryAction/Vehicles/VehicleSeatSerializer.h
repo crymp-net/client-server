@@ -1,62 +1,58 @@
-#pragma once
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2005.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: Implements an entity class which can serialize vehicle parts
 
-#include "CryCommon/CryAction/IGameObject.h"
+-------------------------------------------------------------------------
+History:
+- 16:09:2005: Created by Mathieu Pinard
 
-class VehicleSeatSerializer : public CGameObjectExtensionHelper<VehicleSeatSerializer, IGameObjectExtension>
+*************************************************************************/
+#ifndef __VEHICLESEATSERIALIZER_H__
+#define __VEHICLESEATSERIALIZER_H__
+
+#include "IGameObject.h"
+
+class CVehicle;
+class CVehicleSeat;
+
+class CVehicleSeatSerializer
+	: public CGameObjectExtensionHelper<CVehicleSeatSerializer, IGameObjectExtension>
 {
-#ifdef BUILD_64BIT
-	unsigned char m_data[0x30 - sizeof(IGameObjectExtension)] = {};
-#else
-	unsigned char m_data[0x18 - sizeof(IGameObjectExtension)] = {};
-#endif
-
 public:
-	VehicleSeatSerializer();
-	virtual ~VehicleSeatSerializer();
 
-	////////////////////////////////////////////////////////////////////////////////
-	// IGameObjectExtension
-	////////////////////////////////////////////////////////////////////////////////
+	CVehicleSeatSerializer();
+	virtual ~CVehicleSeatSerializer();
 
-	bool Init(IGameObject* pGameObject) override;
-	void PostInit(IGameObject* pGameObject) override;
+	virtual bool Init(IGameObject * pGameObject);
+	virtual void InitClient(int channelId);
+	virtual void PostInit(IGameObject*) {}
+	virtual void PostInitClient(int channelId) {};
+	virtual void Release() { delete this; }
 
-	void InitClient(int channelId) override;
-	void PostInitClient(int channelId) override;
+	virtual void FullSerialize( TSerialize ser );
+	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags );
+	virtual void PostSerialize() {}
+	virtual void SerializeSpawnInfo( TSerialize ser );
+	virtual ISerializableInfoPtr GetSpawnInfo();
+	virtual void Update(SEntityUpdateContext& ctx, int);
+	virtual void HandleEvent(const SGameObjectEvent& event);
+	virtual void ProcessEvent(SEntityEvent& event) {};
+	virtual void SetChannelId(uint16 id) {};
+	virtual void SetAuthority(bool auth) {};
+	virtual void PostUpdate(float frameTime) { CRY_ASSERT(false); };
+	virtual void PostRemoteSpawn() {};
+	virtual void GetMemoryStatistics(ICrySizer * s) {s->Add(*this);}
 
-	void Release() override;
+	void SetVehicle(CVehicle *pVehicle);
+	void SetSeat(CVehicleSeat *pSeat);
 
-	void FullSerialize(TSerialize ser) override;
-	bool NetSerialize(TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int flags) override;
-	void PostSerialize() override;
-
-	void SerializeSpawnInfo(TSerialize ser) override;
-	ISerializableInfoPtr GetSpawnInfo() override;
-
-	void Update(SEntityUpdateContext& context, int updateSlot) override;
-
-	void HandleEvent(const SGameObjectEvent& event) override;
-
-	void ProcessEvent(SEntityEvent& event) override;
-
-	void GetMemoryStatistics(ICrySizer* s) override;
-
-	void SetChannelId(std::uint16_t id) override;
-	void SetAuthority(bool auth) override;
-
-	const void* GetRMIBase() const override;
-
-	void PostUpdate(float frameTime) override;
-
-	void PostRemoteSpawn() override;
-
-	////////////////////////////////////////////////////////////////////////////////
-
-	static void Register(IGameFramework* pGameFramework);
+protected:
+	CVehicle			*m_pVehicle;
+	CVehicleSeat	*m_pSeat;
 };
 
-#ifdef BUILD_64BIT
-static_assert(sizeof(VehicleSeatSerializer) == 0x30);
-#else
-static_assert(sizeof(VehicleSeatSerializer) == 0x18);
 #endif

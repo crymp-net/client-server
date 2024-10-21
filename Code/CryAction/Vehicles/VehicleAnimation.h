@@ -1,50 +1,97 @@
-#pragma once
+/*************************************************************************
+Crytek Source File.
+Copyright (C), Crytek Studios, 2001-2006.
+-------------------------------------------------------------------------
+$Id$
+$DateTime$
+Description: 
 
-#include "CryCommon/CryAction/IVehicleSystem.h"
+-------------------------------------------------------------------------
+History:
+- 22:03:2006: Created by Mathieu Pinard
 
-class VehicleAnimation : public IVehicleAnimation
+*************************************************************************/
+#ifndef __VEHICLEANIMATION_H__
+#define __VEHICLEANIMATION_H__
+
+#include <vector>
+
+class CVehiclePartAnimated;
+
+class CVehicleAnimation
+	: 
+	public IVehicleAnimation
 {
-#ifdef BUILD_64BIT
-	unsigned char m_data[0x38 - sizeof(IVehicleAnimation)] = {};
-#else
-	unsigned char m_data[0x20 - sizeof(IVehicleAnimation)] = {};
-#endif
-
 public:
-	VehicleAnimation();
-	virtual ~VehicleAnimation();
 
-	////////////////////////////////////////////////////////////////////////////////
-	// IVehicleAnimation
-	////////////////////////////////////////////////////////////////////////////////
+	CVehicleAnimation();
+	virtual ~CVehicleAnimation() {}
 
-	bool Init(IVehicle* pVehicle, const SmartScriptTable& table) override;
-	void Reset() override;
-	void Release() override;
+	VIRTUAL bool Init(IVehicle* pVehicle, const CVehicleParams& table);
+	VIRTUAL void Reset();
+	virtual void Release() { delete this; }
 
-	bool StartAnimation() override;
-	void StopAnimation() override;
+	VIRTUAL bool StartAnimation();
+	VIRTUAL void StopAnimation();
 
-	bool ChangeState(TVehicleAnimStateId stateId) override;
+	VIRTUAL bool ChangeState(TVehicleAnimStateId stateId);
+	VIRTUAL TVehicleAnimStateId GetState();
 
-	TVehicleAnimStateId GetState() override;
-	string GetStateName(TVehicleAnimStateId stateId) override;
-	TVehicleAnimStateId GetStateId(const string& name) override;
+	VIRTUAL string GetStateName(TVehicleAnimStateId stateId);
+	VIRTUAL TVehicleAnimStateId GetStateId(const string& name);
+	
+	VIRTUAL void SetSpeed(float speed);
 
-	void SetSpeed(float speed) override;
+	VIRTUAL void ToggleManualUpdate(bool isEnabled);
+	VIRTUAL void SetTime(float time, bool force=false);
+	
+	VIRTUAL float GetAnimTime(bool raw=false);
+  VIRTUAL bool IsUsingManualUpdates();
+	
+protected:
 
-	float GetAnimTime(bool raw) override;
+	struct SAnimationStateMaterial
+	{
+		string material;
+		string setting;
+		bool invertValue;
+	};
 
-	void ToggleManualUpdate(bool isEnabled) override;
-	bool IsUsingManualUpdates() override;
+	typedef std::vector <SAnimationStateMaterial> TAnimationStateMaterialVector;
 
-	void SetTime(float time, bool force) override;
+	struct SAnimationState
+	{
+		string name;
+		string animation;
 
-	////////////////////////////////////////////////////////////////////////////////
+		string sound;
+		tSoundID soundId;
+		IVehicleHelper* pSoundHelper;
+
+		float speedDefault;
+		float speedMin;
+		float speedMax;
+		bool isLooped;
+		bool isLoopedEx;
+
+		TAnimationStateMaterialVector materials;
+	};
+
+	typedef std::vector <SAnimationState> TAnimationStateVector;
+
+protected:
+
+	bool ParseState(const CVehicleParams& table, IVehicle* pVehicle);
+	IMaterial* FindMaterial(const SAnimationStateMaterial& animStateMaterial, IMaterial* pMaterial);
+
+	CVehiclePartAnimated* m_pPartAnimated;
+	int m_layerId;
+
+	TAnimationStateVector m_animationStates;
+	TVehicleAnimStateId m_currentStateId;
+
+	bool m_currentAnimIsWaiting;
 };
 
-#ifdef BUILD_64BIT
-static_assert(sizeof(VehicleAnimation) == 0x38);
-#else
-static_assert(sizeof(VehicleAnimation) == 0x20);
+
 #endif
