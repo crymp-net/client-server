@@ -32,7 +32,7 @@ class ScriptBind_VehicleSystem;
 class ScriptRMI;
 class TimeDemoRecorder;
 class TimeOfDayScheduler;
-class VehicleSystem;
+class CVehicleSystem;
 class ViewSystem;
 
 class GameFramework : public IGameFramework
@@ -65,7 +65,7 @@ class GameFramework : public IGameFramework
 	ILevelSystem* m_pLevelSystem = nullptr;
 	IActorSystem* m_pActorSystem = nullptr;
 	ItemSystem* m_pItemSystem = nullptr;
-	VehicleSystem* m_pVehicleSystem = nullptr;
+	CVehicleSystem* m_pVehicleSystem = nullptr;
 	IActionMapManager* m_pActionMapManager = nullptr;
 	ViewSystem* m_pViewSystem = nullptr;
 	GameplayRecorder* m_pGameplayRecorder = nullptr;

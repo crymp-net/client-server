@@ -45,9 +45,9 @@
 #include "ScriptBind_ItemSystem.h"
 #include "ScriptBind_MaterialEffects.h"
 #include "ScriptBind_Network.h"
-#include "ScriptBind_Vehicle.h"
-#include "ScriptBind_VehicleSeat.h"
-#include "ScriptBind_VehicleSystem.h"
+#include "Vehicles/ScriptBind_Vehicle.h"
+#include "Vehicles/ScriptBind_VehicleSeat.h"
+#include "Vehicles/ScriptBind_VehicleSystem.h"
 #include "ScriptRMI.h"
 #include "SubtitleManager.h"
 #include "TimeDemoRecorder.h"
@@ -183,7 +183,7 @@ void GameFramework::RegisterFactory(const char* name, IItemCreator* pCreator, bo
 
 void GameFramework::RegisterFactory(const char* name, IVehicleCreator* pCreator, bool isAI)
 {
-	m_pVehicleSystem->RegisterVehicleFactory(name, pCreator);
+	//m_pVehicleSystem->RegisterVehicleFactory(name, pCreator);
 }
 
 void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI)
@@ -247,7 +247,7 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	m_pGameplayRecorder = new GameplayRecorder(this);
 	m_pGameplayAnalyst = new GameplayAnalyst();
 	m_pGameRulesSystem = new GameRulesSystem(m_pSystem, this);
-	m_pVehicleSystem = new VehicleSystem(this);
+	m_pVehicleSystem = new CVehicleSystem(m_pSystem, m_pEntitySystem);
 	m_pNetworkCVars = new NetworkCVars();
 	m_pGameFrameworkCVars = new GameFrameworkCVars();
 
@@ -954,7 +954,7 @@ void GameFramework::RegisterScriptBindings()
 	m_pScriptBind_ActionMapManager = new ScriptBind_ActionMapManager(m_pSystem, m_pActionMapManager);
 	m_pScriptBind_VehicleSystem = new ScriptBind_VehicleSystem(m_pVehicleSystem);
 	m_pScriptBind_Vehicle = new ScriptBind_Vehicle(m_pSystem, this);
-	m_pScriptBind_VehicleSeat = new ScriptBind_VehicleSeat(m_pSystem, this);
+	m_pScriptBind_VehicleSeat = new ScriptBind_VehicleSeat(m_pSystem, this); 
 	m_pScriptBind_Inventory = new ScriptBind_Inventory(m_pSystem, this);
 	m_pScriptBind_DialogSystem = new ScriptBind_DialogSystem(m_pSystem, m_pDialogSystem);
 }
