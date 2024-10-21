@@ -11,9 +11,9 @@ History:
 - 20:07:2007: Created by MichaelR
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleSeatActionAnimation.h"
 #include "VehicleCVars.h"
 
@@ -196,7 +196,7 @@ void CVehicleSeatActionAnimation::Update(float frameTime)
 }
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionAnimation::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionAnimation::Serialize(TSerialize ser, unsigned aspects)
 {
 	if (ser.GetSerializationTarget() != eST_Network)
 	{ 

@@ -43,7 +43,7 @@ public:
 	virtual void OnStartUsing(EntityId passengerId);
   
 	virtual void Update(const float frameTime);
-	virtual void Serialize(TSerialize serialize, EEntityAspects);
+	virtual void Serialize(TSerialize serialize, unsigned int e);
 
   virtual bool ShootToCrosshair() { return false; }
 	// ~IVehicleView

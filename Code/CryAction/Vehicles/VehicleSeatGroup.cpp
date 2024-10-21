@@ -11,12 +11,12 @@ History:
 - 12:03:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "GameObjects/GameObject.h"
-#include "IActorSystem.h"
-#include "IAnimatedCharacter.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IAnimatedCharacter.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehicleSeatGroup.h"
@@ -38,7 +38,7 @@ bool CVehicleSeatGroup::Init(IVehicle* pVehicle, const CVehicleParams& paramsTab
 			string seatName = seatsTable.getChild(i).getAttr("value");
 			if (!seatName.empty())
 			{
-				TVehicleSeatId seatId = m_pVehicle->GetSeatId(seatName);
+				TVehicleSeatId seatId = m_pVehicle->GetSeatId(seatName.c_str());
 				if (CVehicleSeat* pSeat = (CVehicleSeat*)m_pVehicle->GetSeatById(seatId))
 				{
 					pSeat->m_pSeatGroup = this;

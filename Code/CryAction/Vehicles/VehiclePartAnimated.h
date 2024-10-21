@@ -47,7 +47,7 @@ public:
   
 	virtual void Update(const float frameTime);
 
-	virtual void Serialize(TSerialize serialize, EEntityAspects);
+	virtual void Serialize(TSerialize serialize, unsigned aspects);
   virtual void PostSerialize();
 
 	virtual void GetMemoryStatistics(ICrySizer * s);

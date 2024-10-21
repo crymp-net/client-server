@@ -11,12 +11,12 @@ History:
 - 26:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartSubPartWheel.h"
@@ -239,7 +239,7 @@ void CVehiclePartSubPartWheel::Physicalize()
     m_physId = pPhysics->AddGeometry(pPhysGeom, &params, m_slot);
 
     if (m_physId < 0)        
-      GameWarning("AddGeometry failed on <%s> (part %s)", m_pVehicle->GetEntity()->GetName(), m_name.c_str());    
+      CryLogWarning("AddGeometry failed on <%s> (part %s)", m_pVehicle->GetEntity()->GetName(), m_name.c_str());    
   }
 
   if (m_physId != -1)
@@ -256,7 +256,7 @@ void CVehiclePartSubPartWheel::Physicalize()
 
 
 //------------------------------------------------------------------------
-void CVehiclePartSubPartWheel::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehiclePartSubPartWheel::Serialize(TSerialize ser, unsigned aspects)
 {
 	CVehiclePartBase::Serialize(ser, aspects);
   

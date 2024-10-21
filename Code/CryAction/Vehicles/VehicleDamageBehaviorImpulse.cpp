@@ -12,9 +12,9 @@ History:
 - 14:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorImpulse.h"
@@ -70,7 +70,7 @@ void CVehicleDamageBehaviorImpulse::OnDamageEvent(EVehicleDamageBehaviorEvent ev
 	if (event == eVDBE_Hit || event == eVDBE_VehicleDestroyed || event == eVDBE_ComponentDestroyed)  
 	{
 		IEntity* pEntity = m_pVehicle->GetEntity();
-		CRY_ASSERT(pEntity);
+		assert(pEntity);
 
 		IPhysicalEntity* pPhysEntity = pEntity->GetPhysics();
 		if (!pPhysEntity)

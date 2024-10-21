@@ -13,56 +13,56 @@ History:
 *************************************************************************/
 #ifndef __VEHICLEVIEWBASE_H__
 #define __VEHICLEVIEWBASE_H__
-
-class CVehicleViewBase
-	: public IVehicleView
+class CVehicleViewBase : public IVehicleView
 {
 public:
-
-  CVehicleViewBase();
+	CVehicleViewBase();
 
 	// IVehicleView
-	virtual bool Init(CVehicleSeat* pSeat, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void ResetPosition() {};
-	virtual void Release() { delete this; }
+	virtual bool Init(CVehicleSeat* pSeat, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void ResetPosition() override {};
 
-	virtual const char* GetName() { return NULL; }  
-	virtual bool IsThirdPerson() = 0;
-	virtual bool IsPassengerHidden() { return m_hidePlayer; }
+	virtual const char* GetName() override { return nullptr; }
+	virtual bool IsThirdPerson() override = 0;
+	virtual bool IsPassengerHidden() override { return m_hidePlayer; }
 
-	virtual void OnStartUsing(EntityId passengerId);
-	virtual void OnStopUsing();
+	virtual void OnStartUsing(EntityId passengerId) override;
+	virtual void OnStopUsing() override;
 
-	virtual void OnAction(const TVehicleActionId actionId, int activationMode, float value);
-	virtual void UpdateView(SViewParams &viewParams, EntityId playerId) {}
+	virtual void OnAction(const TVehicleActionId actionId, int activationMode, float value) override;
+	virtual void UpdateView(SViewParams& viewParams, EntityId playerId) override {};
 
-	virtual void Update(const float frameTime);
-	virtual void Serialize(TSerialize serialize, EEntityAspects);
+	virtual void Update(const float frameTime) override;
+	virtual void Serialize(TSerialize serialize, unsigned int v) override;
 
-  virtual void SetDebugView(bool debug) { m_isDebugView = debug; }
-  virtual bool IsDebugView() { return m_isDebugView; }
+	virtual void SetDebugView(bool debug) override { m_isDebugView = debug; }
+	virtual bool IsDebugView() override { return m_isDebugView; }
 
-  virtual bool ShootToCrosshair() { return true; }
-  virtual bool IsAvailableRemotely() const { return m_isAvailableRemotely; }
+	virtual bool ShootToCrosshair() override { return true; }
+	virtual bool IsAvailableRemotely() const override { return m_isAvailableRemotely; }
 	// ~IVehicleView
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {};
+
+	// Added methods
+	virtual void Release() override { delete this; } 
+
+	virtual void GetMemoryStatistics(ICrySizer* s) override { s->Add(*this); }
+	// ~IVehicleView
 
 	bool Init(CVehicleSeat* pSeat);
-  
-protected:
 
+protected:
 	IVehicle* m_pVehicle;
 	CVehicleSeat* m_pSeat;
 
 	// view settings (changed only inside Init)
-
 	bool m_isRotating;
 
 	Vec3 m_rotationMin;
 	Vec3 m_rotationMax;
-  Vec3 m_rotationInit;
+	Vec3 m_rotationInit;
 	float m_relaxDelayMax;
 	float m_relaxTimeMax;
 	float m_velLenMin;
@@ -72,10 +72,9 @@ protected:
 	float m_rotationBoundsActionMult;
 
 	// status variables (changed during run-time)
-
 	Ang3 m_rotation;
-  Vec3 m_rotatingAction;
-  Ang3 m_viewAngleOffset;
+	Vec3 m_rotatingAction;
+	Ang3 m_viewAngleOffset;
 
 	bool m_isRelaxEnabled;
 	float m_relaxDelay;
@@ -89,20 +88,20 @@ protected:
 	float m_pitchVal;
 	float m_yawVal;
 
-  static ICVar* m_pSensitivity;
+	static ICVar* m_pSensitivity;
 
 	struct SViewGeneratedAction
 	{
 		TVehicleActionId actionId;
 		int activationMode;
 	};
-	
-  bool m_hidePlayer;
-  bool m_isDebugView;
-  bool m_isAvailableRemotely;
+
+	bool m_hidePlayer;
+	bool m_isDebugView;
+	bool m_isAvailableRemotely;
 	bool m_playerViewThirdOnExit;
 
-	typedef std::vector <string> TVehiclePartNameVector;
+	typedef std::vector<string> TVehiclePartNameVector;
 	TVehiclePartNameVector m_hideParts;
 };
 

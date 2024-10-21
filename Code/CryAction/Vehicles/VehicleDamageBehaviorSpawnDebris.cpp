@@ -12,8 +12,8 @@ History:
 - 30:11:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorSpawnDebris.h"
 #include "VehiclePartAnimated.h"
@@ -44,7 +44,7 @@ bool CVehicleDamageBehaviorSpawnDebris::Init(IVehicle* pVehicle, const CVehicleP
 	for (int k = 0; k < partCount; k++)
 	{
 		IVehiclePart* pPart = m_pVehicle->GetPart(k);
-		CRY_ASSERT(pPart);
+		assert(pPart);
 
 		if (CVehiclePartAnimated* pAnimPart = CAST_VEHICLEOBJECT(CVehiclePartAnimated, pPart))
 		{
@@ -52,7 +52,7 @@ bool CVehicleDamageBehaviorSpawnDebris::Init(IVehicle* pVehicle, const CVehicleP
 			if (pCharInstance)
       {
         ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose();
-        CRY_ASSERT(pSkeletonPose);
+        assert(pSkeletonPose);
 
         int jointCount = pSkeletonPose->GetJointCount();
         for (int jointId = 0; jointId < jointCount; jointId++)
@@ -138,7 +138,7 @@ void CVehicleDamageBehaviorSpawnDebris::OnDamageEvent(EVehicleDamageBehaviorEven
 			isUpdateNeeded = true;
 
 			IEntity* pEntity = debrisInfo.pAnimatedPart->GetEntity();
-			CRY_ASSERT(pEntity);
+			assert(pEntity);
 
 			ICharacterInstance* pCharInstance = debrisInfo.pAnimatedPart->GetEntity()->GetCharacter(
 				debrisInfo.pAnimatedPart->GetSlot());
@@ -147,7 +147,7 @@ void CVehicleDamageBehaviorSpawnDebris::OnDamageEvent(EVehicleDamageBehaviorEven
 				return;
 
 			ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose();
-			CRY_ASSERT(pSkeletonPose);
+			assert(pSkeletonPose);
 
 			const char* pJointName = pSkeletonPose->GetJointNameByID(debrisInfo.jointId);
 
@@ -246,7 +246,7 @@ void CVehicleDamageBehaviorSpawnDebris::Update(const float deltaTime)
 IEntity* CVehicleDamageBehaviorSpawnDebris::SpawnDebris(IStatObj* pStatObj, Matrix34 vehicleTM, float force)
 {
 	IEntity* pVehicleEntity = m_pVehicle->GetEntity();
-	CRY_ASSERT(pVehicleEntity);
+	assert(pVehicleEntity);
 
 	// spawn the detached entity
 
@@ -307,7 +307,7 @@ IEntity* CVehicleDamageBehaviorSpawnDebris::SpawnDebris(IStatObj* pStatObj, Matr
 //------------------------------------------------------------------------
 void CVehicleDamageBehaviorSpawnDebris::AttachParticleEffect(IEntity* pDetachedEntity, const string& effectName)
 {
-	if (IParticleEffect *pEffect = gEnv->pParticleManager->FindEffect(effectName, "VehicleDamageBehaviorEffect"))
+	if (IParticleEffect *pEffect = gEnv->p3DEngine->FindParticleEffect(effectName.c_str(), "VehicleDamageBehaviorEffect"))
 	{
 		int slot = pDetachedEntity->LoadParticleEmitter(-1, pEffect, NULL, false, true);
 

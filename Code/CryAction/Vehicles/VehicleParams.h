@@ -2,141 +2,119 @@
 #define __Vehicle_Params__h__
 
 #include "VehicleModificationParams.h"
+#include "CryCommon/CrySystem/IXml.h"
 
 class CVehicleParams
 {
 public:
-	CVehicleParams( XmlNodeRef root, const CVehicleModificationParams& modificationParams )
-	: m_xmlNode( root )
-	, m_modificationParams( modificationParams )
+	CVehicleParams(XmlNodeRef root, const CVehicleModificationParams& modificationParams)
+		: m_xmlNode(root)
+		, m_modificationParams(modificationParams)
 	{
 	}
-
 
 	virtual ~CVehicleParams() {}
 
-
 	const char* getTag() const
 	{
-		assert( IsValid() );
-
 		return m_xmlNode->getTag();
 	}
 
-
-	bool haveAttr( const char* name ) const
+	bool haveAttr(const char* name) const
 	{
-		assert( IsValid() );
-
-		return m_xmlNode->haveAttr( name );
+		return m_xmlNode->haveAttr(name);
 	}
 
-
-	const char* getAttr( const char* name ) const
+	const char* getAttr(const char* name) const
 	{
-		assert( IsValid() );
-
-		const char* attributeValue = m_xmlNode->getAttr( name );
+		const char* attributeValue = m_xmlNode->getAttr(name);
 		const char** attributeValueAddress = &attributeValue;
-		ApplyModification( name, attributeValueAddress );
+		ApplyModification(name, attributeValueAddress);
 
 		return attributeValue;
 	}
 
-
-	bool getAttr( const char* name, const char** valueOut ) const
+	bool getAttr(const char* name, const char** valueOut) const
 	{
-		return GetAttrImpl( name, valueOut );
+		return GetAttrImpl(name, valueOut);
 	}
 
-
-	bool getAttr( const char* name, int& valueOut ) const
+	bool getAttr(const char* name, int& valueOut) const
 	{
-		return GetAttrImpl( name, valueOut );
+		return GetAttrImpl(name, valueOut);
 	}
 
-
-	bool getAttr( const char* name, float& valueOut ) const
+	bool getAttr(const char* name, float& valueOut) const
 	{
-		return GetAttrImpl( name, valueOut );
+		return GetAttrImpl(name, valueOut);
 	}
 
-
-	bool getAttr( const char* name, bool& valueOut ) const
+	bool getAttr(const char* name, bool& valueOut) const
 	{
-		return GetAttrImpl( name, valueOut );
+		return GetAttrImpl(name, valueOut);
 	}
 
-
-	bool getAttr( const char* name, Vec3& valueOut ) const
+	bool getAttr(const char* name, Vec3& valueOut) const
 	{
-		return GetAttrImpl( name, valueOut );
+		return GetAttrImpl(name, valueOut);
 	}
-	
 
 	int getChildCount() const
 	{
-		assert( IsValid() );
-
 		return m_xmlNode->getChildCount();
 	}
-	
 
-	CVehicleParams getChild( int i ) const
+	CVehicleParams getChild(int i) const
 	{
-		assert( IsValid() );
-
-		XmlNodeRef childNode = m_xmlNode->getChild( i );
-		return CVehicleParams( childNode, m_modificationParams );
+		XmlNodeRef childNode = m_xmlNode->getChild(i);
+		return CVehicleParams(childNode, m_modificationParams);
 	}
 
-
-	CVehicleParams findChild( const char* id ) const
+	CVehicleParams findChild(const char* id) const
 	{
-		assert( IsValid() );
-
-		XmlNodeRef childNode = m_xmlNode->findChild( id );
-		return CVehicleParams( childNode, m_modificationParams );
+		XmlNodeRef childNode = m_xmlNode->findChild(id);
+		return CVehicleParams(childNode, m_modificationParams);
 	}
 
+	operator bool() const { return m_xmlNode != NULL; }
 
-	operator bool() const { return ( m_xmlNode ); }
-
-
-	bool IsValid() const { return ( m_xmlNode ); }
-
+	bool IsValid() const { return m_xmlNode != NULL; }
 
 private:
-	template< typename T >
-	bool GetAttrImpl( const char* name, T& valueOut ) const
+	template<typename T>
+	bool GetAttrImpl(const char* name, T& valueOut) const
 	{
-		assert( IsValid() );
+		bool attributeGetSuccess = m_xmlNode->getAttr(name, valueOut);
+		ApplyModification(name, valueOut);
 
-		bool attributeGetSuccess = m_xmlNode->getAttr( name, valueOut );
-		ApplyModification( name, valueOut );
-		
 		return attributeGetSuccess;
 	}
 
-
-	template< typename T >
-	void ApplyModification( const char* name, T& valueOut ) const
+	template<>
+	bool GetAttrImpl<const char**>(const char* name, const char**& valueOut) const
 	{
-		assert( IsValid() );
+		const bool exists = m_xmlNode->haveAttr(name);
+		*valueOut = m_xmlNode->getAttr(name);
+		ApplyModification(name, valueOut);
 
-		const char* id;
-		bool hasId = m_xmlNode->getAttr( "id", &id );
-		if ( hasId )
+		return exists;
+	}
+
+	template<typename T>
+	void ApplyModification(const char* name, T& valueOut) const
+	{
+		const char* id = m_xmlNode->getAttr("id");
+		if (id && *id)
 		{
-			m_modificationParams.ApplyModification( id, name, valueOut );
+			m_modificationParams.ApplyModification(id, name, valueOut);
 		}
 	}
 
-
 private:
-	XmlNodeRef m_xmlNode;
+	XmlNodeRef                        m_xmlNode;
 	const CVehicleModificationParams& m_modificationParams;
 };
+
 
 
 

@@ -15,7 +15,7 @@ History:
 #ifndef __VEHICLEPARTPARTICLEEFFECT_H__
 #define __VEHICLEPARTPARTICLEEFFECT_H__
 
-#include "IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 #include "VehiclePartBase.h"
 
 class CVehiclePartParticleEffect : public CVehiclePartBase

@@ -10,10 +10,10 @@ Description: Implements several utility functions for vehicles
 History:
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "CryAction.h"
-#include "PersistantDebug.h"
+//#include "CryAction.h"
+//#include "PersistantDebug.h"
 
 #include "Vehicle.h"
 #include "VehicleAnimation.h"
@@ -44,7 +44,7 @@ void VehicleUtils::DumpDamageBehaviorEvent(const SVehicleDamageBehaviorEventPara
 //------------------------------------------------------------------------
 void VehicleUtils::DrawTM(const Matrix34& tm, const char* name, bool clear)
 {
-  IPersistantDebug* pDebug = CCryAction::GetCryAction()->GetIPersistantDebug();
+  IPersistantDebug* pDebug = gEnv->pGame->GetIGameFramework()->GetIPersistantDebug();
   pDebug->Begin(name, clear);
 
   const static ColorF red(1,0,0,1);

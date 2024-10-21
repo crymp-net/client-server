@@ -12,8 +12,8 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorSink.h"
 
@@ -62,7 +62,7 @@ void CVehicleDamageBehaviorSink::OnDamageEvent(EVehicleDamageBehaviorEvent event
 void CVehicleDamageBehaviorSink::ChangeSinkingBehavior(bool isSinking)
 {
 	IEntity* pEntity = m_pVehicle->GetEntity();
-	CRY_ASSERT(pEntity);
+	assert(pEntity);
 
 	if (isSinking && !m_isSinking)
 	{
@@ -128,7 +128,7 @@ void CVehicleDamageBehaviorSink::OnVehicleEvent(EVehicleEvent event, const SVehi
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorSink::Serialize(TSerialize serialize, EEntityAspects)
+void CVehicleDamageBehaviorSink::Serialize(TSerialize serialize, unsigned aspects)
 {
   if (serialize.GetSerializationTarget() != eST_Network)
   {

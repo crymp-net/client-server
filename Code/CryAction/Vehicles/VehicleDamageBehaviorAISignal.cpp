@@ -11,9 +11,9 @@ History:
 - 23:11:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IAgent.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAISystem/IAgent.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleDamageBehaviorAISignal.h"
 
 //------------------------------------------------------------------------
@@ -45,10 +45,10 @@ void CVehicleDamageBehaviorAISignal::OnDamageEvent(EVehicleDamageBehaviorEvent e
 		return;
 
 	IAISystem* pAISystem = gEnv->pAISystem;
-	CRY_ASSERT(pAISystem);
+	assert(pAISystem);
 
 	IAISignalExtraData* pExtraData = pAISystem->CreateSignalExtraData();
-	CRY_ASSERT(pExtraData);
+	assert(pExtraData);
 
 	if (pExtraData)
 		pExtraData->iValue = behaviorParams.shooterId;

@@ -11,8 +11,8 @@ History:
 - 16:11:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehicleSeatActionSound.h"
@@ -47,7 +47,7 @@ bool CVehicleSeatActionSound::Init(IVehicle* pVehicle, TVehicleSeatId seatId, co
 }
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionSound::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionSound::Serialize(TSerialize ser, unsigned aspects)
 {
 	if (aspects&CVehicle::ASPECT_SEAT_ACTION)
 	{
@@ -97,7 +97,7 @@ void CVehicleSeatActionSound::PlaySound(bool play)
 	if (play)
 	{
 		IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*) m_pVehicle->GetEntity()->CreateProxy(ENTITY_PROXY_SOUND);
-		CRY_ASSERT(pSoundProxy);
+		assert(pSoundProxy);
 
 		if (ISound* pSound = pSoundProxy->GetSound(m_soundId))
 		{
@@ -112,8 +112,8 @@ void CVehicleSeatActionSound::PlaySound(bool play)
 		// Report the AI system about the vehicle movement sound.
 		if (!gEnv->bMultiplayer && gEnv->pAISystem)
 		{
-			SAIStimulus stim(AISTIM_SOUND, AISOUND_MOVEMENT_LOUD, m_pVehicle->GetEntityId(), 0, pos, ZERO, 200.0f);
-			gEnv->pAISystem->RegisterStimulus(stim);
+			//SAIStimulus stim(AISTIM_SOUND, AISOUND_MOVEMENT_LOUD, m_pVehicle->GetEntityId(), 0, pos, ZERO, 200.0f); //CryMP: fixme
+		//	gEnv->pAISystem->RegisterStimulus(stim);
 		}
 	}
 	else

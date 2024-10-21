@@ -11,12 +11,9 @@ History:
 - 03:04:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleHelper.h"
-#include "CryAction.h"
-#include "PersistantDebug.h"
-
 //------------------------------------------------------------------------
 const Matrix34& CVehicleHelper::GetVehicleTM()
 {
@@ -40,7 +37,7 @@ const Matrix34& CVehicleHelper::GetVehicleTM()
 //------------------------------------------------------------------------
 const Matrix34& CVehicleHelper::GetWorldTM()
 {
-  FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
 
 	if (!m_isWorldUpdated)
 	{
@@ -60,7 +57,7 @@ const Matrix34& CVehicleHelper::GetWorldTM()
 //------------------------------------------------------------------------
 const Matrix34& CVehicleHelper::GetReflectedWorldTM()
 {
-	FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+	//FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
 
 	Matrix34 tempMatrix = m_localTM;
 	tempMatrix.m03 = -tempMatrix.m03;	// negate x coord of translation
@@ -80,4 +77,4 @@ IVehiclePart* CVehicleHelper::GetParentPart()
 	return m_pParentPart;
 }
 
-#include UNIQUE_VIRTUAL_WRAPPER(IVehicleHelper)
+//#include UNIQUE_VIRTUAL_WRAPPER(IVehicleHelper)

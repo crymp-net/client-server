@@ -11,9 +11,9 @@ History:
 - 22:03:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehiclePartAnimated.h"
 #include "VehicleAnimation.h"
 
@@ -131,7 +131,7 @@ void CVehicleAnimation::Reset()
 					if (stateMaterial.invertValue)
 						value = 1.0f - value;
 
-					pMaterial->SetGetMaterialParamFloat(stateMaterial.setting, value, false);
+					pMaterial->SetGetMaterialParamFloat(stateMaterial.setting.c_str(), value, false);
 				}
 			}
 		}
@@ -162,7 +162,7 @@ bool CVehicleAnimation::StartAnimation()
 		if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
 		{
 			ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-			CRY_ASSERT(pSkeletonAnim);
+			assert(pSkeletonAnim);
 
 			CryCharAnimationParams animParams;
 			animParams.m_nFlags = CA_FORCE_SKELETON_UPDATE;
@@ -188,13 +188,13 @@ bool CVehicleAnimation::StartAnimation()
 			if(animState.animation.empty())
 				return false;
 
-			if (!pSkeletonAnim->StartAnimation(animState.animation, animParams))
+			if (!pSkeletonAnim->StartAnimation(animState.animation.c_str(), 0, 0, 0, animParams)) //CryMP: Fixme?
 				return false;
 
 			if (!animState.sound.empty())
 			{
 				IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
-				CRY_ASSERT(pEntitySoundsProxy);
+				assert(pEntitySoundsProxy);
 
 				int soundFlags = FLAG_SOUND_DEFAULT_3D;
 				if (animState.isLooped)
@@ -227,14 +227,14 @@ void CVehicleAnimation::StopAnimation()
 		SetTime(0.0f);
 
 	IEntity* pEntity = m_pPartAnimated->GetEntity();
-	CRY_ASSERT(pEntity);
+	assert(pEntity);
 
 	SAnimationState& animState = m_animationStates[m_currentStateId];
 
 	if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
 		pSkeletonAnim->StopAnimationInLayer(m_layerId,0.0f);
 	}
@@ -242,7 +242,7 @@ void CVehicleAnimation::StopAnimation()
 	if (animState.soundId != INVALID_SOUNDID)
 	{
 		IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
-		CRY_ASSERT(pEntitySoundsProxy);
+		assert(pEntitySoundsProxy);
 
 		pEntitySoundsProxy->StopSound(animState.soundId);
 		animState.soundId = INVALID_SOUNDID;
@@ -272,15 +272,16 @@ bool CVehicleAnimation::ChangeState(TVehicleAnimStateId stateId)
 		if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
 		{
 			ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-			CRY_ASSERT(pSkeletonAnim);
+			assert(pSkeletonAnim);
 
 			if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
 			{
 				CAnimation& anim = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
 				if (anim.m_fAnimTime > 0.0f)
 				{
-					float speed = pSkeletonAnim->GetLayerUpdateMultiplier(m_layerId) * -1.0f;
-					pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, speed);
+				
+					//float speed = pSkeletonAnim->GetLayerUpdateMultiplier(m_layerId) * -1.0f; //CryMP: Fixme
+					//pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, speed);
 				}
 				else
 					StopAnimation();
@@ -329,14 +330,14 @@ void CVehicleAnimation::SetSpeed(float speed)
 	const SAnimationState& animState = m_animationStates[m_currentStateId];
 
 	IEntity* pEntity = m_pPartAnimated->GetEntity();
-	CRY_ASSERT(pEntity);
+	assert(pEntity);
 
 	ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot());
 	if (!pCharInstance)
 		return;
 
 	ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-	CRY_ASSERT(pSkeletonAnim);
+	assert(pSkeletonAnim);
 
 	pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, max(min(speed, animState.speedMax), animState.speedMin));
 
@@ -358,7 +359,7 @@ void CVehicleAnimation::SetSpeed(float speed)
 
 				value = max(0.001f, min(0.999f, value));
 
-				pMaterial->SetGetMaterialParamFloat(stateMaterial.setting, value, false);
+				pMaterial->SetGetMaterialParamFloat(stateMaterial.setting.c_str(), value, false);
 			}
 		}
 	}
@@ -367,7 +368,7 @@ void CVehicleAnimation::SetSpeed(float speed)
 //------------------------------------------------------------------------
 IMaterial* CVehicleAnimation::FindMaterial(const SAnimationStateMaterial& animStateMaterial, IMaterial* pMaterial)
 {
-	CRY_ASSERT(pMaterial);
+	assert(pMaterial);
 	if (!pMaterial)
 		return NULL;
 
@@ -396,7 +397,7 @@ void CVehicleAnimation::ToggleManualUpdate(bool isEnabled)
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
     if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
     {
@@ -420,7 +421,7 @@ float CVehicleAnimation::GetAnimTime(bool raw/*=false*/)
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
   
 		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
 		{    
@@ -450,7 +451,7 @@ void CVehicleAnimation::SetTime(float time, bool force)
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
     if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
     {
@@ -462,7 +463,7 @@ void CVehicleAnimation::SetTime(float time, bool force)
 		  if (animation.m_AnimParams.m_nFlags&CA_MANUAL_UPDATE)
 			  animation.m_fAnimTime = time;
 
-			CRY_ASSERT(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
+			assert(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
 
 		  //else
 			  //CryLogAlways("Error: can't use SetTime on a VehicleAnimation that wasn't set for manual updates.");
@@ -477,7 +478,7 @@ bool CVehicleAnimation::IsUsingManualUpdates()
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
     if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
     {

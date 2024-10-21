@@ -34,7 +34,7 @@ public:
 	virtual void OnAction(const TVehicleActionId actionId, int activationMode, float value);
 	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) {}
 
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects) {}
+	virtual void Serialize(TSerialize ser, unsigned int aspects) {}
 	virtual void PostSerialize() {}
 	virtual void Update(const float deltaTime);
 

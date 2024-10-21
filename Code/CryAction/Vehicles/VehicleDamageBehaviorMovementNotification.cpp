@@ -12,8 +12,8 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorMovementNotification.h"
 
@@ -30,7 +30,7 @@ CVehicleDamageBehaviorMovementNotification::CVehicleDamageBehaviorMovementNotifi
 //------------------------------------------------------------------------
 bool CVehicleDamageBehaviorMovementNotification::Init(IVehicle* pVehicle, const CVehicleParams& table)
 {
-	CRY_ASSERT(pVehicle);
+	assert(pVehicle);
 	m_pVehicle = pVehicle;
 
 	m_param = 0;

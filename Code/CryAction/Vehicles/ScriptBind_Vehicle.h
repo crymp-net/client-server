@@ -18,8 +18,7 @@ History:
 # pragma once
 #endif
 
-#include <IScriptSystem.h>
-#include <ScriptHelpers.h>
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
 struct IVehicleSystem;
 struct IGameFramework;

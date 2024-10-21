@@ -37,7 +37,7 @@ public:
 
 	virtual void Update(const float frameTime);
 
-	virtual void Serialize(TSerialize serialize, EEntityAspects);
+	virtual void Serialize(TSerialize serialize, unsigned aspects);
 	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) {}
 	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); GetBaseMemoryStatistics(s); }
 	// ~IVehiclePart

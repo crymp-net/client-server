@@ -17,7 +17,7 @@ History:
 #include <utility>
 #include <vector>
 
-#include "VehicleSystem/VehiclePartBase.h"
+#include "VehiclePartBase.h"
 
 class CVehicle;
 
@@ -48,7 +48,7 @@ public:
 
 	virtual void Update(const float frameTime);
 
-	virtual void Serialize(TSerialize serialize, EEntityAspects aspects);
+	virtual void Serialize(TSerialize serialize, unsigned aspects);
 	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) {}
   virtual int GetType(){ return m_typeId; }
 	virtual void GetMemoryStatistics(ICrySizer * s);

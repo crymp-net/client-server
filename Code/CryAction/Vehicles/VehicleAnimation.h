@@ -15,6 +15,7 @@ History:
 #define __VEHICLEANIMATION_H__
 
 #include <vector>
+#include "VehicleParams.h"
 
 class CVehiclePartAnimated;
 
@@ -27,26 +28,26 @@ public:
 	CVehicleAnimation();
 	virtual ~CVehicleAnimation() {}
 
-	VIRTUAL bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	VIRTUAL void Reset();
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
+	virtual void Reset();
 	virtual void Release() { delete this; }
 
-	VIRTUAL bool StartAnimation();
-	VIRTUAL void StopAnimation();
+	virtual bool StartAnimation();
+	virtual void StopAnimation();
 
-	VIRTUAL bool ChangeState(TVehicleAnimStateId stateId);
-	VIRTUAL TVehicleAnimStateId GetState();
+	virtual bool ChangeState(TVehicleAnimStateId stateId);
+	virtual TVehicleAnimStateId GetState();
 
-	VIRTUAL string GetStateName(TVehicleAnimStateId stateId);
-	VIRTUAL TVehicleAnimStateId GetStateId(const string& name);
+	virtual string GetStateName(TVehicleAnimStateId stateId);
+	virtual TVehicleAnimStateId GetStateId(const string& name);
 	
-	VIRTUAL void SetSpeed(float speed);
+	virtual void SetSpeed(float speed);
 
-	VIRTUAL void ToggleManualUpdate(bool isEnabled);
-	VIRTUAL void SetTime(float time, bool force=false);
+	virtual void ToggleManualUpdate(bool isEnabled);
+	virtual void SetTime(float time, bool force=false);
 	
-	VIRTUAL float GetAnimTime(bool raw=false);
-  VIRTUAL bool IsUsingManualUpdates();
+	virtual float GetAnimTime(bool raw=false);
+  virtual bool IsUsingManualUpdates();
 	
 protected:
 

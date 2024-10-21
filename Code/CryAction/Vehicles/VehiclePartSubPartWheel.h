@@ -39,7 +39,7 @@ public:
 	virtual void Physicalize();  
 	virtual void OnEvent(const SVehiclePartEvent& event);	
 	
-  virtual void Serialize(TSerialize ser, EEntityAspects aspects);  
+  virtual void Serialize(TSerialize ser, unsigned aspects);
 	virtual void PostSerialize();
 
   virtual IVehicleWheel* GetIWheel() { return this; }

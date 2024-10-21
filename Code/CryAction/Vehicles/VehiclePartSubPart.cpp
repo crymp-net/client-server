@@ -12,12 +12,12 @@ History:
 - 25:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartAnimated.h"

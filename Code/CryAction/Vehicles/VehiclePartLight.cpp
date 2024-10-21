@@ -11,12 +11,13 @@ History:
 - 24:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehicleComponent.h"
 #include "VehiclePartBase.h"
@@ -68,7 +69,7 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 	m_light.m_nEntityId = m_pVehicle->GetEntityId();
 
   m_light.m_Flags |= DLF_LIGHTSOURCE;  
-	m_light.m_Flags |= DLF_DEFERRED_LIGHT;
+	//m_light.m_Flags |= DLF_DEFERRED_LIGHT;
   //m_light.m_Flags |= DLF_THIS_AREA_ONLY;
   m_light.m_Flags &= ~DLF_DISABLED; 
 
@@ -291,9 +292,9 @@ void CVehiclePartLight::UpdateLight(const float frameTime)
     SEntitySlotInfo info;
     if (m_pVehicle->GetEntity()->GetSlotInfo(m_slot, info) && info.pLight)
     {
-      CDLight& light = info.pLight->GetLightProperties();    
+      CDLight& light = static_cast<ILightSource*>(info.pLight)->GetLightProperties();
 
-      IActor* pActor = CCryAction::GetCryAction()->GetClientActor();
+      IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
       bool localPlayer = (pActor != NULL) && (pActor->GetLinkedVehicle() == m_pVehicle);
 
 			IVehicleSeat* pSeat = pActor ? m_pVehicle->GetSeatForPassenger(pActor->GetEntityId()) : NULL;
@@ -320,7 +321,7 @@ void CVehiclePartLight::UpdateLight(const float frameTime)
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartLight::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehiclePartLight::Serialize(TSerialize ser, unsigned aspects)
 {
   CVehiclePartBase::Serialize(ser, aspects);
 

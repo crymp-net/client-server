@@ -13,11 +13,11 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include "VehicleDamageBehaviorDisableSeatAction.h"
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
 #include "Vehicle.h"
 #include "VehicleSeat.h"
@@ -76,5 +76,8 @@ void CVehicleDamageBehaviorDisableSeatAction::OnDamageEvent(EVehicleDamageBehavi
  	}
 }
 
+void CVehicleDamageBehaviorDisableSeatAction::GetMemoryStatistics(ICrySizer* s)
+{
+}
 
 DEFINE_VEHICLEOBJECT(CVehicleDamageBehaviorDisableSeatAction);

@@ -11,9 +11,9 @@ History:
 - 13:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorDestroy.h"
@@ -115,15 +115,15 @@ void CVehicleDamageBehaviorDestroy::SetDestroyed(bool isDestroyed, EntityId shoo
 		entityEvent.nParam[2] = (INT_PTR)&val;
 		m_pVehicle->GetEntity()->SendEvent(entityEvent);
     
-		if (gEnv->pAISystem)
-	    gEnv->pAISystem->GetSmartObjectManager()->SetSmartObjectState(m_pVehicle->GetEntity(), "Dead");
+		//if (gEnv->pAISystem) //CryMP: Fixme
+	    //gEnv->pAISystem->GetSmartObjectManager()->SetSmartObjectState(m_pVehicle->GetEntity(), "Dead");
 
 		m_pVehicle->OnDestroyed();
 	}
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorDestroy::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleDamageBehaviorDestroy::Serialize(TSerialize ser, unsigned aspects)
 {
 
 }

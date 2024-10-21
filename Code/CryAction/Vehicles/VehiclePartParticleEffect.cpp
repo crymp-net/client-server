@@ -12,19 +12,18 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IVehicleSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <IActorSystem.h>
-#include <ISound.h>
-#include <ISerialize.h>
-#include <IAgent.h>
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 
-#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartParticleEffect.h"
 #include "VehicleUtils.h"
@@ -37,7 +36,7 @@ CVehiclePartParticleEffect::CVehiclePartParticleEffect() : m_id(0), m_pParticleE
 //------------------------------------------------------------------------
 CVehiclePartParticleEffect::~CVehiclePartParticleEffect()
 {
-	CRY_ASSERT(m_pVehicle);
+	assert(m_pVehicle);
 
 	m_pVehicle->UnregisterVehicleEventListener(this);
 
@@ -52,7 +51,7 @@ CVehiclePartParticleEffect::~CVehiclePartParticleEffect()
 //------------------------------------------------------------------------
 bool CVehiclePartParticleEffect::Init(IVehicle *pVehicle, const CVehicleParams &table, IVehiclePart *parent, CVehicle::SPartInitInfo &initInfo, int partType)
 {
-	if(!CVehiclePartBase::Init(pVehicle, table, parent, initInfo, eVPT_Entity))
+	if(!CVehiclePartBase::Init(pVehicle, table, parent, initInfo))
 	{
 		return false;
 	}
@@ -75,7 +74,7 @@ void CVehiclePartParticleEffect::PostInit()
 {
 	if(!m_particleEffectName.empty())
 	{
-		m_pParticleEffect = gEnv->pParticleManager->FindEffect(m_particleEffectName.c_str());
+		m_pParticleEffect = gEnv->p3DEngine->FindParticleEffect(m_particleEffectName.c_str());
 
 		if(m_pParticleEffect)
 		{
@@ -112,7 +111,7 @@ void CVehiclePartParticleEffect::OnVehicleEvent(EVehicleEvent event, const SVehi
 
 			break;
 		}
-
+		/* //CryMP: fixme
 		case eVE_StartParticleEffect:
 		case eVE_StopParticleEffect:
 		{
@@ -122,18 +121,18 @@ void CVehiclePartParticleEffect::OnVehicleEvent(EVehicleEvent event, const SVehi
 			}
 
 			break;
-		}
+		}*/
 	}
 }
 
 //------------------------------------------------------------------------
 void CVehiclePartParticleEffect::GetMemoryUsage(ICrySizer *pSizer) const
 {
-	CRY_ASSERT(pSizer);
+	assert(pSizer);
 
 	pSizer->Add(*this);
 
-	CVehiclePartBase::GetMemoryUsageInternal(pSizer); 
+	//CVehiclePartBase::GetMemoryUsageInternal(pSizer); 
 }
 
 //------------------------------------------------------------------------
@@ -155,9 +154,7 @@ void CVehiclePartParticleEffect::ActivateParticleEffect(bool activate)
 
 			if(m_pHelper)
 			{
-				Matrix34	tm;
-
-				m_pHelper->GetVehicleTM(tm);
+				Matrix34 tm = m_pHelper->GetVehicleTM();
 
 				pEntity->SetSlotLocalTM(m_slot, tm);
 			}

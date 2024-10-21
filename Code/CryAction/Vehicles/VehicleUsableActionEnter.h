@@ -28,22 +28,20 @@ public:
 	~CVehicleUsableActionEnter() {}
 
 	// IVehicleAction
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset() {}
-	virtual void Release() { delete this; }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override {}
+	virtual void Release() override { delete this; }
 
-	virtual int OnEvent(int eventType, SVehicleEventParams& eventParams);
-	void GetMemoryStatistics(ICrySizer * s);
+	virtual int OnEvent(int eventType, SVehicleEventParams& eventParams) override;
+	virtual void Serialize(TSerialize ser, unsigned aspects) override {}
+	virtual void Update(const float deltaTime) override {}
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {}
 	// ~IVehicleAction
 
-	// IVehicleObject
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects) {}
-	virtual void Update(const float deltaTime) {}
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
-	// ~IVehicleObject
+	// Additional methods
+	void GetMemoryStatistics(ICrySizer* s);
 
 protected:
-
 	bool IsSeatAvailable(TVehicleSeatId seatId, EntityId userId);
 
 	CVehicle* m_pVehicle;
@@ -51,5 +49,6 @@ protected:
 	typedef std::vector <TVehicleSeatId> TVehicleSeatIdVector;
 	TVehicleSeatIdVector m_seatIds;
 };
+
 
 #endif

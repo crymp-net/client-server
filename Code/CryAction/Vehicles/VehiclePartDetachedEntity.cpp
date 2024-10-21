@@ -11,19 +11,19 @@ History:
 - 26:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IVehicleSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <IActorSystem.h>
-#include <ISound.h>
-#include <ISerialize.h>
-#include <IAgent.h>
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartDetachedEntity.h"
 #include "VehiclePartBase.h"
@@ -99,7 +99,7 @@ void CVehiclePartDetachedEntity::HandleEvent(const SGameObjectEvent& event)
 			{
 				//OnCollision( pCollider->GetId(), pCollision->pt, pCollision->n );
 				IEntity* pEntity = GetEntity();
-				CRY_ASSERT(pEntity);
+				assert(pEntity);
 
 				int slotCount = pEntity->GetSlotCount();
 				if (slotCount > 1)

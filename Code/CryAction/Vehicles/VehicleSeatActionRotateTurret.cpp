@@ -11,10 +11,12 @@ History:
 - 14:12:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "GameObjects/GameObject.h"
-#include "IGameObject.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryGame/GameUtils.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehiclePartBase.h"
@@ -22,8 +24,7 @@ History:
 #include "VehicleSeatActionRotateTurret.h"
 #include "VehicleSeatActionWeapons.h"
 
-#include "PersistantDebug.h"
-#include "IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 #define TURNSPEED_COEFF 0.002f
 
@@ -64,7 +65,7 @@ bool CVehicleSeatActionRotateTurret::Init(IVehicle* pVehicle, TVehicleSeatId sea
 		{
 			m_rotTestHelperNames[0] = rotationTestTable.getAttr("helper1");
 
-			if(IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_rotTestHelperNames[0]))
+			if(IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_rotTestHelperNames[0].c_str()))
 				m_rotTestHelpers[0] = pHelper;
 		}
 
@@ -72,7 +73,7 @@ bool CVehicleSeatActionRotateTurret::Init(IVehicle* pVehicle, TVehicleSeatId sea
 		{
 			m_rotTestHelperNames[1] = rotationTestTable.getAttr("helper2");
 
-			if(IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_rotTestHelperNames[1]))
+			if(IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_rotTestHelperNames[1].c_str()))
 				m_rotTestHelpers[1] = pHelper;
 		}
 
@@ -123,11 +124,11 @@ void CVehicleSeatActionRotateTurret::StartUsing(EntityId passengerId)
 	// fetch helpers (was in PostInit but that doesn't exist for seat actions...)
 	if(m_rotTestHelpers[0] == NULL && !m_rotTestHelperNames[0].empty())
 	{
-		m_rotTestHelpers[0] = m_pVehicle->GetHelper(m_rotTestHelperNames[0]);
+		m_rotTestHelpers[0] = m_pVehicle->GetHelper(m_rotTestHelperNames[0].c_str());
 	}
 	if(m_rotTestHelpers[1] == NULL && !m_rotTestHelperNames[1].empty())
 	{
-		m_rotTestHelpers[1] = m_pVehicle->GetHelper(m_rotTestHelperNames[1]);
+		m_rotTestHelpers[1] = m_pVehicle->GetHelper(m_rotTestHelperNames[1].c_str());
 	}
 }
 
@@ -182,7 +183,7 @@ void CVehicleSeatActionRotateTurret::OnAction(const TVehicleActionId actionId, i
 }
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionRotateTurret::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionRotateTurret::Serialize(TSerialize ser, unsigned aspects)
 {
 	CVehicleSeat *pSeat = (CVehicleSeat*)m_pVehicle->GetSeatById(m_seatId);
 
@@ -236,7 +237,7 @@ void CVehicleSeatActionRotateTurret::Serialize(TSerialize ser, EEntityAspects as
 //------------------------------------------------------------------------
 void CVehicleSeatActionRotateTurret::Update(float frameTime)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
   if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
     return;
@@ -486,7 +487,7 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 	if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
 		return;
 
-	CRY_ASSERT( eType < eVTRT_NumRotationTypes );
+	assert( eType < eVTRT_NumRotationTypes );
 
 	const float threshold = 0.05f;	
 	m_rotations[eType].m_rotationChanged = false;
@@ -622,7 +623,7 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 		else if(eType == eVTRT_Yaw)
 			deltaAngles.z = delta;
 		else
-			CRY_ASSERT(false && "Unknown turret rotation");
+			assert(false && "Unknown turret rotation");
 	}
 
 	if (m_rotations[eType].m_pPart->IsRotationBlocked())
@@ -689,7 +690,7 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 
 	const Matrix34& worldTM = pPart->GetWorldTM();
 	m_rotations[eType].m_prevWorldQuat = Quat(worldTM);
-	CRY_ASSERT(m_rotations[eType].m_prevWorldQuat.IsValid());
+	assert(m_rotations[eType].m_prevWorldQuat.IsValid());
 
 	if(updated && checkRotation)
 	{
@@ -723,14 +724,15 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 				// there was a collision. check whether the barrel is moving towards the collision point or not... if not, ignore the collision.
 				if(VehicleCVars().v_debugdraw > 0)
 				{
-					CPersistantDebug* pPD = CCryAction::GetCryAction()->GetPersistantDebug();
+					/*
+					CPersistantDebug* pPD = gEnv->pGame->GetIGameFramework()->GetPersistantDebug();
 					pPD->Begin("VehicleCannon", false);
 
 					ColorF col(1.0f, 0.0f, 0.0f, 1.0f);
 					if(pContact && hit > 0.0f)
 					{
 						pPD->AddSphere(pContact->pt, 0.1f, col, 30.0f);
-					}
+					}*/
 				}
 
 				Vec3 endPos = m_rotTestHelpers[1]->GetWorldTM().GetTranslation();
@@ -814,9 +816,10 @@ bool CVehicleSeatActionRotateTurret::InitRotationSounds(const CVehicleParams& ro
 
 	if (sound.haveAttr("event"))
 	{
-		if (string helperName = sound.getAttr("helper"))
+		string helperName = sound.getAttr("helper");
+		if (!helperName.empty())
 		{
-			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(helperName))
+			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(helperName.c_str()))
 			{
 				SVehicleSoundInfo info;
 				info.name = sound.getAttr("event");
@@ -882,7 +885,7 @@ void CVehicleSeatActionRotateTurret::UpdateRotationSound(EVehicleTurretRotationT
 	float inout = 1.f;
 	if (m_pVehicle->IsPlayerPassenger())
 	{ 
-		if (IVehicleSeat* pSeat = m_pVehicle->GetSeatForPassenger(CCryAction::GetCryAction()->GetClientActor()->GetEntityId()))
+		if (IVehicleSeat* pSeat = m_pVehicle->GetSeatForPassenger(gEnv->pGame->GetIGameFramework()->GetClientActor()->GetEntityId()))
 		{
 			if (IVehicleView* pView = pSeat->GetView(pSeat->GetCurrentView()))
 			{

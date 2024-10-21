@@ -11,19 +11,17 @@ History:
 - 06:12:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "GameObjects/GameObject.h"
-#include "IGameObject.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehicleSeatActionWeapons.h"
 
-#include "IActorSystem.h"
-#include "IItemSystem.h"
-#include "IItem.h"
-#include "IWeapon.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IItem.h"
+#include "CryCommon/CryAction/IWeapon.h"
 
 
 
@@ -89,13 +87,13 @@ bool CVehicleSeatActionWeapons::Init(IVehicle* pVehicle, TVehicleSeatId seatId, 
 				string partName = weaponTable.getAttr("part");
 
 				if (!partName.empty())
-					pVehiclePart = m_pVehicle->GetPart(partName);
+					pVehiclePart = m_pVehicle->GetPart(partName.c_str());
 
 				SVehicleWeapon vehicleWeapon;
 				IEntity* pWeaponEntity = 0;
 				SEntitySpawnParams spawnParams;
 
-				spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(className);
+				spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(className.c_str());
 				if (!spawnParams.pClass)
 				{
 					CryLog("[CVehicleSeatActionWeapons]: EntityClass %s not found!", className.c_str());
@@ -119,13 +117,13 @@ bool CVehicleSeatActionWeapons::Init(IVehicle* pVehicle, TVehicleSeatId seatId, 
 					if (pWeaponEntity)
 					{
 						CVehicle* pCVehicle = static_cast<CVehicle*>(pVehicle);
-						CRY_ASSERT(pCVehicle);
+						assert(pCVehicle);
 
 						// this is effectively creating a chain of weapons' parents
 						// so that all weapons will be created on clients before the vehicle itself
 						if (EntityId lastId = pCVehicle->GetLastCreatedWeaponId())
 						{
-							IGameObject* pGameObject = CCryAction::GetCryAction()->GetGameObject(pWeaponEntity->GetId());
+							IGameObject* pGameObject = gEnv->pGame->GetIGameFramework()->GetGameObject(pWeaponEntity->GetId());
 							if (pGameObject)
 								pGameObject->SetNetworkParent(lastId);
 						}
@@ -235,7 +233,7 @@ bool CVehicleSeatActionWeapons::Init(IVehicle* pVehicle, TVehicleSeatId seatId, 
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::SetupWeapon(SVehicleWeapon& weapon)
 {
-	CRY_ASSERT(weapon.weaponEntityId);
+	assert(weapon.weaponEntityId);
 
 	if (weapon.weaponEntityId == 0)
 		return;
@@ -290,7 +288,7 @@ void CVehicleSeatActionWeapons::StartUsing(EntityId passengerId)
 
 	if (m_passengerId && m_passengerId != passengerId)
 	{
-		CRY_ASSERT(!"error: another passenger is already linked to this weapon seat action");
+		assert(!"error: another passenger is already linked to this weapon seat action");
 	}
 
 	m_passengerId = passengerId;
@@ -370,7 +368,7 @@ void CVehicleSeatActionWeapons::OnAction(const TVehicleActionId actionId, int ac
 					else
 						pFireMode->Cancel();
 				}
-				else if (activationMode == eAAM_OnRelease && (pWeapon->IsZoomingInOrOut() || pWeapon->IsZoomed()))
+				else if (activationMode == eAAM_OnRelease && (/*pWeapon->IsZoomingInOrOut() || */pWeapon->IsZoomed()))
 				{
 					pWeapon->StopZoom(m_passengerId);
 				}
@@ -382,7 +380,7 @@ void CVehicleSeatActionWeapons::OnAction(const TVehicleActionId actionId, int ac
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::Update(float frameTime)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	bool distant = m_pVehicle->GetGameObject()->IsProbablyDistant();
 	bool visible = m_pVehicle->GetGameObject()->IsProbablyVisible();
@@ -471,7 +469,7 @@ SVehicleWeapon& CVehicleSeatActionWeapons::GetWeaponInfo(int weaponIndex)
 //------------------------------------------------------------------------
 IItem* CVehicleSeatActionWeapons::GetIItem(const SVehicleWeapon& vehicleWeapon)
 {
-	return CCryAction::GetCryAction()->GetIItemSystem()->GetItem(vehicleWeapon.weaponEntityId);
+	return gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(vehicleWeapon.weaponEntityId);
 }
 
 //------------------------------------------------------------------------
@@ -518,7 +516,7 @@ IVehicleHelper* CVehicleSeatActionWeapons::GetHelper(SVehicleWeapon& vehicleWeap
 
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionWeapons::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionWeapons::Serialize(TSerialize ser, unsigned aspects)
 {
 	if (ser.GetSerializationTarget() != eST_Network)
 	{
@@ -574,7 +572,7 @@ void CVehicleSeatActionWeapons::StartFire()
 		}
 		else
 		{
-			GameWarning("%s: Weapon not available (EntId %i)", m_pVehicle->GetEntity()->GetName(), vehicleWeapon.weaponEntityId);
+			CryLogWarning("%s: Weapon not available (EntId %i)", m_pVehicle->GetEntity()->GetName(), vehicleWeapon.weaponEntityId);
 		}
 	}
 	else
@@ -657,7 +655,7 @@ IWeapon* CVehicleSeatActionWeapons::GetIWeapon(unsigned int index)
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::SetWeaponEntityId(unsigned int index, EntityId weaponId)
 {
-	IItem* pItem = CCryAction::GetCryAction()->GetIItemSystem()->GetItem(weaponId);
+	IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(weaponId);
 	if (!pItem)
 		return;
 
@@ -682,7 +680,7 @@ void CVehicleSeatActionWeapons::SetWeaponEntityId(unsigned int index, EntityId w
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::UpdateWeaponTM(SVehicleWeapon& weapon)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	if (IEntity* pEntityWeapon = GetEntity(weapon))
 	{
@@ -754,7 +752,7 @@ bool CVehicleSeatActionWeapons::GetProbableHit(EntityId weaponId, const IFireMod
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetFiringPos(EntityId weaponId, const IFireMode* pFireMode, Vec3& pos)
 {
-	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
 
 	for (TVehicleWeaponVector::iterator ite = m_weapons.begin(); ite != m_weapons.end(); ++ite)
 	{
@@ -800,7 +798,7 @@ bool CVehicleSeatActionWeapons::GetFiringPos(EntityId weaponId, const IFireMode*
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetFiringDir(EntityId weaponId, const IFireMode* pFireMode, Vec3& dir, const Vec3& probableHit, const Vec3& firingPos)
 {
-	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
 
 	IActor* pActor = GetUserActor();
 
@@ -852,7 +850,7 @@ bool CVehicleSeatActionWeapons::GetFiringDir(EntityId weaponId, const IFireMode*
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetActualWeaponDir(EntityId weaponId, const IFireMode* pFireMode, Vec3& dir, const Vec3& probableHit, const Vec3& firingPos)
 {
-	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
 
 	IActor* pActor = GetUserActor();
 
@@ -943,7 +941,7 @@ bool CVehicleSeatActionWeapons::GetFiringVelocity(EntityId weaponId, const IFire
 //------------------------------------------------------------------------
 IActor* CVehicleSeatActionWeapons::GetUserActor()
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 
 	return pActorSystem->GetActor(m_passengerId);
 }
@@ -965,11 +963,12 @@ void CVehicleSeatActionWeapons::OnVehicleEvent(EVehicleEvent event, const SVehic
 		{
 			if (IEntity* pEntity = GetEntity(*ite))
 			{
-				if (pAISystem) pAISystem->GetSmartObjectManager()->SetSmartObjectState(pEntity, "Busy");
+				//if (pAISystem) pAISystem->GetSmartObjectManager()->SetSmartObjectState(pEntity, "Busy");
 				pEntity->Hide(true);
 			}
 		}
 	}
+	/* CryMP: Fixme
 	else if (event == eVE_WeaponRemoved)
 	{
 		TVehicleWeaponVector::iterator ite = m_weapons.begin();
@@ -991,7 +990,7 @@ void CVehicleSeatActionWeapons::OnVehicleEvent(EVehicleEvent event, const SVehic
 				break;
 			}
 		}
-	}
+	}*/
 }
 
 //------------------------------------------------------------------------
@@ -1034,7 +1033,7 @@ void CVehicleSeatActionWeapons::OnShoot(IWeapon* pWeapon, EntityId shooterId, En
 //------------------------------------------------------------------------
 Vec3 CVehicleSeatActionWeapons::GetAverageFiringPos()
 {
-	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
 
 	AABB bounds;
 	bounds.Reset();

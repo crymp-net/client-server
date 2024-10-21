@@ -11,23 +11,25 @@ History:
 - 14:04:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "GameObjects/GameObject.h"
-#include "IActorSystem.h"
-#include "IAnimatedCharacter.h"
-#include "IAnimationGraph.h"
-#include "IVehicleSystem.h"
-#include "IViewSystem.h"
-#include "CryAction.h"
-#include "IGameObject.h"
-#include "IAgent.h"
-#include "IItemSystem.h"
-#include "IRenderAuxGeom.h"
-#include "IGameRulesSystem.h"
-#include "PersistantDebug.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/gEnv.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IAnimatedCharacter.h"
+#include "CryCommon/CryAction/IAnimationGraph.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAISystem/IAgent.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
-#include <ISoundMoodManager.h>
-#include <ICryAnimation.h>
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IGameplayRecorder.h"
+#include "CryCommon/CryInput/IInput.h"
+#include "CryCommon/CryMath/Cry_Camera.h"
 
 #include "VehicleSeat.h"
 #include "VehicleSeatGroup.h"
@@ -42,6 +44,7 @@ History:
 
 #include "VehicleViewThirdPerson.h"
 
+/*
 #include "../Network/GameContext.h"
 #include "../Network/GameChannel.h"
 #include "../Network/GameClientNub.h"
@@ -49,13 +52,12 @@ History:
 #include "../Network/GameServerNub.h"
 #include "../Network/GameServerChannel.h"
 #include "../Network/GameServerNub.h"
+*/
 
-#include "IPathfinder.h"
-#include "IAIActor.h"
 // MusicLogic
-#include "IMusicSystem.h"
-#include "IAIObject.h"
-CCryAction* CVehicleSeat::m_pGameFramework = NULL;
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+
+IGameFramework* CVehicleSeat::m_pGameFramework = NULL;
 
 //------------------------------------------------------------------------
 CVehicleSeat::CVehicleSeat()
@@ -118,7 +120,7 @@ CVehicleSeat::~CVehicleSeat()
 	for (TVehicleSeatActionVector::iterator ite = m_seatActions.begin(); ite != m_seatActions.end(); ++ite)
 	{
 		SSeatActionData& seatActionData = *ite;
-		CRY_ASSERT(seatActionData.pSeatAction);
+		assert(seatActionData.pSeatAction);
 		seatActionData.pSeatAction->Release();
 		seatActionData.pSeatAction = NULL;
 	}
@@ -137,10 +139,10 @@ CVehicleSeat::~CVehicleSeat()
 //------------------------------------------------------------------------
 bool CVehicleSeat::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& seatTable)
 {
-	IVehicleSystem* pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
 
 	if (!m_pGameFramework)
-		m_pGameFramework = CCryAction::GetCryAction();
+		m_pGameFramework = gEnv->pGame->GetIGameFramework();
 
 	m_pVehicle = (CVehicle*)pVehicle;
 	m_seatId = seatId;
@@ -172,15 +174,19 @@ bool CVehicleSeat::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicl
 				string className = viewTable.getAttr("class");
 				if (!className.empty())
 				{
-					if (CVehicleParams viewParamsTable = viewTable.findChild(className))
+					if (CVehicleParams viewParamsTable = viewTable.findChild(className.c_str()))
 					{
 						IVehicleView* view = pVehicleSystem->CreateVehicleView(className);
 						if (view)
 						{
 							if (view->Init(this, viewTable))
+							{
 								m_views.push_back(view);
+							}
 							else
+							{
 								delete view;
+							}
 						}
 					}
 				}
@@ -260,13 +266,13 @@ bool CVehicleSeat::InitSeatActions(const CVehicleParams& seatTable)
 		}
 		else
 		{
-			CRY_ASSERT(0 && "[CVehicleSeat::InitSeatActions] failed to init movement action");
+			assert(0 && "[CVehicleSeat::InitSeatActions] failed to init movement action");
 			delete pActionMovement;
 		}
 	}
 
-	IVehicleSystem* pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
-	CRY_ASSERT(pVehicleSystem);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	assert(pVehicleSystem);
 
 	CVehicleParams seatActionsTable = seatTable.findChild("SeatActions");
 	if (!seatActionsTable)
@@ -324,16 +330,16 @@ bool CVehicleSeat::InitSeatActions(const CVehicleParams& seatTable)
 
 		if (!params.pClass)
 		{
-			CryFatalError("VehicleSeatSerializer not registered in the entity system!");
+			//CryFatalError("VehicleSeatSerializer not registered in the entity system!");
 			return false;
 		}
 
 
-		static_cast<CVehicleSystem*>(CCryAction::GetCryAction()->GetIVehicleSystem())->SetInitializingSeat(this);
+		static_cast<CVehicleSystem*>(gEnv->pGame->GetIGameFramework()->GetIVehicleSystem())->SetInitializingSeat(this);
 
 		IEntity* pSerializerEntity = gEnv->pEntitySystem->SpawnEntity(params);
 
-		static_cast<CVehicleSystem*>(CCryAction::GetCryAction()->GetIVehicleSystem())->SetInitializingSeat(0);
+		static_cast<CVehicleSystem*>(gEnv->pGame->GetIGameFramework()->GetIVehicleSystem())->SetInitializingSeat(0);
 
 		CGameObject* pSerializerGameObject = (CGameObject*)pSerializerEntity->GetProxy(ENTITY_PROXY_USER);
 		if (!pSerializerGameObject)
@@ -362,7 +368,7 @@ void CVehicleSeat::Reset()
 	m_transitionType = eVT_None;
 	m_queuedTransition = eVT_None;
 
-	if (gEnv->IsEditor())
+	if (gEnv->bEditor)
 	{
 		while (!m_stateList.empty())
 		{
@@ -373,7 +379,8 @@ void CVehicleSeat::Reset()
 
 	m_isLocked = 0;
 	m_passengerId = 0;
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 }
 
 //------------------------------------------------------------------------
@@ -389,12 +396,12 @@ void CVehicleSeat::SerializeActions(TSerialize ser, EEntityAspects aspects)
 int animEventCallback(ICharacterInstance* pCharInstance, void* pData)
 {
 	CVehicleSeat* pSeat = (CVehicleSeat*) pData;
-	CRY_ASSERT(pSeat);
+	assert(pSeat);
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(pSeat->GetPassenger());
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pSeat->GetPassenger());
 
 	ISkeleton* pSkeleton = pCharInstance->GetISkeleton();
-	CRY_ASSERT(pSkeleton);
+	assert(pSkeleton);
 
 	LastAnimEvent lastEvent = pSkeleton->GetLastAnimEvent();
 
@@ -403,10 +410,10 @@ int animEventCallback(ICharacterInstance* pCharInstance, void* pData)
 		if (pActor)
 		{
 			IEntity* pEntity = pActor->GetEntity();
-			CRY_ASSERT(pEntity);
+			assert(pEntity);
 
 			IEntitySoundProxy* pSoundProxy = (IEntitySoundProxy*) pEntity->GetProxy(ENTITY_PROXY_SOUND);
-			CRY_ASSERT(pSoundProxy);
+			assert(pSoundProxy);
 
 			Vec3 soundPos;
 			soundPos.zero();
@@ -436,7 +443,7 @@ bool CVehicleSeat::IsAnimGraphStateExisting(EntityId actorId)
 
 	bool res = false;
 
-	if (IAnimationGraphExistanceQuery* pQuery = pState->CreateExistanceQuery(0)) // assumes vehicle states are defined in layer 0
+	if (IAnimationGraphExistanceQuery* pQuery = pState->CreateExistanceQuery()) // assumes vehicle states are defined in layer 0
 	{
 		pQuery->SetInput("Vehicle", m_agVehicleName.c_str());
 		pQuery->SetInput("VehicleSeat", m_agSeatNumber);
@@ -455,8 +462,8 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 	if (m_pVehicle->IsDestroyed())
 		return false;
 
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(actorId);
 	if (!pActor)
@@ -519,7 +526,7 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 
 		if (!m_seatNameToUseForEntering.empty())
 		{
-			pSeatToEnter = (CVehicleSeat*)m_pVehicle->GetSeatById(m_pVehicle->GetSeatId(m_seatNameToUseForEntering));
+			pSeatToEnter = (CVehicleSeat*)m_pVehicle->GetSeatById(m_pVehicle->GetSeatId(m_seatNameToUseForEntering.c_str()));
 			if (pSeatToEnter)
 			{
 				if (!pSeatToEnter->IsFree())
@@ -545,19 +552,19 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 			target.direction = worldTM.GetColumn(1);
 		}
 
-		//CPersistantDebug* pPD = CCryAction::GetCryAction()->GetPersistantDebug();
+		//CPersistantDebug* pPD = gEnv->pGame->GetIGameFramework()->GetPersistantDebug();
 		//pPD->Begin("VehicleSeat", false);
 			//pPD->AddSphere(target.location, 0.2f, ColorF(0,0,1,1), 3.f);
 
 		target.vehicleSeat = pSeatToEnter->GetSeatId();
-		target.directionTolerance = 0.0f;
-		target.startArcAngle = 0.0f;
+		//target.directionTolerance = 0.0f; //CryMP: fixme?
+		//target.startArcAngle = 0.0f;
 		target.speed = 0;
 		target.vehicleName = m_agVehicleName;
 		target.pQueryStart = &m_agStartEnterQueryId;
 		target.pQueryEnd = &m_agStartEndQueryId;
 		//target.triggerUser = eAGTU_VehicleSystem;
-		target.startWidth = 0.0f;
+		//target.startWidth = 0.0f;
 
 		// don't set actor target here! instead tell AIObject to do that after passing thru all smart objects
 		IAIObject* pAIObject = pActor->GetEntity()->GetAI();
@@ -584,11 +591,11 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 			req.animLocation = target.location;
 			req.animDirection = target.direction;
 			req.vehicleSeat = target.vehicleSeat;
-			req.directionTolerance = target.directionTolerance;
-			req.startArcAngle = target.startArcAngle;
+			//req.directionTolerance = target.directionTolerance;
+			//req.startArcAngle = target.startArcAngle;
 			req.speed = target.speed;
 			req.vehicleName = target.vehicleName;
-			req.startWidth = target.startWidth;
+			//req.startWidth = target.startWidth;
 			// Pass the local ids so that it is possible to listen to the query results.
 			req.pQueryStart = target.pQueryStart;
 			req.pQueryEnd = target.pQueryEnd;
@@ -618,7 +625,7 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 				if (ICharacterInstance* pCharInstance = pActor->GetEntity()->GetCharacter(0))
 				{
 					ISkeleton* pSkeleton = pCharInstance->GetISkeleton();
-					CRY_ASSERT(pSkeleton);
+					assert(pSkeleton);
 
 					pSkeleton->SetEventCallback(animEventCallback, (void*)this);
 				}
@@ -664,7 +671,8 @@ bool CVehicleSeat::Enter(EntityId actorId, bool isTransitionEnabled)
 		SitDown();
 	}
 
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 	// adjust the vehicle update slot to start calling the seat update function
 	m_pVehicle->GetGameObject()->EnableUpdateSlot(m_pVehicle, IVehicle::eVUS_PassengerIn);
@@ -681,7 +689,7 @@ bool CVehicleSeat::EnterRemotely(EntityId actorId)
 	if (m_passengerId != 0 && actorId != m_passengerId && m_transitionType != eVT_Dying)
 		return false;
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(actorId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(actorId);
 	if (!(pActor && pActor->IsPlayer()))
 		return false;
 
@@ -690,7 +698,7 @@ bool CVehicleSeat::EnterRemotely(EntityId actorId)
 
 	GivesActorSeatFeatures(true, true);
 
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 	return true;
 }
@@ -704,7 +712,7 @@ bool CVehicleSeat::ExitRemotely()
 	GivesActorSeatFeatures(false, true);
 
 	m_passengerId = 0;
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 	m_transitionType = eVT_None;
 
@@ -732,7 +740,7 @@ CVehicleSeat* CVehicleSeat::GetSeatUsedRemotely(bool onlyIfBeingUsed)
 //------------------------------------------------------------------------
 bool CVehicleSeat::SitDown()
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 	IActor* pActor = pActorSystem->GetActor(m_passengerId);
 	if (!pActor)
 		return false;
@@ -743,8 +751,8 @@ bool CVehicleSeat::SitDown()
 	else
 		m_transitionType = eVT_None;
 
-	if (IAISystem* pAISystem = gEnv->pAISystem)
-		pAISystem->GetSmartObjectManager()->AddSmartObjectState(pActor->GetEntity(), "InVehicle");
+	//if (IAISystem* pAISystem = gEnv->pAISystem) //CryMP: fixme?
+	//	pAISystem->GetSmartObjectManager()->AddSmartObjectState(pActor->GetEntity(), "InVehicle");
 
 	IEntity* pPassengerEntity = pActor->GetEntity();
 
@@ -763,7 +771,7 @@ bool CVehicleSeat::SitDown()
 	{
 		if (pScriptTable->GetValue("OnActorSitDown", scriptFunction))
 		{
-			CRY_ASSERT(scriptFunction);
+			assert(scriptFunction);
 			ScriptHandle passengerHandle(pPassengerEntity->GetId());
 			IScriptSystem* pIScriptSystem = gEnv->pScriptSystem;
 			Script::Call(pIScriptSystem, scriptFunction, pScriptTable, GetSeatId(), passengerHandle);
@@ -777,7 +785,7 @@ bool CVehicleSeat::SitDown()
 	eventParams.entityId = m_passengerId;
 	m_pVehicle->BroadcastVehicleEvent(eVE_PassengerEnter, eventParams);
 
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 	if (pActor->IsClient())
 	{
@@ -804,7 +812,7 @@ bool CVehicleSeat::SitDown()
 	if (m_pSeatGroup)
 		m_pSeatGroup->OnPassengerEnter(this, m_passengerId);
 
-	CCryAction::GetCryAction()->GetIGameplayRecorder()->Event(pActor->GetEntity(), GameplayEvent(eGE_EnteredVehicle, 0, 0, (void*)m_pVehicle->GetEntityId()));
+	//gEnv->pGame->GetIGameFramework()->GetIGameplayRecorder()->Event(pActor->GetEntity(), GameplayEvent(eGE_EnteredVehicle, 0, 0, (void*)m_pVehicle->GetEntityId()));
 
 	return true;
 }
@@ -820,7 +828,7 @@ bool CVehicleSeat::QueueTransition()
 		for (int i = 0, nWait = info.waitFor.size(); i < nWait; ++i)
 		{
 			CVehicleSeat* pSeat = (CVehicleSeat*)m_pVehicle->GetSeatById(info.waitFor[i]);
-			CRY_ASSERT(pSeat);
+			assert(pSeat);
 
 			int trans = pSeat->GetCurrentTransition();
 
@@ -833,12 +841,15 @@ bool CVehicleSeat::QueueTransition()
 }
 
 //------------------------------------------------------------------------
-bool CVehicleSeat::Exit(bool isTransitionEnabled, bool force/*=false*/, Vec3 exitPos/*=ZERO*/)
+bool CVehicleSeat::Exit(bool isTransitionEnabled, bool force/*=false*/)
 {
 	if (m_transitionType == eVT_RemoteUsage)
 		return ExitRemotely();
 
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+	Vec3 exitPos = Vec3(ZERO);
+	Vec3 exitWorldPos = Vec3(ZERO); //CryMP: Fime
+
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 	IActor* pActor = pActorSystem->GetActor(m_passengerId);
 
 	if (!exitPos.IsEquivalent(ZERO))
@@ -899,13 +910,14 @@ bool CVehicleSeat::Exit(bool isTransitionEnabled, bool force/*=false*/, Vec3 exi
 				{
 					Matrix34 worldTM = GetExitTM(pActor);
 					Vec3 adjustedPos;
-
+					//CryMP: fixme?
+					/*
 					if (IAIPathAgent* aiactor = pAIObject->CastToIAIActor())
 					{
 						if (aiactor->GetValidPositionNearby(worldTM.GetTranslation(), adjustedPos))
 							if (worldTM.GetTranslation() != adjustedPos)
 								m_adjustedExitPos = adjustedPos;
-					}
+					}*/
 				}
 			}
 		}
@@ -1015,7 +1027,7 @@ bool CVehicleSeat::Exit(bool isTransitionEnabled, bool force/*=false*/, Vec3 exi
 //------------------------------------------------------------------------
 void CVehicleSeat::SetAnimGraphInput(EntityId actorId, EAIAGInput input, const char* value)
 {
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(actorId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(actorId);
 	IAnimationGraphState* pState = GetAnimGraphState(actorId);
 
 	if (pActor && pState)
@@ -1024,8 +1036,9 @@ void CVehicleSeat::SetAnimGraphInput(EntityId actorId, EAIAGInput input, const c
 		{
 			if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
 			{
-				if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
-					pAIProxy->SetAGInput(input, value);
+				//if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
+				//	pAIProxy->SetAGInput(input, value);
+				//CryMP: Fixme?
 			}
 		}
 		else
@@ -1040,7 +1053,7 @@ void CVehicleSeat::SetAnimGraphInput(EntityId actorId, EAIAGInput input, const c
 //------------------------------------------------------------------------
 void CVehicleSeat::ResetAnimGraphInput(EntityId actorId, EAIAGInput input)
 {
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(actorId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(actorId);
 	IAnimationGraphState* pState = GetAnimGraphState(actorId);
 
 	if (pActor && pState)
@@ -1049,8 +1062,9 @@ void CVehicleSeat::ResetAnimGraphInput(EntityId actorId, EAIAGInput input)
 		{
 			if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
 			{
-				if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
-					pAIProxy->ResetAGInput(input);
+				//if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
+				//	pAIProxy->ResetAGInput(input);
+				//CryMP: Fixme?
 			}
 		}
 		else
@@ -1068,7 +1082,7 @@ bool CVehicleSeat::StandUp()
 	if (m_passengerId == 0)
 		return false;
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
 	if (!pActor)
 		return false;
 
@@ -1082,8 +1096,9 @@ bool CVehicleSeat::StandUp()
 
 	IEntity* pPassengerEntity = pActor->GetEntity();
 
-	if (IAISystem* pAISystem = gEnv->pAISystem)
-		pAISystem->GetSmartObjectManager()->RemoveSmartObjectState(pActor->GetEntity(), "InVehicle");
+	//CryMP: Fixme?
+	//if (IAISystem* pAISystem = gEnv->pAISystem)
+	//	pAISystem->GetSmartObjectManager()->RemoveSmartObjectState(pActor->GetEntity(), "InVehicle");
 
 
 	// allow lua side of the seat implementation to do its business
@@ -1092,7 +1107,7 @@ bool CVehicleSeat::StandUp()
 	{
 		if (pScriptTable->GetValue("OnActorStandUp", scriptFunction))
 		{
-			CRY_ASSERT(scriptFunction);
+			assert(scriptFunction);
 			ScriptHandle passengerHandle(pPassengerEntity->GetId());
 			IScriptSystem* pIScriptSystem = gEnv->pScriptSystem;
 			Script::Call(pIScriptSystem, scriptFunction, pScriptTable, passengerHandle, true);
@@ -1182,7 +1197,7 @@ bool CVehicleSeat::StandUp()
 
 	if (VehicleCVars().v_debugdraw > 0)
 	{
-		CPersistantDebug* pDB = CCryAction::GetCryAction()->GetPersistantDebug();
+		IPersistantDebug* pDB = gEnv->pGame->GetIGameFramework()->GetIPersistantDebug();
 		pDB->Begin("Seat", false);
 		pDB->AddDirection(passengerTM.GetTranslation() + Vec3(0, 0, 0.5f), 0.25f, passengerTM.GetColumn(1), ColorF(1, 1, 0, 1), 5.f);
 	}
@@ -1201,7 +1216,7 @@ bool CVehicleSeat::StandUp()
 
 	m_passengerId = 0;
 
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 	if (!gEnv->pSystem->IsSerializingFile()) //serialization will fix that automatically
 	{
@@ -1245,7 +1260,7 @@ bool CVehicleSeat::StandUp()
 	eventParams.iParam = m_seatId;
 	m_pVehicle->BroadcastVehicleEvent(eVE_SeatFreed, eventParams);
 
-	CCryAction::GetCryAction()->GetIGameplayRecorder()->Event(pActor->GetEntity(), GameplayEvent(eGE_LeftVehicle, 0, 0, (void*)m_pVehicle->GetEntityId()));
+	//gEnv->pGame->GetIGameFramework()->GetIGameplayRecorder()->Event(pActor->GetEntity(), GameplayEvent(eGE_LeftVehicle, 0, 0, (void*)m_pVehicle->GetEntityId()));
 
 	m_exitWorldPos.zero();
 
@@ -1275,7 +1290,7 @@ void CVehicleSeat::OnSeatFreed(TVehicleSeatId seatId, EntityId passengerId)
 void CVehicleSeat::GivesActorSeatFeatures(bool enabled, bool isRemote)
 {
 	IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(m_passengerId);
-	INetContext* pNetContext = m_pGameFramework->GetGameContext() ? m_pGameFramework->GetGameContext()->GetNetContext() : 0;
+	INetContext* pNetContext = m_pGameFramework->GetNetContext();
 
 	if (enabled && !m_pVehicle->IsDestroyed() && (pActor && pActor->GetHealth() > 0 || gEnv->pSystem->IsSerializingFile())) // move this to PostSerialize (after alpha build..)
 	{
@@ -1286,10 +1301,9 @@ void CVehicleSeat::GivesActorSeatFeatures(bool enabled, bool isRemote)
 			// give authority of the vehicle entity to whoever just sat down
 			if (gEnv->bServer && pActor->IsPlayer())
 			{
-				CGameChannel* pGameChannel = GetGameChannel(m_passengerId);
-
-				if (pGameChannel && pNetContext)
-					pNetContext->DelegateAuthority(m_pVehicle->GetEntityId(), pGameChannel->GetNetChannel());
+				INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(pActor->GetChannelId());
+				if (pNetChannel && pNetContext)
+					pNetContext->DelegateAuthority(m_pVehicle->GetEntityId(), pNetChannel);
 			}
 		}
 
@@ -1329,10 +1343,10 @@ void CVehicleSeat::GivesActorSeatFeatures(bool enabled, bool isRemote)
 		// give authority of the seat serializer to whoever just sat down
 		if (gEnv->bServer && pActor->IsPlayer() && gEnv->pEntitySystem->GetEntity(m_serializerId))
 		{
-			CGameChannel* pGameChannel = GetGameChannel(m_passengerId);
+			INetChannel* pNetChannel = m_pGameFramework->GetNetChannel(pActor->GetChannelId());
 
-			if (pGameChannel && pNetContext)
-				pNetContext->DelegateAuthority(m_serializerId, pGameChannel->GetNetChannel());
+			if (pNetChannel && pNetContext)
+				pNetContext->DelegateAuthority(m_serializerId, pNetChannel);
 		}
 
 		if (!isRemote)
@@ -1398,8 +1412,8 @@ void CVehicleSeat::EnableVehicleActionMaps(bool enable)
 	if (IsDemoPlayback())
 		return;
 
-	IActionMapManager* pActionMapMan = CCryAction::GetCryAction()->GetIActionMapManager();
-	CRY_ASSERT(pActionMapMan);
+	IActionMapManager* pActionMapMan = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	assert(pActionMapMan);
 
 	if (IActionMap* pActionMap = pActionMapMan->GetActionMap("vehicle"))
 	{
@@ -1438,7 +1452,7 @@ IActor* CVehicleSeat::GetPassengerActor(bool remoteUser/*=false*/)
 	if (0 == id)
 		return NULL;
 
-	return CCryAction::GetCryAction()->GetIActorSystem()->GetActor(id);
+	return gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id);
 }
 
 //------------------------------------------------------------------------
@@ -1446,7 +1460,7 @@ bool CVehicleSeat::IsPassengerClientActor() const
 {
 	if (m_passengerId)
 	{
-		IActor* pActor = CCryAction::GetCryAction()->GetClientActor();
+		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
 		if (pActor && pActor->GetEntityId() == m_passengerId)
 			return true;
 	}
@@ -1486,11 +1500,12 @@ IVehicleSeatAction* CVehicleSeat::GetSeatActionById(int id)
 
 
 //------------------------------------------------------------------------
-void CVehicleSeat::ChangedNetworkState(NetworkAspectType aspects)
+void CVehicleSeat::ChangedNetworkState(EEntityAspects aspects)
 {
 	if (m_pSerializer && gEnv->pEntitySystem->GetEntity(m_serializerId))
 	{
-		CHANGED_NETWORK_STATE(m_pSerializer, aspects);
+		//CHANGED_NETWORK_STATE(m_pSerializer, aspects);
+		m_pSerializer->GetGameObject()->ChangedNetworkState(aspects);
 	}
 }
 
@@ -1503,7 +1518,7 @@ bool CVehicleSeat::IsFree()
 	if (!m_passengerId)
 		return true;
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
 	if (!pActor)
 		return true;
 
@@ -1529,7 +1544,7 @@ bool CVehicleSeat::IsFree()
 void CVehicleSeat::OnAction(const TVehicleActionId actionId, int activationMode, float value)
 {
 	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(m_passengerId);
 
@@ -1569,7 +1584,7 @@ void CVehicleSeat::OnAction(const TVehicleActionId actionId, int activationMode,
 //------------------------------------------------------------------------
 void CVehicleSeat::Update(float deltaTime)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	if (m_passengerId)
 	{
@@ -1626,6 +1641,7 @@ void CVehicleSeat::Update(float deltaTime)
 
 				pActor->GetEntity()->GetWorldBounds(worldBounds);
 
+				/* CryMP: Fixme?
 				if (!gEnv->pRenderer->GetCamera().IsAABBVisible_F(worldBounds))
 				{
 					if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
@@ -1638,6 +1654,7 @@ void CVehicleSeat::Update(float deltaTime)
 							}
 					}
 				}
+				*/
 			}
 
 			if (m_queuedTransition == eVT_Exiting)
@@ -1809,7 +1826,7 @@ TVehicleViewId CVehicleSeat::GetNextView(TVehicleViewId viewId)
 //------------------------------------------------------------------------
 void CVehicleSeat::UpdateView(SViewParams& viewParams)
 {
-	CRY_ASSERT(m_passengerId);
+	assert(m_passengerId);
 
 	if (m_transitionType == eVT_None)
 	{
@@ -1821,12 +1838,12 @@ void CVehicleSeat::UpdateView(SViewParams& viewParams)
 		if (IActor* pActor = m_pGameFramework->GetIActorSystem()->GetActor(m_passengerId))
 		{
 			IEntity* pEntity = pActor->GetEntity();
-			CRY_ASSERT(pEntity);
+			assert(pEntity);
 
 			if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(0))
 			{
 				ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose();
-				CRY_ASSERT(pSkeletonPose);
+				assert(pSkeletonPose);
 
 				int16 headId = pSkeletonPose->GetJointIDByName("Bip01 Head");
 				if (headId > -1)
@@ -1917,8 +1934,8 @@ void CVehicleSeat::NetSetPassengerId(EntityId passengerId)
 	{
 		//CryLog("%s::NetSetPassenger: <%s> %i -> %i", m_pVehicle->GetEntity()->GetClass()->GetName(), m_name.c_str(), m_passengerId, passengerId);
 
-		IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-		CRY_ASSERT(pActorSystem);
+		IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+		assert(pActorSystem);
 
 		IActor* pActor = pActorSystem->GetActor(passengerId ? passengerId : m_passengerId);
 		if (!pActor)
@@ -1994,7 +2011,8 @@ void CVehicleSeat::NetSetPassengerId(EntityId passengerId)
 			m_prevTransitionType = m_transitionType;
 		}
 
-		CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+		//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+		m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 	}
 }
 
@@ -2110,7 +2128,7 @@ void CVehicleSeat::Serialize(TSerialize ser, EEntityAspects aspects)
 //------------------------------------------------------------------------
 void CVehicleSeat::PostSerialize()
 {
-	IActor* pActor = m_passengerId ? CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId) : 0;
+	IActor* pActor = m_passengerId ? gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId) : 0;
 	bool remote = (m_transitionType == eVT_RemoteUsage);
 
 	if (pActor)
@@ -2217,8 +2235,8 @@ float CVehicleSeat::ProcessPassengerDamage(float actorHealth, float damage, cons
 //------------------------------------------------------------------------
 void CVehicleSeat::OnPassengerDeath()
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(m_passengerId);
 	if (!pActor)
@@ -2226,7 +2244,7 @@ void CVehicleSeat::OnPassengerDeath()
 
 	if (m_transitionType == eVT_RemoteUsage)
 	{
-		CRY_ASSERT(0 && "OnPassengerDeath called on remotely used seat");
+		assert(0 && "OnPassengerDeath called on remotely used seat");
 		return;
 	}
 
@@ -2274,8 +2292,8 @@ void CVehicleSeat::OnPassengerDeath()
 //------------------------------------------------------------------------
 void CVehicleSeat::UnlinkPassenger(bool ragdoll)
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(m_passengerId);
 	if (!pActor)
@@ -2318,7 +2336,8 @@ void CVehicleSeat::UnlinkPassenger(bool ragdoll)
 	if (pActor->IsClient())
 		StopSounds();
 
-	CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+	m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 }
 
 //------------------------------------------------------------------------
@@ -2449,13 +2468,13 @@ bool CVehicleSeat::RequestMovement(CMovementRequest& movementRequest)
 //------------------------------------------------------------------------
 void CVehicleSeat::GetMovementState(SMovementState& movementState)
 {
-	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
 
 	IEntity* pVehicleEntity = m_pVehicle->GetEntity();
 	if (!pVehicleEntity)
 		return;
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
 
 	const Matrix34& worldTM = pVehicleEntity->GetWorldTM();
 
@@ -2540,16 +2559,16 @@ void CVehicleSeat::GetMovementState(SMovementState& movementState)
 }
 
 //------------------------------------------------------------------------
-bool CVehicleSeat::GetStanceState(const SStanceStateQuery& query, SStanceState& state)
+bool CVehicleSeat::GetStanceState(EStance stance, float lean, bool defaultPose, SStanceState& state)
 {
 	IEntity* pEntity = m_pVehicle->GetEntity();
 	// Returns one stance.
-	if (query.stance != STANCE_STAND || !pEntity)
+	if (stance != STANCE_STAND || !pEntity)
 		return false;
 
 
 	// TODO: This information is very approximate at the moment.
-	if (query.defaultPose)
+	if (false) //(query.defaultPose) //CryMP: Fixme?
 	{
 		AABB	aabb;
 		pEntity->GetLocalBounds(aabb);
@@ -2633,8 +2652,9 @@ CGameChannel* CVehicleSeat::GetGameChannel(EntityId actorId)
 		int channelId = pActor->GetChannelId();
 		if (channelId)
 		{
-			CGameServerNub* pServerNub = CCryAction::GetCryAction()->GetGameServerNub();
-			return pServerNub->GetChannel(channelId);
+			//CryMP: Fixme? not used now
+			//CGameServerNub* pServerNub = gEnv->pGame->GetIGameFramework()->GetGameServerNub();
+			//return pServerNub->GetChannel(channelId);
 		}
 	}
 
@@ -2653,11 +2673,11 @@ void CVehicleSeat::SetOutput(const char* output, const char* value)
 				pPartAnimated->GetEntity()->GetCharacter(pPartAnimated->GetSlot()))
 			{
 				ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-				CRY_ASSERT(pSkeletonAnim);
+				assert(pSkeletonAnim);
 
 				CryCharAnimationParams animParams;
 				animParams.m_nLayerID = pPartAnimated->GetNextFreeLayer();
-				pSkeletonAnim->StartAnimation(value, animParams);
+				//pSkeletonAnim->StartAnimation(value, animParams); //CryMP: Fixme?
 			}
 		}
 	}
@@ -2671,7 +2691,7 @@ void CVehicleSeat::QueryComplete(TAnimationGraphQueryID queryID, bool succeeded)
 		return;
 
 	IAnimationGraphState* pGraphState = pActor->GetAnimationGraphState();
-	CRY_ASSERT(pGraphState);
+	assert(pGraphState);
 
 	pGraphState->GetAnimationTarget();
 	SAnimationTarget target;
@@ -2706,11 +2726,12 @@ void CVehicleSeat::QueryComplete(TAnimationGraphQueryID queryID, bool succeeded)
 			m_transitionType = eVT_None;
 			m_passengerId = 0;
 
-			CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+			//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_SEAT_PASSENGER);
+			m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_SEAT_PASSENGER);
 
 			if (!m_seatNameToUseForEntering.empty())
 			{
-				if (CVehicleSeat* pSeat = (CVehicleSeat*)m_pVehicle->GetSeatById(m_pVehicle->GetSeatId(m_seatNameToUseForEntering)))
+				if (CVehicleSeat* pSeat = (CVehicleSeat*)m_pVehicle->GetSeatById(m_pVehicle->GetSeatId(m_seatNameToUseForEntering.c_str())))
 					pSeat->m_transitionType = eVT_None;
 			}
 
@@ -3089,8 +3110,8 @@ bool CVehicleSeat::TestExitPosition(IActor* pActor, Vec3& testPos, EntityId* pBl
 //------------------------------------------------------------------------
 IVehicleClient* CVehicleSeat::GetVehicleClient()
 {
-	IVehicleSystem* pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
-	CRY_ASSERT(pVehicleSystem);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	assert(pVehicleSystem);
 
 	return pVehicleSystem->GetVehicleClient();
 }
@@ -3123,4 +3144,4 @@ void CVehicleSeat::GetMemoryStatistics(ICrySizer* s)
 	s->Add(m_agVehicleName);
 }
 
-#include UNIQUE_VIRTUAL_WRAPPER(IVehicleSeat)
+//#include UNIQUE_VIRTUAL_WRAPPER(IVehicleSeat)

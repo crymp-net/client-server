@@ -11,12 +11,13 @@ History:
 - 29:01:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IActorSystem.h"
-#include "ICryAnimation.h"
-#include "IViewSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleViewFirstPerson.h"
 #include "VehicleSeat.h"
 
@@ -54,7 +55,7 @@ bool CVehicleViewFirstPerson::Init(CVehicleSeat* pSeat, const CVehicleParams& ta
 		{
 			if (helperName != "auto")
 			{
-				m_pHelper = m_pVehicle->GetHelper(helperName);
+				m_pHelper = m_pVehicle->GetHelper(helperName.c_str());
 			}
 			else
 			{
@@ -73,17 +74,17 @@ bool CVehicleViewFirstPerson::Init(CVehicleSeat* pSeat, const CVehicleParams& ta
 			}
 
 			if (!m_pHelper)
-				GameWarning("[%s, seat %s]: view helper %s not found, using character head", m_pVehicle->GetEntity()->GetName(), m_pSeat->GetName().c_str(), helperName.c_str());
+				CryLogWarning("[%s, seat %s]: view helper %s not found, using character head", m_pVehicle->GetEntity()->GetName(), m_pSeat->GetName().c_str(), helperName.c_str());
 		}
 
 		string frame = paramsTable.getAttr("frameObject");
 		if (!frame.empty())
 		{
 			// todo: aspect ratio?
-			if (strstr(frame, ".cgf"))
-				m_frameSlot = m_pVehicle->GetEntity()->LoadGeometry(-1, frame);
+			if (strstr(frame.c_str(), ".cgf"))
+				m_frameSlot = m_pVehicle->GetEntity()->LoadGeometry(-1, frame.c_str());
 			else
-				m_frameSlot = m_pVehicle->GetEntity()->LoadCharacter(-1, frame);
+				m_frameSlot = m_pVehicle->GetEntity()->LoadCharacter(-1, frame.c_str());
 
 			if (m_frameSlot != -1)
 			{
@@ -197,11 +198,11 @@ void CVehicleViewFirstPerson::OnStopUsing()
 
 	if (EntityId weaponId = m_pVehicle->GetCurrentWeaponId(m_passengerId))
 	{
-		if (IItem* pItem = CCryAction::GetCryAction()->GetIItemSystem()->GetItem(weaponId))
+		if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(weaponId))
 		{
 			if (IWeapon* pWeapon = pItem->GetIWeapon())
 			{
-				if (pWeapon->IsZoomed() || pWeapon->IsZoomingInOrOut())
+				if (pWeapon->IsZoomed()) //CryMP: Fixme || pWeapon->IsZoomingInOrOut())
 					pWeapon->StopZoom(m_passengerId);
 			}
 
@@ -239,7 +240,7 @@ void CVehicleViewFirstPerson::UpdateView(SViewParams& viewParams, EntityId playe
 
 	if (EntityId weaponId = m_pVehicle->GetCurrentWeaponId(m_passengerId))
 	{
-		if (IItem* pItem = CCryAction::GetCryAction()->GetIItemSystem()->GetItem(weaponId))
+		if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(weaponId))
 		{
 			if (pItem->FilterView(viewParams))
 				return;
@@ -250,7 +251,7 @@ void CVehicleViewFirstPerson::UpdateView(SViewParams& viewParams, EntityId playe
 	viewParams.rotation = m_viewRotation * GetVehicleRotGoal() * Quat::CreateRotationXYZ(m_rotation);
 
 	// set view direction on actor
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(playerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId);
 	if (pActor && pActor->IsClient())
 	{
 		pActor->SetViewInVehicle(viewParams.rotation);
@@ -273,8 +274,8 @@ Vec3 CVehicleViewFirstPerson::GetWorldPosGoal()
 	}
 	else
 	{
-		IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
-		CRY_ASSERT(pActor);
+		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
+		assert(pActor);
 
 		IEntity* pEntity = pActor->GetEntity();
 
@@ -327,8 +328,8 @@ Quat CVehicleViewFirstPerson::GetVehicleRotGoal()
 	}
 	else
 	{
-		IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
-		CRY_ASSERT(pActor);
+		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
+		assert(pActor);
 
 		if (pActor)
 		{
@@ -343,8 +344,8 @@ Quat CVehicleViewFirstPerson::GetVehicleRotGoal()
 //------------------------------------------------------------------------
 void CVehicleViewFirstPerson::HideEntitySlots(IEntity* pEnt, bool hide)
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	if (hide)
 	{

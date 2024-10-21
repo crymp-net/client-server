@@ -27,11 +27,11 @@ public:
 	CVehicleDamagesTemplateRegistry() {}
 	virtual ~CVehicleDamagesTemplateRegistry() {}
 
-	VIRTUAL bool Init(const string& defaultDefFilename, const string& damagesTemplatesPath);
+	virtual bool Init(const string& defaultDefFilename, const string& damagesTemplatesPath);
 	virtual void Release() { delete this; }
 
-	VIRTUAL bool RegisterTemplates(const string& filename, const string& defFilename);
-	VIRTUAL bool UseTemplate(const string& templateName, IVehicleDamagesGroup* pDamagesGroup);
+	virtual bool RegisterTemplates(const string& filename, const string& defFilename);
+	virtual bool UseTemplate(const string& templateName, IVehicleDamagesGroup* pDamagesGroup);
 
 protected:
 

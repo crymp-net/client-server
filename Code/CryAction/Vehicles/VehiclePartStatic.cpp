@@ -11,12 +11,12 @@ History:
 - 23:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartStatic.h"
@@ -66,7 +66,7 @@ void CVehiclePartStatic::InitGeometry()
 	if (m_isPhysicalized && m_slot > -1)
 		GetEntity()->UnphysicalizeSlot(m_slot);
 
-	m_slot = GetEntity()->LoadGeometry(m_slot, m_filename, m_geometry);
+	m_slot = GetEntity()->LoadGeometry(m_slot, m_filename.c_str(), m_geometry.c_str());
 
 	if (IStatObj* pStatObj = GetEntity()->GetStatObj(m_slot))
 	{
@@ -78,7 +78,7 @@ void CVehiclePartStatic::InitGeometry()
 
 	if (!m_helperPosName.empty())
 	{
-		if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_helperPosName))
+		if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(m_helperPosName.c_str()))
 		{
 			GetEntity()->SetSlotLocalTM(m_slot, pHelper->GetVehicleTM());
 		}

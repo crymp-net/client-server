@@ -11,17 +11,15 @@ History:
 - 23:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "CryAction.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehicleComponent.h"
 #include "VehicleSeat.h"
 #include "VehicleSeatSerializer.h"
-
-#include "PersistantDebug.h"
 
 const char * CVehiclePartBase::m_geometryDestroyedSuffix = "_damaged";
 
@@ -91,7 +89,7 @@ bool CVehiclePartBase::Init(IVehicle* pVehicle, const CVehicleParams& table, IVe
 	
   string component = table.getAttr("component");
   if (!component.empty())
-    initInfo.partComponentMap.push_back(CVehicle::SPartComponentPair(this, component));
+    initInfo.partComponentMap.push_back(CVehicle::SPartComponentPair(this, component.c_str()));
 
   // read optional multiple components (part->component relationship is now 1:n)
   if (CVehicleParams components = table.findChild("Components"))
@@ -110,9 +108,9 @@ bool CVehiclePartBase::Init(IVehicle* pVehicle, const CVehicleParams& table, IVe
   if (!filename.empty())
   { 
     if (filename.find("."))
-      m_slot = GetEntity()->LoadGeometry(m_slot, filename);
+      m_slot = GetEntity()->LoadGeometry(m_slot, filename.c_str());
     else
-      m_slot = GetEntity()->LoadCharacter(m_slot, filename);
+      m_slot = GetEntity()->LoadCharacter(m_slot, filename.c_str());
   }
 
 	m_isRotationBlocked = false;
@@ -164,7 +162,7 @@ EntityId CVehiclePartBase::SpawnEntity()
 		return pPartEntity->GetId();
 	}
 	
-	CRY_ASSERT(0);
+	assert(0);
 	return 0;
 }
 
@@ -401,7 +399,7 @@ const Matrix34& CVehiclePartBase::GetWorldTM()
 //------------------------------------------------------------------------
 const Matrix34& CVehiclePartBase::LocalToVehicleTM(const Matrix34& localTM)
 {
-  FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
 
   static Matrix34 tm;  
   tm = VALIDATE_MAT(localTM);
@@ -448,7 +446,7 @@ const AABB& CVehiclePartBase::GetLocalBounds()
 //------------------------------------------------------------------------
 void CVehiclePartBase::Update(float frameTime)
 {   
-  FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
   
 	if (m_hideMode != eVPH_NoFade)
 	{
@@ -467,7 +465,7 @@ void CVehiclePartBase::Update(float frameTime)
 				m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 		}
 		else
-			CRY_ASSERT(0);
+			assert(0);
 
 		if (IMaterial* pMaterialMain = GetMaterial())
 		{
@@ -587,7 +585,7 @@ IVehiclePart* CVehiclePartBase::GetParent(bool root/*=false*/)
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartBase::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehiclePartBase::Serialize(TSerialize ser, unsigned aspects)
 {	
 	bool bSaveGame = ser.GetSerializationTarget() != eST_Network;
 
@@ -654,7 +652,7 @@ void CVehiclePartBase::CloneMaterial()
 //------------------------------------------------------------------------
 int CVehiclePartBase::GetCGASlot(int jointId)
 { 
-  CRY_ASSERT(m_slot >= 0);
+  assert(m_slot >= 0);
 
   if (m_slot < 0) 
     return -1; 

@@ -24,20 +24,20 @@ class CVehicleDamageBehaviorImpulse
 	IMPLEMENT_VEHICLEOBJECT
 public:
 
-  CVehicleDamageBehaviorImpulse();
+	CVehicleDamageBehaviorImpulse();
 	virtual ~CVehicleDamageBehaviorImpulse() {}
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
-	
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects) {}
-	virtual void Update(const float deltaTime) {}
+	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
-	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); }
+	virtual void Serialize(TSerialize ser, unsigned aspects) override {};
+	virtual void Update(const float deltaTime) override {}
+
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {};
+	virtual void GetMemoryStatistics(ICrySizer* s) override { s->Add(*this); }
 
 protected:
 
@@ -47,9 +47,10 @@ protected:
 	float m_forceMax;
 	Vec3 m_impulseDir;
 	Vec3 m_angImpulse;
-  
+
 	IVehicleHelper* m_pImpulseLocation;
-  bool m_worldSpace;
+	bool m_worldSpace;
 };
+
 
 #endif

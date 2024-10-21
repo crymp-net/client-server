@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "VehicleModificationParams.h"
 
 //////////////////////////////////////////////////////////////////////////

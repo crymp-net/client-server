@@ -12,9 +12,9 @@ History:
 - 26:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartAnimatedJoint.h"
@@ -54,11 +54,11 @@ bool CVehicleDamageBehaviorDetachPart::Init(IVehicle* pVehicle, const CVehiclePa
 
 		// Get optional custom particle effect
 		if (detachPartParams.haveAttr("effect"))
-			m_pEffect = gEnv->pParticleManager->FindEffect(detachPartParams.getAttr("effect"), "CVehicleDamageBehaviorDetachPart()");
+			m_pEffect = gEnv->p3DEngine->FindParticleEffect(detachPartParams.getAttr("effect"), "CVehicleDamageBehaviorDetachPart()");
 
 		// Use default effect if necessary
 		if (m_pEffect == NULL)
-			m_pEffect = gEnv->pParticleManager->FindEffect(DEFAULT_EFFECT, "CVehicleDamageBehaviorDetachPart()");
+			m_pEffect = gEnv->p3DEngine->FindParticleEffect(DEFAULT_EFFECT, "CVehicleDamageBehaviorDetachPart()");
 
 		detachPartParams.getAttr("pickable", m_pickableDebris);
 
@@ -80,11 +80,11 @@ bool CVehicleDamageBehaviorDetachPart::Init(IVehicle* pVehicle, const string& pa
 
 	// Get optional custom particle effect
 	if (!effectName.empty())
-		m_pEffect = gEnv->pParticleManager->FindEffect(effectName.c_str(), "CVehicleDamageBehaviorDetachPart()");
+		m_pEffect = gEnv->p3DEngine->FindParticleEffect(effectName.c_str(), "CVehicleDamageBehaviorDetachPart()");
 
 	// Use default effect if necessary
 	if (m_pEffect == NULL)
-		m_pEffect = gEnv->pParticleManager->FindEffect(DEFAULT_EFFECT, "CVehicleDamageBehaviorDetachPart()");
+		m_pEffect = gEnv->p3DEngine->FindParticleEffect(DEFAULT_EFFECT, "CVehicleDamageBehaviorDetachPart()");
 
 	return true;
 }
@@ -113,7 +113,7 @@ void CVehicleDamageBehaviorDetachPart::Reset()
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorDetachPart::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleDamageBehaviorDetachPart::Serialize(TSerialize ser, unsigned aspects)
 {
 	if (ser.GetSerializationTarget() != eST_Network)
 	{
@@ -202,7 +202,7 @@ void CVehicleDamageBehaviorDetachPart::OnDamageEvent(EVehicleDamageBehaviorEvent
 
 		// copy vehicle's material to new entity (fixes detaching parts from vehicles with different paints),
 		//	or specify the destroyed material if it exists
-		const char* destroyedMaterial = m_pVehicle->GetDestroyedMaterial();
+	const char* destroyedMaterial = NULL; // m_pVehicle->GetDestroyedMaterial(); //CryMP: Fixme
 		IMaterial* pMaterial = NULL;
 		if(destroyedMaterial && destroyedMaterial[0])
 		{
@@ -222,7 +222,7 @@ void CVehicleDamageBehaviorDetachPart::OnDamageEvent(EVehicleDamageBehaviorEvent
 IEntity* CVehicleDamageBehaviorDetachPart::SpawnDetachedEntity()
 {
 	IEntity* pVehicleEntity = m_pVehicle->GetEntity();
-	CRY_ASSERT(pVehicleEntity);
+	assert(pVehicleEntity);
 
 	// spawn the detached entity
 	char pPartName[128];
@@ -237,7 +237,7 @@ IEntity* CVehicleDamageBehaviorDetachPart::SpawnDetachedEntity()
 	spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("VehiclePartDetached");
 	if (!spawnParams.pClass)
 	{
-		CRY_ASSERT(0);
+		assert(0);
 		return NULL;
 	}
 
@@ -251,7 +251,7 @@ bool CVehicleDamageBehaviorDetachPart::MovePartToTheNewEntity(IEntity* pTargetEn
 		return false;
 
 	IEntity* pVehicleEntity = m_pVehicle->GetEntity();
-	CRY_ASSERT(pVehicleEntity);
+	assert(pVehicleEntity);
 
 	IEntity* pDetachedEntity = gEnv->pEntitySystem->GetEntity(m_detachedEntityId);
 	if (!pDetachedEntity)

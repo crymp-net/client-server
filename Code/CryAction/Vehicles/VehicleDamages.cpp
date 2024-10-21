@@ -11,13 +11,12 @@ History:
 - 23:02:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleDamages.h"
-#include "VehicleSystem/Vehicle.h"
-#include "VehicleSystem/VehicleComponent.h"
-#include "IActorSystem.h"
-#include "CryAction.h"
+#include "Vehicle.h"
+#include "VehicleComponent.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 
 //------------------------------------------------------------------------
 void CVehicleDamages::InitDamages(CVehicle* pVehicle, const CVehicleParams& table)
@@ -112,7 +111,7 @@ void CVehicleDamages::ResetDamages()
 //------------------------------------------------------------------------
 void CVehicleDamages::UpdateDamages(float frameTime)
 {
-  FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
 
 	for (TVehicleDamagesGroupVector::iterator ite = m_damagesGroups.begin(), end = m_damagesGroups.end(); ite != end; ++ite)
 	{

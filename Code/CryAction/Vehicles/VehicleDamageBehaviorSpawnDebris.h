@@ -19,50 +19,48 @@ History:
 
 class CVehiclePartAnimated;
 
-class CVehicleDamageBehaviorSpawnDebris
-	: public IVehicleDamageBehavior
+class CVehicleDamageBehaviorSpawnDebris : public IVehicleDamageBehavior
 {
-	IMPLEMENT_VEHICLEOBJECT
+    IMPLEMENT_VEHICLEOBJECT
 public:
+    CVehicleDamageBehaviorSpawnDebris();
+    ~CVehicleDamageBehaviorSpawnDebris();
 
-	CVehicleDamageBehaviorSpawnDebris();
-	~CVehicleDamageBehaviorSpawnDebris();
-
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects) {}
-	virtual void Update(const float deltaTime);
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& params);
-	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
-
-	virtual void GetMemoryStatistics(ICrySizer * s);
+    // --- IVehicleDamageBehavior interface functions ---
+    virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+    virtual void Reset() override;
+    virtual void Release() override { delete this; } 
+    virtual void Serialize(TSerialize ser, unsigned aspects) override {}
+    virtual void Update(const float deltaTime) override;
+    virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& params) override;
+    virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override;
+    virtual void GetMemoryStatistics(ICrySizer* s) override;
+    // --- End of IVehicleDamageBehavior interface functions ---
 
 protected:
+    IEntity* SpawnDebris(IStatObj* pStatObj, Matrix34 vehicleTM, float force);
+    void AttachParticleEffect(IEntity* pDetachedEntity, const string& effectName);
+    void GiveImpulse(IEntity* pDetachedEntity, float force);
 
-	IEntity* SpawnDebris(IStatObj* pStatObj, Matrix34 vehicleTM, float force);
-	void AttachParticleEffect(IEntity* pDetachedEntity, const string& effectName);
-	void GiveImpulse(IEntity* pDetachedEntity, float force);
+    IVehicle* m_pVehicle;
+    typedef std::list<EntityId> TEntityIdList;
+    TEntityIdList m_spawnedDebris;
 
-	IVehicle* m_pVehicle;
+    struct SDebrisInfo
+    {
+        CVehiclePartAnimated* pAnimatedPart;
+        int jointId;
+        int slot;
+        int index;
+        EntityId entityId;
+        float time;
+        float force;
+    };
 
-	typedef std::list <EntityId> TEntityIdList;
-	TEntityIdList m_spawnedDebris;
-
-	struct SDebrisInfo
-	{
-		CVehiclePartAnimated* pAnimatedPart;
-		int jointId; // id of the joint in the intact model
-		int slot;
-		int index;
-		EntityId entityId;
-		float time;
-		float force;
-	};
-
-	typedef std::list <SDebrisInfo> TDebrisInfoList;
-	TDebrisInfoList m_debris;
-	bool m_pickableDebris;
+    typedef std::list<SDebrisInfo> TDebrisInfoList;
+    TDebrisInfoList m_debris;
+    bool m_pickableDebris;
 };
+
 
 #endif

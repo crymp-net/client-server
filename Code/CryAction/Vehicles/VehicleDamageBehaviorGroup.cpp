@@ -12,9 +12,9 @@ History:
 - 23:02:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IVehicleSystem.h"
-#include "VehicleSystem/Vehicle.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "Vehicle.h"
 #include "VehicleDamageBehaviorGroup.h"
 
 //------------------------------------------------------------------------
@@ -48,7 +48,7 @@ void CVehicleDamageBehaviorGroup::OnDamageEvent(EVehicleDamageBehaviorEvent even
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorGroup::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleDamageBehaviorGroup::Serialize(TSerialize ser, unsigned aspects)
 {
 }
 

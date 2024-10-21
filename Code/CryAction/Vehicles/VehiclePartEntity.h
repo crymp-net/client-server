@@ -14,7 +14,7 @@ History:
 #ifndef __VEHICLEPARTENTITY_H__
 #define __VEHICLEPARTENTITY_H__
 
-#include "IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 class CVehiclePartEntity
 	: public CGameObjectExtensionHelper<CVehiclePartEntity, IGameObjectExtension>
@@ -25,9 +25,9 @@ public:
 	virtual void InitClient(int channelId) {};
 	virtual void PostInit(IGameObject*) {}
 	virtual void PostInitClient(int channelId) {};
-	virtual void Release() { delete this; }
+	virtual void Release() {} // { delete this; } //CryMP: fixme
 
-	virtual void Serialize(TSerialize ser, EEntityAspects what);
+	virtual void Serialize(TSerialize ser, unsigned aspects);
 	virtual void PostSerialize() {}
 	virtual void SerializeSpawnInfo( TSerialize ser ) {}
 	virtual ISerializableInfoPtr GetSpawnInfo() {return 0;}
@@ -36,7 +36,7 @@ public:
 	virtual void ProcessEvent(SEntityEvent& event) {};
 	virtual void SetChannelId(uint16 id) {};
 	virtual void SetAuthority(bool auth) {};
-	virtual void PostUpdate(float frameTime) { CRY_ASSERT(false); };
+	virtual void PostUpdate(float frameTime) { assert(false); };
 	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); }
 
 protected:

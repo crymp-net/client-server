@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "VehicleSystem.h"
 
 #include "Vehicle.h"
@@ -45,9 +45,11 @@
 #include "VehicleViewThirdPerson.h"
 
 #include "VehiclePartDetachedEntity.h"
+#include "CryCommon/CrySystem/ICryPak.h"
+#include <CryCommon/CrySystem/CryPath.h>
 
 
-#include "CryAction.h"
+//#include "CryAction.h"
 
 //------------------------------------------------------------------------
 void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
@@ -58,7 +60,7 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 	serializerClass.flags = ECLF_INVISIBLE;
 
 	static IGameFramework::CGameObjectExtensionCreator<CVehicleSeatSerializer> createVehicleSeatSerializer;
-	CCryAction::GetCryAction()->GetIGameObjectSystem()->RegisterExtension(serializerClass.sName, &createVehicleSeatSerializer, &serializerClass);
+	gameFramework->GetIGameObjectSystem()->RegisterExtension(serializerClass.sName, &createVehicleSeatSerializer, &serializerClass);
 
 	// register the detached part entity
 
@@ -68,7 +70,7 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 	detachedPartClass.flags = ECLF_INVISIBLE;
 
 	static IGameFramework::CGameObjectExtensionCreator<CVehiclePartDetachedEntity> createVehicleDetachedPartEntity;
-	CCryAction::GetCryAction()->GetIGameObjectSystem()->RegisterExtension(detachedPartClass.sName, &createVehicleDetachedPartEntity, &detachedPartClass);
+	gameFramework->GetIGameObjectSystem()->RegisterExtension(detachedPartClass.sName, &createVehicleDetachedPartEntity, &detachedPartClass);
 
 	// register all the vehicles
 
@@ -81,17 +83,17 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 	string sExt(".xml");
 	string sPath("Scripts/Entities/Vehicles/Implementations/Xml/");  
 
-	if ((handle = pack->FindFirst( sPath + string("*") + sExt, &fd )) != -1)
+	if ((handle = pack->FindFirst( (sPath + string("*") + sExt).c_str(), &fd)) != -1)
 	{
 		do
 		{
-			if (XmlNodeRef root = GetISystem()->LoadXmlFile( sPath + string(fd.name)))
+			if (XmlNodeRef root = GetISystem()->LoadXmlFile((sPath + string(fd.name)).c_str()))
 			{
 				const char* name = root->getAttr("name");
 				if (name[0])
 				{					
 					// Allow the name to contain relative path, but use only the name part as class name.
-					string	className(PathUtil::GetFile(name));
+					string	className(CryPath::GetFile(name));
 
 					// register only once
 					std::pair<std::set<string>::iterator, bool> result = setVehicles.insert(className);
@@ -118,7 +120,7 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 						vehicleClass.sScriptFile = scriptName;
             
 						static IGameFramework::CGameObjectExtensionCreator<CVehicle> vehicleCreator;
-						CCryAction::GetCryAction()->GetIGameObjectSystem()->RegisterExtension(name, &vehicleCreator, &vehicleClass);
+						gameFramework->GetIGameObjectSystem()->RegisterExtension(name, &vehicleCreator, &vehicleClass);
 						m_classes.insert(TVehicleClassMap::value_type(name, &vehicleCreator));
 					}
 					else

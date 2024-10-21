@@ -21,36 +21,37 @@ class CVehicleDamageBehaviorEffect
 	IMPLEMENT_VEHICLEOBJECT
 public:
 
-  CVehicleDamageBehaviorEffect() {}
+	CVehicleDamageBehaviorEffect() {}
 	virtual ~CVehicleDamageBehaviorEffect() {}
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
-	
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects);
-	virtual void Update(const float deltaTime)  {}
+	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
+	virtual void Serialize(TSerialize ser, unsigned aspects) override;
+	virtual void Update(const float deltaTime) override {}
 
-	virtual void GetMemoryStatistics(ICrySizer * s);
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {}
+
+	virtual void GetMemoryStatistics(ICrySizer* s) override;
 
 protected:
 
-  void LoadEffect(IVehicleComponent* pComponent);
-  void UpdateEffect(float randomness, float damageRatio);
+	void LoadEffect(IVehicleComponent* pComponent);
+	void UpdateEffect(float randomness, float damageRatio);
 
 	IVehicle* m_pVehicle;
-  float m_damageRatioMin;
-  string m_effectName;
+	float m_damageRatioMin;
+	string m_effectName;
 	SDamageEffect m_damageEffect;
-  	
+
 	int m_slot;
 	float m_scale;
-  
+
 	bool m_disableAfterExplosion;
 };
+
 
 #endif

@@ -11,9 +11,9 @@ History:
 - 01:03:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehiclePartLight.h"
@@ -53,9 +53,9 @@ bool CVehicleSeatActionLights::Init(IVehicle* pVehicle, TVehicleSeatId seatId, c
 
 		if (!lightsTable.getAttr("sound", sound) || !sound)
 		{ // try to get it as a string
-			string xString;
-			if (xString = lightsTable.getAttr("sound") && !xString.empty())
-				m_pSound = gEnv->pSoundSystem->CreateSound(xString, FLAG_SOUND_DEFAULT_3D);
+			string xString = lightsTable.getAttr("sound");
+			if (!xString.empty())
+				m_pSound = gEnv->pSoundSystem->CreateSound(xString.c_str(), FLAG_SOUND_DEFAULT_3D);
 		}
 		else if (sound > 0 && sound <= sizeof(activationSounds)/sizeof(activationSounds[0]))
 			m_pSound = gEnv->pSoundSystem->CreateSound(activationSounds[sound-1], FLAG_SOUND_DEFAULT_3D);
@@ -97,7 +97,7 @@ void CVehicleSeatActionLights::Reset()
 
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionLights::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionLights::Serialize(TSerialize ser, unsigned aspects)
 {
   if (ser.GetSerializationTarget() != eST_Network)
   {
@@ -158,10 +158,10 @@ void CVehicleSeatActionLights::OnVehicleEvent(EVehicleEvent event, const SVehicl
   switch (event)
   {
   case eVE_Brake:
-	case eVE_Reversing:
+	//case eVE_Reversing:
     {
-      if ((event == eVE_Brake && eLA_Brake == m_activation) 
-				|| (event == eVE_Reversing && eLA_Reversing == m_activation))
+      if ((event == eVE_Brake && eLA_Brake == m_activation))
+				//|| (event == eVE_Reversing && eLA_Reversing == m_activation)) //CryMP: fixme
       {
         bool toggle = true;
 

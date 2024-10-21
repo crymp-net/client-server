@@ -11,11 +11,12 @@ History:
 - 06:07:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-
-#include "ICryAnimation.h"
-#include "IViewSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleViewBase.h"
 #include "VehicleSeat.h"
 #include "Vehicle.h"
@@ -299,7 +300,7 @@ void CVehicleViewBase::Update(const float frameTime)
 {
 	const float recenterSpeed = 4.25f;
 
-  IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_pSeat->GetPassenger());
+  IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_pSeat->GetPassenger());
 /*
   if (false && pActor)  
     m_viewAngleOffset = Ang3(pActor->GetViewAngleOffset());
@@ -474,7 +475,7 @@ void CVehicleViewBase::Update(const float frameTime)
 }
 
 //------------------------------------------------------------------------
-void CVehicleViewBase::Serialize(TSerialize serialize, EEntityAspects aspects)
+void CVehicleViewBase::Serialize(TSerialize serialize, unsigned int aspects)
 {
 	if (serialize.GetSerializationTarget() != eST_Network)
 	{

@@ -11,12 +11,12 @@ History:
 - 24:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehicleComponent.h"
 #include "VehiclePartSubPartWheel.h"
@@ -66,14 +66,15 @@ bool CVehiclePartTread::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 		}
 	}
   
-  m_slot = GetEntity()->LoadCharacter(m_slot, filename);
+  m_slot = GetEntity()->LoadCharacter(m_slot, filename.c_str());
   
   m_pCharInstance = GetEntity()->GetCharacter(m_slot);
   if (!m_pCharInstance)
     return false;
 
-  m_pCharInstance->GetISkeletonPose()->SetPostProcessCallback(	
-		(int (*)(ICharacterInstance*,void*)) CVehiclePartTread_PostProcess, (void*)this);
+  //CryMP: Fixme
+ // m_pCharInstance->GetISkeletonPose()->SetPostProcessCallback(	
+	//	(int (*)(ICharacterInstance*,void*)) CVehiclePartTread_PostProcess, (void*)this);
   
   if (subTable.haveAttr("materialName"))
   {
@@ -92,11 +93,11 @@ bool CVehiclePartTread::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
       if (pMaterial)
       {
         // if matname doesn't fit, look in submaterials
-        if (string(pMaterial->GetName()).MakeLower().find(materialName) == string::npos)        
+        if (string(pMaterial->GetName()).MakeLower().find(materialName.c_str()) == string::npos)        
         {
           for (int i=0; i < pMaterial->GetSubMtlCount(); ++i)
           {
-            if (string(pMaterial->GetSubMtl(i)->GetName()).MakeLower().find(materialName) != string::npos)
+            if (string(pMaterial->GetSubMtl(i)->GetName()).MakeLower().find(materialName.c_str()) != string::npos)
             {
               subMtlName = pMaterial->GetSubMtl(i)->GetName();
               subMtlSlot = i;
@@ -239,7 +240,7 @@ bool CVehiclePartTread::ChangeState(EVehiclePartState state, int flags/* =0 */)
 //------------------------------------------------------------------------
 void CVehiclePartTread::SetDamageRatio(float value)
 {
-	CRY_ASSERT(value >= 0.0f);
+	assert(value >= 0.0f);
 
 	if (value >= 1.0f)
 	{ 
@@ -294,7 +295,7 @@ const AABB& CVehiclePartTread::GetLocalBounds()
 //------------------------------------------------------------------------
 void CVehiclePartTread::Update(const float frameTime)
 {
-  FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
   
   if (!m_pCharInstance)
     return;
@@ -356,15 +357,15 @@ void CVehiclePartTread::SkeletonPostProcess(ICharacterInstance* pCharInstance)
     VALIDATE_MAT(slotTM);	
           
     QuatT relQuat = pSkeletonPose->GetRelJointByID(wheelInfo.jointId);            
-    CRY_ASSERT(relQuat.IsValid());
+    assert(relQuat.IsValid());
     relQuat.t = absRoot.GetInverted() * slotTM.GetTranslation();
-    CRY_ASSERT(relQuat.IsValid());
+    assert(relQuat.IsValid());
     pSkeletonPose->SetPostProcessQuat(wheelInfo.jointId, relQuat);    
     
     if (VehicleCVars().v_debugdraw == 4)
     { 
-      Vec3 local = GetEntity()->GetWorldTM().GetInverted() * slotTM.GetTranslation();        
-      gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(GetEntity()->GetWorldTM() * (local+Vec3((float)sgn(local.x)*0.5f,0.f,0.f)),0.1f,ColorB(0,0,255,255));
+      Vec3 local = GetEntity()->GetWorldTM().GetInverted() * slotTM.GetTranslation();        //CryMP: Fixme
+      //gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(GetEntity()->GetWorldTM() * (local+Vec3((float)sgn(local.x)*0.5f,0.f,0.f)),0.1f,ColorB(0,0,255,255));
     }
   }  
 }
@@ -391,7 +392,7 @@ void CVehiclePartTread::SetUVSpeed(float wheelSpeed)
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartTread::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehiclePartTread::Serialize(TSerialize ser, unsigned aspects)
 {
 	float damageRatio = m_damageRatio;
 

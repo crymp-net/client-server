@@ -11,9 +11,10 @@ History:
 - 20:10:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehicleSeatActionMovement.h"
@@ -52,7 +53,7 @@ bool CVehicleSeatActionMovement::Init(IVehicle* pVehicle, TVehicleSeatId seatId)
 //------------------------------------------------------------------------
 void CVehicleSeatActionMovement::Reset()
 {
-	CRY_ASSERT(m_pVehicle);
+	assert(m_pVehicle);
 
 	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 
@@ -66,17 +67,17 @@ void CVehicleSeatActionMovement::Reset()
 //------------------------------------------------------------------------
 void CVehicleSeatActionMovement::StartUsing(EntityId passengerId)
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(passengerId);
-	CRY_ASSERT(pActor);
+	assert(pActor);
 
 	IVehicleSeat* pVehicleSeat = m_pVehicle->GetSeatById(m_seatId);
-	CRY_ASSERT(pVehicleSeat);
+	assert(pVehicleSeat);
 
 	IVehicleMovement* pMovement = m_pVehicle->GetMovement();
-	CRY_ASSERT(pMovement);
+	assert(pMovement);
 
 	if (!pMovement)
 		return;
@@ -95,15 +96,15 @@ void CVehicleSeatActionMovement::StartUsing(EntityId passengerId)
 //------------------------------------------------------------------------
 void CVehicleSeatActionMovement::StopUsing()
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IVehicleMovement* pMovement = m_pVehicle->GetMovement();
 	if (!pMovement)
 		return;
 
 	IVehicleSeat* pSeat = m_pVehicle->GetSeatById(m_seatId);
-	CRY_ASSERT(pSeat);
+	assert(pSeat);
 
 	// default to continuing for a bit
 	m_delayedStop = 0.8f;
@@ -155,7 +156,7 @@ void CVehicleSeatActionMovement::OnAction(const TVehicleActionId actionId, int a
     m_actionForward = -value;
 	
 	IVehicleMovement* pMovement = m_pVehicle->GetMovement();
-	CRY_ASSERT(pMovement);
+	assert(pMovement);
 
 	pMovement->OnAction(actionId, activationMode, value);
 }
@@ -164,7 +165,7 @@ void CVehicleSeatActionMovement::OnAction(const TVehicleActionId actionId, int a
 void CVehicleSeatActionMovement::Update(const float deltaTime)
 {
 	IVehicleMovement* pMovement = m_pVehicle->GetMovement();
-	CRY_ASSERT(pMovement);
+	assert(pMovement);
 
 	bool isReadyToStopEngine = true;
 

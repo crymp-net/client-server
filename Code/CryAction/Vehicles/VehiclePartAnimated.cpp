@@ -11,16 +11,17 @@ History:
 - 24:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 
-#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartAnimated.h"
 #include "VehiclePartAnimatedJoint.h"
+#include <CryCommon/CryCore/StlUtils.h>
+#include "CryCommon/CrySystem/ICryPak.h"
 
 int CVehiclePartAnimated_ProcessRotations(ICharacterInstance* pCharInstance, CVehiclePartAnimated* pPartAnimated);
 
@@ -145,7 +146,7 @@ void CVehiclePartAnimated::Reset()
 	{	
 		ISkeletonAnim* pSkeletonAnim = m_pCharInstance->GetISkeletonAnim();
 		ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
 		pSkeletonAnim->StopAnimationsAllLayers();
 		pSkeletonPose->SetDefaultPose();
@@ -314,7 +315,7 @@ IStatObj* CVehiclePartAnimated::GetDestroyedGeometry(const char* pJointName, uns
 	if (pJointName[0] && m_pCharInstanceDestroyed)
 	{
 		ISkeletonPose* pSkeletonDestroyed = m_pCharInstanceDestroyed->GetISkeletonPose();
-		CRY_ASSERT(pSkeletonDestroyed);
+		assert(pSkeletonDestroyed);
  
     char buffer[256];
 
@@ -344,7 +345,7 @@ Matrix34 CVehiclePartAnimated::GetDestroyedGeometryTM(const char* pJointName, un
 	if (pJointName[0] && m_pCharInstanceDestroyed)
 	{
 		ISkeletonPose* pSkeletonDestroyed = m_pCharInstanceDestroyed->GetISkeletonPose();
-		CRY_ASSERT(pSkeletonDestroyed);
+		assert(pSkeletonDestroyed);
 
 		char buffer[256];
 
@@ -681,7 +682,7 @@ void CVehiclePartAnimated::FlagSkeleton(ISkeletonPose* pSkeletonPose)
       // if no water proxy, we leave only "proxy" parts floating
       if (idWater != -1)
       {
-        if (i == idWater)
+        if (i == (uint32)idWater)
         {
           SetFlags(physId, geom_collides, false);
           SetFlagsCollider(physId, 0);
@@ -789,7 +790,7 @@ void CVehiclePartAnimated::FlagSkeleton(ISkeletonPose* pSkeletonPose)
     if (partId != -1)    
       SetFlags(partId, geom_floats, true);    
     else
-      GameWarning("[CVehiclePartAnimated]: <%s> has no buoyancy parts!",GetEntity()->GetName());
+      CryLogWarning("[CVehiclePartAnimated]: <%s> has no buoyancy parts!",GetEntity()->GetName());
   }
   
   int jointId, physId;
@@ -961,7 +962,7 @@ void CVehiclePartAnimated::SetDrivingProxy(bool bDrive)
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartAnimated::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehiclePartAnimated::Serialize(TSerialize ser, unsigned aspects)
 {
 	CVehiclePartBase::Serialize(ser, aspects);
 }
@@ -986,7 +987,7 @@ void CVehiclePartAnimated::ProcessAnimatedJointRotations()
 	for (TAnimatedJointList::iterator ite = m_rotatingAnimatedJoints.begin(); ite != m_rotatingAnimatedJoints.end(); ++ite)
 	{
 		CVehiclePartAnimatedJoint* pAnimatedJoint = *ite;    
-    CRY_ASSERT(pAnimatedJoint);
+    assert(pAnimatedJoint);
     
     pAnimatedJoint->ApplyRotations();    
 	}  
@@ -1000,13 +1001,14 @@ void CVehiclePartAnimated::RegisterRotatingAnimatedJoint(CVehiclePartAnimatedJoi
 		if (m_pCharInstance)
 		{
 			ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
-			CRY_ASSERT(pSkeletonPose);
+			assert(pSkeletonPose);
       
 			//CryCharAnimationParams animParams;
 			//animParams.m_nFlags |= CA_LOOP_ANIMATION;
 			//pSkeleton->StartAnimation("Default",0, 0,0,  animParams); // [MR: commented out on Ivos request]
 
-			pSkeletonPose->SetPostProcessCallback(	(int (*)(ICharacterInstance*,void*)) CVehiclePartAnimated_ProcessRotations, (void*)this);
+            //CryMP: Fixme
+			//pSkeletonPose->SetPostProcessCallback(	(int (*)(ICharacterInstance*,void*)) CVehiclePartAnimated_ProcessRotations, (void*)this);
 		}
 	}
 
@@ -1062,7 +1064,7 @@ int CVehiclePartAnimated::GetNextFreeLayer()
 	if (ICharacterInstance* pCharInstance = GetEntity()->GetCharacter(m_slot))  
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
 		for (int i=1; i<0x10; i++)
 		{

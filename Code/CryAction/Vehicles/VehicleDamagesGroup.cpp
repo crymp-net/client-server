@@ -11,9 +11,8 @@ History:
 - 23:02:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleDamagesGroup.h"
 #include "Vehicle.h"
 #include "VehicleDamageBehaviorDestroy.h"
@@ -55,7 +54,7 @@ bool CVehicleDamagesGroup::ParseDamagesGroup(const CVehicleParams& table)
 	if (table.haveAttr("useTemplate"))
 	{
 		IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
-		CRY_ASSERT(pVehicleSystem);
+		assert(pVehicleSystem);
 
 		if (IVehicleDamagesTemplateRegistry* pDamageTemplReg = pVehicleSystem->GetDamagesTemplateRegistry())
 			pDamageTemplReg->UseTemplate(table.getAttr("useTemplate"), this);
@@ -133,7 +132,7 @@ IVehicleDamageBehavior* CVehicleDamagesGroup::ParseDamageBehavior(const CVehicle
 	string className = table.getAttr("class");
 	if (!className.empty())
 	{
-		IVehicleSystem* pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
+		IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
 
 		if (IVehicleDamageBehavior* pDamageBehavior = pVehicleSystem->CreateVehicleDamageBehavior(className))
 		{
@@ -264,7 +263,7 @@ void CVehicleDamagesGroup::OnDamageEvent(EVehicleDamageBehaviorEvent event, cons
 //------------------------------------------------------------------------
 void CVehicleDamagesGroup::Update(float frameTime)
 {
-  FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
   
 	TDelayedDamagesSubGroupList::iterator ite = m_delayedSubGroups.begin();
 	TDelayedDamagesSubGroupList::iterator next;
@@ -337,4 +336,4 @@ void CVehicleDamagesGroup::GetMemoryStatistics(ICrySizer* pSizer)
 	}
 }
 
-#include UNIQUE_VIRTUAL_WRAPPER(IVehicleDamagesGroup)
+//#include UNIQUE_VIRTUAL_WRAPPER(IVehicleDamagesGroup)

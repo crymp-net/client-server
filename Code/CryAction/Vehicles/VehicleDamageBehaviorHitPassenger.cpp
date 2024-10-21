@@ -12,12 +12,12 @@ History:
 - 30:07:2007: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "IActorSystem.h"
-#include "IVehicleSystem.h"
-#include "VehicleSystem/Vehicle.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "Vehicle.h"
 #include "VehicleDamageBehaviorHitPassenger.h"
-#include "IGameRulesSystem.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
 //------------------------------------------------------------------------
 CVehicleDamageBehaviorHitPassenger::CVehicleDamageBehaviorHitPassenger()
@@ -49,7 +49,7 @@ void CVehicleDamageBehaviorHitPassenger::OnDamageEvent(EVehicleDamageBehaviorEve
 		return;
 
 	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	assert(pActorSystem);
 
 	for (TVehicleSeatId seatId = InvalidVehicleSeatId + 1; 
 		seatId != m_pVehicle->GetLastSeatId(); seatId++)

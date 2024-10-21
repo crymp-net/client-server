@@ -27,19 +27,19 @@ public:
 	CVehicleDamageBehaviorDetachPart();
 	virtual ~CVehicleDamageBehaviorDetachPart();
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
 	virtual bool Init(IVehicle* pVehicle, const string& partName, const string& effectName);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
-	
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects);
-	virtual void Update(const float deltaTime) {}
+	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
+	virtual void Serialize(TSerialize ser, unsigned aspects) override;
+	virtual void Update(const float deltaTime) override {};
 
-	virtual void GetMemoryStatistics(ICrySizer * s);
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {}
+
+	virtual void GetMemoryStatistics(ICrySizer* s) override;
 
 protected:
 
@@ -49,11 +49,12 @@ protected:
 
 	IVehicle* m_pVehicle;
 	string m_partName;
-	
+
 	EntityId m_detachedEntityId;
 	IStatObj* m_pDetachedStatObj;
-  IParticleEffect* m_pEffect;
+	IParticleEffect* m_pEffect;
 	bool m_pickableDebris;
 };
+
 
 #endif

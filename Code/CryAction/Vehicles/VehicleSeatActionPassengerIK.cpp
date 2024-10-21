@@ -11,14 +11,14 @@ History:
 - 10:01:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IActorSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeatActionPassengerIK.h"
 
-#include "IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 //------------------------------------------------------------------------
 bool CVehicleSeatActionPassengerIK::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& table)
@@ -93,17 +93,17 @@ void CVehicleSeatActionPassengerIK::Update(float frameTime)
 	if (!m_passengerId)
 		return;
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(m_passengerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
 	if (!pActor)
 	{
-		CRY_ASSERT(!"Invalid entity id for the actor id, Actor System didn't know it");
+		assert(!"Invalid entity id for the actor id, Actor System didn't know it");
 		return;
 	}
 
 	if (ICharacterInstance* pCharInstance = pActor->GetEntity()->GetCharacter(0))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		CRY_ASSERT(pSkeletonAnim);
+		assert(pSkeletonAnim);
 
 		if (pSkeletonAnim->GetNumAnimsInFIFO(0) >= 1)
 		{

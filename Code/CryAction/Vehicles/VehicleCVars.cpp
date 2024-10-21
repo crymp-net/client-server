@@ -11,7 +11,9 @@ History:
 
 *************************************************************************/
 
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include "VehicleCVars.h"
 #include "VehicleSystem.h"
 #include "Vehicle.h"
@@ -23,6 +25,16 @@ void OnDebugViewVarChanged(ICVar* pDebugViewVar);
 void OnDebugDrawVarChanged(ICVar* pVar);
 void OnDriverControlledGunsChanged(ICVar* pVar);
 void CmdExitPlayer(IConsoleCmdArgs* pArgs);
+
+// Summary:
+//	 Preferred way to register a CVar
+#define REGISTER_CVAR(_var,_def_val,_flags,_comment)	(gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), _comment))
+// Summary:
+//	 Preferred way to register a string CVar
+#define REGISTER_STRING(_name,_def_val,_flags,_comment)	(gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name,(_def_val), (_flags), _comment))
+// Summary:
+//	 Preferred way to register a console command
+#define REGISTER_COMMAND(_name,_func,_flags,_comment)	(gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->AddCommand(_name,_func,(_flags), _comment))
 
 
 //------------------------------------------------------------------------
@@ -140,7 +152,7 @@ CVehicleCVars::~CVehicleCVars()
 //------------------------------------------------------------------------
 void OnDebugViewVarChanged(ICVar* pDebugViewVar)
 { 
-  if (IActor* pActor = CCryAction::GetCryAction()->GetClientActor())
+  if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
   {
 		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 		{
@@ -173,7 +185,7 @@ void OnDriverControlledGunsChanged(ICVar* pVar)
   if (gEnv->bMultiplayer)
     return;
 
-  if (IActor* pActor = CCryAction::GetCryAction()->GetClientActor())
+  if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
   {
 		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())    
 		{
@@ -188,7 +200,7 @@ void OnDriverControlledGunsChanged(ICVar* pVar)
 //------------------------------------------------------------------------
 void CmdExitPlayer(IConsoleCmdArgs* pArgs)
 { 
-	if (IActor* pActor = CCryAction::GetCryAction()->GetClientActor())
+	if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
 	{
 		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())    
 			pVehicle->GetGameObject()->InvokeRMI(CVehicle::SvRequestLeave(), CVehicle::RequestLeaveParams(pActor->GetEntityId(), ZERO), eRMI_ToServer);    

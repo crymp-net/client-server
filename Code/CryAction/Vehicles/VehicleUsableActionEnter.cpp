@@ -11,14 +11,14 @@ History:
 - 19:01:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "GameObjects/GameObject.h"
-#include "IActorSystem.h"
-#include "IGameObject.h"
-#include "IItem.h"
-#include "IItemSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IItem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
 #include "VehicleSeatGroup.h"

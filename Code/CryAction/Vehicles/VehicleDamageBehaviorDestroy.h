@@ -16,7 +16,6 @@ History:
 #define __VEHICLEDAMAGEBEHAVIORDESTROY_H__
 
 class CVehicle;
-
 class CVehicleDamageBehaviorDestroy
 	: public IVehicleDamageBehavior
 {
@@ -26,20 +25,20 @@ public:
 	CVehicleDamageBehaviorDestroy() {}
 	virtual ~CVehicleDamageBehaviorDestroy() {}
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects);
-	virtual void Update(const float deltaTime) {}
+	virtual void Serialize(TSerialize ser, unsigned aspects) override;
+	virtual void Update(const float deltaTime) override {}
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
+	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {}
 
-	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); }
+	virtual void GetMemoryStatistics(ICrySizer* s) override { s->Add(*this); }
 
-	virtual const string &GetEffectName() const { return m_effectName; }
+	virtual const string& GetEffectName() const { return m_effectName; }
 
 protected:
 
@@ -48,5 +47,6 @@ protected:
 	CVehicle* m_pVehicle;
 	string m_effectName;
 };
+
 
 #endif

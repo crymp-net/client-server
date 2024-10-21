@@ -11,14 +11,17 @@ History:
 - 02:05:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IViewSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include "VehicleSeat.h"
 #include "VehicleViewThirdPerson.h"
 
-#include "Cry_GeoIntersect.h"
+#include "CryCommon/CryMath/Cry_GeoIntersect.h"
+#include "CryCommon/CryGame/GameUtils.h"
+#include "CryCommon/CryMath/Cry_Camera.h"
 
 
 const char* CVehicleViewThirdPerson::m_name = "ThirdPerson";
@@ -216,7 +219,7 @@ void CVehicleViewThirdPerson::UpdateView(SViewParams &viewParams, EntityId playe
 	viewParams.rotation = GetQuatFromMat33(rotation);	
 
 	// set view direction on actor
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(playerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId);
 	if(pActor && pActor->IsClient())
 	{
 		pActor->SetViewInVehicle(viewParams.rotation);
@@ -226,7 +229,7 @@ void CVehicleViewThirdPerson::UpdateView(SViewParams &viewParams, EntityId playe
 }
 
 //------------------------------------------------------------------------
-void CVehicleViewThirdPerson::Serialize(TSerialize serialize, EEntityAspects aspects)
+void CVehicleViewThirdPerson::Serialize(TSerialize serialize, unsigned int aspects)
 {
 	CVehicleViewBase::Serialize(serialize, aspects);
 

@@ -25,12 +25,12 @@ History:
 
 #include "VehicleSystem.h"
 #include "VehicleUtils.h"
-#include "IActionMapManager.h"
-#include <IScriptSystem.h>
-#include "Network/NetActionSync.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
+#include "CryCommon/CryScriptSystem/IScriptSystem.h"
+#include "CryCommon/CryAction/Network/NetActionSync.h"
 #include "VehicleDamages.h"
 #include "VehicleCVars.h"
-#include "VectorMap.h"
+#include "CryCommon/CryCore/VectorMap.h"
 
 
 class CEntityObject;
@@ -115,12 +115,12 @@ class CVehicle :
 public:
 	CVehicle();
 	~CVehicle();
-
-	static const NetworkAspectType ASPECT_SEAT_PASSENGER	= eEA_GameServerStatic;
-	static const NetworkAspectType ASPECT_SEAT_ACTION	= eEA_GameClientDynamic;
-	static const NetworkAspectType ASPECT_COMPONENT_DAMAGE = eEA_GameServerStatic;
-	static const NetworkAspectType ASPECT_PART_MATRIX	= eEA_GameClientDynamic;
-	static const NetworkAspectType ASPECT_FROZEN = eEA_GameServerStatic;
+	
+	static const EEntityAspects ASPECT_SEAT_PASSENGER	= eEA_GameServerStatic;
+	static const EEntityAspects ASPECT_SEAT_ACTION	= eEA_GameClientDynamic;
+	static const EEntityAspects ASPECT_COMPONENT_DAMAGE = eEA_GameServerStatic;
+	static const EEntityAspects ASPECT_PART_MATRIX	= eEA_GameClientDynamic;
+	static const EEntityAspects ASPECT_FROZEN = eEA_GameServerStatic;
 
 	enum EVehicleTimers
 	{
@@ -165,7 +165,8 @@ public:
 
 	virtual void SetAmmoCapacity(IEntityClass* pAmmoType, int capacity);
 	virtual void SetAmmoCount(IEntityClass* pAmmoType, int amount);
-	virtual int  GetAmmoCount(IEntityClass* pAmmoType) const;
+	virtual int  GetAmmoCount(IEntityClass* pAmmoType) const override;
+	virtual int GetAmmoCapacity(IEntityClass* pAmmoType) const override;
 
 
 	// set/get the last weapon created on this vehicle
@@ -182,7 +183,7 @@ public:
 	virtual void PostUpdate(float frameTime);
 	virtual void PostRemoteSpawn() {};
 
-	virtual const SVehicleStatus& GetStatus() const;
+	virtual const SVehicleStatus& GetStatus();
 
 	virtual void Update(SEntityUpdateContext& ctx, int nSlot);
 	virtual void UpdateView(SViewParams &viewParams, EntityId playerId = 0);
@@ -524,7 +525,7 @@ public:
 
 	STransitionInfo& GetTransitionInfoForSeat(TVehicleSeatId seatId) 
 	{ 
-		CRY_ASSERT(seatId>0 && seatId<=m_transitionInfo.size()); 
+		assert(seatId>0 && seatId<=m_transitionInfo.size()); 
 		return m_transitionInfo[seatId-1];
 	}
 

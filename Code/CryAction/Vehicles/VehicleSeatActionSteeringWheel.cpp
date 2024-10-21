@@ -11,10 +11,10 @@ History:
 - 28:11:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "IActorSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartAnimatedJoint.h"
@@ -97,7 +97,7 @@ void CVehicleSeatActionSteeringWheel::StartUsing(EntityId passengerId)
 	m_userId = passengerId;
 	m_isBeingUsed = false;
 
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 
 	if (IActor* pActor = pActorSystem->GetActor(m_userId))
 	{
@@ -120,7 +120,7 @@ void CVehicleSeatActionSteeringWheel::StartUsing(EntityId passengerId)
 //------------------------------------------------------------------------
 void CVehicleSeatActionSteeringWheel::StopUsing()
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 
 	if (IActor* pActor = pActorSystem->GetActor(m_userId))
 	{
@@ -222,7 +222,7 @@ void CVehicleSeatActionSteeringWheel::Update(float frameTime)
 }
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionSteeringWheel::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleSeatActionSteeringWheel::Serialize(TSerialize ser, unsigned aspects)
 {
 	if (ser.GetSerializationTarget() != eST_Network)
 	{
@@ -260,8 +260,8 @@ void CVehicleSeatActionSteeringWheel::SetOutput(const char * output, const char 
 //------------------------------------------------------------------------
 ISkeletonAnim* CVehicleSeatActionSteeringWheel::GetActorSkeleton(EntityId actorId)
 {
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	if (IActor* pActor = pActorSystem->GetActor(m_userId))
 	{
@@ -275,7 +275,7 @@ ISkeletonAnim* CVehicleSeatActionSteeringWheel::GetActorSkeleton(EntityId actorI
 //------------------------------------------------------------------------
 void CVehicleSeatActionSteeringWheel::SetAnimManualUpdate(ISkeletonAnim* pSkeletonAnim, float value)
 {
-	CRY_ASSERT(pSkeletonAnim);
+	assert(pSkeletonAnim);
 
 	if (!pSkeletonAnim)
 		return;
@@ -286,7 +286,7 @@ void CVehicleSeatActionSteeringWheel::SetAnimManualUpdate(ISkeletonAnim* pSkelet
 		if (animation.m_AnimParams.m_nFlags & CA_MANUAL_UPDATE)
 			animation.m_fAnimTime = value;
 
-		CRY_ASSERT(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
+		assert(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
 	}
 }
 

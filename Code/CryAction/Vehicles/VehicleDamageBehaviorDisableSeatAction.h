@@ -18,7 +18,8 @@ History:
 
 class CVehicle;
 
-class CVehicleDamageBehaviorDisableSeatAction	: public IVehicleDamageBehavior
+class CVehicleDamageBehaviorDisableSeatAction
+	: public IVehicleDamageBehavior
 {
 	IMPLEMENT_VEHICLEOBJECT
 public:
@@ -26,18 +27,20 @@ public:
 	CVehicleDamageBehaviorDisableSeatAction();
 	virtual ~CVehicleDamageBehaviorDisableSeatAction() {}
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects) {}
-	virtual void Update(const float deltaTime) {}
+	virtual void Serialize(TSerialize ser, unsigned aspects) override {};
+	virtual void Update(const float deltaTime) override {};
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
+	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
+	virtual void GetMemoryStatistics(ICrySizer* s) override;
 
-	virtual void GetMemoryUsage(ICrySizer * s) const { s->Add(*this); }
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override {}
+
+	virtual void GetMemoryUsage(ICrySizer* s) const override { s->Add(*this); }
 
 protected:
 
@@ -46,4 +49,7 @@ protected:
 	string m_seatActionName;
 };
 
+
 #endif
+
+

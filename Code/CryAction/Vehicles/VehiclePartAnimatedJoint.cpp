@@ -12,13 +12,13 @@ History:
 - 25:08:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ICryAnimation.h"
-#include "IVehicleSystem.h"
-#include "IGameTokens.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 
-#include "CryAction.h"
+//#include "CryAction.h"
 #include "Vehicle.h"
 #include "VehiclePartBase.h"
 #include "VehiclePartAnimated.h"
@@ -127,7 +127,7 @@ void CVehiclePartAnimatedJoint::InitGeometry(const CVehicleParams& table)
 			ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
 
 			m_slot = m_pAnimatedPart->GetSlot();
-			m_jointId = pSkeletonPose->GetJointIDByName(m_name);
+			m_jointId = pSkeletonPose->GetJointIDByName(m_name.c_str());
 
       if (m_useOption >= 0 && m_useOption <= MAX_OPTIONAL_PARTS)          
       { 
@@ -179,13 +179,13 @@ void CVehiclePartAnimatedJoint::InitGeometry(const CVehicleParams& table)
           string externalFile = animatedJointTable.getAttr("filename");
           if (!externalFile.empty())
           {
-            if (m_pGeometry = gEnv->p3DEngine->LoadStatObj(externalFile))
+            if (m_pGeometry = gEnv->p3DEngine->LoadStatObj(externalFile.c_str()))
             { 
               SetStatObj(m_pGeometry);
 
 							externalFile = animatedJointTable.getAttr("filenameDestroyed");
               if (!externalFile.empty())
-                m_pDestroyedGeometry = gEnv->p3DEngine->LoadStatObj(externalFile);
+                m_pDestroyedGeometry = gEnv->p3DEngine->LoadStatObj(externalFile.c_str());
             }
           }
         }
@@ -230,7 +230,7 @@ void CVehiclePartAnimatedJoint::SetMoveable()
 { 
   if (!m_pCharInstance)
   {
-    GameWarning("AnimatedJoint %s is missing CharInstance", m_name.c_str());
+    CryLogWarning("AnimatedJoint %s is missing CharInstance", m_name.c_str());
     return;
   }
       
@@ -278,7 +278,7 @@ bool CVehiclePartAnimatedJoint::ChangeState(EVehiclePartState state, int flags)
 //------------------------------------------------------------------------
 const Matrix34& CVehiclePartAnimatedJoint::GetLocalTM(bool relativeToParentPart)
 {
-  FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
 
 	if (m_pCharInstance && m_jointId > -1)
 	{ 
@@ -291,7 +291,7 @@ const Matrix34& CVehiclePartAnimatedJoint::GetLocalTM(bool relativeToParentPart)
       if (pSkeletonAnim && pSkeletonAnim->GetNumAnimsInFIFO(0))
       { 
         const QuatT& relJointQuat = pSkeletonPose->GetRelJointByID(m_jointId);
-        CRY_ASSERT(relJointQuat.IsValid());
+        assert(relJointQuat.IsValid());
         
         SetLocalBaseTM(Matrix34(relJointQuat));                 
       }
@@ -304,7 +304,7 @@ const Matrix34& CVehiclePartAnimatedJoint::GetLocalTM(bool relativeToParentPart)
     else      
     {
       const Matrix34& vehicleTM = LocalToVehicleTM(m_localTM);
-      CRY_ASSERT(vehicleTM.IsValid() && vehicleTM.IsOrthonormalRH());
+      assert(vehicleTM.IsValid() && vehicleTM.IsOrthonormalRH());
       
       return VALIDATE_MAT(vehicleTM);
     }
@@ -320,7 +320,7 @@ void CVehiclePartAnimatedJoint::SetLocalTM(const Matrix34& localTM)
 	if (!m_pCharInstance || m_jointId < 0)
 		return;
 
-  CRY_ASSERT(localTM.IsValid() && localTM.IsOrthonormalRH());
+  assert(localTM.IsValid() && localTM.IsOrthonormalRH());
 
   if (m_localTM.IsEquivalent(VALIDATE_MAT(localTM), 0.0001f))
 		return;
@@ -388,7 +388,7 @@ void CVehiclePartAnimatedJoint::Serialize(TSerialize ser, EEntityAspects aspects
 //------------------------------------------------------------------------
 const Matrix34& CVehiclePartAnimatedJoint::GetWorldTM()
 {
-  FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
 
 	if (m_pCharInstance && m_jointId > -1)
   { 
@@ -398,7 +398,7 @@ const Matrix34& CVehiclePartAnimatedJoint::GetWorldTM()
 	else
 		m_worldTM = GetEntity()->GetSlotWorldTM(m_slot);
 
-  CRY_ASSERT(m_worldTM.IsValid() && m_worldTM.IsOrthonormalRH());
+  assert(m_worldTM.IsValid() && m_worldTM.IsOrthonormalRH());
   	
   return VALIDATE_MAT(m_worldTM);
 }
@@ -428,7 +428,7 @@ const AABB& CVehiclePartAnimatedJoint::GetLocalBounds()
 //------------------------------------------------------------------------
 void CVehiclePartAnimatedJoint::Update(float frameTime)
 {
-  FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
 
 	CVehiclePartBase::Update(frameTime);
 
@@ -444,7 +444,7 @@ void CVehiclePartAnimatedJoint::Update(float frameTime)
 			if (m_name == "dials_speedometer")
 			{      
 				float value = 0.0f;
-				IGameTokenSystem* pGTS = CCryAction::GetCryAction()->GetIGameTokenSystem();
+				IGameTokenSystem* pGTS = gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem();
 				pGTS->GetTokenValueAs("vehicle.speedNorm", value);      
 				if ( fabsf(m_initialRotOfs) > 0.0f )
 				{
@@ -457,7 +457,7 @@ void CVehiclePartAnimatedJoint::Update(float frameTime)
 			else if (m_name == "dials_revometer")
 			{
 				float value = 0.0f;
-				IGameTokenSystem* pGTS = CCryAction::GetCryAction()->GetIGameTokenSystem();
+				IGameTokenSystem* pGTS = gEnv->pGame->GetIGameFramework()->GetIGameTokenSystem();
 				pGTS->GetTokenValueAs("vehicle.rpmNorm", value);
 				SetLocalBaseTM(m_initialTM * Matrix33::CreateRotationZ( - value * m_dialsRotMax - m_initialRotOfs ));
 			}
@@ -474,7 +474,7 @@ IStatObj* CVehiclePartAnimatedJoint::GetStatObj()
 	if (m_pCharInstance && m_jointId > -1)
 	{
 		ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
-		CRY_ASSERT(pSkeletonPose);
+		assert(pSkeletonPose);
 		return pSkeletonPose->GetStatObjOnJoint(m_jointId);
 	}
 

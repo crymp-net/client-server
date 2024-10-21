@@ -14,7 +14,7 @@ History:
 #ifndef __VEHICLEPARTDETACHEDENTITY_H__
 #define __VEHICLEPARTDETACHEDENTITY_H__
 
-#include "IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 class CVehiclePartDetachedEntity
 	: public CGameObjectExtensionHelper<CVehiclePartDetachedEntity, IGameObjectExtension>
@@ -38,7 +38,7 @@ public:
 	virtual void ProcessEvent(SEntityEvent& event);
 	virtual void SetChannelId(uint16 id) {};
 	virtual void SetAuthority(bool auth) {}
-	virtual void PostUpdate(float frameTime) { CRY_ASSERT(false); }
+	virtual void PostUpdate(float frameTime) { assert(false); }
 	virtual void PostRemoteSpawn() {};
 	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); }
 

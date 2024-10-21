@@ -17,7 +17,7 @@ History:
 # pragma once
 #endif
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleCVars.h"
 
 class CVehiclePartAnimated;
@@ -44,7 +44,7 @@ namespace VehicleUtils
 { 
   inline const Vec3& ValidateVec(const Vec3& vec)
   {
-    CRY_ASSERT(!_isnan(vec.x+vec.y+vec.z));
+    assert(!_isnan(vec.x+vec.y+vec.z));
     return vec;
   }
 

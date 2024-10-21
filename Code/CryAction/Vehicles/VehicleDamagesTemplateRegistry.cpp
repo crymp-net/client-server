@@ -11,13 +11,12 @@ History:
 - 18:07:2006: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "Serialization/XMLScriptLoader.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleDamagesGroup.h"
 #include "VehicleDamagesTemplateRegistry.h"
+#include <CryCommon/CrySystem/ICryPak.h>
 
 //------------------------------------------------------------------------
 bool CVehicleDamagesTemplateRegistry::Init(const string& defaultDefFilename, const string& damagesTemplatesPath)
@@ -36,7 +35,7 @@ bool CVehicleDamagesTemplateRegistry::Init(const string& defaultDefFilename, con
 	int ret;
 	intptr_t handle;
 
-	if ((handle = pCryPak->FindFirst(damagesTemplatesPath + string("*") + ".xml", &fd)) != -1)
+	if ((handle = pCryPak->FindFirst((damagesTemplatesPath + string("*") + string(".xml")).c_str(), &fd)) != -1)
 	{ 
 		do
 		{ 
@@ -63,7 +62,7 @@ bool CVehicleDamagesTemplateRegistry::Init(const string& defaultDefFilename, con
 //------------------------------------------------------------------------
 bool CVehicleDamagesTemplateRegistry::RegisterTemplates(const string& filename, const string& defFilename)
 {
-	XmlNodeRef table = gEnv->pSystem->LoadXmlFile(filename);
+	XmlNodeRef table = gEnv->pSystem->LoadXmlFile(filename.c_str());
 	if (!table)
 		return false;
 
@@ -107,4 +106,4 @@ bool CVehicleDamagesTemplateRegistry::UseTemplate(const string& templateName, IV
 	return false;
 }
 
-#include UNIQUE_VIRTUAL_WRAPPER(IVehicleDamagesTemplateRegistry)
+//#include UNIQUE_VIRTUAL_WRAPPER(IVehicleDamagesTemplateRegistry)

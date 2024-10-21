@@ -11,15 +11,18 @@ History:
 - 02:05:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IViewSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryGame/GameUtils.h"
 #include "VehicleSeat.h"
 #include "VehicleViewActionThirdPerson.h"
 
-#include <Cry_GeoIntersect.h>
-#include <Cry_GeoDistance.h>
+#include "CryCommon/CryMath/Cry_Camera.h"
+#include "CryCommon/CryMath/Cry_GeoIntersect.h"
+#include "CryCommon/CryMath/Cry_GeoDistance.h"
 
 
 const char* CVehicleViewActionThirdPerson::m_name = "ActionThirdPerson";
@@ -248,7 +251,7 @@ void CVehicleViewActionThirdPerson::UpdateView(SViewParams &viewParams, EntityId
 	viewParams.rotation = GetQuatFromMat33(cameraTM);
 
 	// set view direction on actor
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(playerId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(playerId);
 	if(pActor && pActor->IsClient())
 	{
 		pActor->SetViewInVehicle(viewParams.rotation);

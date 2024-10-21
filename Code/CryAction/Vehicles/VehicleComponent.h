@@ -40,13 +40,13 @@ public:
 	void GetMemoryStatistics(ICrySizer * s);
 
 	// IVehicleComponent
-	VIRTUAL unsigned int GetPartCount() const;
-	VIRTUAL IVehiclePart* GetPart(unsigned int index) const;    
-  VIRTUAL const AABB& GetBounds(); // bounds are in vehicle space
-  VIRTUAL float GetDamageRatio() const;
-	VIRTUAL void SetDamageRatio(float ratio);
-	VIRTUAL float GetMaxDamage() const;
-  VIRTUAL const char* GetComponentName() const { return m_name.c_str(); }
+	virtual unsigned int GetPartCount() const;
+	virtual IVehiclePart* GetPart(unsigned int index) const;    
+  virtual const AABB& GetBounds(); // bounds are in vehicle space
+  virtual float GetDamageRatio() const;
+	virtual void SetDamageRatio(float ratio);
+	virtual float GetMaxDamage() const;
+  virtual const char* GetComponentName() const { return m_name.c_str(); }
 	// ~IVehicleComponent
 	
   const string& GetName() { return m_name; }

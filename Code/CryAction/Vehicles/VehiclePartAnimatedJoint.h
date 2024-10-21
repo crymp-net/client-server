@@ -17,7 +17,7 @@ History:
 
 #include <map>
 
-#include "VehicleSystem/VehiclePartBase.h"
+#include "VehiclePartBase.h"
 
 class CVehicle;
 

@@ -11,11 +11,10 @@ History:
 - 17:10:2005: Created by MichaelR
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehiclePartMassBox.h"
-#include "CryAction.h"
 #include "Vehicle.h"
 
 

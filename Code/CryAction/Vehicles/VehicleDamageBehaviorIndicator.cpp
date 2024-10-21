@@ -11,7 +11,7 @@ History:
 - 29:04:2006: Created by michaelr
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "VehicleDamageBehaviorIndicator.h"
 
 #include "Vehicle.h"
@@ -137,7 +137,7 @@ void CVehicleDamageBehaviorIndicator::OnDamageEvent(EVehicleDamageBehaviorEvent 
         m_currentDamageRatio = behaviorParams.componentDamageRatio;
 
         float ratio = (m_currentDamageRatio-m_ratioMin) / (m_ratioMax-m_ratioMin);
-        CRY_ASSERT(ratio >= 0.f && ratio <= 1.f);
+        assert(ratio >= 0.f && ratio <= 1.f);
         m_lightUpdate = 0.5f / (m_frequencyMin + ratio*(m_frequencyMax-m_frequencyMin));
       }      
     }   
@@ -213,7 +213,7 @@ void CVehicleDamageBehaviorIndicator::Update(const float deltaTime)
             if (ISound* pSound = pSoundProxy->GetSound(m_soundId))
             {
               float vol = 1.f - 0.5f*min(1.f, float(m_soundsPlayed-nSoundsMaxVol)/float(nSoundsMinVol-nSoundsMaxVol));
-              pSound->GetInterfaceExtended()->SetVolume(vol);
+              pSound->SetVolume(vol);
             }
           }
         }        
@@ -251,7 +251,7 @@ void CVehicleDamageBehaviorIndicator::GetMaterial()
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorIndicator::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleDamageBehaviorIndicator::Serialize(TSerialize ser, unsigned aspects)
 {
   if (ser.GetSerializationTarget() != eST_Network)
   {

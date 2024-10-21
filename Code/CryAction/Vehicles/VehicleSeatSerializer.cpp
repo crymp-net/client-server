@@ -11,12 +11,10 @@ History:
 - 16:09:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "VehicleSeatSerializer.h"
 #include "Vehicle.h"
 #include "VehicleSeat.h"
-#include "CryAction.h"
-#include "Network/GameContext.h"
 
 
 //------------------------------------------------------------------------
@@ -50,8 +48,8 @@ bool CVehicleSeatSerializer::Init(IGameObject * pGameObject)
 
 	if (gEnv->bServer && !IsDemoPlayback())
 	{
-		CVehicleSeat *pSeat=static_cast<CVehicleSystem *>(CCryAction::GetCryAction()->GetIVehicleSystem())->GetInitializingSeat();
-		CRY_ASSERT(pSeat);
+		CVehicleSeat *pSeat=static_cast<CVehicleSystem *>(gEnv->pGame->GetIGameFramework()->GetIVehicleSystem())->GetInitializingSeat();
+		assert(pSeat);
 
 		pSeat->SetSerializer(this);
 		SetSeat(pSeat);
@@ -98,12 +96,12 @@ void CVehicleSeatSerializer::SerializeSpawnInfo( TSerialize ser )
 	ser.Value("vehicle", vehicle, 'eid');
 	ser.Value("seat", seatId, 'seat');
 
-	CRY_ASSERT(ser.IsReading());
+	assert(ser.IsReading());
 
 	// warning GameObject not set at this point
 	// GetGameObject calls will fail miserably
 
-	m_pVehicle = static_cast<CVehicle *>(CCryAction::GetCryAction()->GetIVehicleSystem()->GetVehicle(vehicle));
+	m_pVehicle = static_cast<CVehicle *>(gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(vehicle));
 	if (!m_pVehicle)
 		return;
 

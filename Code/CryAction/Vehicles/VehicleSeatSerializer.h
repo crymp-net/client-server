@@ -14,10 +14,11 @@ History:
 #ifndef __VEHICLESEATSERIALIZER_H__
 #define __VEHICLESEATSERIALIZER_H__
 
-#include "IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 class CVehicle;
 class CVehicleSeat;
+class ICrySizer;
 
 class CVehicleSeatSerializer
 	: public CGameObjectExtensionHelper<CVehicleSeatSerializer, IGameObjectExtension>
@@ -43,9 +44,9 @@ public:
 	virtual void ProcessEvent(SEntityEvent& event) {};
 	virtual void SetChannelId(uint16 id) {};
 	virtual void SetAuthority(bool auth) {};
-	virtual void PostUpdate(float frameTime) { CRY_ASSERT(false); };
+	virtual void PostUpdate(float frameTime) { assert(false); };
 	virtual void PostRemoteSpawn() {};
-	virtual void GetMemoryStatistics(ICrySizer * s) {s->Add(*this);}
+	virtual void GetMemoryStatistics(ICrySizer * s) {}
 
 	void SetVehicle(CVehicle *pVehicle);
 	void SetSeat(CVehicleSeat *pSeat);

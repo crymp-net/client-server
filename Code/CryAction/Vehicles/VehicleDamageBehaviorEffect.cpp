@@ -11,10 +11,9 @@ History:
 - 13:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "ParticleParams.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleDamageBehaviorEffect.h"
 #include "VehicleCVars.h"
 
@@ -78,10 +77,10 @@ void CVehicleDamageBehaviorEffect::LoadEffect(IVehicleComponent* pComponent)
 	if (VehicleCVars().v_debugdraw == eVDB_Damage)
 		CryLog("Starting vehicle damage effect: %s", m_damageEffect.effectName.c_str());
   
-  if (IParticleEffect *pEffect = gEnv->pParticleManager->FindEffect(m_damageEffect.effectName.c_str(), "VehicleDamageBehaviorEffect"))
+  if (IParticleEffect *pEffect = gEnv->p3DEngine->FindParticleEffect(m_damageEffect.effectName.c_str(), "VehicleDamageBehaviorEffect"))
   {
     IEntity* pEntity = m_pVehicle->GetEntity();
-    CRY_ASSERT(pEntity);
+    assert(pEntity);
 
     m_slot = pEntity->LoadParticleEmitter(m_slot, pEffect, NULL, false, true);
 
@@ -144,7 +143,7 @@ void CVehicleDamageBehaviorEffect::OnDamageEvent(EVehicleDamageBehaviorEvent eve
 }
 
 //------------------------------------------------------------------------
-void CVehicleDamageBehaviorEffect::Serialize(TSerialize ser, EEntityAspects aspects)
+void CVehicleDamageBehaviorEffect::Serialize(TSerialize ser, unsigned aspects)
 {
 	bool isEffectActive = m_slot > -1;
   ser.Value("isActive", isEffectActive);

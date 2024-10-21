@@ -11,24 +11,22 @@ History:
 - 12:10:2005: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include "GameObjects/GameObject.h"
-#include "IActorSystem.h"
-#include "IVehicleSystem.h"
-#include "IViewSystem.h"
-#include "CryAction.h"
-#include "IGameObject.h"
-#include "IAgent.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAISystem/IAgent.h"
 
 #include "Vehicle.h"
 #include "VehicleComponent.h"
 #include "VehicleDamageBehaviorDetachPart.h"
 #include "VehiclePartAnimatedJoint.h"
 
-#include "IRenderer.h"
-#include "IRenderAuxGeom.h"
-#include "IGameRulesSystem.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
 namespace
 {
@@ -91,7 +89,7 @@ bool CVehicleComponent::Init(IVehicle* pVehicle, const CVehicleParams& paramsTab
 		bool hasOldBoundInfo = !m_bounds.IsReset();
 		if ( hasOldBoundInfo )
 		{
-			GameWarning("Component %s for vehicle %s has maxBound and/or minBound together with position and size properties. Using position and size.", m_name.c_str(), m_pVehicle->GetEntity()->GetName());
+			CryLogWarning("Component %s for vehicle %s has maxBound and/or minBound together with position and size properties. Using position and size.", m_name.c_str(), m_pVehicle->GetEntity()->GetName());
 		}
 		Vec3 halfSize = size * 0.5f;
 		m_bounds.min = position - halfSize;
@@ -105,7 +103,7 @@ bool CVehicleComponent::Init(IVehicle* pVehicle, const CVehicleParams& paramsTab
   }
   else if (!(m_bounds.min.x<=m_bounds.max.x && m_bounds.min.y<=m_bounds.max.y && m_bounds.min.z<=m_bounds.max.z))
   {
-    GameWarning("Invalid bounding box read for %s, component %s", m_pVehicle->GetEntity()->GetName(), m_name.c_str());
+    CryLogWarning("Invalid bounding box read for %s, component %s", m_pVehicle->GetEntity()->GetName(), m_name.c_str());
     m_bounds.min.zero();
     m_bounds.max.zero();
   }
@@ -153,7 +151,7 @@ bool CVehicleComponent::Init(IVehicle* pVehicle, const CVehicleParams& paramsTab
 
 				if (damageBehaviorTable.haveAttr("class"))
 				{
-					IVehicleSystem* pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
+					IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
 
 					if (IVehicleDamageBehavior* pDamageBehavior
 						= pVehicleSystem->CreateVehicleDamageBehavior(damageBehaviorTable.getAttr("class")))
@@ -291,7 +289,7 @@ void CVehicleComponent::OnHit(EntityId targetId, EntityId shooterId, float damag
 
 	if (m_isOnlyDamageableByPlayer && processedDamage > 0.f)
 	{
-		if (IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(shooterId))
+		if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId))
 		{
 			if (!pActor->IsPlayer())
 				return;
@@ -302,7 +300,7 @@ void CVehicleComponent::OnHit(EntityId targetId, EntityId shooterId, float damag
 	m_lastHitRadius = max(0.1f, min(3.0f, radius));
 	m_lastHitShooterId = shooterId;
   
-  IGameRules* pGameRules = CCryAction::GetCryAction()->GetIGameRulesSystem()->GetCurrentGameRules();
+  IGameRules* pGameRules = gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules();
   m_lastHitType = (pGameRules) ? pGameRules->GetHitTypeId(damageType) : 0;
 	
 	float currentDamageRatio = m_damage / m_damageMax;
@@ -314,7 +312,8 @@ void CVehicleComponent::OnHit(EntityId targetId, EntityId shooterId, float damag
 	int newDamageLevel = int(min(newDamageRatio, 1.0f) / 0.25f);
 
 	if (gEnv->bServer)
-		CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_COMPONENT_DAMAGE);
+		//CHANGED_NETWORK_STATE(m_pVehicle, CVehicle::ASPECT_COMPONENT_DAMAGE);
+		m_pVehicle->GetGameObject()->ChangedNetworkState(CVehicle::ASPECT_COMPONENT_DAMAGE);
 
 	if (m_useDamageLevels && currentDamageLevel == newDamageLevel)
 		return;

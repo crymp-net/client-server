@@ -11,15 +11,15 @@ History:
 - 05:10:2004   12:05 : Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include <ISound.h>
-#include <IActionMapManager.h>
-#include <ICryAnimation.h>
-#include "IGameFramework.h"
-#include "IActorSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include <vector>
-#include <IRenderAuxGeom.h>
-#include <Cry_GeoOverlap.h>
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryMath/Cry_GeoOverlap.h"
 
 #include "VehicleSystem.h"
 #include "Vehicle.h"
@@ -27,7 +27,7 @@ History:
 #include "VehicleSeat.h"
 #include "ScriptBind_Vehicle.h"
 #include "VehicleDamages.h"
-#include "IGameObject.h"
+#include "CryCommon/CryAction/IGameObject.h"
 
 
 //------------------------------------------------------------------------
@@ -276,11 +276,12 @@ int CScriptBind_Vehicle::SetPlayerToSit(IFunctionHandler* pH, ScriptHandle playe
 
 	if (flags == 1)
 	{
-		gEnv->pGame->GetIGameFramework()->GetGameObject((EntityId)playerId.n)->OnAction("UseVehicle", (int)vehicleEntity->GetId(), 0.0f);
+		//CryMP: Fixme
+		//gEnv->pGame->GetIGameFramework()->GetGameObject((EntityId)playerId.n)->OnAction("UseVehicle", (int)vehicleEntity->GetId(), 0.0f);
 	}
 	else
 	{
-		gEnv->pGame->GetIGameFramework()->GetGameObject((EntityId)playerId.n)->OnAction("UseVehicle", 0, 0.0f);
+		//gEnv->pGame->GetIGameFramework()->GetGameObject((EntityId)playerId.n)->OnAction("UseVehicle", 0, 0.0f);
 	}
 
 	return pH->EndFunction();
@@ -462,7 +463,8 @@ int CScriptBind_Vehicle::UpdateVehicleAnimation(IFunctionHandler* pH, ScriptHand
 	{
 		QuatT renderLocation = QuatT(part->GetWorldTM());
 		charInstance->SkeletonPreProcess(renderLocation, renderLocation, gEnv->pSystem->GetViewCamera(), 0);
-		charInstance->SetPostProcessParameter(renderLocation, renderLocation, 0, (part->GetWorldTM().GetTranslation() - gEnv->pSystem->GetViewCamera().GetPosition()).GetLength(), 0);
+		//CryMP: Fixme
+		//charInstance->SetPostProcessParameter(renderLocation, renderLocation, 0, (part->GetWorldTM().GetTranslation() - gEnv->pSystem->GetViewCamera().GetPosition()).GetLength(), 0);
 	}
 	return pH->EndFunction();
 }
@@ -833,7 +835,7 @@ int CScriptBind_Vehicle::SetAmmoCount(IFunctionHandler* pH, const char* name, in
 	CVehicle* pVehicle = GetVehicle(pH);
 
 	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
-	CRY_ASSERT(pClass);
+	assert(pClass);
 	pVehicle->SetAmmoCount(pClass, amount);
 
 	return pH->EndFunction();

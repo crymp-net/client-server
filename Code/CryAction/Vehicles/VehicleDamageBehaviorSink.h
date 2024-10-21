@@ -15,38 +15,36 @@ History:
 #define __VEHICLEDAMAGEBEHAVIORSINK_H__
 
 class CVehicle;
-
-class CVehicleDamageBehaviorSink
-	: public IVehicleDamageBehavior
+class CVehicleDamageBehaviorSink : public IVehicleDamageBehavior
 {
-	IMPLEMENT_VEHICLEOBJECT
+    IMPLEMENT_VEHICLEOBJECT
 public:
+    CVehicleDamageBehaviorSink() {}
+    virtual ~CVehicleDamageBehaviorSink() {}
 
-	CVehicleDamageBehaviorSink() {}
-	virtual ~CVehicleDamageBehaviorSink() {}
+    // --- IVehicleDamageBehavior interface functions ---
+    virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+    virtual void Reset() override;
+    virtual void Release() override { delete this; }
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+    virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams) override;
 
-	virtual void OnDamageEvent(EVehicleDamageBehaviorEvent event, const SVehicleDamageBehaviorEventParams& behaviorParams);
-	
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects);
-	virtual void Update(const float deltaTime) {}
+    virtual void Serialize(TSerialize ser, unsigned aspects) override;
+    virtual void Update(const float deltaTime) override {}
 
-  virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
+    virtual void GetMemoryStatistics(ICrySizer* s) override { s->Add(*this); }
+    // --- End of IVehicleDamageBehavior interface functions ---
 
-	void ChangeSinkingBehavior(bool isSinking);
+    // IVehicleObject
+    void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override;
 
-	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); }
+    void ChangeSinkingBehavior(bool isSinking);
 
 protected:
-
-	IVehicle* m_pVehicle;
-	
-  float m_formerWaterDensity;  
-  int m_sinkingTimer;
-  bool m_isSinking;
+    IVehicle* m_pVehicle;           
+    float m_formerWaterDensity;    
+    int m_sinkingTimer;            
+    bool m_isSinking;               
 };
 
 #endif

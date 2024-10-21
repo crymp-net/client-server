@@ -11,19 +11,23 @@ History:
 - 05:10:2004: Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
-#include <IViewSystem.h>
-#include <IItemSystem.h>
-#include <IVehicleSystem.h>
-#include <IPhysics.h>
-#include <ICryAnimation.h>
-#include <IActorSystem.h>
-#include <ISound.h>
-#include <ISerialize.h>
-#include <IAgent.h>
+#include "CryCommon/CryAction/IViewSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
+#include "CryCommon/CryAISystem/IAgent.h"
+#include "CryCommon/CryMath/Cry_Math.h"
+#include "CryCommon/CrySystem/gEnv.h"
 
-#include "IGameRulesSystem.h"
+#include "CrySystem/CryPak.h"
+
+#include "CryCommon/CryAction/IGameRulesSystem.h"
 
 #include "VehicleSystem.h"
 #include "ScriptBind_Vehicle.h"
@@ -42,11 +46,13 @@ History:
 #include "VehiclePartAnimatedJoint.h"
 #include "VehiclePartSubPartWheel.h"
 #include "VehiclePartTread.h"
+#include "CryCommon/CryInput/IInput.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryCore/StlUtils.h"
+#include "CryAction/GameFramework.h"
+#include "CryAction/ScriptBind_Vehicle.h"
+#include "CryAction/ScriptBind_VehicleSeat.h"
 
-#include "CryAction.h"
-#include "Serialization/XMLScriptLoader.h"
-#include "PersistantDebug.h"
-#include "IAIObject.h"
 #define ENGINESLOT_MINSPEED 0.05f
 
 // Max view distance ratio for vehicles.
@@ -161,7 +167,8 @@ CVehicle::~CVehicle()
 		delete it->second;
 	}
 
-	std::for_each(m_components.begin(), m_components.end(), stl::container_object_deleter());
+	//std::for_each(m_components.begin(), m_components.end(), stl::container_object_deleter());
+	std::for_each(m_components.begin(), m_components.end(), [](auto* ptr) { delete ptr; }); //CryMP: Fixme?
 
 	TVehiclePartVector::iterator partIte;
 	TVehiclePartVector::iterator partEnd;
@@ -210,7 +217,7 @@ CVehicle::~CVehicle()
 		GetGameObject()->ReleaseExtension("Inventory");
 	}
 
-	CCryAction::GetCryAction()->GetIVehicleSystem()->RemoveVehicle(GetEntityId());
+	gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->RemoveVehicle(GetEntityId());
 
 	GetGameObject()->EnablePhysicsEvent(false, eEPE_OnCollisionLogged | eEPE_OnStateChangeLogged);
 	//GetGameObject()->DisablePostUpdates(this); 
@@ -261,12 +268,12 @@ namespace
 		// try to load file with same filename as class name
 		const static string ext(".xml");
 
-		bool bPrevBinaryXmlLoading = GetISystem()->GetXmlUtils()->EnableBinaryXmlLoading(false);
+		//bool bPrevBinaryXmlLoading = GetISystem()->GetXmlUtils()->EnableBinaryXmlLoading(false);
 
 		string xmlFile = xmlDir + className + ext;
 		XmlNodeRef xmlData = gEnv->pSystem->LoadXmlFile(xmlFile.c_str());
 
-		GetISystem()->GetXmlUtils()->EnableBinaryXmlLoading(bPrevBinaryXmlLoading);
+		//GetISystem()->GetXmlUtils()->EnableBinaryXmlLoading(bPrevBinaryXmlLoading);
 
 		if (0 == xmlData)
 		{
@@ -275,11 +282,11 @@ namespace
 			intptr_t handle;
 			int res;
 
-			if ((handle = gEnv->pCryPak->FindFirst(xmlDir + string("*") + ext, &fd)) != -1)
+			if ((handle = gEnv->pCryPak->FindFirst((xmlDir + string("*") + ext).c_str(), &fd)) != -1)
 			{
 				do
 				{
-					if (XmlNodeRef root = GetISystem()->LoadXmlFile(xmlDir + string(fd.name)))
+					if (XmlNodeRef root = GetISystem()->LoadXmlFile((xmlDir + string(fd.name)).c_str()))
 					{
 						const char* name = root->getAttr("name");
 						if (0 == strcmp(name, className))
@@ -303,7 +310,7 @@ namespace
 //------------------------------------------------------------------------
 void CVehicle::SerializeSpawnInfo(TSerialize ser)
 {
-	CRY_ASSERT(ser.IsReading());
+	assert(ser.IsReading());
 	ser.Value("modification", m_modification);
 	ser.Value("paint", m_paint);
 }
@@ -336,21 +343,22 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 	if (!GetGameObject()->CaptureProfileManager(this))
 	{
-		GameWarning("<%s> CaptureProfileManager failed", GetEntity()->GetName());
+		CryLogWarning("<%s> CaptureProfileManager failed", GetEntity()->GetName());
 		return false;
 	}
 
 	m_pSoundProxy = (IEntitySoundProxy*)GetEntity()->CreateProxy(ENTITY_PROXY_SOUND);
-	CRY_ASSERT(m_pSoundProxy && "no sound proxy on entity");
+	assert(m_pSoundProxy && "no sound proxy on entity");
 
-	m_pVehicleSystem = CCryAction::GetCryAction()->GetIVehicleSystem();
+	m_pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
 	m_engineSlotBySpeed = true;
 
 	m_parts.clear();
 	m_seats.clear();
 
-	CCryAction::GetCryAction()->GetIVehicleSystem()->AddVehicle(GetEntityId(), this);
-	CCryAction::GetCryAction()->GetVehicleScriptBind()->AttachTo(this);
+	gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->AddVehicle(GetEntityId(), this);
+	GameFramework::GetInstance()->GetScriptBind_Vehicle()->AttachTo(this);
+	//gEnv->pGame->GetIGameFramework()->GetVehicleScriptBind()->AttachTo(this); //CryMP: fixme
 
 	m_pInventory = static_cast<IInventory*>(GetGameObject()->AcquireExtension("Inventory"));
 
@@ -366,7 +374,7 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 	if (!vehicleXmlData)
 	{
-		GameWarning("<%s>: failed loading xml file (directory %s), aborting initialization", GetEntity()->GetName(), xmlDir.c_str());
+		CryLogWarning("<%s>: failed loading xml file (directory %s), aborting initialization", GetEntity()->GetName(), xmlDir.c_str());
 		return false;
 	}
 
@@ -402,7 +410,10 @@ bool CVehicle::Init(IGameObject* pGameObject)
 	}
 
 	// this merges modification data and must be done before further processing
-	InitModification(xmlData, m_modification.c_str());
+	//InitModification(xmlData, m_modification.c_str()); //CryMP: Fixme?
+
+	CryLogAlways("$3CryMP] Spawning vehicle %s with modfication '%s'", GetEntity()->GetName(), m_modification.c_str());
+
 	CVehicleModificationParams vehicleModificationParams(vehicleXmlData, m_modification.c_str());
 	CVehicleParams vehicleParams(vehicleXmlData, vehicleModificationParams);
 
@@ -494,8 +505,8 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 				if (animTable.haveAttr("name") && pVehicleAnimation->Init(this, animTable))
 					m_animations.push_back(TVehicleStringAnimationPair(animTable.getAttr("name"), pVehicleAnimation));
-				else
-					delete pVehicleAnimation;
+				//else
+				//	delete pVehicleAnimation; //CryMP: fixme
 			}
 		}
 	}
@@ -629,11 +640,9 @@ bool CVehicle::Init(IGameObject* pGameObject)
 					string type;
 					int capacity = 0;
 
-					if ((type = ammoTable.getAttr("type")) && ammoTable.getAttr("capacity", capacity))
+					if (!(type = ammoTable.getAttr("type")).empty() && ammoTable.getAttr("capacity", capacity)) //CryMP: fixme?
 					{
-						IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(type);
-
-						CRY_ASSERT_MESSAGE(pClass, string().Format("Could not find entity class for ammo type '%s' when initializing vehicle '%s' of class '%s'", type.c_str(), GetEntity()->GetName(), className));
+						IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(type.c_str());
 
 						if (pClass)
 							SetAmmoCapacity(pClass, capacity);
@@ -691,14 +700,19 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 	// attach seat scriptbinds
 	// this is done during OnSpawn when spawning initially, or here in case only the extension is created
-	for (TVehicleSeatVector::iterator it = m_seats.begin(); it != m_seats.end(); ++it)
-		CCryAction::GetCryAction()->GetVehicleSeatScriptBind()->AttachTo(this, GetSeatId(it->second));
+	//for (TVehicleSeatVector::iterator it = m_seats.begin(); it != m_seats.end(); ++it)
+	//	gEnv->pGame->GetIGameFramework()->GetVehicleSeatScriptBind()->AttachTo(this, GetSeatId(it->second)); //CryMP: fixme
+
+	for (const auto &seat : m_seats)
+	{
+		GameFramework::GetInstance()->GetScriptBind_VehicleSeat()->AttachTo(this, GetSeatId(seat.second));
+	}
 
 	if (0 == (GetEntity()->GetFlags() & (ENTITY_FLAG_CLIENT_ONLY | ENTITY_FLAG_SERVER_ONLY)))
 	{
 		if (!GetGameObject()->BindToNetwork())
 		{
-			GameWarning("<%s> BindToNetwork failed", GetEntity()->GetName());
+			CryLogWarning("<%s> BindToNetwork failed", GetEntity()->GetName());
 			return false;
 		}
 	}
@@ -859,7 +873,7 @@ void CVehicle::PostInit(IGameObject* pGameObject)
 		it->second->PostInit(this);
 	}
 
-	if (!CCryAction::GetCryAction()->IsEditing() || IsDebugDrawing())
+	if (!gEnv->pGame->GetIGameFramework()->IsEditing() || IsDebugDrawing())
 		NeedsUpdate();
 
 	if (gEnv->bServer)
@@ -1010,6 +1024,15 @@ int CVehicle::GetAmmoCount(IEntityClass* pAmmoType) const
 }
 
 //------------------------------------------------------------------------
+int CVehicle::GetAmmoCapacity(IEntityClass* pAmmoType) const //CryMP: added
+{
+	if (m_pInventory)
+		return m_pInventory->GetAmmoCapacity(pAmmoType);
+
+	return 0;
+}
+
+//------------------------------------------------------------------------
 void CVehicle::SendWeaponSetup(int where, int channelId)
 {
 	SetupWeaponsParams params;
@@ -1089,7 +1112,7 @@ void CVehicle::OnMaterialLayerChanged(const SEntityEvent& event)
 			IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)pChild->GetProxy(ENTITY_PROXY_RENDER);
 			if (pRenderProxy)
 			{
-				if (IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(pChild->GetId()))
+				if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pChild->GetId()))
 					if (pActor->IsPlayer()) // don't freeze players inside vehicles
 						continue;
 
@@ -1284,7 +1307,7 @@ void CVehicle::DoRequestedPhysicalization()
 //------------------------------------------------------------------------
 void CVehicle::Update(SEntityUpdateContext& ctx, int slot)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	const float frameTime = ctx.fFrameTime;
 	gEnv->pRenderer->GetIRenderAuxGeom()->SetRenderFlags(e_Def3DPublicRenderflags);
@@ -1455,8 +1478,8 @@ void CVehicle::DebugDraw(const float frameTime)
 	if (IsDebugDrawing())
 		NeedsUpdate();
 
-	if (GetEntity()->GetWorldPos().GetSquaredDistance(gEnv->pSystem->GetViewCamera().GetPosition()) > sqr(100.f))
-		return;
+	//if (GetEntity()->GetWorldPos().GetSquaredDistance(gEnv->pSystem->GetViewCamera().GetPosition()) > sqr(100.f))
+	//	return;
 
 	CVehicleCVars& cvars = CVehicleCVars::Get();
 
@@ -1488,7 +1511,7 @@ void CVehicle::DebugDraw(const float frameTime)
 	{
 		static float drawColor[4] = { 1,0,0,1 };
 
-		CPersistantDebug* pDB = CCryAction::GetCryAction()->GetPersistantDebug();
+		IPersistantDebug* pDB = gEnv->pGame->GetIGameFramework()->GetIPersistantDebug();
 		CryFixedStringT<32> dbgName;
 		dbgName.Format("VehicleHelpers_%s", GetEntity()->GetName());
 		pDB->Begin(dbgName.c_str(), true);
@@ -1554,7 +1577,7 @@ void CVehicle::UpdateHelpers()
 	{
 		const string& name = helperIte->first;
 		CVehicleHelper* pHelper = helperIte->second;
-		CRY_ASSERT(pHelper);
+		assert(pHelper);
 
 		pHelper->m_isWorldUpdated = false;
 		pHelper->m_isVehicleUpdated = false;
@@ -1701,14 +1724,14 @@ void CVehicle::HandleEvent(const SGameObjectEvent& event)
 					for (int w = 0;w < n;w++)
 					{
 						EntityId weaponId = weapAction->GetWeaponEntityId(w);
-						if (IItem* pItem = CCryAction::GetCryAction()->GetIItemSystem()->GetItem(weaponId))
+						if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(weaponId))
 							pItem->GetGameObject()->SendEvent(event);
 					}
 				}
 			}
 		}
 
-		CHANGED_NETWORK_STATE(this, ASPECT_FROZEN);
+		this->GetGameObject()->ChangedNetworkState(ASPECT_FROZEN);
 	}
 	else if (event.event == eGFE_PreShatter)
 	{
@@ -1728,7 +1751,7 @@ void CVehicle::HandleEvent(const SGameObjectEvent& event)
 //------------------------------------------------------------------------
 void CVehicle::UpdateStatus(const float deltaTime)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	int frameId = gEnv->pRenderer->GetFrameID();
 	if (!(frameId > m_status.frameId))
@@ -1819,7 +1842,7 @@ void CVehicle::UpdateStatus(const float deltaTime)
 }
 
 //------------------------------------------------------------------------
-const SVehicleStatus& CVehicle::GetStatus() const
+const SVehicleStatus& CVehicle::GetStatus()
 {
 	return m_status;
 }
@@ -1964,6 +1987,10 @@ void CVehicle::FullSerialize(TSerialize ser)
 	}
 
 	ser.BeginGroup("Status");
+
+	EEntityAspects eEA_All = EEntityAspects(EEntityAspects::eEA_GameClientDynamic | EEntityAspects::eEA_GameServerStatic 
+		| EEntityAspects::eEA_GameServerDynamic | EEntityAspects::eEA_GameClientStatic | EEntityAspects::eEA_Physics); //CryMP: fixme
+
 	m_status.Serialize(ser, eEA_All);
 	ser.EndGroup();
 
@@ -2002,7 +2029,7 @@ void CVehicle::FullSerialize(TSerialize ser)
 	ser.BeginGroup("Seats");
 	for (TVehicleSeatVector::iterator it = m_seats.begin(); it != m_seats.end(); ++it)
 	{
-		ser.BeginGroup(it->first);
+		ser.BeginGroup(it->first.c_str());
 		(it->second)->Serialize(ser, eEA_All);
 		ser.EndGroup();
 	}
@@ -2050,7 +2077,7 @@ void CVehicle::OnAction(const TVehicleActionId actionId, int activationMode, flo
 		bool performAction = pCurrentSeat->GetCurrentTransition() == CVehicleSeat::eVT_None;
 		if (!performAction)
 		{
-			IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+			IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 			IActor* pActor = pActorSystem->GetActor(callerId);
 			if (pActor && pActor->IsClient())
 				performAction = (pCurrentSeat->GetCurrentTransition() == CVehicleSeat::eVT_Entering && actionId != eVAI_Exit);
@@ -2073,9 +2100,9 @@ void CVehicle::OnAction(const TVehicleActionId actionId, int activationMode, flo
 				GetGameObject()->InvokeRMI(SvRequestChangeSeat(), RequestChangeSeatParams(callerId, 0), eRMI_ToServer);
 			else if (actionId == eVAI_Exit && activationMode == eAAM_OnPress)
 			{
-				IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
+				IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
 				IActor* pActor = pActorSystem->GetActor(callerId);
-				CRY_ASSERT(pActor);
+				assert(pActor);
 
 				Matrix34 worldTM = pCurrentSeat->GetExitTM(pActor, false);
 				Vec3 pos = worldTM.GetTranslation();
@@ -2113,7 +2140,7 @@ void CVehicle::OnHit(EntityId targetId, EntityId shooterId, float damage, Vec3 p
 		if (m_indestructible || VehicleCVars().v_goliathMode == 1)
 			return;
 
-		IActor* pActor = CCryAction::GetCryAction()->GetClientActor();
+		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
 
 		if (IsPlayerDriving())
 		{
@@ -2198,7 +2225,7 @@ void CVehicle::OnHit(EntityId targetId, EntityId shooterId, float damage, Vec3 p
 	}
 
 	// direct explosion hits (eg with LAW) kill gunners in singleplayer, but only if the weapon was fired by the player.
-	IActor* pShooter = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(shooterId);
+	IActor* pShooter = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(shooterId);
 	if (!gEnv->bMultiplayer && explosion && (targetId == GetEntityId()) && damage > 260 && pShooter && pShooter->IsPlayer())
 	{
 		KillPassengersInExposedSeats(false);
@@ -2323,11 +2350,11 @@ int CVehicle::IsUsable(EntityId userId)
 			return 0;
 	}
 
-	IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(userId);
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(userId);
 	if (pActor == NULL) return false;
 
 	IMovementController* pController = pActor->GetMovementController();
-	CRY_ASSERT(pController);
+	assert(pController);
 	SMovementState movementState;
 	pController->GetMovementState(movementState);
 
@@ -2381,7 +2408,7 @@ bool CVehicle::OnUsed(EntityId userId, int index)
 		if (IsFrozen())
 			return false;
 
-		IActor* pUser = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(userId);
+		IActor* pUser = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(userId);
 		if (!pUser || !CanEnter(userId))
 			return false;
 
@@ -2468,7 +2495,8 @@ bool CVehicle::AddSeat(const SmartScriptTable& seatTable)
 	int seatId = 0;
 	if (seatTable->GetValue("seatId", seatId))
 	{
-		CCryAction::GetCryAction()->GetVehicleSeatScriptBind()->AttachTo(this, seatId);
+		GameFramework::GetInstance()->GetScriptBind_VehicleSeat()->AttachTo(this, seatId);
+		//gEnv->pGame->GetIGameFramework()->GetVehicleSeatScriptBind()->AttachTo(this, seatId); //CryMP: fixme
 	}
 
 	return false;
@@ -2482,7 +2510,7 @@ IVehiclePart* CVehicle::GetPart(const char* name)
 
 	for (TVehiclePartVector::iterator ite = m_parts.begin(); ite != m_parts.end(); ite++)
 	{
-		if (0 == strcmp(name, ite->first))
+		if (0 == strcmp(name, ite->first.c_str()))
 		{
 			IVehiclePart* part = ite->second;
 			return part;
@@ -2500,7 +2528,7 @@ IVehicleAnimation* CVehicle::GetAnimation(const char* name)
 
 	for (TVehicleAnimationsVector::iterator ite = m_animations.begin(); ite != m_animations.end(); ++ite)
 	{
-		if (0 == strcmp(name, ite->first))
+		if (0 == strcmp(name, ite->first.c_str()))
 			return ite->second;
 	}
 
@@ -2520,7 +2548,7 @@ bool CVehicle::AddHelper(const char* pName, Vec3 position, Vec3 direction, IVehi
 				pAnimatedPart->GetEntity()->GetCharacter(pAnimatedPart->GetSlot()))
 			{
 				ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose();
-				CRY_ASSERT(pSkeletonPose);
+				assert(pSkeletonPose);
 
 				int16 id = pSkeletonPose->GetJointIDByName(pName);
 				if (id > -1)
@@ -2771,7 +2799,7 @@ bool CVehicle::SetMovement(const string& movementName, const CVehicleParams& tab
 {
 	m_pMovement = m_pVehicleSystem->CreateVehicleMovement(movementName);
 
-	if (m_pMovement && m_pMovement->Init(this, table))
+	if (m_pMovement && m_pMovement->Init(this, table)) 
 	{
 		if (gEnv->bServer)
 			GetGameObject()->SetAspectProfile(eEA_Physics, eVPhys_Physicalized);
@@ -2790,7 +2818,7 @@ bool CVehicle::SetMovement(const string& movementName, const CVehicleParams& tab
 //------------------------------------------------------------------------
 void CVehicle::OnPhysPostStep(const EventPhys* pEvent)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 	const EventPhysPostStep* eventPhys = (const EventPhysPostStep*)pEvent;
 
 	float deltaTime = eventPhys->dt;
@@ -2805,7 +2833,7 @@ void CVehicle::OnPhysPostStep(const EventPhys* pEvent)
 //------------------------------------------------------------------------
 void CVehicle::OnCollision(EventPhysCollision* pCollision)
 {
-	if (m_status.beingFlipped || m_collisionDisabledTime > 0.0f)
+	if (m_status.flipped || m_collisionDisabledTime > 0.0f)
 		return;
 
 	IEntity* pE1 = gEnv->pEntitySystem->GetEntityFromPhysics(pCollision->pEntity[0]);
@@ -3061,7 +3089,7 @@ bool CVehicle::InitParticles(const CVehicleParams& table)
 				exhaustParams.startEffect = pTable.getAttr("effect");
 
 				if (!exhaustParams.startEffect.empty())
-					m_pParticleEffects.push_back(gEnv->pParticleManager->FindEffect(exhaustParams.startEffect, "CVehicle::InitParticles"));
+					m_pParticleEffects.push_back(gEnv->p3DEngine->FindParticleEffect(exhaustParams.startEffect.c_str(), "CVehicle::InitParticles"));
 			}
 
 			if (CVehicleParams pTable = exhaustTable.findChild("EngineStop"))
@@ -3069,7 +3097,7 @@ bool CVehicle::InitParticles(const CVehicleParams& table)
 				exhaustParams.stopEffect = pTable.getAttr("effect");
 
 				if (!exhaustParams.stopEffect.empty())
-					m_pParticleEffects.push_back(gEnv->pParticleManager->FindEffect(exhaustParams.stopEffect, "CVehicle::InitParticles"));
+					m_pParticleEffects.push_back(gEnv->p3DEngine->FindParticleEffect(exhaustParams.stopEffect.c_str(), "CVehicle::InitParticles"));
 			}
 
 			if (CVehicleParams pTable = exhaustTable.findChild("EngineRunning"))
@@ -3078,10 +3106,10 @@ bool CVehicle::InitParticles(const CVehicleParams& table)
 				exhaustParams.boostEffect = pTable.getAttr("boostEffect");
 
 				if (!exhaustParams.runEffect.empty())
-					m_pParticleEffects.push_back(gEnv->pParticleManager->FindEffect(exhaustParams.runEffect, "CVehicle::InitParticles"));
+					m_pParticleEffects.push_back(gEnv->p3DEngine->FindParticleEffect(exhaustParams.runEffect.c_str(), "CVehicle::InitParticles"));
 
 				if (!exhaustParams.boostEffect.empty())
-					m_pParticleEffects.push_back(gEnv->pParticleManager->FindEffect(exhaustParams.boostEffect, "CVehicle::InitParticles"));
+					m_pParticleEffects.push_back(gEnv->p3DEngine->FindParticleEffect(exhaustParams.boostEffect.c_str(), "CVehicle::InitParticles"));
 
 				pTable.getAttr("baseSizeScale", exhaustParams.runBaseSizeScale);
 				pTable.getAttr("minSpeed", exhaustParams.runMinSpeed);
@@ -3154,7 +3182,7 @@ bool CVehicle::InitParticles(const CVehicleParams& table)
 
 					// preload
 					m_pParticleEffects.push_back(
-						gEnv->pParticleManager->FindEffect(damageEffect.effectName.c_str(), "CVehicle::InitParticles")
+						gEnv->p3DEngine->FindParticleEffect(damageEffect.effectName.c_str(), "CVehicle::InitParticles")
 					);
 				}
 			}
@@ -3176,7 +3204,6 @@ bool CVehicle::InitParticles(const CVehicleParams& table)
 
 			layerParams.name = layerTable.getAttr("name");
 
-			layerTable.getAttr("active", layerParams.active);
 			layerTable.getAttr("active", layerParams.active);
 			layerTable.getAttr("minSpeed", layerParams.minSpeed);
 			layerTable.getAttr("minSpeedSizeScale", layerParams.minSpeedSizeScale);
@@ -3296,10 +3323,10 @@ void CVehicle::UnregisterHUDElement(CVehicleHUDElement* pHudElement)
 //------------------------------------------------------------------------
 void CVehicle::UpdateHUD(float deltaTime)
 {
-	FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
 
 	IConsole* pConsole = gEnv->pConsole;
-	CRY_ASSERT(pConsole);
+	assert(pConsole);
 
 	if (VehicleCVars().v_debugdraw > 0)
 	{
@@ -3429,8 +3456,8 @@ void CVehicle::ChangeSeat(EntityId actorId, int seatChoice, TVehicleSeatId newSe
 	if (IsFlipped())
 		return; // cannot change seats when vehicle is turned over
 
-	IActorSystem* pActorSystem = CCryAction::GetCryAction()->GetIActorSystem();
-	CRY_ASSERT(pActorSystem);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	assert(pActorSystem);
 
 	IActor* pActor = pActorSystem->GetActor(actorId);
 	if (!pActor)
@@ -3488,7 +3515,7 @@ void CVehicle::ChangeSeat(EntityId actorId, int seatChoice, TVehicleSeatId newSe
 			{
 				if (pScriptTable->GetValue("OnActorStandUp", scriptFunction))
 				{
-					CRY_ASSERT(scriptFunction);
+					assert(scriptFunction);
 					ScriptHandle passengerHandle(pCurrentSeat->m_passengerId);
 					Script::Call(pIScriptSystem, scriptFunction, pScriptTable, passengerHandle, false);
 					pIScriptSystem->ReleaseFunc(scriptFunction);
@@ -3498,7 +3525,7 @@ void CVehicle::ChangeSeat(EntityId actorId, int seatChoice, TVehicleSeatId newSe
 			{
 				if (pScriptTable->GetValue("OnActorChangeSeat", scriptFunction))
 				{
-					CRY_ASSERT(scriptFunction);
+					assert(scriptFunction);
 					ScriptHandle passengerHandle(pCurrentSeat->m_passengerId);
 					Script::Call(pIScriptSystem, scriptFunction, pScriptTable, passengerHandle, false);
 					pIScriptSystem->ReleaseFunc(scriptFunction);
@@ -3508,14 +3535,15 @@ void CVehicle::ChangeSeat(EntityId actorId, int seatChoice, TVehicleSeatId newSe
 
 		pCurrentSeat->m_passengerId = 0;
 
-		if (IVehicleClient* pVehicleClient = CCryAction::GetCryAction()->GetIVehicleSystem()->GetVehicleClient())
+		if (IVehicleClient* pVehicleClient = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicleClient())
 			pVehicleClient->OnExitVehicleSeat(pCurrentSeat);
 
 		pNewSeat->m_passengerId = actorId;
 		pNewSeat->SetAnimGraphInputs(actorId, true, false);
 		pNewSeat->SitDown();
 
-		CHANGED_NETWORK_STATE(this, ASPECT_SEAT_PASSENGER);
+		//CHANGED_NETWORK_STATE(this, ASPECT_SEAT_PASSENGER);
+		GetGameObject()->ChangedNetworkState(ASPECT_SEAT_PASSENGER);
 
 		SVehicleEventParams eventParams;
 		eventParams.entityId = passengerId;
@@ -3537,21 +3565,21 @@ void CVehicle::RegisterVehicleEventListener(IVehicleEventListener* pEvenListener
 //------------------------------------------------------------------------
 void CVehicle::UnregisterVehicleEventListener(IVehicleEventListener* pEventListener)
 {
-	stl::member_find_and_erase(m_eventListeners, pEventListener);
+	//stl::member_find_and_erase(m_eventListeners, pEventListener); //CryMP: fixme
 }
 
 //------------------------------------------------------------------------
 void CVehicle::BroadcastVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params)
 {
-	if (event == eVE_BeingFlipped)
+	/*if (event == eVE_BeingFlipped) //CryMP: fixme
 	{
 		m_status.beingFlipped = params.bParam;
 		return;
-	}
+	}*/
 
 	if (event == eVE_PassengerEnter) // need to setup listener _before_ the listener event is sent (which params contain seat id).
 	{
-		m_pVehicleSystem->BroadcastVehicleUsageEvent(event, params.entityId/*playerId*/, this);
+		//m_pVehicleSystem->BroadcastVehicleUsageEvent(event, params.entityId/*playerId*/, this);
 	}
 
 	TVehicleEventListenerList::iterator ite = m_eventListeners.begin();
@@ -3577,7 +3605,7 @@ void CVehicle::BroadcastVehicleEvent(EVehicleEvent event, const SVehicleEventPar
 		break;
 	}
 	case eVE_PassengerExit:
-		m_pVehicleSystem->BroadcastVehicleUsageEvent(event, params.entityId/*playerId*/, this);
+		//m_pVehicleSystem->BroadcastVehicleUsageEvent(event, params.entityId/*playerId*/, this); //CryMP: fixme?
 		// fall through intentional.
 	case eVE_PassengerEnter:
 	{
@@ -3678,7 +3706,7 @@ EntityId CVehicle::GetCurrentWeaponId(EntityId passengerId, bool secondary/*=fal
 //------------------------------------------------------------------------
 void CVehicle::SetObjectUpdate(IVehicleObject* pObject, EVehicleObjectUpdate updatePolicy)
 {
-	CRY_ASSERT(pObject);
+	assert(pObject);
 
 	for (TVehicleObjectUpdateInfoList::iterator ite = m_objectsToUpdate.begin(); ite != m_objectsToUpdate.end(); ++ite)
 	{
@@ -3752,7 +3780,7 @@ bool CVehicle::HasFriendlyPassenger(IEntity* pPlayer)
 //------------------------------------------------------------------------
 bool CVehicle::IsPlayerPassenger()
 {
-	IActor* pActor = CCryAction::GetCryAction()->GetClientActor();
+	IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
 	if (pActor == NULL)
 		return false;
 
@@ -3778,7 +3806,7 @@ void CVehicle::GetParts(IVehiclePart** parts, int nMax)
 //------------------------------------------------------------------------
 IVehiclePart* CVehicle::GetWheelPart(int idx)
 {
-	CRY_ASSERT(idx >= 0 && idx < GetWheelCount());
+	assert(idx >= 0 && idx < GetWheelCount());
 
 	int i = -1;
 	for (TVehiclePartVector::iterator it = m_parts.begin(); it != m_parts.end(); ++it)
@@ -3820,7 +3848,7 @@ IVehicleHelper* CVehicle::GetHelper(const char* pName)
 				pAnimatedPart->GetEntity()->GetCharacter(pAnimatedPart->GetSlot()))
 			{
 				ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose();
-				CRY_ASSERT(pSkeletonPose);
+				assert(pSkeletonPose);
 
 				int16 id = pSkeletonPose->GetJointIDByName(pName);
 				if (id > -1)
@@ -3978,7 +4006,7 @@ bool CVehicle::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 			if (m_pMovement)
 				m_pMovement->PostPhysicalize();
 
-			if (!CCryAction::GetCryAction()->IsEditing())
+			if (!gEnv->pGame->GetIGameFramework()->IsEditing())
 				NeedsUpdate(eVUF_AwakePhysics);
 		}
 		return true;
@@ -4065,7 +4093,7 @@ void CVehicle::StopSound(TVehicleSoundEventId eventId)
 //------------------------------------------------------------------------
 void CVehicle::StartAbandonedTimer(bool force, float timer)
 {
-	if (IsDestroyed() || gEnv->IsEditor() || !gEnv->bServer)
+	if (IsDestroyed() || gEnv->bEditor || !gEnv->bServer)
 		return;
 
 	SmartScriptTable props, respawnprops;
@@ -4356,7 +4384,7 @@ bool CVehicle::InitRespawn()
 				int respawn = 0;
 				if (respawnprops->GetValue("bRespawn", respawn) && respawn)
 				{
-					if (IGameRules* pGameRules = CCryAction::GetCryAction()->GetIGameRulesSystem()->GetCurrentGameRules())
+					if (IGameRules* pGameRules = gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules())
 						pGameRules->CreateEntityRespawnData(GetEntityId());
 
 					return true;
@@ -4375,11 +4403,11 @@ void CVehicle::OnDestroyed()
 
 	DumpParts();
 
-	IGameRules* pGameRules = CCryAction::GetCryAction()->GetIGameRulesSystem()->GetCurrentGameRules();
+	IGameRules* pGameRules = gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules();
 	if (pGameRules)
 		pGameRules->OnVehicleDestroyed(GetEntityId());
 
-	if (gEnv->bServer && !gEnv->IsEditor())
+	if (gEnv->bServer && !gEnv->bEditor)
 	{
 		bool mp = gEnv->bMultiplayer;
 
@@ -4436,7 +4464,7 @@ void CVehicle::OnSubmerged(float ratio)
 	if (gEnv->bMultiplayer && gEnv->bServer && IsEmpty())
 		StartAbandonedTimer();
 
-	if (IGameRules* pGameRules = CCryAction::GetCryAction()->GetIGameRulesSystem()->GetCurrentGameRules())
+	if (IGameRules* pGameRules = gEnv->pGame->GetIGameFramework()->GetIGameRulesSystem()->GetCurrentGameRules())
 		pGameRules->OnVehicleSubmerged(GetEntityId(), ratio);
 }
 
@@ -4648,7 +4676,7 @@ IMPLEMENT_RMI(CVehicle, SvRequestChangeSeat)
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CVehicle, SvRequestLeave)
 {
-	ExitVehicleAtPosition(params.actorId, params.exitPos);
+	ExitVehicleAtPosition(params.actorId, Vec3(ZERO)); //CryMP: fixme
 
 	return true;
 }
@@ -4658,7 +4686,7 @@ IMPLEMENT_RMI(CVehicle, ClRequestLeave)
 {
 	IVehicleSeat* pCurrentSeat = GetSeatForPassenger(params.actorId);
 	if (pCurrentSeat)
-		pCurrentSeat->Exit(true, false, params.exitPos);
+		pCurrentSeat->Exit(true, false);
 
 	return true;
 }
@@ -4678,7 +4706,7 @@ IMPLEMENT_RMI(CVehicle, ClSetupWeapons)
 			IVehicleSeatAction* pSeatAction = ait->pSeatAction;
 			if (CVehicleSeatActionWeapons* weapAction = CAST_VEHICLEOBJECT(CVehicleSeatActionWeapons, pSeatAction))
 			{
-				CRY_ASSERT(iaction < params.seats[s].seatactions.size());
+				assert(iaction < params.seats[s].seatactions.size());
 				int nweapons = (int)params.seats[s].seatactions[iaction].weapons.size();
 
 				for (int w = 0;w < nweapons;w++)
@@ -4696,7 +4724,7 @@ IMPLEMENT_RMI(CVehicle, ClSetupWeapons)
 IMPLEMENT_RMI(CVehicle, ClSetAmmo)
 {
 	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(params.ammo.c_str());
-	CRY_ASSERT(pClass);
+	assert(pClass);
 	SetAmmoCount(pClass, params.count);
 
 	return true;
@@ -4853,7 +4881,7 @@ void CVehicle::ExitVehicleAtPosition(EntityId passengerId, const Vec3& pos)
 		IVehicleSeat* pCurrentSeat = GetSeatForPassenger(params.actorId);
 		if (pCurrentSeat)
 		{
-			pCurrentSeat->Exit(true, false, params.exitPos);
+			pCurrentSeat->Exit(true, false);
 			GetGameObject()->InvokeRMI(ClRequestLeave(), params, eRMI_ToAllClients);
 		}
 	}
@@ -4943,9 +4971,10 @@ bool CVehicle::ExitSphereTest(IPhysicalEntity** pSkipEnts, int nskip, Vec3 start
 	float hitDist = gEnv->pPhysicalWorld->PrimitiveWorldIntersection(sphere.type, &sphere, endPos - sphere.center, ent_static | ent_terrain | ent_rigid | ent_sleeping_rigid | ent_living,
 		&pContact, 0, (geom_colltype_player << rwi_colltype_bit) | rwi_stop_at_pierceable, 0, 0, 0, pSkipEnts, nskip);
 
+	/* //CryMP: fixme
 	if (VehicleCVars().v_debugdraw > 0)
 	{
-		CPersistantDebug* pPD = CCryAction::GetCryAction()->GetPersistantDebug();
+		CPersistantDebug* pPD = gEnv->pGame->GetIGameFramework()->GetPersistantDebug();
 		pPD->Begin("VehicleSeat", false);
 
 		ColorF col(1.0f, 1.0f, 1.0f, 1.0f);
@@ -4957,11 +4986,11 @@ bool CVehicle::ExitSphereTest(IPhysicalEntity** pSkipEnts, int nskip, Vec3 start
 			//pPD->AddSphere(rayhit.pt, 0.2f, col, 10.0f);
 			pPD->AddSphere(pContact->pt, 0.1f, col, 30.0f);
 		}
-	}
+	}*/
 
 	if (hitDist > 0.001f)
 	{
-		CRY_ASSERT(pContact);
+		assert(pContact);
 		if (pBlockingEntity)
 			*pBlockingEntity = pContact->iPrim[0];	//?
 		//CryLog("Pos failed: %.2f, %.2f, %.2f", endPos.x, endPos.y, endPos.z);
@@ -4994,7 +5023,7 @@ bool CVehicle::DoExtendedExitTest(Vec3 seatPos, Vec3 firstTestPos, EntityId bloc
 	//	Hitting another actor will update blockerId for the next check.
 	for (int check = 0; check < numChecks; ++check)
 	{
-		IActor* pActor = CCryAction::GetCryAction()->GetIActorSystem()->GetActor(blockerId);
+		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(blockerId);
 		if (!pActor)
 			break;
 
@@ -5043,7 +5072,9 @@ void CVehicle::DebugFlipOver()
 	}
 }
 
+/*
 #include UNIQUE_VIRTUAL_WRAPPER(IVehicleAnimation)
 #include UNIQUE_VIRTUAL_WRAPPER(IVehicleSystem)
 #include UNIQUE_VIRTUAL_WRAPPER(SEnvironmentParticles)
 #include UNIQUE_VIRTUAL_WRAPPER(IVehicleComponent)
+*/

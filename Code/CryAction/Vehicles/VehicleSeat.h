@@ -31,10 +31,9 @@ struct IAnimationGraph;
 struct IAnimationGraphState;
 class CVehicleViewThirdPerson;
 
-#include "IVehicleSystem.h"
-#include "IMovementController.h"
-#include "AIProxy.h"
-#include "IAnimationGraph.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IMovementController.h"
+#include "CryCommon/CryAction/IAnimationGraph.h"
 
 struct SSeatActionData
 {
@@ -65,9 +64,9 @@ public:
 	CVehicleSeat();
 	~CVehicleSeat();
 
-	VIRTUAL bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& seatTable);
-	VIRTUAL void PostInit(IVehicle* pVehicle);
-	VIRTUAL void Reset();
+	virtual bool Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& seatTable);
+	virtual void PostInit(IVehicle* pVehicle);
+	virtual void Reset();
 	virtual void Release() { delete this; }
 
 	void GetMemoryStatistics(ICrySizer * s);
@@ -80,26 +79,26 @@ public:
 	void SerializeActions(TSerialize ser, EEntityAspects aspects);
 
 	// IVehicleSeat
-	VIRTUAL bool Enter(EntityId actorId, bool isTransitionEnabled = true);
-	VIRTUAL bool Exit(bool isTransitionEnabled, bool force=false, Vec3 exitPos=ZERO);
+	virtual bool Enter(EntityId actorId, bool isTransitionEnabled = true);
+	virtual bool Exit(bool isTransitionEnabled, bool force = false) override;
 
-  VIRTUAL void Lock(bool lock) { m_isLocked = lock; }
+  virtual void Lock(bool lock) { m_isLocked = lock; }
 
-	VIRTUAL bool IsDriver() { return m_isDriver; }
-	VIRTUAL bool IsGunner();
-	VIRTUAL bool IsLocked() { return m_isLocked; }
+	virtual bool IsDriver() { return m_isDriver; }
+	virtual bool IsGunner();
+	virtual bool IsLocked() { return m_isLocked; }
   virtual bool IsRotatable();
 
-  VIRTUAL bool IsPassengerHidden();
-	VIRTUAL bool IsPassengerExposed() const { return m_isPassengerExposed; }
-  VIRTUAL SSeatSoundParams& GetSoundParams() { return m_soundParams; }
+  virtual bool IsPassengerHidden();
+	virtual bool IsPassengerExposed() const { return m_isPassengerExposed; }
+  virtual SSeatSoundParams& GetSoundParams() { return m_soundParams; }
   
-  VIRTUAL bool IsAnimGraphStateExisting(EntityId actorId);
+  virtual bool IsAnimGraphStateExisting(EntityId actorId);
 
-	VIRTUAL TVehicleViewId GetCurrentView() { return m_currentView; }
-	VIRTUAL IVehicleView* GetView(TVehicleViewId viewId);
-	VIRTUAL bool SetView(TVehicleViewId viewId);
-	VIRTUAL TVehicleViewId GetNextView(TVehicleViewId viewId);
+	virtual TVehicleViewId GetCurrentView() { return m_currentView; }
+	virtual IVehicleView* GetView(TVehicleViewId viewId);
+	virtual bool SetView(TVehicleViewId viewId);
+	virtual TVehicleViewId GetNextView(TVehicleViewId viewId);
 	// ~IVehicleSeat
 
 	bool EnterRemotely(EntityId actorId);
@@ -133,11 +132,11 @@ public:
   
 	float ProcessPassengerDamage(float actorHealth, float damage, const char* pDamageClass, bool explosion);
 
-	VIRTUAL void OnPassengerDeath();
-	VIRTUAL void UnlinkPassenger(bool ragdoll);
-	VIRTUAL void ForceAnimGraphInputs();
+	virtual void OnPassengerDeath();
+	virtual void UnlinkPassenger(bool ragdoll);
+	virtual void ForceAnimGraphInputs();
   void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
-  VIRTUAL void OnCameraShake(float& angleAmount, float& shiftAmount, const Vec3& pos, const char* source) const;
+  virtual void OnCameraShake(float& angleAmount, float& shiftAmount, const Vec3& pos, const char* source) const;
 
 	// network
 	EntityId NetGetPassengerId() const;
@@ -146,7 +145,7 @@ public:
 	// IMovementController
 	virtual bool RequestMovement(CMovementRequest& request);
 	virtual void GetMovementState(SMovementState& state);
-	virtual bool GetStanceState(const SStanceStateQuery& query, SStanceState& state);
+	virtual bool GetStanceState(EStance stance, float lean, bool defaultPose, SStanceState& state);
 	// ~IMovementController
 
 	// IFireController
@@ -159,7 +158,7 @@ public:
 	virtual void DestroyedState(IAnimationGraphState*);
 	// ~IAnimationGraphStateListener
 
-	VIRTUAL void ForceFinishExiting() { QueryComplete( m_agVehicleQueryId, true ); }
+	virtual void ForceFinishExiting() { QueryComplete( m_agVehicleQueryId, true ); }
 
 	TVehicleSeatActionVector& GetSeatActions() { return m_seatActions; }
 
@@ -167,18 +166,18 @@ public:
 
 	int GetSeatActionId(IVehicleSeatAction *pAction);
 	IVehicleSeatAction *GetSeatActionById(int id);
-	void ChangedNetworkState(NetworkAspectType aspects);
+	void ChangedNetworkState(EEntityAspects aspects);
 
 	const string& GetName() { return m_name; }
 	TVehicleSeatId GetSeatId() { return m_seatId; }
 
 	CGameChannel *GetGameChannel(EntityId actorId);
 
-	VIRTUAL IVehicleHelper* GetSitHelper() { return m_pSitHelper; }
+	virtual IVehicleHelper* GetSitHelper() { return m_pSitHelper; }
   virtual IVehicleHelper* GetEnterHelper() { return m_pEnterHelper; }
   virtual IVehicleHelper* GetExitHelper() { return m_pExitHelper ? m_pExitHelper : m_pEnterHelper; }
 
-	VIRTUAL int GetCurrentTransition() const { return m_transitionType; }
+	virtual int GetCurrentTransition() const { return m_transitionType; }
 
 	CVehicleSeatGroup* GetSeatGroup() { return m_pSeatGroup; }
 
@@ -218,7 +217,7 @@ protected:
   void UpdatePassengerLocalTM(IActor* pActor);
   bool QueueTransition();
 	
-	static CCryAction* m_pGameFramework;
+	static IGameFramework* m_pGameFramework;
 
 	CVehicle* m_pVehicle;
 	CVehicleSeatSerializer *m_pSerializer;

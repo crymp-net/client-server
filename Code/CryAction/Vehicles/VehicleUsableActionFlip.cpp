@@ -11,14 +11,14 @@ History:
 - Created by Stan Fichele
 
 *************************************************************************/
-#include "StdAfx.h"
-#include "CryAction.h"
-#include "GameObjects/GameObject.h"
-#include "IActorSystem.h"
-#include "IGameObject.h"
-#include "IItem.h"
-#include "IItemSystem.h"
-#include "IVehicleSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+//#include "CryAction.h"
+//
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IGameObject.h"
+#include "CryCommon/CryAction/IItem.h"
+#include "CryCommon/CryAction/IItemSystem.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
 #include "Vehicle.h"
 #include "VehicleUsableActionFlip.h"
 
@@ -34,7 +34,7 @@ void CVehicleUsableActionFlip::Reset()
 	// Inform the vehicle that the flipping has stopped
 	SVehicleEventParams params;
 	params.bParam = false;
-	m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params);
+	//m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params); //CryMP: fixme
 	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 	m_timer = 0.f;
 }
@@ -69,14 +69,14 @@ int CVehicleUsableActionFlip::OnEvent(int eventType, SVehicleEventParams& eventP
 					{
 						// Standing on its nose or tail
 						// Rotate about the x
-						m_localAngVel.Set(speed * (float)__fsel(yAxis.z, -1.f, +1.f), 0.f, 0.f);
+						//m_localAngVel.Set(speed * (float)__fsel(yAxis.z, -1.f, +1.f), 0.f, 0.f);
 					}
 					else
 					{
 						// Rotate about the y (away from the user)
 						const Vec3 centre = physPos.pos + (physPos.BBox[0] + physPos.BBox[1])*0.5f;
 						const Vec3 entityPos = pEntity->GetWorldPos();
-						m_localAngVel.Set(0.f, speed * (float)__fsel((entityPos-centre).dot(xAxis), +1.f, -1.f), 0.f);
+						//m_localAngVel.Set(0.f, speed * (float)__fsel((entityPos-centre).dot(xAxis), +1.f, -1.f), 0.f);
 					}
 
 					// Start the update
@@ -85,7 +85,7 @@ int CVehicleUsableActionFlip::OnEvent(int eventType, SVehicleEventParams& eventP
 					// Inform the vehicle that flipping has started
 					SVehicleEventParams params;
 					params.bParam = true;
-					m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params);
+					//m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params); //CryMP: Fixme fsel
 					m_pVehicle->NeedsUpdate(IVehicle::eVUF_AwakePhysics);
 				}
 			}

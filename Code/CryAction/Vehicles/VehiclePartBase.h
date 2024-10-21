@@ -15,8 +15,8 @@ History:
 #define __VEHICLEPARTBASE_H__
 
 #include <list>
-#include "IVehicleSystem.h"
-#include "Network/NetActionSync.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/Network/NetActionSync.h"
 #include "VehicleCVars.h"
 #include "Vehicle.h"
 
@@ -41,56 +41,84 @@ public:
 	CVehiclePartBase();
 	virtual ~CVehiclePartBase();
 
-	// IVehiclePart
-  virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo);
-	virtual void PostInit();
-	virtual void Reset();
-	virtual void Release();
+	// Initialization and Cleanup
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo);
 
-	virtual const string& GetName() { return m_name; }
-	virtual IVehiclePart* GetParent(bool root=false);
-	virtual IEntity* GetEntity();
+	//IVehiclePart
+	virtual void PostInit() override;
+	virtual void Reset() override;
+	virtual void Release() override;
 
-  virtual void InvalidateTM(bool invalidate){}
-  virtual void AddChildPart(IVehiclePart* pPart) { m_children.push_back((CVehiclePartBase*)pPart); }
-  
-	virtual void OnEvent(const SVehiclePartEvent& event);
+	// Part Information
+	virtual const string& GetName() override { return m_name; }
+	virtual IVehiclePart* GetParent(bool root = false) override;
+	virtual IEntity* GetEntity() override;
 
-	virtual bool ChangeState(EVehiclePartState state, int flags=0);
-  virtual EVehiclePartState GetState() const { return m_state; }
-	
-  virtual void SetMaterial(IMaterial* pMaterial);
-	virtual void Physicalize() {}
-  virtual void SetMoveable() {}
-  
-	virtual const Matrix34& GetLocalTM(bool relativeToParentPart);
-	virtual const Matrix34& GetWorldTM();
-	virtual void SetLocalTM(const Matrix34& localTM);
-	virtual const AABB& GetLocalBounds();
+	// Child Parts Management
+	virtual void InvalidateTM(bool invalidate) override {}
+	virtual void AddChildPart(IVehiclePart* pPart) override { m_children.push_back((CVehiclePartBase*)pPart); }
 
-  // set & get baseTM. for standard parts, this just forwards to LocalTM
-  virtual const Matrix34& GetLocalBaseTM() { return GetLocalTM(true); }
-  virtual void SetLocalBaseTM(const Matrix34& tm) { SetLocalTM(tm); }
+	// Event Handling
+	virtual void OnEvent(const SVehiclePartEvent& event) override;
 
-  virtual void ResetLocalTM(bool recursive);
+	// State Management
+	virtual bool ChangeState(EVehiclePartState state, int flags = 0) override;
+	virtual EVehiclePartState GetState() const override { return m_state; }
 
-	virtual const Matrix34& GetLocalInitialTM() { return GetLocalTM(true); }
+	// Material Handling
+	virtual void SetMaterial(IMaterial* pMaterial) override;
 
-	virtual void Update(const float deltaTime);
-	virtual void Serialize(TSerialize ser, EEntityAspects aspects);
-	virtual void PostSerialize() {}
+	// Transformation Management
+	virtual void Physicalize() override {} 
+	virtual void SetMoveable() override {} 
 
-	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) {}
-  virtual int GetType(){ return m_typeId; }    
+	virtual const Matrix34& GetLocalTM(bool relativeToParentPart) override;
+	virtual const Matrix34& GetWorldTM() override;
+	virtual void SetLocalTM(const Matrix34& localTM) override;
+	virtual const AABB& GetLocalBounds() override;
 
-  virtual IVehicleWheel* GetIWheel() { return NULL; }
+	// Base Transform Handling
+	virtual const Matrix34& GetLocalBaseTM() override { return GetLocalTM(true); }
+	virtual void SetLocalBaseTM(const Matrix34& tm) override { SetLocalTM(tm); }
 
-	virtual const Vec3& GetDetachBaseForce() { return m_detachBaseForce; }
-	virtual float GetMass() { return m_mass; }
-  virtual int GetPhysId() { return m_physId; }
-  virtual int GetSlot() { return m_slot; }  
-	// ~IVehiclePart
+	// Initial Transform
+	virtual const Matrix34& GetLocalInitialTM() override { return GetLocalTM(true); }
 
+	// Update Loop
+	virtual void Update(const float deltaTime) override;
+
+	// Serialization
+	virtual void Serialize(TSerialize ser, unsigned aspects) override;
+	virtual void PostSerialize() override {}
+
+	// Serializer Registration
+	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) override {}
+
+	// Type Management
+	virtual int GetType() override { return m_typeId; }
+	virtual IVehicleWheel* GetIWheel() override { return nullptr; }
+
+	// Physical Properties
+	virtual const Vec3& GetDetachBaseForce() override { return m_detachBaseForce; }
+	virtual float GetMass() override { return m_mass; }
+	virtual int GetPhysId() override { return m_physId; }
+	virtual int GetSlot() override { return m_slot; }
+
+	// New: Memory Statistics (missing in implementation)
+	virtual void GetMemoryStatistics(ICrySizer* s) override
+	{
+		s->Add(*this);
+		GetBaseMemoryStatistics(s);
+	}
+
+	// New: Handle Part Rotation Limits (missing in implementation)
+	virtual bool GetRotationLimits(int axis, float& min, float& max) override { return false; }
+
+	// New: Part Hit Event (missing in implementation)
+	virtual void OnHit(Vec3 localPos, float radius, float strength = 1.0f) override{} //CryMP: fixme: implement
+	// ~IVehiclePart Implementation End
+
+	virtual void ResetLocalTM(bool recursive);
   virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params){}
   
 	virtual IStatObj* GetSubGeometry(CVehiclePartBase* pPart, EVehiclePartState state, Matrix34& position, bool removeFromParent);
@@ -112,12 +140,6 @@ public:
 	void CloneMaterial();
 
 	bool IsRotationBlocked() const { return m_isRotationBlocked; }
-
-	virtual void GetMemoryStatistics(ICrySizer * s)
-	{
-		s->Add(*this);
-		GetBaseMemoryStatistics(s);
-	}
 
   static const char * m_geometryDestroyedSuffix;
 public:

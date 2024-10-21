@@ -24,14 +24,14 @@ public:
 	// IVehicleHelper
 	virtual void Release() { delete this; }
 
-	VIRTUAL const Matrix34& GetLocalTM() { return m_localTM; }
-	VIRTUAL const Matrix34& GetVehicleTM();
-	VIRTUAL const Matrix34& GetWorldTM();
-	VIRTUAL const Matrix34& GetReflectedWorldTM();
+	virtual const Matrix34& GetLocalTM() { return m_localTM; }
+	virtual const Matrix34& GetVehicleTM();
+	virtual const Matrix34& GetWorldTM();
+	virtual const Matrix34& GetReflectedWorldTM();
 
-	VIRTUAL IVehiclePart* GetParentPart();
+	virtual IVehiclePart* GetParentPart();
 
-	VIRTUAL void Invalidate()
+	virtual void Invalidate()
 	{
 		m_isWorldUpdated = false;
 		m_isVehicleUpdated = false;

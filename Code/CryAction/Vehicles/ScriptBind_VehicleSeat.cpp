@@ -11,19 +11,20 @@ History:
 - 28:04:2004   17:02 : Created by Mathieu Pinard
 
 *************************************************************************/
-#include "StdAfx.h"
-#include <ISound.h>
-#include "CryString.h"
-#include <IActionMapManager.h>
-#include <ICryAnimation.h>
-#include "IGameFramework.h"
-#include "IActorSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryCore/CryString.h"
+#include "CryCommon/CryAction/IActionMapManager.h"
+#include "CryCommon/CryAnimation/ICryAnimation.h"
+#include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryAction/IActorSystem.h"
 #include <vector>
+/*
 #include <Cry_Math.h>
 #include <IShader.h>
-#include <IRenderAuxGeom.h>
-#include <Cry_GeoOverlap.h>
-
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryMath/Cry_GeoOverlap.h"
+*/
 #include "VehicleSystem.h"
 #include "VehicleSeat.h"
 #include "ScriptBind_VehicleSeat.h"
@@ -34,7 +35,7 @@ History:
 //------------------------------------------------------------------------
 // macro for retrieving vehicle and entity
 #undef GET_ENTITY
-#define GET_ENTITY IVehicle* pVehicle = GetVehicle(pH); CRY_ASSERT(pVehicle); \
+#define GET_ENTITY IVehicle* pVehicle = GetVehicle(pH); assert(pVehicle); \
 	IEntity* pEntity = pVehicle->GetEntity(); \
 	if (!pEntity) return pH->EndFunction();
 
@@ -89,7 +90,7 @@ void CScriptBind_VehicleSeat::AttachTo(IVehicle *pVehicle, TVehicleSeatId seatId
   SmartScriptTable seatsTable;
 	if (!pScriptTable->GetValue("Seats", seatsTable))
 	{
-		CRY_ASSERT(!"cannot read the seats table");
+		assert(!"cannot read the seats table");
 		return;
 	}
 
