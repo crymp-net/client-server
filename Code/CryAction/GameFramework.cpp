@@ -659,7 +659,7 @@ void GameFramework::PauseGame(bool pause, bool force)
 	gEnv->pEntitySystem->PauseTimers(pause, false);
 
 	m_isPaused = pause;
-	m_isForcedPaused = pause;
+	m_isForcedPaused = force;
 
 	IMovieSystem* pMovieSystem = gEnv->pMovieSystem;
 	if (pMovieSystem)
