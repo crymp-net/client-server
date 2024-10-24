@@ -48,6 +48,17 @@ void MaterialEffects::Update(float frameTime)
 	(this->*reinterpret_cast<void(MaterialEffects::*&)(float)>(func))(frameTime);
 }
 
+void MaterialEffects::SetUpdateMode(bool isGameMode)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x262840;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x1A01E0;
+#endif
+
+	(this->*reinterpret_cast<void(MaterialEffects::*&)(bool)>(func))(isGameMode);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IMaterialEffects
 ////////////////////////////////////////////////////////////////////////////////

@@ -34,3 +34,14 @@ void GameObject::RegisterCVars()
 	pConsole->Register("g_showUpdateState", &pCVars->showUpdateState, 0, VF_CHEAT,
 		"Show the game object update state of any activated entities; 3-4 -- AI objects only.");
 }
+
+void GameObject::UpdateSchedulingProfiles()
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x1AD1E0;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x12A480;
+#endif
+
+	reinterpret_cast<void(*)()>(func)();
+}

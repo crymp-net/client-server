@@ -68,11 +68,55 @@ class StlportVector : private Allocator
 public:
 	StlportVector() = default;
 
-	StlportVector(const StlportVector&) = delete;
-	StlportVector(StlportVector&&) = delete;
+	StlportVector(const StlportVector& other)
+	{
+		this->reserve(other.capacity());
 
-	const StlportVector& operator=(const StlportVector&) = delete;
-	const StlportVector& operator=(StlportVector&&) = delete;
+		for (const T& element : other)
+		{
+			this->push_back(element);
+		}
+	}
+
+	StlportVector(StlportVector&& other) noexcept
+	{
+		m_begin = other.m_begin;
+		m_end = other.m_end;
+		m_end_of_storage = other.m_end_of_storage;
+
+		other.m_begin = nullptr;
+		other.m_end = nullptr;
+		other.m_end_of_storage = nullptr;
+	}
+
+	const StlportVector& operator=(const StlportVector& other)
+	{
+		// self-assignment is ok
+		this->clear();
+		this->reserve(other.capacity());
+
+		for (const T& element : other)
+		{
+			this->push_back(element);
+		}
+
+		return *this;
+	}
+
+	const StlportVector& operator=(StlportVector&& other) noexcept
+	{
+		this->release();
+
+		m_begin = other.m_begin;
+		m_end = other.m_end;
+		m_end_of_storage = other.m_end_of_storage;
+
+		other.m_begin = nullptr;
+		other.m_end = nullptr;
+		other.m_end_of_storage = nullptr;
+
+		return *this;
+	}
 
 	~StlportVector()
 	{
@@ -104,27 +148,73 @@ public:
 		}
 	}
 
+	T* insert(T* pos, const T& element)
+	{
+		const std::size_t index = pos - m_begin;
+		this->grow_if_full();
+		pos = m_begin + index;
+
+		std::construct_at(m_end);
+
+		for (T* it = m_end; it != pos; --it)
+		{
+			*it = *(it - 1);
+		}
+
+		++m_end;
+
+		*pos = element;
+
+		return pos;
+	}
+
+	T* erase(T* pos)
+	{
+		--m_end;
+
+		for (T* it = pos; it != m_end; ++it)
+		{
+			*it = *(it + 1);
+		}
+
+		std::destroy_at(m_end);
+
+		return pos;
+	}
+
 	void push_back(const T& element)
+	{
+		this->grow_if_full();
+
+		std::construct_at(m_end, element);
+		++m_end;
+	}
+
+	void clear()
+	{
+		std::destroy(m_begin, m_end);
+		m_end = m_begin;
+	}
+
+private:
+	void grow_if_full()
 	{
 		if (m_end == m_end_of_storage)
 		{
 			this->reallocate((this->capacity() == 0) ? 8 : this->capacity() * 2);
 		}
-
-		std::construct_at(m_end, element);
-		m_end++;
 	}
 
-private:
 	void reallocate(std::size_t new_capacity)
 	{
-		T* new_buffer = this->allocate(new_capacity);
+		const std::size_t count = this->size();
 
+		T* new_buffer = this->allocate(new_capacity);
 		std::uninitialized_move(m_begin, m_end, new_buffer);
 		this->release();
 
 		m_end_of_storage = new_buffer + new_capacity;
-		m_end = new_buffer + this->size();
+		m_end = new_buffer + count;
 		m_begin = new_buffer;
 	}
 
@@ -141,3 +231,5 @@ private:
 
 template<class T>
 using StlportVector_CryAction = StlportVector<T, NodeAlloc_CryAction<T>>;
+
+static_assert(sizeof(StlportVector_CryAction<void*>) == (sizeof(void*) * 3));

@@ -11,12 +11,11 @@ History:
 
 *************************************************************************/
 
-#ifndef __IDEBUGHISTORY_H__
-#define __IDEBUGHISTORY_H__
-
-#if _MSC_VER > 1000
 #pragma once
-#endif
+
+#include "CryCommon/CryMath/Cry_Color.h"
+
+class ICrySizer;
 
 struct IDebugHistory
 {
@@ -46,5 +45,3 @@ struct IDebugHistoryManager
 
 	virtual void LayoutHelper(const char* id, const char* name, bool visible, float minout, float maxout, float minin, float maxin, float x, float y, float w=1.0f, float h=1.0f) = 0;
 };
-
-#endif /*__IDEBUGHISTORY_H__*/
