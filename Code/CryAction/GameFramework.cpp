@@ -132,8 +132,8 @@ void GameFramework::RegisterFactory(const char* name, IAnimationStateNodeFactory
 	std::uintptr_t func = CRYACTION_BASE + 0x21F760;
 #endif
 
-	(this->*reinterpret_cast<void(GameFramework::*&)(const char*, IAnimationStateNodeFactory* (*)())>(func))
-		(name, pCreator);
+	(this->*reinterpret_cast<void(GameFramework::*&)(const char*, IAnimationStateNodeFactory* (*)(), bool)>(func))
+		(name, pCreator, isAI);
 }
 
 void GameFramework::RegisterFactory(const char* name, ISaveGame* (*pCreator)(), bool isAI)
