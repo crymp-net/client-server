@@ -148,15 +148,46 @@ public:
 		}
 	}
 
-	void push_back(const T& element)
+	T* insert(T* pos, const T& element)
 	{
-		if (m_end == m_end_of_storage)
+		const std::size_t index = pos - m_begin;
+		this->grow_if_full();
+		pos = m_begin + index;
+
+		std::construct_at(m_end);
+
+		for (T* it = m_end; it != pos; --it)
 		{
-			this->reallocate((this->capacity() == 0) ? 8 : this->capacity() * 2);
+			*it = *(it - 1);
 		}
 
+		++m_end;
+
+		*pos = element;
+
+		return pos;
+	}
+
+	T* erase(T* pos)
+	{
+		--m_end;
+
+		for (T* it = pos; it != m_end; ++it)
+		{
+			*it = *(it + 1);
+		}
+
+		std::destroy_at(m_end);
+
+		return pos;
+	}
+
+	void push_back(const T& element)
+	{
+		this->grow_if_full();
+
 		std::construct_at(m_end, element);
-		m_end++;
+		++m_end;
 	}
 
 	void clear()
@@ -166,6 +197,14 @@ public:
 	}
 
 private:
+	void grow_if_full()
+	{
+		if (m_end == m_end_of_storage)
+		{
+			this->reallocate((this->capacity() == 0) ? 8 : this->capacity() * 2);
+		}
+	}
+
 	void reallocate(std::size_t new_capacity)
 	{
 		const std::size_t count = this->size();

@@ -95,6 +95,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/CallbackTimer.h
 	Code/CryAction/DebrisMgr.cpp
 	Code/CryAction/DebrisMgr.h
+	Code/CryAction/DebugHistoryManager.cpp
+	Code/CryAction/DebugHistoryManager.h
 	Code/CryAction/DevMode.cpp
 	Code/CryAction/DevMode.h
 	Code/CryAction/DialogSystem.cpp
@@ -105,6 +107,14 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/EquipmentManager.h
 	Code/CryAction/FlowSystem.cpp
 	Code/CryAction/FlowSystem.h
+	Code/CryAction/GameChannel.cpp
+	Code/CryAction/GameChannel.h
+	Code/CryAction/GameClientChannel.cpp
+	Code/CryAction/GameClientChannel.h
+	Code/CryAction/GameClientNub.cpp
+	Code/CryAction/GameClientNub.h
+	Code/CryAction/GameContext.cpp
+	Code/CryAction/GameContext.h
 	Code/CryAction/GameFramework.cpp
 	Code/CryAction/GameFramework.h
 	Code/CryAction/GameFrameworkCVars.cpp
@@ -117,10 +127,14 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/GameplayRecorder.h
 	Code/CryAction/GameObject.cpp
 	Code/CryAction/GameObject.h
+	Code/CryAction/GameQueryListener.cpp
+	Code/CryAction/GameQueryListener.h
 	Code/CryAction/GameRulesSystem.cpp
 	Code/CryAction/GameRulesSystem.h
 	Code/CryAction/GameSerialize.cpp
 	Code/CryAction/GameSerialize.h
+	Code/CryAction/GameServerChannel.cpp
+	Code/CryAction/GameServerChannel.h
 	Code/CryAction/GameServerNub.cpp
 	Code/CryAction/GameServerNub.h
 	Code/CryAction/GameStatsConfig.cpp
@@ -928,6 +942,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Library/PathTools.h
 	Code/Library/PathTree.h
 	Code/Library/SlotVector.h
+	Code/Library/StlportMap.h
+	Code/Library/StlportSet.h
 	Code/Library/StlportVector.h
 	Code/Library/StringTools.cpp
 	Code/Library/StringTools.h

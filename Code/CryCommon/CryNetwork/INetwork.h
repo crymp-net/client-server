@@ -31,6 +31,7 @@
 #include "ISerialize.h"
 
 #include "CryCommon/CryEntitySystem/EntityId.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
 
 #define SERVER_DEFAULT_PORT 64087

@@ -1,8 +1,15 @@
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
 
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryInput/IInput.h"
+#include "CryCommon/CryMovie/IMovieSystem.h"
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
@@ -15,18 +22,24 @@
 #include "AnimationGraphSystem.h"
 #include "CallbackTimer.h"
 #include "DebrisMgr.h"
+#include "DebugHistoryManager.h"
 #include "DevMode.h"
 #include "DialogSystem.h"
 #include "EffectSystem.h"
 #include "FlowSystem.h"
+#include "GameClientChannel.h"
+#include "GameClientNub.h"
+#include "GameContext.h"
 #include "GameFramework.h"
 #include "GameFrameworkCVars.h"
 #include "GameObject.h"
 #include "GameObjectSystem.h"
 #include "GameplayAnalyst.h"
 #include "GameplayRecorder.h"
+#include "GameQueryListener.h"
 #include "GameRulesSystem.h"
 #include "GameSerialize.h"
+#include "GameServerChannel.h"
 #include "GameServerNub.h"
 #include "GameStatsConfig.h"
 #include "GameTokenSystem.h"
@@ -88,6 +101,7 @@ static void RegisterSomeExtensions(IGameFramework* pGameFramework)
 
 GameFramework::GameFramework()
 {
+	// TODO: remove
 	static std::uintptr_t vtable[97] = {
 #ifdef BUILD_64BIT
 		CRYACTION_BASE + 0x319390, CRYACTION_BASE + 0x319380, CRYACTION_BASE + 0x319370, CRYACTION_BASE + 0x319360, CRYACTION_BASE + 0x3191f0, CRYACTION_BASE + 0x3191e0, CRYACTION_BASE + 0x31d250, CRYACTION_BASE + 0x3286d0,
@@ -123,8 +137,13 @@ GameFramework::GameFramework()
 	const std::uintptr_t* current_vtable = *reinterpret_cast<std::uintptr_t**>(this);
 
 	// use original functions from CryAction DLL except the following
+	vtable[0] = current_vtable[0];    // GameFramework::RegisterFactory(IGameObjectExtensionCreator)
 	vtable[1] = current_vtable[1];    // GameFramework::RegisterFactory(IVehicleCreator)
 	vtable[2] = current_vtable[2];    // GameFramework::RegisterFactory(IItemCreator)
+	vtable[3] = current_vtable[3];    // GameFramework::RegisterFactory(IActorCreator)
+	vtable[4] = current_vtable[4];    // GameFramework::RegisterFactory(ILoadGame)
+	vtable[5] = current_vtable[5];    // GameFramework::RegisterFactory(ISaveGame)
+	vtable[6] = current_vtable[6];    // GameFramework::RegisterFactory(IAnimationStateNodeFactory)
 	vtable[7] = current_vtable[7];    // GameFramework::Init
 	vtable[8] = current_vtable[8];    // GameFramework::CompleteInit
 	vtable[9] = current_vtable[9];    // GameFramework::PreUpdate
@@ -162,20 +181,31 @@ GameFramework* GameFramework::GetInstance()
 // IGameFramework
 ////////////////////////////////////////////////////////////////////////////////
 
-void GameFramework::RegisterFactory(const char* name, IAnimationStateNodeFactory* (*)(), bool isAI)
+void GameFramework::RegisterFactory(const char* name, IAnimationStateNodeFactory* (*pCreator)(), bool isAI)
 {
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x31D250;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x21F760;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)(const char*, IAnimationStateNodeFactory* (*)())>(func))
+		(name, pCreator);
 }
 
-void GameFramework::RegisterFactory(const char* name, ISaveGame* (*)(), bool isAI)
+void GameFramework::RegisterFactory(const char* name, ISaveGame* (*pCreator)(), bool isAI)
 {
+	m_pGameSerialize->RegisterSaveGameFactory(name, pCreator);
 }
 
-void GameFramework::RegisterFactory(const char* name, ILoadGame* (*)(), bool isAI)
+void GameFramework::RegisterFactory(const char* name, ILoadGame* (*pCreator)(), bool isAI)
 {
+	m_pGameSerialize->RegisterLoadGameFactory(name, pCreator);
 }
 
-void GameFramework::RegisterFactory(const char* name, IActorCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IActorCreator* pCreator, bool isAI)
 {
+	m_pActorSystem->RegisterActorFactory(name, pCreator, isAI);
 }
 
 void GameFramework::RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI)
@@ -188,8 +218,9 @@ void GameFramework::RegisterFactory(const char* name, IVehicleCreator* pCreator,
 	m_pVehicleSystem->RegisterVehicleFactory(name, pCreator);
 }
 
-void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI)
+void GameFramework::RegisterFactory(const char* name, IGameObjectExtensionCreator* pCreator, bool isAI)
 {
+	m_pGameObjectSystem->RegisterExtension(name, pCreator, nullptr);
 }
 
 bool GameFramework::Init(SSystemInitParams& startupParams)
@@ -223,8 +254,8 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	// CryMP client sets a random CD key during its initialization
 	// no need to obtain CD key here
 
-	this->RegisterConsoleVariables();
-	this->RegisterConsoleCommands();
+	this->InitCVars();
+	this->InitCommands();
 
 	if (m_pSystem->IsDevMode())
 	{
@@ -292,7 +323,7 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 
 	m_pLevelSystem->AddListener(m_pItemSystem);
 
-	this->RegisterScriptBindings();
+	this->InitScriptBinds();
 
 	m_pSomeStrings = new SomeStrings();
 
@@ -307,8 +338,8 @@ bool GameFramework::Init(SSystemInitParams& startupParams)
 	// skip instantiating CDownloadTask for downloading maps and stuff (m_reserved_0x51c_0x5b8)
 	// it is more harmful than useful and all accesses seem to be guarded by null checks making it optional
 
-	m_pListenersA = new StlportVector_CryAction<Listener>;
-	m_pListenersB = new StlportVector_CryAction<Listener>;
+	m_pListeners = new StlportVector_CryAction<Listener>();
+	m_pListenersCopy = new StlportVector_CryAction<Listener>();
 
 	m_pNextFrameCommand = new CryStringT<char>();
 
@@ -329,7 +360,7 @@ bool GameFramework::CompleteInit()
 
 	if (!m_pMusicGraphState)
 	{
-		CryLogWarningAlways("[GameFramework::CompleteInit] Unable to load music logic graph");
+		CryLogWarningAlways("%s: Unable to load music logic graph", __FUNCTION__);
 	}
 
 	m_pMusicLogic = new MusicLogic(m_pMusicGraphState);
@@ -424,7 +455,7 @@ bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)
 
 		status = m_pSystem->Update(0, pauseMode);
 
-		this->DispatchActionEvent(SActionEvent(eAE_earlyPreUpdate));
+		this->OnActionEvent(SActionEvent(eAE_earlyPreUpdate));
 
 		isGameStarted = this->IsGameStarted();
 		const bool wasGamePaused = isGamePaused;
@@ -504,11 +535,7 @@ void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 
 	m_pSystem->Render();
 
-	*m_pListenersB = *m_pListenersA;
-	for (Listener& listener : *m_pListenersB)
-	{
-		listener.pListener->OnPostUpdate(frameTime);
-	}
+	this->CallListeners([frameTime](IGameFrameworkListener* pListener) { pListener->OnPostUpdate(frameTime); });
 
 	m_pPersistantDebug->PostUpdate(frameTime);
 	m_pGameObjectSystem->PostUpdate(frameTime);
@@ -539,19 +566,19 @@ void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 		gEnv->pFrameProfileSystem->EndFrame();
 	}
 
-	if (m_reserved_0x57c_0x674 && m_pSomeStrings)
+	if (m_delayedSaveGameMethod)
 	{
-		this->SaveGame(
-			m_pSomeStrings->reserved[0].c_str(),
-			m_reserved_0x57c_0x674 == 1,
-			true,
-			m_reserved_0x580_0x678,
-			false,
-			m_pSomeStrings->reserved[1].c_str()
-		);
+		const char* const path = m_pSomeStrings->delayedSaveGameName.c_str();
+		const char* const checkPoint = m_pSomeStrings->checkPointName.c_str();
+		const ESaveGameReason reason = m_delayedSaveGameReason;
+		const bool quick = m_delayedSaveGameMethod == 1;
+		const bool forceImmediate = true;
+		const bool ignoreDelay = false;
 
-		m_reserved_0x57c_0x674 = 0;
-		m_pSomeStrings->reserved[0].clear();
+		this->SaveGame(path, quick, forceImmediate, reason, ignoreDelay, checkPoint);
+
+		m_delayedSaveGameMethod = 0;
+		m_pSomeStrings->delayedSaveGameName.clear();
 	}
 
 	ITextModeConsole* pTextModeConsole = m_pSystem->GetITextModeConsole();
@@ -560,66 +587,145 @@ void GameFramework::PostUpdate(bool haveFocus, unsigned int updateFlags)
 		pTextModeConsole->EndDraw();
 	}
 
-#ifdef BUILD_64BIT
-	std::uintptr_t someFunc = CRYACTION_BASE + 0x1AD1E0;
-#else
-	std::uintptr_t someFunc = CRYACTION_BASE + 0x12A480;
-#endif
-
-	reinterpret_cast<void(*)()>(someFunc)();
+	GameObject::UpdateSchedulingProfiles();
 }
 
 void GameFramework::Shutdown()
 {
-	CryLogErrorAlways("[GameFramework::Shutdown] Not implemented!");
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 void GameFramework::Reset(bool clients)
 {
+	GameContext* pGameContext = m_pActionGame ? m_pActionGame->GetGameContext() : nullptr;
+	if (pGameContext && pGameContext->GetFlags() & eGSF_Server)
+	{
+		pGameContext->ResetMap(true);
+
+		if (gEnv->bServer)
+		{
+			GameServerNub* pGameServerNub = this->GetGameServerNub();
+			if (pGameServerNub)
+			{
+				pGameServerNub->ResetOnHoldChannels();
+			}
+		}
+	}
+
+	if (m_pGameplayRecorder)
+	{
+		m_pGameplayRecorder->Event(nullptr, GameplayEvent(eGE_GameReset));
+	}
+
+	if (m_pMusicLogic)
+	{
+		m_pMusicLogic->Stop();
+	}
 }
 
 void GameFramework::PauseGame(bool pause, bool force)
 {
+	if (!force && m_isPaused && m_isForcedPaused)
+	{
+		return;
+	}
+
+	if (m_isPaused == pause && m_isForcedPaused == force)
+	{
+		return;
+	}
+
+	gEnv->pTimer->PauseTimer(ITimer::ETIMER_GAME, pause);
+
+	m_pActionMapManager->Enable(!pause);
+
+	ISoundSystem* pSoundSystem = gEnv->pSoundSystem;
+	if (pSoundSystem)
+	{
+		pSoundSystem->Pause(pause, false);
+	}
+
+	if (pause)
+	{
+		IInput* pInput = gEnv->pInput;
+		if (pInput)
+		{
+			pInput->ForceFeedbackEvent(SFFOutputEvent(eDI_XI, eFF_Rumble_Basic, 0.0f, 0.0f, 0.0f));
+		}
+	}
+
+	gEnv->p3DEngine->GetTimeOfDay()->SetPaused(pause);
+
+	gEnv->pEntitySystem->PauseTimers(pause, false);
+
+	m_isPaused = pause;
+	m_isForcedPaused = pause;
+
+	IMovieSystem* pMovieSystem = gEnv->pMovieSystem;
+	if (pMovieSystem)
+	{
+		if (pause)
+		{
+			pMovieSystem->Pause();
+		}
+		else
+		{
+			pMovieSystem->Resume();
+		}
+	}
+
+	m_pGameObjectSystem->BroadcastEvent(SGameObjectEvent(pause ? eGFE_PauseGame : eGFE_ResumeGame, eGOEF_ToAll));
 }
 
 bool GameFramework::IsGamePaused()
 {
-	return false;
+	return m_isPaused || !gEnv->pTimer->IsTimerEnabled();
 }
 
 bool GameFramework::IsGameStarted()
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	return pGameContext->IsGameStarted();
 }
 
 ISystem* GameFramework::GetISystem()
 {
-	return nullptr;
+	return m_pSystem;
 }
 
 ILanQueryListener* GameFramework::GetILanQueryListener()
 {
-	return nullptr;
+	return m_pLanQueryListener;
 }
 
 IUIDraw* GameFramework::GetIUIDraw()
 {
-	return nullptr;
+	return m_pUIDraw;
 }
 
 IGameObjectSystem* GameFramework::GetIGameObjectSystem()
 {
-	return nullptr;
+	return m_pGameObjectSystem;
 }
 
 ILevelSystem* GameFramework::GetILevelSystem()
 {
-	return nullptr;
+	return m_pLevelSystem;
 }
 
 IActorSystem* GameFramework::GetIActorSystem()
 {
-	return nullptr;
+	return m_pActorSystem;
 }
 
 IItemSystem* GameFramework::GetIItemSystem()
@@ -629,17 +735,17 @@ IItemSystem* GameFramework::GetIItemSystem()
 
 IActionMapManager* GameFramework::GetIActionMapManager()
 {
-	return nullptr;
+	return m_pActionMapManager;
 }
 
 IViewSystem* GameFramework::GetIViewSystem()
 {
-	return nullptr;
+	return m_pViewSystem;
 }
 
 IGameplayRecorder* GameFramework::GetIGameplayRecorder()
 {
-	return nullptr;
+	return m_pGameplayRecorder;
 }
 
 IVehicleSystem* GameFramework::GetIVehicleSystem()
@@ -649,309 +755,809 @@ IVehicleSystem* GameFramework::GetIVehicleSystem()
 
 IGameRulesSystem* GameFramework::GetIGameRulesSystem()
 {
-	return nullptr;
+	return m_pGameRulesSystem;
 }
 
 IFlowSystem* GameFramework::GetIFlowSystem()
 {
-	return nullptr;
+	return m_pFlowSystem;
 }
 
 IGameTokenSystem* GameFramework::GetIGameTokenSystem()
 {
-	return nullptr;
+	return m_pGameTokenSystem;
 }
 
 IEffectSystem* GameFramework::GetIEffectSystem()
 {
-	return nullptr;
+	return m_pEffectSystem;
 }
 
 IMaterialEffects* GameFramework::GetIMaterialEffects()
 {
-	return nullptr;
+	return m_pMaterialEffects;
 }
 
 IDialogSystem* GameFramework::GetIDialogSystem()
 {
-	return nullptr;
+	return m_pDialogSystem;
 }
 
 IPlayerProfileManager* GameFramework::GetIPlayerProfileManager()
 {
-	return nullptr;
+	return m_pPlayerProfileManager;
 }
 
 IDebrisMgr* GameFramework::GetDebrisMgr()
 {
-	return nullptr;
+	return m_pDebrisMgr;
 }
 
 ISubtitleManager* GameFramework::GetISubtitleManager()
 {
-	return nullptr;
+	return m_pSubtitleManager;
 }
 
 bool GameFramework::StartGameContext(const SGameStartParams* pGameStartParams)
 {
-	return false;
+	if (gEnv->bEditor)
+	{
+		if (!m_pActionGame)
+		{
+			m_pSystem->Error("Must have game around always for editor");
+		}
+	}
+	else
+	{
+		this->EndGameContext();
+		m_pActionGame = new ActionGame(m_pScriptRMI);
+	}
+
+	if (!m_pActionGame->Init(pGameStartParams))
+	{
+		this->EndGameContext();
+		CryLogWarningAlways("%s: Failed initializing game", __FUNCTION__);
+		return false;
+	}
+
+	return true;
 }
 
 bool GameFramework::ChangeGameContext(const SGameContextParams* pGameContextParams)
 {
-	return false;
+	return m_pActionGame && m_pActionGame->ChangeGameContext(pGameContextParams);
 }
 
 void GameFramework::EndGameContext()
 {
+	_smart_ptr<ActionGame> pActionGame = m_pActionGame;
+	m_pActionGame = 0;
+	pActionGame = 0;
+
+	if (gEnv->bEditor)
+	{
+		m_pActionGame = new ActionGame(m_pScriptRMI);
+	}
+
+	if (m_pMusicLogic)
+	{
+		m_pMusicLogic->Stop();
+	}
 }
 
 bool GameFramework::StartedGameContext() const
 {
-	return false;
+	return static_cast<bool>(m_pActionGame);
 }
 
 bool GameFramework::BlockingSpawnPlayer()
 {
-	return false;
+	return m_pActionGame && m_pActionGame->BlockingSpawnPlayer();
 }
 
 void GameFramework::ResetBrokenGameObjects()
 {
+	if (m_pActionGame)
+	{
+		m_pActionGame->FixBrokenObjects();
+	}
 }
 
 void GameFramework::SetEditorLevel(const char* levelName, const char* levelFolder)
 {
+	std::strncpy(m_editorLevelName, levelName, sizeof(m_editorLevelName) - 1);
+	m_editorLevelName[sizeof(m_editorLevelName) - 1] = '\0';
+
+	std::strncpy(m_editorLevelFolder, levelFolder, sizeof(m_editorLevelFolder) - 1);
+	m_editorLevelFolder[sizeof(m_editorLevelFolder) - 1] = '\0';
 }
 
 void GameFramework::GetEditorLevel(char** levelName, char** levelFolder)
 {
+	if (levelName)
+	{
+		*levelName = &m_editorLevelName[0];
+	}
+
+	if (levelFolder)
+	{
+		*levelFolder = &m_editorLevelFolder[0];
+	}
 }
 
 void GameFramework::BeginLanQuery()
 {
+	GameQueryListener* pGameQueryListener = new GameQueryListener();
+	m_pLanQueryListener = m_pNetwork->CreateLanQueryListener(pGameQueryListener);
+	pGameQueryListener->SetNetListener(m_pLanQueryListener);
+
+	this->EndCurrentQuery();
+
+	m_pGameQueryListener = pGameQueryListener;
 }
 
 void GameFramework::EndCurrentQuery()
 {
+	if (m_pGameQueryListener)
+	{
+		m_pGameQueryListener->Complete();
+		m_pGameQueryListener = nullptr;
+	}
 }
 
 IActor* GameFramework::GetClientActor() const
 {
-	return nullptr;
+	return m_pActionGame ? m_pActionGame->GetClientActor() : nullptr;
 }
 
 EntityId GameFramework::GetClientActorId() const
 {
-	return 0;
+	IActor* pActor = this->GetClientActor();
+	if (!pActor)
+	{
+		return 0;
+	}
+
+	return pActor->GetEntityId();
 }
 
 INetChannel* GameFramework::GetClientChannel() const
 {
-	return nullptr;
+	if (!m_pActionGame)
+	{
+		return nullptr;
+	}
+
+	GameClientNub* pGameClientNub = m_pActionGame->GetGameClientNub();
+	if (!pGameClientNub)
+	{
+		return nullptr;
+	}
+
+	GameClientChannel* pGameClientChannel = pGameClientNub->GetGameClientChannel();
+	if (!pGameClientChannel)
+	{
+		return nullptr;
+	}
+
+	return pGameClientChannel->GetNetChannel();
 }
 
 CTimeValue GameFramework::GetServerTime()
 {
-	return {};
+	if (gEnv->bServer)
+	{
+		return gEnv->pTimer->GetFrameStartTime();
+	}
+
+	INetChannel* pNetChannel = this->GetClientChannel();
+	if (!pNetChannel)
+	{
+		return CTimeValue();
+	}
+
+	return pNetChannel->GetRemoteTime();
 }
 
 uint16 GameFramework::GetGameChannelId(INetChannel* pNetChannel)
 {
-	return 0;
+	if (!gEnv->bServer)
+	{
+		return 0;
+	}
+
+	GameServerNub* pGameServerNub = this->GetGameServerNub();
+	if (!pGameServerNub)
+	{
+		return 0;
+	}
+
+	return pGameServerNub->GetChannelId(pNetChannel);
 }
 
 bool GameFramework::IsChannelOnHold(uint16 channelId)
 {
-	return false;
+	GameServerNub* pGameServerNub = this->GetGameServerNub();
+	if (!pGameServerNub)
+	{
+		return false;
+	}
+
+	GameServerChannel* pChannel = pGameServerNub->GetChannel(channelId);
+	if (!pChannel)
+	{
+		return false;
+	}
+
+	return pChannel->IsOnHold();
 }
 
 INetChannel* GameFramework::GetNetChannel(uint16 channelId)
 {
-	return nullptr;
+	GameServerNub* pGameServerNub = this->GetGameServerNub();
+	if (!pGameServerNub)
+	{
+		return nullptr;
+	}
+
+	GameServerChannel* pChannel = pGameServerNub->GetChannel(channelId);
+	if (!pChannel)
+	{
+		return nullptr;
+	}
+
+	return pChannel->GetNetChannel();
 }
 
 IGameObject* GameFramework::GetGameObject(EntityId id)
 {
-	return nullptr;
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(id);
+	if (!pEntity)
+	{
+		return nullptr;
+	}
+
+	GameObject* pGameObject = static_cast<GameObject*>(pEntity->GetProxy(ENTITY_PROXY_USER));
+	if (!pGameObject)
+	{
+		return nullptr;
+	}
+
+	return pGameObject;
 }
 
 bool GameFramework::GetNetworkSafeClassId(uint16& id, const char* className)
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	return pGameContext->ClassIdFromName(id, className);
 }
 
 bool GameFramework::GetNetworkSafeClassName(char* className, size_t maxn, uint16 id)
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	CryStringT<char> name;
+	if (!pGameContext->ClassNameFromId(name, id))
+	{
+		return false;
+	}
+
+	std::strncpy(className, name.c_str(), maxn);
+
+	return true;
 }
 
 IGameObjectExtension* GameFramework::QueryGameObjectExtension(EntityId id, const char* name)
 {
-	return nullptr;
+	IGameObject* pGameObject = this->GetGameObject(id);
+	if (!pGameObject)
+	{
+		return nullptr;
+	}
+
+	return pGameObject->QueryExtension(name);
 }
 
 bool GameFramework::SaveGame(const char* path, bool quick, bool forceImmediate, ESaveGameReason reason, bool ignoreDelay, const char* checkPoint)
 {
-	return false;
+	if (gEnv->bMultiplayer)
+	{
+		return false;
+	}
+
+	IActor* pClientActor = this->GetClientActor();
+	if (!pClientActor)
+	{
+		return false;
+	}
+
+	if (pClientActor->GetHealth() <= 0)
+	{
+		CryLogErrorAlways("%s: Player is dead!", __FUNCTION__);
+		return false;
+	}
+
+	if (!this->CanSave())
+	{
+		CryLogErrorAlways("%s: Suppressing QS", __FUNCTION__);
+		return false;
+	}
+
+	if (m_lastSaveLoad > 0.0f)
+	{
+		if (ignoreDelay)
+		{
+			m_lastSaveLoad = 0.0f;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (!forceImmediate)
+	{
+		m_delayedSaveGameMethod = quick ? 1 : 2;
+		m_delayedSaveGameReason = reason;
+		m_pSomeStrings->delayedSaveGameName = path;
+
+		if (checkPoint)
+		{
+			m_pSomeStrings->checkPointName = checkPoint;
+		}
+		else
+		{
+			m_pSomeStrings->checkPointName.clear();
+		}
+
+		this->OnActionEvent(SActionEvent(eAE_preSaveGame, static_cast<int>(reason)));
+
+		return true;
+	}
+
+	if (m_pSomeStrings->delayedSaveGameName.empty())
+	{
+		this->OnActionEvent(SActionEvent(eAE_preSaveGame, static_cast<int>(reason)));
+	}
+
+	CTimeValue elapsed = -gEnv->pTimer->GetAsyncTime();
+
+	gEnv->pSystem->SerializingFile(quick ? 1 : 2);
+	const bool result = m_pGameSerialize->SaveGame(this, "xml", path, reason, checkPoint);
+	gEnv->pSystem->SerializingFile(0);
+
+	this->OnActionEvent(SActionEvent(eAE_postSaveGame, static_cast<int>(reason), result ? "" : nullptr));
+
+	m_lastSaveLoad = 0.5f;
+	elapsed += gEnv->pTimer->GetAsyncTime();
+
+	CryLogAlways("%s: '%s' %s in %.4f seconds", __FUNCTION__, path, result ? "done" : "failed", elapsed.GetSeconds());
+
+	return result;
 }
 
 bool GameFramework::LoadGame(const char* path, bool quick, bool ignoreDelay)
 {
-	return false;
+	if (gEnv->bMultiplayer)
+	{
+		return false;
+	}
+
+	if (m_lastSaveLoad > 0.0f)
+	{
+		if (ignoreDelay)
+		{
+			m_lastSaveLoad = 0.0f;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (!this->CanLoad())
+	{
+		CryLogErrorAlways("%s: Suppressing QL", __FUNCTION__);
+		return false;
+	}
+
+	CTimeValue elapsed = -gEnv->pTimer->GetAsyncTime();
+
+	gEnv->pSystem->SerializingFile(quick ? 1 : 2);
+
+	SGameStartParams params;
+	params.flags = eGSF_Client | eGSF_Server;
+	params.hostname = "localhost";
+	params.maxPlayers = 1;
+	params.port = gEnv->pConsole->GetCVar("sv_port")->GetIVal();
+
+	gEnv->pEntitySystem->PauseTimers(true, false);
+
+	CryLogAlways("%s: '%s'", __FUNCTION__, path);
+
+	const GameSerialize::LoadResult result = m_pGameSerialize->LoadGame(this, "xml", path, params, quick, true);
+	if (result != GameSerialize::LoadResult::OK)
+	{
+		if (result == GameSerialize::LoadResult::FAILED)
+		{
+			CryLogErrorAlways("%s: '%s' failed", __FUNCTION__, path);
+		}
+		else if (result == GameSerialize::LoadResult::FAILED_AND_DESTROYED_STATE)
+		{
+			CryLogErrorAlways("%s: '%s' failed and destroyed state", __FUNCTION__, path);
+			this->EndGameContext();
+		}
+		else
+		{
+			CryLogErrorAlways("%s: '%s' unknown error %d", __FUNCTION__, path, static_cast<int>(result));
+			gEnv->pEntitySystem->PauseTimers(false, false);
+			this->EndGameContext();
+		}
+
+		gEnv->pSystem->SerializingFile(0);
+
+		return false;
+	}
+
+	gEnv->pEntitySystem->PauseTimers(false, false);
+	gEnv->pSystem->SerializingFile(0);
+
+	this->AllowSave(true);
+
+	m_lastSaveLoad = 0.5f;
+	elapsed += gEnv->pTimer->GetAsyncTime();
+
+	CryLogAlways("%s: '%s' done in %.4f seconds", __FUNCTION__, path, elapsed.GetSeconds());
+
+	return true;
 }
 
 void GameFramework::OnEditorSetGameMode(int mode)
 {
+	if (mode < 2)
+	{
+		const bool isGameMode = mode != 0;
+
+		if (m_pActionGame)
+		{
+			m_pActionGame->OnEditorSetGameMode(isGameMode);
+		}
+
+		if (m_pMaterialEffects)
+		{
+			if (isGameMode && m_isEditing)
+			{
+				m_pMaterialEffects->PreLoadAssets();
+			}
+
+			m_pMaterialEffects->SetUpdateMode(isGameMode);
+		}
+
+		m_isEditing = !isGameMode;
+	}
+	else if (m_pActionGame)
+	{
+		m_pActionGame->FixBrokenObjects();
+		m_pActionGame->ClearBreakHistory();
+	}
 }
 
 bool GameFramework::IsEditing()
 {
-	return false;
+	return m_isEditing;
 }
 
 bool GameFramework::IsInLevelLoad()
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	return pGameContext->IsInLevelLoad();
 }
 
 bool GameFramework::IsLoadingSaveGame()
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	return pGameContext->IsLoadingSaveGame();
 }
 
 bool GameFramework::IsInTimeDemo()
 {
-	return false;
+	return m_pTimeDemoRecorder->IsPlaying() || m_pTimeDemoRecorder->IsRecording();
 }
 
 void GameFramework::AllowSave(bool allow)
 {
+	m_isSaveAllowed = allow;
 }
 
 void GameFramework::AllowLoad(bool allow)
 {
+	m_isLoadAllowed = allow;
 }
 
 bool GameFramework::CanSave()
 {
-	return false;
+	return m_isSaveAllowed && !m_pViewSystem->IsPlayingCutScene() && !this->IsInTimeDemo();
 }
 
 bool GameFramework::CanLoad()
 {
-	return false;
+	return m_isLoadAllowed;
 }
 
 bool GameFramework::CanCheat()
 {
-	return false;
+	return !gEnv->bMultiplayer || gEnv->pSystem->IsDevMode();
 }
 
 const char* GameFramework::GetLevelName()
 {
-	return nullptr;
+	if (m_pSystem->IsEditor())
+	{
+		// does this ever contain anything?
+		return m_editorLevelName;
+	}
+
+	if (!this->StartedGameContext())
+	{
+		return nullptr;
+	}
+
+	ILevel* pLevel = m_pLevelSystem->GetCurrentLevel();
+	if (!pLevel)
+	{
+		return nullptr;
+	}
+
+	ILevelInfo* pLevelInfo = pLevel->GetLevelInfo();
+	if (!pLevelInfo)
+	{
+		return nullptr;
+	}
+
+	return pLevelInfo->GetName();
 }
 
 const char* GameFramework::GetAbsLevelPath()
 {
-	return nullptr;
+	static char buffer[256];
+
+	if (m_pSystem->IsEditor())
+	{
+		// does this ever contain anything?
+		std::strncpy(buffer, m_editorLevelFolder, sizeof(buffer) - 1);
+	}
+	else
+	{
+		if (!this->StartedGameContext())
+		{
+			return nullptr;
+		}
+
+		ILevel* pLevel = m_pLevelSystem->GetCurrentLevel();
+		if (!pLevel)
+		{
+			return nullptr;
+		}
+
+		ILevelInfo* pLevelInfo = pLevel->GetLevelInfo();
+		if (!pLevelInfo)
+		{
+			return nullptr;
+		}
+
+		std::snprintf(buffer, sizeof(buffer), "Game/%s", pLevelInfo->GetPath());
+	}
+
+	return buffer;
 }
 
 IPersistantDebug* GameFramework::GetIPersistantDebug()
 {
-	return nullptr;
+	return m_pPersistantDebug;
 }
 
 IGameStatsConfig* GameFramework::GetIGameStatsConfig()
 {
-	return nullptr;
+	return m_pGameStatsConfig;
 }
 
 IAnimationGraphState* GameFramework::GetMusicGraphState()
 {
-	return nullptr;
+	return m_pMusicGraphState;
 }
 
 IMusicLogic* GameFramework::GetMusicLogic()
 {
-	return nullptr;
+	return m_pMusicLogic;
 }
 
-void GameFramework::RegisterListener(IGameFrameworkListener* pGameFrameworkListener, const char* name, EFRAMEWORKLISTENERPRIORITY priority)
+void GameFramework::RegisterListener(IGameFrameworkListener* pListener, const char* name, EFRAMEWORKLISTENERPRIORITY priority)
 {
+	for (Listener& listener : *m_pListeners)
+	{
+		if (listener.pListener == pListener)
+		{
+			return;
+		}
+	}
+
+	auto it = m_pListeners->begin();
+	for (; it != m_pListeners->end(); ++it)
+	{
+		if (it->priority > priority)
+		{
+			break;
+		}
+	}
+
+	m_pListeners->insert(it, Listener{pListener, name, priority});
 }
 
-void GameFramework::UnregisterListener(IGameFrameworkListener* pGameFrameworkListener)
+void GameFramework::UnregisterListener(IGameFrameworkListener* pListener)
 {
+	for (auto it = m_pListeners->begin(); it != m_pListeners->end(); ++it)
+	{
+		if (it->pListener == pListener)
+		{
+			m_pListeners->erase(it);
+			return;
+		}
+	}
 }
 
 INetNub* GameFramework::GetServerNetNub()
 {
-	return nullptr;
+	if (!m_pActionGame)
+	{
+		return nullptr;
+	}
+
+	return m_pActionGame->GetServerNetNub();
 }
 
 void GameFramework::SetGameGUID(const char* gameGUID)
 {
+	std::strncpy(m_guid, gameGUID, sizeof(m_guid) - 1);
+	m_guid[sizeof(m_guid) - 1] = '\0';
 }
 
 const char* GameFramework::GetGameGUID()
 {
-	return nullptr;
+	return m_guid;
 }
 
 INetContext* GameFramework::GetNetContext()
 {
-	return nullptr;
+	if (!m_pActionGame)
+	{
+		return nullptr;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return nullptr;
+	}
+
+	return pGameContext->GetNetContext();
 }
 
 void GameFramework::GetMemoryStatistics(ICrySizer*)
 {
+	// not implemented
 }
 
 void GameFramework::EnableVoiceRecording(const bool enable)
 {
+	m_voiceRecording = enable ? 1 : 0;
 }
 
 void GameFramework::MutePlayerById(EntityId mutePlayer)
 {
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x321FC0;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x22FC30;
+#endif
+
+	(this->*reinterpret_cast<void(GameFramework::*&)(EntityId)>(func))(mutePlayer);
 }
 
 IDebugHistoryManager* GameFramework::CreateDebugHistoryManager()
 {
-	return nullptr;
+	return new DebugHistoryManager();
 }
 
 void GameFramework::DumpMemInfo(const char* format, ...)
 {
+	CryLogErrorAlways("%s: Not implemented!", __FUNCTION__);
 }
 
 bool GameFramework::IsVoiceRecordingEnabled()
 {
-	return false;
+	return m_voiceRecording != 0;
 }
 
 bool GameFramework::IsImmersiveMPEnabled()
 {
-	return false;
+	if (!m_pActionGame)
+	{
+		return false;
+	}
+
+	GameContext* pGameContext = m_pActionGame->GetGameContext();
+	if (!pGameContext)
+	{
+		return false;
+	}
+
+	return pGameContext->GetFlags() & eGSF_ImmersiveMultiplayer;
 }
 
 void GameFramework::ExecuteCommandNextFrame(const char* command)
 {
+	m_pNextFrameCommand->assign(command);
 }
 
 void GameFramework::ShowPageInBrowser(const char* url)
 {
+	CryLogErrorAlways("%s(%s): Not implemented!", __FUNCTION__, url);
 }
 
 bool GameFramework::StartProcess(const char* cmdLine)
 {
+	CryLogErrorAlways("%s(%s): Not implemented!", __FUNCTION__, cmdLine);
 	return false;
 }
 
 bool GameFramework::SaveServerConfig(const char* path)
 {
-	return false;
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x31B580;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x21FA90;
+#endif
+
+	return (this->*reinterpret_cast<bool(GameFramework::*&)(const char*)>(func))(path);
 }
 
 void GameFramework::PrefetchLevelAssets(const bool enforceAll)
@@ -966,27 +1572,28 @@ bool GameFramework::GetModInfo(SModInfo* modInfo, const char* modPath)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void GameFramework::UnknownFunction1()
+void GameFramework::ScheduleEndLevel(const char* nextLevel)
 {
+	m_isLevelEndScheduled = true;
+	m_pSomeStrings->nextLevelToLoad = nextLevel;
 }
 
 GameServerNub* GameFramework::GetGameServerNub()
 {
-	return nullptr;
+	if (!m_pActionGame)
+	{
+		return nullptr;
+	}
+
+	return m_pActionGame->GetGameServerNub();
 }
 
-void GameFramework::DispatchActionEvent(const SActionEvent& event)
+void GameFramework::OnActionEvent(const SActionEvent& event)
 {
-#ifdef BUILD_64BIT
-	std::uintptr_t func = CRYACTION_BASE + 0x324ea0;
-#else
-	std::uintptr_t func = CRYACTION_BASE + 0x241b00;
-#endif
-
-	(this->*reinterpret_cast<void(GameFramework::*&)(const SActionEvent&)>(func))(event);
+	this->CallListeners([&event](IGameFrameworkListener* pListener) { pListener->OnActionEvent(event); });
 }
 
-void GameFramework::RegisterConsoleVariables()
+void GameFramework::InitCVars()
 {
 #ifdef BUILD_64BIT
 	std::uintptr_t func = CRYACTION_BASE + 0x3212a0;
@@ -997,7 +1604,7 @@ void GameFramework::RegisterConsoleVariables()
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
 }
 
-void GameFramework::RegisterConsoleCommands()
+void GameFramework::InitCommands()
 {
 #ifdef BUILD_64BIT
 	std::uintptr_t func = CRYACTION_BASE + 0x3277a0;
@@ -1008,7 +1615,7 @@ void GameFramework::RegisterConsoleCommands()
 	(this->*reinterpret_cast<void(GameFramework::*&)()>(func))();
 }
 
-void GameFramework::RegisterScriptBindings()
+void GameFramework::InitScriptBinds()
 {
 	m_pScriptBind_Network = new ScriptBind_Network(m_pSystem, this);
 	m_pScriptBind_CryAction = new ScriptBind_CryAction(this);

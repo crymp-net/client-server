@@ -17,6 +17,8 @@ public:
 	explicit ActorSystem(ISystem* pSystem, IEntitySystem* pEntitySystem);
 	virtual ~ActorSystem();
 
+	void RegisterActorFactory(const char* name, IGameFramework::IActorCreator* pCreator, bool isAI);
+
 	////////////////////////////////////////////////////////////////////////////////
 	// IActorSystem
 	////////////////////////////////////////////////////////////////////////////////

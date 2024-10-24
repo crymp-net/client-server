@@ -1,0 +1,28 @@
+#include "GameChannel.h"
+
+GameChannel::GameChannel()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// IGameChannel
+////////////////////////////////////////////////////////////////////////////////
+
+void GameChannel::DefineProtocol(IProtocolBuilder* pBuilder)
+{
+}
+
+bool GameChannel::HasDef(const SNetMessageDef* pDef)
+{
+	return false;
+}
+
+void GameChannel::Release()
+{
+}
+
+void GameChannel::OnDisconnect(EDisconnectionCause cause, const char* description)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
