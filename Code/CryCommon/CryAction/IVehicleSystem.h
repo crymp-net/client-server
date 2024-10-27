@@ -1814,7 +1814,7 @@ struct IVehicleSystem
 
 	virtual IVehicleDamagesTemplateRegistry* GetDamagesTemplateRegistry() = 0;
   
-	virtual bool GetVehicleLightDefaults(const char* type, SmartScriptTable& table) { return false; }; //CryMP: Fixme: not implemented
+	virtual bool GetVehicleLightDefaults(const char* type, SmartScriptTable& table) = 0; 
 
   virtual void GetVehicleImplementations(SVehicleImpls& impls) = 0;
   virtual bool GetOptionalScript(const char* vehicleName, char* buf, size_t len) = 0;

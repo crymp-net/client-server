@@ -41,7 +41,7 @@ public:
 	CVehicleSystem(ISystem *pSystem, IEntitySystem *pEntitySystem);
 	virtual ~CVehicleSystem();
 
-	virtual void Release() { delete this; };
+	virtual void Release() { delete this; }
 
 	virtual void Reset();
 
@@ -66,9 +66,11 @@ public:
 	virtual IVehicleSeatAction* CreateVehicleSeatAction(const string& name);
 	virtual IVehicleAction* CreateVehicleAction(const string& name);
 
+	bool GetVehicleLightDefaults(const char* type, SmartScriptTable& table) override;
+
 	virtual void RegisterVehicles(IGameFramework* gameFramework);
 
-	virtual IVehicleDamagesTemplateRegistry* GetDamagesTemplateRegistry() { return m_pDamagesTemplateRegistry; }
+	virtual IVehicleDamagesTemplateRegistry* GetDamagesTemplateRegistry() { return m_pDamagesTemplateRegistry; } 
 
 	virtual TVehicleObjectId AssignVehicleObjectId();
 	virtual TVehicleObjectId AssignVehicleObjectId(const string& className);
@@ -82,10 +84,11 @@ public:
 
 	virtual void RegisterVehicleUsageEventListener(const EntityId playerId, IVehicleUsageEventListener* pEventListener );
 	virtual void UnregisterVehicleUsageEventListener(const EntityId playerId, IVehicleUsageEventListener* pEventListener);
-	virtual void BroadcastVehicleUsageEvent(const EVehicleEvent eventId, const EntityId playerId, IVehicle* pVehicle );
+	virtual void BroadcastVehicleUsageEvent(const EVehicleEvent eventId, const EntityId playerId, IVehicle* pVehicle); 
+
+	// ~IVehicleSystem
 
 	virtual void Update(float deltaTime);
-	// ~IVehicleSystem
 
 	void SetInitializingSeat(CVehicleSeat *pSeat) { m_pInitializingSeat=pSeat; };
 	CVehicleSeat *GetInitializingSeat() { return m_pInitializingSeat; };
@@ -108,6 +111,8 @@ public:
 
   void LoadDamageTemplates();
   void ReloadSystem();
+
+	void InitLightDefaults();
 
 	void GetMemoryStatistics(ICrySizer * s);
 
@@ -179,6 +184,8 @@ private:
 
 	typedef std::map <string, IVehicleDamageBehavior *(*)()> TVehicleDamageBehaviorClassMap;
 	TVehicleDamageBehaviorClassMap m_damageBehaviorClasses;
+	
+	std::map<std::string, SmartScriptTable, std::less<void>> m_lightDefaults;
 
 	typedef std::map <string, TVehicleObjectId> TVehicleObjectIdMap;
 	TVehicleObjectIdMap m_objectIds;

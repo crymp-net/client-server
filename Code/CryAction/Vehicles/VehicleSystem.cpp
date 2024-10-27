@@ -56,7 +56,7 @@ bool CVehicleSystem::Init()
 {
 	m_nextObjectId = InvalidVehicleObjectId + 1;
 
-	LoadDamageTemplates();
+	ReloadSystem();
 	return true;
 }
 
@@ -71,6 +71,8 @@ void CVehicleSystem::LoadDamageTemplates()
 void CVehicleSystem::ReloadSystem()
 {
 	LoadDamageTemplates();
+
+	this->InitLightDefaults();
 }
 
 //------------------------------------------------------------------------
@@ -307,6 +309,20 @@ IVehicleAction* CVehicleSystem::CreateVehicleAction(const string& name)
 }
 
 //------------------------------------------------------------------------
+bool CVehicleSystem::GetVehicleLightDefaults(const char* type, SmartScriptTable& table)
+{
+	const auto it = m_lightDefaults.find(type);
+	if (it == m_lightDefaults.end())
+	{
+		return false;
+	}
+
+	table = it->second;
+
+	return true;
+}
+
+//------------------------------------------------------------------------
 void CVehicleSystem::GetVehicleImplementations(SVehicleImpls& impls)
 {
 	ICryPak* pack = gEnv->pCryPak;
@@ -332,10 +348,10 @@ void CVehicleSystem::GetVehicleImplementations(SVehicleImpls& impls)
 					if (show || VehicleCVars().v_show_all)
 					{
 						//CryLog("GetVehicleImpls: adding <%s>", name);          
-						//pair<std::set<string>::iterator, bool> result = setVehicles.insert(string(name));
-					////	if (result.second)
+						std::pair<std::set<string>::iterator, bool> result = setVehicles.insert(string(name));
+						if (result.second)
 							impls.Add(name);
-					//	else
+						else
 							CryLog("Vehicle <%s> already registered (duplicate vehicle .xml files?)", name);
 					}
 				}
@@ -564,6 +580,91 @@ void CVehicleSystem::Update(float deltaTime)
 			}
 		}
 		CVehicleCVars::Get().v_debug_flip_over = 0;
+	}
+}
+
+void CVehicleSystem::InitLightDefaults()
+{
+	IScriptSystem* pScriptSystem = gEnv->pScriptSystem;
+
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "HeadLightBeam");
+		light->SetValue("fakeLight", true);
+		light->SetValue("material", "materials/lightbeams/lightbeam_floodlight.mtl");
+		light->SetValue("texture", "textures/lights/flashlight1.dds");
+		light->SetValue("diffuse", Vec3(1, 1, 1));
+		light->SetValue("diffuseMult", 1.5f);
+		light->SetValue("diffuseMult_fp", 0.6f);
+		light->SetValue("radius", 12.0f);
+		light->SetValue("frustumAngle", 10.0f);
+
+		m_lightDefaults["HeadLightBeam"] = light;
+	}
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "HeadLightFlare");
+		light->SetValue("fakeLight", true);
+		light->SetValue("material", "materials/lightbeams/lightglow_white.mtl");
+		light->SetValue("diffuse", Vec3(1, 1, 1));
+		light->SetValue("diffuseMult", 1.0f);
+		light->SetValue("coronaDistSize", 0.002f);
+		light->SetValue("coronaDistIntensity", 0.06f);
+		light->SetValue("coronaScale", 10.0f);
+
+		m_lightDefaults["HeadLightFlare"] = light;
+	}
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "Rear");
+		light->SetValue("fakeLight", true);
+		light->SetValue("material", "materials/lightbeams/lightglow_red.mtl");
+		light->SetValue("diffuse", Vec3(1, 0, 0));
+		light->SetValue("diffuseMult", 1.5f);
+		light->SetValue("coronaDistSize", 0.002f);
+		light->SetValue("coronaDistIntensity", 0.08f);
+		light->SetValue("coronaScale", 10.0f);
+
+		m_lightDefaults["Rear"] = light;
+	}
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "Brake");
+		light->SetValue("fakeLight", true);
+		light->SetValue("material", "materials/lightbeams/lightglow_red.mtl");
+		light->SetValue("diffuse", Vec3(1, 0, 0));
+		light->SetValue("diffuseMult", 1.9f);
+		light->SetValue("coronaDistSize", 0.002f);
+		light->SetValue("coronaDistIntensity", 0.08f);
+		light->SetValue("coronaScale", 10.0f);
+
+		m_lightDefaults["Brake"] = light;
+	}
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "Search");
+		light->SetValue("fakeLight", false);
+		light->SetValue("texture", "textures/lights/flashlight1.dds");
+		light->SetValue("frustumAngle", 40.0f);  // CryMP: this was originally non-existent "lightFrustumAngle"
+		light->SetValue("radius", 20.0f);
+		light->SetValue("directFactor", 2.0f);
+		light->SetValue("diffuseMult", 5.0f);
+		light->SetValue("specularMult", 1.0f);
+
+		m_lightDefaults["Search"] = light;
+	}
+	{
+		SmartScriptTable light(pScriptSystem);
+		light->SetValue("type", "HeadLightDynamic");
+		light->SetValue("fakeLight", false);
+		light->SetValue("texture", "textures/lights/flashlight1.dds");
+		light->SetValue("frustumAngle", 40.0f);  // CryMP: this was originally non-existent "lightFrustumAngle"
+		light->SetValue("radius", 12.0f);
+		light->SetValue("directFactor", 2.0f);
+		light->SetValue("diffuseMult", 5.0f);
+		light->SetValue("specularMult", 1.0f);
+
+		m_lightDefaults["HeadLightDynamic"] = light;
 	}
 }
 
