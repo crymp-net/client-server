@@ -20,7 +20,6 @@ History:
 #include "VehicleCVars.h"
 #include "Vehicle.h"
 
-
 class CVehiclePartSubPart;
 class CVehiclePartSubPartEntity;
 class CVehicle;
@@ -153,8 +152,27 @@ public:
 
 	virtual void Hide(bool hide);
 
+	//CryMP
+	struct RotationParams
+	{
+		float speed = 0.0f;
+		float accel = 0.0f;
+		float limitMin = 0.0f;
+		float limitMax = 0.0f;
+		float worldSpace = 0.0f;
+
+		// Optional sound event info
+		std::string soundEvent;
+		std::string soundEventDamage;
+		std::string soundHelper;
+	};
+	
+	const RotationParams& GetRotationParams() { return m_rotationParams; }
+
 protected:
     
+	RotationParams m_rotationParams;
+
 	void ParsePhysicsParams(SEntityPhysicalizeParams& physicalizeParams, const CVehicleParams& table);
 	  
   bool ClampToRotationLimits(Ang3& angles);
@@ -169,7 +187,9 @@ protected:
   float GetDamageSpeedMul();
   virtual EVehiclePartState GetStateForDamageRatio(float ratio);
   
-	void GetBaseMemoryStatistics(ICrySizer * s);
+  bool ExtractRotationParams(const CVehicleParams& table, RotationParams& rotationParams);
+
+  void GetBaseMemoryStatistics(ICrySizer * s);
   
 protected:
   int m_typeId;

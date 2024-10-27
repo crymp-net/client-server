@@ -65,9 +65,10 @@ bool CVehiclePartBase::Init(IVehicle* pVehicle, const CVehicleParams& table, IVe
 	if (m_name.empty())
 		return false;
 
+	table.getAttr("position", m_position);
+
 	m_helperPosName = table.getAttr("helper");
   
-  table.getAttr("position", m_position);
 	bool hidden = false;
 	table.getAttr("isHidden", hidden);  
 	m_hideCount = (hidden == true) ? 1 : 0;
@@ -115,6 +116,8 @@ bool CVehiclePartBase::Init(IVehicle* pVehicle, const CVehicleParams& table, IVe
 
 	m_isRotationBlocked = false;
 
+	ExtractRotationParams(table, m_rotationParams);
+	
 	return true;
 }
 
@@ -648,7 +651,6 @@ void CVehiclePartBase::CloneMaterial()
 	}
 }
 
-
 //------------------------------------------------------------------------
 int CVehiclePartBase::GetCGASlot(int jointId)
 { 
@@ -658,6 +660,105 @@ int CVehiclePartBase::GetCGASlot(int jointId)
     return -1; 
 
   return PARTID_CGA * (m_slot+1) + jointId;
+}
+
+//------------------------------------------------------------------------
+bool CVehiclePartBase::ExtractRotationParams(const CVehicleParams& table, RotationParams& rotationParams)
+{
+	// Find the Rotation node within AnimatedJoint
+	CVehicleParams animatedJointParams = table.findChild("AnimatedJoint");
+	if (!animatedJointParams)
+	{
+		//CryLogWarningAlways("[VehicleParams] AnimatedJoint not found in part '%s'", partParams.getAttr("name"));
+		return false;
+	}
+
+	CVehicleParams rotationNode = animatedJointParams.findChild("Rotation");
+	if (!rotationNode)
+	{
+		//CryLogWarningAlways("[VehicleParams] Rotation node not found in AnimatedJoint.");
+		return false;
+	}
+
+	// Check for yawLimits node and its children
+	CVehicleParams yawLimitsParams = rotationNode.findChild("yawLimits");
+	if (yawLimitsParams)
+	{
+		if (yawLimitsParams.getChildCount() >= 2)
+		{
+			CVehicleParams yawLimit1 = yawLimitsParams.getChild(0);
+			if (yawLimit1)
+			{
+				yawLimit1.getAttr("value", rotationParams.limitMin);
+			}
+			CVehicleParams yawLimit2 = yawLimitsParams.getChild(1);
+			if (yawLimit2)
+			{
+				yawLimit2.getAttr("value", rotationParams.limitMax);
+			}
+		}
+	}
+
+	CVehicleParams pitchLimitsParams = rotationNode.findChild("pitchLimits");
+	if (pitchLimitsParams)
+	{
+		if (pitchLimitsParams.getChildCount() >= 2)
+		{
+			CVehicleParams pitchLimit1 = pitchLimitsParams.getChild(0);
+			if (pitchLimit1)
+			{
+				pitchLimit1.getAttr("value", rotationParams.limitMin);
+			}
+			CVehicleParams pitchLimit2 = pitchLimitsParams.getChild(1);
+			if (pitchLimit2)
+			{
+				pitchLimit2.getAttr("value", rotationParams.limitMax);
+			}
+		}
+	}
+
+	if (rotationNode.haveAttr("yawSpeed") || rotationNode.haveAttr("yawAccel"))
+	{
+		rotationNode.getAttr("yawSpeed", rotationParams.speed);
+		rotationNode.getAttr("yawAccel", rotationParams.accel);
+	}
+	else if (rotationNode.haveAttr("pitchSpeed") || rotationNode.haveAttr("pitchAccel"))
+	{
+		rotationNode.getAttr("pitchSpeed", rotationParams.speed);
+		rotationNode.getAttr("pitchAccel", rotationParams.accel);
+	}
+
+	rotationNode.getAttr("worldSpace", rotationParams.worldSpace);
+
+	//CryLogAlways("[VehicleParams] %s: limitMin %f, limitMax %f, speed %f, accel %f, worldSpace %f ",
+	//	rotationParams.pitch ? "PITCH" : (rotationParams.yaw  ? "YAW" : "UNDEFINED"),
+	//	rotationParams.limitMin,
+	//	rotationParams.limitMax, rotationParams.speed, rotationParams.accel, rotationParams.worldSpace);
+
+	// Check for an optional Sound node
+	CVehicleParams soundParams = rotationNode.findChild("Sound");
+	if (soundParams)
+	{
+		if (soundParams.haveAttr("event"))
+		{
+			rotationParams.soundEvent = soundParams.getAttr("event");
+		}
+		if (soundParams.haveAttr("eventDamage"))
+		{
+			rotationParams.soundEventDamage = soundParams.getAttr("eventDamage");
+		}
+		if (soundParams.haveAttr("helper"))
+		{
+			rotationParams.soundHelper = soundParams.getAttr("helper");
+		}
+		//CryLogAlways("[%s] Sound - Event: %s, Event Damage: %s, Helper: %s",
+		//	GetParent()->GetEntity()->GetName(),
+		//	rotationParams.soundEvent.c_str(),
+		//	rotationParams.soundEventDamage.c_str(),
+		//	rotationParams.soundHelper.c_str());
+	}
+
+	return true;
 }
 
 void CVehiclePartBase::GetBaseMemoryStatistics(ICrySizer * s)
