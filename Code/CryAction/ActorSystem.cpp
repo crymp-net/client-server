@@ -19,6 +19,18 @@ ActorSystem::~ActorSystem()
 {
 }
 
+void ActorSystem::RegisterActorFactory(const char* name, IGameFramework::IActorCreator* pCreator, bool isAI)
+{
+#ifdef BUILD_64BIT
+	std::uintptr_t func = CRYACTION_BASE + 0x10FD0;
+#else
+	std::uintptr_t func = CRYACTION_BASE + 0x106D0;
+#endif
+
+	(this->*reinterpret_cast<void(ActorSystem::*&)(const char*, IGameFramework::IActorCreator*, bool)>(func))
+		(name, pCreator, isAI);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // IActorSystem
 ////////////////////////////////////////////////////////////////////////////////
