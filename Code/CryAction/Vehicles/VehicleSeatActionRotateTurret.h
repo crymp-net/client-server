@@ -108,8 +108,8 @@ protected:
 	void UpdatePartRotation(EVehicleTurretRotationType eType, float frameTime);
 	float GetDamageSpeedMul(CVehiclePartBase* pPart);
 
-	bool InitRotation(IVehicle* pVehicle, const CVehicleParams& rotationTable, EVehicleTurretRotationType eType);
-	bool InitRotationSounds(const CVehicleParams& rotationParams, EVehicleTurretRotationType eType);
+	bool InitRotation(CVehiclePartBase* pPart, EVehicleTurretRotationType eType);
+	bool InitRotationSounds(CVehiclePartBase* pPart, EVehicleTurretRotationType eType);
 	void UpdateRotationSound(EVehicleTurretRotationType eType, float deltaTime);
 
 	CVehicle* m_pVehicle;

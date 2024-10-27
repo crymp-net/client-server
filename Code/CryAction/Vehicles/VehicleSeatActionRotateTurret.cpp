@@ -46,19 +46,29 @@ bool CVehicleSeatActionRotateTurret::Init(IVehicle* pVehicle, TVehicleSeatId sea
 	if(!rotationTable)
 		return false;
 
-	// first the actual rotation setups
-	if(CVehicleParams pitchTable = rotationTable.findChild("Pitch"))
+	if (rotationTable.haveAttr("pitchPart"))
 	{
-		InitRotation(pVehicle, pitchTable, eVTRT_Pitch);
-		InitRotationSounds(pitchTable, eVTRT_Pitch);
-	}
-	if(CVehicleParams yawTable = rotationTable.findChild("Yaw"))
-	{
-		InitRotation(pVehicle, yawTable, eVTRT_Yaw);
-		InitRotationSounds(yawTable, eVTRT_Yaw);
+		std::string pitchPart = rotationTable.getAttr("pitchPart");
+		CVehiclePartBase* pPichtPart = static_cast<CVehiclePartBase*>(m_pVehicle->GetPart(pitchPart.c_str()));
+		if (pPichtPart)
+		{
+			InitRotation(pPichtPart, eVTRT_Pitch);
+			InitRotationSounds(pPichtPart, eVTRT_Pitch);
+		}
 	}
 
-	// then the (optional) rotation testing
+	if (rotationTable.haveAttr("yawPart"))
+	{
+		std::string yawPart = rotationTable.getAttr("yawPart");
+		CVehiclePartBase* pYawPart = static_cast<CVehiclePartBase*>(m_pVehicle->GetPart(yawPart.c_str()));
+		if (pYawPart)
+		{
+			InitRotation(pYawPart, eVTRT_Yaw);
+			InitRotationSounds(pYawPart, eVTRT_Yaw);
+		}
+	}
+
+	/* //CryMP: not supported 
 	if (CVehicleParams rotationTestTable = rotationTable.findChild("RotationTest"))
 	{
 		if (rotationTestTable.haveAttr("helper1"))
@@ -78,7 +88,7 @@ bool CVehicleSeatActionRotateTurret::Init(IVehicle* pVehicle, TVehicleSeatId sea
 		}
 
 		rotationTestTable.getAttr("radius", m_rotTestRadius);
-	}  
+	}*/
 
 	return true;
 }
@@ -237,8 +247,6 @@ void CVehicleSeatActionRotateTurret::Serialize(TSerialize ser, unsigned aspects)
 //------------------------------------------------------------------------
 void CVehicleSeatActionRotateTurret::Update(float frameTime)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
   if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
     return;
 
@@ -604,10 +612,21 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 		if (IsDebugParts())
 		{
 			float color[] = {1,1,1,1};
+			const auto &info = eType == eVTRT_Yaw ? m_rotations[eVTRT_Yaw] : m_rotations[eVTRT_Pitch];
 			if(eType == eVTRT_Yaw)
-				gEnv->pRenderer->Draw2dLabel(300, 250, 1.5f, color, false, "z: %.1f %s", m_rotations[eVTRT_Yaw].m_currentValue, (slowed ? "(slowdown)" : ""));
+				gEnv->pRenderer->Draw2dLabel(300, 250, 1.5f, color, false,
+					"z: %.1f - limit %.1f / %.1f  %s", 
+					info.m_currentValue,
+					info.m_speed, 
+					info.m_acceleration), 
+					(slowed ? "(slowdown)" : "");
 			else
-				gEnv->pRenderer->Draw2dLabel(300, 280, 1.5f, color, false, "x: %.1f %s", m_rotations[eVTRT_Pitch].m_currentValue, (slowed ? "(slowdown)" : ""));
+				gEnv->pRenderer->Draw2dLabel(300, 280, 1.5f, color, false,
+					"z: %.1f - limit %.1f / %.1f  %s",
+					info.m_currentValue,
+					info.m_speed,
+					info.m_acceleration),
+				(slowed ? "(slowdown)" : "");
 		}
 	}
 
@@ -772,67 +791,57 @@ float CVehicleSeatActionRotateTurret::GetDamageSpeedMul(CVehiclePartBase* pPart)
 }
 
 //------------------------------------------------------------------------
-bool CVehicleSeatActionRotateTurret::InitRotation(IVehicle* pVehicle, const CVehicleParams& rotationTable, EVehicleTurretRotationType eType)
+bool CVehicleSeatActionRotateTurret::InitRotation(CVehiclePartBase* pPart, EVehicleTurretRotationType eType)
 {
-	if(rotationTable)
-	{
-		if (rotationTable.haveAttr("part"))
-			m_rotations[eType].m_pPart = static_cast<CVehiclePartBase*>(m_pVehicle->GetPart(rotationTable.getAttr("part")));
+	if (!pPart)
+		return false;
 
-		if (rotationTable.getAttr("speed", m_rotations[eType].m_speed) && m_rotations[eType].m_pPart)
-		{	
-			m_rotations[eType].m_pPart->SetMoveable();
+	const CVehiclePartBase::RotationParams& params = pPart->GetRotationParams();
 
-			rotationTable.getAttr("accel", m_rotations[eType].m_acceleration);
+	m_rotations[eType].m_pPart = pPart;
 
-			if (CVehicleParams limitsTable = rotationTable.findChild("Limits"))
-			{
-				if (limitsTable.getChildCount() >= 2)
-				{
-					if (CVehicleParams limitRef = limitsTable.getChild(0))
-						m_rotations[eType].m_minLimit = (float)DEG2RAD((float)atof(limitRef.getAttr("value")));
-					else
-						m_rotations[eType].m_minLimit = 0.0f;
+	m_rotations[eType].m_speed = params.speed;
+	m_rotations[eType].m_acceleration = params.accel;
+	m_rotations[eType].m_minLimit = DEG2RAD(params.limitMin);
+	m_rotations[eType].m_maxLimit = DEG2RAD(params.limitMax);
+	m_rotations[eType].m_rotWorldSpace = params.worldSpace;
 
-					if (CVehicleParams limitRef = limitsTable.getChild(1))
-						m_rotations[eType].m_maxLimit = (float)DEG2RAD((float)atof(limitRef.getAttr("value")));
-					else
-						m_rotations[eType].m_maxLimit = 0.0f;
-				}
-			}
-		}
-		rotationTable.getAttr("worldSpace", m_rotations[eType].m_rotWorldSpace);
-	}
+	pPart->SetMoveable();
+
+	//CryLogAlways("[%s] Inited rotation for part %s, speed: %.2f, accel: %.2f, limits: %.2f - %.2f",
+	//	pPart->GetParent()->GetEntity()->GetName(),
+	//	pPart->GetName(), m_rotations[eType].m_speed, m_rotations[eType].m_acceleration, m_rotations[eType].m_minLimit, m_rotations[eType].m_maxLimit);
 
 	return true;
 }
 
 //------------------------------------------------------------------------
-bool CVehicleSeatActionRotateTurret::InitRotationSounds(const CVehicleParams& rotationParams, EVehicleTurretRotationType eType)
+bool CVehicleSeatActionRotateTurret::InitRotationSounds(CVehiclePartBase* pPart, EVehicleTurretRotationType eType)
 {
-	CVehicleParams sound = rotationParams.findChild("Sound");
-	if (!sound)
-		return false;
+	const CVehiclePartBase::RotationParams& params = pPart->GetRotationParams();
 
-	if (sound.haveAttr("event"))
+	if (!params.soundEvent.empty())
 	{
-		string helperName = sound.getAttr("helper");
-		if (!helperName.empty())
+		if (!params.soundHelper.empty())
 		{
-			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(helperName.c_str()))
+			if (IVehicleHelper* pHelper = m_pVehicle->GetHelper(params.soundHelper.c_str()))
 			{
 				SVehicleSoundInfo info;
-				info.name = sound.getAttr("event");
+				info.name = params.soundEvent.c_str();
 				info.pHelper = pHelper;
 				m_rotations[eType].m_turnSoundId = m_pVehicle->AddSoundEvent(info);  
 
-				if (sound.haveAttr("eventDamage"))
+				if (!params.soundEventDamage.empty())
 				{
 					SVehicleSoundInfo dmgInfo;
-					info.name = sound.getAttr("eventDamage");
+					info.name = params.soundEventDamage.c_str();
 					info.pHelper = pHelper;
 					m_rotations[eType].m_damageSoundId = m_pVehicle->AddSoundEvent(info);
 				}
+
+				//CryLogAlways("[%s] Inited rotation sound for part %s, event: %s, helper: %s",
+				//	pPart->GetParent()->GetEntity()->GetName(),
+				//	pPart->GetName(), params.soundEvent.c_str(), params.soundHelper.c_str());
 
 				return true;
 			}
