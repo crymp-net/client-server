@@ -4895,7 +4895,7 @@ void CVehicle::ExitVehicleAtPosition(EntityId passengerId, const Vec3& pos)
 {
 	if (gEnv->bServer)
 	{
-		RequestLeaveParams params(passengerId, pos);
+		RequestLeaveParams params(passengerId);
 		IVehicleSeat* pCurrentSeat = GetSeatForPassenger(params.actorId);
 		if (pCurrentSeat)
 		{
@@ -4904,7 +4904,7 @@ void CVehicle::ExitVehicleAtPosition(EntityId passengerId, const Vec3& pos)
 		}
 	}
 	else
-		GetGameObject()->InvokeRMI(SvRequestLeave(), RequestLeaveParams(passengerId, pos), eRMI_ToServer);
+		GetGameObject()->InvokeRMI(SvRequestLeave(), RequestLeaveParams(passengerId), eRMI_ToServer);
 }
 
 void CVehicle::EvictAllPassengers()

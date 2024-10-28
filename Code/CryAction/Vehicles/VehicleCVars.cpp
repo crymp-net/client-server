@@ -203,7 +203,7 @@ void CmdExitPlayer(IConsoleCmdArgs* pArgs)
 	if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
 	{
 		if (IVehicle* pVehicle = pActor->GetLinkedVehicle())    
-			pVehicle->GetGameObject()->InvokeRMI(CVehicle::SvRequestLeave(), CVehicle::RequestLeaveParams(pActor->GetEntityId(), ZERO), eRMI_ToServer);    
+			pVehicle->GetGameObject()->InvokeRMI(CVehicle::SvRequestLeave(), CVehicle::RequestLeaveParams(pActor->GetEntityId()), eRMI_ToServer);    
 	}
 }
 
