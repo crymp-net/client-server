@@ -4681,6 +4681,7 @@ IMPLEMENT_RMI(CVehicle, SvRequestLeave)
 	return true;
 }
 
+/* //CryMP: Not available in Crysis 1..
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CVehicle, ClRequestLeave)
 {
@@ -4690,7 +4691,7 @@ IMPLEMENT_RMI(CVehicle, ClRequestLeave)
 
 	return true;
 }
-
+*/
 //------------------------------------------------------------------------
 IMPLEMENT_RMI(CVehicle, ClSetupWeapons)
 {
@@ -4899,7 +4900,7 @@ void CVehicle::ExitVehicleAtPosition(EntityId passengerId, const Vec3& pos)
 		if (pCurrentSeat)
 		{
 			pCurrentSeat->Exit(true, false);
-			GetGameObject()->InvokeRMI(ClRequestLeave(), params, eRMI_ToAllClients);
+			//GetGameObject()->InvokeRMI(ClRequestLeave(), params, eRMI_ToAllClients); //CryMP
 		}
 	}
 	else

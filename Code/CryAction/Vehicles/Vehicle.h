@@ -315,6 +315,7 @@ public:
 		};
 	};
 
+	/*
 	struct RequestLeaveParams
 	{
 		EntityId	actorId;
@@ -325,7 +326,19 @@ public:
 		void SerializeWith(TSerialize ser)
 		{
 			ser.Value("actorId", actorId, 'eid');
-			ser.Value("exitPos", exitPos, 'wrld');
+			ser.Value("exitPos", exitPos, 'wrld'); 
+		};
+	};*/
+	
+	struct RequestLeaveParams //CryMP
+	{
+		EntityId	actorId;
+		RequestLeaveParams() {};
+		RequestLeaveParams(EntityId _actorId)
+			: actorId(_actorId) {};
+		void SerializeWith(TSerialize ser)
+		{
+			ser.Value("actorId", actorId, 'eid');
 		};
 	};
 
@@ -481,7 +494,7 @@ public:
 	DECLARE_SERVER_RMI_PREATTACH(SvRequestUse, RequestUseParams, eNRT_ReliableOrdered);
 	DECLARE_SERVER_RMI_PREATTACH(SvRequestChangeSeat, RequestChangeSeatParams, eNRT_ReliableOrdered);
 	DECLARE_SERVER_RMI_PREATTACH(SvRequestLeave, RequestLeaveParams, eNRT_ReliableOrdered);
-	DECLARE_CLIENT_RMI_PREATTACH(ClRequestLeave, RequestLeaveParams, eNRT_ReliableOrdered);
+	//DECLARE_CLIENT_RMI_PREATTACH(ClRequestLeave, RequestLeaveParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetAmmo, AmmoParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetupWeapons, SetupWeaponsParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClAmmoCounts, AmmoCountsParams, eNRT_ReliableOrdered);
