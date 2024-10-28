@@ -1590,7 +1590,7 @@ void CVehicleSeat::OnAction(const TVehicleActionId actionId, int activationMode,
 //------------------------------------------------------------------------
 void CVehicleSeat::Update(float deltaTime)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	if (m_passengerId)
 	{
@@ -2474,7 +2474,7 @@ bool CVehicleSeat::RequestMovement(CMovementRequest& movementRequest)
 //------------------------------------------------------------------------
 void CVehicleSeat::GetMovementState(SMovementState& movementState)
 {
-	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	IEntity* pVehicleEntity = m_pVehicle->GetEntity();
 	if (!pVehicleEntity)

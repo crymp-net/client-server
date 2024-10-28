@@ -395,7 +395,6 @@ void CVehicleComponent::OnVehicleDestroyed()
 //------------------------------------------------------------------------
 void CVehicleComponent::Update(float deltaTime)
 {
-  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
 }
 
 //------------------------------------------------------------------------

@@ -278,7 +278,7 @@ bool CVehiclePartAnimatedJoint::ChangeState(EVehiclePartState state, int flags)
 //------------------------------------------------------------------------
 const Matrix34& CVehiclePartAnimatedJoint::GetLocalTM(bool relativeToParentPart)
 {
-  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+    FUNCTION_PROFILER( gEnv->pSystem, PROFILE_GAME);
 
 	if (m_pCharInstance && m_jointId > -1)
 	{ 
@@ -388,7 +388,7 @@ void CVehiclePartAnimatedJoint::Serialize(TSerialize ser, EEntityAspects aspects
 //------------------------------------------------------------------------
 const Matrix34& CVehiclePartAnimatedJoint::GetWorldTM()
 {
-  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+    FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	if (m_pCharInstance && m_jointId > -1)
   { 
@@ -428,7 +428,7 @@ const AABB& CVehiclePartAnimatedJoint::GetLocalBounds()
 //------------------------------------------------------------------------
 void CVehiclePartAnimatedJoint::Update(float frameTime)
 {
-  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+    FUNCTION_PROFILER( GetISystem(), PROFILE_GAME);
 
 	CVehiclePartBase::Update(frameTime);
 

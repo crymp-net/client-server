@@ -111,7 +111,7 @@ void CVehicleDamages::ResetDamages()
 //------------------------------------------------------------------------
 void CVehicleDamages::UpdateDamages(float frameTime)
 {
-  //FUNCTION_PROFILER( GetISystem(), PROFILE_ACTION );
+    FUNCTION_PROFILER( GetISystem(), PROFILE_GAME);
 
 	for (TVehicleDamagesGroupVector::iterator ite = m_damagesGroups.begin(), end = m_damagesGroups.end(); ite != end; ++ite)
 	{

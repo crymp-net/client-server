@@ -37,7 +37,7 @@ const Matrix34& CVehicleHelper::GetVehicleTM()
 //------------------------------------------------------------------------
 const Matrix34& CVehicleHelper::GetWorldTM()
 {
-  //FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+    FUNCTION_PROFILER( gEnv->pSystem, PROFILE_GAME);
 
 	if (!m_isWorldUpdated)
 	{
@@ -57,7 +57,7 @@ const Matrix34& CVehicleHelper::GetWorldTM()
 //------------------------------------------------------------------------
 const Matrix34& CVehicleHelper::GetReflectedWorldTM()
 {
-	//FUNCTION_PROFILER( gEnv->pSystem, PROFILE_ACTION );
+	FUNCTION_PROFILER( gEnv->pSystem, PROFILE_GAME);
 
 	Matrix34 tempMatrix = m_localTM;
 	tempMatrix.m03 = -tempMatrix.m03;	// negate x coord of translation

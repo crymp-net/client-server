@@ -380,7 +380,7 @@ void CVehicleSeatActionWeapons::OnAction(const TVehicleActionId actionId, int ac
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::Update(float frameTime)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	bool distant = m_pVehicle->GetGameObject()->IsProbablyDistant();
 	bool visible = m_pVehicle->GetGameObject()->IsProbablyVisible();
@@ -680,7 +680,7 @@ void CVehicleSeatActionWeapons::SetWeaponEntityId(unsigned int index, EntityId w
 //------------------------------------------------------------------------
 void CVehicleSeatActionWeapons::UpdateWeaponTM(SVehicleWeapon& weapon)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	if (IEntity* pEntityWeapon = GetEntity(weapon))
 	{
@@ -752,7 +752,7 @@ bool CVehicleSeatActionWeapons::GetProbableHit(EntityId weaponId, const IFireMod
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetFiringPos(EntityId weaponId, const IFireMode* pFireMode, Vec3& pos)
 {
-	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	for (TVehicleWeaponVector::iterator ite = m_weapons.begin(); ite != m_weapons.end(); ++ite)
 	{
@@ -798,7 +798,7 @@ bool CVehicleSeatActionWeapons::GetFiringPos(EntityId weaponId, const IFireMode*
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetFiringDir(EntityId weaponId, const IFireMode* pFireMode, Vec3& dir, const Vec3& probableHit, const Vec3& firingPos)
 {
-	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	IActor* pActor = GetUserActor();
 
@@ -850,7 +850,7 @@ bool CVehicleSeatActionWeapons::GetFiringDir(EntityId weaponId, const IFireMode*
 //------------------------------------------------------------------------
 bool CVehicleSeatActionWeapons::GetActualWeaponDir(EntityId weaponId, const IFireMode* pFireMode, Vec3& dir, const Vec3& probableHit, const Vec3& firingPos)
 {
-	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	IActor* pActor = GetUserActor();
 
@@ -1033,7 +1033,7 @@ void CVehicleSeatActionWeapons::OnShoot(IWeapon* pWeapon, EntityId shooterId, En
 //------------------------------------------------------------------------
 Vec3 CVehicleSeatActionWeapons::GetAverageFiringPos()
 {
-	//FUNCTION_PROFILER(gEnv->pSystem, PROFILE_ACTION);
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
 
 	AABB bounds;
 	bounds.Reset();

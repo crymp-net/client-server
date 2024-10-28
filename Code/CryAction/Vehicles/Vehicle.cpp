@@ -1307,7 +1307,7 @@ void CVehicle::DoRequestedPhysicalization()
 //------------------------------------------------------------------------
 void CVehicle::Update(SEntityUpdateContext& ctx, int slot)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	const float frameTime = ctx.fFrameTime;
 	gEnv->pRenderer->GetIRenderAuxGeom()->SetRenderFlags(e_Def3DPublicRenderflags);
@@ -1751,7 +1751,7 @@ void CVehicle::HandleEvent(const SGameObjectEvent& event)
 //------------------------------------------------------------------------
 void CVehicle::UpdateStatus(const float deltaTime)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	int frameId = gEnv->pRenderer->GetFrameID();
 	if (!(frameId > m_status.frameId))
@@ -2818,7 +2818,7 @@ bool CVehicle::SetMovement(const string& movementName, const CVehicleParams& tab
 //------------------------------------------------------------------------
 void CVehicle::OnPhysPostStep(const EventPhys* pEvent)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 	const EventPhysPostStep* eventPhys = (const EventPhysPostStep*)pEvent;
 
 	float deltaTime = eventPhys->dt;
@@ -3323,7 +3323,7 @@ void CVehicle::UnregisterHUDElement(CVehicleHUDElement* pHudElement)
 //------------------------------------------------------------------------
 void CVehicle::UpdateHUD(float deltaTime)
 {
-	//FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
 
 	IConsole* pConsole = gEnv->pConsole;
 	assert(pConsole);
