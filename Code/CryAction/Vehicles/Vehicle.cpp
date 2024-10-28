@@ -4731,6 +4731,23 @@ IMPLEMENT_RMI(CVehicle, ClSetAmmo)
 }
 
 //------------------------------------------------------------------------
+IMPLEMENT_RMI(CVehicle, ClAmmoCounts)
+{
+	m_pInventory->ResetAmmo();
+
+	for (const AmmoCountsParams::Ammo& ammo : params.ammos)
+	{
+		IEntityClass* pAmmoClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(ammo.name.c_str());
+		if (pAmmoClass)
+		{
+			this->SetAmmoCount(pAmmoClass, ammo.count);
+		}
+	}
+
+	return true;
+}
+
+//------------------------------------------------------------------------
 IMPLEMENT_RMI(CVehicle, ClAbandonWarning)
 {
 	EnableAbandonedWarnSound(params.enable);

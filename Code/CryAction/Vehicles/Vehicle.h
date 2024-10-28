@@ -427,6 +427,44 @@ public:
 		int	count;
 	};
 
+	struct AmmoCountsParams
+	{
+		struct Ammo
+		{
+			CryStringT<char> name;
+			int count = 0;
+		};
+
+		std::vector<Ammo> ammos;
+
+		void SerializeWith(TSerialize ser)
+		{
+			if (ser.IsReading())
+			{
+				int ammoCount = 0;
+				ser.Value("NumberAmmos", ammoCount, 'vNWp');
+
+				this->ammos.resize(ammoCount);
+				for (int i = 0; i < ammoCount; i++)
+				{
+					ser.Value("AmmoName", this->ammos[i].name, 'stab');
+					ser.Value("AmmoCount", this->ammos[i].count, 'ammo');
+				}
+			}
+			else
+			{
+				int ammoCount = static_cast<int>(this->ammos.size());
+				ser.Value("NumberAmmos", ammoCount, 'vNWp');
+
+				for (int i = 0; i < ammoCount; i++)
+				{
+					ser.Value("AmmoName", this->ammos[i].name, 'stab');
+					ser.Value("AmmoCount", this->ammos[i].count, 'ammo');
+				}
+			}
+		}
+	};
+
 	struct AbandonWarningParams
 	{
 		bool enable;
@@ -446,6 +484,7 @@ public:
 	DECLARE_CLIENT_RMI_PREATTACH(ClRequestLeave, RequestLeaveParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetAmmo, AmmoParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetupWeapons, SetupWeaponsParams, eNRT_ReliableOrdered);
+	DECLARE_CLIENT_RMI_NOATTACH(ClAmmoCounts, AmmoCountsParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClAbandonWarning, AbandonWarningParams, eNRT_ReliableOrdered);
 
 	// IGameObjectProfileManager
