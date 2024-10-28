@@ -751,8 +751,11 @@ bool CVehicleSeat::SitDown()
 	else
 		m_transitionType = eVT_None;
 
-	//if (IAISystem* pAISystem = gEnv->pAISystem) //CryMP: fixme?
-	//	pAISystem->GetSmartObjectManager()->AddSmartObjectState(pActor->GetEntity(), "InVehicle");
+	if (IAISystem* pAISystem = gEnv->pAISystem)
+	{
+		//CryMP
+		pAISystem->AddSmartObjectState(pActor->GetEntity(), "InVehicle");
+	}
 
 	IEntity* pPassengerEntity = pActor->GetEntity();
 
@@ -910,14 +913,15 @@ bool CVehicleSeat::Exit(bool isTransitionEnabled, bool force/*=false*/)
 				{
 					Matrix34 worldTM = GetExitTM(pActor);
 					Vec3 adjustedPos;
-					//CryMP: fixme?
-					/*
-					if (IAIPathAgent* aiactor = pAIObject->CastToIAIActor())
+					//CryMP: 
+					if (IAIActor* aiactor = pAIObject->CastToIAIActor())
 					{
-						if (aiactor->GetValidPositionNearby(worldTM.GetTranslation(), adjustedPos))
+						if (pAIObject->GetValidPositionNearby(worldTM.GetTranslation(), adjustedPos))
+						{
 							if (worldTM.GetTranslation() != adjustedPos)
 								m_adjustedExitPos = adjustedPos;
-					}*/
+						}
+					}
 				}
 			}
 		}
@@ -1036,9 +1040,11 @@ void CVehicleSeat::SetAnimGraphInput(EntityId actorId, EAIAGInput input, const c
 		{
 			if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
 			{
-				//if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
-				//	pAIProxy->SetAGInput(input, value);
-				//CryMP: Fixme?
+				//CryMP
+				if (IUnknownProxy* pAIProxy = pAIObject->GetProxy())
+				{
+					pAIProxy->SetAGInput(input, value);
+				}
 			}
 		}
 		else
@@ -1062,9 +1068,11 @@ void CVehicleSeat::ResetAnimGraphInput(EntityId actorId, EAIAGInput input)
 		{
 			if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
 			{
-				//if (CAIProxy* pAIProxy = (CAIProxy*)pAIObject->GetProxy())
-				//	pAIProxy->ResetAGInput(input);
-				//CryMP: Fixme?
+				//CryMP
+				if (IUnknownProxy* pAIProxy = pAIObject->GetProxy())
+				{
+					pAIProxy->ResetAGInput(input);
+				}
 			}
 		}
 		else
@@ -1096,10 +1104,11 @@ bool CVehicleSeat::StandUp()
 
 	IEntity* pPassengerEntity = pActor->GetEntity();
 
-	//CryMP: Fixme?
-	//if (IAISystem* pAISystem = gEnv->pAISystem)
-	//	pAISystem->GetSmartObjectManager()->RemoveSmartObjectState(pActor->GetEntity(), "InVehicle");
-
+	if (IAISystem* pAISystem = gEnv->pAISystem)
+	{
+		//CryMP
+		pAISystem->RemoveSmartObjectState(pActor->GetEntity(), "InVehicle");
+	}
 
 	// allow lua side of the seat implementation to do its business
 	HSCRIPTFUNCTION scriptFunction(0);
@@ -1641,20 +1650,20 @@ void CVehicleSeat::Update(float deltaTime)
 
 				pActor->GetEntity()->GetWorldBounds(worldBounds);
 
-				/* CryMP: Fixme?
 				if (!gEnv->pRenderer->GetCamera().IsAABBVisible_F(worldBounds))
 				{
 					if (IAIObject* pAIObject = pActor->GetEntity()->GetAI())
 					{
-						if (IAIPathAgent* aiactor = pAIObject->CastToIAIActor())
-							if (aiactor->GetTeleportPosition(m_adjustedExitPos))
+						if (IAIActor* aiactor = pAIObject->CastToIAIActor())
+						{
+							if (pAIObject->GetTeleportPosition(m_adjustedExitPos))
 							{
 								Exit(false);
 								StandUp();
 							}
+						}
 					}
 				}
-				*/
 			}
 
 			if (m_queuedTransition == eVT_Exiting)
