@@ -152,6 +152,9 @@ struct IActorIterator
 	virtual IActor* Next() = 0;
 	virtual void    AddRef() = 0;
 	virtual void    Release() = 0;
+
+protected:
+	~IActorIterator() = default;
 };
 typedef _smart_ptr<IActorIterator> IActorIteratorPtr;
 

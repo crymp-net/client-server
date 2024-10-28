@@ -87,6 +87,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryAction/ActionGame.h
 	Code/CryAction/ActionMapManager.cpp
 	Code/CryAction/ActionMapManager.h
+	Code/CryAction/ActorIterator.cpp
+	Code/CryAction/ActorIterator.h
 	Code/CryAction/ActorSystem.cpp
 	Code/CryAction/ActorSystem.h
 	Code/CryAction/AnimationGraphSystem.cpp

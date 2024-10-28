@@ -148,7 +148,7 @@ void GameFramework::RegisterFactory(const char* name, ILoadGame* (*pCreator)(), 
 
 void GameFramework::RegisterFactory(const char* name, IActorCreator* pCreator, bool isAI)
 {
-	m_pActorSystem->RegisterActorFactory(name, pCreator, isAI);
+	m_pActorSystem->RegisterActorClass(name, pCreator, isAI);
 }
 
 void GameFramework::RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI)
