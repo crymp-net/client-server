@@ -1422,13 +1422,10 @@ void CVehicleSeat::EnableVehicleActionMaps(bool enable)
 		return;
 
 	IActionMapManager* pActionMapMan = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
-	assert(pActionMapMan);
 
 	if (IActionMap* pActionMap = pActionMapMan->GetActionMap("vehicle"))
 	{
-		//pActionMapMan->EnableActionMap("player", !enable);
-		pActionMapMan->EnableActionMap("crysis2_common", !enable);
-		pActionMapMan->EnableActionMap("crysis2_suitmenu_closed", !enable);
+		pActionMapMan->EnableActionMap("player", !enable); //CryMP
 		pActionMap->SetActionListener(enable ? m_passengerId : 0);
 		pActionMapMan->EnableActionMap("vehicle", enable);
 	}
