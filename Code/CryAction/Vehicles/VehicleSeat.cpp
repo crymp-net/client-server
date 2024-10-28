@@ -2686,7 +2686,7 @@ void CVehicleSeat::SetOutput(const char* output, const char* value)
 
 				CryCharAnimationParams animParams;
 				animParams.m_nLayerID = pPartAnimated->GetNextFreeLayer();
-				//pSkeletonAnim->StartAnimation(value, animParams); //CryMP: Fixme?
+				pSkeletonAnim->StartAnimation(value, nullptr, nullptr, nullptr, animParams); //CryMP
 			}
 		}
 	}
