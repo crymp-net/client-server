@@ -62,7 +62,8 @@ bool CVehicleMovementTweaks::AddGroup(const CVehicleParams& table)
 		for (; i < c; i++)
 		{
 			CVehicleParams tweakRef = tweaksTable.getChild(i);
-			if (tweakRef && tweakRef.getChildCount() > 0)
+			//if (tweakRef && tweakRef.getChildCount() > 0) 
+			//CryMP: fixme? Always returns false, but tweakRef.haveAttr("name") returns true
 			{
 				if (tweakRef.haveAttr("name"))
 				{
