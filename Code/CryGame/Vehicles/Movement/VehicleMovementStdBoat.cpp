@@ -98,7 +98,7 @@ bool CVehicleMovementStdBoat::Init(IVehicle* pVehicle, const CVehicleParams& tab
             m_pushOffset = pHelper->GetVehicleTM().GetTranslation();
     }
 
-    //m_movementTweaks.Init(table);
+    m_movementTweaks.Init(table);
 
     // compute inertia [assumes box]
     AABB bbox;

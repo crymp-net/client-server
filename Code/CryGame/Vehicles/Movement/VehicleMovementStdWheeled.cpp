@@ -147,7 +147,7 @@ bool CVehicleMovementStdWheeled::Init(IVehicle* pVehicle, const CVehicleParams& 
     if (!InitPhysics(table))
         return false;
 
-   // m_movementTweaks.Init(table);
+    m_movementTweaks.Init(table);
     return true;
 }
 

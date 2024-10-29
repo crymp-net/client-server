@@ -176,7 +176,7 @@ bool CVehicleMovementHovercraft::Init(IVehicle* pVehicle, const CVehicleParams& 
     MOVEMENT_VALUE("thrusterHeightAdaption", m_thrusterHeightAdaption);
     table.getAttr("thrusterUpdate", m_thrusterUpdate);
 
-    //m_movementTweaks.Init(table);
+    m_movementTweaks.Init(table);
     m_prevAction.Clear();
 
     m_maxSpeed = m_velMax;

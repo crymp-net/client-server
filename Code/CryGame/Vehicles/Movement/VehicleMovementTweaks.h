@@ -18,6 +18,7 @@ History:
 #include <list>
 
 class CVehicleMovementBase;
+class CVehicleParams;
 
 class CVehicleMovementTweaks
 {
@@ -25,26 +26,26 @@ public:
 
 	typedef int TTweakGroupId;
 	static const TTweakGroupId InvalidTweakGroupId = -1;
-  typedef int TValueId;
+	typedef int TValueId;
 
 public:
 
 	CVehicleMovementTweaks() {}
 	~CVehicleMovementTweaks() {}
 
-	bool Init(const SmartScriptTable &table);
+	bool Init(const CVehicleParams& table);
 	void AddValue(const char* valueName, float* pValue, bool isRestrictedToMult = false);
 
 	bool UseGroup(TTweakGroupId groupId);
 	bool RevertGroup(TTweakGroupId groupId);
 	bool RevertValues();
 
-	TTweakGroupId GetGroupId(const char* name);  
-  TValueId GetValueId(const char* name);
-  
-  void BlockValue(TValueId valueId, bool block);
-	
-  void Serialize(TSerialize ser, unsigned aspects);
+	TTweakGroupId GetGroupId(const char* name);
+	TValueId GetValueId(const char* name);
+
+	void BlockValue(TValueId valueId, bool block);
+
+	void Serialize(TSerialize ser, unsigned aspects);
 
 protected:
 
@@ -60,7 +61,7 @@ protected:
 		float defaultValue;
 		float* pValue;
 		bool isRestrictedToMult;
-    bool blocked;
+		bool blocked;
 	};
 
 	typedef std::vector <SValue> TValueVector;
@@ -86,8 +87,8 @@ protected:
 
 protected:
 
-	bool AddGroup(const SmartScriptTable &table);
-	
+	bool AddGroup(const CVehicleParams& table);
+
 	void ComputeGroups();
 	void ComputeGroup(const SGroup& group);
 

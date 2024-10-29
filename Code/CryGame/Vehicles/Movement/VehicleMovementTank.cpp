@@ -78,7 +78,7 @@ bool CVehicleMovementTank::Init(IVehicle* pVehicle, const CVehicleParams& table)
   MOVEMENT_VALUE_OPT("steeringImpulseRelaxMin", m_steeringImpulseRelaxMin, table);
   MOVEMENT_VALUE_OPT("steeringImpulseRelaxMax", m_steeringImpulseRelaxMax, table);
 
-  //m_movementTweaks.Init(table);
+  m_movementTweaks.Init(table);
   m_maxSoundSlipSpeed = 10.f;
 
 	return true;

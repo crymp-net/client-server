@@ -99,7 +99,7 @@ bool CVehicleMovementHelicopter::Init(IVehicle* pVehicle, const CVehicleParams& 
 	MOVEMENT_VALUE("yawInputDamping", m_yawInputDamping);
 	MOVEMENT_VALUE("maxRollAngle", m_maxRollAngle);
 
-	//m_movementTweaks.Init(table);
+	m_movementTweaks.Init(table);
 
 	// Initialise the power PID.
 	m_powerPID.Reset();
