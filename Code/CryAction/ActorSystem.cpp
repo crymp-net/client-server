@@ -20,7 +20,8 @@ void ActorSystem::RegisterActorClass(const char* name, IGameFramework::IActorCre
 {
 	const char* actorName = PathTools::FileName(name).data();
 
-	std::string scriptPath(isAI ? "Scripts/Entities/AI/" : "Scripts/Entities/Actor/");
+	// CryMP: changed from "Scripts/Entities/AI/" and "Scripts/Entities/Actor/"
+	std::string scriptPath(isAI ? "CryMP/Scripts/Entities/AI/" : "CryMP/Scripts/Entities/Actor/");
 	scriptPath += name;
 	scriptPath += ".lua";
 

@@ -341,7 +341,8 @@ bool GameFramework::CompleteInit()
 
 	m_pMaterialEffects->LoadFlowGraphLibs();
 
-	m_pScriptSystem->ExecuteFile("scripts/main.lua");
+	// CryMP: changed from "scripts/main.lua"
+	m_pScriptSystem->ExecuteFile("CryMP/Scripts/Main.lua");
 	m_pScriptSystem->BeginCall("OnInit");
 	m_pScriptSystem->EndCall();
 

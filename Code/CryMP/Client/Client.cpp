@@ -237,10 +237,10 @@ void Client::Init(IGameFramework *pGameFramework)
 	SetVersionInLua();
 
 	// execute Lua scripts
-	pScriptSystem->ExecuteFile("Scripts/JSON.lua", true, true);
-	pScriptSystem->ExecuteFile("Scripts/CryMP/RPC.lua", true, true);
-	pScriptSystem->ExecuteFile("Scripts/CryMP/Client.lua", true, true);
-	pScriptSystem->ExecuteFile("Scripts/CryMP/Localization.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/JSON.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/RPC.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/Client.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/Localization.lua", true, true);
 
 	InitMasters();
 

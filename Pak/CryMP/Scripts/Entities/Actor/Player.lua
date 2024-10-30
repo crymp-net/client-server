@@ -1,4 +1,4 @@
-Script.ReloadScript( "SCRIPTS/Entities/actor/BasicActor.lua");
+Script.ReloadScript("CryMP/Scripts/Entities/Actor/BasicActor.lua");
 
 Player = {
 
@@ -7,12 +7,12 @@ Player = {
 
 	type = "Player",
 
-	foreignCollisionDamageMult = 0.1,	
+	foreignCollisionDamageMult = 0.1,
 	vehicleCollisionDamageMult = 7.5,
 	vehicleCollisionDamageMultMP = 0.4,
-	
-	Properties = 
-	{	
+
+	Properties =
+	{
 		-- AI-related properties
 		soclasses_SmartObjectClass = "Player",
 		groupid = 0,
@@ -30,22 +30,22 @@ Player = {
 			--movement related parameters
 			velBase = 1,
 			velScale = .03,
-			--ranges			
+			--ranges
 			sightrange = 50,
 		}	,
 		--
 		fileModel = "objects/characters/human/us/nanosuit/nanosuit_us_multiplayer.cdf",
 		clientFileModel = "objects/characters/human/us/nanosuit/nanosuit_us_fp3p.cdf",
 		--fileModel = "objects/characters/human/asian/nanosuit/nanosuit_asian_fp3p.cdf",
-		fpItemHandsModel = "objects/weapons/arms_global/arms_nanosuit_us.chr",	
-		--fpItemHandsModel = "objects/weapons/arms_global/arms_nanosuit_asian.chr",	
+		fpItemHandsModel = "objects/weapons/arms_global/arms_nanosuit_us.chr",
+		--fpItemHandsModel = "objects/weapons/arms_global/arms_nanosuit_asian.chr",
 		objFrozenModel= "objects/characters/human/asian/nk_soldier/nk_soldier_frozen_scatter.cgf",
 	},
 
 	PropertiesInstance = {
 		aibehavior_behaviour = "PlayerIdle",
 	},
-	
+
 	ammoCapacity =
 	{
 		bullet=40*7,
@@ -71,7 +71,7 @@ Player = {
 		rubberbullet=30*20,
 		tacgunprojectile=5,
 	},
-	
+
 	gameParams =
 	{
 		stance =
@@ -152,17 +152,17 @@ Player = {
 				stanceId = -2,
 			},
 		},
-		
+
 		nanoSuitActive = 1,
 --		thrusterAISoundRadius = 38,
-		
+
 	},
-			
+
 	modelSetup =
 	{
 		deadAttachments = {"head","helmet"},
 	},
-			
+
 	Server = {},
 	Client = {},
 	squadFollowMode = 0,
@@ -194,7 +194,7 @@ end
 
 function Player.Server:OnInit()
 	--self.actor:SetPhysicalizationProfile("alive");
-	
+
 	self.thrusterAISoundRadius = 38;
 
 	if AI then
@@ -239,7 +239,7 @@ function Player.Server:OnPostInitClient( channelId )
 	--for i,v in ipairs(self.inventory) do
 		--self.onClient:PickUpItem(channelId, v, false);
 	--end
-	
+
 	--if (self.inventory:GetCurrentItemId()) then
 		--self.onClient:SetCurrentItem(channelId, self.inventory:GetCurrentItemId());
 	--end
@@ -300,27 +300,27 @@ function Player.Client:OnUpdate(frameTime)
 	end
 
 	self:UpdateScreenEffects(frameTime);
-	--FIXME:move to c++	
+	--FIXME:move to c++
 	self:UpdateDraw();
 end
 ]]
 
 function Player.Server:OnUpdate(frameTime)
 	BasicActor.Server.OnUpdate(self,frameTime);
-		
+
 	--FIXME:temporary
 	if (self.stopEPATime and self.stopEPATime < 0) then
 		self.actor:SetParams({followCharacterHead = 0,});
 		self.actor:SetMovementTarget(g_Vectors.v000,g_Vectors.v000,g_Vectors.v000,1);
 		self.stopEPATime = nil;
 		self.hostageID = nil;
-		
+
 		self:HolsterItem(false);
-						
+
 	elseif (self.stopEPATime) then
 		self.stopEPATime = self.stopEPATime - frameTime;
 	end
-	
+
 end
 
 
@@ -331,7 +331,7 @@ function Player:OnInit()
 	----------------------------------------
 
 --	self:InitSounds();
-	
+
 	self:OnReset(true);
 	--self:SetTimer(0,1);
 end
@@ -350,28 +350,28 @@ function Player:OnReset()
 	g_aimode = nil;
 	self.stopEPATime = nil;
 	self.hostageID = nil;
-	
+
 	BasicActor.Reset(self);
-	
+
 	self:SetTimer(0,500);
-	
+
 	self.thrusterAIVolume = 1.0;		-- Have different volume for the AI, since it needs differen scale.
 	self.thrusterVolume = nil;
 	self:StopThrusterSounds();
-	
+
 	--if (self == g_localActor) then
 	--	self:ResetDofFx();
 	--	self:ResetMotionFx();
 	--end
 
 	mergef(Player.SignalData,g_SignalData,1);
-	
+
 --	HUD:Reset();
 	self.squadFollowMode = 0;
-		
+
 	--reset the animation graph for third/first person switch.
 	--self.actor:ChangeAnimGraph(self.AnimationGraph);
-	
+
 	-- Reset temperature camoflage.
 	--self.camoState = false;
 	--self.camoFading = false;
@@ -390,11 +390,11 @@ function Player:OnReset()
 	--AI.Signal(SIGNALFILTER_LEADER, 1,"OnEnableAlertStatus",self.id,g_SignalData);
 
 	self.lastOverloadTime = nil;
-	
+
 	self.actor:ActivateNanoSuit(1);
 	--FIXME:set normal cloak as default
 	self:SetCloakType(1);
-	
+
 end
 
 
@@ -403,25 +403,25 @@ function Player:StopThrusterSounds()
 	if (self.thrusterSound) then
 		self:StopSound(self.thrusterSound);
 	end
-	
+
 	self.thrusterSound = nil;
 end
 
 
 ----------------------------------------------------------------------------------------------------
 function Player:StartThrusterSounds(afterburn)
-			
-	if (not self.thrusterSound or not Sound.IsPlaying(self.thrusterSound)) then	
+
+	if (not self.thrusterSound or not Sound.IsPlaying(self.thrusterSound)) then
 		self.thrusterSound = self:PlaySoundEvent("sounds/interface:suit:thrusters_1p", g_Vectors.v000, g_Vectors.v010, SOUND_DEFAULT_3D, SOUND_SEMANTIC_PLAYER_FOLEY);
 		Sound.SetSoundLoop(self.thrusterSound,1);
 	end
-	
+
 	self.thrusterVolume = 1.0 + afterburn * 0.15;
 	self.thrusterAIVolume = 1.0 + afterburn * 3.0;
 end
 
 function Player:UpdateThrusterSounds(frameTime)
-		
+
 	if (self.thrusterVolume and self.thrusterVolume<0.0) then
 		self:StopThrusterSounds();
 		self.thrusterVolume = nil;
@@ -429,13 +429,13 @@ function Player:UpdateThrusterSounds(frameTime)
 	elseif (self.thrusterVolume) then
 		self.thrusterVolume = self.thrusterVolume - frameTime;
 		self.thrusterAIVolume = self.thrusterAIVolume - frameTime;
-				
+
 		local volume = self.zeroGTable.thrusterVolume;
-		
+
 		if (not volume) then
 			volume = 150;
 		end
-		
+
 		Sound.SetSoundVolume(self.thrusterSound,__min(255,__max(0,volume*self.thrusterVolume))/255.0);
 	end
 end
@@ -446,11 +446,11 @@ function Player:UpdateAISounds(frameTime)
 
 	local nextAISound = (self.nextAISound or 0) - frameTime;
 	self.nextAISound = nextAISound;
-	
+
 	if (nextAISound<0) then
 		--AI sounds are updated each 1 seconds
 		self.nextAISound = 1.0;
-		
+
 		--update the thruster sound
 		if (self.thrusterVolume) then
 			local soundDamp = self.actorStats.soundDamp;
@@ -458,7 +458,7 @@ function Player:UpdateAISounds(frameTime)
 			--Log("soundDamp:"..soundDamp);
 			if AI then AI.SoundEvent(self:GetWorldPos(), soundRadius, AISE_MOVEMENT, self.id) end
 		end
-	end	
+	end
 end
 
 --function Player:InitSounds()
@@ -495,7 +495,7 @@ function Player:OnAction(action, activation, value)
 		end
 	end
 
-	if (action == "use" or action == "xi_use") then	
+	if (action == "use" or action == "xi_use") then
 		self:UseEntity( self.OnUseEntityId, self.OnUseSlot, activation == "press");
 	end
 end
@@ -509,28 +509,28 @@ function Player:OnUpdateView(frameTime)
 end
 
 function Player:ScriptEvent(event,value,str)
-	
+
 	local message = nil;
 	local sound = nil;
-	
+
 	if (event == "gyroscope") then
 		message = "gyroscope";
 		sound = "gyro";
 	elseif (event == "gravityboots") then
 		message = "gravity_boots";
-		sound = "gboots"; 
+		sound = "gboots";
 	end
-	
+
 	if (message) then
 		if (value == 1) then
 			message = message.."_on";
 		else
 			message = message.."_off";
 		end
-		
+
 --		HUD:AddInfoMessage(message);
 	end
-	
+
 	if (sound) then
 		if (value == 1) then
 			sound  = sound.."_on";
@@ -540,7 +540,7 @@ function Player:ScriptEvent(event,value,str)
 
 		PlayRandomSound(self,self.zeroGTable[sound]);
 	end
-	
+
 	if (event == "thrusters") then
 		self:StartThrusterSounds(value);
 --	elseif (event == "printhud") then
@@ -548,7 +548,7 @@ function Player:ScriptEvent(event,value,str)
 	elseif (event == "unfreeze_shake") then
 	  self:OnUnfreezeShake(value);
 	end
-	
+
 	BasicActor.ScriptEvent(self,event,value,str);
 end
 
@@ -557,14 +557,14 @@ function Player:GrabObject(object, query)
 end
 
 function Player.Client:OnTimer(timerId,mSec)
-	if(timerId==SWITCH_WEAPON_TIMER) then 
+	if(timerId==SWITCH_WEAPON_TIMER) then
 		if AI then AI.Signal(SIGNALFILTER_GROUPONLY_EXCEPT,1,"CheckNextWeaponAccessory",self.id) end;
 
 		-- set player combat class depending on weapon
 		local item = self.inventory:GetCurrentItem();
-		if(item and item.class=="LAW") then 
+		if(item and item.class=="LAW") then
 			if AI then AI.ChangeParameter( self.id, AIPARAM_COMBATCLASS, AICombatClasses.PlayerRPG ) end
-		else	
+		else
 			if AI then AI.ChangeParameter( self.id, AIPARAM_COMBATCLASS, AICombatClasses.Player ) end
 		end
 	else
@@ -579,31 +579,31 @@ end
 function Player:UseEntity(entityId, slot, press)
 	assert(entityId)
 	assert(slot)
-	
+
 	if ((self.actor:GetHealth() <= 0) or (self.actor:GetSpectatorMode()~=0) or (self.actorStats.isFrozen)) then
 		return;
 	end
-	
+
 	local entity = System.GetEntity(entityId)
 	if entity then
-		
+
 		local onUsed = entity.OnUsed;
 		local onUsedRelease = entity.OnUsedRelease;
-		
+
 		if (not onUsed) then
 			local state = entity:GetState();
 			if (state ~= "" and entity[state]) then
 				onUsed = entity[state].OnUsed;
 			end
 		end
-		
+
 		if (not onUsedRelease) then
 			local state = entity:GetState();
 			if (state ~= "" and entity[state]) then
 				onUsedRelease = entity[state].OnUsedRelease;
 			end
 		end
-		
+
 		--special case for grabbing
 		if (self.grabParams.entityId) then
 			if (press) then
@@ -614,14 +614,14 @@ function Player:UseEntity(entityId, slot, press)
 				press = true;
 			else
 				return;
-			end			
+			end
 		end
-		
-		if (onUsed and press) then			
+
+		if (onUsed and press) then
 			onUsed(entity,self,slot);
 			if AI then AI.SmartObjectEvent("OnUsed",entity.id,self.id) end;
 		end
-		
+
 		if(onUsedRelease and not press) then
 			onUsedRelease(entity,self,slot);
 			if AI then AI.SmartObjectEvent("OnUsedRelease",entity.id,self.id) end;
@@ -643,7 +643,7 @@ function Player:OnSave(save)
 	BasicActor.OnSave(self, save);
 
 --	local savedTable =self.AI_WeaponAccessoryTable;
---	if(savedTable) then 
+--	if(savedTable) then
 --		save.AI_WeaponAccessoryTable = {};
 --		for acc,on in pairs(savedTable) do
 --			save.AI_WeaponAccessoryTable[acc] = on;
@@ -659,28 +659,28 @@ function Player:OnLoad(saved)
 
 --	self.AI.WeaponAccessoryTable = {};
 --	local savedTable =saved.AI.WeaponAccessoryTable;
---	if(savedTable) then 
+--	if(savedTable) then
 --		for acc,on in pairs(savedTable) do
 --			self.AI.WeaponAccessoryTable[acc] = on;
 --		end
 --	end
-	
+
 end
 
 function Player:OnLoadAI(saved)
 	self.AI = {};
-	if(saved.AI) then 
+	if(saved.AI) then
 		self.AI = saved.AI;
 	end
 end
 
 function Player:OnSaveAI(save)
-	if(self.AI) then 
+	if(self.AI) then
 		save.AI = self.AI;
 	end
 end
 
-function Player.Client:OnAnimationEvent(animation,strPar,intPar)	
+function Player.Client:OnAnimationEvent(animation,strPar,intPar)
 	if (intPar == HOSTAGE_UNTIE) then
 		if (self.hostageID) then
 			local hostage = System.GetEntity(self.hostageID);
@@ -690,7 +690,7 @@ function Player.Client:OnAnimationEvent(animation,strPar,intPar)
 			self.hostageID = nil;
 		end
 	end
-	
+
 	BasicActor.Client.OnAnimationEvent(self,animation,strPar,intPar);
 end
 
@@ -701,7 +701,7 @@ function Player:CanPickItem(item)
 	return self:CanChangeItem();
 end
 
-function Player:CanChangeItem()	
+function Player:CanChangeItem()
 	--if weapon is holstered, its not possible to switch weapons either
 	if (self.holsteredItemId) then
 		return false;
@@ -712,7 +712,7 @@ end
 
 function Player:DropItem()
 	local item;
-	
+
 	item = self.inventory:GetCurrentItem();
 	if (item) then
 		item:Drop();
@@ -721,12 +721,12 @@ end
 
 function Player:OnShoot(remote)
 	-- Luciano: not called
-	if (self.EPAtankId) then	
+	if (self.EPAtankId) then
 		return false;
 	end
-	
+
 --	self:EnableFireControl();
-	
+
 	return true;
 end
 
@@ -744,18 +744,18 @@ end
 --end
 
 function Player:SetFollowMode( )
-	AIBehaviour.PlayerIdle:Follow(self);	
+	AIBehaviour.PlayerIdle:Follow(self);
 end
 
 
 function Player:Goto()
 --	if(self.gotoAllowed) then
---		
+--
 --		self.squadFollowMode = 0;
 --		AI.Signal(SIGNALFILTER_LEADER,1,"ORD_GOTO",self.id, self.squadTarget);
 --
 --		self:SayOrder("goto","");
---		g_aimode	= 0;	
+--		g_aimode	= 0;
 --
 --	else
 --		AI.LogEvent("GOTO not allowed");
@@ -765,20 +765,20 @@ end
 
 function Player:SayOrder( soundName, answer, entity )
 --	g_StringTemp1 = "Languages/voicepacks/Player/wait_here_"..random(1,2)..".wav";
---System.Log(">>>> player says hold >>> "..g_StringTemp1);		
-	
+--System.Log(">>>> player says hold >>> "..g_StringTemp1);
+
 	--local orderSound = Sound.Load3DSound(wavfile, 0, 128, 3, 43);
 	local orderSoundTable = self["Sound_"..soundName];
-	
+
 	if(orderSoundTable ==nil) then
-		return 
+		return
 	end
-	
+
 	local numSound = count(orderSoundTable);
 	if(numSound ==0) then
-		return 
+		return
 	end
-	
+
 	local orderSound = orderSoundTable[random(1,numSound)];
 	if(answer and type(answer) == "string") then
 		Player.SignalData.ObjectName = answer;
@@ -788,9 +788,9 @@ function Player:SayOrder( soundName, answer, entity )
 	if(orderSound) then
 		ZeroVector(g_Vectors.temp_v1);
 		g_Vectors.temp_v1.z = 0.6;
-		
+
 		local soundHandle = self:PlaySoundEvent(orderSound, g_Vectors.temp_v1, g_Vectors.v000, SOUND_DEFAULT_3D, SOUND_SEMANTIC_AI_READABILITY);
-		
+
 		local soundLength = 500;
 		if (soundHandle) then
 			soundLength = Sound.GetSoundLength(soundHandle)*1000;
@@ -798,7 +798,7 @@ function Player:SayOrder( soundName, answer, entity )
 				soundLength = 2000;
 			end
 		end
-		
+
 		if(entity) then
 			self.iSoundTimer  = Script.SetTimerForFunction(soundLength, "Player.OnEndCommandSound", entity);
 		else
@@ -835,7 +835,7 @@ function Player:UpdateScreenEffects(frameTime)
 	if (self ~= g_localActor) then
 		return
 	end
-	
+
 	--Temperature camo effect
 	local frostScale = 1;
 	if (not self.camoState) then
@@ -843,27 +843,27 @@ function Player:UpdateScreenEffects(frameTime)
 	end
 
 	if (self.camoFading == true) then
-		
+
 		local curFrost = 0;
 		curFrost = System.GetScreenFx("ScreenFrost_Amount",curFrost) or 0;
-		
-		
+
+
 		local maxFrost = 0.5;
 		-- reach maxFrost in 2 seconds
 		local frostRate = maxFrost / 2 * frostScale;
 		local frostDelta = frostRate * frameTime;
 		curFrost = curFrost + frostDelta;
 		curFrost = clamp(curFrost, 0, 1);
-		
+
 		if (curFrost <= 0.01) then curFrost=0; end;
-		
+
 		System.SetScreenFx("ScreenFrost_Amount", curFrost);
 		System.SetScreenFx("ScreenFrost_CenterAmount", 1-curFrost);
-	
+
 		--System.Log("FrostScale:"..frostScale);
 		--System.Log("CurFrostAfter:"..curFrost);
 		--System.Log("FrostRate:"..frostRate);
-		
+
 		if (curFrost == 0 or curFrost == 1) then
 			self.camoFading = false;
 			if (curFrost == 0) then
@@ -873,29 +873,29 @@ function Player:UpdateScreenEffects(frameTime)
 	end
 	--
 
-	self.blurType = tonumber(System.GetCVar("cl_motionBlur")); 
+	self.blurType = tonumber(System.GetCVar("cl_motionBlur"));
 
 	local stats = self.actorStats;
 	local speed = stats.flatSpeed or 0;
 	local minSpeed = self.gameParams.stance[1].maxSpeed;
-	
+
 	local viewBlur = self.viewBlur or 0;
 	viewBlur = math.max(0.0,viewBlur - frameTime);
 	self.viewBlur = viewBlur;
-	
-	if (viewBlur>0.001) then		
+
+	if (viewBlur>0.001) then
 		blurAmount = self.viewBlurAmt or 0;
 		self:SetMotionFxMask();
 		self:SetMotionFxAmount(blurAmount, 2.5);
 	elseif ((stats.onGround or 0)>0.1 and speed>minSpeed) then
 		local maxSpeed = minSpeed * self.gameParams.sprintMultiplier;
 		local blurAmount = (speed-minSpeed)/(maxSpeed-minSpeed)*tonumber(System.GetCVar("cl_sprintBlur"));--1.25;
-		self:SetMotionFxMask("textures/player/motionblur_mask.dds");		
+		self:SetMotionFxMask("textures/player/motionblur_mask.dds");
 		self:SetMotionFxAmount(blurAmount, 2.5);
 	else
 		self:SetMotionFxAmount(0, 4);
 	end
-	
+
 	--self:SetDofFxLimits(0, 1500, 1800, 2);
 	--self:SetDofFxAmount(0, 0.5);
 	self:UpdateDofFx(frameTime);
@@ -906,8 +906,8 @@ end
 function Player:SetDofFxLimits(focusmin, focusmax, focuslim, speed)
 	if (not speed) then
 		System.SetPostProcessFxParam("Dof_FocusRange", -1);
-		System.SetPostProcessFxParam("Dof_FocusMin", focusmin);	
-		System.SetPostProcessFxParam("Dof_FocusMax", focusmax);	
+		System.SetPostProcessFxParam("Dof_FocusMin", focusmin);
+		System.SetPostProcessFxParam("Dof_FocusMax", focusmax);
 		System.SetPostProcessFxParam("Dof_FocusLimit", focuslim);
 	else
 		if (speed > 0) then
@@ -924,8 +924,8 @@ function Player:SetDofFxLimits(focusmin, focusmax, focuslim, speed)
 			self.target_dof_max = focusmax;
 			self.target_dof_lim = focuslim;
 			System.SetPostProcessFxParam("Dof_FocusRange", -1);
-			System.SetPostProcessFxParam("Dof_FocusMin", focusmin);	
-			System.SetPostProcessFxParam("Dof_FocusMax", focusmax);	
+			System.SetPostProcessFxParam("Dof_FocusMin", focusmin);
+			System.SetPostProcessFxParam("Dof_FocusMax", focusmax);
 			System.SetPostProcessFxParam("Dof_FocusLimit", focuslim);
 		end
 	end
@@ -934,18 +934,18 @@ end
 ----------------------------------------------------------------------------------------------------
 function Player:SetDofFxMask(texName)
 	if (texName) then
-		System.SetPostProcessFxParam("Dof_UseMask", 1);	
-		System.SetPostProcessFxParam("Dof_MaskTexName", texName);	
+		System.SetPostProcessFxParam("Dof_UseMask", 1);
+		System.SetPostProcessFxParam("Dof_MaskTexName", texName);
 	else
-		System.SetPostProcessFxParam("Dof_UseMask", 0);	
-	end	
+		System.SetPostProcessFxParam("Dof_UseMask", 0);
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
 function Player:SetDofFxAmount(amount, speed)
 	if (not speed) then
-		System.SetPostProcessFxParam("Dof_BlurAmount", amount);	
-		
+		System.SetPostProcessFxParam("Dof_BlurAmount", amount);
+
 		if (amount <= 0.075) then
 			System.SetPostProcessFxParam("Dof_Active", 0);
 		else
@@ -984,7 +984,7 @@ function Player:ResetDofFx(speed)
 		self.current_dof_max = 2000;
 		self.current_dof_lim = 2500;
 		self.current_dof_amount = 0;
-		
+
 		self:SetDofFxLimits(self.current_dof_min, self.current_dof_max, self.current_dof_lim);
 		self:SetDofFxAmount(0);
 	end
@@ -1005,16 +1005,16 @@ function Player:UpdateDofFx(frameTime)
 		self:ResetDofFx();
 	end
 
-	
+
 	-- update dof amount
 	local curr_dof_amt = self.current_dof_amount;
 	local target_dof_amt = self.target_dof_amount;
-	
+
 	if (curr_dof_amt ~= target_dof_amt) then
 		self.current_dof_amount = DofInterpolate(curr_dof_amt, target_dof_amt, self.dof_amount_speed, frameTime);
 		self:SetDofFxAmount(self.current_dof_amount);
 	end
-	
+
 	-- update dof distances
 	-- dof min
 	local curr_dof_min = self.current_dof_min;
@@ -1041,7 +1041,7 @@ function Player:UpdateDofFx(frameTime)
 		self.current_dof_lim = DofInterpolate(curr_dof_lim, target_dof_lim, self.dof_distance_speed, frameTime);
 		changelimits = true;
 	end
-	
+
 	if (changelimits) then
 		self:SetDofFxLimits(self.current_dof_min, self.current_dof_max, self.current_dof_lim);
 	end
@@ -1052,12 +1052,12 @@ function Player:SetMotionFxAmount(amount, speed)
 	if (self.blurType == 0) then
 		System.SetPostProcessFxParam("MotionBlur_Active", 0);
 	end
-	
+
 	-- accumulation based
 	if (self.blurType == 1) then
-		System.SetPostProcessFxParam("MotionBlur_Type", 0);	
+		System.SetPostProcessFxParam("MotionBlur_Type", 0);
 		if (not speed) then
-			System.SetPostProcessFxParam("MotionBlur_Amount", amount);	
+			System.SetPostProcessFxParam("MotionBlur_Amount", amount);
 			if (amount < 0.075) then
 				System.SetPostProcessFxParam("MotionBlur_Active", 0);
 			else
@@ -1071,35 +1071,35 @@ function Player:SetMotionFxAmount(amount, speed)
 				self.mblur_amount_speed = 0;
 				self.current_mblur_amount = amount;
 				self.target_mblur_amount = amount;
-				System.SetPostProcessFxParam("MotionBlur_Amount", amount);	
+				System.SetPostProcessFxParam("MotionBlur_Amount", amount);
 			end
 		end
 	end
-	
+
 	-- velocity based
 	if (self.blurType == 2) then
 		amount = clamp(amount, 0, 1);
 		amount = amount*amount;
-		System.SetPostProcessFxParam("MotionBlur_Type", 1);	
-		System.SetPostProcessFxParam("MotionBlur_Quality", 2);	
+		System.SetPostProcessFxParam("MotionBlur_Type", 1);
+		System.SetPostProcessFxParam("MotionBlur_Quality", 2);
 		if (not speed) then
 			--System.Log(tostring(amount));
 			local sprintScale = 0;
-			if (amount > 0.3) then 
+			if (amount > 0.3) then
 				sprintScale = (amount - 0.3)/0.7;
 			end
-			
+
 			local headDir = self.actor:GetHeadDir(g_Vectors.temp_v3);
 			local velocity = NormalizeVector(self:GetVelocity(g_Vectors.temp_v4));
 			local sprintAmount = 1-dotproduct3d(headDir, velocity);
-			
+
 			if (sprintAmount < 0) then
 				sprintAmount = 0;
 			end
 			sprintScale = clamp(sprintScale, 0, 1);
 			sprintAmount = clamp(sprintAmount, 0, 1);
-			System.SetPostProcessFxParam("MotionBlur_CameraSphereScale", 8 - 6.0*sprintScale*sprintAmount);	
-			System.SetPostProcessFxParam("MotionBlur_VectorsScale", 1.5);	
+			System.SetPostProcessFxParam("MotionBlur_CameraSphereScale", 8 - 6.0*sprintScale*sprintAmount);
+			System.SetPostProcessFxParam("MotionBlur_VectorsScale", 1.5);
 			System.SetPostProcessFxParam("MotionBlur_Active", 1);
 		else
 			if (speed > 0) then
@@ -1109,8 +1109,8 @@ function Player:SetMotionFxAmount(amount, speed)
 				self.mblur_amount_speed = 0;
 				self.current_mblur_amount = amount;
 				self.target_mblur_amount = amount;
-				System.SetPostProcessFxParam("MotionBlur_CameraSphereScale", 2*amount);	
-				System.SetPostProcessFxParam("MotionBlur_VectorsScale", 1.5*amount);	
+				System.SetPostProcessFxParam("MotionBlur_CameraSphereScale", 2*amount);
+				System.SetPostProcessFxParam("MotionBlur_VectorsScale", 1.5*amount);
 			end
 		end
 	end
@@ -1121,11 +1121,11 @@ end
 function Player:SetMotionFxMask(texName)
 	if (self.blurType == 1) then
 		if (texName) then
-			System.SetPostProcessFxParam("MotionBlur_UseMask", 1);	
-			System.SetPostProcessFxParam("MotionBlur_MaskTexName", texName);	
+			System.SetPostProcessFxParam("MotionBlur_UseMask", 1);
+			System.SetPostProcessFxParam("MotionBlur_MaskTexName", texName);
 		else
-			System.SetPostProcessFxParam("MotionBlur_UseMask", 0);	
-		end	
+			System.SetPostProcessFxParam("MotionBlur_UseMask", 0);
+		end
 	end
 end
 
@@ -1156,15 +1156,15 @@ function Player:UpdateMotionFx(frameTime)
 	if (not self.mblur_amount_speed) then
 		self:ResetMotionFx();
 	end
-	
+
 	-- update motion blur amount
 	local curr_mblur_amt = self.current_mblur_amount;
 	local target_mblur_amt = self.target_mblur_amount;
-	
+
 	if (not curr_mblur_amt) then
 		curr_mblur_amt = 0;
 	end
-	
+
 	if (curr_mblur_amt ~= target_mblur_amt) then
 		self.current_mblur_amount = MBlurInterpolate(curr_mblur_amt, target_mblur_amt, self.mblur_amount_speed, frameTime);
 		self:SetMotionFxAmount(self.current_mblur_amount);
@@ -1185,19 +1185,19 @@ end
 --	local hdir = g_Vectors.temp_v2;
 --	self.actor:GetHeadDir(hdir);
 --	local hdirlength = LengthVector(hdir);
---	
+--
 --	self.gotoAllowed = false;
 --	self.squadmateUseMessage =nil;
 --	self.aimedEntity = nil;
---	
+--
 --	if(hdirlength==0) then
 --		return
 --	end
---	
+--
 --	ScaleVectorInPlace(hdir,60/hdirlength);
 --
 --	local hitNum = Physics.RayWorldIntersection(hpos,hdir,1,ent_terrain+ent_static+ent_rigid+ent_sleeping_rigid+ent_living,self.id,NULL_ENTITY,g_HitTable);
---		
+--
 --	if(hitNum==0) then
 --		return
 --	end
@@ -1205,11 +1205,11 @@ end
 -- 	if( firstHit.dist > 50) then
 --		return
 --	end
---	
+--
 --	self.gotoAllowed = true;
---	
+--
 --	CopyVector(self.squadTarget,firstHit.pos);
---	
+--
 --	if(firstHit.entity) then
 --		-- TO DO: squadmate interaction with aimed entity
 --		local aim = firstHit.entity;
@@ -1217,23 +1217,23 @@ end
 --		if(aim.UsableBySquadmates and aim:UsableBySquadmates()) then
 --		  self.squadmateUseMessage = aim.squadmateUseMessage;
 --		end
---		 
+--
 --	end
---	
+--
 --end
 
 function Player:UpdateActorEffects(deltaTime)
 	BasicActor.UpdateActorEffects(self,deltaTime);
 end
 
-function Player:UpdateDraw()	
+function Player:UpdateDraw()
 	local stats = self.actorStats;
 
 	--AI or thirperson, show all
 	if (stats.isHidden or self.actor:GetSpectatorMode()~=0) then
 		self:DrawSlot(0,0);
 	elseif (self ~= g_localActor or stats.thirdPerson or stats.isOnLadder) then
-		self:DrawSlot(0,1);	
+		self:DrawSlot(0,1);
 		--show all
 		self:HideAllAttachments(0, false, false);
 		-- hide head if we are on a ladder and thirdperson is not set
@@ -1243,8 +1243,8 @@ function Player:UpdateDraw()
 			end
 		end
 	else
-		local ghostPit = self.actor:IsGhostPit();	  
-	  
+		local ghostPit = self.actor:IsGhostPit();
+
 		if (self.hideActor) then
 			self:DrawSlot(0,0);
 		elseif (stats.followCharacterHead==1 or self.grabParams.entityId or (self:IsOnVehicle() and not ghostPit)) then
@@ -1271,7 +1271,7 @@ end
 
 function Player:IsSquadAlive()
 	if not AI then return false end
-	local count = AI.GetGroupCount(self.id);		
+	local count = AI.GetGroupCount(self.id);
 	for i=1,count do
 		local mate = AI.GetGroupMember(self.id,i);
 		if(mate and mate ~=self and not mate:IsDead()) then
@@ -1281,7 +1281,7 @@ function Player:IsSquadAlive()
 	return false
 end
 
--- 
+--
 -- Protypes for some suit features.
 --
 function Player:SuitOverloadProto()
@@ -1312,7 +1312,7 @@ function Player:OnSuitOverload(timerid)
 	local radius = 75;
 
 	local entities = System.GetPhysicalEntitiesInBox(pos, radius);
-	
+
 	if (entities) then
 		-- calculate damage for each entity
 		for i,entity in ipairs(entities) do
@@ -1352,83 +1352,83 @@ end
 
 -------------------------------------------------------------------------------
 --[[ MR: not used so far
-function Player:OnPreFreeze(freeze, vapor)	
-	if (freeze and g_gameRules and not g_gameRules:IsMultiplayer()) then	  
+function Player:OnPreFreeze(freeze, vapor)
+	if (freeze and g_gameRules and not g_gameRules:IsMultiplayer()) then
     local ratio = self.actor:GetHealth() / self.actor:GetMaxHealth();
 	  if (ratio > 0.5) then
 	    return false; -- don't allow freezing above health ratio
-	  end		
-	end	
-	
+	  end
+	end
+
 	return true;
 end
 --]]
 
 -------------------------------------------------------------------------------
 function Player:OnFrost(shooterId, weaponId, frost)
-  -- this adds the frost amount to the player (only needed in SP so far)  
+  -- this adds the frost amount to the player (only needed in SP so far)
   if (g_gameRules and not g_gameRules:IsMultiplayer() and frost > 0) then
-    
+
     local oldAmt = self.actor:GetFrozenAmount();
-    self.actor:AddFrost(frost);	  
+    self.actor:AddFrost(frost);
 	  local newAmt = self.actor:GetFrozenAmount();
-	  
+
 	  --Log("frost: %.3f, old: %.2f, new: %.2f", frost, oldAmt, newAmt);
-	  
+
 	  -- trigger sound feedback
 	  if (newAmt < 1.0 and self.actor:IsLocalClient()) then
   	  if (not self.playerFrostSounds) then
   	    self.playerFrostSounds = {0.2, 0.4, 0.6, 0.8};
   	  end
-  	  
+
   	  local currTime = System.GetCurrTime();
-      
+
       if (currTime - (self.lastFrostSound or 0) > 0.1) then
     	  for i,val in ipairs(self.playerFrostSounds) do
-    	    if (oldAmt < val and newAmt >= val) then    	      
+    	    if (oldAmt < val and newAmt >= val) then
     	      self:PlaySoundEvent("sounds/interface:hud:freeze_burst", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_HUD);
     	      self.lastFrostSound = currTime;
     	      break;
     	    end
-    	  end    	  
+    	  end
     	end
   	end
 	end
 end;
 
 -------------------------------------------------------------------------------
-function Player:OnUnfreezeShake(deltaFreeze)  
+function Player:OnUnfreezeShake(deltaFreeze)
   if (not self.lastUnfreezeShake) then
 	  self.lastUnfreezeShake = 0;
 	end
-  
+
   if (deltaFreeze>0) then
     -- next stage reached
-    self:PlaySoundEvent("sounds/interface:hud:freeze_player", g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_HUD);    
-    
-    local effect = "breakable_objects.frozen_human.vapor_gun";        
+    self:PlaySoundEvent("sounds/interface:hud:freeze_player", g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_HUD);
+
+    local effect = "breakable_objects.frozen_human.vapor_gun";
     local item = self.inventory:GetCurrentItem();
     if (item) then
       local slot = item:LoadParticleEffect(-1, effect, {} );
-    end    
-  else    
+    end
+  else
     local currTime = System.GetCurrTime();
-    if (currTime - self.lastUnfreezeShake > 0.25) then    
-      self:PlaySoundEvent("sounds/interface:suit:frozen_trying_to_unfreeze", g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_NANOSUIT);    
+    if (currTime - self.lastUnfreezeShake > 0.25) then
+      self:PlaySoundEvent("sounds/interface:suit:frozen_trying_to_unfreeze", g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_NANOSUIT);
       self.lastUnfreezeShake = currTime;
     end
-  end    
-  
+  end
+
 end
 
 function Player:CurrentItemChanged(newItemId,lastItemId)
 
 	local item = System.GetEntity(newItemId);
-	if(item) then 
+	if(item) then
 		-- notify squadmates about the attachments on new weapon
 		local weapon = item.weapon;
 		local entityAccessoryTable = SafeTableGet(self.AI, "WeaponAccessoryTable");
-		if(weapon and entityAccessoryTable) then 
+		if(weapon and entityAccessoryTable) then
 			if(weapon:GetAccessory("Silencer") or item.class == "Fists") then
 				entityAccessoryTable["Silencer"] = 1;
 				self.AI.Silencer = true;
@@ -1436,7 +1436,7 @@ function Player:CurrentItemChanged(newItemId,lastItemId)
 				entityAccessoryTable["Silencer"] = 0;
 				self.AI.Silencer = false;
 			end
-			
+
 			if(weapon:GetAccessory("SCARIncendiaryAmmo")) then
 				entityAccessoryTable["SCARIncendiaryAmmo"] = 2;
 				entityAccessoryTable["SCARNormalAmmo"] = 0;
