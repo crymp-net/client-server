@@ -545,8 +545,8 @@ void CVehiclePartAnimatedJoint::SetMaterial(IMaterial* pMaterial)
 //------------------------------------------------------------------------
 void CVehiclePartAnimatedJoint::ApplyRotations()
 {
-  if (!m_localTMInvalid)
-    return;
+  //if (!m_localTMInvalid) //CryMP: commented, otherwise turrets fallback to original rotation
+    //return;
 
 	if (!m_pCharInstance)
     return;

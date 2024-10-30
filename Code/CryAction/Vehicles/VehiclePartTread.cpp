@@ -72,9 +72,9 @@ bool CVehiclePartTread::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
   if (!m_pCharInstance)
     return false;
 
-  //CryMP: Fixme
- // m_pCharInstance->GetISkeletonPose()->SetPostProcessCallback(	
-	//	(int (*)(ICharacterInstance*,void*)) CVehiclePartTread_PostProcess, (void*)this);
+    //CryMP
+    m_pCharInstance->GetISkeletonPose()->SetPostProcessCallback0(	
+	(int (*)(ICharacterInstance*,void*)) CVehiclePartTread_PostProcess, (void*)this);
   
   if (subTable.haveAttr("materialName"))
   {
@@ -181,6 +181,16 @@ bool CVehiclePartTread::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 //------------------------------------------------------------------------
 void CVehiclePartTread::Release()
 { 
+    //CryMP
+    if (m_pCharInstance)
+    {
+        ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
+        if (pSkeletonPose)
+        {
+            pSkeletonPose->SetPostProcessCallback0(nullptr, nullptr);
+        }
+    }
+
   CVehiclePartBase::Release();
 }
 

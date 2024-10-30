@@ -42,11 +42,20 @@ CVehiclePartAnimated::CVehiclePartAnimated()
 //------------------------------------------------------------------------
 CVehiclePartAnimated::~CVehiclePartAnimated()
 { 
-  if (m_pCharInstanceDestroyed)    
-  {
-    m_pCharInstanceDestroyed->Release();		  
-    m_pCharInstanceDestroyed = 0;
-  }
+    if (m_pCharInstanceDestroyed)    
+    {
+        m_pCharInstanceDestroyed->Release();		  
+        m_pCharInstanceDestroyed = 0;
+    }
+    //CryMP
+    if (m_pCharInstance)
+    {
+        ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
+        if (pSkeletonPose)
+        {
+            pSkeletonPose->SetPostProcessCallback0(nullptr, nullptr);
+        }
+    }
 }
 
 namespace
@@ -1002,13 +1011,16 @@ void CVehiclePartAnimated::RegisterRotatingAnimatedJoint(CVehiclePartAnimatedJoi
 		{
 			ISkeletonPose* pSkeletonPose = m_pCharInstance->GetISkeletonPose();
 			assert(pSkeletonPose);
+
+            //ISkeletonAnim* pSkeletonAnim = m_pCharInstance->GetISkeletonAnim();
       
 			//CryCharAnimationParams animParams;
 			//animParams.m_nFlags |= CA_LOOP_ANIMATION;
-			//pSkeleton->StartAnimation("Default",0, 0,0,  animParams); // [MR: commented out on Ivos request]
+            //pSkeletonAnim->StartAnimation("Default",0, 0,0,  animParams); // [MR: commented out on Ivos request]
 
-            //CryMP: Fixme
-			//pSkeletonPose->SetPostProcessCallback(	(int (*)(ICharacterInstance*,void*)) CVehiclePartAnimated_ProcessRotations, (void*)this);
+            //CryMP
+            pSkeletonPose->SetPostProcessCallback0(
+                (int (*)(ICharacterInstance*, void*)) CVehiclePartAnimated_ProcessRotations, (void*)this);
 		}
 	}
 
@@ -1018,12 +1030,9 @@ void CVehiclePartAnimated::RegisterRotatingAnimatedJoint(CVehiclePartAnimatedJoi
 //------------------------------------------------------------------------
 int CVehiclePartAnimated_ProcessRotations(ICharacterInstance* pCharInstance, CVehiclePartAnimated* pPartAnimated)
 {
-	pPartAnimated->ProcessAnimatedJointRotations();
-	return 0;
+    pPartAnimated->ProcessAnimatedJointRotations();
+	return 1;
 }
-
-
-
 
 void DumpSkeleton(ISkeletonPose* pSkeletonPose)
 {
