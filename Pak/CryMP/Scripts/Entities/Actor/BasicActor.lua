@@ -21,14 +21,14 @@ ActorShared =
 				direction = {x=0,y=0,z=-1},
 				strength = 1.2,
 				partId = -1,
-			},
+			},			
 			{
 				use_direction = true,
 				direction = {x=1,y=1,z=1},
 				use_strength = true,
 				partId = -1,
 				strength = 1.2,
-			},
+			},						
 			{
 				use_direction = true,
 				direction = {x=1,y=1,z=1},
@@ -107,7 +107,7 @@ ActorShared =
 					direction = {x=0,y=1,z=0},
 					strength = 25,
 					partId = 3,
-				},
+				},							
 			},
 			chestshot =
 			{
@@ -132,14 +132,14 @@ ActorShared =
 					direction = {x=0,y=0,z=-1},
 					strength = 500,
 					partId = -1,
-				},
+				},			
 				{
 					use_direction = true,
 					direction = {x=1,y=1,z=1},
 					use_strength = true,
 					partId = -1,
 					strength = 2,
-				},
+				},						
 				{
 					use_direction = true,
 					direction = {x=1,y=1,z=1},
@@ -217,7 +217,7 @@ ActorShared =
 					direction = {x=0,y=1,z=0},
 					strength = 50,
 					partId = 3,
-				},
+				},					
 			},
 			chestshot =
 			{
@@ -258,7 +258,7 @@ ActorShared =
 					direction = {x=0,y=1,z=0},
 					strength = 50,
 					partId = 3,
-				},
+				},								
 			},
 			chestshot =
 			{
@@ -299,7 +299,7 @@ ActorShared =
 					direction = {x=0,y=1,z=0},
 					strength = 50,
 					partId = 3,
-				},
+				},								
 			},
 			chestshot =
 			{
@@ -340,7 +340,7 @@ ActorShared =
 					direction = {x=0,y=1,z=0},
 					strength = 50,
 					partId = 3,
-				},
+				},				
 			},
 			chestshot =
 			{
@@ -359,7 +359,7 @@ ActorShared =
 			rotate = 0,
 		},
 	},
-
+	
   -- why do player sound start from 1 to 10 and AI is 00 to 09 ??
 	player =
 	{
@@ -376,7 +376,7 @@ ActorShared =
 			{"languages/dialog/ai_player/pain_09.wav"},
 			{"languages/dialog/ai_player/pain_10.wav"},
 		},
-
+		
 		pain_mp =
 		{
 			{"languages/dialog/ai_korean_soldier_1/pain_01.wav"},
@@ -390,7 +390,7 @@ ActorShared =
 			{"languages/dialog/ai_korean_soldier_1/pain_09.wav"},
 			{"languages/dialog/ai_korean_soldier_1/pain_10.wav"},
 		},
-
+		
 		death =
 		{
 			{"languages/dialog/ai_player/death_00.wav"},
@@ -404,10 +404,10 @@ ActorShared =
 			{"languages/dialog/ai_player/death_08.wav"},
 			{"languages/dialog/ai_player/death_09.wav"},
 		},
-
+		
 		death_mp =
 		{
-			{"languages/dialog/ai_korean_soldier_1/death_00.wav"},
+			{"languages/dialog/ai_korean_soldier_1/death_00.wav"},		
 			{"languages/dialog/ai_korean_soldier_1/death_01.wav"},
 			{"languages/dialog/ai_korean_soldier_1/death_02.wav"},
 			{"languages/dialog/ai_korean_soldier_1/death_03.wav"},
@@ -419,7 +419,7 @@ ActorShared =
 			{"languages/dialog/ai_korean_soldier_1/death_09.wav"},
 		},
 	},
-
+	 
 	alien =
 	{
 		pain =
@@ -431,7 +431,7 @@ ActorShared =
 		{
 			{"sounds/alien:naked_alien:death"},
 		},
-
+		
 		tentacles =
 		{
 			{"sounds/alien:naked_alien:melee_attack"},
@@ -439,93 +439,93 @@ ActorShared =
 
 		accelerate = {"sounds/alien:naked_alien:accelerate"},
 		melee = {"sounds/alien:naked_alien:melee_attack"},
-
+				
 		idle = {"sounds/alien:naked_alien:idle"},
 	},
-
+	
 	alienTest =
 	{
 		pain =
 		{
 			{"sounds/alien:naked_alien:pain"},
 		},
-
+		
 		death =
 		{
 			{"sounds/alien:naked_alien:death"},
 		},
-
+		
 		tentacles =
 		{
 			{"sounds/alien:naked_alien:melee_attack"},
 		},
-
+				
 		idle = {"sounds/alien:naked_alien:hiss_loop_test"},
 	},
-
+	
 	trooper =
 	{
 		pain =
 		{
 			{"sounds/alien:trooper:pain",{x=0,y=0,z=1.5}},
 		},
-
+		
 		death =
 		{
 			{"sounds/alien:trooper:death",{x=0,y=0,z=1.5}},
 		},
-
+						
 		idle = {"sounds/alien:trooper:idle",{x=0,y=0,z=1.5}},
 		idleCloak = {"sounds/alien:trooper:idle_cloaked",{x=0,y=0,z=1.5}},
-
+		
 --		tentacles =
 --		{
 --			{"sounds/alien:trooper:melee_attack"},
 --		},
 	},
-
+	
 	hunter =
 	{
 		pain =
 		{
 			{"sounds/alien:hunter:pain"},
 		},
-
+		
 --		death =
 --		{
 --			{"sounds/alien:hunter:death_part1"},
 --		},
-
+						
 		idle = {"sounds/alien:hunter:idle",{x=0,y=0,z=6.5}},
 	},
-
+		
 	scout =
 	{
 		pain =
 		{
 			{"sounds/alien:scout:pain"},
 		},
-
+		
 		death =
 		{
 			{"sounds/alien:scout:death"},
 		},
-
+		
 		idle = {"sounds/alien:scout:idle"},
-
+		
 	},
-
+		
 	zeroG_sounds =
 	{
 		thrusters =	{"sounds/player/exosuit/thruster.wav", SOUND_DEFAULT_3D, 100, 3, 30},
 		thrusterVolume = 95,
-
+				
 		gyro_on = {"sounds/player/exosuit/activating_gyroscope.wav", SOUND_DEFAULT_3D, 250, 3, 30},
 		gyro_off = {"sounds/player/exosuit/deactivating_gyroscope.wav", SOUND_DEFAULT_3D, 250, 3, 30},
-
+		
 		gboots_on = {"sounds/player/exosuit/activating_magnetic_boots.wav", SOUND_DEFAULT_3D, 250, 3, 30},
 		gboots_off = {"sounds/player/exosuit/deactivating_magnetic_boots.wav", SOUND_DEFAULT_3D, 250, 3, 30},
-
+		
 		gboots_step =
 		{
 			{"sounds/player/exosuit/boots_step1.wav", SOUND_DEFAULT_3D, 200, 5, 60},
@@ -534,14 +534,14 @@ ActorShared =
 			{"sounds/player/exosuit/boots_step4.wav", SOUND_DEFAULT_3D, 200, 5, 60},
 		}
 	},
-
+	
 	none = {},
-
+	
 	splash_sounds =
 	{
 		{"Sounds/physics:player_foley:bodyfall_waterdeep", SOUND_DEFAULT_3D, 200, 5, 60},
 	},
-
+	
 	--animation events
 	animation_events =
 	{
@@ -553,10 +553,10 @@ ActorShared =
 }
 
 function GetRandomSound(sounds)
-
+	
 	if (type(sounds) == "table") then
 		local num = table.getn(sounds);
-
+		
 		if (num>=1) then
 			if (type(sounds[1]) == "table") then
 				return sounds[math.random(num)];
@@ -565,22 +565,22 @@ function GetRandomSound(sounds)
 			end
 		end
 	end
-
+		
 	return nil;
 end
 
 function PlayRandomSound(emitter,sounds)
-
-	if (not emitter) then
-		return nil;
+	
+	if (not emitter) then 
+		return nil; 
 	end
-
+	
 	local sound = GetRandomSound(sounds);
-
+	
 	if (sound) then
 		return emitter:PlaySoundEventEx(sound[1], SOUND_DEFAULT_3D, 1, g_Vectors.v000, 0, 0, SOUND_SEMANTIC_AI_READABILITY);
 	end
-
+	
 	return nil;
 end
 
@@ -612,20 +612,20 @@ ALIENEVENT_CALLFUNCTION = 6;
 ALIENEVENT_SETGRAPHINPUT = 7;
 
 
-
+	
 ----------------------------------------------------------------------------------------------------
 --BasicActor
 BasicActor =
-{
+{	
 	AnimationGraph = "PlayerFullBody.xml",
 	UpperBodyGraph = "PlayerUpperBody.xml",
 
-	Properties =
+	Properties = 
 	{
 		soclasses_SmartObjectClass = "Actor",
 		ragdollPersistence = 0,
 		physicMassMult = 1.0,
-
+		
 		Damage =
 		{
 			bLogDamages = 0,
@@ -633,10 +633,10 @@ BasicActor =
 			--playerMult = 1.0,
 			--AIMult = 1.0,
 		},
-
+		
 		equip_EquipmentPack="",
 	},
-
+		
 	lastHit =
 	{
 		dir = {x=0,y=0,z=0},
@@ -646,61 +646,61 @@ BasicActor =
 		damage = 0,
 		bulletType = -1,
 	},
-
+	
 	tempSetStats =
 	{
 	},
-
+			
 	Server = {},
 	Client = {},
-
+	
 	grabParams =
 	{
-		collisionFlags = 0, --geom_colltype_player,
-
+		collisionFlags = 0, --geom_colltype_player,		
+						
 		holdPos = {x=0.0,y=0.4,z=1.25}, -- position where grab is holded
-
+						
 		grabDelay = 0,--if IK is used, its the time delay where the limb tries to reach the object.
 		followSpeed = 5.5,
-
-		limbs =
+		
+		limbs = 
 		{
 			"rightArm",
 			"leftArm",
 			--"fpRightArm",
 			--"fpLeftArm",
 		},
-
+		
 		useIKRotation = 0,
 	},
-
+	
 --	Bip01 R Clavicle
 --	Bip01 R UpperArm
 --	Bip01 R Forearm
 --	Bip01 R Hand
 
-	IKLimbs =
+	IKLimbs = 
 	{
 		{0,"rightArm","Bip01 R UpperArm","Bip01 R Forearm","Bip01 R Hand", IKLIMB_RIGHTHAND},
 		{0,"leftArm","Bip01 L UpperArm","Bip01 L Forearm","Bip01 L Hand", IKLIMB_LEFTHAND},
-
+				
 		--{2,"fpRightArm","rootR","forearm_R","hand_R"},
 		--{2,"fpLeftArm","rootL","forearm_L","hand_L"},
-
+		
 		--{2,"fpRightArm","rootR","","hand_R"},
 		--{2,"fpLeftArm","rootL","","hand_L"},
 	},
-
+		
 	bloodFlowEffectWater = "misc.blood_fx.water",
 	bloodFlowEffect = "misc.blood_fx.ground",
-	bloodSplatWall={
+	bloodSplatWall={	
 		"Materials/decals/blood_splat1",
 		"Materials/decals/blood_splat2",
 		"Materials/decals/blood_splat5",
 		"Materials/decals/blood_splat7",
 		"Materials/decals/blood_splat11",
 	},
-	bloodSplatGround={
+	bloodSplatGround={	
 		"materials/decals/blood_pool",
 	},
 	bloodSplatGroundDir = {x=0, y=0, z=-1},
@@ -709,43 +709,43 @@ BasicActor =
 	{
 		lastSplash = 0,
 	},
-
+	
 	actorStats =
 	{
-
+		
 	},
 }
 
 
 BasicActorParams =
-{
+{	
 	physicsParams =
 	{
 		flags = 0,
 		mass = 80,
 		stiffness_scale = 73,
-
-		Living =
+					
+		Living = 
 		{
 			gravity = 9.81,--15,--REMINDER: if there is a ZeroG sphere in the map, gravity is set to 9.81.
 						 --It will be fixed, but for now just do all the tweaks without any zeroG sphere in the map.
 			mass = 80,
 			air_resistance = 0.5, --used in zeroG
-
+			
 			k_air_control = 0.9,
-
+			
 			max_vel_ground = 16,
-
+			
 			min_slide_angle = 45.0,
 			max_climb_angle = 50.0,
 			min_fall_angle = 50.0,
-
+			
 			timeImpulseRecover = 1.0,
-
+			
 			colliderMat = "mat_player_collider",
 		},
 	},
-
+	
 	gameParams =
 	{
 		stance =
@@ -851,28 +851,28 @@ BasicActorParams =
 				useCapsule = 1,
 			},
 		},
-
+					
 		sprintMultiplier = 1.5,--speed is multiplied by this ammount if sprint key is pressed -- 1.2 for a more counter-striky feel
 		strafeMultiplier = 1.0,--speed is multiplied by this ammount when strafing
 		backwardMultiplier = 0.7,--speed is multiplied by this ammount when going backward
 		grabMultiplier = 0.5,--speed is multiplied by this ammount when the player is carry the maximun ammount carriable
-
-		inertia = 10.0,--7.0,--the more, the faster the speed change: 1 is very slow, 10 is very fast already
+				
+		inertia = 10.0,--7.0,--the more, the faster the speed change: 1 is very slow, 10 is very fast already 
 		inertiaAccel = 11.0,--same as inertia, but used when the player accel
-
+			
 		jumpHeight = 1.0,--meters
-
+		
 		slopeSlowdown = 3.0,
-
+		
 		leanShift = 0.35,--how much the view shift on the side when leaning
 		leanAngle = 15,--how much the view rotate when leaning
-
+		
 		--ZeroG stuff:
 		thrusterImpulse = 14.0,--thruster power, for the moment very related to air_resistance.
 		thrusterStabilizeImpulse = 0.01,--used from the jetpack to make the player stop slowly.
 		gravityBootsMultipler = 0.8,--speed is multiplied by this ammount when gravity boots are on
 		afterburnerMultiplier = 2.0,--how much the afterburner
-
+		
 		--grabbing
 		maxGrabMass = 70,
 		maxGrabVolume = 2.0,--its the square volume of an 1x1x2 meters object
@@ -910,31 +910,31 @@ function BasicActor:ResetCommon()
 	end
 	self.actor:SetMaxHealth(health);
 	self.lastHealth = self.actor:GetHealth();
-
+	
 	--sounds
 	self:StopSounds();
 	BasicActor.InitSoundTables(self);
-
+	
 	--reset events
 	self:StopEvent("all");
-
+	
 	-- drop grab, if present
 	self:DropObject();
-
+	
 	--
 	self:RemoveDecals();
 	self:EnableDecals(0, true);
-
+	
 	--
 	self.lastDeathImpulse = 0;
 	self.bodyUnseen = 0;
 	self:KillTimer(DEAD_TIMER);
 	self:KillTimer(DEADANIM_TIMER);
-
+	
 	self:KillTimer(PAIN_TIMER);
 	self:KillTimer(BLOOD_POOL_TIMER);
 	self.painSoundTriggered = nil;
-
+	
 	--[[ C++
 	--to save some performace, the effects timer for AI will be different.
 	if (self.actor:IsPlayer()) then
@@ -949,27 +949,27 @@ function BasicActor:ResetCommon()
 	end
 	self.AI = {};
 
-	if (not System.IsEditor()) then
+	if (not System.IsEditor()) then	
 		if (self.inventory and self.ammoCapacity) then
 			for ammo,capacity in pairs(self.ammoCapacity) do
 				self.inventory:SetAmmoCapacity(ammo, capacity);
 			end
 		end
 	end
-
-
+	
+	
 end
 
 --------------------------------------------------------------------------
-function BasicActor:GetCollisionDamageThreshold()
+function BasicActor:GetCollisionDamageThreshold()      
   return self.collisionDamageThreshold or 0;
 end
 
 --------------------------------------------------------------------------
-function BasicActor:GetSelfCollisionMult(collider, hit)
-	if (not collider) then
+function BasicActor:GetSelfCollisionMult(collider, hit) 
+	if (not collider) then  
 		-- static geometry -> use self collision damping
-		return self.selfCollisionDamageMult or 1;
+		return self.selfCollisionDamageMult or 1;  
 	end
 
 	if(collider and collider.vehicle) then
@@ -988,14 +988,14 @@ function BasicActor:GetForeignCollisionMult(entity, hit)
 	if (self.foreignCollisionDamageMult) then
 		return self.foreignCollisionDamageMult;
 	end
-
+  
 	return 1;
 end
 
 --------------------------------------------------------------------------
 function BasicActor:GetColliderEnergyScale(collider)
 	if (not collider.actor) then
-		return self.colliderEnergyScale or 1;
+		return self.colliderEnergyScale or 1; 
 	elseif ((collider.actor:GetPhysicalizationProfile() == "sleep") or (collider.actor:GetPhysicalizationProfile() == "ragdoll")) then
 		return self.colliderRagdollScale or 1;
 	end
@@ -1006,14 +1006,14 @@ end
 function BasicActor:Reset()
 
 	BasicActor.ResetCommon(self);
-
+		
 	--misc resetting
 	self.actor:SetMovementTarget(g_Vectors.v000,g_Vectors.v000,g_Vectors.v000,1);
 	self.lastVehicleId = nil;
 	self.AI.theVehicle = nil;
-
+		
 	self:ResetBleeding();
-
+	
 	--E3 hacks
 	BasicActor.ActorLink(self);
 end
@@ -1024,30 +1024,30 @@ function BasicActor:ResetLoad()
 end
 
 function BasicActor:InitAnimationEvents()
-
+	
 	self.animation_events = ActorShared.animation_events;
-
+	
 	--TODO:check all possible nils and such
 	if (self.animation_events) then
-
+		
 		local chrSlot = 0;
-
+		
 		for i,event in pairs(self.animation_events) do
-
+			
 			--self:SetAnimationEvent(chrSlot,event[1]);
 			local cells = table.getn(event);
-
+			
 			for i=2, cells do
-
+				
 				local cell = event[i];
-				self:SetAnimationKeyEvent(chrSlot,event[1],cell[1],cell[2]);
+				self:SetAnimationKeyEvent(chrSlot,event[1],cell[1],cell[2]);				
 			end
 		end
 	end
 end
 
 function BasicActor:InitIKLimbs()
-	if (self.IKLimbs) then
+	if (self.IKLimbs) then		
 		for i,limb in pairs(self.IKLimbs) do
 			self.actor:CreateIKLimb(limb[1],limb[2],limb[3],limb[4],limb[5],limb[6] or 0);
 		end
@@ -1065,45 +1065,45 @@ function BasicActor:SetAnimKeyEvent(animation,frame,func)
 end
 
 function BasicActor:InitSoundTables()
-
+	
 	local voiceType = self.Properties.voiceType;
 	if (not voiceType or voiceType == "") then
 		voiceType = self.voiceType;
 	end
-
+	
 	if (voiceType and voiceType ~= "" and ActorShared[voiceType]) then
-
+		
 		self.voiceTable = ActorShared[voiceType];
 	 	local precache = GetRandomSound(self.voiceTable.pain);
-		if (precache~=nil) then
+		if (precache~=nil) then 
 	 		Sound.Precache(precache[1], SOUND_PRECACHE_LOAD_SOUND);
 	 	end;
 --	else
 --		self.voiceTable = {};
 --		AI.Warning("Warning, "..self:GetName().." has no voice table!");
 	end
-
+	
 	self.zeroGTable = ActorShared.zeroG_sounds;
-
+	
 end
 
 
-function BasicActor:ShutDown()
+function BasicActor:ShutDown()  
 	self:ResetAttachment(0, "right_item_attachment");
-	self:ResetAttachment(0, "left_item_attachment");
+	self:ResetAttachment(0, "left_item_attachment");	
 	self:ResetAttachment(0, "laser_attachment");
 	--self:DestroyAttachment(0,"mouth");
 end
 
 --[[ C++
 function BasicActor.Client:OnUpdate(frameTime)
-
-  -- update screen frost.
+  
+  -- update screen frost. 
   -- in MP, we only have frost after being fully frozen, in SP always if frozenAmount > 0 (by Design)
   local frozenAmount = self.actor:GetFrozenAmount();
   local doFrost = self.actorStats.isFrozen or (frozenAmount>0.05 and not g_gameRules:IsMultiplayer());
   local isClient = self.actor:IsLocalClient();
-
+  
   if (doFrost and frozenAmount < 1) then
   	if (g_gameRules:IsMultiplayer()) then
   		doFrost=false;
@@ -1116,18 +1116,18 @@ function BasicActor.Client:OnUpdate(frameTime)
 		  self._frost_params.speedMultiplier = 1-frozenAmount;
 		  self.actor:SetParams(self._frost_params);
 		end
-
-		if (isClient) then
-			System.SetScreenFx("ScreenFrost_CenterAmount", 1);
+		
+		if (isClient) then	  	
+			System.SetScreenFx("ScreenFrost_CenterAmount", 1);		  			
 			System.SetScreenFx("ScreenFrost_Amount", math.min(1, 1.5*frozenAmount));
 		end
 	elseif (isClient and self.prevFrozenAmount > 0.1 and frozenAmount <= 0.1) then
-		System.SetScreenFx("ScreenFrost_CenterAmount", 0);
+		System.SetScreenFx("ScreenFrost_CenterAmount", 0);		  			
 		System.SetScreenFx("ScreenFrost_Amount", 0);
 	end
-
+	
 	self.prevFrozenAmount = frozenAmount;
-
+	
 	System.LogAlways("BasicActor.Client OnUpdate "..self:GetName());
 end
 ]]
@@ -1147,11 +1147,11 @@ end
 --[[
 function BasicActor:UpdateSounds(frameTime)
 	local aStats = self.actorStats;
-
+	
 	--stance sounds
 	local newStance = aStats.stance or 0;
 	local oldStance = aStats.oldStance or 0;
-
+	
 	if (newStance ~= oldStance) then
 		local stanceSound = "";
 		--
@@ -1167,12 +1167,12 @@ function BasicActor:UpdateSounds(frameTime)
 				stanceSound = "sounds/physics:player_foley:crouch_off";
 			end
 		end
-
+		
 		local sound = self:PlaySoundEvent(stanceSound, g_Vectors.v000, g_Vectors.v010, SOUND_DEFAULT_3D, SOUND_SEMANTIC_PLAYER_FOLEY);
-
+		
 		--Log("stance changed, last:"..oldStance..", current:"..newStance);
 	end
-
+	
 	aStats.oldStance = newStance;
 end
 ]]
@@ -1186,13 +1186,13 @@ function BasicActor:WallBloodSplat(hit)
 		local dist = 2.5;
 		local dir = vecScale(hit.dir, dist);
 		local	hits = Physics.RayWorldIntersection(hit.pos,dir,1,ent_all,hit.targetId,nil,g_HitTable);
-
+		
 		local splat = g_HitTable[1];
 		if (hits > 0 and splat and ((splat.dist or 0)>0.25)) then
 			local n = table.getn(self.bloodSplatWall);
 			local i = math.random(1,n);
 			local s = 0.25+(splat.dist/dist)*0.35;
-
+			
 			Particle.CreateMatDecal(splat.pos, splat.normal, s, 300, self.bloodSplatWall[i], math.random()*360, vecNormalize(hit.dir), splat.entity and splat.entity.id, splat.renderNode);
 		end
 	end
@@ -1212,10 +1212,10 @@ function BasicActor:DoBloodPool()
 		return;
 	end
 	self:KillTimer(BLOOD_POOL_TIMER);
-
+	
 	local dist = 2.5;
-	local pos = self:GetBonePos("Bip01 Spine2", g_Vectors.temp_v1);
-	--local pos = self:GetWorldPos(g_Vectors.temp_v1);
+	local pos = self:GetBonePos("Bip01 Spine2", g_Vectors.temp_v1);	
+	--local pos = self:GetWorldPos(g_Vectors.temp_v1);	
 	if(pos == nil) then
 		Log("Bip01 Spine2 not found in model "..self.currModel);
 		return;
@@ -1223,14 +1223,14 @@ function BasicActor:DoBloodPool()
 	pos.z = pos.z + 1;
 	local dir = vecScale(self.bloodSplatGroundDir, dist);
 	local	hits = Physics.RayWorldIntersection(pos,dir,1,ent_terrain+ent_static, nil, nil, g_HitTable);
-
+	
 	local splat = g_HitTable[1];
 	if (hits > 0 and splat) then
 		local n = table.getn(self.bloodSplatGround);
-		local i = math.random(1,n);
+		local i = math.random(1,n);	
 		local s = 0.4;--random(0.4, 0.45);
 		--local s = 0.5+(splat.dist/dist)*0.5;
-
+		
 		Particle.CreateMatDecal(splat.pos, splat.normal, s, 300, self.bloodSplatGround[i], math.random()*360, vecNormalize(dir), splat.entity and splat.entity.id, splat.renderNode, 6, true);
 		--Particle.CreateDecal(splat.pos, splat.normal, 0.9, 300, "textures/sprites/blood/blood_pool.tif", math.random()*360, vecNormalize(hit.dir), splat.entity and splat.entity.id, splat.partid, 4);
 	end
@@ -1243,14 +1243,14 @@ function BasicActor:StartBleeding()
 	end
 	self:DestroyAttachment(0, "wound");
 	self:CreateBoneAttachment(0, "Bip01", "wound");
-
+	
 	local effect=self.bloodFlowEffect;
 	local pos = self:GetBonePos("Bip01", g_Vectors.temp_v1);
 	local level,normal,flow=CryAction.GetWaterInfo(pos);
 	if (level and level>=pos.z) then
 		effect=self.bloodFlowEffectWater;
 	end
-
+	
 	self.bleeding = true;
 	self:SetAttachmentEffect(0, "wound", effect, g_Vectors.v000, g_Vectors.v010, 1, 0);
 end
@@ -1289,97 +1289,97 @@ end
 
 
 function BasicActor:PushEvent(eventStr)
-
+	
 	local events = self.scripted_events;
-
+	
 	if (not events) then
 		return 0;
 	end
-
+	
 	local event = events[eventStr];
-
+	
 	if (event) then
-
+		
 		if (not self.events) then
 			self.events = {};
 		end
-
+		
 		local asize = table.getn(self.events);
 		local newIdx = asize+1;
-
+		
 		for i=1,asize do
-			if (not self.events[i].event) then
+			if (not self.events[i].event) then	
 				newIdx = i;
 				break;
 			end
 		end
-
+			
 		--
 		if (newIdx == asize+1) then
 			self.events[newIdx] = {};
 		end
-
+		
 		self.events[newIdx].eventName = eventStr;
 		self.events[newIdx].event = event;
 		self.events[newIdx].time = 0;
 		self.events[newIdx].currentEventId = 1;
-
+		
 		AI.LogEvent("event "..eventStr.." pushed at index "..newIdx.."!!");
-
+				
 		return 1;
 	end
 end
 
 function BasicActor:IsEventActive(eventStr)
-
+	
 	if (self.events) then
-
+				
 		local asize = table.getn(self.events);
-
+		
 		for i=1,asize do
-			if (self.events[i].event) then
+			if (self.events[i].event) then	
 				if (self.events[i].eventName == eventStr) then
 					return 1;
 				end
 			end
 		end
 	end
-
+	
 	return nil;
 end
 
 function BasicActor:UpdateEvents(frameTime)
-
+	
 	if (self.events) then
-
+		
 		local event = nil;
 		local asize = table.getn(self.events);
-
+		
 		for i=1,asize do
-			if (self.events[i].event) then
-
+			if (self.events[i].event) then	
+					
 				event = self.events[i];
 				if (event.time >= 0) then
 					event.time = event.time + frameTime;
 				end
-
+			
 				for j,step in pairs(event.event) do
-
+			
 					--if time is negative we want to stop this event
 					if ((event.time<0 and j>=event.currentEventId) or (step[2]<=event.time and j == event.currentEventId)) then
-
+					
 --						if (event.time < 0) then
 --							AI.LogEvent("stopping event "..event.eventName.."("..event.currentEventId..")!");
 --						end
-
+							
 						self:PlayEvent(step[1]);
 						event.currentEventId = event.currentEventId + 1;
-
+						
 						if (event.currentEventId > table.getn(event.event)) then
 							self.events[i].event = nil;
 							AI.LogEvent("event "..event.eventName.." stopped!");
 						end
-					end
+					end	
 				end
 			end
 		end
@@ -1388,43 +1388,43 @@ end
 
 --if eventStr is "all" stop all events
 function BasicActor:StopEvent(eventStr)
-
+		
 	if (self.events) then
-
+				
 		local asize = table.getn(self.events);
-
+		
 		for i=1,asize do
-			if (self.events[i].event) then
+			if (self.events[i].event) then	
 				if (eventStr == "all" or self.events[i].eventName == eventStr) then
 					self.events[i].time = -1;
 					AI.LogEvent("REQUEST TO STOP event "..self.events[i].eventName);
 				end
 			end
 		end
-
+		
 		--make sure to stop events
 		self:UpdateEvents(1.0);
 	end
 end
 
 function BasicActor:PlayEvent(eventStr)
-
+	
 	local events = self.scripted_events;
-
+	
 	if (not events) then
 		return 0;
 	end
-
+	
 	local event = events[eventStr];
-
+	
 	if (event) then
-
+		
 		if (event.event == ALIENEVENT_CALLFUNCTION) then
 		  if (event.func) then
 			  event.func(self,event.value);
 			else
 			  Log("<%s> BasicActor:PlayEvent: func not found! (event %s)", self:GetName(), eventStr);
-			end
+			end		
 		elseif (event.event == ALIENEVENT_QUEUEGRAPHSTATE) then
 			self.actor:QueueAnimationState(event.value);
 		elseif (event.event == ALIENEVENT_SETGRAPHINPUT) then
@@ -1436,7 +1436,7 @@ function BasicActor:PlayEvent(eventStr)
 			self:StopAnimation(0, event.value);
 			--Log("ALIENEVENT_STOPANIMATION");
 		elseif (event.event == ALIENEVENT_ISVULNERABLE) then
-
+			
 			if (event.value == 1) then
 				self.isVulnerable = 1;
 			else
@@ -1453,7 +1453,7 @@ end
 function BasicActor:WalkingOnWater()
 end
 
-function BasicActor:HealthChanged()
+function BasicActor:HealthChanged()	
 
 	local health = self.actor:GetHealth();
 	local damage = self.lastHealth - health;
@@ -1461,7 +1461,7 @@ function BasicActor:HealthChanged()
 	if (self.Properties.Damage.bLogDamages ~= 0) then
 		Log(self:GetName().." health:"..health.." (last damage:"..damage..")");
 	end
-
+	
 	self.lastHealth = self.actor:GetHealth();
 end
 
@@ -1479,19 +1479,19 @@ function BasicActor.Server:OnDeadHit(hit)
 		angAxis.x = math.random() * 2 - 1;
 		angAxis.y = math.random() * 2 - 1;
 		angAxis.z = math.random() * 2 - 1;
-
+		
 		local imp1 = math.random() * 20 + 10;
 		local imp2 = math.random() * 20 + 10;
 		--System.Log("DeadHit linear: "..string.format(" %.03f,%.03f,%.03f",dir.x,dir.y,dir.z).." -> "..tostring(imp1));
 		--System.Log("DeadHit angular: "..string.format(" %.03f,%.03f,%.03f",angAxis.x,angAxis.y,angAxis.z).." -> "..tostring(imp2));
-
+		
 		self:AddImpulse( hit.partId, hit.pos, dir, imp1, 1, angAxis, imp2, 35);
 		self.lastDeathImpulse = frameID;
-	end
+	end 
 end
 
 
-function BasicActor.Server:OnHit(hit)
+function BasicActor.Server:OnHit(hit)	
 	if (self.actor:GetSpectatorMode()~=0) then
 		return;
 	end
@@ -1499,7 +1499,7 @@ function BasicActor.Server:OnHit(hit)
 	if (hit.damage>=1) then
 		if (g_gameRules and hit.target and hit.target.actor and hit.target.actor:IsPlayer()) then
 			if(not hit.shooterId == nil or (hit.damage > 3.0)) then
-				g_gameRules.game:SendDamageIndicator(hit.targetId, hit.shooterId or NULL_ENTITY, hit.weaponId or NULL_ENTITY);
+				g_gameRules.game:SendDamageIndicator(hit.targetId, hit.shooterId or NULL_ENTITY, hit.weaponId or NULL_ENTITY);	
 			end
 		end
 		if (hit.shooter and hit.shooter.actor and hit.shooterId~=hit.targetId and hit.shooter.actor:IsPlayer()) then
@@ -1508,46 +1508,46 @@ function BasicActor.Server:OnHit(hit)
 			end
 		end
 	end
-
+	
   --Log("BasicActor.Server:OnHit (%s)", self:GetName());
-	-- store some information for musiclogic
+	-- store some information for musiclogic	
 	if (not self.MusicInfo) then self.MusicInfo={}; end
 	self.MusicInfo.nonbullet = true;
-
+	
 	if (self:IsOnVehicle() and hit.type~="heal") then
-		local vehicle = System.GetEntity(self.actor:GetLinkedVehicleId());
+		local vehicle = System.GetEntity(self.actor:GetLinkedVehicleId());				
 		local newDamage = vehicle.vehicle:ProcessPassengerDamage(self.id, self.actor:GetHealth(), hit.damage, hit.type or "", hit.explosion or false);
-		if (newDamage <= 0.0) then
+		if (newDamage <= 0.0) then		  
 			return;
-		end
+		end		
 	end
-
+	
 	local isPlayer = self.actor:IsPlayer();
-
+	
 	if (hit.damage>0) then
 		self.actor:NanoSuitHit(hit.damage);
 	end
-
+	
 --	if (self.actor:GetPhysicalizationProfile() == "sleep") then
 --		self.actor:StandUp();
 --	end
-
+	
 	if (hit.frost and hit.frost>0) then
 	  self.actor:AddFrost(hit.frost);
 	end
-
+	
 --	Log("OnHit >>>>>>>>> "..self:GetName().."   damage: "..hit.damage);
 
 	local died = g_gameRules:ProcessActorDamage(hit);
-
+		
   if (died and not isPlayer and (hit.type == "collision" or hit.explosion == true)) then
     self:LastHitInfo(self.lastHit, hit);
 	end
-
+	
 	if(hit.damage==0 or hit.type=="heal") then return end
-
+		
 	--some AI related
-	if (not isPlayer) then
+	if (not isPlayer) then	
 		local theShooter=hit.shooter;
 		-- upade hide-in-vehicle
 		if (theShooter and theShooter.IsOnVehicle) then
@@ -1557,34 +1557,34 @@ function BasicActor.Server:OnHit(hit)
 				if(shootersVehicle and shootersVehicle.ChangeSpecies and (shootersVehicle.AI==nil or shootersVehicle.AI.hostileSet~=1)) then
 					shootersVehicle:ChangeSpecies(theShooter, 2);
 				end
-			end
+			end	
 		end
-
+	
 		if (hit.type and hit.type ~= "collision" and hit.type ~= "fall" and hit.type ~= "event") then
 			if (theShooter) then
 				CopyVector(g_SignalData.point, theShooter:GetWorldPos());
 				g_SignalData.id = hit.shooterId;
 			else
 				g_SignalData.id = NULL_ENTITY;
-				CopyVector(g_SignalData.point, g_Vectors.v000);
-			end
+				CopyVector(g_SignalData.point, g_Vectors.v000); 
+			end	
 
 			g_SignalData.fValue = hit.damage;
-
+			
 			if (theShooter and AI.Hostile(self.id,hit.shooterId)) then
 				AI.Signal(SIGNALFILTER_SENDER,0,"OnEnemyDamage",self.id,g_SignalData);
 				AI.UpTargetPriority(self.id, hit.shooterId, 0.2);	-- make the target more important
 				-- check for greeting player in case of "nice shot"
-				if(died and theShooter == g_localActor) then
+				if(died and theShooter == g_localActor) then 
 					local ratio = self.lastHealth / self.Properties.Damage.health;
-					if( ratio> 0.9 and hit.material_type and hit.material_type=="head" and hit.type and hit.type=="bullet") then
+					if( ratio> 0.9 and hit.material_type and hit.material_type=="head" and hit.type and hit.type=="bullet") then 
 						AI.Signal(SIGNALFILTER_GROUPONLY,0,"OnPlayerNiceShot",g_localActor.id);
 					end
 				end
 --			elseif(hit.shooter and hit.shooter==g_localActor and self.Properties.species==hit.shooter.Properties.species) then
 --				AI.Signal(SIGNALFILTER_SENDER,0,"OnFriendlyDamageByPlayer",self.id,g_SignalData);
 			elseif (theShooter ~= nil and theShooter~=self) then
-				if(hit.weapon and hit.weapon.vehicle) then
+				if(hit.weapon and hit.weapon.vehicle) then 
 					AI.Signal(SIGNALFILTER_SENDER,0,"OnDamage",self.id,g_SignalData);
 				else
 					AI.Signal(SIGNALFILTER_SENDER,0,"OnFriendlyDamage",self.id,g_SignalData);
@@ -1593,11 +1593,11 @@ function BasicActor.Server:OnHit(hit)
 				AI.Signal(SIGNALFILTER_SENDER,0,"OnDamage",self.id,g_SignalData);
 			end
 		end
-
+		
 		if (self.RushTactic) then
 			self:RushTactic(5);
 		end
-
+		
 	--elseif (not died) then
 --		Log("Player Damage: damage="..hit.damage.." t=".._time);
 		-- design request : decouple energy from health
@@ -1605,25 +1605,25 @@ function BasicActor.Server:OnHit(hit)
 	end
 
 	--AI.DebugReportHitDamage(self.id, hit.shooter.id, hit.damage, hit.material_type);
-
--- kirill > this is for debugging AI accurracy, do not remove
---	self.actor:CreateCodeEvent({event = "aiHitDebug",shooterId=hit.shooterId});
-
+	
+-- kirill > this is for debugging AI accurracy, do not remove	
+--	self.actor:CreateCodeEvent({event = "aiHitDebug",shooterId=hit.shooterId});	
+	
 --	if (died) then
 --		self:SetTimer(UNRAGDOLL_TIMER, 3500);
 --	end
-
+	
 	self:HealthChanged();
 	return died;
 end
 
 function BasicActor:ApplyDeathImpulse()
-
+	
 	local lastVelocity = self.lastHit.velocity;
 	local lastSpeed = LengthVector(lastVelocity);
-
+		
 	local dir = g_Vectors.temp_v2;
-
+		
 	if (self.lastHit.dir) then
 		CopyVector(dir, self.lastHit.dir);
 	else
@@ -1631,48 +1631,48 @@ function BasicActor:ApplyDeathImpulse()
 		dir.y = 0;
 		dir.z = 0;
 	end
-
+		
 	dir.z = dir.z + (math.random()*6 + 1)*0.1;
-
+		
 	--NormalizeVector(lastVelocity);
 	--FastSumVectors(dir, dir, lastVelocity);
-
+							
 	--local impulse = 2.0*lastSpeed + (100*math.random(1.0,2.0));
 	if (self.lastHit.damage < 0.01) then
 		return;
 	end
-
+	
 	local damageDone = self.lastHit.damage;
 	local impulse = math.min(650,math.max(10,self.lastHit.damage) * (math.random()*3+6));
-
+			
 	local playerPos = {};
 	self:GetWorldPos(playerPos);
 	playerPos.z = playerPos.z + 1;
-
+	
 	local hitpos = g_Vectors.temp_v3;
 	local partId = self.lastHit.partId;
-
+	
 	if (not partId) then
 		partId = -1;
 	end
-
+			
 	if (self.lastHit.pos) then
 		CopyVector(hitpos,self.lastHit.pos);
 	else
 		CopyVector(hitpos,playerPos);
 	end
-
-
+		
+		
 	if (self.lastMelee) then
-
+	
 		--local dir = g_Vectors.temp_v4;
 		--g_localActor.actor:GetHeadDir(dir) --not working in MP - talk to Jan N
-
+		
 		if (dir.z < 0) then
 			dir.z = 0.1;
 			NormalizeVector(dir);
 		end
-
+		
 		if(self.lastMeleeImpulse > 300) then
 			self:AddImpulse( -1, hitpos, dir, self.lastMeleeImpulse*1.2,1 );
 		else
@@ -1682,25 +1682,25 @@ function BasicActor:ApplyDeathImpulse()
 	else
 		local fwdVec = {x=0,y=0,z=0};
 		local rightVec = {x=0,y=0,z=0};
-
+		
 		self:GetDirectionVector(0,rightVec);
 		self:GetDirectionVector(1,fwdVec);
-
+		
 		local rotAxis = g_Vectors.temp_v4;
 		--CopyVector(rotAxis,g_Vectors.v001);
 		self:GetDirectionVector(2,rotAxis);
-		rotAxis.x = rotAxis.x - fwdVec.x * 0.35;
+		rotAxis.x = rotAxis.x - fwdVec.x * 0.35; 
 		rotAxis.y = rotAxis.y - fwdVec.y * 0.35;
 		rotAxis.z = rotAxis.z - fwdVec.z * 0.35;
 		NormalizeVector(rotAxis);
-
+				
 		local delta = {x=0,y=0,z=0};
 		SubVectors(delta,hitpos,playerPos);
 		delta.z = 0;
-
+						
 		local dotRight = math.min(1.0,math.max(-1.0,dotproduct3d(rightVec,delta)));
 		local dotFront = math.min(1.0,math.max(-1.0,dotproduct3d(fwdVec,delta)));
-
+		
 		local angImpulse = -1;
 		if(dotRight>0)then
 			--angImpulse = -1;
@@ -1708,9 +1708,9 @@ function BasicActor:ApplyDeathImpulse()
 		if(dotFront<0)then
 			angImpulse = angImpulse * -1;
 		end
-
+		
 		--Log("angImpulse = "..angImpulse);
-
+		
 		angImpulse = angImpulse * (dotRight * math.pi) * (impulse/650) * 80;
 
 		--cap the angular impulse if necessary
@@ -1736,14 +1736,14 @@ function BasicActor:ApplyDeathImpulse()
 					lookUp = deathImpulse.chestshot;
 				end
 				for i,impulse in pairs(lookUp) do
-
+					
 					local myPartId = -1;
 					if(impulse.partId ~= nil) then
 						myPartId = impulse.partId;
 					else
-						myPartId = self.lastHit.partId;
+						myPartId = self.lastHit.partId;	
 					end
-
+					
 					local myDirection = {x=0,y=0,z=0};
 					if(impulse.use_direction ~= nil)then
 						CopyVector(myDirection, self.lastHit.dir);
@@ -1751,21 +1751,21 @@ function BasicActor:ApplyDeathImpulse()
 					else
 						CopyVector(myDirection,impulse.direction);
 					end
-
+					
 					local myImpulse = 0;
 					if(impulse.use_strength ~= nil)then
 						myImpulse = self.lastHit.damage*0.8*impulse.strength;
 					else
 						myImpulse = impulse.strength;
 					end
-
+					
 					--randomize a bit
 					myDirection.x = myDirection.x * (math.random()*0.4 + 0.8);
 					myDirection.y = myDirection.y * (math.random()*0.4 + 0.8);
 					myDirection.z = myDirection.z * (math.random()*0.4 + 0.8);
-
+					
 					myImpulse = myImpulse * (math.random()*0.4 + 0.8);
-
+					
 					if (self.lastHit.explosion and myImpulse > 120) then
 						myImpulse = 120;
 					end
@@ -1773,24 +1773,24 @@ function BasicActor:ApplyDeathImpulse()
 					self:AddImpulse( myPartId, hitpos, myDirection, myImpulse, 1 );
 				end
 			end
-		end
-
+		end		
+		
 		dir.x = dir.x + math.random()*2 - 1;
 		dir.y = dir.y + math.random()*2 - 1;
 		dir.z = dir.z + math.random();
-
+		
 		NormalizeVector(dir);
-
+		
 		CopyVector(self.lastHit.dir,dir);
 		self.lastHit.damage = 0;
 		self.lastHit.partId = partId;
 		self.lastHit.impulse = impulse;-- * 0.5;
 		self.lastHit.angImpulse = angImpulse;-- * 0.5;
-
+		
 		--self:SetTimer(DEATH_REIMPULSE_TIMER,math.random(300,900));
 	end
-
-	--Log(self:GetName()..":DeathImpulse("..partId..","..Vec2Str(dir)..","..impulse..")");
+	
+	--Log(self:GetName()..":DeathImpulse("..partId..","..Vec2Str(dir)..","..impulse..")");	
 end
 
 function BasicActor:TurnRagdoll(param)
@@ -1801,7 +1801,7 @@ function BasicActor:TurnRagdoll(param)
 
 	--AI.LogEvent("BasicActor:TurnRagdoll("..self:GetName()..")");
 	--Log("BasicActor:TurnRagdoll("..self:GetName()..")");
-
+	
 	self.actor:SetPhysicalizationProfile("ragdoll");
 end
 
@@ -1816,14 +1816,14 @@ function BasicActor:OnPostFreeze(freeze)
 		if (not self._frost_params) then self._frost_params={}; end;
 		self._frost_params.speedMultiplier = 1;
 		self.actor:SetParams(self._frost_params);
-
+		
 		if (self.actor:IsLocalClient()) then
 		 	AI.FreeSignal(1, "OnPlayerUnFrozen", self:GetPos(), 20, self.id);
-			System.SetScreenFx("ScreenFrost_Amount", 0);
+			System.SetScreenFx("ScreenFrost_Amount", 0);	
 			System.SetScreenFx("ScreenFrost_CenterAmount", 0);
 		end
 	end
-
+	
 	-- kill AIs
 	if (freeze and not self.actor:IsPlayer()) then
 		self:Kill(false, NULL_ENTITY, NULL_ENTITY, freeze);
@@ -1848,9 +1848,9 @@ end;
 function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 
 	self.actor:Kill();
-
+	
 	self:StopEvent("all");
-
+	
 	AI.LogEvent("BasicActor:ClientKill( "..tostring(ragdoll)..", "..tostring(shooterId)..", "..tostring(weaponId));
 	if (self.actor:GetHealth() > 0) then
 		self.actor:SetHealth(0);
@@ -1858,10 +1858,10 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 
 	BasicActor.DoPainSounds(self, 1);
 	self:KillTimer(PAIN_TIMER);
-
+	
 	self:DropObject();
 	local shooter = System.GetEntity(shooterId);
-
+	
 	-- send event to music logic
 	if (self.MusicInfo) then
 		if (self.MusicInfo.headshot == true) then
@@ -1874,7 +1874,7 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 		self.MusicInfo.headshot = false;
 		self.MusicInfo.nonbullet = false;
 	end;
-
+	
 	-- additional signals for player and squad mates
 	if (self == g_localActor) then
 		AI.Signal(SIGNALFILTER_GROUPONLY_EXCEPT, 1, "OnPlayerDied", self.id);
@@ -1882,13 +1882,13 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 			MusicLogic.SetEvent(MUSICLOGICEVENT_PLAYER_KILLED);
 		end;
 	elseif (self.Properties and self.Properties.species == 0) then
-
+	
 		-- making player hoslite to squadmates, if he kills one of them
 		if(shooter and shooter==g_localActor ) then
 			g_SignalData.id = shooter.id;
 			AI.Signal(SIGNALFILTER_LEADER,10,"OnUnitBusy",self.id);
 			AI.Signal(SIGNALFILTER_GROUPONLY_EXCEPT, 1, "OnPlayerTeamKill", self.id,g_SignalData);
-		else
+		else	
 			AI.Signal(SIGNALFILTER_GROUPONLY_EXCEPT, 1, "OnSquadmateDied", self.id);
 		end
 		if(self.bUseOrderEnabled and self.useAction and self.useAction>0) then
@@ -1922,18 +1922,18 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 	-- Notify group about this
 	g_SignalData.id = self.id;
 	CopyVector(g_SignalData.point,self:GetPos());
-
+	
 	if (AI.GetGroupCount(self.id) > 1) then
 		-- tell your nearest that someone you have died only if you were not the only one
---		AI.Signal(SIGNALFILTER_NEARESTINCOMM, 10, "OnGroupMemberDiedNearest",self.id, g_SignalData);
+--		AI.Signal(SIGNALFILTER_NEARESTINCOMM, 10, "OnGroupMemberDiedNearest",self.id, g_SignalData); 
 		-- notify the closest looking at me dude
 		AI.ChangeParameter(self.id,AIPARAM_COMMRANGE,100);
 		AI.Signal(SIGNALFILTER_NEARESTINCOMM_LOOKING, 10, "OnBodyFallSound",self.id, g_SignalData);
 		-- the closest guy withing 10m will "hear" body falling sound
 		AI.ChangeParameter(self.id,AIPARAM_COMMRANGE,10);
 		AI.Signal(SIGNALFILTER_NEARESTINCOMM, 10, "OnBodyFallSound",self.id, g_SignalData);
-
---		AI.Signal(SIGNALFILTER_NEARESTINCOMM_LOOKING, 10, "OnGroupMemberDiedNearest",self.id, g_SignalData);
+		
+--		AI.Signal(SIGNALFILTER_NEARESTINCOMM_LOOKING, 10, "OnGroupMemberDiedNearest",self.id, g_SignalData); 		
 
 	else
 		-- tell anyone that you have been killed, even outside your group
@@ -1942,11 +1942,11 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 
 	if(shooter) then
 		AI.LogEvent("Shooter position:"..Vec2Str(shooter:GetWorldPos()));
-		AI.SetRefPointPosition(self.id,shooter:GetWorldPos());
+		AI.SetRefPointPosition(self.id,shooter:GetWorldPos());	
 --		self:InsertSubpipe(0,"DropBeaconAt",shooter.id);
-		AI.SetBeaconPosition(self.id, shooter:GetWorldPos());
+		AI.SetBeaconPosition(self.id, shooter:GetWorldPos());		
 	end
-
+		
 	-- Call the destructor directly, since the following AIEVENT_TARGETDEAD will
 	-- prevent the AI updating further (and kill all signals too).
 	if (self.Behaviour and self.Behaviour.Destructor) then
@@ -1955,11 +1955,11 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 	end
 	-- Notify AI system about this
 	self:TriggerEvent(AIEVENT_AGENTDIED);
-	if (BasicAI) then
-		--Script.SetTimer(1000, BasicAI.OnDeath, self);
+	if (BasicAI) then 
+		--Script.SetTimer(1000, BasicAI.OnDeath, self); 
 		Script.SetTimerForFunction( 1000 , "BasicAI.OnDeath", self );
 	end;
-
+	
 	--test death animations
 	if (nil) then
 		local animStr = "death_death_rifle_right_01";
@@ -1970,10 +1970,10 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 	elseif (not self:IsOnVehicle()) then
 		if (ragdoll) then
 			self:TurnRagdoll(1);
-		end
+		end	
 	end
 
-	if (not self.actor:IsPlayer() and self.Properties.ragdollPersistence>=0
+	if (not self.actor:IsPlayer() and self.Properties.ragdollPersistence>=0 
 		and not self:IsOnVehicle() and not freeze) then
 		local pos = self:GetPos();
 		local level,normal,flow=CryAction.GetWaterInfo(pos);
@@ -1990,7 +1990,7 @@ function BasicActor:Kill(ragdoll, shooterId, weaponId, freeze)
 		g_gameRules.Client.OnPlayerKilled(g_gameRules, self);
 	end
 
-	return true;
+	return true;	
 end
 
 
@@ -2008,16 +2008,16 @@ function BasicActor.Client:OnHit(hit)
 	end
 
 	local shooter = hit.shooter;
-
+		
 	-- store some information for musiclogic
 	if (not self.MusicInfo) then self.MusicInfo={}; end
 	local headshot = g_gameRules:IsHeadShot(hit);
 	self.MusicInfo.headshot  = headshot;
-
-	self:LastHitInfo(self.lastHit, hit);
-
+		
+	self:LastHitInfo(self.lastHit, hit);	
+	
 	local armor = self.actor:GetArmor();
-
+	
 	-- hit effects
 	if (string.find(hit.type,"bullet")) then
 		if (not self:IsBleeding()) then
@@ -2030,7 +2030,7 @@ function BasicActor.Client:OnHit(hit)
 				armorEffect = true;
 			end
 		end
-
+		
 		if(self.id == g_localActorId) then --client player only effects
 			local sound;
 			if (armorEffect) then
@@ -2038,12 +2038,12 @@ function BasicActor.Client:OnHit(hit)
 			else
 				sound="sounds/physics:bullet_impact:mat_flesh_fp";
 			end
-
+			
 			if (sound and (sound~="")) then
 				self:PlaySoundEvent(sound, g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_PLAYER_FOLEY);
 			end
 		end
-
+		
 		if(tonumber(System.GetCVar("g_useHitSoundFeedback")) > 0) then
 			if(hit.shooter and hit.shooter == g_localActor) then
 				local sound;
@@ -2070,7 +2070,7 @@ function BasicActor.Client:OnHit(hit)
 						end
 					end
 				end
-
+				
 				if (sound and (sound~="")) then
 						self:PlaySoundEvent(sound, g_Vectors.v000, g_Vectors.v010, SOUND_2D, SOUND_SEMANTIC_PLAYER_FOLEY);
 				end
@@ -2082,24 +2082,24 @@ function BasicActor.Client:OnHit(hit)
 				end
 			end
 		end
-
+		
 		if (g_localActor) then
 			-- hit particles (additional readability, independent from material system)
-			local particleDirection = hit.dir;
+			local particleDirection = hit.dir; 
 			ScaleVectorInPlace(particleDirection, -1.0);
 			local playerPos = g_Vectors.temp_v4;
 			g_localActor:GetWorldPos(playerPos);
 			local dirVec = playerPos;
 			SubVectors(dirVec, playerPos, hit.pos);
 			local distance = math.min(50.0, LengthVector(dirVec));
-			local distanceScale = 0.2 + (distance / 50.0);
+			local distanceScale = 0.2 + (distance / 50.0);			
 			if(armorEffect) then
 				Particle.SpawnEffect("bullet.hit_flesh.armor", hit.pos, particleDirection, distanceScale);
 			else
 				Particle.SpawnEffect("bullet.hit_default.smoke", hit.pos, particleDirection, distanceScale*3.0);
 			end
 		end
-
+	
 		self:WallBloodSplat(hit);
 		-- marcok: talk to me before touching this
 		--if ((self.nextBloodsplat == nil or self.nextBloodsplat < _time) and
@@ -2119,18 +2119,18 @@ function BasicActor.Client:OnHit(hit)
 	if (hit.type=="melee") then
 		self.lastMelee = 1;
 		self.lastMeleeImpulse = hit.damage * 2;
-
+		
 		camShakeAmt = 33;
 		--camShakeDuration = 0.5;
 		camShakeFreq = 0.2;
 	else
 		self.lastMelee = nil;
 	end
-
+	
 	if (self.actor:GetHealth() <= 0) then
 		return;
 	end
-
+		
 	if (self == g_localActor) then
 		if (shooter and (self.Properties.species ~= shooter.Properties.species)) then
 			g_SignalData.id = shooterId;
@@ -2138,16 +2138,16 @@ function BasicActor.Client:OnHit(hit)
 			g_SignalData.iValue = LAS_DEFAULT;
 			shooter:GetWorldPos(g_SignalData.point);
 			AI.Signal(SIGNALFILTER_SUPERGROUP, 1, "OnPlayerHit", self.id, g_SignalData);
-		end
+		end	
 	end
-
+	
 	if (hit.damage > 5 and armor <= 0) then
 		if (not self.painSoundTriggered) then
 			self:SetTimer(PAIN_TIMER,0.15 * 1000);
 			self.painSoundTriggered = true;
 		end
 	end
-
+	
 	--
 	self.actor:CameraShake(camShakeAmt, camShakeDuration, camShakeFreq, g_Vectors.v000);
 	self.viewBlur = 0.5;
@@ -2160,18 +2160,18 @@ function BasicActor:LastHitInfo(dest, hit)
 	dest.partId = hit.partId;
 	self:GetVelocity(dest.velocity);
 	dest.damage = hit.damage;
-
+	
 	if (hit.explosion) then
 		dest.explosion = true;
 	else
 		dest.explosion = false;
 	end
-
+	
 	if(hit.bulletType) then
 		dest.bulletType = hit.bulletType+1;
 	else
 		dest.bulletType = -1;
-	end
+	end	
 end
 
 function BasicActor:StopSounds()
@@ -2180,16 +2180,16 @@ function BasicActor:StopSounds()
 end
 
 function BasicActor:DoPainSounds(dead)
-
+	
 	-- TODO: Perhaps find alternative solution for the player sounds.
 	if (self.actor:IsPlayer()) then
 
-		if (not dead) then
+		if (not dead) then		
 			if (self.lastPainSound and ((_time-self.lastPainTime<5.0) or Sound.IsPlaying(self.lastPainSound))) then
 				return;
 			end
 		end
-
+		
 		local sound;
 		if (dead) then
 			if(not self.actor:IsLocalClient()) then
@@ -2204,13 +2204,13 @@ function BasicActor:DoPainSounds(dead)
 				sound = GetRandomSound(self.voiceTable.pain);
 			end
 		end
-
+		
 		if (sound) then
 			local sndFlags = bor(bor(SOUND_EVENT, SOUND_VOICE), SOUND_DEFAULT_3D);
 			self.lastPainSound = self:PlaySoundEvent(sound[1], g_Vectors.v000, g_Vectors.v010, sndFlags, SOUND_SEMANTIC_PLAYER_FOLEY);
 			self.lastPainTime = _time;
 		end
-
+		
 	else
 		-- If a pain sound is still playing, do not trigger new one.
 		if (not dead) then
@@ -2225,7 +2225,7 @@ function BasicActor:DoPainSounds(dead)
 		end
 
 	end
-
+	
 end
 
 -- Blood splat on player (player is close enough and roughly faces actor)
@@ -2234,21 +2234,21 @@ function BasicActor:MakeBloodSplats(effect, radius, targetPos)
 	if (blood == 0) then
 		return;
 	end
-
-	if (g_localActor:IsOnVehicle() and not self:IsOnVehicle()) then
+	
+	if (g_localActor:IsOnVehicle() and not self:IsOnVehicle()) then		
 		return;
 	end
-
+		
 	if (targetPos == nil) then
 		targetPos = g_Vectors.temp_v2;
 		self:GetWorldPos(targetPos);
 	end
-
+		
 	local playerPos = g_Vectors.temp_v4;
 	g_localActor:GetWorldPos(playerPos);
 	local dirToTarget = g_Vectors.temp_v1;
 	SubVectors(dirToTarget, targetPos, playerPos);
-
+	
 	local distance = LengthVector(dirToTarget);
 	if (distance < radius) then
 		local headDir = g_localActor.actor:GetHeadDir();
@@ -2280,15 +2280,15 @@ end
 function BasicActor:SetActorModel(isClient)
 
 	self:KillTimer(UNRAGDOLL_TIMER);
-
+	
 	local PropInstance = self.PropertiesInstance;
 	local model = self.Properties.fileModel;
-
+	
 	-- take care of fp3p
 	if (self.Properties.clientFileModel and isClient) then
 		model = self.Properties.clientFileModel;
 	end
-
+	
 	local nModelVariations = self.Properties.nModelVariations;
 	if (nModelVariations and nModelVariations > 0 and PropInstance and PropInstance.nVariation) then
 	  local nModelIndex = PropInstance.nVariation;
@@ -2302,9 +2302,9 @@ function BasicActor:SetActorModel(isClient)
 		model = string.gsub(model, "_%d%d", "_"..sVariation);
 		--System.Log( "ActorModel = "..model );
 	end
-
+	
 	if (self.currModel ~= model) then
-		self.currModel = model;
+		self.currModel = model;	
 
 		self:LoadCharacter(0, model);
 
@@ -2313,37 +2313,37 @@ function BasicActor:SetActorModel(isClient)
 
 		--set IK limbs
 		self:InitIKLimbs();
-
+		
 		self:ForceCharacterUpdate(0, false);
 		if (self.Properties.objFrozenModel and self.Properties.objFrozenModel~="") then
 			self:LoadObject(1, self.Properties.objFrozenModel);
 			self:DrawSlot(1, 0);
 		end
-
-		self:CreateBoneAttachment(0, "weapon_bone", "right_item_attachment");
+		
+		self:CreateBoneAttachment(0, "weapon_bone", "right_item_attachment");	
 		self:CreateBoneAttachment(0, "alt_weapon_bone01", "left_item_attachment");
-
+	
 		--laser bone (need it for updating character correctly when out of camera view)
-		self:CreateBoneAttachment(0, "weapon_bone", "laser_attachment");
-
+		self:CreateBoneAttachment(0, "weapon_bone", "laser_attachment");	
+		
 		if(self.CreateAttachments) then
 			self:CreateAttachments();
 		end
-	end
+	end	
 
-	if (self.currItemModel ~= self.Properties.fpItemHandsModel) then
+	if (self.currItemModel ~= self.Properties.fpItemHandsModel) then	
 		self:LoadCharacter(3, self.Properties.fpItemHandsModel);
 		self:DrawSlot(3, 0);
 		self:LoadCharacter(4, self.Properties.fpItemHandsModel); -- second instance for dual wielding
 		self:DrawSlot(4, 0);
-
+		
 		self.currItemModel = self.Properties.fpItemHandsModel;
-	end
+	end	
 end
 
 function BasicActor:OnNextSpawnPoint()
 	local entities = System.GetEntitiesByClass( "SpawnPoint" )
-
+	
 	local n = table.getn(entities)
 	table.sort( entities, CompareEntitiesByName )
 
@@ -2371,7 +2371,7 @@ function BasicActor:SpawnAtSpawnPoint(spawnPointName)
 		if (class == "SpawnPoint") then
 			self:InternalSpawnAtSpawnPoint(entity);
 --			System.Log("BasicActor:SpawnAtSpawnPoint"..entity:GetName());
-		end
+		end	
 	end
 end
 
@@ -2379,19 +2379,19 @@ function BasicActor:InternalSpawnAtSpawnPoint(spawnPoint)
   if (spawnPoint) then
   	self.lastSpawnPoint = spawnPoint:GetName()
   	AI.LogEvent( "Teleport to "..self.lastSpawnPoint )
-
+  
   	self:SetWorldPos(spawnPoint:GetWorldPos(g_Vectors.temp_v1));
   	spawnPoint:GetAngles(g_Vectors.temp_v1);
-
+  	
   	self:SetWorldAngles(g_Vectors.temp_v1);
   	spawnPoint:Spawned(self);
   end
 end
 
-function BasicActor:CanGrabObject(object)
+function BasicActor:CanGrabObject(object)  
 	--FIXME:
 	return 0;
-
+	
 --  local ret = BasicActor.GrabObject(self, object, 1);
 --  if (ret ~= 1) then
 --    --GrabLog(self:GetName().." cant grab object "..object:GetName());
@@ -2404,15 +2404,15 @@ function BasicActor:GrabObject(object, query)
 	if (query and self.actor:IsPlayer()) then
 		return 0;
 	end
-
+	
 	self.grabParams.entityId = object.id;
 	local grabParams = new(self.grabParams);
 	grabParams.event = "grabObject";
-
+	
 	if (self.actor:CreateCodeEvent(grabParams)) then
 		return 1;
 	end
-
+	
 	return 0;
 end
 
@@ -2428,11 +2428,11 @@ function BasicActor:DropObject(throw,throwVec,throwDelay)
 		throwVec = {x=0,y=0,z=0},
 		throwDelay = throwDelay or 0,
 	};
-
+		
 	if (throwVec) then
 		CopyVector(dropTable.throwVec,throwVec);
 	end
-
+		
 	self.actor:CreateCodeEvent(dropTable);
 end
 
@@ -2445,7 +2445,7 @@ function BasicActor:OnSave(save)
 	if (self.inventory) then
 		save.inventory = self.inventory;
 	end
-
+	
 end
 
 
@@ -2460,17 +2460,17 @@ function BasicActor:OnResetLoad()
 end
 
 function BasicActor:OnSpawn()
-  -- make sure to get a new table
-  self.grabParams = new(self.grabParams);
-  self.waterStats = new(self.waterStats);
+  -- make sure to get a new table  
+  self.grabParams = new(self.grabParams);  
+  self.waterStats = new(self.waterStats);  
   self.actorStats = new(self.actorStats);
-
+  
   if (CryAction.IsServer()) then
   	if (g_gameRules and g_gameRules.EquipActor) then
 			g_gameRules:EquipActor(self);
 		end
   end
-
+  
   self.prevFrozenAmount = 0;
 end
 
@@ -2488,7 +2488,7 @@ end
 --end
 
 function BasicActor:ScriptEvent(event,value,str)
-
+	
 	if (event == "cloaking") then
 		self:OnCloaking(value);
 	elseif (event == "animationevent") then
@@ -2498,7 +2498,7 @@ function BasicActor:ScriptEvent(event,value,str)
 	elseif (event == "resurrect") then
 		self:Resurrect();
 	elseif (event == "holster") then
-		self:HolsterItem(value);
+		self:HolsterItem(value);		
 	elseif (event == "kill") then
 		self:Kill(true, NULL_ENTITY, NULL_ENTITY);
 	elseif (event == "fallStart") then
@@ -2520,18 +2520,18 @@ function BasicActor:ScriptEvent(event,value,str)
 		if(_time - self.waterStats.lastSplash > 1.0) then
 			self.waterStats.lastSplash = _time;
 			--PlayRandomSound(self,ActorShared.splash_sounds);
-
+			
 			local ppos = g_Vectors.temp_v1;
 			self:GetWorldPos(ppos);
 			ppos.z = ppos.z + 1;
-
+			
 			Particle.SpawnEffect("water.body_splash.enter_water", ppos, g_Vectors.v001, 1.0);
 		end
-	elseif (event == "jump_splash") then
+	elseif (event == "jump_splash") then	
 		local ppos = g_Vectors.temp_v1;
 		self:GetWorldPos(ppos);
 		ppos.z = ppos.z + value;
-
+			
 		Particle.SpawnEffect("water.body_splash.corpse", ppos, g_Vectors.v001, 1.0);
 		if(not str) then
 			self:PlaySoundEvent("sounds/physics:player_foley:dive_in", g_Vectors.v000, g_Vectors.v010, SOUND_DEFAULT_3D, SOUND_SEMANTIC_PLAYER_FOLEY);
@@ -2541,7 +2541,7 @@ function BasicActor:ScriptEvent(event,value,str)
 			self:ApplyDeathImpulse();
 		end
 	elseif (event == "hide") then
-		self:ScriptEventHide(value);
+		self:ScriptEventHide(value);		
 	elseif (event == "sleep") then
 --System.Log(">>>>>>> BasicActor:ScriptEvent:Event_Sleep "..self:GetName());
 		-- don't call event_Sleep - it's not inpue-event, not handled with MakeSpawnable
@@ -2552,7 +2552,7 @@ function BasicActor:ScriptEvent(event,value,str)
 
 --		if(self.Event_Sleep) then
 ----System.Log(">>>>>>> BasicActor:ScriptEvent:Event_Sleep executing");
---			self:Event_Sleep(self);
+--			self:Event_Sleep(self);	
 --			self.isFallen = 1;
 --		end
 	elseif (event == "jumped") then
@@ -2561,10 +2561,10 @@ function BasicActor:ScriptEvent(event,value,str)
 end
 
 function BasicActor.Client:OnAnimationEvent(animation,strPar,intPar)
-
+	
 	--function callback, if any
 	local onAnimationKey = self.onAnimationKey;
-
+	
 	if (onAnimationKey) then
 		local func = onAnimationKey[strPar];
 		if (func) then
@@ -2600,7 +2600,7 @@ function BasicActor.Client:OnTimer(timerId,mSec)
 	elseif (timerId == NANOSUIT_MODE_TIMER) then
 		self.actor:SetNanoSuitMode(self.AI.NanoSuitMode);
 	elseif (timerId == NANOSUIT_CLOAK_TIMER) then
-		if(self.AI.NanoSuitCloak) then
+		if(self.AI.NanoSuitCloak) then 
 			entity.actor:SetNanoSuitMode(NANOMODE_CLOAK);
 		else
 			entity.actor:SetNanoSuitMode(NANOMODE_DEFENSE);
@@ -2608,7 +2608,7 @@ function BasicActor.Client:OnTimer(timerId,mSec)
 	elseif (timerId == COLLISION_TIMER) then
 		self.AI.Colliding = false;
 	--[[
-	elseif (timerId == ACTOREFFECTS_TIMER) then
+	elseif (timerId == ACTOREFFECTS_TIMER) then	
 		self:UpdateSounds(mSec*0.001);
 		--if the actor is dead, dont loop
 		if (not self:IsDead()) then
@@ -2618,7 +2618,7 @@ function BasicActor.Client:OnTimer(timerId,mSec)
 	elseif (timerId == BLOOD_POOL_TIMER) then
 	  self:DoBloodPool();
 	end
-
+	
 end
 
 
@@ -2632,59 +2632,59 @@ end
 function BasicActor:RemoveRagdoll(frameTime)
 	if (not g_localActor) then
 		return false;
-	end
-
+	end	
+	
 	local delta = g_Vectors.temp_v1;
 	local playerDir = g_Vectors.temp_v2;
-
+	
 	self:GetWorldPos(delta);
 	g_localActor:GetWorldPos(playerDir);
-
+	
 	SubVectors(delta,delta,playerDir);
-
+	
 	--if the body is less than "g_ragdollDistance" meters close don't remove it
 	local minDist = System.GetCVar("g_ragdollDistance");
 	if (LengthSqVector(delta)<minDist*minDist) then
 		return false;
 	end
-
+	
 	NormalizeVector(delta);
-
+	
 	g_localActor.actor:GetHeadDir(playerDir);
-
+	
 	local dot = dotproduct3d(playerDir,delta);
-
+	
 	if (dot < 0) then
 		self.bodyUnseen = self.bodyUnseen + frameTime;
 	else
 		self.bodyUnseen = 0;
 	end
-
-	--if not visible for "ragdollPersistence" seconds, remove/hide it
+	
+	--if not visible for "ragdollPersistence" seconds, remove/hide it	
 	local ragdollPersistence = self.Properties.ragdollPersistence;
 	local ragdollUnseenTime = System.GetCVar("g_ragdollUnseenTime");
 	if (ragdollPersistence > 0) then
 		ragdollUnseenTime = ragdollUnseenTime * ragdollPersistence;
 	end
-
+	
 	if (self.bodyUnseen > ragdollUnseenTime) then
 		self:RemoveActor();
 		return true;
 	end
-
+	
 	return false;
 end
 
 function BasicActor:OnAfterShoot(weapon, pos, dir, impulse, ammo)
-
+	
 	self.tempSetStats.inFiring = 10;
 	self.actor:SetStats(self.tempSetStats);
-
+		
 	local physstats = self:GetPhysicalStats();
-
+	
 	if (physstats and (physstats.gravity > -1.0)) then
 		local stats = self.actorStats;
-
+		
 		--with gravity boots no impulse at all
 		if (stats.gravityBoots and stats.onGround > 0) then
 			return
@@ -2693,18 +2693,18 @@ function BasicActor:OnAfterShoot(weapon, pos, dir, impulse, ammo)
 		self.impulse_pos = self:GetWorldPos(self.impulse_pos);
 		self:AddImpulse(-1, self.impulse_pos, dir, -impulse, 1);
 	end
-
+	
 	-- registering grenades...
 	if (ammo and ammo.class == "ExplosiveGrenade") then
 		AI.LogEvent("registering grenades...");
 		--self.aiType = 150;
 		AI.RegisterWithAI(ammo.id, 150);
-	end
+	end	
 end
 
 
 function BasicActor:HolsterItem(holster)
---	if(holster) then
+--	if(holster) then 
 --		AI.LogEvent(self:GetName().." HOLSTERING WEAPON");
 --	else
 --		AI.LogEvent(self:GetName().." DRAWING WEAPON");
@@ -2744,13 +2744,13 @@ end
 -- print entity name of vehicleId, if present
 function LogLinkedVehicle(entityName)
   if (entityName) then
-    local ent = System.GetEntityByName(entityName);
+    local ent = System.GetEntityByName(entityName);    
     if (ent) then
       if (ent.vehicleId) then
         Log("LinkedVehicle id: "..tostring(ent.vehicleId));
         local vehicle = System.GetEntity(ent.vehicleId);
         if (vehicle) then
-          Log("LinkedVehicle: %s", vehicle:GetName());
+          Log("LinkedVehicle: %s", vehicle:GetName());          
         end
       else
         Log("No vehicleId");
@@ -2762,11 +2762,11 @@ end
 
 function BasicActor:ActorLink(entName)
 	if (not entName) then
-		self.actor:LinkToEntity();
-		self.hideActor = false;
+		self.actor:LinkToEntity();		
+		self.hideActor = false;	
 	else
 		local ent = System.GetEntityByName(entName);
-
+		
 		self.actor:LinkToEntity(ent.id);
 		self.hideActor = true;
 	end
@@ -2780,16 +2780,16 @@ end
 --3 temperature
 -------------------------------------------------------------------------
 function BasicActor:OnCloaking(state)
-
+	
 	local stats = self.actorStats;
-
+	
 	if (state~=0) then
 		if (state == 3) then
 			self.camoStartTime = _time;
-
+					
 			self:PlaySoundEvent("Sounds/interface:suit:suit_deep_freeze", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
 			self:PlaySoundEvent("Sounds/interface:suit:breathing_in_mask_cold_oneshot", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
-
+						
 			if (self.actor:IsPlayer()) then
 				--System.SetScreenFx("ScreenFrost_Amount", 0);
 
@@ -2803,7 +2803,7 @@ function BasicActor:OnCloaking(state)
 		end
 
 		--Log(self:GetName().." Cloaking::"..state);
-
+		
 	else
 		local lastState = self.lastCloakState or 1;
 		if (lastState == 3) then
@@ -2819,7 +2819,7 @@ function BasicActor:OnCloaking(state)
 
 		--Log(self:GetName().." UnCloaking::"..lastState);
 	end
-
+	
 	self.lastCloakState = state;
 
 	if(state == 1) then
@@ -2838,7 +2838,7 @@ function BasicActor:OnCloaking(state)
 end
 
 function BasicActor:SetCloakType(cloakType)
-	local params =
+	local params = 
 	{
 		nanoSuit =
 		{
@@ -2852,7 +2852,7 @@ function BasicActor:SetCloakType(cloakType)
 			cloakHudMessage = "normal_cloak",
 		},
 	};
-
+	
 	local nanoSuit = params.nanoSuit;
 	if (cloakType and cloakType == 2) then
 		nanoSuit.cloakType = 2;
@@ -2871,7 +2871,7 @@ function BasicActor:SetCloakType(cloakType)
 		nanoSuit.cloakHeatDamp = 0.0;
 		nanoSuit.cloakHudMessage = "temperature_cloak";
 	end
-
+	
 	self.actor:SetParams(params);
 end
 
@@ -2885,7 +2885,7 @@ end
 --end
 
 --test
---[Dejan] I removed this test since it was breaking my code
+--[Dejan] I removed this test since it was breaking my code 
 --function BasicActor:IsUsable(user)
 --	local ret = user:CanGrabObject(self);
 --	return ret or 0;
@@ -2911,12 +2911,12 @@ function SetInertia(inertia,inertiaAccel)
 		inertia = inertia,
 		inertiaAccel = inertiaAccel,
 	};
-
+		
 	g_localActor.actor:SetParams(params);
 	g_localActor.gameParams.inertia = inertia;
 	g_localActor.gameParams.inertiaAccel = inertiaAccel;
 	g_localActor.actor:PostPhysicalize();
-
+	
 	Log("Inertia set for "..g_localActor:GetName()..":"..inertia..","..inertiaAccel);
 end
 
@@ -2933,19 +2933,19 @@ function SetJetpack(thruster,afterburner,thrusterStabilize)
 		afterburnerMultiplier = afterburner,
 		thrusterStabilizeImpulse = thrusterStabilize;--used from the jetpack to make the player to stop.
 	};
-
+		
 	g_localActor.actor:SetParams(params);
 	g_localActor.gameParams.thrusterImpulse = thruster;
 	g_localActor.gameParams.afterburnerMultiplier = afterburner;
 	g_localActor.gameParams.thrusterStabilizeImpulse = thrusterStabilize;
-
+	
 	Log("Zerog thrusters set for "..g_localActor:GetName()..":"..g_localActor.gameParams.thrusterImpulse..","..g_localActor.gameParams.afterburnerMultiplier);
 end
 
 function RePhysicalize()
 
 	local p = g_localActor;
-
+	
 	p.currModel = "";
 	p.actor:SetPhysicalizationProfile("alive");
 end
@@ -2960,17 +2960,17 @@ end
 function TestBeam()
 
 	local beam = System.GetEntityByName("Beam1");
-
+	
 	--beam:Activate(1);
 	beam:StartAnimation(0, "throw", 0, 0.0, 1.0, false);
-
+		
 	g_localActor.actor:CreateCodeEvent({event = "animationEntity",id=beam.id});
 	g_localActor.actor:QueueAnimationState("HeavyBeam");
 end
 
 function TestLink(entName)
 	BasicActor.ActorLink(g_localActor,entName);
-
+	
 	if (entName) then
 		g_localActor:SetLocalPos({x=0,y=1,z=1});
 		g_localActor:SetLocalAngles({x=0,y=0,z=0});
