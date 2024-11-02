@@ -935,6 +935,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Launcher/MemoryPatch.cpp
 	Code/Launcher/MemoryPatch.h
 	Code/Launcher/Resources.h
+	Code/Launcher/StartupTime.cpp
+	Code/Launcher/StartupTime.h
 	Code/Library/CPUID.cpp
 	Code/Library/CPUID.h
 	Code/Library/CrashLogger.cpp

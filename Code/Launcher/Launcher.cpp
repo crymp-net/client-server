@@ -30,6 +30,7 @@
 #include "Launcher.h"
 #include "MemoryPatch.h"
 #include "Resources.h"
+#include "StartupTime.h"
 
 #include "config.h"
 
@@ -1072,6 +1073,9 @@ void Launcher::StartEngine()
 	{
 		throw StringTools::ErrorFormat("CryENGINE post-initialization failed!");
 	}
+
+	StartupTime::Finish();
+	CryLogAlways("$7Startup finished in %.3f seconds", StartupTime::GetSeconds());
 
 	gEnv->pSystem->ExecuteCommandLine();
 }
