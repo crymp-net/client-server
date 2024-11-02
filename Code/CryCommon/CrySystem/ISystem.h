@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+
 #include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryCore/smartptr.h"
 
@@ -423,10 +426,10 @@ struct ISystem
 	virtual void RenderStatistics () = 0;
 
 	// Common (cross-module) memory allocation function.
-	virtual void* AllocMem( void* oldptr, size_t newsize ) = 0;
+	virtual void* AllocMem( void* oldptr, std::size_t newsize ) = 0;
 
 	// Returns the current used memory
-	virtual uint32 GetUsedMemory() = 0;
+	virtual std::uint32_t GetUsedMemory() = 0;
 
 	// Retrieve the name of the user currently logged in to the computer
 	virtual const char *GetUserName() = 0;
@@ -589,8 +592,8 @@ struct ISystem
 	virtual bool WriteCompressedFile(const char *filename, void *data, unsigned int bitlen) = 0;
 	virtual unsigned int ReadCompressedFile(const char *filename, void *data, unsigned int maxbitlen) = 0;
 	virtual unsigned int GetCompressedFileSize(const char *filename)=0;
-	virtual bool CompressDataBlock( const void * input, size_t inputSize, void * output, size_t& outputSize, int level = 3 ) = 0;
-	virtual bool DecompressDataBlock( const void * input, size_t inputSize, void * output, size_t& outputSize ) = 0;
+	virtual bool CompressDataBlock( const void * input, std::size_t inputSize, void * output, std::size_t& outputSize, int level = 3 ) = 0;
+	virtual bool DecompressDataBlock( const void * input, std::size_t inputSize, void * output, std::size_t& outputSize ) = 0;
 
 	// Retrieve IDataProbe interface.
 	virtual IDataProbe* GetIDataProbe() = 0;
@@ -687,7 +690,7 @@ struct ISystem
 	virtual CPNoise3* GetNoiseGen() = 0;
 
 	// Retrieve system update counter.
-	virtual uint64 GetUpdateCounter() = 0;
+	virtual std::uint64_t GetUpdateCounter() = 0;
 };
 
 
@@ -708,15 +711,15 @@ struct IMemoryManager
 {
 	struct SProcessMemInfo
 	{
-		uint64 PageFaultCount;
-		uint64 PeakWorkingSetSize;
-		uint64 WorkingSetSize;
-		uint64 QuotaPeakPagedPoolUsage;
-		uint64 QuotaPagedPoolUsage;
-		uint64 QuotaPeakNonPagedPoolUsage;
-		uint64 QuotaNonPagedPoolUsage;
-		uint64 PagefileUsage;
-		uint64 PeakPagefileUsage;
+		std::uint64_t PageFaultCount;
+		std::uint64_t PeakWorkingSetSize;
+		std::uint64_t WorkingSetSize;
+		std::uint64_t QuotaPeakPagedPoolUsage;
+		std::uint64_t QuotaPagedPoolUsage;
+		std::uint64_t QuotaPeakNonPagedPoolUsage;
+		std::uint64_t QuotaNonPagedPoolUsage;
+		std::uint64_t PagefileUsage;
+		std::uint64_t PeakPagefileUsage;
 	};
 	virtual bool GetProcessMemInfo( SProcessMemInfo &minfo ) = 0;
 };

@@ -929,6 +929,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CrySystem/ResourceList.h
 	Code/CrySystem/StreamEngine.cpp
 	Code/CrySystem/StreamEngine.h
+	Code/CrySystem/System.cpp
+	Code/CrySystem/System.h
 	Code/Launcher/Launcher.cpp
 	Code/Launcher/Launcher.h
 	Code/Launcher/Main.cpp

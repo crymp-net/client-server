@@ -223,7 +223,7 @@ void CWeapon::InitFireModes(const IItemParamsNode* firemodes)
 		const IItemParamsNode* fm = firemodes->GetChild(k);
 		const char* typ = fm->GetAttribute("type");
 
-		if (typ && !strcmpi(typ, "default"))
+		if (typ && !_stricmp(typ, "default"))
 		{
 			m_fmDefaults = fm;
 			m_fmDefaults->AddRef();
@@ -246,7 +246,7 @@ void CWeapon::InitFireModes(const IItemParamsNode* firemodes)
 			continue;
 		}
 
-		if (!strcmpi(typ, "default"))
+		if (!_stricmp(typ, "default"))
 			continue;
 
 		if (!name || !name[0])
@@ -299,7 +299,7 @@ void CWeapon::InitZoomModes(const IItemParamsNode* zoommodes)
 		const IItemParamsNode* zm = zoommodes->GetChild(k);
 		const char* typ = zm->GetAttribute("type");
 
-		if (typ && !strcmpi(typ, "default"))
+		if (typ && !_stricmp(typ, "default"))
 		{
 			m_zmDefaults = zm;
 			m_zmDefaults->AddRef();
@@ -322,7 +322,7 @@ void CWeapon::InitZoomModes(const IItemParamsNode* zoommodes)
 			continue;
 		}
 
-		if (!strcmpi(typ, "default"))
+		if (!_stricmp(typ, "default"))
 			continue;
 
 		if (!name || !name[0])
@@ -390,7 +390,7 @@ void CWeapon::InitAmmos(const IItemParamsNode* ammos)
 	for (int i = 0; i < ammos->GetChildCount(); i++)
 	{
 		const IItemParamsNode* ammo = ammos->GetChild(i);
-		if (!strcmpi(ammo->GetName(), "ammo"))
+		if (!_stricmp(ammo->GetName(), "ammo"))
 		{
 			int extra = 0;
 			int amount = 0;
