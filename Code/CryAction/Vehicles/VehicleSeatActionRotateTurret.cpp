@@ -247,8 +247,9 @@ void CVehicleSeatActionRotateTurret::Serialize(TSerialize ser, unsigned aspects)
 //------------------------------------------------------------------------
 void CVehicleSeatActionRotateTurret::Update(float frameTime)
 {
-  if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
-    return;
+	//CryMP: commented out
+	//if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
+	//	return;
 
 	if (!m_aimGoal.IsZero())
 	{
@@ -492,8 +493,9 @@ inline bool ComputeRotation(float &actual, float goal, float speed, float frameT
 //------------------------------------------------------------------------
 void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationType eType, float frameTime)
 {
-	if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
-		return;
+	//CryMP: commented out
+	//if (gEnv->bClient && m_pVehicle->GetGameObject()->IsProbablyDistant() && !m_pVehicle->GetGameObject()->IsProbablyVisible())
+	//	return;
 
 	assert( eType < eVTRT_NumRotationTypes );
 
