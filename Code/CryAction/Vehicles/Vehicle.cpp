@@ -2111,7 +2111,15 @@ void CVehicle::OnAction(const TVehicleActionId actionId, int activationMode, flo
 				if (!canExit)
 					canExit = m_pVehicle->GetExitPositionForActor(pActor, pos);
 
-				GetGameObject()->InvokeRMI(SvRequestLeave(), RequestLeaveParams(callerId, pos), eRMI_ToServer);
+				//CryMP
+				if (canExit)
+				{
+					const bool success = pCurrentSeat->Exit(true, false);
+					if (success)
+					{
+						GetGameObject()->InvokeRMI(SvRequestLeave(), RequestLeaveParams(callerId), eRMI_ToServer);
+					}
+				}
 			}
 		}
 	}
