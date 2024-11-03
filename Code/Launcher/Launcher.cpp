@@ -1075,7 +1075,7 @@ void Launcher::StartEngine()
 	}
 
 	StartupTime::Finish();
-	CryLogAlways("$7Startup finished in %.3f seconds", StartupTime::GetSeconds());
+	CryLogAlways("Startup finished in %.3f seconds", StartupTime::GetSeconds());
 
 	gEnv->pSystem->ExecuteCommandLine();
 }
