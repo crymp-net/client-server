@@ -98,10 +98,10 @@ public:
 
 protected:
 
-	enum EVehicleTurretRotationType
+	enum EVehicleTurretRotationType 
 	{
-		eVTRT_Pitch = 0,
-		eVTRT_Yaw,
+		eVTRT_Yaw = 0, //CryMP: Changed order
+		eVTRT_Pitch,
 		eVTRT_NumRotationTypes,
 	};
 
