@@ -1979,11 +1979,20 @@ void CVehicleSeat::NetSetPassengerId(EntityId passengerId)
 				ExitRemotely();
 			else
 			{
-				pActor->GetEntity()->GetCharacter(0)->GetISkeletonAnim()->StopAnimationsAllLayers();
+				if (!pActor->IsClient())
+				{
+					Exit(false, true);
+					//CryMP: Unfortunately no leave seat rmi so we have to catch NetSetPassengerId(0) in NetSerialize
+				}
+				else
+				{
+					pActor->GetEntity()->GetCharacter(0)->GetISkeletonAnim()->StopAnimationsAllLayers();
 
-				GivesActorSeatFeatures(false);
+					GivesActorSeatFeatures(false);
 
-				SetAnimGraphInputs(exitId, false, false);
+					SetAnimGraphInputs(exitId, false, false);
+				}
+
 				m_passengerId = 0;
 
 				SVehicleEventParams ep;
