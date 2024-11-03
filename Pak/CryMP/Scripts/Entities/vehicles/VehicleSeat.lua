@@ -38,6 +38,14 @@ function VehicleSeat:Init(vehicle, seatId)
 	self.playerId = 0;
 	
 	vehicle.vehicle:AddSeat(self);
+
+	if (vehicle.Seats) then --CryMP fix needed?
+		--System.LogAlways("Seat table for "..vehicle:GetName().." is "..#vehicle.Seats.." - vehicleId: "..tostring(self.vehicleId));
+		--if (vehicle.Seats[self.seatId].OnReset) then
+		--	System.LogAlways("OnReset is "..type(vehicle.Seats[self.seatId].OnReset))
+		--end
+		vehicle.Seats[seatId] = self;
+	end
 end
 
 --------------------------------------------------------------------------
