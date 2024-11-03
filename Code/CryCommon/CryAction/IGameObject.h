@@ -141,13 +141,13 @@ template <size_t N>
 class CRMIAllocator
 {
 public:
-	static ILINE void * Allocate()
+	static void * Allocate()
 	{
 		if (!m_pAllocator)
 			m_pAllocator = new stl::PoolAllocator<N>;
 		return m_pAllocator->Allocate();
 	}
-	static ILINE void Deallocate(void * p)
+	static void Deallocate(void * p)
 	{
 		assert(m_pAllocator);
 		m_pAllocator->Deallocate(p);
@@ -287,21 +287,21 @@ public:
 	}
 
 	// turn an extension on
-	ILINE bool ActivateExtension( const char * extension ) { return ChangeExtension( extension, eCE_Activate ) != 0; }
+	bool ActivateExtension( const char * extension ) { return ChangeExtension( extension, eCE_Activate ) != 0; }
 	// turn an extension off
-	ILINE void DeactivateExtension( const char * extension ) { ChangeExtension( extension, eCE_Deactivate ); }
+	void DeactivateExtension( const char * extension ) { ChangeExtension( extension, eCE_Deactivate ); }
 	// forcefully get a pointer to an extension (may instantiate if needed)
-	ILINE IGameObjectExtension * AcquireExtension( const char * extension ) { return ChangeExtension( extension, eCE_Acquire ); }
+	IGameObjectExtension * AcquireExtension( const char * extension ) { return ChangeExtension( extension, eCE_Acquire ); }
 	// release a previously acquired extension
-	ILINE void ReleaseExtension( const char * extension ) { ChangeExtension( extension, eCE_Release ); }
+	void ReleaseExtension( const char * extension ) { ChangeExtension( extension, eCE_Release ); }
 
 	// retrieve the hosting entity
-	ILINE IEntity *GetEntity() const
+	IEntity *GetEntity() const
 	{
 		return m_pEntity;
 	}
 
-	ILINE EntityId GetEntityId() const
+	EntityId GetEntityId() const
 	{
 		return m_entityId;
 	}
@@ -324,8 +324,8 @@ public:
 
 	virtual bool IsJustExchanging() = 0;
 
-	ILINE void SetMovementController( IMovementController * pMC ) { m_pMovementController = pMC; }
-	ILINE IMovementController * GetMovementController() { return m_pMovementController; }
+	void SetMovementController( IMovementController * pMC ) { m_pMovementController = pMC; }
+	IMovementController * GetMovementController() { return m_pMovementController; }
 
 protected:
 	enum EChangeExtension
@@ -360,7 +360,7 @@ public:
 	// INetAtSyncItem
 	// INetAtSyncItem
 
-	static ILINE CRMIAtSyncItem * Create( const T& params, EntityId id, const SGameObjectExtensionRMI * pRMI, CallbackFunc callback, INetChannel * pChannel )
+	static CRMIAtSyncItem * Create( const T& params, EntityId id, const SGameObjectExtensionRMI * pRMI, CallbackFunc callback, INetChannel * pChannel )
 	{
 		return new (CRMIAllocator<sizeof(CRMIAtSyncItem)>::Allocate()) CRMIAtSyncItem(params, id, pRMI, callback, pChannel);
 	}
@@ -493,7 +493,7 @@ private:
 		{ \
 			MethodInfo_##name( const SGameObjectExtensionRMI * pMethodInfo ) { this->pMethodInfo = pMethodInfo; } \
 			const SGameObjectExtensionRMI * pMethodInfo; \
-			ILINE void Verify( const params& p ) const \
+			void Verify( const params& p ) const \
 			{ \
 			} \
 		}; \
@@ -521,7 +521,7 @@ private:
 		{ \
 			MethodInfo_##name( const SGameObjectExtensionRMI * pMethodInfo ) { this->pMethodInfo = pMethodInfo; } \
 			const SGameObjectExtensionRMI * pMethodInfo; \
-			ILINE void Verify( const params& p ) const \
+			void Verify( const params& p ) const \
 			{ \
 			} \
 		}; \
@@ -544,7 +544,7 @@ private:
 		params.SerializeWith( ser ); \
 		return CRMIAtSyncItem<Params_##name, cls>::Create( params, *pID, m_info##name.pMethodInfo, &cls::Handle_##name, pChannel ); \
 	} \
-	ILINE bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
+	bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
 
 #define IMPLEMENT_INTERFACE_RMI(cls, name) \
 	cls::MethodInfo_##name cls::m_info##name = cls::Helper_AddMessage( &cls::Decode_##name, "RMI:" #cls ":" #name, cls::Attach_##name, cls::ServerCall_##name, cls::Reliability_##name, cls::LowDelay_##name ); \
@@ -554,7 +554,7 @@ private:
 		params.SerializeWith( ser ); \
 		return CRMIAtSyncItem<Params_##name, cls>::Create( params, id, m_info##name.pMethodInfo, &cls::Handle_##name, pChannel ); \
 	} \
-	ILINE bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
+	bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
 
 /*
  * _FAST versions may send the RMI without waiting for the frame to end; be sure that consistency with the entity is not important!
@@ -736,19 +736,19 @@ struct IGameObjectExtension
 	//   Retrieves the pointer to the game object
 	// Returns
 	//   A pointer to the game object which hold this extension
-	ILINE IGameObject * GetGameObject() const { return m_pGameObject; }
+	IGameObject* GetGameObject() const { return m_pGameObject; }
 
 	// Summary
 	//   Retrieves the pointer to the entity
 	// Returns
 	//   A pointer to the entity which hold this game object extension
-	ILINE IEntity * GetEntity() const { return m_pEntity; }
+	IEntity* GetEntity() const { return m_pEntity; }
 
 	// Summary
 	//   Retrieves the EntityId
 	// Returns
 	//   An EntityId to the entity which hold this game object extension
-	ILINE EntityId GetEntityId() const { return m_entityId; }
+	EntityId GetEntityId() const { return m_entityId; }
 
 protected:
 	void SetGameObject( IGameObject * pGameObject )

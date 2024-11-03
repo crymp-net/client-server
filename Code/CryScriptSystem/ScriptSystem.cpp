@@ -456,6 +456,16 @@ void ScriptSystem::SetGCFrequency(const float rate)
 
 bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool forceReload)
 {
+	std::string fileNameCryMP("CryMP/");
+	fileNameCryMP += fileName;
+
+	// files in CryMP/Scripts/ override the original ones in Scripts/
+	if (!fileNameCryMP.starts_with("CryMP/CryMP/") && gEnv->pCryPak->IsFileExist(fileNameCryMP.c_str()))
+	{
+		CryLogComment("%s(\"%s\"): Overriding with \"%s\"", __FUNCTION__, fileName, fileNameCryMP.c_str());
+		fileName = fileNameCryMP.c_str();
+	}
+
 	const bool isNew = this->AddToScripts(fileName);
 
 	if (forceReload)

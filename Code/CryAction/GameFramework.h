@@ -1,9 +1,13 @@
 #pragma once
 
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "Library/StlportVector.h"
+
+#include "ActionGame.h"
 
 struct ICVar;
 
+class ActorSystem;
 class AnimationGraphSystem;
 class CallbackTimer;
 class DevMode;
@@ -12,11 +16,14 @@ class GameFrameworkCVars;
 class GameObjectSystem;
 class GameplayAnalyst;
 class GameplayRecorder;
+class GameQueryListener;
 class GameSerialize;
+class GameServerNub;
 class GameStatsConfig;
 class ItemSystem;
 class MaterialEffects;
 class NetworkCVars;
+class PersistantDebug;
 class ScriptBind_ActionMapManager;
 class ScriptBind_Actor;
 class ScriptBind_AI;
@@ -37,15 +44,20 @@ class ViewSystem;
 
 class GameFramework : public IGameFramework
 {
-	struct SomeStrings
+	// TODO: use std::unique_ptr instead of raw pointers
+
+	struct Listener
 	{
-		CryStringT<char> reserved[3];
+		IGameFrameworkListener* pListener = nullptr;
+		CryStringT<char> name;
+		EFRAMEWORKLISTENERPRIORITY priority = FRAMEWORKLISTENERPRIORITY_DEFAULT;
 	};
 
-	struct Listeners
+	struct SomeStrings
 	{
-		// probably std::vector<IGameFrameworkListener*>
-		void* reserved[3] = {};
+		CryStringT<char> delayedSaveGameName;
+		CryStringT<char> checkPointName;
+		CryStringT<char> nextLevelToLoad;
 	};
 
 	// m_reserved_<32-bit-offset>_<64-bit-offset>
@@ -59,16 +71,17 @@ class GameFramework : public IGameFramework
 	ITimer* m_pTimer = nullptr;
 	ILog* m_pLog = nullptr;
 	void* m_reserved_0x24_0x48 = nullptr;
-	void* m_reserved_0x28_0x50 = nullptr;  // contains client actor and server net nub
-	char m_reserved_0x2c_0x58[1024] = {};
+	_smart_ptr<ActionGame> m_pActionGame;  // m_reserved_0x28_0x50
+	char m_editorLevelName[512] = {};  // m_reserved_0x2c_0x58
+	char m_editorLevelFolder[512] = {};  // m_reserved_0x22c_0x258
 	char m_guid[128] = "{00000000-0000-0000-0000-000000000000}";
-	ILevelSystem* m_pLevelSystem = nullptr;
-	IActorSystem* m_pActorSystem = nullptr;
-	ItemSystem* m_pItemSystem = nullptr;
-	CVehicleSystem* m_pVehicleSystem = nullptr;
-	IActionMapManager* m_pActionMapManager = nullptr;
-	ViewSystem* m_pViewSystem = nullptr;
-	GameplayRecorder* m_pGameplayRecorder = nullptr;
+	ILevelSystem* m_pLevelSystem = nullptr;  // m_reserved_0x4ac_0x4d8
+	ActorSystem* m_pActorSystem = nullptr;  // m_reserved_0x4b0_0x4e0
+	ItemSystem* m_pItemSystem = nullptr;  // m_reserved_0x4b4_0x4e8
+	VehicleSystem* m_pVehicleSystem = nullptr;  // m_reserved_0x4b8_0x4f0
+	IActionMapManager* m_pActionMapManager = nullptr;  // m_reserved_0x4bc_0x4f8
+	ViewSystem* m_pViewSystem = nullptr;  // m_reserved_0x4c0_0x500
+	GameplayRecorder* m_pGameplayRecorder = nullptr;  // m_reserved_0x4c4_0x508
 	IGameRulesSystem* m_pGameRulesSystem = nullptr;  // m_reserved_0x4c8_0x510
 	IFlowSystem* m_pFlowSystem = nullptr;  // m_reserved_0x4cc_0x518
 	IUIDraw* m_pUIDraw = nullptr;
@@ -89,7 +102,7 @@ class GameFramework : public IGameFramework
 	GameStatsConfig* m_pGameStatsConfig = nullptr;  // m_reserved_0x50c_0x598
 	DevMode* m_pDevMode = nullptr;
 	TimeDemoRecorder* m_pTimeDemoRecorder = nullptr;
-	void* m_reserved_0x518_0x5b0 = nullptr;
+	GameQueryListener* m_pGameQueryListener = nullptr;  // m_reserved_0x518_0x5b0
 	void* m_reserved_0x51c_0x5b8 = nullptr;
 	ScriptBind_CryAction* m_pScriptBind_CryAction = nullptr;  // m_reserved_0x520_0x5c0
 	ScriptBind_ItemSystem* m_pScriptBind_ItemSystem = nullptr;  // m_reserved_0x524_0x5c8
@@ -104,7 +117,7 @@ class GameFramework : public IGameFramework
 	ScriptBind_DialogSystem* m_pScriptBind_DialogSystem = nullptr;  // m_reserved_0x548_0x610
 	ScriptBind_MaterialEffects* m_pScriptBind_MaterialEffects = nullptr;  // m_reserved_0x54c_0x618
 	TimeOfDayScheduler* m_pTimeOfDayScheduler = nullptr;  // m_reserved_0x550_0x620
-	IPersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
+	PersistantDebug* m_pPersistantDebug = nullptr;  // m_reserved_0x554_0x628
 	NetworkCVars* m_pNetworkCVars = nullptr;  // m_reserved_0x558_0x630
 	GameFrameworkCVars* m_pGameFrameworkCVars = nullptr;  // m_reserved_0x55c_0x638
 	void* m_reserved_0x560_0x640 = nullptr;
@@ -114,13 +127,16 @@ class GameFramework : public IGameFramework
 	void* m_reserved_0x570_0x660 = nullptr;
 	ICVar* m_pLanBrowserCVar = nullptr;  // m_reserved_0x574_0x668
 	bool m_isLanBrowserRunning = false;  // m_reserved_0x578_0x670
-	int m_reserved_0x57c_0x674[2] = {};
+	bool m_isEditing = false;  // m_reserved_0x579_0x671
+	bool m_isLevelEndScheduled = false;  // m_reserved_0x57a_0x672
+	int m_delayedSaveGameMethod = 0;  // m_reserved_0x57c_0x674
+	ESaveGameReason m_delayedSaveGameReason = {};  // m_reserved_0x580_0x678
 	SomeStrings* m_pSomeStrings = nullptr;  // m_reserved_0x584_0x680
-	Listeners* m_pListenersA = nullptr;  // m_reserved_0x588_0x688
-	Listeners* m_pListenersB = nullptr;  // m_reserved_0x58c_0x690
-	int m_voiceRecording = 0;
-	bool m_unknownFlag1 = true;
-	bool m_unknownFlag2 = true;
+	StlportVector_CryAction<Listener>* m_pListeners = nullptr;  // m_reserved_0x588_0x688
+	StlportVector_CryAction<Listener>* m_pListenersCopy = nullptr;  // m_reserved_0x58c_0x690
+	int m_voiceRecording = 0;  // m_reserved_0x590_0x698
+	bool m_isSaveAllowed = true;  // m_reserved_0x594_0x69c
+	bool m_isLoadAllowed = true;  // m_reserved_0x595_0x69d
 	CryStringT<char>* m_pNextFrameCommand = nullptr;  // m_reserved_0x598_0x6a0
 	void* m_reserved_0x59c_0x6a8 = nullptr;
 	float m_lastSaveLoad = 0;  // m_reserved_0x5a0_0x6b0
@@ -137,13 +153,13 @@ public:
 	// IGameFramework
 	////////////////////////////////////////////////////////////////////////////////
 
-	void RegisterFactory(const char* name, IAnimationStateNodeFactory* (*)(), bool isAI) override;
-	void RegisterFactory(const char* name, ISaveGame* (*)(), bool isAI) override;
-	void RegisterFactory(const char* name, ILoadGame* (*)(), bool isAI) override;
-	void RegisterFactory(const char* name, IActorCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IAnimationStateNodeFactory* (*pCreator)(), bool isAI) override;
+	void RegisterFactory(const char* name, ISaveGame* (*pCreator)(), bool isAI) override;
+	void RegisterFactory(const char* name, ILoadGame* (*pCreator)(), bool isAI) override;
+	void RegisterFactory(const char* name, IActorCreator* pCreator, bool isAI) override;
 	void RegisterFactory(const char* name, IItemCreator* pCreator, bool isAI) override;
 	void RegisterFactory(const char* name, IVehicleCreator* pCreator, bool isAI) override;
-	void RegisterFactory(const char* name, IGameObjectExtensionCreator*, bool isAI) override;
+	void RegisterFactory(const char* name, IGameObjectExtensionCreator* pCreator, bool isAI) override;
 
 	bool Init(SSystemInitParams& startupParams) override;
 	bool CompleteInit() override;
@@ -232,8 +248,8 @@ public:
 	IAnimationGraphState* GetMusicGraphState() override;
 	IMusicLogic* GetMusicLogic() override;
 
-	void RegisterListener(IGameFrameworkListener* pGameFrameworkListener, const char* name, EFRAMEWORKLISTENERPRIORITY priority) override;
-	void UnregisterListener(IGameFrameworkListener* pGameFrameworkListener) override;
+	void RegisterListener(IGameFrameworkListener* pListener, const char* name, EFRAMEWORKLISTENERPRIORITY priority) override;
+	void UnregisterListener(IGameFrameworkListener* pListener) override;
 
 	INetNub* GetServerNetNub() override;
 
@@ -269,18 +285,29 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////
 
-	virtual void UnknownFunction1();
-	virtual void UnknownFunction2();
+	virtual void ScheduleEndLevel(const char* nextLevel);
+	virtual GameServerNub* GetGameServerNub();
 
-	void DispatchActionEvent(const SActionEvent& event);
+	void OnActionEvent(const SActionEvent& event);
 
 	ScriptBind_Vehicle* GetScriptBind_Vehicle() { return m_pScriptBind_Vehicle; }
 	ScriptBind_VehicleSeat* GetScriptBind_VehicleSeat() { return m_pScriptBind_VehicleSeat; }
 
 private:
-	void RegisterConsoleVariables();
-	void RegisterConsoleCommands();
-	void RegisterScriptBindings();
+	void InitCVars();
+	void InitCommands();
+	void InitScriptBinds();
 
 	void CheckEndLevelSchedule();
+
+	template<class Lambda>
+	void CallListeners(Lambda lambda)
+	{
+		*m_pListenersCopy = *m_pListeners;
+
+		for (Listener& listener : *m_pListenersCopy)
+		{
+			lambda(listener.pListener);
+		}
+	}
 };
