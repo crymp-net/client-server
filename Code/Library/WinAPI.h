@@ -91,7 +91,10 @@ namespace WinAPI
 	void FillNOP(void *address, size_t length);
 	void FillMem(void *address, const void *data, size_t length);
 
+	void HookWithJump(void* address, void* pNewFunc);
+
 	bool HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc);
+	bool HookIATByName(void *pDLL, const char *dllName, const char *funcName, void *pNewFunc);
 
 	///////////
 	// Files //
@@ -267,7 +270,6 @@ namespace WinAPI
 		const std::string_view & url,
 		const std::string_view & data,
 		const std::map<std::string, std::string> & headers,
-		int timeout,
 		HTTPRequestCallback callback
 	);
 
@@ -276,4 +278,28 @@ namespace WinAPI
 	///////////////
 
 	std::string GetClipboardText(std::size_t maxLength = std::size_t(-1));
+
+	////////////
+	// Cursor //
+	////////////
+
+	namespace Cursor
+	{
+		void GetPos(long& x, long& y);
+		void SetPos(long x, long y);
+
+		void Show(bool show);
+
+		void Clip(void* window);
+	}
+
+	////////////
+	// Window //
+	////////////
+
+	namespace Window
+	{
+		void ConvertPosToWindow(void* window, long& x, long& y);
+		void ConvertPosToScreen(void* window, long& x, long& y);
+	}
 }

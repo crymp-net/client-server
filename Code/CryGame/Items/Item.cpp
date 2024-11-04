@@ -1111,8 +1111,13 @@ void CItem::Select(bool select)
 		select = false;
 	
 	if (!pOwner || !m_ownerId || m_stats.selected == select)
-	//CryMP: don't proceed...
+	{
+		//CryMP: don't proceed...
 		return;
+	}
+
+	CPlayer* pPlayerOwner = CPlayer::FromActor(pOwner);
+	const bool updateHUD = pPlayerOwner && (pPlayerOwner->IsClient() || pPlayerOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE);
 
 	m_stats.selected = select;
 
@@ -1130,10 +1135,15 @@ void CItem::Select(bool select)
 
 	IAISystem* pAISystem = gEnv->pAISystem;
 
-	CWeaponAttachmentManager* pWAM = pOwner ? pOwner->GetWeaponAttachmentManager() : NULL;
+	CWeaponAttachmentManager* pWAM = pOwner ? pOwner->GetWeaponAttachmentManager() : nullptr;
 
 	if (select)
 	{
+		if (updateHUD)
+		{
+			SAFE_HUD_FUNC(GetCrosshair()->Fade(0.0f, 1.0f, WEAPON_FADECROSSHAIR_SELECT));
+		}
+
 		if (IsDualWield())
 		{
 			//SetActionSuffix(m_params.dual_wield_suffix.c_str());
@@ -1147,23 +1157,8 @@ void CItem::Select(bool select)
 
 		if (!m_stats.mounted && GetOwner())
 			GetEntity()->SetWorldTM(GetOwner()->GetWorldTM());	// move somewhere near the owner so the sound can play
-		float speedOverride = -1.0f;
-
-		if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pOwner))
-		{
-			ENanoMode curMode = pNanoSuit->GetMode();
-			if (curMode == NANOMODE_SPEED)
-				speedOverride = 1.75f;
-		}
-
-		// only LAW has 2 different select animations
-		const ItemString& select_animation = (m_params.has_first_select && m_stats.first_selection)
-			? g_pItemStrings->first_select : g_pItemStrings->select;
-
-		if (speedOverride > 0.0f)
-			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend, speedOverride);
-		else
-			PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend);
+		
+		PlaySelectAnimation(pOwner);
 
 		//ForceSkinning(true);
 		unsigned int selectBusyTimer = 0;
@@ -1209,7 +1204,12 @@ void CItem::Select(bool select)
 		// set no-weapon pose on actor (except for the Offhand)
 
 		if (pOwner && (GetEntity()->GetClass() != CItem::sOffHandClass) && g_pItemStrings)
-			pOwner->PlayAction(g_pItemStrings->idle.c_str(), ITEM_DESELECT_POSE);
+		{
+			if (!m_stats.mounted)
+			{
+				pOwner->PlayAction(g_pItemStrings->idle.c_str(), ITEM_DESELECT_POSE);
+			}
+		}
 
 		EnableUpdate(false);
 
@@ -1246,15 +1246,36 @@ void CItem::Select(bool select)
 	else
 		CloakEnable(false, false);
 
-	if (pOwner)
+	if (updateHUD)
 	{
-		//CryMP: Fp spec support
-		if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
-			SAFE_HUD_FUNC(UpdateCrosshair(select ? this : NULL));	//crosshair might change
+		//CryMP: Spectator support
+		SAFE_HUD_FUNC(UpdateCrosshair(select ? this : nullptr));	//crosshair might change
 	}
 
 	OnSelected(select);
 }
+
+void CItem::PlaySelectAnimation(CActor *pOwner)
+{
+	float speedOverride = -1.0f;
+
+	if (CNanoSuit* pNanoSuit = CPlayer::GetNanoSuit(pOwner))
+	{
+		ENanoMode curMode = pNanoSuit->GetMode();
+		if (curMode == NANOMODE_SPEED)
+			speedOverride = 1.75f;
+	}
+
+	// only LAW has 2 different select animations
+	const ItemString& select_animation = (m_params.has_first_select && m_stats.first_selection)
+		? g_pItemStrings->first_select : g_pItemStrings->select;
+
+	if (speedOverride > 0.0f)
+		PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend, speedOverride);
+	else
+		PlayAction(select_animation, 0, false, eIPAF_Default | eIPAF_NoBlend);
+}
+
 //------------------------------------------------------------------------
 void CItem::Drop(float impulseScale, bool selectNext, bool byDeath)
 {
@@ -1492,12 +1513,25 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 	bool soundEnabled = IsSoundEnabled();
 	EnableSound(sound);
 
-	SetViewMode(0);
+	if (!IsSelected())
+	{
+		SetViewMode(0);
+	}
+	else
+	{
+		//CryLogWarningAlways("Item %s was already selected when picked up by %s", 
+		//	GetEntity()->GetName(), pActor->GetEntity()->GetName());
+	}
+
 	SetOwnerId(pickerId);
 
 	CopyRenderFlags(GetOwner());
 
-	Hide(true);
+	if (!gEnv->bMultiplayer) //CryMP: Causes weapon to be hidden after sv_restart in mp
+	{
+		Hide(true);
+	}
+
 	m_stats.dropped = false;
 	m_stats.brandnew = false;
 
@@ -1643,7 +1677,7 @@ void CItem::PickUp(EntityId pickerId, bool sound, bool select, bool keepHistory)
 
 		if (select)
 		{
-			if (!pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder))
+			if (!pActor->GetLinkedVehicle() && !pActor->ShouldSwim() && (!pStats || !pStats->isOnLadder.Value()))
 			{
 				if (CanSelect() && !slave)
 					m_pItemSystem->SetActorItem(GetOwnerActor(), itemToSelect->GetEntity()->GetId(), keepHistory);
@@ -2140,15 +2174,19 @@ void CItem::StartUse(EntityId userId)
 	pOwner->GetGameObject()->SetExtensionParams("Interactor", locker);
 
 	pOwner->LinkToMountedWeapon(GetEntityId());
-	SAFE_HUD_FUNC(GetCrosshair()->SetUsability(0));
 
+	if (pOwner->IsClient() || pOwner->IsFpSpectatorTarget())
+	{
+		SAFE_HUD_FUNC(GetCrosshair()->SetUsability(0));
+	}
+
+	/* Handled in UpdateDraw() now
 	//Don't draw legs for the FP player (prevents legs clipping in the view)
 	if (pOwner->IsClient() && !pOwner->IsThirdPerson())
 	{
-		ICharacterInstance* pChar = pOwner->GetEntity()->GetCharacter(0);
-		if (pChar)
-			pChar->HideMaster(1);
+		pOwner->m_hideMaster = true;
 	}
+	*/
 
 	if (pOwner->GetAnimatedCharacter())
 		pOwner->GetAnimatedCharacter()->SetNoMovementOverride(true);
@@ -2167,13 +2205,13 @@ void CItem::StopUse(EntityId userId)
 	if (!pActor)
 		return;
 
+	/* Handled in UpdateDraw() now 
 	//Draw legs again for the FP player
 	if (pActor->IsClient())
 	{
-		ICharacterInstance* pChar = pActor->GetEntity()->GetCharacter(0);
-		if (pChar)
-			pChar->HideMaster(0);
+		pActor->m_hideMaster = false;
 	}
+	*/
 
 	if (pActor->GetHealth() > 0)
 		pActor->SelectLastItem(true);

@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "SPAnalyst.h"
 
 #include "CryCommon/CryNetwork/ISerialize.h"
@@ -134,8 +135,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IItem* pItem = g_pGame->GetIGameFramework()->GetIItemSystem()->GetItem(entityId);
+				if (pItem)
 				{
 					if(event.event == eGE_ItemSelected)
 						WriteValue("event.itemSelected", string(pItem->GetEntity()->GetClass()->GetName()));
@@ -151,8 +153,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId);
+				if (pVehicle)
 					WriteValue("EnteredVehicle", pVehicle->GetEntity()->GetClass()->GetName());
 				else
 					WriteValue("EnteredVehicle", int(entityId));
@@ -163,8 +166,9 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			if(event.extra)
 			{
-				EntityId entityId = EntityId((int)(event.extra));
-				if(IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId))
+				entityId = EntityId(reinterpret_cast<uintptr_t>(event.extra));
+				IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(entityId);
+				if (pVehicle)
 					WriteValue("EnteredVehicle", pVehicle->GetEntity()->GetClass()->GetName());
 				else
 					WriteValue("EnteredVehicle", int(entityId));
@@ -186,6 +190,7 @@ void CSPAnalyst::OnGameplayEvent(IEntity *pEntity, const GameplayEvent &event)
 		{
 			WriteValue("PlayerDeath", int(eGE_Death));
 		}
+		break;
 	case eGE_Disconnected:
 		{
 			WriteValue("GameDisconnected", int(eGE_Disconnected));
@@ -223,6 +228,7 @@ void CSPAnalyst::ProcessPlayerEvent(IEntity* pEntity, const GameplayEvent& event
 	case eGE_Death:
 		if (PlayerAnalysis* pA = GetPlayer(entityId))
 			++pA->deaths;
+		break;
 	default:
 		break;
 	}
@@ -407,20 +413,18 @@ void CSPAnalyst::WriteXML()
 {
 	if(m_recordingData)
 	{
-		const string xmlHeader("<?xml version=\"1.0\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n");
-
 		string filename;
 		filename.append(m_recordingFileName);
 		filename.append(".xml");
 
-		FILE *pFile = gEnv->pCryPak->FOpen(filename.c_str(),"wb");
-		if (pFile)
+		if (CryFile file(filename.c_str(), "wb"); file)
 		{
 			_smart_ptr<IXmlStringData> pXmlStrData = m_recordingData->getXMLData( 6000000 );
-			gEnv->pCryPak->FWrite((void*)xmlHeader.c_str(), xmlHeader.size(), 1, pFile);
-			gEnv->pCryPak->FWrite((void*)pXmlStrData->GetString(), pXmlStrData->GetStringLength(), 1, pFile);
-			gEnv->pCryPak->FClose(pFile);
+			file.Puts("<?xml version=\"1.0\"?>");
+			file.Puts("<?mso-application progid=\"Excel.Sheet\"?>");
+			file.Write(pXmlStrData->GetString(), pXmlStrData->GetStringLength());
 		}
+
 		m_recordingData = NULL;
 		m_currentRecordingSection = NULL;
 	}

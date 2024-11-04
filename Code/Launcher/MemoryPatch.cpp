@@ -4,21 +4,16 @@
 
 #include "MemoryPatch.h"
 
-static void* ByteOffset(void* base, std::size_t offset)
-{
-	return static_cast<unsigned char*>(base) + offset;
-}
-
 static void FillNop(void* base, std::size_t offset, std::size_t size)
 {
-	void* address = ByteOffset(base, offset);
+	void* address = static_cast<unsigned char*>(base) + offset;
 
 	WinAPI::FillNOP(address, size);
 }
 
 static void FillMem(void* base, std::size_t offset, const void* data, std::size_t dataSize)
 {
-	void* address = ByteOffset(base, offset);
+	void* address = static_cast<unsigned char*>(base) + offset;
 
 	WinAPI::FillMem(address, data, dataSize);
 }
@@ -53,6 +48,53 @@ void MemoryPatch::CryAction::DisableBreakLog(void* pCryAction)
 #endif
 }
 
+/**
+ * Disables the lower limit of ToD length.
+ */
+void MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(void* pCryAction)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCryAction, 0x302F28, 0x1A);
+#else
+	FillNop(pCryAction, 0x20C9E4, 0x23);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CryAISystem
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Disables the multiplayer check in AI system.
+ */
+void MemoryPatch::CryAISystem::AllowMultiplayerAI(void* pCryAISystem)
+{
+	const unsigned char code[] = {
+#ifdef BUILD_64BIT
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0xEB, 0x0E,  // jmp [rip+0x0E]
+#else
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0x90,        // nop
+		0xEB, 0x1F,  // jmp [eip+0x1F]
+#endif
+	};
+
+#ifdef BUILD_64BIT
+	FillMem(pCryAISystem, 0x1C8740, code, sizeof(code));
+#else
+	FillMem(pCryAISystem, 0x17504B, code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryNetwork
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +114,18 @@ void MemoryPatch::CryNetwork::AllowSameCDKeys(void* pCryNetwork)
 }
 
 /**
+ * Disables creation of "server_profile.txt" file.
+ */
+void MemoryPatch::CryNetwork::DisableServerProfile(void* pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	// already disabled in 64-bit version
+#else
+	FillNop(pCryNetwork, 0x9BE2E, 0x5);
+#endif
+}
+
+/**
  * Unlocks advantages of pre-ordered version for everyone.
  *
  * This is both server-side and client-side patch.
@@ -87,9 +141,9 @@ void MemoryPatch::CryNetwork::EnablePreordered(void* pCryNetwork)
 	};
 
 #ifdef BUILD_64BIT
-	FillMem(pCryNetwork, 0x17C377, code, sizeof code);
+	FillMem(pCryNetwork, 0x17C377, code, sizeof(code));
 #else
-	FillMem(pCryNetwork, 0x43188, code, sizeof code);
+	FillMem(pCryNetwork, 0x43188, code, sizeof(code));
 #endif
 }
 
@@ -134,18 +188,18 @@ void MemoryPatch::CryNetwork::FixFileCheckCrash(void* pCryNetwork)
 
 #ifdef BUILD_64BIT
 	// client
-	FillMem(pCryNetwork, 0x14F5B1, codeA, sizeof codeA);
-	FillMem(pCryNetwork, 0x14F5C9, codeB, sizeof codeB);
+	FillMem(pCryNetwork, 0x14F5B1, codeA, sizeof(codeA));
+	FillMem(pCryNetwork, 0x14F5C9, codeB, sizeof(codeB));
 	// server
-	FillMem(pCryNetwork, 0x14F8E1, codeA, sizeof codeA);
-	FillMem(pCryNetwork, 0x14F8F9, codeB, sizeof codeB);
+	FillMem(pCryNetwork, 0x14F8E1, codeA, sizeof(codeA));
+	FillMem(pCryNetwork, 0x14F8F9, codeB, sizeof(codeB));
 #else
 	// client
 	FillNop(pCryNetwork, 0x4A34F, 0xC);
-	FillMem(pCryNetwork, 0x4A39E, clientCode, sizeof clientCode);
+	FillMem(pCryNetwork, 0x4A39E, clientCode, sizeof(clientCode));
 	// server
 	FillNop(pCryNetwork, 0x49F68, 0xC);
-	FillMem(pCryNetwork, 0x30E7B, serverCode, sizeof serverCode);
+	FillMem(pCryNetwork, 0x30E7B, serverCode, sizeof(serverCode));
 #endif
 }
 
@@ -161,26 +215,125 @@ void MemoryPatch::CryNetwork::FixInternetConnect(void* pCryNetwork)
 #endif
 }
 
+/**
+ * Fixes LAN server browser unable to find any servers when GameSpy is only used for LAN lobby.
+ */
+void MemoryPatch::CryNetwork::FixLanServerBrowser(void* pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0x40, 0x3A, 0xF8,  // cmp dil, al
+	};
+#else
+	const unsigned char code[] = {
+		0x38, 0x5D, 0x08,  // cmp byte ptr ss:[ebp+0x8], bl
+	};
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryNetwork, 0x110D8A, &code, sizeof(code));
+#else
+	FillMem(pCryNetwork, 0x53936, &code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryRenderD3D9
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef BUILD_64BIT
+static void DoFixUseAfterFreeInShaderParser(void* pCryRender, std::size_t codeOffset,
+	std::size_t secondMovOffset,
+	std::size_t secondMovSize,
+	std::size_t atofRegionOffset,
+	std::size_t atofRegionSize)
+{
+	const std::size_t firstMovOffset = 0x0;
+	const std::size_t firstMovSize = secondMovOffset;
+	const std::size_t stringDtorRegionOffset = secondMovOffset + secondMovSize;
+	const std::size_t stringDtorRegionSize = atofRegionOffset - stringDtorRegionOffset;
+
+	const unsigned char* oldCode = static_cast<unsigned char*>(pCryRender) + codeOffset;
+	unsigned char newCode[256];
+
+	// copy and reorder old code
+	std::size_t newCodeSize = 0;
+	std::memcpy(newCode + newCodeSize, oldCode + secondMovOffset, secondMovSize);
+	newCodeSize += secondMovSize;
+	std::memcpy(newCode + newCodeSize, oldCode + atofRegionOffset, atofRegionSize);
+	newCodeSize += atofRegionSize;
+	std::memcpy(newCode + newCodeSize, oldCode + firstMovOffset, firstMovSize);
+	newCodeSize += firstMovSize;
+	std::memcpy(newCode + newCodeSize, oldCode + stringDtorRegionOffset, stringDtorRegionSize);
+	newCodeSize += stringDtorRegionSize;
+
+	const std::size_t newAtofRegionOffset = secondMovSize;
+
+	// patch offsets relative to instruction pointer
+	int offset;
+
+	std::memcpy(&offset, newCode + newAtofRegionOffset + 5, 4);
+	offset += static_cast<int>(firstMovSize + stringDtorRegionSize);
+	std::memcpy(newCode + newAtofRegionOffset + 5, &offset, 4);
+
+	std::memcpy(&offset, newCode + (newCodeSize - 4), 4);
+	offset -= static_cast<int>(atofRegionSize);
+	std::memcpy(newCode + (newCodeSize - 4), &offset, 4);
+
+	std::memcpy(&offset, newCode + (newCodeSize - 9), 4);
+	offset -= static_cast<int>(atofRegionSize);
+	std::memcpy(newCode + (newCodeSize - 9), &offset, 4);
+
+	// inject new code
+	FillMem(pCryRender, codeOffset, newCode, newCodeSize);
+}
+#endif
+
+/**
+ * Fixes use-after-free bugs in shader parser.
+ *
+ * The original code first destroys a string and then calls atof on it. This patch simply changes the order.
+ */
+void MemoryPatch::CryRenderD3D9::FixUseAfterFreeInShaderParser(void* pCryRenderD3D9)
+{
+#ifdef BUILD_64BIT
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x127C87, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x127D0D, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12B4D7, 0x5, 0x3, 0x2C, 0xD);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C05F, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C128, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C182, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C1DF, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C23C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C296, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C2F0, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C34A, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C3A4, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x12C3FB, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x19280C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D9, 0x192FA7, 0x5, 0x3, 0x2F, 0x12);
+#else
+	// TODO: 32-bit
+#endif
+}
+
+static void SetWindowName(char* buffer, const char* name)
+{
+	constexpr std::size_t BUFFER_SIZE = 80;
+
+	std::size_t length = std::strlen(name);
+	if (length >= BUFFER_SIZE)
+	{
+		length = BUFFER_SIZE - 1;
+	}
+
+	std::memcpy(buffer, name, length);
+	buffer[length] = '\0';
+}
+
 static void HookWindowName(void* pCryRender, std::size_t offset, const char* name)
 {
-	using SetFunc = void (*)(char* buffer, const char* name);
-
-	const SetFunc pSetFunc = [](char* buffer, const char* name)
-	{
-		constexpr std::size_t BUFFER_SIZE = 80;
-
-		std::size_t length = std::strlen(name);
-		if (length >= BUFFER_SIZE)
-		{
-			length = BUFFER_SIZE - 1;
-		}
-
-		std::memcpy(buffer, name, length + 1);
-	};
+	void* pSetFunc = &SetWindowName;
 
 #ifdef BUILD_64BIT
 	unsigned char code[] = {
@@ -211,7 +364,7 @@ static void HookWindowName(void* pCryRender, std::size_t offset, const char* nam
 	std::memcpy(&code[14], &pSetFunc, 4);
 #endif
 
-	FillMem(pCryRender, offset, code, sizeof code);
+	FillMem(pCryRender, offset, code, sizeof(code));
 }
 
 /**
@@ -282,6 +435,34 @@ void MemoryPatch::CryRenderD3D10::FixLowRefreshRateBug(void* pCryRenderD3D10)
 }
 
 /**
+ * Fixes use-after-free bugs in shader parser.
+ *
+ * The original code first destroys a string and then calls atof on it. This patch simply changes the order.
+ */
+void MemoryPatch::CryRenderD3D10::FixUseAfterFreeInShaderParser(void* pCryRenderD3D10)
+{
+#ifdef BUILD_64BIT
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x11D787, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x11D80D, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x120FD7, 0x5, 0x3, 0x2C, 0xD);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121BAF, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121C78, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121CD2, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121D2F, 0x8, 0x3, 0x32, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121D8C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121DE6, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121E40, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121E9A, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121EF4, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x121F4B, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x18888C, 0x5, 0x3, 0x2F, 0x12);
+	DoFixUseAfterFreeInShaderParser(pCryRenderD3D10, 0x189027, 0x5, 0x3, 0x2F, 0x12);
+#else
+	// TODO: 32-bit
+#endif
+}
+
+/**
  * Sets a new string to be used as title during game window creation.
  *
  * Note that the name pointer must remain valid until the game window is created.
@@ -348,6 +529,79 @@ void MemoryPatch::CryRenderD3D10::HookAdapterInfo(void* pCryRenderD3D10, void (*
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CryRenderNULL
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Disables the debug renderer in CryRenderNULL DLL.
+ *
+ * This patch gets rid of the wasteful debug renderer with its hidden window and OpenGL context.
+ *
+ * The 1st FillNop disables debug renderer stuff in CNULLRenderAuxGeom constructor.
+ * The 2nd FillNop disables debug renderer stuff in CNULLRenderAuxGeom destructor.
+ * The 3rd FillMem disables the CNULLRenderAuxGeom::BeginFrame call in CNULLRenderer::BeginFrame.
+ * The 4th FillMem disables the CNULLRenderAuxGeom::EndFrame call in CNULLRenderer::EndFrame.
+ */
+void MemoryPatch::CryRenderNULL::DisableDebugRenderer(void* pCryRenderNULL)
+{
+	const unsigned char code[] = {
+		0xC3,  // ret
+#ifdef BUILD_64BIT
+		0x90,  // nop
+#endif
+		0x90,  // nop
+		0x90,  // nop
+		0x90,  // nop
+		0x90,  // nop
+		0x90   // nop
+	};
+
+	unsigned int renderAuxGeomVTableOffset = 0;
+
+#ifdef BUILD_64BIT
+	FillNop(pCryRenderNULL, 0xD379, 0x175);
+	FillNop(pCryRenderNULL, 0xD533, 0x35);
+	FillMem(pCryRenderNULL, 0x16CE, code, sizeof(code));
+	FillMem(pCryRenderNULL, 0x16E0, code, sizeof(code));
+	renderAuxGeomVTableOffset = 0x97588;
+#else
+	FillNop(pCryRenderNULL, 0x1CEE6, 0x101);
+	FillNop(pCryRenderNULL, 0x1CFF9, 0xE);
+	FillMem(pCryRenderNULL, 0x1895, code, sizeof(code));
+	FillMem(pCryRenderNULL, 0x18A9, code, sizeof(code));
+	renderAuxGeomVTableOffset = 0xA778C;
+#endif
+
+	if (renderAuxGeomVTableOffset)
+	{
+		void** oldVTable = reinterpret_cast<void**>(
+			static_cast<unsigned char*>(pCryRenderNULL) + renderAuxGeomVTableOffset
+		);
+
+		// CNULLRenderAuxGeom::SetRenderFlags is empty and returns nothing
+		void* emptyFunc = oldVTable[0];
+
+		// create a new CNULLRenderAuxGeom vtable
+		void* newVTable[27] = {};
+
+		// keep CNULLRenderAuxGeom::SetRenderFlags
+		// keep CNULLRenderAuxGeom::GetRenderFlags
+		newVTable[0] = oldVTable[0];
+		newVTable[1] = oldVTable[1];
+
+		// make the rest of CNULLRenderAuxGeom functions empty
+		// note that all the functions return nothing
+		for (int i = 2; i < 27; i++)
+		{
+			newVTable[i] = emptyFunc;
+		}
+
+		// install the new vtable
+		FillMem(pCryRenderNULL, renderAuxGeomVTableOffset, newVTable, sizeof(newVTable));
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CrySystem
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -378,39 +632,6 @@ void MemoryPatch::CrySystem::AllowMultipleInstances(void* pCrySystem)
 }
 
 /**
- * Disables useless "IO Error=" log messages from stream engine.
- */
-void MemoryPatch::CrySystem::DisableIOErrorLog(void* pCrySystem)
-{
-#ifdef BUILD_64BIT
-	FillNop(pCrySystem, 0x7B23C, 0x5);
-	FillNop(pCrySystem, 0x7B5E4, 0x5);
-	FillNop(pCrySystem, 0x7B62C, 0x5);
-	FillNop(pCrySystem, 0x7B65E, 0x5);
-	FillNop(pCrySystem, 0x7B692, 0x5);
-	FillNop(pCrySystem, 0x7B6DF, 0x5);
-	FillNop(pCrySystem, 0x7B724, 0x5);
-	FillNop(pCrySystem, 0x7B76A, 0x5);
-	FillNop(pCrySystem, 0x7B982, 0x5);
-	FillNop(pCrySystem, 0x7BAE1, 0x5);
-	FillNop(pCrySystem, 0x7BB98, 0x5);
-	FillNop(pCrySystem, 0x7BCDA, 0x5);
-	FillNop(pCrySystem, 0x7C51D, 0x5);
-#else
-	FillNop(pCrySystem, 0x780CB, 0x5);
-	FillNop(pCrySystem, 0x781AF, 0x5);
-	FillNop(pCrySystem, 0x78490, 0x5);
-	FillNop(pCrySystem, 0x784CF, 0x5);
-	FillNop(pCrySystem, 0x7850D, 0x5);
-	FillNop(pCrySystem, 0x78549, 0x5);
-	FillNop(pCrySystem, 0x7859E, 0x5);
-	FillNop(pCrySystem, 0x785D6, 0x5);
-	FillNop(pCrySystem, 0x7861C, 0x5);
-	FillNop(pCrySystem, 0x78744, 0x5);
-#endif
-}
-
-/**
  * Prevents out-of-bounds access of the CPUInfo::cores array.
  */
 void MemoryPatch::CrySystem::FixCPUInfoOverflow(void* pCrySystem)
@@ -419,6 +640,21 @@ void MemoryPatch::CrySystem::FixCPUInfoOverflow(void* pCrySystem)
 	FillNop(pCrySystem, 0x3801D, 0x1A);
 #else
 	FillNop(pCrySystem, 0x4B4A0, 0x9);
+#endif
+}
+
+/**
+ * Prevents Flash memory allocator from causing buffer underflow.
+ *
+ * This is normally harmless as it's read-only buffer underflow, but it annoys debug allocator.
+ */
+void MemoryPatch::CrySystem::FixFlashAllocatorUnderflow(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0xDEE82, 0x10);
+	FillNop(pCrySystem, 0xDEF0F, 0x10);
+#else
+	// TODO: 32-bit
 #endif
 }
 
@@ -447,9 +683,9 @@ void MemoryPatch::CrySystem::HookCPUDetect(void* pCrySystem, void (*handler)(CPU
 #endif
 
 #ifdef BUILD_64BIT
-	FillMem(pCrySystem, 0xA7E0, &code, sizeof code);
+	FillMem(pCrySystem, 0xA7E0, &code, sizeof(code));
 #else
-	FillMem(pCrySystem, 0xA380, &code, sizeof code);
+	FillMem(pCrySystem, 0xA380, &code, sizeof(code));
 #endif
 }
 
@@ -491,9 +727,9 @@ void MemoryPatch::CrySystem::HookError(void* pCrySystem, void (*handler)(const c
 #endif
 
 #ifdef BUILD_64BIT
-	FillMem(pCrySystem, 0x52D00, &code, sizeof code);
+	FillMem(pCrySystem, 0x52D00, &code, sizeof(code));
 #else
-	FillMem(pCrySystem, 0x63290, &code, sizeof code);
+	FillMem(pCrySystem, 0x63290, &code, sizeof(code));
 #endif
 }
 
@@ -534,5 +770,41 @@ void MemoryPatch::CrySystem::UnhandledExceptions(void* pCrySystem)
 	FillNop(pCrySystem, 0x17D67, 0x5);
 	FillNop(pCrySystem, 0x17D72, 0xC);
 	FillNop(pCrySystem, 0x59DF8, 0x13);
+#endif
+}
+
+/**
+ * Enables physics thread on server.
+ */
+void MemoryPatch::CrySystem::EnableServerPhysicsThread(void* pCrySystem)
+{
+#ifdef BUILD_64BIT
+	FillNop(pCrySystem, 0x36CD6, 0x11);
+#else
+	FillNop(pCrySystem, 0x4CBC1, 0xD);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FMODEx
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Fixes truncation of 64-bit heap buffer addresses inside FMOD.
+ */
+void MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(void* pFMODEx)
+{
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0x48, 0x8D, 0x40, 0x0F,              // lea rax, qword ptr ds:[rax+0xF]
+		0x48, 0x83, 0xE0, 0xF0,              // and rax, 0xFFFFFFFFFFFFFFF0
+		0x90,                                // nop
+		0x90,                                // nop
+		0x90,                                // nop
+		0x41, 0xB9, 0x3C, 0x00, 0x00, 0x00,  // mov r9d, 0x3C
+	};
+
+	FillMem(pFMODEx, 0x482DA, &code, sizeof(code) - 6);
+	FillMem(pFMODEx, 0x486B7, &code, sizeof(code));
 #endif
 }

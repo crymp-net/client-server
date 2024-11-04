@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cstring>
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/CryColorCode.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ISystem.h"
@@ -503,6 +505,8 @@ void Logger::PushMessageV(ILog::ELogType type, unsigned int flags, const char* f
 
 	BuildMessagePrefix(message);
 	BuildMessageContent(message, format, args);
+
+	TracyMessage(message.content.data(), message.content.length());
 
 	if (std::this_thread::get_id() == m_mainThreadID)
 	{

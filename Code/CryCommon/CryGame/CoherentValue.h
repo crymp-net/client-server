@@ -46,11 +46,11 @@ public:
 		return *this;
 	}
 
-	ILINE bool IsDirty() const {	return m_dirty;	}
-	ILINE void Clear() {	m_dirty = false;	}
-	ILINE const T& Value() const {	return m_val;	}
+	bool IsDirty() const {	return m_dirty;	}
+	void Clear() {	m_dirty = false;	}
+	const T& Value() const {	return m_val;	}
 
-	ILINE void SetDirtyValue(CScriptSetGetChain& chain, const char* name)
+	void SetDirtyValue(CScriptSetGetChain& chain, const char* name)
 	{
 		if (IsDirty())
 		{
@@ -58,7 +58,7 @@ public:
 			Clear();
 		}
 	}
-	ILINE void Serialize(TSerialize ser, const char* name)
+	void Serialize(TSerialize ser, const char* name)
 	{
 		ser.Value(name, m_val);
 		if (ser.IsReading())
@@ -66,14 +66,6 @@ public:
 			m_dirty = true;
 		}
 	}
-	operator bool() const 
-	{
-		return m_val != NULL;
-	};
-	bool operator !() const 
-	{
-		return m_val == NULL;
-	};
 private:
 	T			m_val;
 	bool	m_dirty;

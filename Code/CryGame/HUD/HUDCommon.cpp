@@ -118,13 +118,7 @@ CHUDCommon::CHUDCommon()
 
 CHUDCommon::~CHUDCommon()
 {
-	if (g_pGame->ShowMousePointer(false))
-	{
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
-		{
-			g_pGameActions->FilterNoMouse()->Enable(false);
-		}
-	}
+	this->ShowMouseCursor(false);
 
 	if (gEnv->pHardwareMouse)
 	{
@@ -175,29 +169,32 @@ void CHUDCommon::SetGODMode(uint8 ucGodMode, bool forceUpdate)
 //-- Cursor handling
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDCommon::CursorIncrementCounter()
+void CHUDCommon::ShowMouseCursor(bool show)
 {
-	if (g_pGame->ShowMousePointer(true))
+	if (m_isMouseCursorVisible == show)
 	{
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
-		{
-			g_pGameActions->FilterNoMouse()->Enable(true);
-		}
-		//UpdateCrosshairVisibility();
+		return;
 	}
-}
 
-//-----------------------------------------------------------------------------------------------------
+	m_isMouseCursorVisible = show;
 
-void CHUDCommon::CursorDecrementCounter()
-{
-	if (g_pGame->ShowMousePointer(false))
+	if (gEnv->pHardwareMouse)
 	{
-		if (g_pGameActions && g_pGameActions->FilterNoMouse())
+		CryLogComment("%s: Changing cursor visibility", __FUNCTION__);
+
+		if (show)
 		{
-			g_pGameActions->FilterNoMouse()->Enable(false);
+			gEnv->pHardwareMouse->IncrementCounter();
 		}
-		//UpdateCrosshairVisibility();
+		else
+		{
+			gEnv->pHardwareMouse->DecrementCounter();
+		}
+	}
+
+	if (g_pGameActions && g_pGameActions->FilterNoMouse())
+	{
+		g_pGameActions->FilterNoMouse()->Enable(show);
 	}
 }
 

@@ -51,7 +51,6 @@ class CHUDScore;
 class CHUDTextChat;
 class CHUDObituary;
 class CHUDTextArea;
-class CHUDTweakMenu;
 class CHUDVehicleInterface;
 class CHUDPowerStruggle;
 class CHUDTeamInstantAction;
@@ -206,7 +205,7 @@ public:
 	// ~IWeaponEventListener
 
 	// INanoSuitListener
-	virtual void ModeChanged(ENanoMode mode);     // nanomode
+	virtual void ModeChanged(ENanoMode mode, bool suitModeChanged);     // nanomode
 	virtual void EnergyChanged(float energy);     // energy
 	// ~INanoSuitListener
 
@@ -425,6 +424,8 @@ public:
 	//interface effects
 	void IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle = false);
 	void IndicateHit(bool enemyIndicator = false,IEntity *pEntity = NULL, bool explosionFeedback = false);
+	void ShowPlayerHitIndicator();
+	void ShowVehicleHitIndicator();
 	void UpdateHitIndicator();
 	void ShowKillAreaWarning(bool active, int timer);
 	void ShowTargettingAI(EntityId id);
@@ -432,7 +433,6 @@ public:
 	void FakeDeath(bool revive = false);
 	ILINE bool IsFakeDead() { return (m_fPlayerRespawnTimer)?true:false; }
 	void ShowDataUpload(bool active);
-	void ShowSpectate(bool active);
 	void ShowWeaponsOnGround();
 	void FireModeSwitch(bool grenades = false);
 	ILINE int GetSelectedFiremode() const { return m_curFireMode; }
@@ -551,7 +551,6 @@ private:
 	CHUDTextChat					*m_pHUDTextChat = nullptr;
 	CHUDObituary					*m_pHUDObituary = nullptr;
 	CHUDTextArea					*m_pHUDTextArea = nullptr;
-	CHUDTweakMenu					*m_pHUDTweakMenu = nullptr;
 	CHUDVehicleInterface	*m_pHUDVehicleInterface = nullptr;
 	CHUDPowerStruggle			*m_pHUDPowerStruggle = nullptr;
 	CHUDTeamInstantAction	* m_pHUDTeamInstantAction = nullptr;
@@ -725,7 +724,8 @@ private:
 	CGameFlashAnimation m_animTeamSelection;
 	CGameFlashAnimation m_animNetworkConnection;
 	//CryMP
-	CGameFlashAnimation m_animHitIndicator;
+	CGameFlashAnimation m_animHitIndicatorPlayer;
+	CGameFlashAnimation m_animHitIndicatorVehicle;
 
 	// HUD objects
 	typedef std::list<CHUDObject *> THUDObjectsList;
@@ -888,7 +888,8 @@ protected:
 	std::vector<EntityId> m_underAttackBuildings;
 	float m_underAttackCheck = 0.0f;
 	bool m_bRadarScanningEffect = false;
-	float m_hitIndicatorTimer = 0.0f;
+	float m_hitIndicatorPlayerTimer = 0.0f;
+	float m_hitIndicatorVehicleTimer = 0.0f;
 	std::list<string> m_listBoughtItems;
 
 public:

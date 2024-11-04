@@ -1,4 +1,5 @@
 #include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/Cry3DEngine/IMaterial.h"
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
@@ -52,6 +53,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetKeyName, "action");
 	SCRIPT_REG_TEMPLFUNC(IsKeyUsed, "key");
 	SCRIPT_REG_TEMPLFUNC(CreateKeyBind, "key, command");
+	SCRIPT_REG_TEMPLFUNC(CreateKeyFunction, "key, function");
 	SCRIPT_REG_FUNC(ClearKeyBinds);
 	SCRIPT_REG_TEMPLFUNC(GetModelFilePath, "entityId, slot");
 	SCRIPT_REG_TEMPLFUNC(CreateMaterialFromTexture, "materialName, texturePath");
@@ -59,6 +61,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetLastSeenTime, "entityId");
 	SCRIPT_REG_FUNC(GetLP);
 	SCRIPT_REG_FUNC(GetNumVars);
+	SCRIPT_REG_FUNC(GetVars);
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -77,7 +80,13 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetLoadingScreenMapPicturePath, "");
 
 	//Effects
-	SCRIPT_REG_TEMPLFUNC(FOVEffect, "");
+	SCRIPT_REG_TEMPLFUNC(FOVEffect, "goalFov, speed");
+	
+	//Entity attachments
+	SCRIPT_REG_TEMPLFUNC(SetAttachmentMaterial, "entityId, characterSlot, attachmentName, materialName");
+	SCRIPT_REG_TEMPLFUNC(GetCharacterAttachments, "entityId, characterSlot");
+	SCRIPT_REG_TEMPLFUNC(GetCharacterJoints, "entityId, characterSlot");
+	SCRIPT_REG_TEMPLFUNC(CreateCharacterDecal, "entityId, characterSlot, params");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -217,18 +226,15 @@ int ScriptBind_CPPAPI::Request(IFunctionHandler *pH, SmartScriptTable params, HS
 		const char *method = "GET";
 		const char *body = "";
 		SmartScriptTable headers;
-		int timeout = 4000;
 
 		chain.GetValue("url", url);
 		chain.GetValue("method", method);
 		chain.GetValue("body", body);
 		chain.GetValue("headers", headers);
-		chain.GetValue("timeout", timeout);
 
 		request.url = url;
 		request.method = method;
 		request.data = body;
-		request.timeout = timeout;
 
 		if (headers)
 		{
@@ -356,6 +362,13 @@ int ScriptBind_CPPAPI::CreateKeyBind(IFunctionHandler* pH, const char* key, cons
 	return pH->EndFunction(true);
 }
 
+int ScriptBind_CPPAPI::CreateKeyFunction(IFunctionHandler* pH, const char* key, HSCRIPTFUNCTION function)
+{
+	gClient->AddKeyBind(key, function);
+
+	return pH->EndFunction(true);
+}
+
 int ScriptBind_CPPAPI::ClearKeyBinds(IFunctionHandler* pH)
 {
 	gClient->ClearKeyBinds();
@@ -460,6 +473,21 @@ int ScriptBind_CPPAPI::GetNumVars(IFunctionHandler* pH)
 	return pH->EndFunction(gEnv->pConsole->GetNumVars());
 }
 
+int ScriptBind_CPPAPI::GetVars(IFunctionHandler* pH)
+{
+	std::vector<const char*> cmds;
+
+	cmds.resize(gEnv->pConsole->GetNumVars());
+	gEnv->pConsole->GetSortedVars(&cmds[0], cmds.size());
+
+	SmartScriptTable vars(m_pSS);
+	for (const char* vName : cmds)
+	{
+		vars->PushBack(vName);
+	}
+	return pH->EndFunction(vars);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Localization
 ////////////////////////////////////////////////////////////////////////////////
@@ -518,6 +546,12 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 	};
 
 	label.name = name;
+
+	const LocalizationManager::Label* existingLabel = localization.FindLabel(label.name);
+	if (existingLabel)
+	{
+		label = *existingLabel;
+	}
 
 	if (params)
 	{
@@ -731,4 +765,214 @@ int ScriptBind_CPPAPI::FOVEffect(IFunctionHandler* pH, float goalFOV, float spee
 		}
 	}
 	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::SetAttachmentMaterial(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot, const char* attachmentName, const char* materialName)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+	if (!pEntity)
+		return pH->EndFunction();
+
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(characterSlot);
+
+	if (!pCharacter)
+		return pH->EndFunction();
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+
+	if (pIAttachmentManager)
+	{
+		if (IAttachment* pAttachment = pIAttachmentManager->GetInterfaceByName(attachmentName))
+		{
+			if (IAttachmentObject* pAttachmentObject = pAttachment->GetIAttachmentObject())
+			{
+				IMaterial* pMaterial = gEnv->p3DEngine->GetMaterialManager()->LoadMaterial(materialName, false);
+				if (!pMaterial)
+					CryLogWarningAlways("No such material '%s'", materialName);
+				else
+				{
+					pAttachmentObject->SetMaterial(pMaterial);
+				}
+			}
+		}
+		else
+			CryLogWarningAlways("No such attachment '%s'", attachmentName);
+	}
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::GetCharacterAttachments(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+	if (!pEntity)
+		return pH->EndFunction();
+
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(characterSlot);
+
+	if (!pCharacter)
+		return pH->EndFunction();
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+
+	SmartScriptTable attachments(m_pSS);
+
+	if (pIAttachmentManager)
+	{
+		const int n = pIAttachmentManager->GetAttachmentCount();
+		for (int i = 0; i < n; i++)
+		{
+			IAttachment* pAttachment = pIAttachmentManager->GetInterfaceByIndex(i);
+			if (pAttachment)
+			{
+				attachments->PushBack(pAttachment->GetName());
+			}
+		}
+	}
+
+	return pH->EndFunction(attachments);
+}
+
+int ScriptBind_CPPAPI::GetCharacterJoints(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+	if (!pEntity)
+		return pH->EndFunction();
+
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(characterSlot);
+
+	if (!pCharacter)
+		return pH->EndFunction();
+
+	ISkeletonPose* pISkeletonPose = pCharacter->GetISkeletonPose();
+	if (!pISkeletonPose)
+	{
+		CryLogWarningAlways("No skeleton on this character '%s'", pCharacter->GetFilePath());
+		return pH->EndFunction();
+	}
+
+	SmartScriptTable joints(m_pSS);
+	if (pISkeletonPose)
+	{
+		uint32 numJoints = pISkeletonPose->GetJointCount();
+		for (int i = 0; i < numJoints; i++)
+		{
+			const char* jointName = pISkeletonPose->GetJointNameByID(i);
+			if (jointName && jointName[0])
+			{
+				joints->SetAt(i, jointName);
+			}
+		}
+	}
+
+	return pH->EndFunction(joints);
+}
+
+int ScriptBind_CPPAPI::CreateCharacterDecal(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot, SmartScriptTable params)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId.n);
+	if (!pEntity)
+		return pH->EndFunction();
+
+	ICharacterInstance* pCharacter = pEntity->GetCharacter(characterSlot);
+	if (!pCharacter)
+	{
+		CryLogWarningAlways("Entity has no character on slot %d", characterSlot);
+		return pH->EndFunction();
+	}
+
+	IRenderNode* pRenderNode = nullptr;
+	if (pEntity)
+	{
+		IEntityRenderProxy* pRenderProxy = (IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER);
+		if (pRenderProxy)
+			pRenderNode = pRenderProxy->GetRenderNode();
+	}
+
+	if (!pRenderNode)
+	{
+		CryLogWarningAlways("No render node on entity '%s'", pEntity->GetName());
+		return pH->EndFunction();
+	}
+
+	CScriptSetGetChain chain(params);
+
+	const char* material = nullptr;
+	chain.GetValue("material", material);
+
+	if (!material || !material[0])
+	{
+		CryLogWarningAlways("No material specified");
+		return pH->EndFunction();
+	}
+
+	IMaterial* pMaterial = gEnv->p3DEngine->GetMaterialManager()->LoadMaterial(material, false);
+	if (!pMaterial)
+	{
+		CryLogWarningAlways("No such material '%s' exists", material);
+		return pH->EndFunction();
+	}
+
+	Vec3 pos = Vec3(ZERO);
+	Vec3 normal = Vec3(ZERO);
+	Vec3 dir = Vec3(ZERO);
+	bool adjust = false;
+	bool skipoverlaptest = false;
+	float size = 1.0f;
+	float angle = 0.0f;
+	float time = 1.0f;
+
+	chain.GetValue("pos", pos);
+	chain.GetValue("normal", normal);
+	chain.GetValue("dir", dir);
+	chain.GetValue("adjust", adjust);
+	chain.GetValue("skipoverlaptest", skipoverlaptest);
+	chain.GetValue("size", size);
+	chain.GetValue("time", time);
+
+	CryEngineDecalInfo decal;
+
+	bool foundPos = false;
+	const char* boneName = nullptr;
+	if (chain.GetValue("bone", boneName))
+	{
+		ISkeletonPose* pISkeletonPose = pCharacter->GetISkeletonPose();
+		if (pISkeletonPose)
+		{
+			const auto id = pISkeletonPose->GetJointIDByName(boneName);
+			if (id != -1)
+			{
+				decal.vPos = (pEntity->GetWorldPos() + pCharacter->GetISkeletonPose()->GetAbsJointByID(id).t);
+				foundPos = true;
+			}
+			else
+				CryLogWarningAlways("No such bone '%s' exists", boneName);
+		}
+		else
+			CryLogWarningAlways("Entity '%s' has no skeletonpose", pEntity->GetName());
+	}
+
+	if (chain.GetValue("angle", angle))
+		decal.fAngle = angle;
+	else
+		decal.fAngle = RAD2DEG(acos_tpl(normal.Dot(dir)));
+
+	decal.ownerInfo.pRenderNode = pRenderNode;
+
+	if (!foundPos)
+	{
+		decal.vPos = pos;
+	}
+	decal.vNormal = normal;
+	decal.vHitDirection = dir;
+	decal.bAdjustPos = adjust;
+	decal.bSkipOverlappingTest = skipoverlaptest;
+	strcpy(decal.szMaterialName, material);
+	decal.fSize = size;
+	decal.fLifeTime = time;
+
+	pCharacter->EnableDecals(1);
+	pCharacter->CreateDecal(decal);
+
+	return pH->EndFunction(true);
 }

@@ -31,9 +31,8 @@
 #include "ISerialize.h"
 
 #include "CryCommon/CryEntitySystem/EntityId.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
-
-#include <vector>				// STL vector<>
 
 #define SERVER_DEFAULT_PORT 64087
 #define SERVER_DEFAULT_PORT_STRING "64087"
@@ -1292,10 +1291,7 @@ struct IRMIMessageBody
 private:
 	volatile int m_cnt;
 
-	virtual void DeleteThis()
-	{
-		delete this;
-	}
+	virtual void DeleteThis() = 0;
 };
 
 // this class provides a mechanism for the network library to obtain information

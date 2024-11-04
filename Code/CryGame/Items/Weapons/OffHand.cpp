@@ -691,7 +691,7 @@ void COffHand::UpdateFPView(float frameTime)
 		if (m_usable)
 		{
 			if (g_pGame->GetHUD())
-				g_pGame->GetHUD()->GetCrosshair()->SetUsability(false, "");
+				g_pGame->GetHUD()->GetCrosshair()->SetUsability(0, "");
 			m_usable = false;
 		}
 
@@ -726,7 +726,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 		CPlayer* pPlayer = CPlayer::FromActor(pActor);
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder.Value();
 
 		const int canGrab = CanPerformPickUp(pActor, NULL);
 
@@ -769,7 +769,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
 						{
 							if (pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
-								pHUDCrosshair->SetUsability(true, "@game_take_ammo_from", itemName.c_str());
+								pHUDCrosshair->SetUsability(1, "@game_take_ammo_from", itemName.c_str());
 							else
 								pHUDCrosshair->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
 						}
@@ -781,7 +781,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 								IItem* pExchangedItem = GetExchangeItem(pPlayer);
 								if (pExchangedItem)
 								{
-									pHUDCrosshair->SetUsability(true, "@game_exchange_weapon",
+									pHUDCrosshair->SetUsability(1, "@game_exchange_weapon",
 										pExchangedItem->GetEntity()->GetClass()->GetName(), itemName.c_str());
 								}
 								else
@@ -789,7 +789,7 @@ void COffHand::UpdateCrosshairUsabilitySP()
 							}
 							else
 							{
-								pHUDCrosshair->SetUsability(true, "@pick_weapon", itemName.c_str());
+								pHUDCrosshair->SetUsability(1, "@pick_weapon", itemName.c_str());
 							}
 						}
 					}
@@ -827,7 +827,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 	{
 		bool isLadder = pPlayer->IsLadderUsable();
 
-		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder;
+		const bool onLadder = pPlayer->GetPlayerStats()->isOnLadder.Value();
 
 		IMovementController* pMC = pPlayer->GetMovementController();
 		if (!pMC)
@@ -908,7 +908,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 		else if (m_usable)
 		{
 			if (g_pGame->GetHUD())
-				g_pGame->GetHUD()->GetCrosshair()->SetUsability(false, "");
+				g_pGame->GetHUD()->GetCrosshair()->SetUsability(0, "");
 			m_usable = false;
 		}
 	}
@@ -1623,7 +1623,7 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 		if (!m_mainHand)
 		{
 			SActorStats* pStats = GetOwnerActor()->GetActorStats();
-			if (!GetOwnerActor()->ShouldSwim() && !m_bCutscenePlaying && (pStats && !pStats->inFreefall))
+			if (!GetOwnerActor()->ShouldSwim() && !m_bCutscenePlaying && (pStats && !pStats->inFreefall.Value()))
 				GetOwnerActor()->HolsterItem(false);
 		}
 		else if (!m_mainHandIsDualWield && !m_prevMainHandId)
@@ -2298,12 +2298,12 @@ int COffHand::CheckItemsInProximity(Vec3 pos, Vec3 dir, bool getEntityInfo)
 		AABB bbox;
 		pEntity->GetWorldBounds(bbox);
 		Vec3 itemPos = bbox.GetCenter();
-		Vec3 dir = (pos - itemPos);
+		Vec3 newDir = (pos - itemPos);
 
 		IPhysicalEntity* phys = pEntity->GetPhysics();
 
 		ray_hit hit;
-		if (!gEnv->pPhysicalWorld->RayWorldIntersection(itemPos, dir, ent_static | ent_rigid | ent_sleeping_rigid,
+		if (!gEnv->pPhysicalWorld->RayWorldIntersection(itemPos, newDir, ent_static | ent_rigid | ent_sleeping_rigid,
 			rwi_stop_at_pierceable | rwi_ignore_back_faces, &hit, 1, phys ? &phys : NULL, phys ? 1 : 0))
 		{
 			//If nothing in between...
@@ -3223,17 +3223,26 @@ void COffHand::PlaySound(EOffHandSounds sound, bool play)
 	{
 		ISound* pSound = NULL;
 		if (repeating && m_sounds[sound])
-			if (pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]))
-				if (pSound->IsPlaying())
-					return;
+		{
+			pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
+			if (pSound && pSound->IsPlaying())
+			{
+				return;
+			}
+		}
 
 		if (!pSound)
+		{
 			pSound = gEnv->pSoundSystem->CreateSound(soundName, 0);
+		}
+
 		if (pSound)
 		{
 			pSound->SetSemantic(eSoundSemantic_Player_Foley);
 			if (repeating)
+			{
 				m_sounds[sound] = pSound->GetId();
+			}
 			pSound->Play();
 		}
 	}
@@ -3241,7 +3250,9 @@ void COffHand::PlaySound(EOffHandSounds sound, bool play)
 	{
 		ISound* pSound = gEnv->pSoundSystem->GetSound(m_sounds[sound]);
 		if (pSound)
+		{
 			pSound->Stop();
+		}
 		m_sounds[sound] = 0;
 	}
 
@@ -3343,10 +3354,10 @@ int COffHand::CanExchangeWeapons(IItem* pItem, IItem** pExchangeItem)
 	if (!pPlayer->CheckInventoryRestrictions(pItem->GetEntity()->GetClass()->GetName()))
 	{
 		//Can not carry more heavy/medium weapons
-		IItem* pItem = GetExchangeItem(pPlayer);
-		if (pItem)
+		IItem* pNewItem = GetExchangeItem(pPlayer);
+		if (pNewItem)
 		{
-			*pExchangeItem = pItem;
+			*pExchangeItem = pNewItem;
 			//can replace medium or heavy weapon
 			return ITEM_CAN_EXCHANGE;
 		}

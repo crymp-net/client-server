@@ -23,7 +23,7 @@ History:
 #include "CryCommon/CryAction/Network/NetActionSync.h"
 #include "CryCommon/CryAISystem/IAgent.h"
 #include "CryCommon/CryGame/GameUtils.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryGame/Actors/Player/Player.h"
 
 #include "CryGame/NetInputChainDebug.h"
@@ -778,7 +778,6 @@ void CVehicleMovementStdWheeled::DebugDrawMovement(const float deltaTime)
         float slip = ws.velSlip.len();
         if (ws.bSlip>0)
         {
-          IRenderAuxGeom* pGeom = gEnv->pRenderer->GetIRenderAuxGeom();
           pGeom->DrawLine(wp.pos, colRed, wp.pos+ws.velSlip, colRed);
         }
       }
@@ -2027,7 +2026,6 @@ void CVehicleMovementStdWheeled::OnValuesTweaked()
       SetEngineRPMMult(GetWheelCondition());
   }
 }
-
 
 //------------------------------------------------------------------------
 bool CVehicleMovementStdWheeled::DoGearSound()

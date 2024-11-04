@@ -332,12 +332,19 @@ bool CRadio::OnInputEvent( const SInputEvent &event )
 	if (!gEnv->bMultiplayer)
 		return false;
 
-	//CryLogAlways("RADIO: Input[%3.2f] %s %d", gEnv->pTimer->GetCurrTime(), event.keyName.c_str(), event.state);
+	const EKeyId keyId = event.keyId;
+	if (keyId == eKI_Escape) //CryMP
+	{
+		CloseRadioMenu();
+		return true;
+	}
+
+	//CryLogAlways("RADIO: Input[%3.2f] %s %d", gEnv->pTimer->GetCurrTime(), event.keyName, event.state);
 
 	// Signal that input events have been processed and sent to all listeners.
 	m_waitForInputEvents = false;
 
-	const char* sKey = event.keyName.c_str();
+	const char* sKey = event.keyName;
 	// nasty check, but fastest early out
 	int iKey = -1;
 

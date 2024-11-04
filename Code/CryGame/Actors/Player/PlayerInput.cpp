@@ -387,7 +387,7 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 				//			m_deltaRotation.Set(0,0,0);
 				m_deltaMovement.Set(0, 0, 0);
 			}
-			else if (m_pPlayer->GetHealth() > 0 && !m_pPlayer->m_stats.isFrozen.Value() && !m_pPlayer->m_stats.inFreefall.Value() && !m_pPlayer->m_stats.isOnLadder
+			else if (m_pPlayer->GetHealth() > 0 && !m_pPlayer->m_stats.isFrozen.Value() && !m_pPlayer->m_stats.inFreefall.Value() && !m_pPlayer->m_stats.isOnLadder.Value()
 				&& !m_pPlayer->m_stats.isStandingUp && m_pPlayer->GetGameObject()->GetAspectProfile(eEA_Physics) != eAP_Sleep)
 			{
 				m_pPlayer->CActor::OnAction(actionId, activationMode, value);
@@ -546,12 +546,12 @@ void CPlayerInput::OnAction(const ActionId& actionId, int activationMode, float 
 				}
 				else if (actions.thirdperson == actionId) //CryMP F1 Button: Toggle First Person Spectator (see PlayerView)
 				{
-					CPlayer *pTarget = CPlayer::FromIActor(m_pPlayer->GetSpectatorTargetPlayer());
-					if (pTarget)
+					CPlayer *pTarget = CPlayer::FromIActor(m_pPlayer->GetSpectatorTargetActor());
+					if (pTarget && pTarget->GetPhysicsProfile() != eAP_Ragdoll)
 					{
 						const bool bEnableSpectator(!m_pPlayer->IsFpSpectator());
 
-						pTarget->SetFpSpectatorTarget(bEnableSpectator);
+						pTarget->EnableFpSpectatorTarget(bEnableSpectator);
 
 						m_KeepFPSpectatorMode = bEnableSpectator;
 					}
@@ -885,7 +885,7 @@ void CPlayerInput::PreUpdate()
 			m_actions &= ~ACTION_PRONE;*/
 	}
 
-	if (m_pPlayer->m_stats.isOnLadder)
+	if (m_pPlayer->m_stats.isOnLadder.Value())
 	{
 		m_actions &= ~ACTION_PRONE;
 		m_actions &= ~ACTION_CROUCH;
@@ -1120,7 +1120,7 @@ bool CPlayerInput::OnActionMoveLeft(EntityId entityId, const ActionId& actionId,
 			ApplyMovement(Vec3(-(value * 2.0f - 1.0f), 0, 0));
 			m_checkZoom = true;
 			AdjustMoveButtonState(eMBM_Left, activationMode);
-			if (m_pPlayer->m_stats.isOnLadder)
+			if (m_pPlayer->m_stats.isOnLadder.Value())
 				m_pPlayer->m_stats.ladderAction = CPlayer::eLAT_StrafeLeft;
 		}
 	}
@@ -1145,7 +1145,7 @@ bool CPlayerInput::OnActionMoveRight(EntityId entityId, const ActionId& actionId
 			ApplyMovement(Vec3(value * 2.0f - 1.0f, 0, 0));
 			m_checkZoom = true;
 			AdjustMoveButtonState(eMBM_Right, activationMode);
-			if (m_pPlayer->m_stats.isOnLadder)
+			if (m_pPlayer->m_stats.isOnLadder.Value())
 				m_pPlayer->m_stats.ladderAction = CPlayer::eLAT_StrafeRight;
 		}
 	}
@@ -1156,6 +1156,11 @@ bool CPlayerInput::OnActionMoveRight(EntityId entityId, const ActionId& actionId
 bool CPlayerInput::OnActionRotateYaw(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
 	m_deltaRotation.z -= value;
+
+	if (m_pPlayer->IsThirdPerson() && fabs(value) > 60.f)
+	{
+		m_pPlayer->m_PlayerView.SetFastCameraCorrectionMode(0.3f);
+	}
 
 	if ((m_actions & ACTION_SPRINT) && g_pGameCVars->g_enableSpeedLean)
 	{
@@ -1180,6 +1185,11 @@ bool CPlayerInput::OnActionRotateYaw(EntityId entityId, const ActionId& actionId
 
 bool CPlayerInput::OnActionRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
+	if (m_pPlayer->IsThirdPerson() && fabs(value) > 60.f)
+	{
+		m_pPlayer->m_PlayerView.SetFastCameraCorrectionMode(0.3f);
+	}
+
 	/*if(m_pPlayer->GetActorStats()->inZeroG)	//check for flip over in zeroG .. this makes no sense
 	{
 	SPlayerStats *stats = static_cast<SPlayerStats*> (m_pPlayer->GetActorStats());
@@ -1571,7 +1581,7 @@ bool CPlayerInput::OnActionUse(EntityId entityId, const ActionId& actionId, int 
 		}
 
 		//--------------------------LADDERS-----------------------------------------------		
-		if (m_pPlayer->m_stats.isOnLadder)
+		if (m_pPlayer->m_stats.isOnLadder.Value())
 		{
 			m_pPlayer->RequestLeaveLadder(CPlayer::eLAT_Use);
 			return false;

@@ -1,0 +1,4 @@
+<Entity
+ Name="Updater"
+ Script="CryMP/Scripts/Entities/Updater.lua"
+/>

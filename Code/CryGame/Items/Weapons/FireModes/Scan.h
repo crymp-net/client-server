@@ -26,6 +26,10 @@ History:
 
 class CScan : public IFireMode
 {
+	struct DelayTimer;
+	struct TagEntitiesDelay;
+	struct DurationTimer;
+
 public:
 	CScan();
 	~CScan();
@@ -41,6 +45,9 @@ public:
 	virtual void PatchParams(const struct IItemParamsNode *patch);
 
 	virtual void Activate(bool activate);
+
+	void StartTimers();
+	void KillTimers();
 
 	void ShowFlashAnimation(bool enable);
 
@@ -124,7 +131,9 @@ public:
 	virtual void Lock(EntityId targetId, int partId) {};
 	virtual void Unlock() {};
 
-
+	//CryMP ------------------------------------------------------
+	void OnEnterFirstPerson() override;
+	void OnEnterThirdPerson() override;
 
 protected:
 	struct SScanParams
@@ -184,12 +193,12 @@ protected:
 	tSoundID		m_scanLoopId;
 
 	bool				m_scanning;
-	float				m_delayTimer;
-	float				m_durationTimer;
-	float       m_tagEntitiesDelay;
 
 	float m_fPulse = 0.0f;
 	bool m_rTop = false;
+	unsigned int m_delayTimerId = 0;
+	unsigned int m_durationTimerId = 0;
+	unsigned int m_scanTimerId = 0;
 
 public:
 

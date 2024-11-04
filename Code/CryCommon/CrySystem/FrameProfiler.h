@@ -1,26 +1,11 @@
-////////////////////////////////////////////////////////////////////////////
-//
-//  Crytek Engine Source File.
-//  Copyright (C), Crytek Studios, 2002.
-// -------------------------------------------------------------------------
-//  File name:   frameprofiler.h
-//  Version:     v1.00
-//  Created:     24/6/2003 by Timur,Sergey,Wouter.
-//  Compilers:   Visual Studio.NET
-//  Description: 
-// -------------------------------------------------------------------------
-//  History:
-//
-////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2002 Crytek GmbH
 
-#ifndef __frameprofiler_h__
-#define __frameprofiler_h__
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
-#define USE_FRAME_PROFILER      // comment this define to remove most profiler related code in the engine
+#include <cstdint>
+#include <vector>
+
+#include "ISystem.h"
 
 enum EProfiledSubsystem
 {
@@ -52,8 +37,6 @@ enum EProfiledSubsystem
 
 	PROFILE_LAST_SUBSYSTEM // Must always be last.
 };
-
-#include "ISystem.h"
 
 class CFrameProfiler;
 class CFrameProfilerSection;
@@ -137,7 +120,7 @@ struct IFrameProfileSystem
 	virtual void RemovePeaksListener( IFrameProfilePeakCallback *pPeakCallback ) = 0;
 
 	//! helper 
-	virtual float TicksToSeconds (int64 nTime) = 0;
+	virtual float TicksToSeconds(std::int64_t nTime) = 0;
 };
 
 
@@ -308,40 +291,40 @@ public:
 class CFrameProfiler
 {
 public:
-	ISystem *m_pISystem;
-	const char *m_name;
+	ISystem *m_pISystem = nullptr;
+	const char *m_name = nullptr;
 
 	//! Total time spent in this counter including time of child profilers in current frame.
-	int64 m_totalTime;
+	std::int64_t m_totalTime = 0;
 	//! Self frame time spent only in this counter (But includes recursive calls to same counter) in current frame.
-	int64 m_selfTime;
+	std::int64_t m_selfTime = 0;
 	//! How many times this profiler counter was executed.
-	int m_count;
+	int m_count = 0;
 	//! Total time spent in this counter during all profiling period.
-	int64 m_sumTotalTime;
+	std::int64_t m_sumTotalTime = 0;
 	//! Total self time spent in this counter during all profiling period.
-	int64 m_sumSelfTime;
+	std::int64_t m_sumSelfTime = 0;
 	//! Displayed quantity (interpolated or avarage).
-	float m_displayedValue;
+	float m_displayedValue = 0;
 	//! Displayed quantity (current frame value).
-	float m_displayedCurrentValue;
+	float m_displayedCurrentValue = 0;
 	//! How variant this value.
-	float m_variance;
+	float m_variance = 0;
 	//! Latest frame ID
-	uint64 m_latestFrame;
+	std::uint64_t m_latestFrame = 0;
 
 	//! Current parent profiler in last frame.
-	CFrameProfiler *m_pParent;
+	CFrameProfiler *m_pParent = nullptr;
 	//! Expended or collapsed displaying state.
-	bool m_bExpended;
-	bool m_bHaveChildren;
+	bool m_bExpended = false;
+	bool m_bHaveChildren = false;
 
 	//! Thread Id of this instance.
-	uint32 m_threadId;
+	uint32 m_threadId = 0;
 	//! Linked list to other thread instances.
-	CFrameProfiler* m_pNextThread;
+	CFrameProfiler* m_pNextThread = nullptr;
 
-	EProfiledSubsystem m_subsystem;
+	EProfiledSubsystem m_subsystem = {};
 
 	CFrameProfilerSamplesHistory<float,64> m_totalTimeHistory;
 	CFrameProfilerSamplesHistory<float,64> m_selfTimeHistory;
@@ -350,27 +333,13 @@ public:
 	//! Graph data for this frame profiler.
 	
 	//! Graph associated with this profiler.
-	CFrameProfilerGraph* m_pGraph;
-	CFrameProfilerOfflineHistory *m_pOfflineHistory;
+	CFrameProfilerGraph* m_pGraph = nullptr;
+	CFrameProfilerOfflineHistory *m_pOfflineHistory = nullptr;
 
-	CFrameProfiler( ISystem *pSystem,const char *sCollectorName,EProfiledSubsystem subsystem=PROFILE_ANY )
+	CFrameProfiler(ISystem* pSystem, const char* collectorName, EProfiledSubsystem subsystem = PROFILE_ANY)
+	: m_pISystem(pSystem), m_name(collectorName), m_subsystem(subsystem)
 	{
-		m_pParent = 0;
-		m_pGraph = 0;
-		m_bExpended = false;
-		m_bHaveChildren = false;
-		m_pOfflineHistory = 0;
-		m_subsystem = subsystem;
-		m_totalTime = m_selfTime = 0;
-		m_sumTotalTime = m_sumSelfTime = 0;
-		m_count = 0;
-		m_pISystem = pSystem;
-		m_name = sCollectorName;
-		m_threadId = 0;
-		m_pNextThread = 0;
-		m_latestFrame = 0;
-		if(IFrameProfileSystem * pFrameProfileSystem = m_pISystem->GetIProfileSystem())
-      pFrameProfileSystem->AddFrameProfiler( this );
+		pSystem->GetIProfileSystem()->AddFrameProfiler(this);
 	}
 };
 
@@ -382,12 +351,12 @@ public:
 class CFrameProfilerSection
 {
 public:
-	int64 m_startTime;
-	int64 m_excludeTime;
+	std::int64_t m_startTime;
+	std::int64_t m_excludeTime;
 	CFrameProfiler *m_pFrameProfiler;
 	CFrameProfilerSection *m_pParent;
 
-	__forceinline CFrameProfilerSection( CFrameProfiler *profiler )
+	CFrameProfilerSection( CFrameProfiler *profiler )
 	{
 		if (!gEnv->bProfilerEnabled)
 		{
@@ -399,7 +368,7 @@ public:
 			gEnv->callbackStartSection( this );
 		}
 	}
-	__forceinline ~CFrameProfilerSection()
+	~CFrameProfilerSection()
 	{
 		if (m_pFrameProfiler)
 			gEnv->callbackEndSection( this );
@@ -420,22 +389,19 @@ public:
 	CCustomProfilerSection *m_pParent;
 
 	//! pValue pointer must remain valid until after calling destructor of this custom profiler section.
-	__forceinline CCustomProfilerSection( CFrameProfiler *profiler,int *pValue )
+	CCustomProfilerSection( CFrameProfiler *profiler,int *pValue )
 	{
 		m_pValue = pValue;
 		m_pFrameProfiler = profiler;
 		if (profiler)
 			m_pFrameProfiler->m_pISystem->GetIProfileSystem()->StartCustomSection( this );
 	}
-	__forceinline ~CCustomProfilerSection()
+	~CCustomProfilerSection()
 	{
 		if (m_pFrameProfiler)
 			m_pFrameProfiler->m_pISystem->GetIProfileSystem()->EndCustomSection( this );
 	}
 };
-
-//USE_FRAME_PROFILER
-#if defined(USE_FRAME_PROFILER) && (!defined(_RELEASE) || defined(WIN64))
 
 //////////////////////////////////////////////////////////////////////////
 //! Place this macro when you need to profile a function.
@@ -470,18 +436,5 @@ public:
 	static CFrameProfiler staticFrameProfiler( pISystem,szProfilerName,subsystem ); \
 	CFrameProfilerSection frameProfilerSection( &staticFrameProfiler );
 
-#else //#if !defined(_RELEASE) || defined(WIN64)
-
-#define FUNCTION_PROFILER( pISystem,subsystem )
-#define FUNCTION_PROFILER_FAST( pISystem,subsystem,bProfileEnabled )
-#define FRAME_PROFILER( szProfilerName,pISystem,subsystem )
-#define FRAME_PROFILER_FAST( szProfilerName,pISystem,subsystem,bProfileEnabled )
-;
-
-#endif //USE_FRAME_PROFILER
-
 #define FUNCTION_PROFILER_SYS(subsystem) \
 	FUNCTION_PROFILER_FAST( gEnv->pSystem, PROFILE_##subsystem, m_bProfilerEnabled )
-
-
-#endif // __frameprofiler_h__

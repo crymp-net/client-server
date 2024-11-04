@@ -82,10 +82,12 @@ void CHUDCrosshair::Update(float fDeltaTime)
 	IItemSystem* pItemSystem = g_pGame->GetIGameFramework()->GetIItemSystem();
 
 	if (pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
 
 	if (!pPlayer)
 		return;
+
+	UpdateOpacity(fDeltaTime);
 
 	UpdateDamageIndicator(pPlayer, fDeltaTime);
 
@@ -298,6 +300,66 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 		m_animInterActiveIcons.SetVisible(false);
 }
 
+void CHUDCrosshair::HandleUsability(int objId, const char* message)
+{
+	int usable = (gEnv->pEntitySystem->GetEntity(objId)) ? 1 : 0;
+	std::string textLabel;
+	const bool gotMessage = (message && strlen(message) != 0);
+	if (gotMessage)
+	{
+		textLabel = message;
+	}
+
+	m_pHUD->m_pGameRules->SetLastUsabilityEntityId(objId);
+
+	if (usable == 1)
+	{
+		if (IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(objId))
+		{
+			textLabel = "@use_vehicle";
+
+			const int pteamId = m_pHUD->m_pGameRules->GetTeam(m_pHUD->m_pClientActor->GetEntityId());
+			const int vteamId = m_pHUD->m_pGameRules->GetTeam(objId);
+
+			if (vteamId && vteamId != pteamId)
+			{
+				usable = 2;
+				textLabel = "@use_vehicle_locked";
+			}
+		}
+		else if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(objId))
+		{
+			if (!gotMessage)
+				return;
+
+			//Offhand controls pick up messages
+			/*if(!m_pHUD->m_pClientActor->CheckInventoryRestrictions(pItem->GetEntity()->GetClass()->GetName()))
+			{
+				usable = 2;
+				textLabel = "@inventory_full";
+			}
+			else
+			{
+				if(!gotMessage)
+					return pH->EndFunction();
+			}*/
+		}
+		else
+		{
+			if (gEnv->bMultiplayer && !gotMessage)
+				usable = 0;
+			else if (!gotMessage)
+				textLabel = "@pick_object";
+		}
+	}
+	else
+	{
+		textLabel = ""; //turn off text
+	}
+
+	SetUsability(usable, textLabel.c_str(), nullptr);
+}
+
 //-----------------------------------------------------------------------------------------------------
 
 bool CHUDCrosshair::GetUsability() const
@@ -387,7 +449,7 @@ void CHUDCrosshair::UpdateCrosshair()
 
 	//CryMP: Fp spec support
 	if (pPlayer && pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
 
 	if (!pPlayer)
 		return;
@@ -431,9 +493,11 @@ void CHUDCrosshair::UpdateCrosshair()
 	// SNH: if player is carrying a claymore or mine, ask the weapon whether it is possible to place it currently
 	//	(takes into account player speed / stance / aim direction).
 	// So 'friendly' is a bit of a misnomer here, but we want the "don't/can't fire" crosshair...
+
+	CWeapon* pWeapon = pPlayer->GetCurrentWeapon(false);
+
 	if (iNewFriendly != 1)
 	{
-		CWeapon * pWeapon = pPlayer->GetWeapon(pPlayer->GetCurrentItemId());
 		if (pWeapon)
 		{
 			const IEntityClass* pClass = pWeapon->GetEntity()->GetClass();
@@ -443,7 +507,10 @@ void CHUDCrosshair::UpdateCrosshair()
 				if (IFireMode* pfm = pWeapon->GetFireMode(pWeapon->GetCurrentFireMode()))
 				{
 					if (!pfm->IsFiring())
+					{
 						iNewFriendly = pWeapon->CanFire() ? 0 : 1;
+
+					}
 				}
 			}
 		}
@@ -454,16 +521,22 @@ void CHUDCrosshair::UpdateCrosshair()
 		m_iFriendlyTarget = iNewFriendly;
 		//m_animCrossHair.Invoke("setFriendly", m_iFriendlyTarget);
 		if (iNewFriendly)
+		{
 			m_animFriendCross.SetVisible(true);
+
+			Fade(1.0f, 0.0f, WEAPON_FADECROSSHAIR_FRIENDLYCROSS);
+		}
 		else
+		{
 			m_animFriendCross.SetVisible(false);
+			Fade(0.0f, 1.0f, WEAPON_FADECROSSHAIR_FRIENDLYCROSS);
+		}
 	}
 
 	if (m_animInterActiveIcons.GetVisible())
 	{
 		m_bHideUseIconTemp = false;
 
-		CWeapon* pWeapon = pPlayer->GetCurrentWeapon(false);
 		if (pWeapon)
 		{
 			CItem::SStats stats = pWeapon->GetStats();
@@ -491,7 +564,7 @@ void CHUDCrosshair::UpdateCrosshair()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDCrosshair::SetOpacity(float opacity)
+void CHUDCrosshair::SetFlashOpacity(float opacity)
 {
 	if (opacity != m_opacity)
 	{
@@ -510,7 +583,9 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 
 	//CryMP: Fp spec support
 	if (pPlayer->IsFpSpectator())
-		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetPlayer());
+	{
+		pPlayer = CPlayer::FromIActor(pPlayer->GetSpectatorTargetActor());
+	}
 
 	if (!pPlayer)
 	{
@@ -521,7 +596,9 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 	if (g_pGameCVars->hud_crosshair != 0)
 	{
 		if (!pItem)
+		{
 			pItem = pPlayer->GetCurrentItem();
+		}
 
 		const IEntityClass *pClass = pItem ? pItem->GetEntity()->GetClass() : nullptr;
 
@@ -575,6 +652,8 @@ void CHUDCrosshair::SelectCrosshair(IItem* pItem)
 		SetCrosshair(g_pGameCVars->hud_crosshair);
 }
 
+//------------------------------------------------------------------------
+
 void CHUDCrosshair::Break(bool state)
 {
 	m_bBroken = state;
@@ -585,6 +664,96 @@ void CHUDCrosshair::Break(bool state)
 		pAnim->GetFlashPlayer()->Advance(0.1f);
 	}
 }
+
+//------------------------------------------------------------------------
+
+void CHUDCrosshair::SetVisibility(bool visible)
+{
+	m_fading.visible = visible;
+}
+
+//------------------------------------------------------------------------
+
+bool CHUDCrosshair::GetVisibility() const
+{
+	return m_fading.visible;
+}
+
+//------------------------------------------------------------------------
+
+void CHUDCrosshair::SetOpacity(float opacity)
+{
+	m_fading.opacity = opacity;
+}
+
+//------------------------------------------------------------------------
+
+float CHUDCrosshair::GetOpacity() const
+{
+	return m_fading.opacity;
+}
+
+//------------------------------------------------------------------------
+
+void CHUDCrosshair::Fade(float from, float to, float time)
+{
+	m_fading.fading = true;
+	m_fading.fadefrom = from;
+	m_fading.fadeto = to;
+	m_fading.fadetime = MAX(0, time);
+	m_fading.fadetimer = m_fading.fadetime;
+
+	SetOpacity(from);
+}
+
+//------------------------------------------------------------------------
+
+void CHUDCrosshair::UpdateOpacity(float frameTime)
+{
+	if (m_fading.fading)
+	{
+		if (m_fading.fadetimer > 0.0f)
+		{
+			m_fading.fadetimer -= frameTime;
+			if (m_fading.fadetimer < 0.0f)
+				m_fading.fadetimer = 0.0f;
+
+			float t = (m_fading.fadetime - m_fading.fadetimer) / m_fading.fadetime;
+			float d = (m_fading.fadeto - m_fading.fadefrom);
+
+			if (t >= 1.0f)
+				m_fading.fading = false;
+
+			if (d < 0.0f)
+				t = 1.0f - t;
+
+			if (m_fading.fadefrom == m_fading.fadeto)
+				m_fading.opacity = m_fading.fadeto;
+			else
+				m_fading.opacity = fabsf(t * d);
+		}
+		else
+		{
+			m_fading.opacity = m_fading.fadeto;
+			m_fading.fading = false;
+		}
+	}
+
+	SetFlashOpacity(m_fading.opacity);
+}
+
+//------------------------------------------------------------------------
+
+void CHUDCrosshair::OnLookatEntityChangeTeam(EntityId entityId)
+{
+	if (m_bUsable)
+	{
+		SetUsability(0);
+		HandleUsability(entityId, "");
+	}
+}
+
+//------------------------------------------------------------------------
 
 bool CHUD::ShouldRenderCrosshair() const
 {
@@ -606,9 +775,12 @@ bool CHUD::ShouldRenderCrosshair() const
 	if (m_pModalHUD && m_pModalHUD->GetVisible())
 		return false;
 
+	if (m_pHUDCrosshair->IsFriendlyCrossVisible())
+		return false;
+
 	CPlayer* pPlayer = m_pClientActor;
 
-	if (IActor* pSpec = pPlayer->GetSpectatorTargetPlayer())
+	if (IActor* pSpec = pPlayer->GetSpectatorTargetActor())
 	{
 		pPlayer = CPlayer::FromIActor(pSpec);
 		if (!pPlayer)
@@ -621,9 +793,7 @@ bool CHUD::ShouldRenderCrosshair() const
 		{
 			if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(pPlayer->GetEntityId()))
 			{
-				bool b(pSeat->IsGunner());
-				
-				return b;
+				return pSeat->IsGunner();
 			}
 		}
 	}
@@ -640,6 +810,7 @@ bool CHUD::ShouldRenderCrosshair() const
 	}
 	return true;
 }
+
 void CHUD::UpdateCrosshairVisibility()
 {
 	if (!m_pHUDCrosshair)

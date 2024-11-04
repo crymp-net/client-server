@@ -12,19 +12,19 @@ History:
 - 03/2007: Created by Jan Müller
 
 *************************************************************************/
-#ifndef __OPTIONS_MANAGER_H__
-#define __OPTIONS_MANAGER_H__
-
 #pragma once
 
+#include <map>
+#include <string>
+#include <string_view>
+
 #include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/CryAction/IGameFramework.h"
-#include "CryGame/GameCVars.h"
 
 //-----------------------------------------------------------------------------------------------------
 
-class CGameFlashAnimation;
+class CryFile;
 class CFlashMenuScreen;
+struct IPlayerProfileManager;
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -40,12 +40,9 @@ enum ECrysisProfileColor
 
 //-----------------------------------------------------------------------------------------------------
 
-class COptionsManager : public ICVarDumpSink
+class COptionsManager
 {
-
-	typedef void (COptionsManager::*OpFuncPtr) (const char*);
-
-public :
+public:
 
 	~COptionsManager() 
 	{
@@ -59,14 +56,10 @@ public :
 		return sp_optionsManager;
 	}
 
-	ILINE IPlayerProfileManager *GetProfileManager() { return m_pPlayerProfileManager; }
-	ILINE bool IsFirstStart() { return m_firstStart; }
+	IPlayerProfileManager* GetProfileManager() { return m_pPlayerProfileManager; }
+	bool IsFirstStart() { return m_firstStart; }
 
 	ECrysisProfileColor GetCrysisProfileColor();
-
-	//ICVarDumpSink
-	virtual void OnElementFound(ICVar *pCVar);
-	//~ICVarDumpSink
 
 	//flash system
 	bool HandleFSCommand(const char *strCommand,const char *strArgs);
@@ -94,22 +87,24 @@ public :
 	bool IgnoreProfile();
 	bool WriteGameCfg();
 	void SetVideoMode(const char* params);
+	void SetAntiAliasingMode(const char* params);
+	void SetDifficulty(const char* params);
+	void PBClient(const char* params);
 	void AutoDetectHardware(const char* params);
 	void SystemConfigChanged(bool silent = false);
 	//~profile system
 
 private:
+	bool HandleSpecialCommand(std::string_view command, const char* args);
+
 	struct CCVarSink : public ICVarDumpSink
 	{
-		CCVarSink(COptionsManager* pMgr, FILE* pFile)
-		{
-			m_pOptionsManager = pMgr;
-			m_pFile = pFile;
-		}
+		const COptionsManager* self;
+		CryFile& file;
 
-		void OnElementFound(ICVar *pCVar);
-		COptionsManager* m_pOptionsManager;
-		FILE* m_pFile;
+		explicit CCVarSink(const COptionsManager* self, CryFile& file) : self(self), file(file) {}
+
+		void OnElementFound(ICVar* pCVar) override;
 	};
 
 	COptionsManager();
@@ -117,29 +112,13 @@ private:
 
 	struct SOptionEntry
 	{
-		string name;
-		bool   bWriteToConfig;
-
-		SOptionEntry() : bWriteToConfig(false) {}
-		SOptionEntry(const string& name, bool bWriteToConfig) : name(name), bWriteToConfig(bWriteToConfig) {}
-		SOptionEntry(const char* name, bool bWriteToConfig) : name(name), bWriteToConfig(bWriteToConfig) {}
+		std::string name;
+		bool writeToConfig = false;
 	};
 
-	std::map<string, SOptionEntry> m_profileOptions;
+	std::map<std::string, SOptionEntry, std::less<void>> m_profileOptions;
 
 	ECrysisProfileColor m_eCrysisProfileColor;
-
-	//************ OPTION FUNCTIONS ************
-	void SetAntiAliasingMode(const char* params);
-	void SetDifficulty(const char* params);
-	void PBClient(const char* params);
-	//initialize option-functions
-	void InitOpFuncMap();
-	//option-function mapper
-	typedef std::map<string, OpFuncPtr> TOpFuncMap;
-	TOpFuncMap	m_opFuncMap;
-	typedef TOpFuncMap::iterator TOpFuncMapIt;
-	//******************************************
 
 	void SetCrysisProfileColor(const char *szValue);
 	CFlashMenuScreen * GetCurrentMenu();
@@ -153,9 +132,5 @@ private:
 	bool m_firstStart;
 
 };
-
-//-----------------------------------------------------------------------------------------------------
-
-#endif
 
 //-----------------------------------------------------------------------------------------------------

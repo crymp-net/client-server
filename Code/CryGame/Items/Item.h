@@ -749,6 +749,7 @@ public:
 	virtual void SetHand(int hand);
 	virtual void Use(EntityId userId);
 	virtual void Select(bool select);
+	void PlaySelectAnimation(CActor* pOwner);
 	virtual void Drop(float impulseScale=1.0f, bool selectNext=true, bool byDeath=false);
 	virtual void PickUp(EntityId pickerId, bool sound, bool select=true, bool keepHistory=true);
 	virtual void Physicalize(bool enable, bool rigid);
@@ -945,17 +946,14 @@ public:
 	// view
 	bool IsOwnerFP();
 	bool IsCurrentItem();
-	void UpdateMounted(float frameTime);  
+	void UpdateMounted(float frameTime);
+	void OnPreProcessBonesRotation(IActor* pActor, const float frameTime);
 	void CheckViewChange();
 	void SetViewMode(int mode);
 	void CopyRenderFlags(IEntity *pOwner);
 	void ResetRenderFlags();
-  virtual void UseManualBlending(bool enable);
-  virtual bool GetAimBlending(OldBlendSpace& params);
-
-   void UpdateGunnerLocation(IEntity* pParent, const Vec3& bodyDirection);
-   Vec3 GetMountDirection(IEntity* pParent) const;
-   void Update(float frameTime);
+	virtual void UseManualBlending(bool enable);
+	virtual bool GetAimBlending(OldBlendSpace& params);
 
    int m_CheckFrames;
 
@@ -1395,6 +1393,11 @@ public:
 	static IEntityClass*    sUS_tank;
 	static IEntityClass*    sUS_trolley;
 	static IEntityClass*	sUS_vtol;
+
+	void ForceReselect()
+	{
+		m_stats.selected = false;
+	}
 };
 
 

@@ -105,13 +105,19 @@ void CWeapon::NetMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &dir)
 	{
 		m_melee->NetShootEx(pos, dir, ZERO, ZERO, 1.0f, 0);
 		if (IsServer())
-			m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, (void *)GetEntityId()));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+			m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, extra));
+		}
 	}
 	else if (m_fm)
 	{
 		m_fm->NetShootEx(pos, dir, ZERO, ZERO, 1.0f, 0);
 		if (IsServer())
-			m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, (void *)GetEntityId()));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+			m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, extra));
+		}
 	}
 }
 
@@ -203,12 +209,16 @@ void CWeapon::RequestShoot(IEntityClass* pAmmoType, const Vec3 &pos, const Vec3 
 	{
 		if (pOwner)
 			pOwner->GetGameObject()->Pulse('bang');
+
 		GetGameObject()->Pulse('bang');
 
-		if (IsServerSpawn(pAmmoType) || forceExtended)
-			GetGameObject()->InvokeRMI(CWeapon::SvRequestShootEx(), SvRequestShootExParams(pos, dir, vel, hit, extra, predictionHandle, seq, seqr), eRMI_ToServer);
-		else
-			GetGameObject()->InvokeRMI(CWeapon::SvRequestShoot(), SvRequestShootParams(pos, dir, hit, predictionHandle, seq, seqr), eRMI_ToServer);
+		if (pOwner)
+		{
+			if (IsServerSpawn(pAmmoType) || forceExtended)
+				GetGameObject()->InvokeRMI(CWeapon::SvRequestShootEx(), SvRequestShootExParams(pos, dir, vel, hit, extra, predictionHandle, seq, seqr), eRMI_ToServer);
+			else
+				GetGameObject()->InvokeRMI(CWeapon::SvRequestShoot(), SvRequestShootParams(pos, dir, hit, predictionHandle, seq, seqr), eRMI_ToServer);
+		}
 	}
 	else if (!IsClient() && IsServer())
 	{
@@ -230,7 +240,12 @@ void CWeapon::RequestMeleeAttack(bool weaponMelee, const Vec3 &pos, const Vec3 &
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(CWeapon::SvRequestMeleeAttack(), RequestMeleeAttackParams(weaponMelee, pos, dir, seq), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(CWeapon::SvRequestMeleeAttack(), RequestMeleeAttackParams(weaponMelee, pos, dir, seq), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
 	{
 		GetGameObject()->InvokeRMI(CWeapon::ClMeleeAttack(), ClMeleeAttackParams(weaponMelee, pos, dir), eRMI_ToAllClients);
@@ -243,9 +258,16 @@ void CWeapon::RequestStartFire()
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(CWeapon::SvRequestStartFire(), EmptyParams(), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(CWeapon::SvRequestStartFire(), EmptyParams(), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
+	{
 		GetGameObject()->InvokeRMI(CWeapon::ClStartFire(), EmptyParams(), eRMI_ToAllClients);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -253,7 +275,12 @@ void CWeapon::RequestStartMeleeAttack(bool weaponMelee)
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(CWeapon::SvRequestStartMeleeAttack(), RequestStartMeleeAttackParams(weaponMelee), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(CWeapon::SvRequestStartMeleeAttack(), RequestStartMeleeAttackParams(weaponMelee), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
 	{
 		GetGameObject()->InvokeRMI(CWeapon::ClStartMeleeAttack(), RequestStartMeleeAttackParams(weaponMelee), eRMI_ToAllClients);
@@ -266,7 +293,12 @@ void CWeapon::RequestZoom(float fov)
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(CWeapon::SvRequestZoom(), ZoomParams(fov), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(CWeapon::SvRequestZoom(), ZoomParams(fov), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
 	{
 		GetGameObject()->InvokeRMI(CWeapon::ClZoom(), ZoomParams(fov), eRMI_ToAllClients);
@@ -280,7 +312,13 @@ void CWeapon::RequestStopFire()
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(CWeapon::SvRequestStopFire(), EmptyParams(), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(CWeapon::SvRequestStopFire(), EmptyParams(), eRMI_ToServer);
+		}
+	}
+
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClStopFire(), EmptyParams(), eRMI_ToAllClients);
 }
@@ -290,7 +328,12 @@ void CWeapon::RequestReload()
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(SvRequestReload(), EmptyParams(), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(SvRequestReload(), EmptyParams(), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
 		GetGameObject()->InvokeRMI(CWeapon::ClReload(), EmptyParams(), eRMI_ToAllClients);
 }
@@ -300,9 +343,16 @@ void CWeapon::RequestCancelReload()
 {
 	CActor* pOwner = GetOwnerActor();
 	if ((!pOwner || pOwner->IsClient()) && IsClient())
-		GetGameObject()->InvokeRMI(SvRequestCancelReload(), EmptyParams(), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(SvRequestCancelReload(), EmptyParams(), eRMI_ToServer);
+		}
+	}
 	else if (!IsClient() && IsServer())
+	{
 		GetGameObject()->InvokeRMI(CWeapon::ClCancelReload(), EmptyParams(), eRMI_ToAllClients);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -314,7 +364,12 @@ void CWeapon::RequestFireMode(int fmId)
 		if (gEnv->bServer)
 			SetCurrentFireMode(fmId);	// serialization will fix the rest.
 		else
-			GetGameObject()->InvokeRMI(SvRequestFireMode(), SvRequestFireModeParams(fmId), eRMI_ToServer);
+		{
+			if (pOwner)
+			{
+				GetGameObject()->InvokeRMI(SvRequestFireMode(), SvRequestFireModeParams(fmId), eRMI_ToServer);
+			}
+		}
 	}
 }
 
@@ -332,7 +387,12 @@ void CWeapon::RequestLock(EntityId id, int partId)
 			GetGameObject()->InvokeRMI(CWeapon::ClLock(), LockParams(id, partId), eRMI_ToRemoteClients);
 		}
 		else
-			GetGameObject()->InvokeRMI(SvRequestLock(), LockParams(id, partId), eRMI_ToServer);
+		{
+			if (pOwner)
+			{
+				GetGameObject()->InvokeRMI(SvRequestLock(), LockParams(id, partId), eRMI_ToServer);
+			}
+		}
 	}
 }
 
@@ -341,7 +401,12 @@ void CWeapon::RequestUnlock()
 {
 	CActor* pOwner = GetOwnerActor();
 	if (!pOwner || pOwner->IsClient())
-		GetGameObject()->InvokeRMI(SvRequestUnlock(), EmptyParams(), eRMI_ToServer);
+	{
+		if (pOwner)
+		{
+			GetGameObject()->InvokeRMI(SvRequestUnlock(), EmptyParams(), eRMI_ToServer);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -574,7 +639,8 @@ IMPLEMENT_RMI(CWeapon, SvRequestMeleeAttack)
 				pGameRules->ValidateShot(pActor->GetEntityId(), GetEntityId(), params.seq, 0);
 		}
 
-		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, (void *)GetEntityId()));
+		void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponMelee, 0, 0, extra));
 	}
 
 	return true;
@@ -612,7 +678,9 @@ IMPLEMENT_RMI(CWeapon, SvRequestZoom)
 		int event=eGE_ZoomedOut;
 		if (params.fov<0.99f)
 			event=eGE_ZoomedIn;
-		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(event, 0, 0, (void *)GetEntityId()));
+
+		void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(event, 0, 0, extra));
 	}
 
 	return true;
@@ -665,7 +733,8 @@ IMPLEMENT_RMI(CWeapon, SvRequestReload)
 		if (!isLocal && m_fm)
 			m_fm->Reload(0);
 
-		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponReload, 0, 0, (void *)GetEntityId()));
+		void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId()));
+		m_pGameplayRecorder->Event(GetOwner(), GameplayEvent(eGE_WeaponReload, 0, 0, extra));
 	}
 
 	return true;

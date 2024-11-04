@@ -1416,7 +1416,8 @@ struct CGameNetworkProfile::SStoredServerLists
 	{
 		for (int i = 0;i < m_favorites.size();++i)
 		{
-			if (m_favorites[i].ip == ip && m_favorites[i].port == port)
+			if (m_favorites[i].ip == static_cast<int>(ip)
+			 && m_favorites[i].port == static_cast<int>(port))
 			{
 				m_favorites.erase(i);
 				SaveFavoritesList();

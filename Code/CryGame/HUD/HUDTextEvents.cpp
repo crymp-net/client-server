@@ -533,7 +533,7 @@ const char* GetSoundKey(const char* soundName)
 	{
 		buf.append (soundName);
 	}
-	PathUtil::RemoveExtension(buf);
+	CryPath::RemoveExtension(buf);
 	return buf.c_str();
 }
 
@@ -981,7 +981,7 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 
 	CActor* pTarget = static_cast<CActor*>(gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(targetId));
 
-	const bool freezeKill = pTarget && pTarget->GetActorStats() && pTarget->GetActorStats()->isShattered;
+	const bool freezeKill = pTarget && pTarget->GetActorStats() && pTarget->GetActorStats()->isShattered.Value();
 	const bool isVehicleClass = g_pGame->GetIGameFramework()->GetIVehicleSystem()->IsVehicleClass(weaponClassName);
 	bool skipShooter = false;
 
@@ -989,6 +989,10 @@ void CHUD::ObituaryMessage(EntityId targetId, EntityId shooterId, const char *we
 	{
 		skipShooter = true;
 		iconName = fire ? "Fire" : (falling ? "Fall" : "Suicide");
+	}
+	else if (fire)
+	{
+		iconName = "Fire";
 	}
 	else if(freezeKill)
 	{

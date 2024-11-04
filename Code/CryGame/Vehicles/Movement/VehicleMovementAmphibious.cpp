@@ -190,7 +190,7 @@ void CVehicleMovementAmphibious::Boost(bool enable)
   m_boat.Boost(enable);
 }
 
-
+//------------------------------------------------------------------------
 void CVehicleMovementAmphibious::GetMemoryStatistics(ICrySizer * s)
 {
   s->Add(*this);

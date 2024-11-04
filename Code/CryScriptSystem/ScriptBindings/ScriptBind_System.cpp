@@ -11,11 +11,14 @@
 #include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/CryFind.h"
 #include "CryCommon/CryAction/IGameFramework.h"
 #include "CryCommon/CryMath/Cry_Camera.h"
 #include "CryCommon/CryMath/Cry_Geo.h"
 #include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryAction/IActorSystem.h"
+#include "CryCommon/CryAction/IItemSystem.h" // <== GetItemClasses
 
 #include "ScriptBind_System.h"
 
@@ -125,6 +128,16 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(GetSkyHighlight, "");
 	SCRIPT_REG_TEMPLFUNC(LoadLocalizationXml, "filename");
 	SCRIPT_REG_FUNC(GetFrameID);
+	SCRIPT_REG_FUNC(GetActors);
+	SCRIPT_REG_TEMPLFUNC(GetActorsByClass, "class");
+	SCRIPT_REG_FUNC(GetPlayers);
+	SCRIPT_REG_FUNC(GetVehicles);
+	SCRIPT_REG_TEMPLFUNC(GetVehiclesByClass, "class");
+	SCRIPT_REG_TEMPLFUNC(IsClassValid, "class");
+	SCRIPT_REG_TEMPLFUNC(GetEntityScriptFilePath, "class");
+
+	SCRIPT_REG_FUNC(GetVehicleClasses);
+	SCRIPT_REG_FUNC(GetItemClasses);
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -389,7 +402,7 @@ int ScriptBind_System::GetEntities(IFunctionHandler *pH)
 	IEntityItPtr pIIt = gEnv->pEntitySystem->GetEntityIterator();
 	IEntity *pEntity = nullptr;
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if (radius)
 		{
@@ -427,7 +440,7 @@ int ScriptBind_System::GetEntitiesByClass(IFunctionHandler *pH, const char *enti
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if (pEntity->GetClass() == pClass)
 		{
@@ -450,7 +463,7 @@ int ScriptBind_System::GetEntitiesInSphere(IFunctionHandler *pH, Vec3 center, fl
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if ((pEntity->GetWorldPos() - center).len2() <= radius  *radius)
 		{
@@ -482,7 +495,7 @@ int ScriptBind_System::GetEntitiesInSphereByClass(IFunctionHandler *pH, Vec3 cen
 
 	pIIt->MoveFirst();
 
-	while (pEntity = pIIt->Next())
+	while ((pEntity = pIIt->Next()) != nullptr)
 	{
 		if ((pEntity->GetClass() == pClass) && ((pEntity->GetWorldPos() - center).len2() <= radius  *radius))
 		{
@@ -496,31 +509,13 @@ int ScriptBind_System::GetEntitiesInSphereByClass(IFunctionHandler *pH, Vec3 cen
 	return pH->EndFunction(*pObj);
 }
 
-static bool Filter(struct __finddata64_t& fd, int nScanMode)
+static bool Filter(const CryFindEntry& entry, int scanMode)
 {
-	if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-		return false;
-
-	switch (nScanMode)
+	switch (scanMode)
 	{
 		case SCANDIR_ALL:     return true;
-		case SCANDIR_SUBDIRS: return 0 != (fd.attrib & _A_SUBDIR);
-		case SCANDIR_FILES:   return 0 == (fd.attrib & _A_SUBDIR);
-	}
-
-	return false;
-}
-
-static bool Filter(struct _finddata_t& fd, int nScanMode)
-{
-	if (!strcmp(fd.name, ".") || !strcmp(fd.name, ".."))
-		return false;
-
-	switch (nScanMode)
-	{
-		case SCANDIR_ALL:     return true;
-		case SCANDIR_SUBDIRS: return 0 != (fd.attrib & _A_SUBDIR);
-		case SCANDIR_FILES:   return 0 == (fd.attrib & _A_SUBDIR);
+		case SCANDIR_SUBDIRS: return entry.IsDirectory();
+		case SCANDIR_FILES:   return !entry.IsDirectory();
 	}
 
 	return false;
@@ -529,41 +524,34 @@ static bool Filter(struct _finddata_t& fd, int nScanMode)
 int ScriptBind_System::ScanDirectory(IFunctionHandler *pH)
 {
 	if (pH->GetParamCount() < 1)
+	{
 		return pH->EndFunction();
+	}
 
 	SmartScriptTable pObj(m_pSS);
 	int k = 1;
 
 	const char *folderName = nullptr;
 	if (!pH->GetParam(1, folderName))
-		return pH->EndFunction(*pObj);
-
-	int nScanMode = SCANDIR_SUBDIRS;
-
-	if (pH->GetParamCount() > 1)
-		pH->GetParam(2, nScanMode);
-
 	{
-		_finddata_t c_file;
-		intptr_t hFile;
+		return pH->EndFunction(*pObj);
+	}
 
-		if ((hFile = gEnv->pCryPak->FindFirst((std::string(folderName) + "\\*.*").c_str(), &c_file)) == -1L)
-		{
-			return pH->EndFunction(*pObj);
-		}
-		else
-		{
-			do
-			{
-				if (Filter(c_file, nScanMode))
-				{
-					pObj->SetAt(k, c_file.name);
-					k++;
-				}
-			}
-			while (gEnv->pCryPak->FindNext(hFile, &c_file) == 0);
+	int scanMode = SCANDIR_SUBDIRS;
+	if (pH->GetParamCount() > 1)
+	{
+		pH->GetParam(2, scanMode);
+	}
 
-			gEnv->pCryPak->FindClose(hFile);
+	std::string wildcard(folderName);
+	wildcard += "/*";
+
+	for (auto& entry : CryFind(wildcard.c_str()))
+	{
+		if (Filter(entry, scanMode))
+		{
+			pObj->SetAt(k, entry.name);
+			k++;
 		}
 	}
 
@@ -1702,4 +1690,167 @@ int ScriptBind_System::GetFrameID(IFunctionHandler *pH)
 	SCRIPT_CHECK_PARAMETERS(0);
 
 	return pH->EndFunction(gEnv->pRenderer->GetFrameID());
+}
+
+int ScriptBind_System::GetActors(IFunctionHandler *pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while ((pActor = pActorIterator->Next()) != nullptr)
+	{
+		pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetActorsByClass(IFunctionHandler* pH, const char *entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while ((pActor = pActorIterator->Next()) != nullptr)
+	{
+		if (pActor->GetEntity()->GetClass() == pClass)
+		{
+			pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetPlayers(IFunctionHandler* pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
+	IActorIteratorPtr pActorIterator = pActorSystem->CreateActorIterator();
+	IActor* pActor = nullptr;
+	int k = 1;
+
+	while ((pActor = pActorIterator->Next()) != nullptr)
+	{
+		if (!pActor->IsPlayer())
+		{
+			continue;
+		}
+		pObj->SetAt(k++, pActor->GetEntity()->GetScriptTable());
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehicles(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IVehicleIteratorPtr pVehicleIterator = pVehicleSystem->CreateVehicleIterator();
+	IVehicle* pVehicle = nullptr;
+	int k = 1;
+
+	while ((pVehicle = pVehicleIterator->Next()) != nullptr)
+	{
+		if (pVehicle->GetEntity()->GetScriptTable())
+		{
+			pObj->SetAt(k++, pVehicle->GetEntity()->GetScriptTable());
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehiclesByClass(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+
+	SmartScriptTable pObj(m_pSS);
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IVehicleIteratorPtr pVehicleIterator = pVehicleSystem->CreateVehicleIterator();
+	IVehicle* pVehicle = nullptr;
+	int k = 1;
+
+	while ((pVehicle = pVehicleIterator->Next()) != nullptr)
+	{
+		if (pVehicle->GetEntity()->GetClass() == pClass)
+		{
+			if (pVehicle->GetEntity()->GetScriptTable())
+			{
+				pObj->SetAt(k++, pVehicle->GetEntity()->GetScriptTable());
+			}
+		}
+	}
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::IsClassValid(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (pClass)
+	{
+		return pH->EndFunction(true);
+	}
+	return pH->EndFunction(false);
+}
+
+int ScriptBind_System::GetEntityScriptFilePath(IFunctionHandler* pH, const char* entityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(entityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+	return pH->EndFunction(pClass->GetScriptFile());
+}
+
+int ScriptBind_System::GetItemClasses(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	int k = 1;
+
+	IItemSystem* pItemSystem = gEnv->pGame->GetIGameFramework()->GetIItemSystem();
+	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
+	IEntityClass* pClass;
+
+	for (pEntityRegistry->IteratorMoveFirst(); (pClass = pEntityRegistry->IteratorNext()) != nullptr;)
+	{
+		if (pItemSystem->IsItemClass(pClass->GetName()))
+		{
+			pObj->SetAt(k++, pClass->GetName());
+		}
+
+	}
+
+	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::GetVehicleClasses(IFunctionHandler * pH)
+{
+	SmartScriptTable pObj(m_pSS);
+	int k = 1;
+
+	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	IEntityClassRegistry* pEntityRegistry = gEnv->pEntitySystem->GetClassRegistry();
+	IEntityClass* pClass;
+
+	for (pEntityRegistry->IteratorMoveFirst(); (pClass = pEntityRegistry->IteratorNext()) != nullptr;)
+	{
+		if (pVehicleSystem->IsVehicleClass(pClass->GetName())) {
+			pObj->SetAt(k++, pClass->GetName());
+
+		}
+	}
+
+	return pH->EndFunction(*pObj);
 }

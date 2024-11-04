@@ -116,7 +116,9 @@ unsigned int CItem::AttachEffect(int slot, unsigned int id, bool attach, const c
 				IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
 				IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(info.helper.c_str());
 				if (pAttachment)
+				{
 					pAttachment->ClearBinding();
+				}
 			}
 		}
 		m_effects.erase(it);
@@ -338,7 +340,10 @@ unsigned int CItem::AttachLight(int slot, unsigned int id, bool attach, float ra
 				IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
 				IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(info.helper.c_str());
 
-				pAttachment->ClearBinding();
+				if (pAttachment)
+				{
+					pAttachment->ClearBinding();
+				}
 			}
 		}
 		m_effects.erase(it);

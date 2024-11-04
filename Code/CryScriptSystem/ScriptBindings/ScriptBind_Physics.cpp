@@ -248,7 +248,6 @@ int ScriptBind_Physics::SamplePhysEnvironment(IFunctionHandler *pH)
 	primitives::sphere sph;
 	intersection_params ip;
 	geom_contact *pcontacts;
-	IEntity *pEntity;
 	SmartScriptTable pObj(m_pSS);
 	ip.bStopAtFirstTri = true;
 	ip.bNoBorder = true;
@@ -278,7 +277,8 @@ int ScriptBind_Physics::SamplePhysEnvironment(IFunctionHandler *pH)
 			{
 				++nHits;
 
-				if (pEntity = (IEntity*)pEnts[i]->GetForeignData(PHYS_FOREIGN_ID_ENTITY))
+				IEntity* pEntity = (IEntity*)pEnts[i]->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+				if (pEntity)
 					pObj->SetAt(nHits  *3 - 2, pEntity->GetScriptTable());
 				else
 					pObj->SetNullAt(nHits  *3 - 2);

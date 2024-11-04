@@ -25,12 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download 32-bit build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact_32 }}
 
       - name: Download 64-bit build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact_64 }}
 
@@ -45,7 +45,7 @@ jobs:
           {
             echo "{\"name\": \"$(basename "$1")\", \"size\": $(stat -c %s "$1")}"
           }
-          BASE_URL="http://crymp.nullptr.one/api/v2_release"
+          BASE_URL="http://crymp.org/api/v2_release"
           TIMESTAMP=$(date +%s)
           SIGNATURE=$(printf %s "$TIMESTAMP" | hmac_sha256)
           cat CryMP-Client32.exe CryMP-Client64.exe | curl --verbose --silent --show-error --fail-with-body \

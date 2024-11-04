@@ -133,14 +133,18 @@ void CPlayerRotation::Commit(CPlayer& player)
 	player.m_linkStats.baseQuatLinked = m_baseQuatLinked.GetNormalized();
 	player.m_linkStats.viewQuatLinked = m_viewQuatLinked.GetNormalized();
 
+	if (player.IsClient())
+	{
+		player.m_stats.angularImpulseTime = m_angularImpulseTime;
+		player.m_stats.angularImpulse = m_angularImpulse;
+		player.m_stats.angularVel = m_angularVel;
+	}
+
 	player.m_viewRoll = m_viewRoll;
 	player.m_upVector = m_upVector;
 	player.m_viewAnglesOffset = m_viewAnglesOffset;
 	player.m_stats.leanAmount = m_leanAmount;
-	player.m_stats.angularImpulseTime = m_angularImpulseTime;
-	player.m_stats.angularImpulse = m_angularImpulse;
-	player.m_stats.angularVel = m_angularVel;
-
+	
 	player.m_stats.forceLookVector.zero();
 
 	if (m_absRoll > 0.01f)
@@ -166,7 +170,7 @@ void CPlayerRotation::GetStanceAngleLimits(float& minAngle, float& maxAngle)
 	}
 
 	//Limit camera rotation on ladders(to prevent clipping)
-	if (m_player.m_stats.isOnLadder)
+	if (m_player.m_stats.isOnLadder.Value())
 	{
 		minAngle = -40.0f;
 		maxAngle = 80.0f;
@@ -508,7 +512,7 @@ void CPlayerRotation::ClampAngles()
 			}
 		}
 
-		if (m_player.m_stats.isOnLadder)
+		if (m_player.m_stats.isOnLadder.Value())
 		{
 			limitDir = -m_player.m_stats.ladderOrientation;
 			limitH = DEG2RAD(40.0f);
@@ -611,7 +615,7 @@ void CPlayerRotation::ProcessLean()
 {
 	float leanAmt(0.0f);
 
-	if (m_stats.isOnLadder)
+	if (m_stats.isOnLadder.Value())
 		return;
 
 	if (!m_stats.inZeroG || m_stats.inAir < 0.1f)

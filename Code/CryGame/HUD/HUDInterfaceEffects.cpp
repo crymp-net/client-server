@@ -197,7 +197,7 @@ void CHUD::UpdateMissionObjectiveIcon(EntityId objective, int friendly, FlashOnS
 	CPlayer *pPlayer = m_pClientActor;
 	
 	//CryMP: Spectator check 
-	IActor* pTarget = m_pClientActor->GetSpectatorTargetPlayer();
+	IActor* pTarget = m_pClientActor->GetSpectatorTargetActor();
 	if (pTarget)
 	{
 		pPlayer = CPlayer::FromIActor(pTarget);
@@ -389,7 +389,7 @@ void CHUD::TrackProjectiles(CPlayer* pPlayerActor)
 	//CryMP track projectiles in Fp Spec
 	if (pPlayerActor && pPlayerActor->IsFpSpectator())
 	{
-		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetPlayer());
+		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetActor());
 	}
 
 	if (!pPlayerActor)
@@ -638,28 +638,34 @@ void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 
 void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedback)
 {
-	if(explosionFeedback)
-		PlaySound(ESound_SpecialHitFeedback);
-
-	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
+	if (explosionFeedback)
 	{
-		m_animHitIndicator.Invoke("indicateHit");
-		m_hitIndicatorTimer = 1.0f;
+		PlaySound(ESound_SpecialHitFeedback);
+	}
+
+	if (m_pHUDCrosshair->GetFlashAnim()->GetVisible())
+	{
+		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
+
+		ShowPlayerHitIndicator();
 	}
 
 	IVehicle* pVehicle = m_pClientActor->GetLinkedVehicle();
-	if (!pVehicle)
-		m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
-	else
+	if (pVehicle)
 	{
 		IVehicleSeat *pSeat = pVehicle->GetSeatForPassenger(m_pClientActor->GetEntityId());
-		if(pSeat && !pSeat->IsDriver())
-			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
-		else
+		if (!pSeat || pSeat->IsDriver())
 		{
-			m_pHUDVehicleInterface->m_animMainWindow.Invoke("indicateHit", enemyIndicator);
+			if (enemyIndicator)
+			{
+				m_pHUDVehicleInterface->m_animMainWindow.Invoke("indicateHit", enemyIndicator);
+			}
+			else if (m_pHUDVehicleInterface->HasMainHUD())
+			{
+				ShowVehicleHitIndicator();
+			}
 
-			if(pEntity && !gEnv->bMultiplayer)
+			if (pEntity && !gEnv->bMultiplayer)
 			{
 				const auto ct = g_pGameCVars->hud_colorLine;
 				const float r = ((ct >> 16) & 0xFF) / 255.0f;
@@ -668,32 +674,71 @@ void CHUD::IndicateHit(bool enemyIndicator,IEntity *pEntity, bool explosionFeedb
 
 				// It should be useless to test if pEntity is an enemy (it's already done by caller func)
 				IActor *pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
-				if(pActor)
-					m_pHUDSilhouettes->SetSilhouette(pActor,r,g,b,1.0f,5.0f,true);
-				else if(IVehicle *pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId()))
-					m_pHUDSilhouettes->SetSilhouette(pVehicle,r,g,b,1.0f,5.0f);
+				if (pActor)
+				{
+					m_pHUDSilhouettes->SetSilhouette(pActor, r, g, b, 1.0f, 5.0f, true);
+				}
+				else if (IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(pEntity->GetId()))
+				{
+					m_pHUDSilhouettes->SetSilhouette(pVehicle, r, g, b, 1.0f, 5.0f);
+				}
 			}
+		}
+
+		if (m_pHUDCrosshair->GetFlashAnim()->GetVisible())
+		{
+			m_pHUDCrosshair->GetFlashAnim()->Invoke("indicateHit");
 		}
 	}
 }
 
+void CHUD::ShowPlayerHitIndicator()
+{
+	if (gEnv->bMultiplayer && g_pGameCVars->mp_hitIndicator)
+	{
+		m_animHitIndicatorPlayer.Invoke("indicateHit");
+		m_hitIndicatorPlayerTimer = 1.0f;
+	}
+}
+
+void CHUD::ShowVehicleHitIndicator()
+{
+	m_animHitIndicatorVehicle.Invoke("indicateHit");
+	m_hitIndicatorVehicleTimer = 1.0f;
+}
+
 void CHUD::UpdateHitIndicator()
 {
-	//CryMP hit indicator
-	bool bVisible = m_hitIndicatorTimer > 0.0f;
-	if (g_pGameCVars->mp_hitIndicator || bVisible)
+	//CryMP player hit indicator
+	bool visible = m_hitIndicatorPlayerTimer > 0.0f;
+	if (g_pGameCVars->mp_hitIndicator || visible)
 	{
-		if (bVisible)
+		if (visible)
 		{
-			m_hitIndicatorTimer -= gEnv->pTimer->GetRealFrameTime();
-			bVisible = m_hitIndicatorTimer >= 0.0f;
+			m_hitIndicatorPlayerTimer -= gEnv->pTimer->GetRealFrameTime();
+			visible = m_hitIndicatorPlayerTimer >= 0.0f;
 		}
-		if (m_animHitIndicator.GetVisible() != bVisible)
+		if (m_animHitIndicatorPlayer.GetVisible() != visible)
 		{
-			m_animHitIndicator.SetVisible(bVisible);
+			m_animHitIndicatorPlayer.SetVisible(visible);
 		}
 	}
+	//CryMP vehicle hit indicator
+	bool visible_v = m_hitIndicatorVehicleTimer > 0.0f; //only visible when main vehicle HUD visible
+	if (visible_v)
+	{
+		m_hitIndicatorVehicleTimer -= gEnv->pTimer->GetRealFrameTime();
+		if (!m_pHUDVehicleInterface->HasMainHUD())
+		{
+			m_hitIndicatorVehicleTimer = 0.0f;
+		}
 
+		visible_v = m_hitIndicatorVehicleTimer >= 0.0f;
+	}
+	if (m_animHitIndicatorVehicle.GetVisible() != visible_v)
+	{
+		m_animHitIndicatorVehicle.SetVisible(visible_v);
+	}
 }
 
 void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
@@ -725,9 +770,12 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 			float r = 0.8f;
 			float g = 0.8f;
 			float b = 1.0f;
-			//VTOL lockons
-			//CryMP lets add different colors according to team as well, like we did for binoculars ages ago :)
-			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_entityTargetAutoaimId))
+			//CryMP: Custom colors for VTOL lockons
+			//Neutral: White
+			//Team: Blue
+			//Enemy: Orange-Red
+			if (m_pGameRules->IsHostile(m_entityTargetAutoaimId, m_pClientActor->GetEntityId())
+				&& (!m_pGameRules->IsNeutral(m_entityTargetAutoaimId) || m_pGameRules->GetTeamCount() < 2))
 			{
 				r = 1.0f;
 				g = 0.1f;
@@ -934,7 +982,7 @@ void CHUD::Targetting(EntityId pTargetEntity, bool bStatic)
 
 		CPlayer* pCurrentPlayer = m_pClientActor;
 		//CryMP: Show explosives icons in spectator mode
-		IActor* pTarget = m_pClientActor->GetSpectatorTargetPlayer();
+		IActor* pTarget = m_pClientActor->GetSpectatorTargetActor();
 		if (pTarget)
 		{
 			pCurrentPlayer = CPlayer::FromIActor(pTarget);

@@ -23,7 +23,7 @@ History:
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryCommon/CrySystem/IFlashPlayer.h"
 #include "GameFlashAnimation.h"
-#include "CryCommon/CryInput/IHardwareMouse.h"
+#include "CryCommon/CrySystem/IHardwareMouse.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
 
 //-----------------------------------------------------------------------------------------------------
@@ -67,8 +67,7 @@ public:
 	void Show(bool bShow);
 
 	// Cursor handling
-	void CursorIncrementCounter();
-	void CursorDecrementCounter();
+	void ShowMouseCursor(bool show);
 
 	bool IsVisible() { return m_bShow; }
 
@@ -96,6 +95,8 @@ protected:
 	TMFXEffectId	m_deathFxId;
 	float					m_fLastGodModeUpdate;
 	char					m_strGODMode[32];
+
+	bool m_isMouseCursorVisible = false;
 
 	// Cached sizes
 	int						m_width;

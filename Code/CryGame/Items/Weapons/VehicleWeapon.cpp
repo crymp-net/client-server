@@ -106,6 +106,13 @@ void CVehicleWeapon::StopUse(EntityId userId)
 	if (m_ownerId && userId != m_ownerId)
 		return;
 
+	CActor* pActor = GetOwnerActor();
+	if (pActor)
+	{
+		pActor->ClearIKPosBlending("leftArm");
+		pActor->ClearIKPosBlending("rightArm");
+	}
+
 	SendMusicLogicEvent(eMUSICLOGICEVENT_WEAPON_UNMOUNT);
 
 	Select(false);
@@ -161,6 +168,26 @@ void CVehicleWeapon::Update(SEntityUpdateContext& ctx, int update)
 
 		CheckForFriendlyAI(ctx.fFrameTime);
 		CheckForFriendlyPlayers(ctx.fFrameTime);
+	}
+}
+
+//------------------------------------------------------------------------
+void CVehicleWeapon::OnEnterFirstPerson()
+{
+	CWeapon::OnEnterFirstPerson();
+}
+
+//------------------------------------------------------------------------
+void CVehicleWeapon::OnEnterThirdPerson()
+{
+	//CryMP: VehicleWeapons (mounted) shouldn't call CItem::OnEnterThirdPerson
+
+	AttachArms(false, false);
+
+	IFireMode* pFM = GetActiveFireMode();
+	if (pFM)
+	{
+		pFM->OnEnterThirdPerson();
 	}
 }
 
@@ -305,9 +332,12 @@ void CVehicleWeapon::UpdateFPView(float frameTime)
 //---------------------------------------------------------------------------
 void CVehicleWeapon::CheckForFriendlyAI(float frameTime)
 {
+	if (gEnv->bMultiplayer)
+		return;
+
 	CActor* pOwner = GetOwnerActor();
 
-	if (pOwner && m_pVehicle && pOwner->IsPlayer() && !gEnv->bMultiplayer)
+	if (pOwner && m_pVehicle && pOwner->IsClient())
 	{
 		CPlayer* pPlayer = static_cast<CPlayer*>(pOwner);
 		m_timeToUpdate -= frameTime;
@@ -495,9 +525,12 @@ void CVehicleWeapon::CheckForFriendlyAI(float frameTime)
 //---------------------------------------------------------------------------
 void CVehicleWeapon::CheckForFriendlyPlayers(float frameTime)
 {
+	if (!gEnv->bMultiplayer)
+		return;
+
 	CActor* pOwner = GetOwnerActor();
 
-	if (pOwner && pOwner->IsPlayer() && gEnv->bMultiplayer)
+	if (pOwner && (pOwner->IsClient() || pOwner->IsFpSpectatorTarget()))
 	{
 		m_timeToUpdate -= frameTime;
 		if (m_timeToUpdate > 0.0f)
@@ -512,17 +545,20 @@ void CVehicleWeapon::CheckForFriendlyPlayers(float frameTime)
 
 			ray_hit rayhit;
 			IPhysicalEntity* pSkipEnts[10];
-			int nSkip = CSingle::GetSkipEntities(this, pSkipEnts, 10);
+			const int nSkip = CSingle::GetSkipEntities(this, pSkipEnts, 10);
 
-			int intersect = gEnv->pPhysicalWorld->RayWorldIntersection(info.weaponPosition, info.aimDirection * 150.0f, ent_all,
+			const int intersect = gEnv->pPhysicalWorld->RayWorldIntersection(info.weaponPosition, info.aimDirection * 150.0f, 
+				ent_living | ent_sleeping_rigid | ent_rigid, //CryMP: IsFriendlyEntity checks for players and vehicles
 				rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkip);
 
-			IEntity* pLookAtEntity = NULL;
+			IEntity* pLookAtEntity = nullptr;
 
 			if (intersect && rayhit.pCollider)
+			{
 				pLookAtEntity = m_pEntitySystem->GetEntityFromPhysics(rayhit.pCollider);
+			}
 
-			bool bFriendly = SAFE_HUD_FUNC_RET(GetCrosshair()->IsFriendlyEntity(pLookAtEntity));
+			const bool bFriendly = SAFE_HUD_FUNC_RET(GetCrosshair()->IsFriendlyEntity(pLookAtEntity));
 			SAFE_HUD_FUNC(GetVehicleInterface()->DisplayFriendlyFire(bFriendly));
 		}
 	}

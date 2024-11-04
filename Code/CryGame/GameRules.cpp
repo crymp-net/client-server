@@ -211,7 +211,10 @@ void CGameRules::PostInit(IGameObject* pGameObject)
 	RegisterConsoleCommands(pConsole);
 	RegisterConsoleVars(pConsole);
 
-	gClient->GetScriptCallbacks()->OnGameRulesCreated(GetEntityId());
+	if (gClient)
+	{
+		gClient->GetScriptCallbacks()->OnGameRulesCreated(GetEntityId());
+	}
 }
 
 //------------------------------------------------------------------------
@@ -1119,7 +1122,10 @@ void CGameRules::KillPlayer(CActor* pActor, bool dropItem, bool ragdoll, EntityI
 	m_pGameplayRecorder->Event(pActor->GetEntity(), GameplayEvent(eGE_Death));
 	if (shooterId && shooterId != pActor->GetEntityId())
 		if (IActor* pShooter = m_pActorSystem->GetActor(shooterId))
-			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Kill, 0, 0, (void*)weaponId));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(weaponId));
+			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Kill, 0, 0, extra));
+		}
 }
 
 //------------------------------------------------------------------------
@@ -1614,21 +1620,6 @@ void CGameRules::SetTeam(int teamId, EntityId id)
 		}
 	}
 
-	if (IActor* pClient = m_pGameFramework->GetClientActor())
-	{
-		if (GetTeam(pClient->GetEntityId()) == teamId)
-		{
-			if (id == pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId())
-			{
-				if (g_pGame->GetHUD())
-				{
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(0);
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(1);
-				}
-			}
-		}
-	}
-
 	if (isplayer)
 	{
 		ReconfigureVoiceGroups(id, oldTeam, teamId);
@@ -1699,7 +1690,8 @@ void CGameRules::AddObjective(int teamId, const char* objective, int status, Ent
 	if (!pObjectives)
 		m_objectives.insert(TTeamObjectiveMap::value_type(teamId, TObjectiveMap()));
 
-	if (pObjectives = GetTeamObjectives(teamId))
+	pObjectives = GetTeamObjectives(teamId);
+	if (pObjectives)
 	{
 		if (pObjectives->find(CONST_TEMP_STRING(objective)) == pObjectives->end())
 			pObjectives->insert(TObjectiveMap::value_type(objective, TObjective(status, entityId)));
@@ -3096,23 +3088,17 @@ void CGameRules::ChatLog(EChatMessageType type, EntityId sourceId, EntityId targ
 
 	char tempBuffer[64];
 
-	switch (type)
+	if (type == eChatToTeam && teamId)
 	{
-	case eChatToTeam:
-		if (teamId)
-		{
-			IActor* pClientActor = m_pGameFramework->GetClientActor();
-			if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
-				return;
-			targetName = tempBuffer;
-			sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
-		}
-		else
-		{
-	case eChatToAll:
+		IActor* pClientActor = m_pGameFramework->GetClientActor();
+		if (!(gEnv->bServer && gEnv->pSystem->IsDedicated()) && pClientActor && teamId != GetTeam(pClientActor->GetEntityId()))
+			return;
+		targetName = tempBuffer;
+		sprintf(tempBuffer, "Team %s", GetTeamName(teamId));
+	}
+	else
+	{
 		targetName = "ALL";
-		}
-		break;
 	}
 
 	CryLogAlways("CHAT %s to %s:", sourceName, targetName);
@@ -4339,17 +4325,17 @@ bool CGameRules::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profi
 	{
 	case eEA_GameServerDynamic:
 	{
-		uint32 flags = 0;
+		uint32 todFlags = 0;
 		if (ser.IsReading())
 		{
-			flags |= ITimeOfDay::NETSER_COMPENSATELAG;
+			todFlags |= ITimeOfDay::NETSER_COMPENSATELAG;
 			if (!m_timeOfDayInitialized)
 			{
-				flags |= ITimeOfDay::NETSER_FORCESET;
+				todFlags |= ITimeOfDay::NETSER_FORCESET;
 				m_timeOfDayInitialized = true;
 			}
 		}
-		gEnv->p3DEngine->GetTimeOfDay()->NetSerialize(ser, 0.0f, flags);
+		gEnv->p3DEngine->GetTimeOfDay()->NetSerialize(ser, 0.0f, todFlags);
 	}
 	break;
 	case eEA_GameServerStatic:
@@ -4379,7 +4365,6 @@ bool CGameRules::OnEndCutScene(IAnimSequence* pSeq)
 	return true;
 }
 
-//------------------------------------------------------------------------
 bool CGameRules::IsSpawnUsedTouch(EntityId spawnId)
 {
 	float curTime = GetISystem()->GetITimer()->GetCurrTime();
@@ -4397,7 +4382,6 @@ bool CGameRules::IsSpawnUsedTouch(EntityId spawnId)
 	return false;
 }
 
-//------------------------------------------------------------------------
 bool CGameRules::IsSpawnUsed(EntityId spawnId) const
 {
 	float curTime = GetISystem()->GetITimer()->GetCurrTime();
@@ -4411,4 +4395,45 @@ bool CGameRules::IsSpawnUsed(EntityId spawnId) const
 		return true;
 	}
 	return false;
+}
+void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
+{
+	if (!pActor)
+		return;
+
+	const bool isPlayer = pActor->IsPlayer();
+	const EntityId playerId = pActor->GetEntityId();
+	const int KEY_MODEL = 1000;
+	//const int currTeamId = GetTeam(playerId);
+	const int CURR_KEY_MODEL = KEY_MODEL + currTeamId;
+	const int TEAM_ID_NK = 1;
+
+	string model;
+	if (GetSynchedEntityValue(playerId, CURR_KEY_MODEL, model) && model.length() > 0)
+	{
+		pActor->SetFileModel(model.c_str());
+	}
+	else if (isPlayer)
+	{
+		if (currTeamId == TEAM_ID_NK) 
+		{
+			pActor->SetFileModel("objects/characters/human/asian/nanosuit/nanosuit_asian_multiplayer.cdf");
+		}
+		else
+		{
+			pActor->SetFileModel("objects/characters/human/us/nanosuit/nanosuit_us_multiplayer.cdf");
+		}
+	}
+
+	if (isPlayer)
+	{
+		if (currTeamId == TEAM_ID_NK)
+		{
+			pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_asian.chr");
+		}
+		else
+		{
+			pActor->SetFpItemHandsModel("objects/weapons/arms_global/arms_nanosuit_us.chr");
+		}
+	}
 }

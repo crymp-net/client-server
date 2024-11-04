@@ -22,7 +22,7 @@ History:
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/ILevelSystem.h"
 #include "CryCommon/CryAction/IWeapon.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "../Item.h"
 #include "TracerManager.h"
 #include "CryCommon/CryCore/VectorMap.h"
@@ -103,8 +103,10 @@ public:
 
 	CTracerManager &GetTracerManager() { return m_tracerManager; };
 
-	void Scan(const char *folderName);
-	bool ScanXML(XmlNodeRef &root, const char *xmlFile);
+	void RegisterAmmo(const char* name, const char* className, const char* script, const char* config, IItemParamsNode* params);
+
+	// WeaponSystem_XMLData.cpp
+	void RegisterXMLData();
 
   static void DebugGun(IConsoleCmdArgs *args = 0);
 	static void RefGun(IConsoleCmdArgs *args = 0);
@@ -143,9 +145,7 @@ private:
 	TAmmoTypeParams			m_ammoparams;
 	TProjectileMap			m_projectiles;
 
-	TFolderList					m_folders;
 	bool								m_reloading;
-	bool								m_recursing;
 
 	string							m_config;
 

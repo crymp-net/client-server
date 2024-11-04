@@ -6,13 +6,30 @@
 
 #pragma once
 
+#include <cstdint>
+
 #ifdef _MSC_VER
-#include <io.h>  // _finddata_t
+#include <io.h>
+#else
+#include <ctime>
+#define _A_NORMAL 0x00
+#define _A_RDONLY 0x01
+#define _A_HIDDEN 0x02
+#define _A_SYSTEM 0x04
+#define _A_SUBDIR 0x10
+#define _A_ARCH 0x20
+struct _finddata_t
+{
+	unsigned int attrib;
+	std::time_t time_create;
+	std::time_t time_access;
+	std::time_t time_write;
+	std::uint64_t size;
+	char name[260];
+};
 #endif
 
-#include <cstdint>
-#include <vector>  // for smartptr.h
-
+#include "CryCommon/CryCore/platform.h"  // PRINTF_PARAMS
 #include "CryCommon/CryCore/smartptr.h"
 
 struct IResourceList; 
@@ -497,52 +514,3 @@ struct IResourceList : public _reference_target_t
 	//    Client must call GetFirst before calling GetNext.
 	virtual const char* GetNext() = 0;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Include File helpers.
-//////////////////////////////////////////////////////////////////////////
-#include "CryPath.h"
-#include "CryFile.h"
-
-//////////////////////////////////////////////////////////////////////
-
-//! Everybody should use fxopen instead of fopen
-//! so it will work both on PC and XBox
-inline FILE * fxopen(const char *file, const char *mode)
-{
-	//SetFileAttributes(file,FILE_ATTRIBUTE_ARCHIVE);
-	//	FILE *pFile = fopen("C:/MasterCD/usedfiles.txt","a");
-	//	if (pFile)
-	//	{
-	//		fprintf(pFile,"%s\n",file);
-	//		fclose(pFile);
-	//	}
-
-#if defined(LINUX)
-	char adjustedName[MAX_PATH];
-	bool createFlag = false;
-	if (strchr(mode, 'w') || strchr(mode, 'a'))
-		createFlag = true;
-	GetFilenameNoCase(file, adjustedName, createFlag);
-	return fopen(adjustedName, mode);
-#else
-	// This is on windows.
-	if (gEnv && gEnv->pCryPak)
-	{
-		bool bWriteAccess = false;
-		for (const char *s = mode; *s; s++) { if (*s == 'w' || *s == 'W' || *s == 'a' || *s == 'A' || *s == '+') { bWriteAccess = true; break; }; }
-		int nAdjustFlags = ICryPak::FLAGS_NO_MASTER_FOLDER_MAPPING;
-		if (bWriteAccess)
-			nAdjustFlags |= ICryPak::FLAGS_FOR_WRITING;
-		char path[_MAX_PATH];
-		const char* szAdjustedPath = gEnv->pCryPak->AdjustFileName(file,path,nAdjustFlags);
-		return fopen(szAdjustedPath,mode);
-	}
-	else
-	{
-		return 0;
-	}
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////

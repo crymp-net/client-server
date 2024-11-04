@@ -26,7 +26,7 @@
 
 #include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryCommon/CryNetwork/ISerialize.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IMaterialEffects.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"
 
@@ -114,13 +114,6 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 {
 	bool bSuccess = false;
 	SEntitySlotInfo slotInfo;
-	bool isClient = false;
-
-	CActor* pActor = static_cast<CActor*> (g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId()));
-	if (pActor != 0 && pActor->IsClient())
-	{
-		isClient = true;
-	}
 
 	if (pNanoMat && pEntity->GetSlotInfo(0, slotInfo) && slotInfo.pCharacter != 0)
 	{
@@ -137,11 +130,7 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 				ICharacterInstance* pCharInstance = pAttachmentObj->GetICharacterInstance();
 				if (pCharInstance)
 				{
-					// needed to support "fp3p"
-					if (isClient)
-						pCharInstance->SetMaterial(pNanoMat->arms);
-					else
-						pCharInstance->SetMaterial(pNanoMat->body);
+					pCharInstance->SetMaterial(pNanoMat->body);
 				}
 			}
 		}
@@ -247,7 +236,7 @@ void CNanoSuit::Reset(CPlayer* owner)
 	m_pendingAction = eNA_None;
 	m_bWasSprinting = false;
 	m_bSprintUnderwater = false;
-	m_energy = 0.0f;
+	m_energy = NANOSUIT_ENERGY; // CryMP: was 0.0f, but we always spawn with full energy anyway
 
 	m_bNightVisionEnabled = false;
 
@@ -489,9 +478,9 @@ void CNanoSuit::Update(float frameTime)
 	if (m_cloak.m_active)
 	{
 		float energyCost = m_cloak.m_energyCost * g_pGameCVars->g_suitCloakEnergyDrainAdjuster;
-		if (stats.inFreefall)
+		if (stats.inFreefall.Value())
 			recharge = min(recharge - max(1.0f, energyCost * 8.0f), -max(1.0f, energyCost * 8.0f));
-		else if (stats.isOnLadder)
+		else if (stats.isOnLadder.Value())
 			recharge = min(recharge - max(1.0f, energyCost * stats.speedFlat), -max(1.0f, energyCost * stats.speedFlat));
 		else
 			recharge = min(recharge - max(1.0f, energyCost * (stats.speedFlat * 0.5f)), -max(1.0f, energyCost * (stats.speedFlat * 0.5f)));
@@ -848,14 +837,10 @@ bool CNanoSuit::SetMode(ENanoMode mode, bool forceUpdate, bool keepInvul)
 	}
 
 	// call listeners on nano mode change
-	if (m_listeners.empty() == false)
+
+	for (INanoSuitListener* listener : m_listeners)
 	{
-		std::vector<INanoSuitListener*>::iterator iter = m_listeners.begin();
-		while (iter != m_listeners.end())
-		{
-			(*iter)->ModeChanged(mode);
-			++iter;
-		}
+		listener->ModeChanged(mode, lastMode != m_currentMode);
 	}
 
 	SelectSuitMaterial();
@@ -914,30 +899,28 @@ void CNanoSuit::SetCloak(bool on, bool force)
 			if (!force && on)
 			{
 				PlaySound(ESound_SuitCloakActivate);
-				if (!m_pOwner->IsClient())
-					PlaySound(ESound_SuitCloakFeedback);
-				else
+				
+				if (m_pOwner->IsClient() || m_pOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE)
 				{
 					m_pOwner->SendMusicLogicEvent(eMUSICLOGICEVENT_CLOAKMODE_ENTER);
+					SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_CLOAK));
+				}
+				if (m_pOwner->IsRemote())
+				{
+					PlaySound(ESound_SuitCloakFeedback);
 				}
 			}
 			else if (!on)
 			{
-				if (!m_pOwner->IsClient())
-					PlaySound(ESound_SuitCloakFeedback, 1, true);
-				else
+				if (m_pOwner->IsClient() || m_pOwner->GetSpectatorTargetType() != SpectatorTargetType::NONE)
 				{
 					m_pOwner->SendMusicLogicEvent(eMUSICLOGICEVENT_CLOAKMODE_LEAVE);
+					SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_CLOAK));
 				}
-			}
-
-			if (on)
-			{
-				SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_ENTER_CLOAK));
-			}
-			else
-			{
-				SAFE_SOUNDMOODS_FUNC(AddSoundMood(SOUNDMOOD_LEAVE_CLOAK));
+				if (m_pOwner->IsRemote())
+				{
+					PlaySound(ESound_SuitCloakFeedback, 1, true);
+				}
 			}
 
 			ENanoCloakMode cloakMode = m_cloak.GetType();
@@ -1073,7 +1056,7 @@ void CNanoSuit::DeactivateSuit(float time)
 
 void CNanoSuit::PlaySound(ENanoSound sound, float param, bool stopSound)
 {
-	if (!gEnv->pSoundSystem || !m_pOwner || !m_active)
+	if (!gEnv->pSoundSystem || !m_pOwner || !m_active || gEnv->pSystem->IsDedicated())
 		return;
 
 	int soundFlag = 0; //localActor will get 2D sounds
@@ -1213,6 +1196,7 @@ void CNanoSuit::PlaySound(ENanoSound sound, float param, bool stopSound)
 		soundName = "sounds/interface:suit:suit_grab_vs_throw";
 		eSemantic = eSoundSemantic_NanoSuit;
 		bAppendPostfix = false;
+		break;
 	default:
 		break;
 	}

@@ -402,7 +402,11 @@ CAlien::~CAlien()
 	SAFE_DELETE(m_pGroundEffect);
 
 	SAFE_DELETE(m_pBeamEffect);
-	SAFE_DELETE(m_pDebugHistoryManager);
+
+	if (m_pDebugHistoryManager)
+	{
+		m_pDebugHistoryManager->Release();
+	}
 }
 
 void CAlien::BindInputs(IAnimationGraphState* pAGState)
@@ -814,9 +818,9 @@ void CAlien::Update(SEntityUpdateContext& ctx, int updateSlot)
 				m_pGroundEffect->Update();
 			}
 
-			if (m_pTrailAttachment)
+			if (m_pTrailAttachment && m_pTrailAttachment->GetType() == IAttachmentObject::EType::eAttachment_Effect)
 			{
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pTrailAttachment->GetIAttachmentObject();
+				CEffectAttachment* pEffectAttachment = static_cast<CEffectAttachment*>(m_pTrailAttachment->GetIAttachmentObject());
 				if (pEffectAttachment)
 				{
 					float goalspeed = max(0.f, m_stats.speed - m_params.trailEffectMinSpeed);
@@ -833,9 +837,9 @@ void CAlien::Update(SEntityUpdateContext& ctx, int updateSlot)
 				}
 			}
 
-			if (m_pHealthTrailAttachment)
+			if (m_pHealthTrailAttachment && m_pHealthTrailAttachment->GetType() == IAttachmentObject::EType::eAttachment_Effect)
 			{
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pHealthTrailAttachment->GetIAttachmentObject();
+				CEffectAttachment* pEffectAttachment = static_cast<CEffectAttachment*>(m_pHealthTrailAttachment->GetIAttachmentObject());
 				if (pEffectAttachment)
 				{
 					float goal = 1.0f - ((float)GetHealth() / (float)max(1, GetMaxHealth()));
@@ -2476,9 +2480,9 @@ Ang3 CAlien::GetAngles()
 	return angles;
 }
 
-void CAlien::StanceChanged(EStance last)
+void CAlien::StanceChanged(EStance lastStance, EStance newStance)
 {
-	float delta(GetStanceInfo(last)->modelOffset.z - GetStanceInfo(m_stance)->modelOffset.z);
+	float delta(GetStanceInfo(lastStance)->modelOffset.z - GetStanceInfo(newStance)->modelOffset.z);
 	if (delta > 0.0f)
 		m_modelOffset.z -= delta;
 }

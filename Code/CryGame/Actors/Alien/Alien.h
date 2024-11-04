@@ -403,7 +403,7 @@ public:
 	virtual void SetMovementTarget(const Vec3 &position,const Vec3 &looktarget,const Vec3 &up,float speed) {m_input.posTarget = position; m_input.dirTarget = looktarget; m_input.upTarget=up;m_input.speedTarget=speed;}
 	virtual void SetAngles(const Ang3 &angles);
 	virtual Ang3 GetAngles();
-	virtual void StanceChanged(EStance last);
+	virtual void StanceChanged(EStance lastStance, EStance newStance);
 //	virtual void SetRotation(const Quat &rot,int flags=0);
 	// ~CActor
 

@@ -22,6 +22,7 @@
 #include "NanoSuit.h"
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAction/IViewSystem.h"
+#include "PlayerView.h"
 
 
 class CPlayerMovement;
@@ -31,6 +32,13 @@ class CHUD;
 class CVehicleClient;
 struct IDebugHistory;
 struct IDebugHistoryManager;
+
+enum class SpectatorTargetType
+{
+	NONE,
+	FIRST_PERSON,
+	THIRD_PERSON
+};
 
 struct SPlayerStats : public SActorStats
 {
@@ -141,7 +149,7 @@ struct SPlayerStats : public SActorStats
 
 	//CryMP FP Spec
 	bool fpSpectator;
-	bool fpSpectatorTarget;
+	SpectatorTargetType spectatorTargetType;
 
 	SPlayerStats()
 	{
@@ -195,7 +203,7 @@ struct SPlayerStats : public SActorStats
 
 		//CryMP FP spec
 		fpSpectator = false,
-		fpSpectatorTarget = false;
+		spectatorTargetType = SpectatorTargetType::NONE;
 	}
 
 	void Serialize(TSerialize ser, unsigned aspects);
@@ -281,7 +289,7 @@ struct IPlayerEventListener
 	virtual void OnObjectGrabbed(IActor* pActor, bool bIsGrab, EntityId objectId, bool bIsNPC, bool bIsTwoHanded) {};
 };
 
-class CPlayerView;
+class PlayerView;
 
 class CPlayer :
 	public CActor, public ISoundSystemEventListener
@@ -289,7 +297,7 @@ class CPlayer :
 	friend class CPlayerMovement;
 	friend class CPlayerRotation;
 	friend class CPlayerInput;
-	friend class CPlayerView;
+	friend class PlayerView;
 	friend class CNetPlayerInput;
 
 public:
@@ -320,6 +328,10 @@ public:
 		ESound_ParachuteStart,
 		ESound_ParachuteRun,
 		ESound_ParachuteStop,
+		ESound_ProneOn,
+		ESound_ProneOff,
+		ESound_CrouchOn,
+		ESound_CrouchOff,
 		ESound_Player_Last
 	};
 
@@ -532,8 +544,6 @@ public:
 	virtual void ToggleThirdPerson();
 	void EnableThirdPerson(bool enable);
 
-	void CheckCurrentWeapon(bool thirdperson);
-
 	virtual int  IsGod();
 
 	virtual void Revive(ReasonForRevive reason = ReasonForRevive::NONE);
@@ -542,7 +552,8 @@ public:
 	//stances
 	virtual Vec3	GetStanceViewOffset(EStance stance, float* pLeanAmt = NULL, bool withY = false) const;
 	virtual bool IsThirdPerson() const;
-	virtual void StanceChanged(EStance last);
+	virtual void StanceChanged(EStance lastStance, EStance newStance);
+	void StanceSound(EStance lastStance, EStance newStance);
 	//virtual bool TrySetStance(EStance stance); // Moved to Actor, to be shared with Aliens.
 
 	virtual void ResetAnimGraph();
@@ -558,7 +569,7 @@ public:
 	virtual void SetDeathCamTarget(EntityId targetId) { m_stats.deathCamTarget = targetId; };
 	virtual EntityId GetSpectatorTarget() const { return m_stats.spectatorTarget; };
 	virtual EntityId GetDeathCamTarget() const { return m_stats.deathCamTarget; };
-	virtual void SetSpectatorHealth(int health) { m_stats.spectatorHealth = health; };
+	virtual void SetSpectatorHealth(int health) override;
 	virtual int GetSpectatorHealth() const { return m_stats.spectatorHealth; };
 	virtual void ChangeSpectatorZoom(int zoomChange) { m_stats.spectatorZoom = CLAMP(m_stats.spectatorZoom + zoomChange, 2, 8); }
 	virtual int GetSpectatorZoom() const { return m_stats.spectatorZoom; }
@@ -592,6 +603,7 @@ public:
 	virtual bool NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags);
 	virtual void PostSerialize();
 	//set/get actor params
+	void OnHealthChanged(const int health);
 	virtual void SetHealth(int health);
 	virtual SActorStats* GetActorStats() { return &m_stats; };
 	virtual const SActorStats* GetActorStats() const { return &m_stats; };
@@ -624,10 +636,11 @@ public:
 	virtual bool CanSleep() { return true; }
 
 	void UpdateParachute(float frameTime);
+	void UpdateParachuteIK();
 	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
 	void DeployParachute(bool show, bool sound);
-	void UpdateFreefallAnimationInputs(bool force = false);
+	void UpdateFreefallAnimationInputs(bool force = false, bool parachuteActive = false);
 
 	void ProcessCharacterOffset(float frameTime);
 
@@ -648,6 +661,8 @@ public:
 
 	void RegisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
 	void UnregisterPlayerEventListener(IPlayerEventListener* pPlayerEventListener);
+
+	void ResetOpacity();
 
 	ILINE bool GravityBootsOn() const
 	{
@@ -672,7 +687,7 @@ public:
 	void UpdateUnfreezeInput(const Ang3& deltaRotation, const Vec3& deltaMovement, float mult);
 
 	void SpawnParticleEffect(const char* effectName, const Vec3& pos, const Vec3& dir);
-	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = NULL, float paramValue = 0.0f);
+	void PlaySound(EPlayerSounds sound, bool play = true, bool param = false, const char* paramName = nullptr, float paramValue = 0.0f);
 	virtual void SendMusicLogicEvent(EMusicLogicEvents event);
 
 	//Ladders
@@ -779,7 +794,7 @@ protected:
 	Vec3		m_eyeOffset;	// View system - used to interpolate to goal eye offset
 												//the offset from the entity origin to eyes, its not the real offset vector but its referenced to player view direction.
 
-	Vec3		m_eyeOffsetView; //this is exclusive for CPlayerView to use, do not touch it outside CPlayerView
+	Vec3		m_eyeOffsetView; //this is exclusive for PlayerView to use, do not touch it outside PlayerView
 
 	Vec3		m_weaponOffset;
 
@@ -827,6 +842,7 @@ protected:
 	IAnimationGraph::InputID m_inputAiming;
 	IAnimationGraph::InputID m_inputVehicleName;
 	IAnimationGraph::InputID m_inputVehicleSeat;
+	IAnimationGraph::InputID m_inputPseudoSpeed;
 
 	// probably temporary, feel free to figure out better place
 	float m_lastAnimControlled;
@@ -843,8 +859,8 @@ protected:
 	float m_stickySurfaceTimer;
 
 	// used by parachute. 
-	int			m_nParachuteSlot;
-	float		m_fParachuteMorph; //0..1 to play morph targets
+	bool m_ParachuteOpen = false;
+	float m_fParachuteMorph = 0.0f; //0..1 to play morph targets
 	bool		m_parachuteEnabled;
 	float		m_openParachuteTimer;
 	bool    m_openingParachute;
@@ -884,38 +900,110 @@ public:
 //CryMP 
 //////////////////////////////////////////////////////////////////////////////////
 
-protected:
+private:
+
+	static constexpr std::string_view m_parachuteAttachmentName = "parachute_attach";
 
 	float m_tpLeanOffset = 0.0f;
 	float m_tpProneOffset = 0.0f;
+	float m_prevFrozenAmount = 0.0f;
 	Vec3 m_vehicleViewDirSmooth = Vec3(ZERO);
 	Vec3 m_netAimDir = Vec3(ZERO);
 	Vec3 m_netAimDirSmooth = Vec3(ZERO);
-	int m_currentSeatId = -1;
 	bool m_bSlowCamera = false;
 	bool GetAimTargetAdjusted(Vec3& aimTarget);
 
 	SViewParams m_FirstPersonSpectatorParams = SViewParams();
-	void UpdateFpSpectator(EntityId oldTargetId, EntityId newTargetId);
+	void UpdateSpectator(EntityId oldTargetId, EntityId newTargetId);
+
+	PlayerView m_PlayerView = PlayerView(*this);
+
+	void UpdateDraw();
+	void UpdateCharacter(ICharacterInstance* pCharacter, bool characterLoad = false);
+	void UpdateScreenFrost();
+	void UpdateScreenEffects(float frameTime);
+	void SetDofFxLimits(float focusmin, float focusmax, float focuslim, float speed = 0);
+	void SetDofFxMask(const char* texName);
+	void SetDofFxAmount(float amount, float speed = 0);
+	void ResetDofFx(float speed = 0);
+	void UpdateDofFx(float frameTime);
+	void SetMotionFxAmount(float amount, float speed = 0);
+	void SetMotionFxMask(const char* texName);
+	void ResetMotionFx();
+	void UpdateMotionFx(float frameTime);
+
+	float DofInterpolate(float curr, float target, float speed, float frameTime);
+	float MBlurInterpolate(float curr, float target, float speed, float frameTime);
+
+	void UpdateModelChangeInVehicle();
+
+	float m_viewBlur = 0.0f;
+	float m_viewBlurAmt = 0.0f;
+
+	int m_blurType = 0;
+
+	// Depth of Field (DoF) related variables
+	float m_dof_amount_speed = 0.0f;
+	float m_dof_distance_speed = 0.0f;
+	float m_target_dof_min = 0.0f;
+	float m_target_dof_max = 2000.0f;
+	float m_target_dof_lim = 2500.0f;
+	float m_target_dof_amount = 0.0f;
+	float m_current_dof_min = 0.0f;
+	float m_current_dof_max = 2000.0f;
+	float m_current_dof_lim = 2500.0f;
+	float m_current_dof_amount = 0.0f;
+
+	// Motion Blur related variables
+	float m_mblur_amount_speed = 0.0f;
+	float m_target_mblur_amount = 0.0f;
+	float m_current_mblur_amount = 0.0f;
+
+	int m_lastAttachmentCount = 0;
 
 public:
 
-	//First Person Spectator
-	virtual bool IsFpSpectator() const { return m_stats.fpSpectator; }
-	virtual bool IsFpSpectatorTarget() const { return m_stats.fpSpectatorTarget; }
-	void SetFpSpectator(bool activate) { m_stats.fpSpectator = activate; }
-	void SetFpSpectatorTarget(bool activate);
-	IActor* GetSpectatorTargetPlayer();
+	// Member variables
+	bool m_camoState = false;
+	bool m_camoFading = false;
+
+	virtual bool IsSpectatorTarget() const { return m_stats.spectatorTarget; }
+
+	//First/Third Person Spectator
+	virtual bool IsFpSpectator() const 
+	{ 
+		return m_stats.fpSpectator; 
+	}
+	virtual bool IsFpSpectatorTarget() const override
+	{
+		return m_stats.spectatorTargetType == SpectatorTargetType::FIRST_PERSON;
+	}
+	virtual bool IsTpSpectatorTarget() const override
+	{
+		return m_stats.spectatorTargetType == SpectatorTargetType::THIRD_PERSON;
+	}
+	void SetFpSpectator(bool activate) 
+	{
+		m_stats.fpSpectator = activate; 
+	}
+	void EnableFpSpectatorTarget(bool activate);
+	SpectatorTargetType GetSpectatorTargetType() const
+	{
+		return m_stats.spectatorTargetType;
+	}
+	void SetSpectatorTargetType(SpectatorTargetType type);
+
+	IActor* GetSpectatorTargetActor();
+
 	void SetSlowCamera(bool on) { m_bSlowCamera = on; }
 	bool IsSlowCamera() const { return m_bSlowCamera; }
 	float m_fCameraMoveSpeedMult = 1.0f;
-	float m_ColDistance = 2.0f;
 	float m_targetOpacity = 1.0f;
 	float m_smoothedOpacity = 1.0f;
 
-	bool IsParachuteMorphActive()
+	bool IsParachuteActive()
 	{
-		return m_fParachuteMorph > 0.0f;
+		return m_ParachuteOpen;
 	}
 
 	Vec3 GetVehicleViewDirSmooth() const { return m_vehicleViewDirSmooth; }

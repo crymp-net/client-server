@@ -1287,17 +1287,12 @@ void CShark::ProcessMovement(float frameTime)
 	float rotSpeed = m_params.rotSpeed_min + (1.0f - rotScale) * (m_params.rotSpeed_max - m_params.rotSpeed_min);
 */
 	float desiredTurnRadius;
-	float desiredSpeed;
-	float rotSpeed;
+	float desiredSpeed = 0;
+	float rotSpeed = 0;
 	Vec3 center;
 	ColorB debugColor(0, 0, 255, 48);
 
-	if(m_moveTarget.IsZero())
-	{
-		desiredSpeed =0;
-		rotSpeed = 0;
-	}
-	else
+	if(!m_moveTarget.IsZero())
 	{
 		// Slow down if the desired direction differs from the current direction.
 		Vec3 desiredDir(m_moveTarget - GetEntity()->GetWorldPos()) ;

@@ -1,5 +1,7 @@
 #include <stdlib.h>  // atoi
 
+#include <tracy/Tracy.hpp>
+
 #include "CryCommon/CrySystem/ISystem.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CryNetwork/INetwork.h"
@@ -9,6 +11,7 @@
 #include "CryMP/Common/Executor.h"
 #include "CryMP/Common/GSMasterHook.h"
 #include "CrySystem/GameWindow.h"
+#include "CrySystem/Logger.h"
 #include "CrySystem/RandomGenerator.h"
 #include "Launcher/Resources.h"
 #include "Library/StringTools.h"
@@ -17,7 +20,6 @@
 
 #include "Client.h"
 #include "FileDownloader.h"
-#include "FileRedirector.h"
 #include "FileCache.h"
 #include "MapDownloader.h"
 #include "ScriptCommands.h"
@@ -28,8 +30,8 @@
 #include "ServerPAK.h"
 #include "EngineCache.h"
 #include "ParticleManager.h"
-#include "FlashFileHooks.h"
 #include "DrawTools.h"
+#include "FFontHooks.h"
 
 #include "config.h"
 
@@ -53,7 +55,7 @@ void Client::InitMasters()
 	}
 	else
 	{
-		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS);
+		content = WinAPI::GetDataResource(nullptr, RESOURCE_MASTERS_TXT);
 	}
 
 	for (const std::string_view & master : Util::SplitWhitespace(content))
@@ -63,7 +65,7 @@ void Client::InitMasters()
 
 	if (m_masters.empty())
 	{
-		m_masters.emplace_back("crymp.nullptr.one");
+		m_masters.emplace_back("crymp.org");
 	}
 
 	m_pScriptCallbacks->OnMasterResolved();
@@ -74,11 +76,6 @@ void Client::SetVersionInLua()
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT", CRYMP_CLIENT_VERSION);
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_STRING", CRYMP_CLIENT_VERSION_STRING);
 	gEnv->pScriptSystem->SetGlobalValue("CRYMP_CLIENT_BITS", CRYMP_CLIENT_BITS);
-}
-
-void Client::AddFlashFileHook(const std::string_view& path, int resourceID)
-{
-	m_pFlashFileHooks->Add(path, WinAPI::GetDataResource(nullptr, resourceID));
 }
 
 std::string Client::GenerateRandomCDKey()
@@ -201,7 +198,6 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pExecutor          = std::make_unique<Executor>();
 	m_pHTTPClient        = std::make_unique<HTTPClient>(*m_pExecutor);
 	m_pFileDownloader    = std::make_unique<FileDownloader>();
-	m_pFileRedirector    = std::make_unique<FileRedirector>();
 	m_pFileCache         = std::make_unique<FileCache>();
 	m_pMapDownloader     = std::make_unique<MapDownloader>();
 	m_pGSMasterHook      = std::make_unique<GSMasterHook>();
@@ -213,26 +209,9 @@ void Client::Init(IGameFramework *pGameFramework)
 	m_pServerPAK         = std::make_unique<ServerPAK>();
 	m_pEngineCache       = std::make_unique<EngineCache>();
 	m_pParticleManager   = std::make_unique<ParticleManager>();
-	m_pFlashFileHooks    = std::make_unique<FlashFileHooks>();
 	m_pDrawTools         = std::make_unique<DrawTools>();
 
-	// prepare Lua scripts
-	m_scriptMain         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_MAIN);
-	m_scriptJSON         = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_JSON);
-	m_scriptRPC          = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_RPC);
-	m_scriptLocalization = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_LOCALIZATION);
-
-	AddFlashFileHook("Libs/UI/HUD_ChatSystem.gfx", RESOURCE_HUD_CHAT_SYSTEM_GFX);
-	AddFlashFileHook("Libs/UI/HUD_VehicleStats.gfx", RESOURCE_HUD_VEHICLE_STATS_GFX);
-	AddFlashFileHook("Libs/UI/HUD_PDA_Buy.gfx", RESOURCE_HUD_PDA_BUY_GFX);
-	AddFlashFileHook("Libs/UI/Menus_Loading_MP.gfx", RESOURCE_MENUS_LOADING_MP_GFX);
-	AddFlashFileHook("Libs/UI/HUD_HitIndicator.gfx", RESOURCE_HUD_HIT_INDICATOR_GFX);
-	AddFlashFileHook("Libs/UI/HUD_Spectate.gfx", RESOURCE_HUD_SPECTATE_GFX);
-	AddFlashFileHook("Libs/UI/HUD_MP_Radio_Buttons.gfx", RESOURCE_HUD_MP_RADIO_BUTTONS_GFX);
-	AddFlashFileHook("Libs/UI/HUD_ChatSystem_HR.gfx", RESOURCE_HUD_CHAT_SYSTEM_HR_GFX);
-	AddFlashFileHook("Libs/UI/HUD_MultiplayerScoreboard_TDM.gfx", RESOURCE_HUD_MP_SCOREBOARD_TDM_GFX);
-	AddFlashFileHook("Libs/UI/HUD_TIAScore.gfx", RESOURCE_HUD_TIA_SCORE_GFX);
-	AddFlashFileHook("Libs/UI/HUD_KillLog.gfx", RESOURCE_HUD_KILL_LOG_GFX);
+	PatchCryFont();
 
 	// register engine listeners
 	pGameFramework->RegisterListener(this, "crymp-client", FRAMEWORKLISTENERPRIORITY_DEFAULT);
@@ -258,10 +237,10 @@ void Client::Init(IGameFramework *pGameFramework)
 	SetVersionInLua();
 
 	// execute Lua scripts
-	pScriptSystem->ExecuteBuffer(m_scriptJSON.data(), m_scriptJSON.length(), "JSON.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptRPC.data(), m_scriptRPC.length(), "RPC.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptMain.data(), m_scriptMain.length(), "Main.lua");
-	pScriptSystem->ExecuteBuffer(m_scriptLocalization.data(), m_scriptLocalization.length(), "Localization.lua");
+	pScriptSystem->ExecuteFile("CryMP/Scripts/JSON.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/RPC.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/Client.lua", true, true);
+	pScriptSystem->ExecuteFile("CryMP/Scripts/Localization.lua", true, true);
 
 	InitMasters();
 
@@ -302,6 +281,9 @@ void Client::UpdateLoop()
 
 	while (GameWindow::GetInstance().OnUpdate() && m_pGame->Update(haveFocus, updateFlags))
 	{
+		Logger::GetInstance().OnUpdate();
+
+		FrameMark;
 	}
 
 	GameWindow::GetInstance().OnQuit();
@@ -381,13 +363,65 @@ void Client::AddKeyBind(const std::string_view& key, const std::string_view& com
 	}
 }
 
+void Client::AddKeyBind(const std::string_view& key, HSCRIPTFUNCTION function)
+{
+	for (KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
+			return;
+		}
+	}
+
+	KeyBind& bind = m_keyBinds.emplace_back();
+	bind.key = key;
+	bind.function = SmartScriptFunction(gEnv->pScriptSystem, function);
+
+	if (m_pGameFramework->GetClientActor())
+	{
+		bind.createdInGame = true;
+	}
+}
+
 void Client::OnKeyPress(const std::string_view& key)
 {
 	for (const KeyBind& bind : m_keyBinds)
 	{
 		if (bind.key == key)
 		{
-			gEnv->pConsole->ExecuteString(bind.command.c_str());
+			if (!bind.command.empty())
+			{
+				gEnv->pConsole->ExecuteString(bind.command.c_str());
+			}
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(1); //press
+					pSS->EndCall();
+				}
+			}
+		}
+	}
+}
+
+void Client::OnKeyRelease(const std::string_view& key)
+{
+	for (const KeyBind& bind : m_keyBinds)
+	{
+		if (bind.key == key)
+		{
+			if (bind.function)
+			{
+				IScriptSystem* pSS = gEnv->pScriptSystem;
+				if (pSS->BeginCall(bind.function))
+				{
+					pSS->PushFuncParam(2); //release
+					pSS->EndCall();
+				}
+			}
 		}
 	}
 }

@@ -1278,7 +1278,8 @@ void CHUDRadar::UpdateScanner(float frameTime)
 				//Enemy: Orange-Red
 				if (gEnv->bMultiplayer)
 				{
-					if (m_pGameRules->IsHostile(m_scannerObjectID, m_pClientActor->GetEntityId()) && !m_pGameRules->IsNeutral(m_scannerObjectID))
+					if (m_pGameRules->IsHostile(m_scannerObjectID, m_pClientActor->GetEntityId()) 
+						&& (!m_pGameRules->IsNeutral(m_scannerObjectID) || m_pGameRules->GetTeamCount() < 2))
 					{
 						//ColorF V(0.8f, 0.498039f, 0.196078f);
 						r = 1.0f;
@@ -1685,7 +1686,7 @@ void CHUDRadar::LoadMiniMap(const char* mapPath)
 				{
 					mapNode->getAttributeByIndex(i, &key, &value);
 					CryFixedStringT<64> keyString(key);
-					int pos = keyString.find("Filename");
+					size_t pos = keyString.find("Filename");
 					if (pos != string::npos)
 					{
 						pos += 8; //add size of "FileName"
@@ -1892,7 +1893,8 @@ void CHUDRadar::RenderMapOverlay()
 			EntityId id = m_taggedEntities[i];
 			if (id)
 			{
-				if (pTempActor = m_pActorSystem->GetActor(id))
+				pTempActor = m_pActorSystem->GetActor(id);
+				if (pTempActor)
 				{
 					if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
 					{
@@ -1927,7 +1929,8 @@ void CHUDRadar::RenderMapOverlay()
 		for (int e = 0; e < m_tempEntitiesOnRadar.size(); ++e)
 		{
 			EntityId id = m_tempEntitiesOnRadar[e].m_id;
-			if (pTempActor = m_pActorSystem->GetActor(id))
+			pTempActor = m_pActorSystem->GetActor(id);
+			if (pTempActor)
 			{
 				if (IVehicle* pVehicle = pTempActor->GetLinkedVehicle())
 				{

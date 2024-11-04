@@ -22,7 +22,6 @@ struct HTTPClientTask : public IExecutorTask
 				request.url,
 				request.data,
 				request.headers,
-				request.timeout,
 				[this](uint64_t contentLength, const WinAPI::HTTPRequestReader & reader)
 				{
 					// content length is zero if not provided by the server

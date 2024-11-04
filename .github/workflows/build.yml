@@ -34,7 +34,7 @@ jobs:
       artifact_name: ${{ steps.build.outputs.artifact_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # for version generator
           fetch-depth: 0
@@ -67,8 +67,8 @@ jobs:
           cmake -S . -B $env:BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=${{ inputs.type }}
           cmake --build $env:BUILD_DIR
           $exe_path = Join-Path $env:BUILD_DIR 'CryMP-Client${{ inputs.bits }}.exe'
-          $exe_hash = (Get-FileHash $exe_path -Algorithm SHA256).Hash.ToLower()
-          'artifact_name=CryMP-Client${{ inputs.bits }}-' + $exe_hash >> $env:GITHUB_OUTPUT
+          $version = git describe --dirty --tags --match 'v*'
+          'artifact_name=CryMP-Client${{ inputs.bits }}-' + $version >> $env:GITHUB_OUTPUT
 
       - name: Sign
         if: inputs.sign
@@ -82,9 +82,9 @@ jobs:
           Remove-Item bundle.*
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: |
-            ${{ env.BUILD_DIR }}\*.exe
-            ${{ env.BUILD_DIR }}\*.pdb
+            ${{ env.BUILD_DIR }}/*.exe
+            ${{ env.BUILD_DIR }}/*.pdb

@@ -304,10 +304,16 @@ void CGameRules::ProcessServerHit(HitInfo& hitInfo)
 		}
 
 		if (pShooter)
-			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Hit, 0, 0, (void*)hitInfo.weaponId));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(hitInfo.weaponId));
+			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Hit, 0, 0, extra));
+		}
 
 		if (pShooter)
-			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Damage, 0, hitInfo.damage, (void*)hitInfo.weaponId));
+		{
+			void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(hitInfo.weaponId));
+			m_pGameplayRecorder->Event(pShooter->GetEntity(), GameplayEvent(eGE_Damage, 0, hitInfo.damage, extra));
+		}
 	}
 }
 
@@ -907,16 +913,10 @@ IMPLEMENT_RMI(CGameRules, ClSetTeam)
 
 	if (IActor* pClient = m_pGameFramework->GetClientActor())
 	{
-		if (GetTeam(pClient->GetEntityId()) == params.teamId)
+		const EntityId lookAtEntId = pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId();
+		if (m_lastUsabilityEntityId == lookAtEntId)
 		{
-			if (params.entityId == pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId())
-			{
-				if (g_pGame->GetHUD())
-				{
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(0);
-					g_pGame->GetHUD()->GetCrosshair()->SetUsability(1);
-				}
-			}
+			SAFE_HUD_FUNC(GetCrosshair()->OnLookatEntityChangeTeam(params.entityId));
 		}
 	}
 

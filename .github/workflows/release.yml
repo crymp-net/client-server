@@ -33,7 +33,7 @@ jobs:
       - build_64
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get changelog
         run: |
@@ -43,12 +43,12 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Download 32-bit build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build_32.outputs.artifact_name }}
 
       - name: Download 64-bit build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build_64.outputs.artifact_name }}
 
@@ -81,6 +81,7 @@ jobs:
           asset_content_type: application/zip
 
   upload:
+    if: github.repository_owner == 'crymp-net'
     needs:
       - build_32
       - build_64

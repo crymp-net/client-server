@@ -6,6 +6,7 @@
 #define _CRY_ARRAY_H_
 #pragma once
 
+#include "CryMalloc.h"
 #include "CryPodArray.h"
 
 //---------------------------------------------------------------------------
@@ -16,12 +17,12 @@ struct FModuleAlloc
 	{
 		if (newsize)
 		{
-			return (oldptr) ? realloc(oldptr, newsize) : malloc(newsize);
+			return (oldptr) ? CryRealloc(oldptr, newsize) : CryMalloc(newsize);
 		}
 
 		if (oldptr)
 		{
-			free(oldptr);
+			CryFree(oldptr);
 		}
 
 		return 0;
@@ -379,19 +380,19 @@ struct FModuleAlloc16
     }
     if (newsize)
     {
-      unsigned char *pData = (unsigned char *)malloc(newsize+16+sizeof(char *)+sizeof(DynArray<char>::Header));
+      unsigned char *pData = (unsigned char *)CryMalloc(newsize+16+sizeof(char *)+sizeof(DynArray<char>::Header));
       unsigned char *bPtrRes = (unsigned char *)((ptrdiff_t)(pData+16+sizeof(char *)) & ~0xf);
       ((unsigned char**)bPtrRes)[-1] = pData;
       if (oldptr)
       {
         memcpy(&bPtrRes[sizeof(DynArray<char>::Header)], oldptr, oldsize);
-        free(bActualPtr);
+        CryFree(bActualPtr);
       }
       return &bPtrRes[sizeof(DynArray<char>::Header)];
     }
     else if (oldptr)
     {
-      free(bActualPtr);
+      CryFree(bActualPtr);
     }
     return NULL;
   }

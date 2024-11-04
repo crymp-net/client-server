@@ -20,6 +20,8 @@
 #ifndef _CRY_COMMON_STREAM_ENGINE_HDR_
 #define _CRY_COMMON_STREAM_ENGINE_HDR_
 
+#include <cstdint>
+
 #include "CryCommon/CryCore/smartptr.h"
 
 struct StreamEngineParams;
@@ -91,13 +93,13 @@ struct StreamReadParams
 	StreamReadParams (
 		//const char* _szFile,
 		//IStreamCallback* _pCallback,
-		DWORD_PTR _dwUserData = 0,
+		std::uintptr_t _dwUserData = 0,
 		int _nPriority = 0,
 		unsigned _nLoadTime = 0,
 		unsigned _nMaxLoadTime = 0,
 		unsigned _nOffset = 0,
 		unsigned _nSize = 0,
-		void* _pBuffer = NULL,
+		void* _pBuffer = nullptr,
 		unsigned _nFlags = 0
 	):
 		//szFile (_szFile),
@@ -118,7 +120,7 @@ struct StreamReadParams
 	// the callback
 	//IStreamCallback* pCallback;
 	// the user data that'll be used to call the callback
-	DWORD_PTR dwUserData;
+	std::uintptr_t dwUserData;
 
 	// the priority of this read; INT_MIN is the idle, INT_MAX is the highest, 0 is the average
 	int nPriority;
@@ -191,7 +193,7 @@ public:
 	// (in the main thread) outside StartRead() (it happens in the entity update),
 	// so you're guaranteed that it won't trash inside the calling function. However, this may change in the future
 	// and you'll be required to assign it to IReadStream immediately (StartRead will return IReadStream_AutoPtr then)
-	virtual IReadStreamPtr StartRead (const char* szSource, const char* szFile, IStreamCallback* pCallback = NULL, StreamReadParams* pParams = NULL) = 0;
+	virtual IReadStreamPtr StartRead (const char* szSource, const char* szFile, IStreamCallback* pCallback = nullptr, StreamReadParams* pParams = nullptr) = 0;
 
 	// returns the size of the file; returns 0 if there's no such file.
 	// nCryPakFlags is the flag set as in ICryPak
@@ -297,7 +299,7 @@ public:
 
 	// Returns the transparent DWORD that was passed in the StreamReadParams::dwUserData field
 	// of the structure passed in the call to IStreamEngine::StartRead
-	virtual DWORD_PTR GetUserData() = 0;
+	virtual std::uintptr_t GetUserData() = 0;
 
 	// unconditionally waits until the callback is called
 	// i.e. if the stream hasn't yet finish, it's guaranteed that the user-supplied callback
@@ -334,7 +336,7 @@ protected:
 // 
 // params.dwUserData = 0;
 // params.nSize = 0;
-// params.pBuffer = NULL;
+// params.pBuffer = nullptr;
 // params.nLoadTime = 10000;
 // params.nMaxLoadTime = 10000;
 // params.nFlags |= SRP_FLAGS_ASYNC_PROGRESS;

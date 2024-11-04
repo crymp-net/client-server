@@ -111,10 +111,6 @@
 //////////////////////////////////////////////////////////////////////////
 // Platform: WIN23,WIN64,LINUX32,LINUX64,_XBOX
 //////////////////////////////////////////////////////////////////////////
-#if defined(_MSC_VER)
-#include "MSVCspecific.h"
-#endif
-
 #define ILINE __forceinline
 
 #define DEPRICATED __declspec(deprecated)
@@ -200,4 +196,10 @@ enum ETriState
 	eTS_false,
 	eTS_true,
 	eTS_maybe
+};
+
+// needed by both IRenderer.h and I3DEngine.h
+enum eSplashType
+{
+	EST_Water,
 };

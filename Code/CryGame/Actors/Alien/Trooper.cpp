@@ -1143,7 +1143,6 @@ void CTrooper::ProcessAnimation(ICharacterInstance *pCharacter,float frameTime)
 			else
 			{
 				float timeToZero = ClandDuration/2;
-				float frameTime = gEnv->pSystem->GetITimer()->GetFrameTime();
 				if(m_jumpParams.curVelocity.z< -0.01f) // going down
 				{
 					m_jumpParams.curVelocity -= m_jumpParams.initLandVelocity * frameTime * (ClandDuration - timeToZero) * ClandStiffnessMultiplier;

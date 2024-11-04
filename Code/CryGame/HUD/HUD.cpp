@@ -55,8 +55,6 @@ History:
 #include "CryGame/Items/Weapons/Weapon.h"
 #include "CryGame/Items/Weapons/OffHand.h"
 
-#include "Tweaks/HUDTweakMenu.h"
-
 #include "HUDVehicleInterface.h"
 #include "HUDPowerStruggle.h"
 #include "HUDTeamInstantAction.h"
@@ -120,7 +118,6 @@ CHUD::CHUD()
 	CFlashMenuObject::GetFlashMenuObject()->SetColorChanged();
 	// CHUDCommon constructor runs first
 	m_pHUDRadar = NULL;
-	m_pHUDTweakMenu = NULL;
 	m_pHUDScore = NULL;
 	m_pHUDTextChat = NULL;
 	m_pRenderer = NULL;
@@ -491,7 +488,6 @@ bool CHUD::Init(IActor* pActor)
 	m_pHUDTextArea->SetFadeTime(2.0f);
 	m_pHUDTextArea->SetPos(Vec2(200.0f, 450.0f));
 
-	m_pHUDTweakMenu = new CHUDTweakMenu(pScriptSystem);
 	m_pHUDCrosshair = new CHUDCrosshair(this);
 	m_pHUDTagNames = new CHUDTagNames(this);
 	m_pHUDSilhouettes = new CHUDSilhouettes;
@@ -507,7 +503,6 @@ bool CHUD::Init(IActor* pActor)
 	m_hudObjectsList.push_back(m_pHUDRadar);
 	m_hudObjectsList.push_back(m_pHUDObituary);
 	m_hudObjectsList.push_back(m_pHUDTextArea);
-	m_hudObjectsList.push_back(m_pHUDTweakMenu);
 	m_hudObjectsList.push_back(m_pHUDCrosshair);
 
 	if (gEnv->bMultiplayer || loadEverything)
@@ -546,7 +541,8 @@ bool CHUD::Init(IActor* pActor)
 	m_animDownloadEntities.Load("Libs/UI/HUD_DownloadEntities.gfx");
 
 	//CryMP
-	m_animHitIndicator.Load("Libs/UI/HUD_HitIndicator.gfx", eFD_Center, eFAF_Visible);
+	m_animHitIndicatorPlayer.Load("Libs/UI/HUD_HitIndicatorPlayer.gfx", eFD_Center, eFAF_Visible);
+	m_animHitIndicatorVehicle.Load("Libs/UI/HUD_HitIndicatorVehicle.gfx", eFD_Center, eFAF_Visible);
 
 	// these are delay-loaded elsewhere!!!
 	if (loadEverything)
@@ -569,12 +565,18 @@ bool CHUD::Init(IActor* pActor)
 	m_animWeaponAccessories.Load("Libs/UI/HUD_WeaponAccessories.gfx", eFD_Center, eFAF_ThisHandler);
 	if (loadEverything)
 	{
-		m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Load("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Load("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 	else
 	{
-		m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		if (!gEnv->bMultiplayer)
+		{
+			m_animCinematicBar.Init("Libs/UI/HUD_CineBar.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
+		}
 		m_animSubtitles.Init("Libs/UI/HUD_Subtitle.gfx", eFD_Center, eFAF_ThisHandler | eFAF_ManualRender | eFAF_Visible);
 	}
 
@@ -867,7 +869,7 @@ void CHUD::PlayerIdSet(EntityId playerId)
 
 IActor* CHUD::GetSpectatorTarget()
 {
-	return m_pClientActor->GetSpectatorTargetPlayer();
+	return m_pClientActor->GetSpectatorTargetActor();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -906,12 +908,12 @@ void CHUD::SwitchToModalHUD(CGameFlashAnimation* pModalHUD, bool bNeedMouse)
 	{
 		if (bNeedMouse)
 		{
-			CursorIncrementCounter();
+			this->ShowMouseCursor(true);
 		}
 	}
 	else
 	{
-		CursorDecrementCounter();
+		this->ShowMouseCursor(false);
 	}
 	m_pModalHUD = pModalHUD;
 }
@@ -1020,7 +1022,7 @@ void CHUD::Serialize(TSerialize ser)
 		BreakHUD(m_iBreakHUD);
 		m_pHUDCrosshair->GetFlashAnim()->Reload(true); // only to make sure damage indicator won't be shown at next weapon switch
 		m_pHUDCrosshair->Reset(); //reset crosshair
-		m_pHUDCrosshair->SetUsability(false); //sometimes the scripts don't update the usability after loading from mounted gun for example
+		m_pHUDCrosshair->SetUsability(0); //sometimes the scripts don't update the usability after loading from mounted gun for example
 
 		m_bMiniMapZooming = false;
 
@@ -1042,7 +1044,7 @@ void CHUD::Serialize(TSerialize ser)
 		// Reset cursor
 		m_bScoreboardCursor = false;
 		m_pSwitchScoreboardHUD = NULL;
-		CursorDecrementCounter();
+		this->ShowMouseCursor(false);
 		if (IPlayerInput* pInput = m_pClientActor->GetPlayerInput())
 			pInput->DisableXI(false);
 		g_pGameActions->FilterNoMouse()->Enable(false);
@@ -1350,14 +1352,11 @@ void CHUD::ShowInventoryOverview(const char* curCategory, const char* curItem, b
 		COffHand* pOffHand = static_cast<COffHand*>(m_pClientActor->GetWeaponByClass(CItem::sOffHandClass));
 		if (pOffHand)
 		{
-			std::vector<string> grenades;
-			pOffHand->GetAvailableGrenades(grenades);
-			std::vector<string>::const_iterator it = grenades.begin();
-			std::vector<string>::const_iterator end = grenades.end();
-			int count = sizeof(grenades);
-			for (; it != end; ++it)
+			std::vector<string> grenadeNames;
+			pOffHand->GetAvailableGrenades(grenadeNames);
+			for (const auto& grenadeName : grenadeNames)
 			{
-				SFlashVarValue args[2] = { it->c_str(), (*it) == curItem };
+				SFlashVarValue args[2] = { grenadeName.c_str(), grenadeName == curItem };
 				m_animWeaponSelection.Invoke("addLog", args, 2);
 			}
 		}
@@ -2003,7 +2002,7 @@ bool CHUD::OnInputEvent(const SInputEvent& rInputEvent)
 	if (!gEnv->bMultiplayer)
 		return false;
 
-	const char* sKey = rInputEvent.keyName.c_str();
+	const char* sKey = rInputEvent.keyName;
 	// nasty check, but fastest early out
 	if (sKey && sKey[0] && !sKey[1])
 	{
@@ -2113,7 +2112,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 	else if (action == rGameActions.xi_rotatepitch || action == rGameActions.xi_v_rotatepitch)
 	{
-		if (g_pGame->IsMousePointerVisible())
+		if (m_isMouseCursorVisible)
 		{
 			m_fAutosnapCursorControllerY = value * value * (-value);
 		}
@@ -2126,7 +2125,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 	}
 	else if (action == rGameActions.xi_rotateyaw || action == rGameActions.xi_v_rotateyaw)
 	{
-		if (g_pGame->IsMousePointerVisible())
+		if (m_isMouseCursorVisible)
 		{
 			m_fAutosnapCursorControllerX = value * value * value;
 		}
@@ -2341,7 +2340,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 			if (activationMode == eIS_Pressed)
 			{
 				m_bScoreboardCursor = true;
-				CursorIncrementCounter();
+				this->ShowMouseCursor(true);
 				g_pGameActions->FilterNoMove()->Enable(true);
 
 				m_pClientActor->GetPlayerInput()->DisableXI(true);
@@ -2351,7 +2350,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				if (m_bScoreboardCursor)
 				{
 					m_bScoreboardCursor = false;
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 					g_pGameActions->FilterNoMove()->Enable(false);
 
 					m_pClientActor->GetPlayerInput()->DisableXI(false);
@@ -2372,7 +2371,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				{
 					// We don't want to have the cursor already active in the scoreboard
 					// The player HAS to hit the spacebar to activate the mouse!
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 				}
 				SwitchToModalHUD(&m_animScoreBoard, false);
 				PlaySound(ESound_MapOpen);
@@ -2405,7 +2404,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				if (m_bScoreboardCursor)
 				{
 					m_bScoreboardCursor = false;
-					CursorDecrementCounter();
+					this->ShowMouseCursor(false);
 					g_pGameActions->FilterNoMove()->Enable(false);
 
 					m_pClientActor->GetPlayerInput()->DisableXI(false);
@@ -2414,7 +2413,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				{
 					// Restore the mouse if we were coming from a modal hud
 					// Seems that only the quick menu does not use the mouse
-					CursorIncrementCounter();
+					this->ShowMouseCursor(true);
 				}
 				SwitchToModalHUD(m_pSwitchScoreboardHUD, (m_pSwitchScoreboardHUD != &m_animQuickMenu) ? true : false);
 				PlaySound(ESound_MapClose);
@@ -2650,9 +2649,6 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 	}
 
-	if (m_pHUDTweakMenu)
-		m_pHUDTweakMenu->OnActionTweak(action.c_str(), activationMode, value);
-
 	return filterOut;
 }
 
@@ -2886,7 +2882,7 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 
 void CHUD::OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent)
 {
-	if (!g_pGame->IsMousePointerVisible())
+	if (!m_isMouseCursorVisible)
 	{
 		return;
 	}
@@ -3406,7 +3402,7 @@ void CHUD::OnPostUpdate(float frameTime)
 			const uint8 specMode = m_pClientActor->GetSpectatorMode();
 			if (specMode >= CActor::eASM_FirstMPMode && specMode <= CActor::eASM_LastMPMode)
 			{
-				CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetPlayer());
+				CPlayer* pSpectatorTarget = CPlayer::FromIActor(m_pClientActor->GetSpectatorTargetActor());
 				CheckSpectatorTarget(pSpectatorTarget, frameTime);
 
 				m_animSpectate.GetFlashPlayer()->Advance(frameTime);
@@ -4246,11 +4242,6 @@ void CHUD::ActorDeath(IActor* pActor)
 	// for MP and for SP local player
 	// remove any progress bar and close suit menu if it was open
 
-	if (m_pClientActor->IsFpSpectatorTarget())
-	{
-		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
-	}
-
 	if (pActor->IsClient())
 	{
 		ShowProgress(); // hide any leftover progress bar
@@ -4288,6 +4279,10 @@ void CHUD::ActorDeath(IActor* pActor)
 		ShowKillAreaWarning(false, 0);
 
 		m_listBoughtItems.clear();
+	}
+	else if (static_cast<CActor*>(pActor)->IsFpSpectatorTarget())
+	{
+		m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 	}
 }
 
@@ -4382,7 +4377,11 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 		{
 			CNanoSuit* pOldSuit = pOldTarget->GetNanoSuit();
 			if (pOldSuit)
+			{
 				pOldSuit->RemoveListener(this);
+			}
+
+			m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 		}
 	}
 	if (newTargetid)
@@ -4395,8 +4394,6 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 			{
 				pNewSuit->AddListener(this);
 				EnergyChanged(pNewSuit->GetSuitEnergy());
-
-				m_pHUDCrosshair->SetUsability(0); //CryMP reset crosshair for FP spec
 			}
 		}
 	}
@@ -4406,7 +4403,7 @@ void CHUD::SetSpectatorMode(int mode, EntityId oldTargetId, EntityId newTargetid
 
 void CHUD::UpdateObjective(CHUDMissionObjective* pObjective)
 {
-	const char* status;
+	const char* status = "";
 	int colorStatus = 0;
 	bool active = false;
 
@@ -4689,7 +4686,6 @@ void CHUD::GetMemoryStatistics(ICrySizer* s)
 	//CHILD_STATISTICS(m_pHUDTextChat);
 	CHILD_STATISTICS(m_pHUDObituary);
 	CHILD_STATISTICS(m_pHUDTextArea);
-	CHILD_STATISTICS(m_pHUDTweakMenu);
 
 	TGameFlashAnimationsList::const_iterator iter = m_gameFlashAnimationsList.begin();
 	TGameFlashAnimationsList::const_iterator end = m_gameFlashAnimationsList.end();

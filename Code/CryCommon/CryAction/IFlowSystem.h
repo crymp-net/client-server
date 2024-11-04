@@ -3,17 +3,23 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "CryCommon/CryCore/ConfigurableVariant.h"
+#include "CryCommon/CryCore/smartptr.h"
 #include "CryCommon/CryEntitySystem/EntityId.h"
 #include "CryCommon/CryNetwork/SerializeFwd.h"
+#include "CryCommon/CrySystem/IXml.h"
+
+struct IEntity;
 
 // Help message.
 #define _HELP(x) x
 #define _UICONFIG(x) x
 
-typedef uint8 TFlowPortId;
-typedef uint16 TFlowNodeId;
-typedef uint16 TFlowNodeTypeId;
+typedef std::uint8_t TFlowPortId;
+typedef std::uint16_t TFlowNodeId;
+typedef std::uint16_t TFlowNodeTypeId;
 
 static const TFlowNodeId InvalidFlowNodeId = ~TFlowNodeId(0);
 static const TFlowPortId InvalidFlowPortId = ~TFlowPortId(0);
@@ -382,26 +388,26 @@ struct SFlowNodeConfig
 	const SInputPortConfig * pInputPorts;
 	const SOutputPortConfig * pOutputPorts;
 	// Node configuration flags @see EFlowNodeFlags
-	uint32 nFlags;
+	std::uint32_t nFlags;
 	const char *sDescription;
 	const char *sUIClassName;
 
-	ILINE void SetCategory(uint32 flags)
+	ILINE void SetCategory(std::uint32_t flags)
 	{
 		nFlags = (nFlags & ~EFLN_CATEGORY_MASK) | flags;
 	}
 
-	ILINE uint32 GetCategory() const
+	ILINE std::uint32_t GetCategory() const
 	{
 		return /* static_cast<EFlowNodeFlags> */ (nFlags & EFLN_CATEGORY_MASK);
 	}
 
-	ILINE uint32 GetCoreFlags() const
+	ILINE std::uint32_t GetCoreFlags() const
 	{
 		return nFlags & EFLN_CORE_MASK;
 	}
 
-	ILINE uint32 GetUsageFlags() const
+	ILINE std::uint32_t GetUsageFlags() const
 	{
 		return nFlags & EFLN_USAGE_MASK;
 	}

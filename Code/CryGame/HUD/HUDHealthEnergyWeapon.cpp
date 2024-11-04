@@ -105,10 +105,12 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 	{
 		if (!pItem)
 		{
-			auto* Target = GetSpectatorTarget();
-			CActor* pActor = static_cast<CActor*>(Target ? Target : m_pClientActor);
+			IActor* pTarget = GetSpectatorTarget();
+			CActor* pActor = static_cast<CActor*>(pTarget ? pTarget : m_pClientActor);
 			if (pActor)
+			{
 				pItem = pActor->GetCurrentItem(true);
+			}
 			if (!pItem)
 				return;
 		}
@@ -156,11 +158,13 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 		if (m_animProgressLocking.GetVisible())
 			ShowProgress(-1);
 	}
-
+	
 	if (pItem->GetIWeapon() && pItem->GetIWeapon()->IsZoomed() && !g_pGameCVars->g_enableAlternateIronSight)
 	{
 		if (m_pHUDCrosshair->GetCrosshairType() != 0)
+		{
 			m_pHUDCrosshair->SetCrosshair(0);
+		}
 	}
 	else if (m_pHUDCrosshair->GetCrosshairType() == 0 && (g_pGameCVars->g_difficultyLevel < 4 || gEnv->bMultiplayer))
 	{
@@ -178,38 +182,50 @@ void CHUD::SetFireMode(IItem* pItem, IFireMode* pFM, bool forceUpdate)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::ModeChanged(ENanoMode mode)
+void CHUD::ModeChanged(ENanoMode mode, bool suitModeChanged)
 {
-	IAISignalExtraData* pData = NULL;
-	CPlayer* pPlayer = NULL;
+	IAISignalExtraData* pData = nullptr;
+	CPlayer* pPlayer = nullptr;
 	switch (mode)
 	{
 	case NANOMODE_SPEED:
 		m_animPlayerStats.Invoke("setMode", "Speed");
-		m_fSpeedTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fSpeedTimer;
+		if (suitModeChanged)
+		{
+			m_fSpeedTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fSpeedTimer;
+		}
 		break;
 	case NANOMODE_STRENGTH:
 		m_animPlayerStats.Invoke("setMode", "Strength");
-		m_fStrengthTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fStrengthTimer;
+		if (suitModeChanged)
+		{
+			m_fStrengthTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fStrengthTimer;
+		}
 		break;
 	case NANOMODE_DEFENSE:
 		m_animPlayerStats.Invoke("setMode", "Armor");
-		m_fDefenseTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
-		m_fSuitChangeSoundTimer = m_fDefenseTimer;
+		if (suitModeChanged)
+		{
+			m_fDefenseTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = m_fDefenseTimer;
+		}
 		break;
 	case NANOMODE_CLOAK:
 		m_animPlayerStats.Invoke("setMode", "Cloak");
 
-		PlaySound(ESound_PresetNavigationBeep);
-		if (m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_SPEED, true) != 50 ||
-			m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_MEDICAL, true) != 50)
+		if (suitModeChanged)
 		{
-			TextMessage("suit_modification_engaged");
-		}
+			PlaySound(ESound_PresetNavigationBeep);
+			if (m_pNanoSuit->GetSlotValue(NANOSLOT_ARMOR, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_SPEED, true) != 50 ||
+				m_pNanoSuit->GetSlotValue(NANOSLOT_STRENGTH, true) != 50 || m_pNanoSuit->GetSlotValue(NANOSLOT_MEDICAL, true) != 50)
+			{
+				TextMessage("suit_modification_engaged");
+			}
 
-		m_fSuitChangeSoundTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+			m_fSuitChangeSoundTimer = gEnv->pTimer->GetFrameStartTime().GetMilliSeconds();
+		}
 
 		if (gEnv->pAISystem)
 		{

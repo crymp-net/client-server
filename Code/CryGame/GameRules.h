@@ -260,6 +260,7 @@ public:
 	bool IsSameTeam(EntityId firstId, EntityId secondId) const { return GetTeam(firstId) == GetTeam(secondId); };
 	bool IsNeutral(EntityId entityId) const { return GetTeam(entityId) == 0; };
 	bool IsHostile(EntityId firstId, EntityId secondId) const { return (!IsSameTeam(firstId, secondId) || GetTeamCount() < 2); };
+	void OnSetActorModel(CActor* pActor, int teamId);
 
 	//------------------------------------------------------------------------
 	// player
@@ -972,7 +973,7 @@ public:
 	typedef std::map<int, EntityId>				TTeamIdEntityIdMap;
 	typedef std::map<EntityId, int>				TEntityTeamIdMap;
 	typedef std::map<int, TPlayers>				TPlayerTeamIdMap;
-	typedef std::map<int, EntityId>				TChannelTeamIdMap;
+	typedef std::map<int, int>				TChannelTeamIdMap;
 	typedef std::map<string, int>					TTeamIdMap;
 
 	typedef std::map<int, int>						THitMaterialMap;
@@ -1214,6 +1215,15 @@ protected:
 			Aacannon,
 			Emp,
 		};
+
+		void SetLastUsabilityEntityId(EntityId vehicleId)
+		{
+			m_lastUsabilityEntityId = vehicleId;
+		}
+
+	private:
+
+		EntityId m_lastUsabilityEntityId = 0;
 };
 
 #endif //__GAMERULES_H__

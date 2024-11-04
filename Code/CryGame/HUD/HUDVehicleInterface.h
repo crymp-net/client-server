@@ -93,6 +93,7 @@ private:
 	void UpdateSeats();
 	//display specific interface
 	void ShowVehicleInterface(EVehicleHud type, bool forceFlashUpdate = false);
+	bool HasMainHUD() const;
 	//sets basic value to the flash asset
 	void InitVehicleHuds();
 	//hide current interface

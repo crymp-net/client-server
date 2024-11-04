@@ -25,6 +25,7 @@ public:
 	int GetKeyName(IFunctionHandler* pH, const char* action);
 	int IsKeyUsed(IFunctionHandler* pH, const char* key);
 	int CreateKeyBind(IFunctionHandler* pH, const char* key, const char* action);
+	int CreateKeyFunction(IFunctionHandler* pH, const char* key, HSCRIPTFUNCTION function);
 	int ClearKeyBinds(IFunctionHandler* pH);
 	int GetModelFilePath(IFunctionHandler* pH, ScriptHandle entityId, int slot);
 	int CreateMaterialFromTexture(IFunctionHandler* pH, const char* materialName, const char* texturePath);
@@ -32,6 +33,7 @@ public:
 	int GetLastSeenTime(IFunctionHandler* pH, ScriptHandle entity);
 	int GetLP(IFunctionHandler* pH);
 	int GetNumVars(IFunctionHandler* pH);
+	int GetVars(IFunctionHandler* pH);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization
@@ -54,6 +56,12 @@ public:
 	int DrawColorBox(IFunctionHandler* pH, float posX, float posY, float width, float height, float color1, float color2, float color3, float opacity);
 	int RemoveTextOrImageById(IFunctionHandler* pH, int id);
 	int RemoveTextOrImageAll(IFunctionHandler* pH);
+	
 	int GetLoadingScreenMapPicturePath(IFunctionHandler* pH, const char* level);
 	int FOVEffect(IFunctionHandler* pH, float goalFOV, float speed);
+
+	int SetAttachmentMaterial(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot, const char* attachmentName, const char* materialName);
+	int GetCharacterAttachments(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot);
+	int GetCharacterJoints(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot);
+	int CreateCharacterDecal(IFunctionHandler* pH, ScriptHandle entityId, int characterSlot, SmartScriptTable params);
 };

@@ -135,7 +135,9 @@ bool CDetonate::Detonate(bool net)
 				if (CProjectile *pProjectile=g_pGame->GetWeaponSystem()->GetProjectile(projectileId))
 				{
 					pProjectile->Explode(true, false);
-					g_pGame->GetIGameFramework()->GetIGameplayRecorder()->Event(pWeapon->GetOwner(), GameplayEvent(eGE_WeaponShot, pProjectile->GetEntity()->GetClass()->GetName(), 1, (void *)pWeapon->GetEntityId()));
+					void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(pWeapon->GetEntityId()));
+					const GameplayEvent event(eGE_WeaponShot, pProjectile->GetEntity()->GetClass()->GetName(), 1, extra);
+					g_pGame->GetIGameFramework()->GetIGameplayRecorder()->Event(pWeapon->GetOwner(), event);
 				}
 			}
 		}

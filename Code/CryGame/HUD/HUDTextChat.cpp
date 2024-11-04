@@ -208,7 +208,7 @@ bool CHUDTextChat::OnInputEventUI(const SInputEvent& event)
 		return false;
 	}
 
-	const char ch = event.keyName.key[0];
+	const char ch = event.keyName[0];
 
 	this->Insert(ch);
 

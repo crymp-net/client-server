@@ -18,6 +18,7 @@ History:
 # pragma once
 #endif
 
+#include <cstdint>
 #include <utility>
 
 #include "CryCommon/CryEntitySystem/IEntity.h"
@@ -738,13 +739,13 @@ struct IVehicle : public IGameObjectExtension
   virtual SParticleParams* GetParticleParams() = 0;
   virtual const SVehicleDamageParams& GetDamageParams() const = 0;
 
-	uint16 GetChannelId()
+	std::uint16_t GetChannelId()
 	{
 		return GetGameObject()->GetChannelId();
 	}
-	void SetChannelId( uint16 id )
+	void SetChannelId(std::uint16_t id)
 	{
-		GetGameObject()->SetChannelId( id );
+		GetGameObject()->SetChannelId(id);
 	}
 
 	enum EVehicleUpdateSlot
@@ -1778,7 +1779,7 @@ struct IVehicleSystem
 	// Returns:
 	//   A pointer to the correct vehicle proxy. The value 0 is returned in case 
 	//   that the specified vehicle couldn't be created.
-	virtual IVehicle* CreateVehicle(uint16 channelId, const char *name, const char *vehicleClass, const Vec3 &pos, const Quat &rot, const Vec3 &scale, EntityId id = 0) = 0;
+	virtual IVehicle* CreateVehicle(std::uint16_t channelId, const char *name, const char *vehicleClass, const Vec3 &pos, const Quat &rot, const Vec3 &scale, EntityId id = 0) = 0;
 
 	// Summary:
 	//   Gets the Vehicle proxy of an entity
@@ -1789,7 +1790,7 @@ struct IVehicleSystem
 	//   that the proxy wasn't found.
 	virtual IVehicle* GetVehicle(EntityId entityId) = 0;
 
-	virtual IVehicle* GetVehicleByChannelId(uint16 channelId) = 0;
+	virtual IVehicle* GetVehicleByChannelId(std::uint16_t channelId) = 0;
 
 	virtual bool IsVehicleClass(const char *name) const = 0;
 
@@ -1821,7 +1822,7 @@ struct IVehicleSystem
 	//   Used to get the count of all vehicle instance
 	// Returns
 	//   The count of all the vehicle instance created by the vehicle system
-	virtual uint32 GetVehicleCount() = 0;
+	virtual std::uint32_t GetVehicleCount() = 0;
 	virtual IVehicleIteratorPtr CreateVehicleIterator() = 0;
 
 	// Summary

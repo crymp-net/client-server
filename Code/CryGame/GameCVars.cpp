@@ -68,6 +68,7 @@ static void BroadcastChangeSafeMode(ICVar*)
 	}
 }
 
+/*
 static void CmdBulletTimeMode(IConsoleCmdArgs* cmdArgs)
 {
 	g_pGameCVars->goc_enable = 0;
@@ -100,6 +101,7 @@ static void CmdGOCMode(IConsoleCmdArgs* cmdArgs)
 		pPlayer->ToggleThirdPerson();
 	}
 }
+*/
 
 SCVars::SCVars()
 {
@@ -620,7 +622,7 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_animationModelMult", &mp_animationModelMult, 1.0f, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_animationModelMultSpeed", &mp_animationModelMultSpeed, 1.0f, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_menuSpeed", &mp_menuSpeed, 3.0f, VF_NOT_NET_SYNCED);
-	pConsole->Register("mp_hitIndicator", &mp_hitIndicator, 1, VF_NOT_NET_SYNCED, "Enables hit indicator from Wars");
+	pConsole->Register("mp_hitIndicator", &mp_hitIndicator, 1, VF_NOT_NET_SYNCED, "Enables hit indicator");
 	pConsole->Register("mp_chatHighResolution", &mp_chatHighResolution, 0, VF_NOT_NET_SYNCED);
 	pConsole->Register("mp_spectatorSlowMult", &mp_spectatorSlowMult, 0.15f, VF_NOT_NET_SYNCED, "Speed mult for spectating while holding Ctrl");
 	pConsole->Register("mp_buyPageKeepTime", &mp_buyPageKeepTime, 30, VF_NOT_NET_SYNCED, "The time in sec it will remember your last buy page");

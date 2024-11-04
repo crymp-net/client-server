@@ -17,7 +17,7 @@ History:
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "VehicleMovementBase.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IEffectSystem.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryInput/IInput.h"
@@ -519,9 +519,6 @@ void CVehicleMovementBase::Update(const float deltaTime)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateRunSound(const float deltaTime)
 {
-	if (!IsSoundWithinReach(eSID_Run))
-		return;
-
 	float soundSpeedRatio = ENGINESOUND_IDLE_RATIO + (1.f - ENGINESOUND_IDLE_RATIO) * m_speedRatio;
 	SetSoundParam(eSID_Run, "speed", soundSpeedRatio);
 	SetSoundParam(eSID_Ambience, "speed", soundSpeedRatio);
@@ -571,17 +568,17 @@ bool CVehicleMovementBase::IsSoundWithinReach(EVehicleMovementSound soundId)
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateDamageSound()
 {
-	if (!CanUpdateDamageSound() || !IsSoundWithinReach(eSID_Damage))
-		return;
-
 	//IVehicleComponent* pEngine = m_pVehicle->GetComponent("Engine");
 	//if (!pEngine)
 	//	pEngine = m_pVehicle->GetComponent("engine");
 
 	const float damage = GetSoundDamage();
 
-	if (damage > 0.1f)
+	if (damage > 0.1f && !m_pVehicle->IsDestroyed())
 	{
+		if (!CanUpdateDamageSound() || !IsSoundWithinReach(eSID_Damage))
+			return;
+
 		if (ISound* pSound = GetOrPlaySound(eSID_Damage, 5.f, m_enginePos))
 		{
 			if (static_cast<int>(damage * 100.f) != m_lastSoundDamage)
@@ -645,7 +642,7 @@ bool CVehicleMovementBase::IsSubmerged()
 //------------------------------------------------------------------------
 void CVehicleMovementBase::UpdateDamage(const float deltaTime)
 {
-	if (IsSubmerged())
+	if (IsSubmerged() && IsEngineAffectedBySubmerge())
 	{
 		if (m_damage < 1.f)
 		{

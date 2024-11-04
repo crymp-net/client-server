@@ -9,8 +9,11 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <tracy/Tracy.hpp>
+
+#include "CryCommon/CryCore/CryMalloc.h"
+#include "CryCommon/CrySystem/CryFile.h"
 #include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CrySystem/IConsole.h"
 #include "CryCommon/CrySystem/ITimer.h"
 #include "CryCommon/CryAISystem/IAISystem.h"
@@ -19,8 +22,15 @@ extern "C"
 #include "ScriptTable.h"
 #include "ScriptUtil.h"
 
-#include "Launcher/Resources.h"
-#include "Library/WinAPI.h"
+static HSCRIPTFUNCTION RefToFunctionHandle(int ref)
+{
+	return reinterpret_cast<HSCRIPTFUNCTION>(static_cast<std::uintptr_t>(ref));
+}
+
+static int FunctionHandleToRef(HSCRIPTFUNCTION handle)
+{
+	return static_cast<int>(reinterpret_cast<std::uintptr_t>(handle));
+}
 
 extern "C"
 {
@@ -62,7 +72,8 @@ void *ScriptSystem::Allocate(size_t size)
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
 	// TODO: optimized memory allocator
-	void *block = malloc(size);
+	void *block = CryMalloc(size);
+	TracyAllocN(block, size, "ScriptSystem");
 
 	// we never fail
 	if (!block)
@@ -78,7 +89,8 @@ void ScriptSystem::Deallocate(void *block)
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_SCRIPT);
 
-	free(block);
+	TracyFreeN(block, "ScriptSystem");
+	CryFree(block);
 }
 
 void ScriptSystem::PushAny(const ScriptAnyValue & any)
@@ -122,7 +134,7 @@ void ScriptSystem::PushAny(const ScriptAnyValue & any)
 		case ANY_TFUNCTION:
 		{
 			if (any.function)
-				lua_getref(m_L, reinterpret_cast<int>(any.function));
+				lua_getref(m_L, FunctionHandleToRef(any.function));
 			else
 				lua_pushnil(m_L);
 			break;
@@ -130,7 +142,7 @@ void ScriptSystem::PushAny(const ScriptAnyValue & any)
 		case ANY_TUSERDATA:
 		{
 			if (any.ud.ptr)
-				lua_getref(m_L, reinterpret_cast<int>(any.ud.ptr));
+				lua_getref(m_L, static_cast<int>(reinterpret_cast<std::uintptr_t>(any.ud.ptr)));
 			else
 				lua_pushnil(m_L);
 			break;
@@ -302,7 +314,7 @@ bool ScriptSystem::ToAny(ScriptAnyValue & any, int index)
 			if (any.type == ANY_ANY || any.type == ANY_TFUNCTION)
 			{
 				lua_pushvalue(m_L, index);
-				any.function = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+				any.function = RefToFunctionHandle(lua_ref(m_L, 1));
 				any.type = ANY_TFUNCTION;
 				return true;
 			}
@@ -444,6 +456,16 @@ void ScriptSystem::SetGCFrequency(const float rate)
 
 bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool forceReload)
 {
+	std::string fileNameCryMP("CryMP/");
+	fileNameCryMP += fileName;
+
+	// files in CryMP/Scripts/ override the original ones in Scripts/
+	if (!fileNameCryMP.starts_with("CryMP/CryMP/") && gEnv->pCryPak->IsFileExist(fileNameCryMP.c_str()))
+	{
+		CryLogComment("%s(\"%s\"): Overriding with \"%s\"", __FUNCTION__, fileName, fileNameCryMP.c_str());
+		fileName = fileNameCryMP.c_str();
+	}
+
 	const bool isNew = this->AddToScripts(fileName);
 
 	if (forceReload)
@@ -455,25 +477,16 @@ bool ScriptSystem::ExecuteFile(const char *fileName, bool raiseError, bool force
 
 	if (isNew || forceReload || m_nestedForceReload > 0)
 	{
-		CCryFile file;
-
-		if (std::string(fileName) == "scripts/gamerules/teaminstantaction.lua")
-		{
-			const std::string_view content = WinAPI::GetDataResource(nullptr, RESOURCE_SCRIPT_TIA_GAMERULES);
-
-			success = this->ExecuteBuffer(content.data(), content.length(), fileName);
-		}
 		// try to load and execute the script file
-		else if (file.Open(fileName, "rb"))
+		if (CryFile file(fileName, "rb"); file)
 		{
 			std::vector<char> content;
 
 			// read script file content
-			content.resize(file.GetLength());
+			content.resize(file.GetSize());
 			content.resize(file.ReadRaw(content.data(), content.size()));
 
 			// use script file path as its description
-			// TODO: maybe use real path from CryPak instead?
 			const char *description = fileName;
 
 			// execute the file
@@ -578,12 +591,12 @@ int ScriptSystem::BeginCall(HSCRIPTFUNCTION func)
 	if (!func)
 		return 0;
 
-	const int funcHandle = reinterpret_cast<int>(func);
+	const int funcRef = FunctionHandleToRef(func);
 
-	lua_getref(m_L, funcHandle);
+	lua_getref(m_L, funcRef);
 	if (!lua_isfunction(m_L, -1))
 	{
-		CryLogWarning("ScriptSystem::BeginCall(%d): Not a function", funcHandle);
+		CryLogWarning("ScriptSystem::BeginCall(%d): Not a function", funcRef);
 		lua_pop(m_L, 1);
 		return 0;
 	}
@@ -683,10 +696,10 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *funcName)
 		return nullptr;
 	}
 
-	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION handle = RefToFunctionHandle(lua_ref(m_L, 1));
 	lua_pop(m_L, 1);
 
-	return result;
+	return handle;
 }
 
 HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *funcName)
@@ -708,17 +721,17 @@ HSCRIPTFUNCTION ScriptSystem::GetFunctionPtr(const char *tableName, const char *
 		return nullptr;
 	}
 
-	HSCRIPTFUNCTION result = reinterpret_cast<HSCRIPTFUNCTION>(lua_ref(m_L, 1));
+	HSCRIPTFUNCTION handle = RefToFunctionHandle(lua_ref(m_L, 1));
 	lua_pop(m_L, 2);
 
-	return result;
+	return handle;
 }
 
 void ScriptSystem::ReleaseFunc(HSCRIPTFUNCTION func)
 {
 	if (func)
 	{
-		lua_unref(m_L, reinterpret_cast<int>(func));
+		lua_unref(m_L, FunctionHandleToRef(func));
 	}
 }
 
@@ -1079,35 +1092,29 @@ int ScriptSystem::PanicHandler(lua_State *L)
 	return 0;
 }
 
-void *ScriptSystem::LuaAllocator(void *userData, void *originalBlock, size_t originalSize, size_t newSize)
+void* ScriptSystem::LuaAllocator(void* userData, void* originalBlock, size_t originalSize, size_t newSize)
 {
 	ScriptSystem *self = static_cast<ScriptSystem*>(userData);
 
-	if (newSize)
-	{
-		if (newSize <= originalSize)
-		{
-			return originalBlock;
-		}
-		else
-		{
-			// always succeeds
-			void *newBlock = self->Allocate(newSize);
-
-			if (originalSize > 0)
-			{
-				memcpy(newBlock, originalBlock, originalSize);
-			}
-
-			return newBlock;
-		}
-	}
-	else
+	if (!newSize)
 	{
 		self->Deallocate(originalBlock);
-
 		return nullptr;
 	}
+
+	if (newSize <= originalSize)
+	{
+		return originalBlock;
+	}
+
+	// always succeeds
+	void *newBlock = self->Allocate(newSize);
+
+	memcpy(newBlock, originalBlock, originalSize);
+
+	self->Deallocate(originalBlock);
+
+	return newBlock;
 }
 
 void ScriptSystem::OnDumpStateCmd(IConsoleCmdArgs *pArgs)

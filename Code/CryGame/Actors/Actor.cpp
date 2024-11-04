@@ -21,7 +21,7 @@
 #include "CryCommon/CryNetwork/ISerialize.h"
 #include "CryCommon/CryGame/GameUtils.h"
 #include "CryCommon/CryAnimation/ICryAnimation.h"
-#include "CryCommon/CryGame/IGameTokens.h"
+#include "CryCommon/CryAction/IGameTokens.h"
 #include "CryCommon/CryAction/IItemSystem.h"
 #include "CryCommon/CryAction/IInteractor.h"
 #include "CryCommon/CryAction/IGameplayRecorder.h"
@@ -40,8 +40,11 @@
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
 #include "Library/Util.h"
+#include "Library/StringTools.h"
 
 #include "CryCommon/CryAnimation/IFacialAnimation.h"
+#include "CryCommon/CrySystem/CryFile.h"
+#include "CryCommon/CrySystem/CryPath.h"
 
 IItemSystem* CActor::m_pItemSystem = 0;
 IGameFramework* CActor::m_pGameFramework = 0;
@@ -375,6 +378,10 @@ bool CActor::Init(IGameObject* pGameObject)
 	GetEntity()->SetFlags(GetEntity()->GetFlags() | (ENTITY_FLAG_ON_RADAR | ENTITY_FLAG_CUSTOM_VIEWDIST_RATIO));
 
 	m_isPlayerClass = GetEntity()->GetClass() == gEnv->pEntitySystem->GetClassRegistry()->FindClass("Player");
+
+	CacheIKLimbs();
+
+	CacheFileModels();
 
 	return true;
 }
@@ -803,9 +810,109 @@ void CActor::Physicalize(EStance stance)
 //
 void CActor::SetActorModel()
 {
-	// this should be pure-virtual, but for the moment to support alien scripts
-	if (IScriptTable* pScriptTable = GetEntity()->GetScriptTable())
-		Script::CallMethod(pScriptTable, "SetActorModel", IsClient());
+	IVehicle* pCurrVehicle = GetLinkedVehicle();
+
+	if (gEnv->bMultiplayer)
+	{
+		if (CGameRules* pGameRules = g_pGame->GetGameRules())
+		{
+			pGameRules->OnSetActorModel(this, m_teamId);
+		}
+	}
+
+	GetEntity()->KillTimer(Timers::UNRAGDOLL);
+
+	bool changed = false;
+
+	if (m_currFileModel != m_fileModel)
+	{
+		changed = true;
+
+		m_currFileModel = m_fileModel;
+
+		ICharacterInstance *pPreviousCharacter = GetEntity()->GetCharacter(EntitySlot::CHARACTER);
+		const char* previousModel = pPreviousCharacter ? pPreviousCharacter->GetFilePath() : "";
+
+		const int loaded = GetEntity()->LoadCharacter(EntitySlot::CHARACTER, m_fileModel.c_str());
+		if (loaded == -1)
+		{
+			CryLogWarningAlways("Failed to load character model '%s', reverting to '%s'", 
+				m_fileModel.c_str(), previousModel);
+
+			GetEntity()->LoadCharacter(EntitySlot::CHARACTER, previousModel);
+
+			m_currFileModel = previousModel;
+			return;
+		}
+
+		// Initialize animation events and IK limbs
+		//InitAnimationEvents(); OLD CODE, NOT NEEEDED?
+
+		// Use the cached IK limbs to set up IK
+		for (const auto& limb : m_cachedIKLimbs)
+		{
+			CreateIKLimb(limb.slot, limb.limbName.c_str(), limb.rootBone.c_str(), limb.midBone.c_str(), limb.endBone.c_str(), limb.flags);
+		}
+
+		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(EntitySlot::CHARACTER);
+		if (pCharacter)
+		{
+			ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose();
+			if (pSkeletonPose)
+			{
+				pSkeletonPose->SetForceSkeletonUpdate(0);
+			}
+		}
+
+		// Load frozen model if specified
+		if (m_frozenModel.length() > 0)
+		{
+			//entity:LoadObject
+			const char* ext = CryPath::GetExt(m_frozenModel.c_str());
+			if (stricmp(ext, CRY_CHARACTER_FILE_EXT) == 0 ||
+				stricmp(ext, CRY_CHARACTER_DEFINITION_FILE_EXT) == 0 ||
+				stricmp(ext, CRY_ANIM_GEOMETRY_FILE_EXT) == 0)
+			{
+				GetEntity()->LoadCharacter(EntitySlot::FROZEN, m_frozenModel.c_str());
+			}
+			else
+			{
+				GetEntity()->LoadGeometry(EntitySlot::FROZEN, m_frozenModel.c_str());
+			}
+
+			DrawSlot(EntitySlot::FROZEN, 0);
+		}
+
+		CreateBoneAttachment(EntitySlot::CHARACTER, "weapon_bone", "right_item_attachment");
+		CreateBoneAttachment(EntitySlot::CHARACTER, "alt_weapon_bone01", "left_item_attachment");
+		CreateBoneAttachment(EntitySlot::CHARACTER, "weapon_bone", "laser_attachment");
+
+		// Additional attachments if defined
+		CallCreateAttachments();
+	}
+
+	if (m_currfpItemHandsModel != m_fpItemHandsModel)
+	{
+		GetEntity()->LoadCharacter(EntitySlot::FPITEMHANDS, m_fpItemHandsModel.c_str());
+		DrawSlot(EntitySlot::FPITEMHANDS, 0);
+		GetEntity()->LoadCharacter(EntitySlot::FPITEMHANDS_SECONDARY, m_fpItemHandsModel.c_str());
+		DrawSlot(EntitySlot::FPITEMHANDS_SECONDARY, 0);
+
+		m_currfpItemHandsModel = m_fpItemHandsModel;
+	}
+
+	if (changed)
+	{
+		IVehicle* pVehicle = GetLinkedVehicle();
+		if (pVehicle)
+		{
+			SetVehicleRelinkUpdateId(pVehicle->GetEntityId());
+		}
+		else
+		{
+			GetEntity()->SetTimer(Timers::ITEM_RESELECT, 1);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -1276,6 +1383,18 @@ void CActor::ProcessEvent(SEntityEvent& event)
 {
 	switch (event.event)
 	{
+	case ENTITY_EVENT_TIMER:
+	{
+		if (event.nParam[0] == Timers::ITEM_RESELECT)
+		{
+			CWeapon* pWeapon = GetCurrentWeapon(false);
+			if (pWeapon && pWeapon->IsSelected())
+			{
+				pWeapon->PlaySelectAnimation(this);
+			}
+		}
+	}
+	break;
 	case ENTITY_EVENT_HIDE:
 	case ENTITY_EVENT_INVISIBLE:
 	{
@@ -1560,7 +1679,7 @@ bool CActor::UpdateStance()
 		if (!TrySetStance(m_desiredStance))
 			return false;
 
-		StanceChanged(m_stance);
+		StanceChanged(m_stance, m_desiredStance);
 
 		m_stance = m_desiredStance;
 
@@ -2022,6 +2141,11 @@ bool CActor::IsClient() const
 	return m_isClient;
 }
 
+bool CActor::IsRemote() const
+{
+	return !m_isClient;
+}
+
 bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 {
 	bool res(false);
@@ -2365,7 +2489,10 @@ void CActor::HandleEvent(const SGameObjectEvent& event)
 		//Init HUD
 		g_pGame->InitHUD((IActor*)(this));
 
-		gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
+		if (gClient)
+		{
+			gClient->GetScriptCallbacks()->OnBecomeLocalActor(GetEntityId());
+		}
 	}
 }
 
@@ -2725,11 +2852,21 @@ void CActor::UpdateGrab(float frameTime)
 //IK stuff
 void CActor::SetIKPos(const char* pLimbName, const Vec3& goalPos, int priority)
 {
-	int limbID = GetIKLimbIndex(pLimbName);
+	const int limbID = GetIKLimbIndex(pLimbName);
 	if (limbID > -1)
 	{
 		Vec3 pos(goalPos);
 		m_IKLimbs[limbID].SetWPos(GetEntity(), pos, ZERO, 0.5f, 0.5f, priority);
+	}
+}
+
+void CActor::ClearIKPosBlending(const char* pLimbName)
+{
+	const int limbID = GetIKLimbIndex(pLimbName);
+	if (limbID > -1)
+	{
+		m_IKLimbs[limbID].recoverTime = -1.f;
+		m_IKLimbs[limbID].blendTime = -1.f;
 	}
 }
 
@@ -3030,7 +3167,8 @@ bool CActor::PickUpItem(EntityId itemId, bool sound)
 			}
 		}
 
-		m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemPickedUp, 0, 0, (void*)pItem->GetEntityId()));
+		void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(pItem->GetEntityId()));
+		m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemPickedUp, 0, 0, extra));
 	}
 	else
 	{
@@ -3078,7 +3216,10 @@ bool CActor::DropItem(EntityId itemId, float impulseScale, bool selectNext, bool
 			pItem->Drop(impulseScale, selectNext, bydeath);
 
 			if (!bydeath)
-				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, (void*)itemId));
+			{
+				void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(itemId));
+				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, extra));
+			}
 		}
 		else
 		{
@@ -3111,7 +3252,8 @@ void CActor::DropAttachedItems()
 			if (pItemBack)
 			{
 				pItemBack->Drop(1.0f, false, true);
-				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, (void*)pItemBack->GetEntityId()));
+				void* extra = reinterpret_cast<void*>(static_cast<uintptr_t>(pItemBack->GetEntityId()));
+				m_pGameplayRecorder->Event(GetEntity(), GameplayEvent(eGE_ItemDropped, 0, 0, extra));
 			}
 
 			it++;
@@ -3450,7 +3592,9 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 	if (IVehicle* pVehicle = GetLinkedVehicle())
 	{
 		if (IVehicleSeat* pSeat = pVehicle->GetSeatForPassenger(GetEntityId()))
+		{
 			pSeat->Exit(false);
+		}
 	}
 
 	// stop using any mounted weapons before reviving
@@ -3460,7 +3604,7 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 		if (pItem->IsMounted())
 		{
 			pItem->StopUse(GetEntityId());
-			pItem = 0;
+			pItem = nullptr;
 		}
 	}
 
@@ -3474,21 +3618,21 @@ void CActor::NetReviveAt(const Vec3& pos, const Quat& rot, int teamId)
 	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), rot, pos));
 
 	// This will cover the case when the ClPickup RMI comes in before we're revived
+	if (m_netLastSelectablePickedUp)
 	{
-		if (m_netLastSelectablePickedUp)
-			pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
+		pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
 		m_netLastSelectablePickedUp = 0;
+	}
 
-		if (pItem)
-		{
-			bool soundEnabled = pItem->IsSoundEnabled();
-			pItem->EnableSound(false);
-			pItem->Select(false);
-			pItem->EnableSound(soundEnabled);
+	if (pItem)
+	{
+		const bool soundEnabled = pItem->IsSoundEnabled();
+		pItem->EnableSound(false);
+		pItem->Select(false);
+		pItem->EnableSound(soundEnabled);
 
-			m_pItemSystem->SetActorItem(this, (EntityId)0);
-			SelectItem(pItem->GetEntityId(), true);
-		}
+		m_pItemSystem->SetActorItem(this, (EntityId)0);
+		SelectItem(pItem->GetEntityId(), true);
 	}
 
 	if (IsClient())
@@ -3513,39 +3657,46 @@ void CActor::NetReviveInVehicle(EntityId vehicleId, int seatId, int teamId)
 		if (pItem->IsMounted())
 		{
 			pItem->StopUse(GetEntityId());
-			pItem = 0;
+			pItem = nullptr;
 		}
 	}
 
 	SetHealth(GetMaxHealth());
 
 	m_teamId = teamId;
+
 	g_pGame->GetGameRules()->OnReviveInVehicle(this, vehicleId, seatId, m_teamId);
 
 	Revive(ReasonForRevive::SPAWN);
 
 	// fix our physicalization, since it's need for some vehicle stuff, and it will be set correctly before the end of the frame
 	// make sure we are alive, for when we transition from ragdoll to linked...
-	if (!GetEntity()->GetPhysics() || GetEntity()->GetPhysics()->GetType() != PE_LIVING)
+	IPhysicalEntity *pPhysics = GetEntity()->GetPhysics();
+	if (!pPhysics || pPhysics->GetType() != PE_LIVING)
+	{
 		Physicalize();
+	}
 
 	IVehicle* pVehicle = m_pGameFramework->GetIVehicleSystem()->GetVehicle(vehicleId);
-	assert(pVehicle);
 	if (pVehicle)
 	{
 		IVehicleSeat* pSeat = pVehicle->GetSeatById(seatId);
 		if (pSeat && (!pSeat->GetPassenger() || pSeat->GetPassenger() == GetEntityId()))
+		{
 			pSeat->Enter(GetEntityId(), false);
+		}
 	}
 
 	// This will cover the case when the ClPickup RMI comes in before we're revived
 	if (m_netLastSelectablePickedUp)
+	{
 		pItem = static_cast<CItem*>(m_pItemSystem->GetItem(m_netLastSelectablePickedUp));
-	m_netLastSelectablePickedUp = 0;
+		m_netLastSelectablePickedUp = 0;
+	}
 
 	if (pItem)
 	{
-		bool soundEnabled = pItem->IsSoundEnabled();
+		const bool soundEnabled = pItem->IsSoundEnabled();
 		pItem->EnableSound(false);
 		pItem->Select(false);
 		pItem->EnableSound(soundEnabled);
@@ -3899,9 +4050,10 @@ IMPLEMENT_RMI(CActor, ClSetSpectatorMode)
 }
 
 //------------------------------------------------------------------------
-IMPLEMENT_RMI(CActor, ClSetSpectatorHealth)
+IMPLEMENT_RMI(CActor, ClSetSpectatorHealth) //called on client
 {
-	SetSpectatorHealth(params.health);
+	SetSpectatorHealth(params.health); 
+
 	return true;
 }
 
@@ -3975,7 +4127,7 @@ IMPLEMENT_RMI(CActor, ClSetAmmo)
 			}
 			else
 			{
-				if (IsClient())
+				if (IsClient() && GetHealth() > 0.0f)
 				{
 					SAFE_HUD_FUNC(DisplayFlashMessage("@ammo_maxed_out", 2, ColorF(1.0f, 0, 0), true, (string("@") + pClass->GetName()).c_str()));
 				}
@@ -4242,6 +4394,25 @@ bool CActor::IsGhostPit()
 	return false;
 }
 
+IAttachment* CActor::CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName)
+{
+	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
+
+	if (!pCharacter)
+	{
+		return nullptr;
+	}
+
+	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
+	IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(attachmentName);
+	if (!pIAttachment)
+	{
+		pIAttachment = pIAttachmentManager->CreateAttachment(attachmentName, CA_BONE, boneName);
+	}
+
+	return pIAttachment;
+}
+
 void CActor::HideAllAttachments(int characterSlot, bool hide, bool hideShadow)
 {
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
@@ -4302,5 +4473,123 @@ void CActor::DrawSlot(int nSlot, int nEnable)
 	else
 	{
 		GetEntity()->SetSlotFlags(nSlot, GetEntity()->GetSlotFlags(nSlot) & ~(ENTITY_SLOT_RENDER | ENTITY_SLOT_RENDER_NEAREST));
+	}
+}
+
+bool CActor::IsFp3pModel() const
+{
+	SEntitySlotInfo slotInfo;
+	if (GetEntity()->GetSlotInfo(0, slotInfo) && slotInfo.pCharacter)
+	{
+		IAttachmentManager* pMan = slotInfo.pCharacter->GetIAttachmentManager();
+		IAttachment* pAttachment = pMan->GetInterfaceByName("upper_body");
+		if (pAttachment)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void CActor::CacheIKLimbs()
+{
+	m_cachedIKLimbs.clear();
+
+	SmartScriptTable ikLimbs;
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (pScriptTable && pScriptTable->GetValue("IKLimbs", ikLimbs))
+	{
+		IScriptTable::Iterator it = ikLimbs->BeginIteration();
+		while (ikLimbs->MoveNext(it))
+		{
+			SmartScriptTable limb;
+			if (it.value.CopyTo(limb))
+			{
+				IKLimb cachedLimb;
+
+				const char* limbName = nullptr;
+				const char* rootBone = nullptr;
+				const char* midBone = nullptr;
+				const char* endBone = nullptr;
+				limb->GetAt(1, cachedLimb.slot);
+
+				if (limb->GetAt(2, limbName)
+					&& limb->GetAt(3, rootBone)
+					&& limb->GetAt(4, midBone)
+					&& limb->GetAt(5, endBone))
+				{
+					cachedLimb.limbName = limbName;
+					cachedLimb.rootBone = rootBone;
+					cachedLimb.midBone = midBone;
+					cachedLimb.endBone = endBone;
+				}
+				limb->GetAt(6, cachedLimb.flags);
+
+				m_cachedIKLimbs.push_back(std::move(cachedLimb));
+			}
+		}
+		ikLimbs->EndIteration(it);
+	}
+
+	//CryLogAlways("[%s] Cached %d IK limbs", GetEntity()->GetName(), m_cachedIKLimbs.size());
+}
+
+void CActor::CacheFileModels()
+{
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (!pScriptTable)
+		return;
+
+	// Retrieve the Properties and PropertiesInstance tables from Lua
+	SmartScriptTable properties, propertiesInstance;
+	if (pScriptTable->GetValue("Properties", properties))
+	{
+		const char* model = nullptr;
+		properties->GetValue("fileModel", model);
+
+		m_fileModel = StringTools::SafeView(model);
+
+		// Handle model variations
+		int nModelVariations = 0;
+		if (properties->GetValue("nModelVariations", nModelVariations) && nModelVariations > 0)
+		{
+			if (pScriptTable->GetValue("PropertiesInstance", propertiesInstance))
+			{
+				int nVariation = 0;
+				if (propertiesInstance->GetValue("nVariation", nVariation))
+				{
+					nVariation = max(1, min(nVariation, nModelVariations));
+					const std::string newPattern = StringTools::Format("_%.2d", nVariation);
+					const std::string_view oldPattern = "_%d%d";
+
+					if (size_t pos = m_fileModel.find(oldPattern); pos != std::string::npos)
+					{
+						m_fileModel.replace(pos, oldPattern.length(), newPattern);
+					}
+				}
+			}
+		}
+		const char* frozenModel = nullptr;
+		if (properties->GetValue("objFrozenModel", frozenModel))
+		{
+			m_frozenModel = frozenModel;
+		}
+		const char* fpItemHandsModel = nullptr;
+		if (properties->GetValue("fpItemHandsModel", fpItemHandsModel))
+		{
+			m_fpItemHandsModel = fpItemHandsModel;
+		}
+	}
+}
+
+void CActor::CallCreateAttachments()
+{
+	IScriptTable* pScriptTable = GetEntity()->GetScriptTable();
+	if (pScriptTable)
+	{
+		if (pScriptTable->GetValueType("CreateAttachments") == svtFunction)
+		{
+			Script::CallMethod(pScriptTable, "CreateAttachments");
+		}
 	}
 }

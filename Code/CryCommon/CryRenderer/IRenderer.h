@@ -17,11 +17,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-enum eSplashType
-{
-  EST_Water,
-};
-
 // Global typedefs.
 //////////////////////////////////////////////////////////////////////
 

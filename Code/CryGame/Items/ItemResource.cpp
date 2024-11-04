@@ -410,10 +410,14 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 	case eIGS_ThirdPerson:
 	default:
 	{
-		if (name.empty() || forceReload)
+		if (forceReload)
 		{
 			GetEntity()->FreeSlot(slot);
 			m_geometry[slot].clear();
+		}
+		else if (name.empty())
+		{
+			DrawSlot(slot, false); //CryMP: Hide unused slot instead of clearing it
 		}
 
 		DestroyAttachmentHelpers(slot);
@@ -422,7 +426,7 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 		{
 			if (m_geometry[slot] != name)
 			{
-				const char* ext = PathUtil::GetExt(name.c_str());
+				const char* ext = CryPath::GetExt(name.c_str());
 				if ((_stricmp(ext, "chr") == 0) || (_stricmp(ext, "cdf") == 0) || (_stricmp(ext, "cga") == 0))
 					GetEntity()->LoadCharacter(slot, name.c_str(), 0);
 				else

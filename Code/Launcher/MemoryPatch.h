@@ -11,14 +11,22 @@ namespace MemoryPatch
 	{
 		void AllowDX9ImmersiveMultiplayer(void* pCryAction);
 		void DisableBreakLog(void* pCryAction);
+		void DisableTimeOfDayLengthLowerLimit(void* pCryAction);
+	}
+
+	namespace CryAISystem
+	{
+		void AllowMultiplayerAI(void* pCryAISystem);
 	}
 
 	namespace CryNetwork
 	{
 		void AllowSameCDKeys(void* pCryNetwork);
+		void DisableServerProfile(void* pCryNetwork);
 		void EnablePreordered(void* pCryNetwork);
 		void FixFileCheckCrash(void* pCryNetwork);
 		void FixInternetConnect(void* pCryNetwork);
+		void FixLanServerBrowser(void* pCryNetwork);
 	}
 
 	namespace CryRenderD3D9
@@ -38,6 +46,7 @@ namespace MemoryPatch
 			// ...
 		};
 
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D9);
 		void HookWindowNameD3D9(void* pCryRenderD3D9, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D9, void (*handler)(AdapterInfo* info));
 	}
@@ -60,20 +69,32 @@ namespace MemoryPatch
 		};
 
 		void FixLowRefreshRateBug(void* pCryRenderD3D10);
+		void FixUseAfterFreeInShaderParser(void* pCryRenderD3D10);
 		void HookWindowNameD3D10(void* pCryRenderD3D10, const char* name);
 		void HookAdapterInfo(void* pCryRenderD3D10, void (*handler)(AdapterInfo* info));
+	}
+
+	namespace CryRenderNULL
+	{
+		void DisableDebugRenderer(void* pCryRenderNULL);
 	}
 
 	namespace CrySystem
 	{
 		void AllowDX9VeryHighSpec(void* pCrySystem);
 		void AllowMultipleInstances(void* pCrySystem);
-		void DisableIOErrorLog(void* pCrySystem);
 		void FixCPUInfoOverflow(void* pCrySystem);
+		void FixFlashAllocatorUnderflow(void* pCrySystem);
 		void HookCPUDetect(void* pCrySystem, void (*handler)(CPUInfo* info));
 		void HookError(void* pCrySystem, void (*handler)(const char* format, va_list args));
 		void MakeDX9Default(void* pCrySystem);
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
+		void EnableServerPhysicsThread(void* pCrySystem);
+	}
+
+	namespace FMODEx
+	{
+		void Fix64BitHeapAddressTruncation(void* pFMODEx);
 	}
 }

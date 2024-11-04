@@ -308,6 +308,32 @@ void WinAPI::FillMem(void *address, const void *data, size_t length)
 	}
 }
 
+void WinAPI::HookWithJump(void* address, void* pNewFunc)
+{
+	if (!address)
+	{
+		return;
+	}
+
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xE0                                                   // jmp rax
+	};
+
+	std::memcpy(&code[2], &pNewFunc, 8);
+#else
+	unsigned char code[] = {
+		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
+		0xFF, 0xE0                     // jmp eax
+	};
+
+	std::memcpy(&code[1], &pNewFunc, 4);
+#endif
+
+	FillMem(address, &code, sizeof(code));
+}
+
 bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 {
 	const IMAGE_DATA_DIRECTORY *pIATData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IAT);
@@ -333,6 +359,66 @@ bool WinAPI::HookIATByAddress(void *pDLL, void *pFunc, void *pNewFunc)
 
 			// hook the function
 			FillMem(&pIAT[i], &pNewFunc, sizeof (void*));
+		}
+	}
+
+	if (!found)
+	{
+		SetLastError(ERROR_PROC_NOT_FOUND);
+		return false;
+	}
+
+	return true;
+}
+
+bool WinAPI::HookIATByName(void *pDLL, const char *dllName, const char *funcName, void *pNewFunc)
+{
+	const IMAGE_DATA_DIRECTORY* importData = GetDirectoryData(pDLL, IMAGE_DIRECTORY_ENTRY_IMPORT);
+	if (!importData)
+	{
+		SetLastError(ERROR_INVALID_HANDLE);
+		return false;
+	}
+
+	bool found = false;
+
+	const IMAGE_IMPORT_DESCRIPTOR* importDescriptor =
+		static_cast<const IMAGE_IMPORT_DESCRIPTOR*>(RVA(pDLL, importData->VirtualAddress));
+
+	for (; importDescriptor->Name && importDescriptor->FirstThunk; ++importDescriptor)
+	{
+		const char* currentDllName = static_cast<const char*>(RVA(pDLL, importDescriptor->Name));
+		if (_stricmp(currentDllName, dllName) != 0)
+		{
+			continue;
+		}
+
+		const IMAGE_THUNK_DATA* thunks =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->OriginalFirstThunk));
+
+		const IMAGE_THUNK_DATA* pIAT =
+			static_cast<const IMAGE_THUNK_DATA*>(RVA(pDLL, importDescriptor->FirstThunk));
+
+		for (size_t i = 0; thunks[i].u1.Ordinal; ++i)
+		{
+			if (IMAGE_SNAP_BY_ORDINAL(thunks[i].u1.Ordinal))
+			{
+				continue;
+			}
+
+			const IMAGE_IMPORT_BY_NAME* thunkData =
+				static_cast<const IMAGE_IMPORT_BY_NAME*>(RVA(pDLL, thunks[i].u1.AddressOfData));
+
+			const char* thunkName = reinterpret_cast<const char*>(thunkData->Name);
+			if (strcmp(thunkName, funcName) != 0)
+			{
+				continue;
+			}
+
+			found = true;
+
+			// hook the function
+			FillMem(const_cast<IMAGE_THUNK_DATA*>(&pIAT[i]), &pNewFunc, sizeof(void*));
 		}
 	}
 
@@ -719,6 +805,7 @@ bool WinAPI::IsVistaOrLater()
 {
 	OSVERSIONINFOW info = {};
 	info.dwOSVersionInfoSize = sizeof info;
+	__pragma(warning(suppress:4996))
 	GetVersionExW(&info);
 
 	return info.dwMajorVersion >= 6;
@@ -783,7 +870,6 @@ int WinAPI::HTTPRequest(
 	const std::string_view & url,
 	const std::string_view & data,
 	const std::map<std::string, std::string> & headers,
-	int timeout,
 	HTTPRequestCallback callback
 ){
 	std::wstring urlW;
@@ -808,11 +894,6 @@ int WinAPI::HTTPRequest(
 	if (!hSession)
 	{
 		throw StringTools::SysErrorFormat("WinHttpOpen");
-	}
-
-	if (!WinHttpSetTimeouts(hSession, timeout, timeout, timeout, timeout))
-	{
-		throw StringTools::SysErrorFormat("WinHttpSetTimeouts");
 	}
 
 	const std::wstring serverNameW(urlComponents.lpszHostName, urlComponents.dwHostNameLength);
@@ -948,4 +1029,71 @@ std::string WinAPI::GetClipboardText(std::size_t maxLength)
 	const std::size_t dataLength = std::strlen(data);
 
 	return { data, (dataLength <= maxLength) ? dataLength : maxLength };
+}
+
+////////////
+// Cursor //
+////////////
+
+void WinAPI::Cursor::GetPos(long& x, long& y)
+{
+	POINT point = {};
+	GetCursorPos(&point);
+
+	x = point.x;
+	y = point.y;
+}
+
+void WinAPI::Cursor::SetPos(long x, long y)
+{
+	SetCursorPos(x, y);
+}
+
+void WinAPI::Cursor::Show(bool show)
+{
+	ShowCursor(show ? TRUE : FALSE);
+}
+
+void WinAPI::Cursor::Clip(void* window)
+{
+	if (window)
+	{
+		RECT rect = {};
+		GetClientRect(static_cast<HWND>(window), &rect);
+		ClientToScreen(static_cast<HWND>(window), reinterpret_cast<POINT*>(&rect.left));
+		ClientToScreen(static_cast<HWND>(window), reinterpret_cast<POINT*>(&rect.right));
+		ClipCursor(&rect);
+	}
+	else
+	{
+		ClipCursor(nullptr);
+	}
+}
+
+////////////
+// Window //
+////////////
+
+void WinAPI::Window::ConvertPosToWindow(void* window, long& x, long& y)
+{
+	POINT point;
+	point.x = x;
+	point.y = y;
+
+	ScreenToClient(static_cast<HWND>(window), &point);
+
+	x = point.x;
+	y = point.y;
+}
+
+void WinAPI::Window::ConvertPosToScreen(void* window, long& x, long& y)
+{
+	POINT point;
+	point.x = x;
+	point.y = y;
+
+	ClientToScreen(static_cast<HWND>(window), &point);
+
+	x = point.x;
+	y = point.y;
 }

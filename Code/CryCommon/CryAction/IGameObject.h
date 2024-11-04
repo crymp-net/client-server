@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 // FIXME: Cell SDK GCC bug workaround.
 #ifndef __IGAMEOBJECTSYSTEM_H__
 #include "IGameObjectSystem.h"
@@ -139,13 +141,13 @@ template <size_t N>
 class CRMIAllocator
 {
 public:
-	static ILINE void * Allocate()
+	static void * Allocate()
 	{
 		if (!m_pAllocator)
 			m_pAllocator = new stl::PoolAllocator<N>;
 		return m_pAllocator->Allocate();
 	}
-	static ILINE void Deallocate(void * p)
+	static void Deallocate(void * p)
 	{
 		assert(m_pAllocator);
 		m_pAllocator->Deallocate(p);
@@ -211,9 +213,9 @@ public:
 	// bind this entity to the network system (it gets synchronized then...)
 	virtual bool BindToNetwork(EBindToNetworkMode mode = eBTNM_Normal) = 0;
 	// flag that we have changed the state of the game object aspect
-	virtual void ChangedNetworkState( uint8 aspects ) = 0;
+	virtual void ChangedNetworkState(std::uint8_t aspects) = 0;
 	// enable/disable network aspects on game object
-	virtual void EnableAspect(uint8 aspects, bool enable) = 0;
+	virtual void EnableAspect(std::uint8_t aspects, bool enable) = 0;
 	// query extension. returns 0 if extension is not there.
 	virtual IGameObjectExtension *QueryExtension(const char *name) const= 0;
 	// set extension parameters
@@ -226,24 +228,24 @@ public:
 	virtual void ForceUpdate(bool force) = 0;
 	virtual void ForceUpdateExtension( IGameObjectExtension * pGOE, int slot ) = 0;
 	// get/set network channel
-	virtual uint16 GetChannelId() const = 0;
-	virtual void SetChannelId( uint16 ) = 0;
+	virtual std::uint16_t GetChannelId() const = 0;
+	virtual void SetChannelId(std::uint16_t channelId) = 0;
 	virtual INetChannel *GetNetChannel() const = 0;
 	// serialize some aspects of the game object
 	virtual void FullSerialize( TSerialize ser ) = 0;
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int pflags ) = 0;
+	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int pflags ) = 0;
 	// in case things have to be set after serialization
 	virtual void PostSerialize() = 0;
 	// is the game object probably visible?
 	virtual bool IsProbablyVisible() = 0;
 	virtual bool IsProbablyDistant() = 0;
 	// change the profile of an aspect
-	virtual bool SetAspectProfile( EEntityAspects aspect, uint8 profile, bool fromNetwork = false ) = 0;
-	virtual uint8 GetAspectProfile( EEntityAspects aspect ) = 0;
+	virtual bool SetAspectProfile(EEntityAspects aspect, std::uint8_t profile, bool fromNetwork = false) = 0;
+	virtual std::uint8_t GetAspectProfile(EEntityAspects aspect) = 0;
 	virtual IGameObjectExtension * GetExtensionWithRMIBase( const void * pBase ) = 0;
 	virtual void EnablePrePhysicsUpdate( EPrePhysicsUpdate updateRule ) = 0;
 	virtual void SetNetworkParent( EntityId id ) = 0;
-	virtual void Pulse( uint32 pulse ) = 0;
+	virtual void Pulse(std::uint32_t pulse) = 0;
 	virtual void RegisterAsPredicted() = 0;
 	virtual void RegisterAsValidated(IGameObject* pGO, int predictionHandle) = 0;
 	virtual int GetPredictionHandle() = 0;
@@ -261,7 +263,7 @@ public:
 	virtual bool ShouldUpdate( ) = 0;
 
 	// register a partial update in the netcode without actually serializing - useful only for working around other bugs
-	virtual void RequestRemoteUpdate( uint8 aspectMask ) = 0;
+	virtual void RequestRemoteUpdate(std::uint8_t aspectMask) = 0;
 
 	// WARNING: there *MUST* be at least one frame between spawning ent and using this function to send an RMI if
 	// that RMI is _FAST, otherwise the dependent entity is ignored
@@ -285,21 +287,21 @@ public:
 	}
 
 	// turn an extension on
-	ILINE bool ActivateExtension( const char * extension ) { return ChangeExtension( extension, eCE_Activate ) != 0; }
+	bool ActivateExtension( const char * extension ) { return ChangeExtension( extension, eCE_Activate ) != 0; }
 	// turn an extension off
-	ILINE void DeactivateExtension( const char * extension ) { ChangeExtension( extension, eCE_Deactivate ); }
+	void DeactivateExtension( const char * extension ) { ChangeExtension( extension, eCE_Deactivate ); }
 	// forcefully get a pointer to an extension (may instantiate if needed)
-	ILINE IGameObjectExtension * AcquireExtension( const char * extension ) { return ChangeExtension( extension, eCE_Acquire ); }
+	IGameObjectExtension * AcquireExtension( const char * extension ) { return ChangeExtension( extension, eCE_Acquire ); }
 	// release a previously acquired extension
-	ILINE void ReleaseExtension( const char * extension ) { ChangeExtension( extension, eCE_Release ); }
+	void ReleaseExtension( const char * extension ) { ChangeExtension( extension, eCE_Release ); }
 
 	// retrieve the hosting entity
-	ILINE IEntity *GetEntity() const
+	IEntity *GetEntity() const
 	{
 		return m_pEntity;
 	}
 
-	ILINE EntityId GetEntityId() const
+	EntityId GetEntityId() const
 	{
 		return m_entityId;
 	}
@@ -313,7 +315,7 @@ public:
 	virtual void ReleaseProfileManager( IGameObjectProfileManager * pPH ) = 0;
 	virtual void EnableUpdateSlot( IGameObjectExtension * pExtension, int slot ) = 0;
 	virtual void DisableUpdateSlot( IGameObjectExtension * pExtension, int slot ) = 0;
-  virtual uint8 GetUpdateSlotEnables( IGameObjectExtension * pExtension, int slot ) = 0;
+	virtual std::uint8_t GetUpdateSlotEnables( IGameObjectExtension * pExtension, int slot ) = 0;
 	virtual void EnablePostUpdates( IGameObjectExtension * pExtension ) = 0;
 	virtual void DisablePostUpdates( IGameObjectExtension * pExtension ) = 0;
 	virtual void SetUpdateSlotEnableCondition( IGameObjectExtension * pExtension, int slot, EUpdateEnableCondition condition ) = 0;
@@ -322,8 +324,8 @@ public:
 
 	virtual bool IsJustExchanging() = 0;
 
-	ILINE void SetMovementController( IMovementController * pMC ) { m_pMovementController = pMC; }
-	ILINE IMovementController * GetMovementController() { return m_pMovementController; }
+	void SetMovementController( IMovementController * pMC ) { m_pMovementController = pMC; }
+	IMovementController * GetMovementController() { return m_pMovementController; }
 
 protected:
 	enum EChangeExtension
@@ -358,7 +360,7 @@ public:
 	// INetAtSyncItem
 	// INetAtSyncItem
 
-	static ILINE CRMIAtSyncItem * Create( const T& params, EntityId id, const SGameObjectExtensionRMI * pRMI, CallbackFunc callback, INetChannel * pChannel )
+	static CRMIAtSyncItem * Create( const T& params, EntityId id, const SGameObjectExtensionRMI * pRMI, CallbackFunc callback, INetChannel * pChannel )
 	{
 		return new (CRMIAllocator<sizeof(CRMIAtSyncItem)>::Allocate()) CRMIAtSyncItem(params, id, pRMI, callback, pChannel);
 	}
@@ -379,7 +381,7 @@ public:
 			}
 			else
 			{
-				snprintf(msg, sizeof(msg), "Game object extension with base %.8x for entity %s for RMI %s not found", (uint32)m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
+				snprintf(msg, sizeof(msg), "Game object extension with base %p for entity %s for RMI %s not found", m_pRMI->pBase, pGameObject->GetEntity()->GetName(), m_pRMI->pMsgDef->description);
 				CryLogWarning("%s", msg);
 			}
 		}
@@ -491,7 +493,7 @@ private:
 		{ \
 			MethodInfo_##name( const SGameObjectExtensionRMI * pMethodInfo ) { this->pMethodInfo = pMethodInfo; } \
 			const SGameObjectExtensionRMI * pMethodInfo; \
-			ILINE void Verify( const params& p ) const \
+			void Verify( const params& p ) const \
 			{ \
 			} \
 		}; \
@@ -519,7 +521,7 @@ private:
 		{ \
 			MethodInfo_##name( const SGameObjectExtensionRMI * pMethodInfo ) { this->pMethodInfo = pMethodInfo; } \
 			const SGameObjectExtensionRMI * pMethodInfo; \
-			ILINE void Verify( const params& p ) const \
+			void Verify( const params& p ) const \
 			{ \
 			} \
 		}; \
@@ -542,7 +544,7 @@ private:
 		params.SerializeWith( ser ); \
 		return CRMIAtSyncItem<Params_##name, cls>::Create( params, *pID, m_info##name.pMethodInfo, &cls::Handle_##name, pChannel ); \
 	} \
-	ILINE bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
+	bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
 
 #define IMPLEMENT_INTERFACE_RMI(cls, name) \
 	cls::MethodInfo_##name cls::m_info##name = cls::Helper_AddMessage( &cls::Decode_##name, "RMI:" #cls ":" #name, cls::Attach_##name, cls::ServerCall_##name, cls::Reliability_##name, cls::LowDelay_##name ); \
@@ -552,7 +554,7 @@ private:
 		params.SerializeWith( ser ); \
 		return CRMIAtSyncItem<Params_##name, cls>::Create( params, id, m_info##name.pMethodInfo, &cls::Handle_##name, pChannel ); \
 	} \
-	ILINE bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
+	bool cls::Handle_##name( const Params_##name& params, INetChannel* pNetChannel )
 
 /*
  * _FAST versions may send the RMI without waiting for the frame to end; be sure that consistency with the entity is not important!
@@ -600,8 +602,8 @@ struct IGameObjectView
 
 struct IGameObjectProfileManager
 {
-	virtual bool SetAspectProfile( EEntityAspects aspect, uint8 profile ) = 0;
-	virtual uint8 GetDefaultProfile( EEntityAspects aspect ) = 0;
+	virtual bool SetAspectProfile( EEntityAspects aspect, std::uint8_t profile ) = 0;
+	virtual std::uint8_t GetDefaultProfile( EEntityAspects aspect ) = 0;
 };
 
 // Summary
@@ -667,7 +669,7 @@ struct IGameObjectExtension
 	// See Also
 	//   ISerialize
 	virtual void FullSerialize( TSerialize ser ) = 0;
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int pflags ) = 0;
+	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, std::uint8_t profile, int pflags ) = 0;
 	
 	// Summary
 	//   Performs post serialization fixes
@@ -708,7 +710,7 @@ struct IGameObjectExtension
 
 	virtual void GetMemoryStatistics(ICrySizer * s) = 0;
 
-	virtual void SetChannelId(uint16 id) = 0;
+	virtual void SetChannelId(std::uint16_t id) = 0;
 	virtual void SetAuthority( bool auth ) = 0;
 
 	// Summary
@@ -734,19 +736,19 @@ struct IGameObjectExtension
 	//   Retrieves the pointer to the game object
 	// Returns
 	//   A pointer to the game object which hold this extension
-	ILINE IGameObject * GetGameObject() const { return m_pGameObject; }
+	IGameObject* GetGameObject() const { return m_pGameObject; }
 
 	// Summary
 	//   Retrieves the pointer to the entity
 	// Returns
 	//   A pointer to the entity which hold this game object extension
-	ILINE IEntity * GetEntity() const { return m_pEntity; }
+	IEntity* GetEntity() const { return m_pEntity; }
 
 	// Summary
 	//   Retrieves the EntityId
 	// Returns
 	//   An EntityId to the entity which hold this game object extension
-	ILINE EntityId GetEntityId() const { return m_entityId; }
+	EntityId GetEntityId() const { return m_entityId; }
 
 protected:
 	void SetGameObject( IGameObject * pGameObject )

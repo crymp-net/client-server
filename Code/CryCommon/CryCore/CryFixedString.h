@@ -26,6 +26,8 @@
 #include <ctype.h>
 #include <wctype.h>
 
+#include "CryMalloc.h"
+
 #ifndef CRY_STRING_DEBUG
 #define CRY_STRING_DEBUG(s)
 #endif
@@ -595,7 +597,7 @@ inline void CryStackStringT<T,S>::_AllocData( size_type nLen )
 		value_type* pData = m_strBuf;
 		if (allocLen > MAX_SIZE)
 		{
-			pData = (value_type*) malloc(allocLen);
+			pData = (value_type*) CryMalloc(allocLen);
 			_usedMemory( allocLen ); // For statistics.
 			m_nAllocSize = nLen;
 		}
@@ -625,7 +627,7 @@ inline void CryStackStringT<T,S>::_FreeData(value_type* pData)
 	{
 		int allocLen = (m_nAllocSize+1)*sizeof(value_type);
 		_usedMemory( -allocLen ); // For statistics.
-		free(pData);
+		CryFree(pData);
 	}
 }
 
@@ -1431,9 +1433,8 @@ inline CryStackStringT<T,S>& CryStackStringT<T,S>::insert( size_type nIndex,cons
 		{
 			value_type* pOldData = m_str;
 			size_type nOldLength = m_nLength;
-			const_str pstr = m_str;
 			_AllocData(nNewLength);
-			CharTraits<T>::_copy( m_str, pstr,(nOldLength+1) );
+			CharTraits<T>::_copy( m_str, pOldData,(nOldLength+1) );
 			_FreeData(pOldData);
 		}
 
@@ -1530,7 +1531,6 @@ inline CryStackStringT<T,S>& CryStackStringT<T,S>::replace( const_str strOld,con
 		if (capacity() < nNewLength)
 		{
 			value_type* pOldData = m_str;
-			size_type nOldLength = m_nLength;
 			const_str pstr = m_str;
 			_AllocData(nNewLength);
 			CharTraits<T>::_copy( m_str, pstr, nOldLength );
