@@ -255,7 +255,9 @@ void CVehicle::LoadParts(const CVehicleParams& table, IVehiclePart* pParent, SPa
 		if (IVehiclePart* pPart = AddPart(partTable, pParent, initInfo))
 		{
 			if (CVehicleParams childPartsTable = partTable.findChild("Parts"))
+			{
 				LoadParts(childPartsTable, pPart, initInfo);
+			}
 		}
 	}
 }
@@ -357,8 +359,7 @@ bool CVehicle::Init(IGameObject* pGameObject)
 	m_seats.clear();
 
 	gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->AddVehicle(GetEntityId(), this);
-	GameFramework::GetInstance()->GetScriptBind_Vehicle()->AttachTo(this);
-	//gEnv->pGame->GetIGameFramework()->GetVehicleScriptBind()->AttachTo(this); //CryMP: fixme
+	GameFramework::GetInstance()->GetScriptBind_Vehicle()->AttachTo(this); //CryMP
 
 	m_pInventory = static_cast<IInventory*>(GetGameObject()->AcquireExtension("Inventory"));
 
@@ -412,7 +413,7 @@ bool CVehicle::Init(IGameObject* pGameObject)
 	// this merges modification data and must be done before further processing
 	//InitModification(xmlData, m_modification.c_str()); //CryMP: Fixme?
 
-	CryLogAlways("$3CryMP] Spawning vehicle %s with modfication '%s'", GetEntity()->GetName(), m_modification.c_str());
+	CryLogAlways("$3[CryMP] Spawning vehicle %s with modification '%s'", GetEntity()->GetName(), m_modification.c_str());
 
 	CVehicleModificationParams vehicleModificationParams(vehicleXmlData, m_modification.c_str());
 	CVehicleParams vehicleParams(vehicleXmlData, vehicleModificationParams);
@@ -451,9 +452,11 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 	// load parts  
 	SPartInitInfo partInitInfo;
-
-	if (CVehicleParams partsTable = vehicleParams.findChild("Parts"))
-		LoadParts(partsTable, NULL, partInitInfo);
+	CVehicleParams partsTable = vehicleParams.findChild("Parts");
+	if (partsTable)
+	{
+		LoadParts(partsTable, nullptr, partInitInfo);
+	}
 	else
 		CryLog("%s: No Parts table found!", GetEntity()->GetName());
 
@@ -505,8 +508,8 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 				if (animTable.haveAttr("name") && pVehicleAnimation->Init(this, animTable))
 					m_animations.push_back(TVehicleStringAnimationPair(animTable.getAttr("name"), pVehicleAnimation));
-				//else
-				//	delete pVehicleAnimation; //CryMP: fixme
+				else
+					delete pVehicleAnimation; //CryMP: fixme
 			}
 		}
 	}
@@ -700,11 +703,9 @@ bool CVehicle::Init(IGameObject* pGameObject)
 
 	// attach seat scriptbinds
 	// this is done during OnSpawn when spawning initially, or here in case only the extension is created
-	//for (TVehicleSeatVector::iterator it = m_seats.begin(); it != m_seats.end(); ++it)
-	//	gEnv->pGame->GetIGameFramework()->GetVehicleSeatScriptBind()->AttachTo(this, GetSeatId(it->second)); //CryMP: fixme
-
 	for (const auto &seat : m_seats)
 	{
+		//CryMP: vehicle.seat script binds 
 		GameFramework::GetInstance()->GetScriptBind_VehicleSeat()->AttachTo(this, GetSeatId(seat.second));
 	}
 
@@ -2072,8 +2073,6 @@ void CVehicle::OnAction(const TVehicleActionId actionId, int activationMode, flo
 		if (!m_frozen)
 			pCurrentSeat->OnAction(actionId, activationMode, value);
 
-
-
 		bool performAction = pCurrentSeat->GetCurrentTransition() == CVehicleSeat::eVT_None;
 		if (!performAction)
 		{
@@ -2481,21 +2480,29 @@ IVehiclePart* CVehicle::AddPart(const CVehicleParams& partParams, IVehiclePart* 
 
 	if (IVehiclePart* pPart = m_pVehicleSystem->CreateVehiclePart(partClass))
 	{
-		if (!((CVehiclePartBase*)pPart)->Init(this, partParams, parent, initInfo))
+		CVehiclePartBase *pPartBase = static_cast<CVehiclePartBase*>(pPart);
+
+		if (!pPartBase->Init(this, partParams, parent, initInfo))
 		{
-			CryLog("Vehicle error: part <%s> failed to initialize on vehicle <%s>", partName.c_str(), GetEntity()->GetName());
+			CryLogWarningAlways("Vehicle error: part <%s> failed to initialize on vehicle <%s>", partName.c_str(), GetEntity()->GetName());
 
 			pPart->Release();
 			return NULL;
 		}
 
+		//CryMP:
+		InitHelpers(partParams, pPart);
+
 		m_parts.push_back(TVehiclePartPair(partName, pPart));
 		return pPart;
+	}
+	else
+	{
+		CryLogWarningAlways("Vehicle error: failed to create part <%s> on vehicle <%s>", partName.c_str(), GetEntity()->GetName());
 	}
 
 	return NULL;
 }
-
 
 //------------------------------------------------------------------------
 bool CVehicle::AddSeat(const SmartScriptTable& seatTable)
@@ -2503,8 +2510,7 @@ bool CVehicle::AddSeat(const SmartScriptTable& seatTable)
 	int seatId = 0;
 	if (seatTable->GetValue("seatId", seatId))
 	{
-		GameFramework::GetInstance()->GetScriptBind_VehicleSeat()->AttachTo(this, seatId);
-		//gEnv->pGame->GetIGameFramework()->GetVehicleSeatScriptBind()->AttachTo(this, seatId); //CryMP: fixme
+		GameFramework::GetInstance()->GetScriptBind_VehicleSeat()->AttachTo(this, seatId); //CryMP
 	}
 
 	return false;
@@ -2592,7 +2598,7 @@ bool CVehicle::AddHelper(const char* pName, Vec3 position, Vec3 direction, IVehi
 }
 
 //------------------------------------------------------------------------
-void CVehicle::InitHelpers(const CVehicleParams& table)
+void CVehicle::InitHelpers(const CVehicleParams& table, IVehiclePart *pPart)
 {
 	// currently this only initializes AI Anchors. If you use this method
 	// for something else, be sure to adjust the checks below
@@ -2615,6 +2621,9 @@ void CVehicle::InitHelpers(const CVehicleParams& table)
 			if (!helperRef.haveAttr("name") || !helperRef.haveAttr("part"))
 				continue;
 
+			//if (!helperRef.haveAttr("part")) CryMP: commented out
+			//	continue;
+
 			Vec3 position, direction;
 			if (!helperRef.getAttr("position", position))
 				position.zero();
@@ -2622,10 +2631,23 @@ void CVehicle::InitHelpers(const CVehicleParams& table)
 			if (!helperRef.getAttr("direction", direction))
 				direction.zero();
 
-			if (IVehiclePart* pPart = GetPart(helperRef.getAttr("part")))
-				AddHelper(helperRef.getAttr("name"), position, direction, pPart);
+			if (!pPart)
+			{
+				pPart = GetPart(helperRef.getAttr("part"));
+			}
+
+			if (pPart)
+			{
+				const bool ok = AddHelper(helperRef.getAttr("name"), position, direction, pPart);
+				if (!ok)
+				{
+					CryLogWarningAlways("Failed to add helper <%s> on vehicle <%s, part: %s>", 
+						helperRef.getAttr("name"), GetEntity()->GetName(), pPart->GetName());
+				}
+			}
 			else
-				CryLog("Error adding helper <%s> on vehicle <%s>", helperRef.getAttr("part"), GetEntity()->GetName());
+				CryLogWarningAlways("Failed to add helper <%s> on vehicle <%s>, no part found!", 
+					helperRef.getAttr("name"), GetEntity()->GetName());
 		}
 	}
 
@@ -2642,7 +2664,7 @@ void CVehicle::InitHelpers(const CVehicleParams& table)
 
 			if (!pEntityClass)
 			{
-				CryLog("Entity class 'AIAnchor' not found (entity name: %s)", GetEntity()->GetName());
+				CryLogWarning("Entity class 'AIAnchor' not found (entity name: %s)", GetEntity()->GetName());
 				continue;
 			}
 
@@ -3926,7 +3948,7 @@ IVehicleHelper* CVehicle::GetHelper(const char* pName)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

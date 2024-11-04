@@ -205,7 +205,7 @@ public:
 	virtual IVehiclePart* AddPart(const CVehicleParams& partParams, IVehiclePart* parent, SPartInitInfo& initInfo);
 	virtual bool AddSeat(const SmartScriptTable& seatParams);
 	virtual bool AddHelper(const char* pName, Vec3 position, Vec3 direction, IVehiclePart* pPart);
-	virtual void InitHelpers(const CVehicleParams& table);
+	virtual void InitHelpers(const CVehicleParams& table, IVehiclePart* pPart = nullptr);
 	virtual bool HasHelper(const char* name);
 
 	virtual bool SetMovement(const string& movementName, const CVehicleParams& table);

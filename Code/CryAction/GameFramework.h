@@ -78,7 +78,7 @@ class GameFramework : public IGameFramework
 	ILevelSystem* m_pLevelSystem = nullptr;  // m_reserved_0x4ac_0x4d8
 	ActorSystem* m_pActorSystem = nullptr;  // m_reserved_0x4b0_0x4e0
 	ItemSystem* m_pItemSystem = nullptr;  // m_reserved_0x4b4_0x4e8
-	VehicleSystem* m_pVehicleSystem = nullptr;  // m_reserved_0x4b8_0x4f0
+	CVehicleSystem* m_pVehicleSystem = nullptr;  // m_reserved_0x4b8_0x4f0
 	IActionMapManager* m_pActionMapManager = nullptr;  // m_reserved_0x4bc_0x4f8
 	ViewSystem* m_pViewSystem = nullptr;  // m_reserved_0x4c0_0x500
 	GameplayRecorder* m_pGameplayRecorder = nullptr;  // m_reserved_0x4c4_0x508
