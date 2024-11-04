@@ -1643,6 +1643,8 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 	{
 		EntityId id = static_cast<EntityId>(atoi(szArgs));
 		m_pHUDRadar->SelectTeamMate(id, true);
+
+		PlaySound(ESound_Select);
 	}
 	else if (!_stricmp(szCommand, "MP_KickPlayer"))
 	{
@@ -1659,14 +1661,22 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 	{
 		if (szArgs)
 		{
-			EntityId mute = atoi(szArgs);
-			gEnv->pGame->GetIGameFramework()->MutePlayerById(mute);
+			const EntityId muteId = atoi(szArgs);
+
+			IVoiceContext* pVoiceContext = gEnv->pGame->GetIGameFramework()->GetNetContext()->GetVoiceContext();
+			const bool muted = pVoiceContext->IsMuted(m_pClientActor->GetEntityId(), muteId);
+
+			gEnv->pGame->GetIGameFramework()->MutePlayerById(muteId);
+
+			PlaySound(muted ? ESound_DownloadStop : ESound_DownloadStart);
 		}
 	}
 	else if (!_stricmp(szCommand, "MP_TeamMateDeselected"))
 	{
 		EntityId id = static_cast<EntityId>(atoi(szArgs));
 		m_pHUDRadar->SelectTeamMate(id, false);
+
+		PlaySound(ESound_Select);
 	}
 	else if (!_stricmp(szCommand, "soundstart_malfunction"))
 	{
