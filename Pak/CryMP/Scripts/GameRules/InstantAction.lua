@@ -37,6 +37,7 @@ InstantAction.SCORE_KILLS_KEY 		= 100;
 InstantAction.SCORE_DEATHS_KEY 		= 101;
 InstantAction.SCORE_HEADSHOTS_KEY = 102;
 InstantAction.SCORE_PING_KEY 			= 103;
+InstantAction.SCORE_LAST_KEY 			= 104;	-- CryMP added
 
 
 
