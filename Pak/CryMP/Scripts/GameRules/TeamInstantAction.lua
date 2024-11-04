@@ -19,9 +19,13 @@ TeamInstantAction = new(InstantAction);
 TeamInstantAction.States = { "Reset", "PreGame", "InGame", "PostGame", };
 
 
+-- timers
+TeamInstantAction.TEAM_CHANGE_MIN_TIME			= 60; -- time before allowing teamchange
 TeamInstantAction.MIN_TEAM_LIMIT_WARN_TIMER	= 15; -- team limit warning timer
-TeamInstantAction.START_TIMER								= 30; -- starting countdown timer
 
+
+
+TeamInstantAction.TIA_SPAWN_LOCATIONS			= true;
 TeamInstantAction.TEAM_SPAWN_LOCATIONS			= true;
 TeamInstantAction.NEUTRAL_SPAWN_LOCATIONS	= true;
 
@@ -33,9 +37,12 @@ TeamInstantAction.TEAMSCORE_TEAM2_KEY 			= 12;
 TeamInstantAction.BALANCE_ACTION_TIME				= 30;
 TeamInstantAction.BALANCE_ACTION_TIMERID		= 7000;
 
+TeamInstantAction.SCORE_TEAMKILLS_KEY 		= InstantAction.SCORE_LAST_KEY+1;
+TeamInstantAction.SCORE_SELFKILLS_KEY 		= InstantAction.SCORE_LAST_KEY+2;
 
 ----------------------------------------------------------------------------------------------------
 TeamInstantAction.teamName={ "tan", "black" };
+--[[
 TeamInstantAction.teamModel=
 {
 	black	={
@@ -56,10 +63,8 @@ TeamInstantAction.teamModel=
 						},
 					},
 }
+]]
 
-
-----------------------------------------------------------------------------------------------------
---maximum 4 groups, 5 messages in each (F5-F8, then 1-5). Change Radio.cpp if more needed.
 TeamInstantAction.teamRadio=
 {
 	black = 
@@ -71,15 +76,24 @@ TeamInstantAction.teamRadio=
 			{"mp_american/us_F5_3_wait","@mp_radio_Wait",3},
 			{"mp_american/us_F5_4_follow_me","@mp_radio_FollowMe",3},
 			{"mp_american/us_F5_6_thank_you","@mp_radio_Thanks",3},
+			{"mp_american/us_F5_5_sorry","@mp_radio_Sorry", 3},
+			{"mp_american/us_F5_7_watch_out","@mp_radio_WatchOut", 3},
+			{"mp_american/us_F5_8_well_done","@mp_radio_WellDone", 3},
+			{"mp_american/us_F5_9_hurry_up","@mp_radio_HurryUp", 3},
 		},
+		--[[
 		[2]=
 		{
+			--Deactivated
 			{"mp_american/us_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
 			{"mp_american/us_F6_2_gather_power_cores","@mp_radio_GatherPower"},
 			{"mp_american/us_F6_3_take_prototype_factory","@mp_radio_TakePT"},
 			{"mp_american/us_F6_4_take_war_factory","@mp_radio_TakeWar"},
 			{"mp_american/us_F6_5_take_airfield","@mp_radio_TakeAir"},
+			{"mp_american/us_F6_6_take_bunker","@mp_radio_TakeBunker"},
+			{"mp_american/us_F6_7_take_naval","@mp_radio_TakeNaval"},
 		},
+		]]
 		[3]=
 		{
 			{"mp_american/us_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
@@ -87,6 +101,7 @@ TeamInstantAction.teamRadio=
 			{"mp_american/us_F7_3_boat_spotted","@mp_radio_BoatSpotted"},
 			{"mp_american/us_F7_4_vehicle_spotted","@mp_radio_LTVSpotted"},
 			{"mp_american/us_F7_5_infantry_spotted","@mp_radio_InfantrySpotted"},
+			{"mp_american/us_F7_6_sniper","@mp_radio_SniperSpotted"},
 		},
 		[4]=
 		{
@@ -95,6 +110,7 @@ TeamInstantAction.teamRadio=
 			{"mp_american/us_F8_3_get_out_vehicle","@mp_radio_GetOut"},
 			{"mp_american/us_F8_4_mechanical_assistance_needed","@mp_radio_MechAssistance"},
 			{"mp_american/us_F8_5_radar_scan","@mp_radio_Radar"},
+			{"mp_american/us_F5_10_request_pickup","@mp_radio_Pickup", 3},
 		},
 	},
 	tan = 
@@ -106,6 +122,10 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F5_3_wait","@mp_radio_Wait",3},
 			{"mp_korean/nk_F5_4_follow_me","@mp_radio_FollowMe",3},
 			{"mp_korean/nk_F5_6_thank_you","@mp_radio_Thanks",3},
+			{"mp_korean/nk_F5_5_sorry","@mp_radio_Sorry", 3},
+			{"mp_korean/nk_F5_7_watch_out","@mp_radio_WatchOut", 3},
+			{"mp_korean/nk_F5_8_well_done","@mp_radio_WellDone", 3},
+			{"mp_korean/nk_F5_9_hurry_up","mp_radio_HurryUp", 3},
 		},
 		[2]=
 		{
@@ -114,6 +134,8 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F6_3_take_prototype_factory","@mp_radio_TakePT"},
 			{"mp_korean/nk_F6_4_take_war_factory","@mp_radio_TakeWar"},
 			{"mp_korean/nk_F6_5_take_airfield","@mp_radio_TakeAir"},
+			{"mp_korean/nk_F6_6_take_bunker","@mp_radio_TakeBunker"},
+			{"mp_korean/nk_F6_7_take_naval","@mp_radio_TakeNaval"},
 		},
 		[3]=
 		{
@@ -122,6 +144,7 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F7_3_boat_spotted","@mp_radio_BoatSpotted"},
 			{"mp_korean/nk_F7_4_vehicle_spotted","@mp_radio_LTVSpotted"},
 			{"mp_korean/nk_F7_5_infantry_spotted","@mp_radio_InfantrySpotted"},
+			{"mp_korean/nk_F7_6_sniper","@mp_radio_SniperSpotted"},
 		},
 		[4]=
 		{
@@ -130,10 +153,32 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F8_3_get_out_vehicle","@mp_radio_GetOut"},
 			{"mp_korean/nk_F8_4_mechanical_assistance_needed","@mp_radio_MechAssistance"},
 			{"mp_korean/nk_F8_5_radar_scan","@mp_radio_Radar"},
+			{"mp_korean/nk_F5_10_request_pickup","@mp_radio_Pickup", 3},
 		},
-	}
+	},
 }
 
+TeamInstantAction.SoundAlert=
+{
+	Radio=
+	{
+		tan=
+		{
+			timer2m							= "mp_korean/nk_commander_2_minute_warming_01",
+			timer1m							= "mp_korean/nk_commander_1_minute_warming_01",
+			timer30s						= "mp_korean/nk_commander_30_second_warming_01",
+			timer5s							= "mp_korean/nk_commander_final_countdown_01",
+		},
+		
+		black=
+		{
+			timer2m 		= "mp_american/us_commander_mission_2_minute_warning_01",
+			timer1m 		= "mp_american/us_commander_mission_1_minute_warning_02",
+			timer30s 		= "mp_american/us_commander_mission_30_second_03",
+			timer5s			= "mp_american/us_commander_final_countdown_01",
+		},
+	},
+}
 
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -141,31 +186,47 @@ Net.Expose {
 	Class = TeamInstantAction,
 	ClientMethods = {
 		ClSetupPlayer					= { RELIABLE_UNORDERED, NO_ATTACH, DEPENTITYID, },
-		ClSetSpawnGroup	 			= { RELIABLE_UNORDERED, POST_ATTACH, ENTITYID, },
-		ClSetPlayerSpawnGroup	= { RELIABLE_UNORDERED, POST_ATTACH, ENTITYID, ENTITYID },
-		ClSpawnGroupInvalid		= { RELIABLE_UNORDERED, POST_ATTACH, ENTITYID, },
-		ClVictory							= { RELIABLE_ORDERED, POST_ATTACH, INT8, INT8 },
+		ClSetSpawnGroup	 			= { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, },
+		ClSetPlayerSpawnGroup	= { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, ENTITYID },
+		ClSpawnGroupInvalid		= { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, },
+		ClVictory							= { RELIABLE_ORDERED, NO_ATTACH, INT8, INT8 },
 		
-		ClStartWorking				= { RELIABLE_ORDERED, POST_ATTACH, ENTITYID; STRINGTABLE },
-		ClStepWorking					= { RELIABLE_ORDERED, POST_ATTACH, INT8 },
-		ClStopWorking					= { RELIABLE_ORDERED, POST_ATTACH, ENTITYID, BOOL },
-		ClWorkComplete				= { RELIABLE_ORDERED, POST_ATTACH, ENTITYID, STRINGTABLE },
+		ClStartWorking				= { RELIABLE_ORDERED, NO_ATTACH, ENTITYID; STRINGTABLE },
+		ClStepWorking					= { RELIABLE_ORDERED, NO_ATTACH, INT8 },
+		ClStopWorking					= { RELIABLE_ORDERED, NO_ATTACH, ENTITYID, BOOL },
+		ClWorkComplete				= { RELIABLE_ORDERED, NO_ATTACH, ENTITYID, STRINGTABLE },
 		
-		ClClientConnect				= { RELIABLE_UNORDERED, POST_ATTACH, STRING, BOOL },
-		ClClientDisconnect		= { RELIABLE_UNORDERED, POST_ATTACH, STRING, },
-		ClClientEnteredGame		= { RELIABLE_UNORDERED, POST_ATTACH, STRING, },	
+		ClClientConnect				= { RELIABLE_UNORDERED, NO_ATTACH, STRING, BOOL },
+		ClClientDisconnect		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },
+		ClClientEnteredGame		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },	
+		ClTimerAlert					= { RELIABLE_UNORDERED, NO_ATTACH, INT8 },
 	},
 	ServerMethods = {
-		RequestRevive		 = { RELIABLE_UNORDERED, POST_ATTACH, ENTITYID, },
-		RequestSpawnGroup			= { RELIABLE_UNORDERED, POST_ATTACH, ENTITYID, ENTITYID },
+		RequestRevive		 = { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, },
+		RequestSpawnGroup			= { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, ENTITYID },
+		RequestSpectatorTarget= { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, INT8 },
 	},
 	ServerProperties = {
 	},
 };
 
 
-----------------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:PlayRadioAlert(alertName, teamId)
+	local teamName=self.game:GetTeamName(teamId);
+	if (teamName and teamName~="") then
+		local alert=self.SoundAlert.Radio[teamName];
+		if (alert) then
+			alert=alert[alertName];
+			if (alert) then
+				self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
+			end
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
 
 function TeamInstantAction:AutoTeamBalanceCheck()
 	if ((not self.auto_team_balancing) and (not self.starting_auto_team_balance) and (self.game:GetAutoTeamBalance()~=0)) then
@@ -211,7 +272,7 @@ end
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:EndAutoTeamBalance()
 	if (self.auto_team_balancing and self.auto_team_balance_actions>0) then
-		self.game:SendTextMessage(TextMessageCenter, "@mp_AutoTeamBalanceFinished", TextMessageToAll, nil);
+--		self.game:SendTextMessage(TextMessageCenter, "@mp_AutoTeamBalanceFinished", TextMessageToAll, nil);
 
 		self.auto_team_balancing = nil;
 		self.auto_team_balance_affected = nil;
@@ -267,29 +328,56 @@ function TeamInstantAction:UpdateAutoTeamBalance()
 		if (not mrplayer) then
 			return;
 		end
-
-		if (mrplayer) then
-			Log("Auto Team Balance: Switching %s from %d to %d...", mrplayer:GetName(), self.game:GetTeam(mrplayer.id), tmin);
-			
-			self.auto_team_balance_affected[mrplayer.id]=tmin;
-			self.auto_team_balance_actions=self.auto_team_balance_actions+1;
-
-			self:AutoTeamBalanceSwitchPlayer(mrplayer, tmin);
+		
+		local curTeam=self.game:GetTeam(mrplayer.id);
+		if (curTeam==tmin) then
+			return;
 		end
+
+		Log("Auto Team Balance: Switching %s from %d to %d...", mrplayer:GetName(), curTeam, tmin);
+			
+		self.auto_team_balance_affected[mrplayer.id]=tmin;
+		self.auto_team_balance_actions=self.auto_team_balance_actions+1;
+
+		self:AutoTeamBalanceSwitchPlayer(mrplayer, tmin);	
 	end
 end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:AutoTeamBalanceSwitchPlayer(player, dstTeamId)
+
 	self.game:SendTextMessage(TextMessageCenter, "@mp_AutoTeamBalanceSwapYou", TextMessageToClient, player.id);
 	self.game:SendTextMessage(TextMessageCenter, "@mp_AutoTeamBalanceSwap", TextMessageToOtherClients, player.id, player:GetName());
 
+--	self.Server.RequestSpawnGroup(self, player.id, NULL_ENTITY, true);
 	self.game:SetTeam(dstTeamId, player.id);
+	player.last_team_change=_time;
+	
 end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:AutoTeamBalanceCanSwitchPlayer(player, dstTeamId)
-	return true;
+	return player:IsDead();
+end
+
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:ResetScore(playerId)
+	self.game:SetSynchedEntityValue(playerId, self.SCORE_TEAMKILLS_KEY, 0);
+	self.game:SetSynchedEntityValue(playerId, self.SCORE_SELFKILLS_KEY, 0);
+	InstantAction.ResetScore(self, playerId);
+end
+
+------------------------------------------------------------------------------------------------------
+function TeamInstantAction:Award(player, deaths, kills, headshots, teamkills, selfkills)
+
+	if (player) then
+		local cTeamKills=teamkills + (self.game:GetSynchedEntityValue(player.id, self.SCORE_TEAMKILLS_KEY, 0) or 0);
+		self.game:SetSynchedEntityValue(player.id, self.SCORE_TEAMKILLS_KEY, cTeamKills);
+		local cSelfKills=selfkills + (self.game:GetSynchedEntityValue(player.id, self.SCORE_SELFKILLS_KEY, 0) or 0);
+		self.game:SetSynchedEntityValue(player.id, self.SCORE_SELFKILLS_KEY, cSelfKills);		
+	end
+	InstantAction.Award(self, player, deaths, kills, headshots);
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -300,28 +388,36 @@ function TeamInstantAction:ProcessScores(hit, tk)
 	local shooter=hit.shooter;
 	local headshot=self:IsHeadShot(hit);
 
+	if(tk == nil) then
+		tk = self:IsTeamKill(target, shooter);
+	end
+
 	local h=0;
 	if (headshot) then
 		h=1;
 	end
 
 	if (target.actor and target.actor:IsPlayer()) then
-		self:Award(target, 1, 0, 0);
+		local targetTeamId=self.game:GetTeam(target.id);
+		if (target == shooter) then	--selfkill -3
+			self:Award(target, 1, 0, 0, 0, 1);
+			return;			-- no need to do anything else for suicide
+		elseif(not tk)then  -- if teamkill - nothing for target
+			self:Award(target, 1, 0, 0, 0, 0);
+		end
 	end
 	
 	if (shooter and shooter.actor and shooter.actor:IsPlayer()) then
+		local teamId=self.game:GetTeam(shooter.id);
 		if (target ~= shooter) then
 			if (not tk) then
-				self:Award(shooter, 0, 1, h);
+				self:Award(shooter, 0, 1, h, 0, 0);
 				
 				-- update team score
-				local teamId=self.game:GetTeam(shooter.id);
-				self:SetTeamScore(teamId, self:GetTeamScore(teamId)+1);
+				self:SetTeamScore(teamId, self:GetTeamScore(teamId) + self:CalculateScore(0,1,0,0));
 			else
-				self:Award(shooter, 0, -1, 0);				
+				self:Award(shooter, 0, 0, 0, 1, 0);
 			end
-		else
-			self:Award(shooter, 0, -1, 0);
 		end
 	end
 end
@@ -357,20 +453,44 @@ end
 
 
 ----------------------------------------------------------------------------------------------------
+function TeamInstantAction:GetPlayerScore( playerId )
+
+	local myKillN = self.game:GetSynchedEntityValue(playerId, self.SCORE_KILLS_KEY, 0) or 0;
+	local myDeathN = self.game:GetSynchedEntityValue(playerId, self.SCORE_DEATHS_KEY, 0) or 0;	
+	local myTeamKillN = self.game:GetSynchedEntityValue(playerId, self.SCORE_TEAMKILLS_KEY, 0) or 0;	
+	local mySelfKillN = self.game:GetSynchedEntityValue(playerId, self.SCORE_SELFKILLS_KEY, 0) or 0;		
+--	local myTeamKillN = self.SCORE_TEAMKILLS_KEY;	
+	local myScore = self:CalculateScore(myDeathN, myKillN, myTeamKillN, mySelfKillN);
+	
+	return myScore;
+end
+
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:GetPlayerTeamKills( playerId )
+
+	return self.game:GetSynchedEntityValue(playerId, self.SCORE_TEAMKILLS_KEY, 0) or 0
+	
+end
+
+
+----------------------------------------------------------------------------------------------------
 function TeamInstantAction:CheckScoreLimit(teamId, score)
 	local state=self:GetState();
 	if (state and state~="InGame") then
 		return;
 	end
 
-	local fraglimit=self.game:GetFragLimit();
-	local fraglead=self.game:GetFragLead();
+	local scoreLimit = self.game:GetScoreLimit(); --System.GetCVar("g_scorelimit");
+	local scoreLead = self.game:GetScoreLead(); --System.GetCVar("g_scorelead"); 
 	
-	if ((fraglimit > 0) and (score >= fraglimit)) then
-		if ((fraglead > 1) and self.teamId) then
+	if ((scoreLimit > 0) and (score >= scoreLimit)) then
+		if ((scoreLead > 1) and self.teamId) then
 			for i,id in pairs(self.teamId) do
-				if (self:GetTeamScore(id)+fraglead > score) then
-					return;
+				if(id ~= teamId) then
+					if (self:GetTeamScore(id)+scoreLead > score) then
+						return;
+					end
 				end
 			end
 		end
@@ -408,7 +528,10 @@ function TeamInstantAction:CheckTimeLimit()
 		if (not draw) then
 			self:OnGameEnd(maxId, 2);
 		else
-			self:OnGameEnd(nil, 2);
+			local overtimeTime=3;
+			self.game:AddOvertime(overtimeTime);
+			self.game:SendTextMessage(TextMessageBig, "@ui_msg_overtime_0", TextMessageToAll, nil, overtimeTime);
+--			self:OnGameEnd(nil, 2);
 		end
 	end
 end
@@ -428,14 +551,16 @@ function TeamInstantAction:PlayerCountOk()
 	return true;
 end
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Server:OnStartGame()
+	InstantAction.Server.OnStartGame(self);
+	self.teamkills = {};
+end	
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:OnGameEnd(winningTeamId, type)
 	if (winningTeamId and winningTeamId~=0) then
 		local teamName=self.game:GetTeamName(winningTeamId);
-		self.game:SendTextMessage(TextMessageCenter, "@mp_GameOverWinner", TextMessageToAll, nil, "@mp_team_"..teamName);
-	else
-		self.game:SendTextMessage(TextMessageCenter, "@mp_GameOverNoWinner", TextMessageToAll);
 	end
 	
 	self.allClients:ClVictory(winningTeamId or 0, type or 0);
@@ -468,6 +593,9 @@ function TeamInstantAction.Client:OnInit()
 			table.insert(self.teamId, self.game:CreateTeam(v));
 		end
 	end
+	
+	--Sound.SetMasterVolumeScale(1);
+	
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -483,10 +611,43 @@ function TeamInstantAction.Server:OnClientEnteredGame(channelId, player, reset)
 end
 
 ----------------------------------------------------------------------------------------------------
+function TeamInstantAction:CanRevive(playerId)
+
+	local result = InstantAction.CanRevive(self, playerId);
+	
+	result = self.game:GetTeam(playerId)~=0 and result;
+
+	return result;
+end
+
+----------------------------------------------------------------------------------------------------
+
 function TeamInstantAction.Server:OnChangeTeam(playerId, teamId)
 	if (teamId ~= self.game:GetTeam(playerId)) then
 		local player=System.GetEntity(playerId);
 		if (player) then
+		
+			if (player.last_team_change and teamId~=0) then
+				if (self:GetState()=="InGame") then
+					if (_time-player.last_team_change<self.TEAM_CHANGE_MIN_TIME) then
+						if ((not player.last_team_change_warning) or (_time-player.last_team_change_warning>=4)) then
+							player.last_team_change_warning=_time;
+							self.game:SendTextMessage(TextMessageError, "@mp_TeamChangeLimit", TextMessageToClient, playerId, self.TEAM_CHANGE_MIN_TIME-math.floor(_time-player.last_team_change+0.5));
+						end
+						return;
+					end
+				end
+			end
+			
+			if (self:IsTeamLocked(teamId, playerId)) then
+				if ((not player.last_team_locked_warning) or (_time-player.last_team_locked_warning>=4)) then
+					player.last_team_locked_warning=_time;
+					Log("team change request by %s denied: team %d has too many players", EntityName(playerId), teamId);
+					self.game:SendTextMessage(TextMessageError, "@mp_TeamLockedTooMany", TextMessageToClient, playerId);
+				end
+				return;
+			end
+		
 			if (player.actor:GetHealth()>0 and player.actor:GetSpectatorMode()==0) then
 				self:KillPlayer(player);
 			end
@@ -532,6 +693,17 @@ function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId,
 	end
 end
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Server:RequestRevive(playerId)
+	local player = System.GetEntity(playerId);
+
+	if (player and player.actor) then
+		-- allow respawn if spectating player and on a team
+		if (((player.actor:GetSpectatorMode() == 3 and self.game:GetTeam(playerId)~=0) or (player:IsDead() and player.death_time and _time-player.death_time>2.5))) then
+			self:RevivePlayer(player.actor:GetChannel(), player);
+		end
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:AutoAssignTeam(player, forceTeamId)
@@ -628,27 +800,61 @@ function TeamInstantAction.Server:OnPlayerKilled(hit)
 	target.death_time=_time;
 	target.death_pos=target:GetWorldPos(target.death_pos);
 	
-	local tk=false;
-	local shooter=hit.shooter;
+	local tk = self:IsTeamKill(hit.target, hit.shooter);
+	self.game:KillPlayer(hit.targetId, not tk, true, hit.shooterId, hit.weaponId, hit.damage, hit.materialId, hit.typeId, hit.dir);
+	self:ProcessScores(hit, tk);
+end
 
-	if (shooter and shooter.actor and shooter.actor:IsPlayer()) then
-		if (target ~= shooter) then
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:IsTeamKill(target, shooter)
+
+	local tk=false;
+
+	if (shooter and shooter.actor and shooter.actor:IsPlayer() and
+			target and target ~= shooter) then
+			
 			local team1=self.game:GetTeam(shooter.id);
 			local team2=self.game:GetTeam(target.id);
-	
 			if ((team1~=0) and (team1==team2)) then
 				tk=true;
 				if (self.OnTeamKill) then
 					self:OnTeamKill(target.id, shooter.id);
 				end
 			end
-		end
 	end
-	
-	self.game:KillPlayer(hit.targetId, not tk, true, hit.shooterId, hit.weaponId, hit.damage, hit.materialId, hit.typeId, hit.dir);
-	self:ProcessScores(hit, tk);
+	return tk;
 end
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:OnTeamKill(targetId, shooterId)
+
+	if((System.GetCVar("g_tk_punish")~=0) and (self:GetState()=="InGame")) then
+		self.teamkills[shooterId] = 1 + (self.teamkills[shooterId] or 0);
+	
+		if (self.teamkills[shooterId] >= System.GetCVar("g_tk_punish_limit")) then
+			CryAction.BanPlayer(shooterId, "You were banned for exceeding team kill limit!");
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:CalculateScore(deaths, kills, teamkills, selfKills)
+	
+--	local score = (deaths * -1) + (kills * 3) + (teamkills * -3);
+	local score = (kills * 3);	
+
+	return score;
+end
+
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Server:OnTimer(timerId, msec)
+	InstantAction.Server.OnTimer(self, timerId, msec);
+	
+	if (timerId==self.BALANCE_ACTION_TIMERID) then
+		self:StartAutoTeamBalance();
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:DefaultState(cs, state)
@@ -699,16 +905,6 @@ TeamInstantAction.Server.PostGame.OnSpectatorMode = nil;
 
 
 ----------------------------------------------------------------------------------------------------
-function TeamInstantAction.Server:OnTimer(timerId, msec)
-	InstantAction.Server.OnTimer(self, timerId, msec);
-	
-	if (timerId==self.BALANCE_ACTION_TIMERID) then
-		self:StartAutoTeamBalance();
-	end
-end
-
-
-----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client.PreGame:OnBeginState()
 	InstantAction.Client.PreGame.OnBeginState(self);
 end
@@ -736,7 +932,7 @@ function TeamInstantAction.Server.PreGame:OnTick()
 	if (self:PlayerCountOk()) then
 		if (not self.starting) then
 			self.starting=true;
-			self.game:ResetGameStartTimer(self.START_TIMER);
+			self.game:ResetGameStartTimer(System.GetCVar("g_roundRestartTime"));
 		end
 	elseif (self.starting) then
 		self.starting=false;
@@ -768,6 +964,9 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Server.InGame:OnTick()
+	self:AutoTeamBalanceCheck();
+	self:UpdateAutoTeamBalance();
+	
 	InstantAction.Server.InGame.OnTick(self);
 end
 
@@ -783,6 +982,33 @@ end
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client.InGame:OnBeginState()
 	InstantAction.Client.InGame.OnBeginState(self);
+
+-- let's not reset it - keep counters for all games
+--	local thisActor = System.GetEntity(g_localActorId);
+end
+
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Client.PreGame:OnUpdate(frameTime)
+
+	SinglePlayer.Client.OnUpdate(self, frameTime);
+
+--System.DrawText(300, 50, "tia-PreGame> "..tostring( math.floor(self.game:GetRemainingGameTime()/60))..":"..tostring( (math.floor(self.game:GetRemainingGameTime())%60)), 3);
+		 
+--System.DrawText(300, 80, "SCORE_LIMIT> "..self.game:GetScoreLimit(), self.game:GetFragLimit(), 2.5, 1, 1, 0, 1);
+
+	if(self.show_scores == true) then
+		self:UpdateScores();
+	end
+
+end
+
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Client.InGame:OnUpdate(frameTime)
+
+	InstantAction.Client.OnUpdate(self, frameTime);
+	
 end
 
 
@@ -791,6 +1017,7 @@ function TeamInstantAction.Server.InGame:OnUpdate(frameTime)
 	TeamInstantAction.Server.OnUpdate(self, frameTime);
 
 	self:CheckTimeLimit();
+	self:UpdateClAlerts();	
 end
 
 
@@ -840,13 +1067,114 @@ function TeamInstantAction.Client:ClVictory(teamId, type)
 		if(ownTeamId == teamId) then
 			--self:PlaySoundAlert("win", ownTeamId);
 			--self:PlayRadioAlert("win", ownTeamId);
-			self.game:GameOver(1);
+			self.game:GameOver(1, teamId, g_localActorId);
 		else
 			--self:PlaySoundAlert("lose", ownTeamId);
 			--self:PlayRadioAlert("lose", ownTeamId);
-			self.game:GameOver(-1);
+			self.game:GameOver(-1, teamId, g_localActorId);
 		end
 	else
-		self.game:GameOver(0);
+		self.game:GameOver(0, 0, g_localActorId);
 	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:OnEnterVehicleSeat(vehicle, seat, entityId)
+	InstantAction.OnEnterVehicleSeat(self, vehicle, seat, entityId);
+	if(self.isServer) then
+		self.game:SetTeam(self.game:GetTeam(entityId), vehicle.id);
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:OnLeaveVehicleSeat(vehicle, seat, passengerId, exiting)
+	InstantAction.OnLeaveVehicleSeat(self, vehicle, seat, passengerId, exiting);
+
+	if(self.isServer) then
+		if (exiting) then
+			local empty=true;
+			for i,seat in pairs(vehicle.Seats) do
+				local passengerId = seat:GetPassengerId();
+				if (passengerId and passengerId~=NULL_ENTITY and passengerId~=entityId) then
+					empty=false;
+					break;
+				end
+			end
+
+			if (empty) then
+				self.game:SetTeam(0, vehicle.id);
+			end
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:CanEnterVehicle(vehicle, userId)
+	if (vehicle.vehicle:GetOwnerId()==userId) then
+		return true;
+	end
+	
+	local vteamId=self.game:GetTeam(vehicle.id);
+	local pteamId=self.game:GetTeam(userId);
+
+	if (pteamId==vteamId or vteamId==0) then
+		return vehicle.vehicle:GetOwnerId()==nil;
+	elseif (pteamId~=vteamId) then
+		return false;
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:IsTeamLocked(teamId, playerId)
+	local lock=self.game:GetTeamLock();
+	if (lock<=0) then
+		return false;
+	end
+	
+	local currentTeam=self.game:GetTeam(playerId) or 0;
+	
+	if (currentTeam~=0) then -- changing team
+		local cCount=self.game:GetTeamChannelCount(currentTeam)-1;
+		local nCount=self.game:GetTeamChannelCount(teamId)+1;
+		
+		if (nCount-cCount>lock) then
+			return true;
+		end
+	else	-- joining the game.
+		local minTeamId;
+		local minCount;
+	
+		-- check if there is an outnumbered team, and if so, only allow joining the "weakest" team
+		local imba=false;
+		for i,v in pairs(self.teamId) do
+			local vCount=self.game:GetTeamChannelCount(v);
+
+			for k,j in pairs(self.teamId) do
+				if (k~=i) then
+					local jCount=self.game:GetTeamChannelCount(j);
+
+					if (math.abs(jCount-vCount)>=lock) then
+						imba=true;
+						if (jCount>vCount) then
+							if ((not minCount) or (minCount>vCount)) then
+								minCount=vCount;
+								minTeamId=v;
+							end
+						else
+							if ((not minCount) or (minCount>jCount)) then
+								minCount=jCount;
+								minTeamId=j;
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		if (imba and (teamId~=minTeamId)) then
+			return true;
+		end
+	end
+	
+	return false;
 end
