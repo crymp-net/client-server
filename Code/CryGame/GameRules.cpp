@@ -4092,7 +4092,7 @@ void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 	if (!pActor)
 		return;
 
-	const bool isPlayer = pActor->IsPlayer();
+	const bool isPlayer = pActor->IsPlayerClass(); 
 	const EntityId playerId = pActor->GetEntityId();
 	const int KEY_MODEL = 1000;
 	//const int currTeamId = GetTeam(playerId);
