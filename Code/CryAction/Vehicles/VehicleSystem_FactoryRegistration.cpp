@@ -46,10 +46,7 @@
 
 #include "VehiclePartDetachedEntity.h"
 #include "CryCommon/CrySystem/ICryPak.h"
-#include <CryCommon/CrySystem/CryPath.h>
-
-
-//#include "CryAction.h"
+#include "CryCommon/CrySystem/CryPath.h"
 
 //------------------------------------------------------------------------
 void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
@@ -66,7 +63,8 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 
 	IEntityClassRegistry::SEntityClassDesc detachedPartClass;
 	detachedPartClass.sName = "VehiclePartDetached";
-	detachedPartClass.sScriptFile = "Scripts/Entities/Vehicles/VehiclePartDetached.lua";
+	//CryMP: commented out
+	//detachedPartClass.sScriptFile = "Scripts/Entities/Vehicles/VehiclePartDetached.lua";
 	detachedPartClass.flags = ECLF_INVISIBLE;
 
 	static IGameFramework::CGameObjectExtensionCreator<CVehiclePartDetachedEntity> createVehicleDetachedPartEntity;
@@ -110,12 +108,12 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 						else
 							sprintf(scriptName, "Scripts/Entities/Vehicles/VehiclePool.lua");
 
-            bool show = true;
-            if (root->getAttr("show", show))
-            {
-              if (!show && VehicleCVars().v_show_all==0)
-                vehicleClass.flags |= ECLF_INVISIBLE;
-            }
+						bool show = true;
+						if (root->getAttr("show", show))
+						{
+							if (!show && VehicleCVars().v_show_all==0)
+								vehicleClass.flags |= ECLF_INVISIBLE;
+						}
 
 						vehicleClass.sScriptFile = scriptName;
             
