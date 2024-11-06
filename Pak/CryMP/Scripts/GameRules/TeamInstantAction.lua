@@ -127,6 +127,7 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F5_8_well_done","@mp_radio_WellDone", 3},
 			{"mp_korean/nk_F5_9_hurry_up","mp_radio_HurryUp", 3},
 		},
+		--[[
 		[2]=
 		{
 			{"mp_korean/nk_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
@@ -136,7 +137,7 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F6_5_take_airfield","@mp_radio_TakeAir"},
 			{"mp_korean/nk_F6_6_take_bunker","@mp_radio_TakeBunker"},
 			{"mp_korean/nk_F6_7_take_naval","@mp_radio_TakeNaval"},
-		},
+		},]]
 		[3]=
 		{
 			{"mp_korean/nk_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
@@ -164,9 +165,9 @@ TeamInstantAction.SoundAlert=
 	{
 		tan=
 		{
-			timer2m							= "mp_korean/nk_commander_2_minute_warming_01",
-			timer1m							= "mp_korean/nk_commander_1_minute_warming_01",
-			timer30s						= "mp_korean/nk_commander_30_second_warming_01",
+			timer2m							= "mp_korean/nk_commander_2_minute_warning_01",
+			timer1m							= "mp_korean/nk_commander_1_minute_warning_01",
+			timer30s						= "mp_korean/nk_commander_30_second_warning_01",
 			timer5s							= "mp_korean/nk_commander_final_countdown_01",
 		},
 		
@@ -997,18 +998,16 @@ function TeamInstantAction.Client.PreGame:OnUpdate(frameTime)
 		 
 --System.DrawText(300, 80, "SCORE_LIMIT> "..self.game:GetScoreLimit(), self.game:GetFragLimit(), 2.5, 1, 1, 0, 1);
 
-	if(self.show_scores == true) then
-		self:UpdateScores();
-	end
+	--if(self.show_scores == true) then --CryMP: not needed anymore
+	--	self:UpdateScores();
+	--end
 
 end
 
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client.InGame:OnUpdate(frameTime)
-
 	InstantAction.Client.OnUpdate(self, frameTime);
-	
 end
 
 
@@ -1017,7 +1016,7 @@ function TeamInstantAction.Server.InGame:OnUpdate(frameTime)
 	TeamInstantAction.Server.OnUpdate(self, frameTime);
 
 	self:CheckTimeLimit();
-	self:UpdateClAlerts();	
+	--self:UpdateClAlerts();	--CryMP handled on client side now
 end
 
 

@@ -203,92 +203,6 @@ function PowerStruggle:BLAlert(type, msg, entity, param1)
 	HUD.BattleLogEvent(type, msg, coord, param1);
 end
 
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle:QueueVoice(soundName, soundFlags, soundSemantics, soundGap, endProc, endProcParam)
-	if (not self.voiceQueue) then
-		self.voiceQueue={};
-	end
-	local queue=self.voiceQueue;
-
-	table.insert(queue, {
-		name=soundName,
-		flags=soundFlags,
-		semantics=soundSemantics,
-		gap=soundGap,
-		proc=endProc,
-		param=endProcParam,
-	});
-end
-
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle:UpdateVoiceQueue(frameTime)
-	if (not self.voiceBusy) then
-		self:PlayQueueFront();
-	else
-		local front=self.voiceQueue[1];
-		if (front and (_time>=front.endTime) and (not Sound.IsPlaying(front.soundId))) then
-			table.remove(self.voiceQueue, 1);				
-			self.voiceBusy=false;
-			
-			if (front.proc) then
-				front.proc(front.param);
-			end
-
-			self:PlayQueueFront();
-		end
-	end
-end
-
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle:PlayQueueFront()
-	if (not self.voiceQueue) then
-		return;
-	end
-	
-	local front=self.voiceQueue[1];
-	if (front) then
-		local soundId=Sound.Play(front.name, g_Vectors.v000, front.flags, front.semantics);
-		if (soundId) then
-			front.endTime=_time+Sound.GetSoundLength(soundId);
-			front.soundId=soundId;
-			
-			if (front.gap and front.gap>0) then
-				front.endTime=front.endTime+front.gap;
-			end
-			
-			self.voiceBusy=true;
-		else
-			front.endTime=0;
-		end
-	end
-end
-
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle:ClearVoiceQueue()
-	self.voiceBusy=nil;
-	self.voiceQueue=nil;
-end
-
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle:PlayRadioAlert(alertName, teamId)
-	local teamName=self.game:GetTeamName(teamId);
-	if (teamName and teamName~="") then
-		local alert=self.SoundAlert.Radio[teamName];
-		if (alert) then
-			alert=alert[alertName];
-			if (alert) then
-				self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
-			end
-		end
-	end
-end
-
-
 ----------------------------------------------------------------------------------------------------
 function PowerStruggle:PlayRadioAlertCoord(alertName, teamId, entity)
 	local x,y=1,1;
@@ -891,6 +805,7 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function PowerStruggle.Client:ClTimerAlert(time)
+	--[[  --CryMP: this function now does nothing
 	if (not g_localActorId) then return end
 	
 	local teamId=self.game:GetTeam(g_localActorId);
@@ -903,6 +818,7 @@ function PowerStruggle.Client:ClTimerAlert(time)
 	else
 		self:PlayRadioAlert("timer5s", teamId);
 	end
+	]]
 end
 
 ----------------------------------------------------------------------------------------------------

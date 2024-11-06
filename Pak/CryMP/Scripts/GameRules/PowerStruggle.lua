@@ -1346,6 +1346,8 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function PowerStruggle.Client.InGame:OnBeginState()
+	TeamInstantAction.Client.InGame.OnBeginState(self);  --CryMP: was missing
+
 	CryAction.SendGameplayEvent(NULL_ENTITY, eGE_GameStarted, "", 0);--client
 end
 

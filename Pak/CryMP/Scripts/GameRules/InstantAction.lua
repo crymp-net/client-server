@@ -60,6 +60,16 @@ InstantAction.DamagePlayerToPlayer =
 	assist_min= 0.8,
 };
 
+InstantAction.SoundAlert=
+{
+	Radio=
+	{
+			timer2m 		= "mp_american/us_commander_mission_2_minute_warning_01",
+			timer1m 		= "mp_american/us_commander_mission_1_minute_warning_02",
+			timer30s 		= "mp_american/us_commander_mission_30_second_03",
+			timer5s			= "mp_american/us_commander_final_countdown_01",
+	},
+}
 
 ----------------------------------------------------------------------------------------------------
 Net.Expose {
@@ -89,7 +99,84 @@ Net.Expose {
 	ServerProperties = {
 	},
 };
+
 ----------------------------------------------------------------------------------------------------
+function InstantAction:PlayRadioAlert(alertName, teamId)
+	local alert=self.SoundAlert.Radio[alertName];
+	if (alert) then
+		self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
+	end
+end
+
+
+----------------------------------------------------------------------------------------------------
+function InstantAction:QueueVoice(soundName, soundFlags, soundSemantics, soundGap, endProc, endProcParam)
+	if (not self.voiceQueue) then
+		self.voiceQueue={};
+	end
+	local queue=self.voiceQueue;
+
+	table.insert(queue, {
+		name=soundName,
+		flags=soundFlags,
+		semantics=soundSemantics,
+		gap=soundGap,
+		proc=endProc,
+		param=endProcParam,
+	});
+end
+
+----------------------------------------------------------------------------------------------------
+function InstantAction:UpdateVoiceQueue(frameTime) --CryMP: Fixed
+	if (not self.voiceBusy) then
+		self:PlayQueueFront();
+	else
+		local front = self.voiceQueue[1];
+		if (front) then
+			if (_time >=front.endTime and not Sound.IsPlaying(front.soundId)) then
+				table.remove(self.voiceQueue, 1);				
+				self.voiceBusy=false;
+				if (front.proc) then
+					front.proc(front.param);
+				end
+				self:PlayQueueFront();
+			elseif (_time -front.endTime > 10 and #self.voiceQueue > 1) then
+				self.voiceQueue = {	self.voiceQueue[1] };
+			end
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function InstantAction:PlayQueueFront()
+	if (not self.voiceQueue) then
+		return;
+	end
+	
+	local front=self.voiceQueue[1];
+	if (front) then
+		local soundId=Sound.Play(front.name, g_Vectors.v000, front.flags, front.semantics);
+		if (soundId) then
+			front.endTime=_time+Sound.GetSoundLength(soundId);
+			front.soundId=soundId;
+			
+			if (front.gap and front.gap>0) then
+				front.endTime=front.endTime+front.gap;
+			end
+			
+			self.voiceBusy=true;
+		else
+			front.endTime=0;
+		end
+	end
+end
+
+
+----------------------------------------------------------------------------------------------------
+function InstantAction:ClearVoiceQueue()
+	self.voiceBusy=nil;
+	self.voiceQueue=nil;
+end
 
 
 ----------------------------------------------------------------------------------------------------
@@ -122,6 +209,33 @@ function InstantAction:CheckPlayerScoreLimit(playerId, score)
 	end
 end
 
+----------------------------------------------------------------------------------------------------
+function InstantAction:UpdateTimerSoundAlerts() --CryMP added
+	if (not g_localActorId) then 
+		return 
+	end
+
+	if (self.game:IsTimeLimited() and self:GetState()=="InGame") then
+		local rt=math.floor(self.game:GetRemainingGameTime());
+		
+		if ((not self.lastTimerAlert) or (rt~=self.lastTimerAlert)) then
+			if (rt==120 or rt==60 or rt==30 or rt==5) then
+				self.lastTimerAlert=rt;
+
+				local teamId=self.game:GetTeam(g_localActorId);
+				if (time==120) then
+					self:PlayRadioAlert("timer2m", teamId);
+				elseif(time==60) then
+					self:PlayRadioAlert("timer1m", teamId);
+				elseif(time==30) then
+					self:PlayRadioAlert("timer30s", teamId);		
+				else
+					self:PlayRadioAlert("timer5s", teamId);
+				end
+			end
+		end
+	end		
+end
 
 ----------------------------------------------------------------------------------------------------
 function InstantAction:CheckTimeLimit()
@@ -517,6 +631,9 @@ end
 ----------------------------------------------------------------------------------------------------
 function InstantAction.Client:OnTimer(timerId, msec)
 	if (timerId == self.TICK_TIMERID) then
+		
+		self:UpdateTimerSoundAlerts();
+		
 		self:OnClientTick();
 		if (not self.isServer) then
 			self:SetTimer(self.TICK_TIMERID, self.TICK_TIME);
@@ -530,9 +647,10 @@ end
 ----------------------------------------------------------------------------------------------------
 function InstantAction.Client:OnUpdate(frameTime)
 	SinglePlayer.Client.OnUpdate(self, frameTime);
-	if(self.show_scores == true) then
-		self:UpdateScores();
-	end
+	--if(self.show_scores == true) then --CryMP: commented
+	--	self:UpdateScores();
+	--end
+	self:UpdateVoiceQueue(frameTime);
 end
 
 
@@ -1368,7 +1486,7 @@ function InstantAction:DefaultState(cs, state)
 		OnItemDropped = default.OnItemDropped,
 
 		OnTimer = default.OnTimer,
-		OnUpdate = default.OnUpdate,	
+		OnUpdate = default.OnUpdate,
 	}
 end
 
@@ -1452,7 +1570,6 @@ function InstantAction.Client.PreGame:OnTick()
 		self.game:TextMessage(TextMessageCenter,  "@mp_GameStartingCountdown", time);
 	end
 end
-
 
 ----------------------------------------------------------------------------------------------------
 function InstantAction.Server.InGame:OnTick()
