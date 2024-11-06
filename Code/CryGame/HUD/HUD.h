@@ -329,6 +329,16 @@ public:
   void SetVotingState(EVotingState state, int timeout, EntityId id, const char* descr);
 
 	//RadioButtons & Chat
+  	enum class RadioType
+	{
+		None,
+		Default,
+		Extended,
+		Extended_TIA,
+	};
+
+	RadioType m_currentRadioType = RadioType::None;
+
 	void SetRadioButtons(bool active, int buttonNo = 0, bool extended = false);
 	void ShowGamepadConnected(bool active);
 	void ObituaryMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, int material, int hit_type);

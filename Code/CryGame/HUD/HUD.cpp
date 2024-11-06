@@ -4986,6 +4986,9 @@ void CHUD::LoadGameRulesHUD(bool load)
 				m_animMessages.Load("Libs/UI/HUD_Messages.gfx");
 			//if (!m_animMPMessages.IsLoaded())
 			//	m_animMPMessages.Load("Libs/UI/HUD_MP_Messages.gfx", eFD_Center, eFAF_Visible);
+
+			if (!m_animRadioButtons.IsLoaded())
+				m_animRadioButtons.Load("Libs/UI/HUD_MP_Radio_Buttons.gfx", eFD_Center, eFAF_ThisHandler | eFAF_SkipBreak);
 		}
 		else
 		{

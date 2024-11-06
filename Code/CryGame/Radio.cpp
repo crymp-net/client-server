@@ -303,8 +303,10 @@ bool CRadio::UpdatePendingGroup()
 	m_currentGroup = m_requestedGroup;
 	m_requestedGroup = -1;
 
-	if(g_pGame->GetHUD())
-		g_pGame->GetHUD()->SetRadioButtons(true, m_currentGroup+1, IsExtendedRadio());
+	if (g_pGame->GetHUD())
+	{
+		g_pGame->GetHUD()->SetRadioButtons(true, m_currentGroup + 1, IsExtendedRadio());
+	}
 
 	m_menuOpenTime = gEnv->pTimer->GetCurrTime();
 
