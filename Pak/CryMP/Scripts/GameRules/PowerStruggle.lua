@@ -42,6 +42,7 @@ PowerStruggle.TEAMPOWER_TEAM0_KEY 			= 300;
 
 ----------------------------------------------------------------------------------------------------
 PowerStruggle.teamName	={ "tan", "black" };
+--[[
 PowerStruggle.teamModel	=
 {
 	black	={
@@ -62,7 +63,7 @@ PowerStruggle.teamModel	=
 						},
 					},
 }
-
+]]
 PowerStruggle.VehiclePaint=
 {
 	black	=	"us",

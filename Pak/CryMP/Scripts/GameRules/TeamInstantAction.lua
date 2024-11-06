@@ -81,19 +81,17 @@ TeamInstantAction.teamRadio=
 			{"mp_american/us_F5_8_well_done","@mp_radio_WellDone", 3},
 			{"mp_american/us_F5_9_hurry_up","@mp_radio_HurryUp", 3},
 		},
-		--[[
 		[2]=
 		{
-			--Deactivated
-			{"mp_american/us_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
-			{"mp_american/us_F6_2_gather_power_cores","@mp_radio_GatherPower"},
-			{"mp_american/us_F6_3_take_prototype_factory","@mp_radio_TakePT"},
-			{"mp_american/us_F6_4_take_war_factory","@mp_radio_TakeWar"},
-			{"mp_american/us_F6_5_take_airfield","@mp_radio_TakeAir"},
-			{"mp_american/us_F6_6_take_bunker","@mp_radio_TakeBunker"},
-			{"mp_american/us_F6_7_take_naval","@mp_radio_TakeNaval"},
+			--Deactivated, needs to be 7 entries
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
 		},
-		]]
 		[3]=
 		{
 			{"mp_american/us_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
@@ -110,7 +108,7 @@ TeamInstantAction.teamRadio=
 			{"mp_american/us_F8_3_get_out_vehicle","@mp_radio_GetOut"},
 			{"mp_american/us_F8_4_mechanical_assistance_needed","@mp_radio_MechAssistance"},
 			{"mp_american/us_F8_5_radar_scan","@mp_radio_Radar"},
-			{"mp_american/us_F5_10_request_pickup","@mp_radio_Pickup", 3},
+			{"mp_american/us_F5_10_request_pickup","@mp_radio_RequestPickup", 3},
 		},
 	},
 	tan = 
@@ -127,17 +125,17 @@ TeamInstantAction.teamRadio=
 			{"mp_korean/nk_F5_8_well_done","@mp_radio_WellDone", 3},
 			{"mp_korean/nk_F5_9_hurry_up","mp_radio_HurryUp", 3},
 		},
-		--[[
 		[2]=
 		{
-			{"mp_korean/nk_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
-			{"mp_korean/nk_F6_2_gather_power_cores","@mp_radio_GatherPower"},
-			{"mp_korean/nk_F6_3_take_prototype_factory","@mp_radio_TakePT"},
-			{"mp_korean/nk_F6_4_take_war_factory","@mp_radio_TakeWar"},
-			{"mp_korean/nk_F6_5_take_airfield","@mp_radio_TakeAir"},
-			{"mp_korean/nk_F6_6_take_bunker","@mp_radio_TakeBunker"},
-			{"mp_korean/nk_F6_7_take_naval","@mp_radio_TakeNaval"},
-		},]]
+			--Deactivated, needs to be 7 entries
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+		},
 		[3]=
 		{
 			{"mp_korean/nk_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
@@ -665,6 +663,7 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:OnRevive(playerId, pos, rot, teamId)
+	--[[  CryMP: now in c++
 	local teamId = teamId;
 	local player = System.GetEntity(playerId);
 	
@@ -675,12 +674,13 @@ function TeamInstantAction.Client:OnRevive(playerId, pos, rot, teamId)
 			local model=models[1];
 			player:SetModel(model[1], model[2], model[3], model[4]);
 		end
-	end
+	end]]
 end
 
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId, teamId)
+	--[[  CryMP: now in c++
 	local teamId = teamId;
 	local player = System.GetEntity(playerId);
 	
@@ -692,6 +692,7 @@ function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId,
 			player:SetModel(model[1], model[2], model[3], model[4]);
 		end
 	end
+	]]
 end
 
 ----------------------------------------------------------------------------------------------------
