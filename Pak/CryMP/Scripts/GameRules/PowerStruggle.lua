@@ -624,7 +624,7 @@ function PowerStruggle.Client:OnUpdate(frameTime)
 	
 	self:UpdateObjectives();
 	
-	self:UpdateVoiceQueue(frameTime);
+	--self:UpdateVoiceQueue(frameTime); --CryMP: now in IA.lua
 end
 
 
@@ -1355,6 +1355,7 @@ function PowerStruggle.Server.InGame:OnUpdate(frameTime)
 
 	self:CheckTimeLimit();
 	
+	--[[  --CryMP: this is now done in IA.lua Client.OnUpdate, to support all gamerules
 	if (self.game:IsTimeLimited() and self:GetState()=="InGame") then
 		local rt=math.floor(self.game:GetRemainingGameTime());
 		if ((not self.lastTimerAlert) or (rt~=self.lastTimerAlert)) then
@@ -1364,6 +1365,7 @@ function PowerStruggle.Server.InGame:OnUpdate(frameTime)
 			end
 		end
 	end
+	]] 
 end
 
 
