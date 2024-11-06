@@ -824,8 +824,40 @@ void CHUD::InternalShowSubtitle(const char* subtitleLabel, ISound* pSound, bool 
 	}
 }
 
-void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended /* = false */)
+void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended)
 {
+	//CryMP: 3 types of Radio interface
+	if (m_currentRadioType == RadioType::None)
+	{
+		if (extended)
+		{
+			if (m_currentGameRules == EHUD_TEAMINSTANTACTION)
+			{
+				m_currentRadioType = RadioType::Extended_TIA;
+			}
+			else
+			{
+				m_currentRadioType = RadioType::Extended;
+			}
+		}
+		else
+		{
+			m_currentRadioType = RadioType::Default;
+		}
+	}
+
+	m_currentRadioType = RadioType::Extended_TIA;
+
+	const char* flashCmd = "showRadioButtons";
+	if (m_currentRadioType == RadioType::Extended)
+	{
+		flashCmd = "showRadioButtons_extended";
+	}
+	else if (m_currentRadioType == RadioType::Extended_TIA)
+	{
+		flashCmd = "showRadioButtons_tia";
+	}
+
 	if(active)
 	{
 		if(GetModalHUD() == &m_animPDA)
@@ -833,10 +865,7 @@ void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended /*
 		else if(GetModalHUD() == &m_animBuyMenu)
 			ShowPDA(false, true);
 
-		if (extended)
-			m_animRadioButtons.Invoke("showRadioButtons_extended", buttonNo); //CryMP: Show the extended radio
-		else
-			m_animRadioButtons.Invoke("showRadioButtons", buttonNo); //CryMP: Default radio
+		m_animRadioButtons.Invoke(flashCmd, buttonNo);
 
 		m_animRadioButtons.SetVisible(true);
 		wstring group0(LocalizeWithParams("@mp_radio_group_0"));
@@ -848,7 +877,7 @@ void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended /*
 	}
 	else
 	{
-		m_animRadioButtons.Invoke("showRadioButtons_extended", 0);
+		m_animRadioButtons.Invoke(flashCmd, 0);
 		m_animRadioButtons.SetVisible(false);
 	}
 }
