@@ -29,6 +29,7 @@ History:
 
 CHUDScore::ScoreEntry::ScoreEntry(EntityId id, int kills, int deaths, int ping)
 {
+	m_entityId = id;
 	m_kills = kills;
 	m_deaths = deaths;
 	m_ping = ping;

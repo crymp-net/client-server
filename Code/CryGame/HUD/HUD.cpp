@@ -2736,6 +2736,11 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 		if (m_currentGameRules == EHUD_POWERSTRUGGLE ||
 			m_currentGameRules == EHUD_TEAMINSTANTACTION)
 		{
+			if (m_pHUDTeamInstantAction)
+			{
+				m_pHUDTeamInstantAction->Show(!show);
+			}
+
 			if (!buyMenu && show && m_pModalHUD == NULL)
 			{
 				if (m_pGameRules->GetTeam(m_pClientActor->GetEntityId()) != 0)
