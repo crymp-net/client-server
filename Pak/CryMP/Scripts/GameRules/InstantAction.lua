@@ -932,6 +932,32 @@ function InstantAction:RevivePlayer(channelId, player, keepEquip)
 	return result;
 end
 
+----------------------------------------------------------------------------------------------------
+function InstantAction:OnEnterVehicleSeat(vehicle, seat, entityId)
+	if(self.isServer) then
+		if (vehicle.vehicle:GetMovementType()=="air") then
+			local player=System.GetEntity(entityId);
+			if (player) then
+				if (player.inventory:GetCountOfClass("Parachute")==0) then
+					ItemSystem.GiveItem("Parachute", entityId, false);
+				end
+			end
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+function InstantAction:OnLeaveVehicleSeat(vehicle, seat, passengerId, exiting)
+	if(self.isServer) then
+		if(exiting) then
+			local player=System.GetEntity(passengerId);
+			if(player) then
+				player.lastExitedVehicleId = vehicle.id;
+				player.lastExitedVehicleTime = _time;
+			end
+		end
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 -- how much damage does 1 point of energy absorbs?
