@@ -180,7 +180,7 @@ TeamInstantAction.SoundAlert=
 }
 
 ----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+
 Net.Expose {
 	Class = TeamInstantAction,
 	ClientMethods = {
@@ -1076,6 +1076,24 @@ function TeamInstantAction.Client:ClVictory(teamId, type)
 	else
 		self.game:GameOver(0, 0, g_localActorId);
 	end
+end
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Client:ClTimerAlert(time)
+	--[[  --CryMP: this function now does nothing, but still needs to be implementated or kick
+	if (not g_localActorId) then return end
+	
+	local teamId=self.game:GetTeam(g_localActorId);
+	if (time==120) then
+		self:PlayRadioAlert("timer2m", teamId);
+	elseif(time==60) then
+		self:PlayRadioAlert("timer1m", teamId);
+	elseif(time==30) then
+		self:PlayRadioAlert("timer30s", teamId);		
+	else
+		self:PlayRadioAlert("timer5s", teamId);
+	end
+	]]
 end
 
 ----------------------------------------------------------------------------------------------------

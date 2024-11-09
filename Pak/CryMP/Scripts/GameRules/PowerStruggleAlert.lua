@@ -203,6 +203,7 @@ function PowerStruggle:BLAlert(type, msg, entity, param1)
 	HUD.BattleLogEvent(type, msg, coord, param1);
 end
 
+
 ----------------------------------------------------------------------------------------------------
 function PowerStruggle:PlayRadioAlertCoord(alertName, teamId, entity)
 	local x,y=1,1;
@@ -802,24 +803,6 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Client Alerts
 ----------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------
-function PowerStruggle.Client:ClTimerAlert(time)
-	--[[  --CryMP: this function now does nothing
-	if (not g_localActorId) then return end
-	
-	local teamId=self.game:GetTeam(g_localActorId);
-	if (time==120) then
-		self:PlayRadioAlert("timer2m", teamId);
-	elseif(time==60) then
-		self:PlayRadioAlert("timer1m", teamId);
-	elseif(time==30) then
-		self:PlayRadioAlert("timer30s", teamId);		
-	else
-		self:PlayRadioAlert("timer5s", teamId);
-	end
-	]]
-end
 
 ----------------------------------------------------------------------------------------------------
 function PowerStruggle:SendMDAlert(teamId, name, playerId)
