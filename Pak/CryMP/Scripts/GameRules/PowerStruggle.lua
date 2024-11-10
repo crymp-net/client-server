@@ -64,6 +64,81 @@ PowerStruggle.teamModel	=
 					},
 }
 ]]
+
+PowerStruggle.teamRadio=
+{
+	black = 
+	{
+		[1]=
+		{
+			{"mp_american/us_F5_1_10-4","@mp_radio_Yes",3},
+			{"mp_american/us_F5_2_negative","@mp_radio_No",3},
+			{"mp_american/us_F5_3_wait","@mp_radio_Wait",3},
+			{"mp_american/us_F5_4_follow_me","@mp_radio_FollowMe",3},
+			{"mp_american/us_F5_6_thank_you","@mp_radio_Thanks",3},
+		},
+		[2]=
+		{
+			{"mp_american/us_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
+			{"mp_american/us_F6_2_gather_power_cores","@mp_radio_GatherPower"},
+			{"mp_american/us_F6_3_take_prototype_factory","@mp_radio_TakePT"},
+			{"mp_american/us_F6_4_take_war_factory","@mp_radio_TakeWar"},
+			{"mp_american/us_F6_5_take_airfield","@mp_radio_TakeAir"},
+		},
+		[3]=
+		{
+			{"mp_american/us_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
+			{"mp_american/us_F7_2_aircraft_spotted","@mp_radio_AircraftSpotted"},
+			{"mp_american/us_F7_3_boat_spotted","@mp_radio_BoatSpotted"},
+			{"mp_american/us_F7_4_vehicle_spotted","@mp_radio_LTVSpotted"},
+			{"mp_american/us_F7_5_infantry_spotted","@mp_radio_InfantrySpotted"},
+		},
+		[4]=
+		{
+			{"mp_american/us_F8_1_request_assistance","@mp_radio_Assistance"},
+			{"mp_american/us_F8_2_get_into_vehicle","@mp_radio_GetIn"},
+			{"mp_american/us_F8_3_get_out_vehicle","@mp_radio_GetOut"},
+			{"mp_american/us_F8_4_mechanical_assistance_needed","@mp_radio_MechAssistance"},
+			{"mp_american/us_F8_5_radar_scan","@mp_radio_Radar"},
+		},
+	},
+	tan = 
+	{
+		[1]=
+		{
+			{"mp_korean/nk_F5_1_10-4","@mp_radio_Yes",3},
+			{"mp_korean/nk_F5_2_negative","@mp_radio_No",3},
+			{"mp_korean/nk_F5_3_wait","@mp_radio_Wait",3},
+			{"mp_korean/nk_F5_4_follow_me","@mp_radio_FollowMe",3},
+			{"mp_korean/nk_F5_6_thank_you","@mp_radio_Thanks",3},
+		},
+		[2]=
+		{
+			{"mp_korean/nk_F6_1_attack_enemy_base","@mp_radio_TakeBase"},
+			{"mp_korean/nk_F6_2_gather_power_cores","@mp_radio_GatherPower"},
+			{"mp_korean/nk_F6_3_take_prototype_factory","@mp_radio_TakePT"},
+			{"mp_korean/nk_F6_4_take_war_factory","@mp_radio_TakeWar"},
+			{"mp_korean/nk_F6_5_take_airfield","@mp_radio_TakeAir"},
+		},
+		[3]=
+		{
+			{"mp_korean/nk_F7_1_armor_spotted","@mp_radio_ArmorSpotted"},
+			{"mp_korean/nk_F7_2_aircraft_spotted","@mp_radio_AircraftSpotted"},
+			{"mp_korean/nk_F7_3_boat_spotted","@mp_radio_BoatSpotted"},
+			{"mp_korean/nk_F7_4_vehicle_spotted","@mp_radio_LTVSpotted"},
+			{"mp_korean/nk_F7_5_infantry_spotted","@mp_radio_InfantrySpotted"},
+		},
+		[4]=
+		{
+			{"mp_korean/nk_F8_1_request_assistance","@mp_radio_Assistance"},
+			{"mp_korean/nk_F8_2_get_into_vehicle","@mp_radio_GetIn"},
+			{"mp_korean/nk_F8_3_get_out_vehicle","@mp_radio_GetOut"},
+			{"mp_korean/nk_F8_4_mechanical_assistance_needed","@mp_radio_MechAssistance"},
+			{"mp_korean/nk_F8_5_radar_scan","@mp_radio_Radar"},
+		},
+	},
+}
+
 PowerStruggle.VehiclePaint=
 {
 	black	=	"us",
