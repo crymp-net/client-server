@@ -3586,20 +3586,18 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			if (gEnv->bMultiplayer)
 			{
-				if (m_pGameRules)
+				if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ &&
+					m_pGameRules->IsTimeLimited())
 				{
-					if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ && m_pGameRules->IsTimeLimited())
-					{
-						int time = (int)(m_pGameRules->GetRemainingGameTime());
-
-						int minutes = time / 60;
-						int seconds = time - (minutes * 60);
-						CryFixedStringT<32> msg;
-						msg.Format("%02d:%02d", minutes, seconds);
-						m_animScoreBoard.Invoke("setCountdown", msg.c_str());
-					}
-					else
-						m_animScoreBoard.Invoke("setCountdown", "");
+					const int time = static_cast<int>(m_pGameRules->GetRemainingGameTime());
+					const int minutes = time / 60;
+					const int seconds = time - (minutes * 60);
+					std::string msg = StringTools::Format("%02d:%02d", minutes, seconds);
+					m_animScoreBoard.Invoke("setCountdown", msg.c_str());
+				}
+				else
+				{
+					m_animScoreBoard.Invoke("setCountdown", "");
 				}
 			}
 			m_animScoreBoard.GetFlashPlayer()->Advance(frameTime);
@@ -3888,6 +3886,8 @@ void CHUD::RebootHUD()
 
 void CHUD::SetTeamDisplay(std::string team)
 {
+	//CryMP: unused
+	/*
 	if (m_animHexIcons.IsLoaded())
 	{
 		if (m_currentGameRules == EHUD_POWERSTRUGGLE)
@@ -3900,7 +3900,7 @@ void CHUD::SetTeamDisplay(std::string team)
 			m_animHexIcons.Invoke("setFlagIcon", team.c_str());
 			m_animHexIcons.Invoke("setBackground", "");
 		}
-	}
+	}*/
 }
 
 //-----------------------------------------------------------------------------------------------------

@@ -103,6 +103,12 @@ void CHUDTeamInstantAction::UpdateStats()
 	}
 
 	roundTime = floor(pGameRules->GetRemainingGameTime());
+
+	if (pGameRules->GetCurrentStateId() != 3 /*InGame*/ || !pGameRules->IsTimeLimited())
+	{
+		roundTime = -1.0f; //hides the timer
+	}
+
 	scoreLimit = g_pGameCVars->mp_scoreLimitTia;
 
 	if(	ownTeamScore!=m_ownTeamScore ||
