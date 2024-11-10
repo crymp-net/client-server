@@ -2602,7 +2602,7 @@ float CGameRules::GetClosestTeamMateDistSqr(int teamId, const Vec3& pos, EntityI
 
 	int idx = 0;
 	EntityId teamMateId;
-	while (teamMateId = GetTeamActivePlayer(teamId, idx++))
+	while ((teamMateId = GetTeamActivePlayer(teamId, idx++)) != 0)
 	{
 		if (teamMateId == skipId)
 			continue;
@@ -3213,7 +3213,7 @@ void CGameRules::AddOvertime(float overTime)
 //------------------------------------------------------------------------
 float CGameRules::GetRemainingGameTime() const
 {
-	return MAX(0, (m_endTime - m_pGameFramework->GetServerTime()).GetSeconds());
+	return MAX(0.0f, (m_endTime - m_pGameFramework->GetServerTime()).GetSeconds());
 }
 
 //------------------------------------------------------------------------
