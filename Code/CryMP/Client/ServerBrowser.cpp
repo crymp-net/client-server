@@ -6,7 +6,6 @@
 
 #include "CryCommon/CrySystem/ISystem.h"
 #include "Library/StringTools.h"
-#include "Library/Util.h"
 
 #include "ServerBrowser.h"
 #include "ServerConnector.h"
@@ -81,19 +80,6 @@ namespace
 		return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
 	}
 
-	const char *GetGameType(const json & serverInfo)
-	{
-		const std::string_view map = GetString(serverInfo, "map");
-
-		if (Util::StartsWithNoCase(map, "multiplayer/ia/"))
-			return "InstantAction";
-
-		if (Util::StartsWithNoCase(map, "multiplayer/ps/"))
-			return "PowerStruggle";
-
-		return "";
-	}
-
 	int GetTimeLeft(const json & serverInfo)
 	{
 		int minutes = 0;
@@ -125,6 +111,7 @@ namespace
 
 		info.m_hostName   =              GetCString(serverInfo, "name");
 		info.m_mapName    =              GetCString(serverInfo, "mapnm");
+		info.m_gameType   =              GetCString(serverInfo, "rules");
 		info.m_numPlayers =                  GetInt(serverInfo, "numpl");
 		info.m_maxPlayers =                  GetInt(serverInfo, "maxpl");
 		info.m_publicIP   = IPFromString(GetCString(serverInfo, "public_ip"));
@@ -136,8 +123,6 @@ namespace
 
 		const std::string version = "1.1.1." + std::to_string(GetInt(serverInfo, "ver"));
 		info.m_gameVersion = version.c_str();
-
-		info.m_gameType = GetGameType(serverInfo);
 
 		if (GetBool(serverInfo, "gs"))
 		{
@@ -246,6 +231,7 @@ bool ServerBrowser::OnServerInfo(HTTPClientResult & result, int serverID)
 
 		m_pListener->UpdateValue(serverID, "hostname",              GetCString(serverInfo, "name"));
 		m_pListener->UpdateValue(serverID, "mapname",               GetCString(serverInfo, "mapnm"));
+		m_pListener->UpdateValue(serverID, "gametype",              GetCString(serverInfo, "rules"));
 		m_pListener->UpdateValue(serverID, "numplayers", std::to_string(GetInt(serverInfo, "numpl")).c_str());
 		m_pListener->UpdateValue(serverID, "maxplayers", std::to_string(GetInt(serverInfo, "maxpl")).c_str());
 		m_pListener->UpdateValue(serverID, "password",              GetCString(serverInfo, "pass"));
@@ -253,8 +239,6 @@ bool ServerBrowser::OnServerInfo(HTTPClientResult & result, int serverID)
 
 		const std::string version = "1.1.1." + std::to_string(GetInt(serverInfo, "ver"));
 		m_pListener->UpdateValue(serverID, "gamever", version.c_str());
-
-		m_pListener->UpdateValue(serverID, "gametype", GetGameType(serverInfo));
 
 		const int timeLeft = GetTimeLeft(serverInfo);
 		m_pListener->UpdateValue(serverID, "timelimit", timeLeft ? "1" : "0");
