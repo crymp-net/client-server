@@ -727,13 +727,21 @@ void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityI
 		return;
 	//send chat message to hud
 	int teamFaction = 0;
-	if (IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
+	if (IActor* pClientActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
 	{
-		if (pActor->GetEntityId() != sourceId)
+		//CryMP: Mute check
+		IVoiceContext* pVoiceContext = gEnv->pGame->GetIGameFramework()->GetNetContext()->GetVoiceContext();
+		const bool muted = pVoiceContext->IsMuted(pClientActor->GetEntityId(), sourceId);
+		if (muted)
+		{
+			return;
+		}
+
+		if (pClientActor->GetEntityId() != sourceId)
 		{
 			if (GetTeamCount() > 1)
 			{
-				if (GetTeam(pActor->GetEntityId()) == GetTeam(sourceId))
+				if (GetTeam(pClientActor->GetEntityId()) == GetTeam(sourceId))
 					teamFaction = 1;
 				else
 					teamFaction = 2;
@@ -4186,6 +4194,14 @@ void CGameRules::SendRadioMessage(const EntityId sourceId, const int msg)
 
 void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)
 {
+	//CryMP: Mute check
+	IVoiceContext* pVoiceContext = gEnv->pGame->GetIGameFramework()->GetNetContext()->GetVoiceContext();
+	const bool muted = pVoiceContext->IsMuted(m_pGameFramework->GetClientActorId(), sourceId);
+	if (muted)
+	{
+		return;
+	}
+
 	//CryLog("[radio] from: %s message: %d",,msg);
 	m_pRadio->OnRadioMessage(msg, sourceId);
 }
@@ -4401,7 +4417,7 @@ void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 	if (!pActor)
 		return;
 
-	const bool isPlayer = pActor->IsPlayer();
+	const bool isPlayer = pActor->IsPlayerClass(); 
 	const EntityId playerId = pActor->GetEntityId();
 	const int KEY_MODEL = 1000;
 	//const int currTeamId = GetTeam(playerId);
