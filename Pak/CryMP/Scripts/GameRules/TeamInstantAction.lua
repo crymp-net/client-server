@@ -167,6 +167,8 @@ TeamInstantAction.SoundAlert=
 			timer1m							= "mp_korean/nk_commander_1_minute_warning_01",
 			timer30s						= "mp_korean/nk_commander_30_second_warning_01",
 			timer5s							= "mp_korean/nk_commander_final_countdown_01",
+			win								= "mp_korean/nk_commander_win_mission",
+			lose							= "mp_korean/nk_commander_fail_mission_01",
 		},
 		
 		black=
@@ -175,6 +177,8 @@ TeamInstantAction.SoundAlert=
 			timer1m 		= "mp_american/us_commander_mission_1_minute_warning_02",
 			timer30s 		= "mp_american/us_commander_mission_30_second_03",
 			timer5s			= "mp_american/us_commander_final_countdown_01",
+			win				= "mp_american/us_commander_round_won_01",
+			lose			= "mp_american/us_commander_round_lost_01",
 		},
 	},
 }
@@ -1059,18 +1063,37 @@ function Team(p)
 	return g_gameRules.game:GetTeam(p);
 end
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:PlaySoundAlert(alertName, teamId)
+	local id;
+	if (teamId) then
+		local teamName=self.game:GetTeamName(teamId);
+		if (teamName and teamName~="") then
+			local alert=self.SoundAlert.Sound[teamName];
+			if (alert) then
+				alert=alert[alertName];
+				if (alert) then
+					self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
+				end
+			end
+		end
+	else
+		local alert=self.SoundAlert.Sound[alertName];
+		if (alert) then
+			self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
+		end
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:ClVictory(teamId, type)
 	if (teamId and teamId~=0) then
 		local ownTeamId=self.game:GetTeam(g_localActorId);
 		if(ownTeamId == teamId) then
-			--self:PlaySoundAlert("win", ownTeamId);
-			--self:PlayRadioAlert("win", ownTeamId);
+			self:PlaySoundAlert("win", ownTeamId);
 			self.game:GameOver(1, teamId, g_localActorId);
 		else
-			--self:PlaySoundAlert("lose", ownTeamId);
-			--self:PlayRadioAlert("lose", ownTeamId);
+			self:PlaySoundAlert("lose", ownTeamId);
 			self.game:GameOver(-1, teamId, g_localActorId);
 		end
 	else
@@ -1080,7 +1103,7 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:ClTimerAlert(time)
-	--[[  --CryMP: this function now does nothing, but still needs to be implementated or kick
+	--[[  --CryMP: this function now does nothing, but still needs to be implemented or kick
 	if (not g_localActorId) then return end
 	
 	local teamId=self.game:GetTeam(g_localActorId);
