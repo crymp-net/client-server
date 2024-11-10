@@ -425,8 +425,8 @@ void CSPAnalyst::WriteXML()
 			file.Write(pXmlStrData->GetString(), pXmlStrData->GetStringLength());
 		}
 
-		m_recordingData = NULL;
-		m_currentRecordingSection = NULL;
+		m_recordingData = {};
+		m_currentRecordingSection = {};
 	}
 }
 

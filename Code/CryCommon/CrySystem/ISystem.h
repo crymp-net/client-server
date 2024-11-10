@@ -60,7 +60,6 @@ struct IFlashPlayer;
 struct IFlashLoadMovieHandler;
 class  ICrySizer;
 struct ITestSystem;
-class  IXMLBinarySerializer;
 struct IReadWriteXMLSink;
 struct IGlobalTaskScheduler;
 struct IThreadTaskManager;

@@ -42,7 +42,7 @@ class TimeOfDayScheduler;
 class VehicleSystem;
 class ViewSystem;
 
-class GameFramework : public IGameFramework
+class GameFramework final : public IGameFramework
 {
 	// TODO: use std::unique_ptr instead of raw pointers
 
@@ -145,6 +145,12 @@ class GameFramework : public IGameFramework
 	GameFramework();
 
 public:
+	GameFramework(const GameFramework&) = delete;
+	GameFramework(GameFramework&&) = delete;
+
+	GameFramework& operator=(const GameFramework&) = delete;
+	GameFramework& operator=(GameFramework&&) = delete;
+
 	virtual ~GameFramework();
 
 	static GameFramework* GetInstance();

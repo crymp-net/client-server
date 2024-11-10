@@ -2,12 +2,10 @@
 // Crytek Source File.
 // Copyright (C) Crytek GmbH, 2001-2008.
 // -------------------------------------------------------------------------
-#ifndef __IPLAYERPROFILES_H__
-#define __IPLAYERPROFILES_H__
 
-#if _MSC_VER > 1000
-#	pragma once
-#endif
+#pragma once
+
+#include <cstdint>
 
 #include "CryCommon/CryAction/IFlowSystem.h"
 
@@ -19,7 +17,7 @@ struct ISaveGame;
 struct ISaveGameThumbnail
 {
 	// a thumbnail is a image in BGR or BGRA format
-	// uint8* p; p[0] = B; p[1] = G; p[2] = R; p[3] = A;
+	// std::uint8_t* p; p[0] = B; p[1] = G; p[2] = R; p[3] = A;
 
 	virtual const char* GetSaveGameName() = 0;
 	// image access
@@ -27,13 +25,13 @@ struct ISaveGameThumbnail
 	virtual int   GetWidth() = 0;
 	virtual int   GetHeight() = 0;
 	virtual int   GetDepth() = 0;
-	virtual const uint8* GetImageData() = 0;
+	virtual const std::uint8_t* GetImageData() = 0;
 
 	// smart ptr
 	virtual void AddRef() = 0;
 	virtual void Release() = 0;
 };
-typedef _smart_ptr<ISaveGameThumbnail> ISaveGameThumbailPtr;
+typedef _smart_ptr<ISaveGameThumbnail> ISaveGameThumbnailPtr;
 
 struct ISaveGameEnumerator
 {
@@ -59,8 +57,8 @@ struct ISaveGameEnumerator
 	virtual bool GetDescription(int index, SGameDescription& desc) = 0;
 
 	// Get thumbnail (by index or save game name)
-	virtual ISaveGameThumbailPtr GetThumbnail(int index) = 0;
-	virtual ISaveGameThumbailPtr GetThumbnail(const char* saveGameName) = 0;
+	virtual ISaveGameThumbnailPtr GetThumbnail(int index) = 0;
+	virtual ISaveGameThumbnailPtr GetThumbnail(const char* saveGameName) = 0;
 
 	// smart ptr
 	virtual void AddRef() = 0;
@@ -170,9 +168,9 @@ struct IPlayerProfileManager
 
 struct ILevelRotationFile
 {
-  virtual bool Save(XmlNodeRef r) = 0;
-  virtual XmlNodeRef Load() = 0;
-  virtual void Complete() = 0;
+	virtual bool Save(XmlNodeRef r) = 0;
+	virtual XmlNodeRef Load() = 0;
+	virtual void Complete() = 0;
 };
 
 struct IPlayerProfile
@@ -225,7 +223,5 @@ struct IPlayerProfile
 	virtual ILoadGame* CreateLoadGame() = 0;
 	virtual bool DeleteSaveGame(const char* name) = 0;
 
-  virtual ILevelRotationFile* GetLevelRotationFile(const char* name) = 0;
+	virtual ILevelRotationFile* GetLevelRotationFile(const char* name) = 0;
 };
-
-#endif

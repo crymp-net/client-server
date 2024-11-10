@@ -17,6 +17,7 @@ enum
 
 enum EVarFlags
 {
+	VF_NULL                 = 0x00000000,  // nothing
 	VF_CHEAT                = 0x00000002,  // stays in the default state when cheats are disabled
 	VF_NOT_NET_SYNCED       = 0x00000080,  // can be changed on client
 	VF_DUMPTODISK           = 0x00000100,

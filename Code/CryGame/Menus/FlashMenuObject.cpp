@@ -3582,7 +3582,7 @@ string CFlashMenuObject::GetFSAAMode(int samples, int quality)
 class CFlashLoadMovieImage : public IFlashLoadMovieImage
 {
 public:
-	CFlashLoadMovieImage(ISaveGameThumbailPtr pThumbnail) : m_pThumbnail(pThumbnail)
+	CFlashLoadMovieImage(ISaveGameThumbnailPtr pThumbnail) : m_pThumbnail(pThumbnail)
 	{
 		SwapRB();
 	}
@@ -3649,7 +3649,7 @@ public:
 		}
 	}
 
-	ISaveGameThumbailPtr m_pThumbnail;
+	ISaveGameThumbnailPtr m_pThumbnail;
 };
 
 //-----------------------------------------------------------------------------------------------------
@@ -3672,7 +3672,7 @@ IFlashLoadMovieImage* CFlashMenuObject::LoadMovie(const char* pFilePath)
 		ISaveGameEnumeratorPtr pSGE = pProfile->CreateSaveGameEnumerator();
 		if (pSGE == 0)
 			return 0;
-		ISaveGameThumbailPtr pThumbnail = pSGE->GetThumbnail(saveGameName.c_str());
+		ISaveGameThumbnailPtr pThumbnail = pSGE->GetThumbnail(saveGameName.c_str());
 		if (pThumbnail == 0)
 			return 0;
 		return new CFlashLoadMovieImage(pThumbnail);

@@ -1,10 +1,24 @@
 #pragma once
 
-#include "CryCommon/CryAction/IPlayerProfiles.h"
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
-class PlayerProfileManager : public IPlayerProfileManager
+#include "CryCommon/CryAction/IPlayerProfiles.h"
+#include "CryCommon/CrySystem/IConsole.h"
+
+class PlayerProfile;
+
+class PlayerProfileManager final : public IPlayerProfileManager
 {
-	void* reserved[9 - 1] = {};
+	std::vector<std::string> m_profileNames;
+	std::unique_ptr<PlayerProfile> m_currentProfile;
+	std::unique_ptr<PlayerProfile> m_previewProfile;
+
+	ICVar* m_pRichSaveGamesCVar = nullptr;
+	ICVar* m_pRSFDebugWriteCVar = nullptr;
+	ICVar* m_pRSFDebugWriteOnLoadCVar = nullptr;
 
 public:
 	PlayerProfileManager();
@@ -20,12 +34,12 @@ public:
 	void GetMemoryStatistics(ICrySizer*) override;
 
 	int GetUserCount() override;
-	bool GetUserInfo(int index, IPlayerProfileManager::SUserInfo& outInfo) override;
-	bool LoginUser(const char* userId, bool& outFirstTime) override;
+	bool GetUserInfo(int index, SUserInfo& userInfo) override;
+	bool LoginUser(const char* userId, bool& firstTime) override;
 	bool LogoutUser(const char* userId) override;
 
 	int GetProfileCount(const char* userId) override;
-	bool GetProfileInfo(const char* userId, int index, IPlayerProfileManager::SProfileDescription& outInfo) override;
+	bool GetProfileInfo(const char* userId, int index, SProfileDescription& profileInfo) override;
 
 	bool CreateProfile(const char* userId, const char* profileName, bool overrideIfPresent, EProfileOperationResult& result) override;
 	bool DeleteProfile(const char* userId, const char* profileName, EProfileOperationResult& result) override;
@@ -42,4 +56,9 @@ public:
 	const char* GetSharedSaveGameFolder() override;
 
 	////////////////////////////////////////////////////////////////////////////////
+
+private:
+	void LoadProfileNames();
+
+	static void DumpActionMapsCommand(IConsoleCmdArgs* args);
 };

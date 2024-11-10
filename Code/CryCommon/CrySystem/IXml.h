@@ -13,61 +13,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef __ixml_h__
-#define __ixml_h__
-
-#if _MSC_VER > 1000
 #pragma once
-#endif
+
+#include <cstdint>
 
 #include "CryCommon/CryCore/platform.h"
 #include "CryCommon/CryMath/Cry_Math.h"
 
-#ifdef  SANDBOX_API
-#include "Util/GuidUtil.h"
-#endif //SANDBOX_API
-
-class IXMLDataSink;
-class IXMLBinarySerializer;
 struct IReadWriteXMLSink;
 struct ISerialize;
 
-/**
-
-This is wrapper arround expat library to provide DOM type of access for xml.
-Do not use IXmlNode class directly instead always use XmlNodeRef wrapper that
-takes care of memory managment issues.
-
-Usage Example:
--------------------------------------------------------
-void testXml()
-{
-XmlParser xml;
-XmlNodeRef root = xml.parse( "test.xml" );
-
-if (root) {
-for (int i = 0; i < root->getChildCount(); i++) {
-XmlNodeRef child = root->getChild(i);
-if (child->isTag("world")) {
-if (child->getAttr("name") == "blah") {
-}
-}
-}
-}
-};
-*/
+// This is wrapper arround expat library to provide DOM type of access for xml.
+// Do not use IXmlNode class directly instead always use XmlNodeRef wrapper that
+// takes care of memory managment issues.
 
 // Special string wrapper for xml nodes.
 class XmlString : public string
 {
 public:
-	XmlString() {};
-	XmlString( const char *str ) : string(str) {};
-#ifdef  SANDBOX_API
-	XmlString( const CString &str ) : string( (const char*)str ) {};
-#endif // SANDBOX_API
-
-	operator const char*() const { return c_str(); }
+	XmlString() = default;
+	explicit XmlString( const char *str ) : string(str) {}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,33 +53,27 @@ class IXmlNode;
 * XmlNodeRef, wrapper class implementing reference counting for IXmlNode.
 ******************************************************************************
 */
-class XmlNodeRef {
-private:
-	IXmlNode* p;
+class XmlNodeRef
+{
+	IXmlNode* p = nullptr;
+
 public:
-	XmlNodeRef() : p(NULL) {}
-	XmlNodeRef( int Null ) : p(NULL) {}
-	XmlNodeRef( IXmlNode* p_ );
-	XmlNodeRef( const XmlNodeRef &p_ );
-	//explicit XmlNodeRef( const char *tag,IXmlNode *node );
+	XmlNodeRef() = default;
+	explicit XmlNodeRef(IXmlNode* p);
+
+	XmlNodeRef(const XmlNodeRef& other);
+	XmlNodeRef& operator=(const XmlNodeRef& other);
+
 	~XmlNodeRef();
 
-	operator IXmlNode*() const { return p; }
-	operator const IXmlNode*() const { return p; }
+	explicit operator IXmlNode*() const { return p; }
 	IXmlNode& operator*() const { return *p; }
 	IXmlNode* operator->(void) const { return p; }
 
-	XmlNodeRef&  operator=( IXmlNode* newp );
-	XmlNodeRef&  operator=( const XmlNodeRef &newp );
+	explicit operator bool() const { return p != nullptr; }
 
-	operator bool() const { return p != NULL; };
-	bool operator !() const { return p == NULL; };
-
-	// Misc compare functions.
 	bool  operator == ( const IXmlNode* p2 ) const { return p == p2; };
-	bool  operator == ( IXmlNode* p2 ) const { return p == p2; };
 	bool  operator != ( const IXmlNode* p2 ) const { return p != p2; };
-	bool  operator != ( IXmlNode* p2 ) const { return p != p2; };
 	bool  operator <  ( const IXmlNode* p2 ) const { return p < p2; };
 	bool  operator >  ( const IXmlNode* p2 ) const { return p > p2; };
 
@@ -122,11 +81,6 @@ public:
 	bool  operator != ( const XmlNodeRef &n ) const { return p != n.p; };
 	bool  operator <  ( const XmlNodeRef &n ) const { return p < n.p; };
 	bool  operator >  ( const XmlNodeRef &n ) const { return p > n.p; };
-
-	friend bool operator == ( const XmlNodeRef &p1,int null );
-	friend bool operator != ( const XmlNodeRef &p1,int null );
-	friend bool operator == ( int null,const XmlNodeRef &p1 );
-	friend bool operator != ( int null,const XmlNodeRef &p1 );
 };
 
 /**
@@ -158,7 +112,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//! Get XML node tag.
 	virtual const char *getTag() const = 0;
-	virtual void	setTag( const char *tag ) = 0;
+	virtual void setTag( const char *tag ) = 0;
 
 	//! Return true if givven tag equal to node tag.
 	virtual bool isTag( const char *tag ) const = 0;
@@ -192,7 +146,7 @@ public:
 	virtual void deleteChildAt( int nIndex ) = 0;
 
 	//! Get number of child XML nodes.
-	virtual int	getChildCount() const = 0;
+	virtual int getChildCount() const = 0;
 
 	//! Get XML Node child nodes.
 	virtual XmlNodeRef getChild( int i ) const = 0;
@@ -225,10 +179,10 @@ public:
 
 	//! Set new XML Node attribute (or override attribute with same key).
 	virtual void setAttr( const char* key,const char* value ) = 0;
-	virtual void setAttr( const char* key,int value ) = 0;
-	virtual void setAttr( const char* key,unsigned int value ) = 0;
-	virtual void setAttr( const char* key,int64 value ) = 0;
-	virtual void setAttr( const char* key,uint64 value ) = 0;
+	virtual void setAttr( const char* key,std::int32_t value ) = 0;
+	virtual void setAttr( const char* key,std::uint32_t value ) = 0;
+	virtual void setAttr( const char* key,std::int64_t value ) = 0;
+	virtual void setAttr( const char* key,std::uint64_t value ) = 0;
 	virtual void setAttr( const char* key,float value ) = 0;
 	virtual void setAttr( const char* key,const Vec2& value ) = 0;
 	virtual void setAttr( const char* key,const Ang3& value ) = 0;
@@ -236,9 +190,7 @@ public:
 	virtual void setAttr( const char* key,const Quat &value ) = 0;
 	//////////////////////////////////////////////////////////////////////////
 	// Inline Helpers.
-	void setAttr( const char* key,unsigned long value ) { setAttr( key,(unsigned int)value ); };
-	void setAttr( const char* key,long value ) { setAttr( key,(int)value ); };
-	void setAttr( const char* key,double value ) { setAttr( key,(float)value ); };
+	void setAttr( const char* key,double value ) { setAttr( key,static_cast<float>(value) ); };
 	//////////////////////////////////////////////////////////////////////////
 
 
@@ -248,10 +200,10 @@ public:
 	virtual void removeAllAttributes() = 0;
 
 	//! Get attribute value of node.
-	virtual bool getAttr( const char *key,int &value ) const = 0;
-	virtual bool getAttr( const char *key,unsigned int &value ) const = 0;
-	virtual bool getAttr( const char *key,int64 &value ) const = 0;
-	virtual bool getAttr( const char *key,uint64 &value ) const = 0;
+	virtual bool getAttr( const char *key,std::int32_t &value ) const = 0;
+	virtual bool getAttr( const char *key,std::uint32_t &value ) const = 0;
+	virtual bool getAttr( const char *key,std::int64_t &value ) const = 0;
+	virtual bool getAttr( const char *key,std::uint64_t &value ) const = 0;
 	virtual bool getAttr( const char *key,float &value ) const = 0;
 	virtual bool getAttr( const char *key,Vec2& value ) const = 0;
 	virtual bool getAttr( const char *key,Ang3& value ) const = 0;
@@ -261,117 +213,55 @@ public:
 	virtual bool getAttr( const char *key,XmlString &value ) const = 0;
 	//////////////////////////////////////////////////////////////////////////
 	// Inline Helpers.
-	bool getAttr( const char *key,long &value ) const { int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
-	bool getAttr( const char *key,unsigned long &value ) const { unsigned int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
-	bool getAttr( const char *key,unsigned short &value ) const { unsigned int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
-	bool getAttr( const char *key,unsigned char &value ) const { unsigned int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
-	bool getAttr( const char *key,short &value ) const { int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
-	bool getAttr( const char *key,char &value ) const { int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
+	bool getAttr( const char *key,std::uint16_t &value ) const { unsigned int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
+	bool getAttr( const char *key,std::uint8_t &value ) const { unsigned int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
+	bool getAttr( const char *key,std::int16_t &value ) const { int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
+	bool getAttr( const char *key,std::int8_t &value ) const { int v; if (getAttr(key,v)) { value = v; return true; } else return false; }
 	bool getAttr( const char *key,double &value ) const { float v; if (getAttr(key,v)) { value = (double)v; return true; } else return false; }
-
-#ifdef  SANDBOX_API
-	//////////////////////////////////////////////////////////////////////////
-	// Get CString attribute.
-	//////////////////////////////////////////////////////////////////////////
-	bool getAttr( const char *key,CString &value ) const
-	{
-		if (!haveAttr(key))
-			return false;
-		value = getAttr(key);
-		return true;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Set GUID attribute.
-	//////////////////////////////////////////////////////////////////////////
-	void setAttr( const char* key,REFGUID value )
-	{
-		const char *str = GuidUtil::ToString(value);
-		setAttr( key,str );
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// Get GUID from attribute.
-	//////////////////////////////////////////////////////////////////////////
-	bool getAttr( const char *key,GUID &value ) const
-	{
-		if (!haveAttr(key))
-			return false;
-		const char *guidStr = getAttr(key);
-		value = GuidUtil::FromString( guidStr );
-		if (value.Data1 == 0)
-		{
-			memset( &value,0,sizeof(value) );
-			// If bad GUID, use old guid system.
-			value.Data1 = atoi(guidStr);
-		}
-		return true;
-	}
-#endif //SANDBOX_API
 
 	//! Lets be friendly to him.
 	friend class XmlNodeRef;
 };
 
-/*
-///////////////////////////////////////////////////////////////////////////////
-// Inline Implementation of XmlNodeRef
-inline XmlNodeRef::XmlNodeRef( const char *tag,IXmlNode *node )
+inline XmlNodeRef::XmlNodeRef(IXmlNode* p) : p(p)
 {
-if (node)
-p = node->createNode( tag );
-else
-p = new XmlNode( tag );
-p->AddRef();
-}
-*/
-
-//////////////////////////////////////////////////////////////////////////
-inline XmlNodeRef::XmlNodeRef( IXmlNode* p_ ) : p(p_)
-{
-	if (p) p->AddRef();
+	if (p)
+	{
+		p->AddRef();
+	}
 }
 
-inline XmlNodeRef::XmlNodeRef( const XmlNodeRef &p_ ) : p(p_.p)
+inline XmlNodeRef::XmlNodeRef(const XmlNodeRef& other) : p(other.p)
 {
-	if (p) p->AddRef();
+	if (p)
+	{
+		p->AddRef();
+	}
+}
+
+inline XmlNodeRef& XmlNodeRef::operator=(const XmlNodeRef& other)
+{
+	if (p)
+	{
+		p->Release();
+	}
+
+	p = other.p;
+
+	if (p)
+	{
+		p->AddRef();
+	}
+
+	return *this;
 }
 
 inline XmlNodeRef::~XmlNodeRef()
 {
-	if (p) p->Release();
-}
-
-inline XmlNodeRef&  XmlNodeRef::operator=( IXmlNode* newp )
-{
-	if (newp) newp->AddRef();
-	if (p) p->Release();
-	p = newp;
-	return *this;
-}
-
-inline XmlNodeRef&  XmlNodeRef::operator=( const XmlNodeRef &newp )
-{
-	if (newp.p) newp.p->AddRef();
-	if (p) p->Release();
-	p = newp.p;
-	return *this;
-}
-
-inline bool operator == ( const XmlNodeRef &p1,int null )	{
-	return p1.p == 0;
-}
-
-inline bool operator != ( const XmlNodeRef &p1,int null )	{
-	return p1.p != 0;
-}
-
-inline bool operator == ( int null,const XmlNodeRef &p1 )	{
-	return p1.p == 0;
-}
-
-inline bool operator != ( int null,const XmlNodeRef &p1 )	{
-	return p1.p != 0;
+	if (p)
+	{
+		p->Release();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -414,7 +304,7 @@ struct IXmlUtils
 	// Load xml file, return 0 if load failed.
 	virtual XmlNodeRef LoadXmlFile( const char *sFilename ) = 0;
 	// Load xml from string, return 0 if load failed.
-	virtual XmlNodeRef LoadXmlFromString( const char *sXmlString ) = 0;	
+	virtual XmlNodeRef LoadXmlFromString( const char *sXmlString ) = 0;
 
 	// create an MD5 hash of an XML file
 	virtual const char * HashXml( XmlNodeRef node ) = 0;
@@ -426,5 +316,3 @@ struct IXmlUtils
 	// Creates XML Writer for ISerialize interface.
 	virtual IXmlSerializer* CreateXmlSerializer() = 0;
 };
-
-#endif // __ixml_h__

@@ -254,7 +254,7 @@ void CBattleDust::ReloadXml()
 					weaponNode->getAttr("power", power);
 					weaponNode->getAttr("lifetime", lifetime);
 
-					if (!strcmp(name, "default"))
+					if (!strcmp(name.c_str(), "default"))
 					{
 						m_defaultWeapon.m_power = power;
 						m_defaultWeapon.m_lifetime = lifetime;
@@ -263,7 +263,7 @@ void CBattleDust::ReloadXml()
 					{
 						SBattleEventParameter param;
 						param.m_name = name;
-						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 						param.m_power = power;
 						param.m_lifetime = lifetime;
 						m_weaponPower.push_back(param);
@@ -287,7 +287,7 @@ void CBattleDust::ReloadXml()
 					explosiveNode->getAttr("power", power);
 					explosiveNode->getAttr("lifetime", lifetime);
 
-					if (!strcmp(name, "default"))
+					if (!strcmp(name.c_str(), "default"))
 					{
 						m_defaultExplosion.m_power = power;
 						m_defaultExplosion.m_lifetime = lifetime;
@@ -296,7 +296,7 @@ void CBattleDust::ReloadXml()
 					{
 						SBattleEventParameter param;
 						param.m_name = name;
-						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 						param.m_power = power;
 						param.m_lifetime = lifetime;
 						m_explosionPower.push_back(param);
@@ -320,7 +320,7 @@ void CBattleDust::ReloadXml()
 					vehicleNode->getAttr("power", power);
 					vehicleNode->getAttr("lifetime", lifetime);
 
-					if (!strcmp(name, "default"))
+					if (!strcmp(name.c_str(), "default"))
 					{
 						m_defaultVehicleExplosion.m_power = power;
 						m_defaultVehicleExplosion.m_lifetime = lifetime;
@@ -329,7 +329,7 @@ void CBattleDust::ReloadXml()
 					{
 						SBattleEventParameter param;
 						param.m_name = name;
-						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 						param.m_power = power;
 						param.m_lifetime = lifetime;
 						m_vehicleExplosionPower.push_back(param);
@@ -353,7 +353,7 @@ void CBattleDust::ReloadXml()
 					impact->getAttr("power", power);
 					impact->getAttr("lifetime", lifetime);
 
-					if (!strcmp(name, "default"))
+					if (!strcmp(name.c_str(), "default"))
 					{
 						m_defaultBulletImpact.m_power = power;
 						m_defaultBulletImpact.m_lifetime = lifetime;
@@ -362,7 +362,7 @@ void CBattleDust::ReloadXml()
 					{
 						SBattleEventParameter param;
 						param.m_name = name;
-						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
+						param.m_pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name.c_str());
 						param.m_lifetime = lifetime;
 						param.m_power = power;
 						m_bulletImpactPower.push_back(param);
