@@ -31157,7 +31157,7 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_params_param = node_params->InsertChild("param");
 				node_params_param->SetAttribute("name", "auto_droppable");
-				node_params_param->SetAttribute("value", static_cast<int>(1));
+				node_params_param->SetAttribute("value", static_cast<int>(0));
 			}
 			{
 				IItemParamsNode* node_params_param = node_params->InsertChild("param");
