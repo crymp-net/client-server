@@ -39024,6 +39024,54 @@ void ItemSystem::RegisterXMLData()
 				node_firemodes_firemode->SetAttribute("name", "Shotgun");
 				node_firemodes_firemode->SetAttribute("type", "Shotgun");
 				{
+					IItemParamsNode* node_firemodes_firemode_tracer = node_firemodes_firemode->InsertChild("tracer");
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometryFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometry");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effectFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standardfp");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effect");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standard");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speed");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "frequency");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_tp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_fp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+				}
+				{
 					IItemParamsNode* node_firemodes_firemode_shotgun = node_firemodes_firemode->InsertChild("shotgun");
 					{
 						IItemParamsNode* node_firemodes_firemode_shotgun_param = node_firemodes_firemode_shotgun->InsertChild("param");
@@ -39059,6 +39107,54 @@ void ItemSystem::RegisterXMLData()
 				IItemParamsNode* node_firemodes_firemode = node_firemodes->InsertChild("firemode");
 				node_firemodes_firemode->SetAttribute("name", "Narrow");
 				node_firemodes_firemode->SetAttribute("type", "Shotgun");
+				{
+					IItemParamsNode* node_firemodes_firemode_tracer = node_firemodes_firemode->InsertChild("tracer");
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometryFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometry");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effectFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standardfp");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effect");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standard");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speed");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "frequency");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_tp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_fp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+				}
 				{
 					IItemParamsNode* node_firemodes_firemode_shotgun = node_firemodes_firemode->InsertChild("shotgun");
 					{
