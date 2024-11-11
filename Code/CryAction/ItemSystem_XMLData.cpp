@@ -24130,7 +24130,7 @@ void ItemSystem::RegisterXMLData()
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
 						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
-						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1200));
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(280));
 					}
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
@@ -29051,7 +29051,7 @@ void ItemSystem::RegisterXMLData()
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
 						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
-						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(400));
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(280));
 					}
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
