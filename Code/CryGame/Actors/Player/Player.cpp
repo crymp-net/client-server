@@ -2196,6 +2196,11 @@ void CPlayer::EnableFpSpectatorTarget(bool activate)
 	if (IsClient())
 		return;
 
+	if (!activate)
+	{
+		m_PlayerView.StopVehicleViewUpdates();
+	}
+
 	CPlayer* pPlayer = (CPlayer*)gEnv->pGame->GetIGameFramework()->GetClientActor();
 	if (pPlayer)
 	{
