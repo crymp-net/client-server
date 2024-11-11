@@ -2391,6 +2391,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/equipment/lockpick_kit/lockpick_kit_tp.cgf");
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(-120,0,90));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.04,-0.025,0.04));
 			}
 		}
 		{
@@ -4148,6 +4150,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/equipment/repair_kit/repair_kit_tp.cgf");
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(-70,0,90));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.1,0,0));
 			}
 			{
 				IItemParamsNode* node_geometry_boneAttachments = node_geometry->InsertChild("boneAttachments");
