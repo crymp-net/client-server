@@ -14236,8 +14236,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/us/detonator/detonator_tp.cgf");
-				node_geometry_thirdperson->SetAttribute("angles", Vec3(0,-90,90));
-				node_geometry_thirdperson->SetAttribute("position", Vec3(0,0,0));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.08,-0.0806,0.0153));
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(17,-90,180));
 			}
 		}
 		{
