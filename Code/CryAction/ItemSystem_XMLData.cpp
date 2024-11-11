@@ -2623,7 +2623,7 @@ void ItemSystem::RegisterXMLData()
 			IItemParamsNode* node_geometry = item.params->InsertChild("geometry");
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
-				node_geometry_thirdperson->SetAttribute("name", "objects/default.cgf");
+				node_geometry_thirdperson->SetAttribute("name", "objects/characters/attachment/squad/base_helmets/squad_nightvisiongoggles.cgf");
 			}
 		}
 
