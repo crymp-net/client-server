@@ -163,22 +163,26 @@ TeamInstantAction.SoundAlert=
 	{
 		tan=
 		{
+			start                           = "mp_korean/nk_commander_kyong_roundstart_01",
 			timer2m							= "mp_korean/nk_commander_2_minute_warning_01",
 			timer1m							= "mp_korean/nk_commander_1_minute_warning_01",
 			timer30s						= "mp_korean/nk_commander_30_second_warning_01",
 			timer5s							= "mp_korean/nk_commander_final_countdown_01",
 			win								= "mp_korean/nk_commander_win_mission",
 			lose							= "mp_korean/nk_commander_fail_mission_01",
+			almost_lost						= "mp_korean/nk_commander_round_almost_lost_01",
 		},
 		
 		black=
 		{
+			start           = "mp_american/us_commander_prophet_roundstart_01",
 			timer2m 		= "mp_american/us_commander_mission_2_minute_warning_01",
 			timer1m 		= "mp_american/us_commander_mission_1_minute_warning_02",
 			timer30s 		= "mp_american/us_commander_mission_30_second_03",
 			timer5s			= "mp_american/us_commander_final_countdown_01",
 			win				= "mp_american/us_commander_round_won_01",
 			lose			= "mp_american/us_commander_round_lost_01",
+			almost_lost		= "mp_american/us_commander_round_almost_lost_01",
 		},
 	},
 }
@@ -202,7 +206,8 @@ Net.Expose {
 		ClClientConnect				= { RELIABLE_UNORDERED, NO_ATTACH, STRING, BOOL },
 		ClClientDisconnect		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },
 		ClClientEnteredGame		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },	
-		ClTimerAlert					= { RELIABLE_UNORDERED, NO_ATTACH, INT8 },
+		--ClTimerAlert					= { RELIABLE_UNORDERED, NO_ATTACH, INT8 },
+		ClPlaySoundAlert				= { RELIABLE_UNORDERED, NO_ATTACH, STRINGTABLE }, --CryMP
 	},
 	ServerMethods = {
 		RequestRevive		 = { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, },
@@ -1102,8 +1107,8 @@ function TeamInstantAction.Client:ClVictory(teamId, type)
 end
 
 ----------------------------------------------------------------------------------------------------
+--[[  
 function TeamInstantAction.Client:ClTimerAlert(time)
-	--[[  --CryMP: this function now does nothing, but still needs to be implemented or kick
 	if (not g_localActorId) then return end
 	
 	local teamId=self.game:GetTeam(g_localActorId);
@@ -1116,7 +1121,15 @@ function TeamInstantAction.Client:ClTimerAlert(time)
 	else
 		self:PlayRadioAlert("timer5s", teamId);
 	end
-	]]
+end
+]]
+
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction.Client:ClPlaySoundAlert(sound)
+	if (not g_localActorId) then return end
+	
+	local teamId=self.game:GetTeam(g_localActorId);
+	self:PlayRadioAlert(sound, teamId);
 end
 
 ----------------------------------------------------------------------------------------------------
