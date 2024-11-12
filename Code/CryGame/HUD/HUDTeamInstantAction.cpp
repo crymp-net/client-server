@@ -109,7 +109,7 @@ void CHUDTeamInstantAction::UpdateStats()
 		roundTime = -1.0f; //hides the timer
 	}
 
-	scoreLimit = g_pGameCVars->mp_scoreLimitTia;
+	scoreLimit = g_pGameCVars->mp_tiaScoreLimit;
 
 	if(	ownTeamScore!=m_ownTeamScore ||
 			enemyTeamScore!=m_enemyTeamScore ||
