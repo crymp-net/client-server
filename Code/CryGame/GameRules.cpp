@@ -717,6 +717,30 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char* msg,
 		SAFE_HUD_FUNC(DisplayFlashMessage(msg, 2, color, p0 != 0, p0, p1, p2, p3));
 		break;
 	}
+	case eTextMessageBattleInfo: //5
+	{
+		SAFE_HUD_FUNC(BattleLogEvent(eBLE_Information, msg, p0, p1, p2, p3));
+
+		break;
+	}
+	case eTextMessageBattleCurrency: //6
+	{
+		SAFE_HUD_FUNC(BattleLogEvent(eBLE_Currency, msg, p0, p1, p2, p3));
+
+		break;
+	}
+	case eTextMessageBattleWarning: //7
+	{
+		SAFE_HUD_FUNC(BattleLogEvent(eBLE_Warning, msg, p0, p1, p2, p3));
+
+		break;
+	}
+	case eTextMessageBattleSystem: //8
+	{
+		SAFE_HUD_FUNC(BattleLogEvent(eBLE_System, msg, p0, p1, p2, p3));
+
+		break;
+	}
 	}
 }
 
