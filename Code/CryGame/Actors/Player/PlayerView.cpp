@@ -1250,9 +1250,17 @@ void PlayerView::ViewSpectatorTarget_CryMP(SViewParams& viewParams)
 
 	if (IVehicle* pVehicle = pActor->GetLinkedVehicle())
 	{
-		AABB vehicleBox;
-		pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
-		distance = 2.0f * vehicleBox.GetRadius();
+		if (pVehicle->GetMovement() && pVehicle->GetMovement()->GetMovementType() == IVehicleMovement::eVMT_Air)
+		{
+			offset = 5.0f;
+			distance = 30.f;
+		}
+		else
+		{
+			AABB vehicleBox;
+			pVehicle->GetEntity()->GetLocalBounds(vehicleBox);
+			distance = 2.0f * vehicleBox.GetRadius();
+		}
 	}
 
 	//Zooming ability
