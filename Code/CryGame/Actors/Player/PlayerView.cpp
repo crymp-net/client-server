@@ -104,7 +104,10 @@ void PlayerView::Update(SViewParams& viewParams)
 
 void PlayerView::OnExitVehicle()
 {
-	m_lastSeatId = -1;
+	if (m_player.IsRemote())
+	{
+		StopVehicleViewUpdates();
+	}
 }
 
 //--------------------------------------------------------------------------
@@ -950,13 +953,17 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 				const int currSeatViewId = 1;
 
 				//CryMP: Check if player is switching seat
-				if (m_lastSeatId != pSeat->GetSeatId())
+				if (m_currentViewUpdateSeatId != pSeat->GetSeatId())
 				{	
+					StopVehicleViewUpdates();
 
 					IVehicleView* pNewView = pSeat->GetView(currSeatViewId);
 					if (pNewView)
 					{
 						pNewView->OnStartUsing(m_player.GetEntityId());
+
+						m_currentViewUpdateSeatId = pSeat->GetSeatId();
+						m_currentViewUpdateVehicleId = m_pVehicle->GetEntityId();
 					}
 					if (IVehicleMovement* pMovement = m_pVehicle->GetMovement())
 					{
@@ -964,10 +971,8 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 						params.fValue = 1.0f;
 						pMovement->OnEvent(IVehicleMovement::eVME_PlayerSwitchView, params);
 					}
-
-					m_lastSeatId = pSeat->GetSeatId();
 				}
-				if (IVehicleView* pView = pSeat->GetView(currSeatViewId))
+				if (IVehicleView* pView = m_currentViewUpdateSeatId ? pSeat->GetView(currSeatViewId) : nullptr)
 				{
 					//CryMP: This probably needs a fix in CryAction
 					//so that we see the view direction changes in non driver/gunner seats
@@ -1010,6 +1015,32 @@ void PlayerView::ViewVehicle(SViewParams& viewParams)
 			}
 		}
 	}
+}
+
+void PlayerView::StopVehicleViewUpdates()
+{
+	if (!m_currentViewUpdateVehicleId || !m_currentViewUpdateSeatId)
+	{
+		return;
+	}
+	IVehicle *pVehicle = g_pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(m_currentViewUpdateVehicleId);
+	if (pVehicle)
+	{
+		if (IVehicleSeat* pPreviousSeat = pVehicle->GetSeatById(m_currentViewUpdateSeatId))
+		{
+			if (IVehicleView* pView = pPreviousSeat->GetView(1))
+			{
+				//CryMP: Called on the FP spectator target whenever client stops spectating
+				//or target changes seat/leaves vehicle
+
+				pView->OnStopUsing();
+				
+				//CryLogAlways("$3Stopping view update for vehicle: %s seat %s", pVehicle->GetEntity()->GetName(),pPreviousSeat->GetSeatName());
+			}
+		}
+	}
+	m_currentViewUpdateVehicleId = 0;
+	m_currentViewUpdateSeatId = 0;
 }
 
 void PlayerView::ViewSpectatorTarget(SViewParams& viewParams)
