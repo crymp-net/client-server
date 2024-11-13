@@ -3730,14 +3730,17 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			//CryMP begin
 			const ServerInfo& server = gClient->GetServerConnector()->GetLastServer();
 
-			const std::string text = StringTools::Format("%s (%s:%hu)",
-				server.name.c_str(),
-				server.public_host.c_str(),
-				server.public_port
-			);
+			if (!server.public_host.empty() && server.public_port)
+			{
+				const std::string text = StringTools::Format("%s (%s:%hu)",
+					server.name.c_str(),
+					server.public_host.c_str(),
+					server.public_port
+				);
 
-			SFlashVarValue sArgs[1] = { text.c_str() };
-			m_animSpectate.Invoke("setServerInfo", sArgs, 1);
+				SFlashVarValue sArgs[1] = { text.c_str() };
+				m_animSpectate.Invoke("setServerInfo", sArgs, 1);
+			}
 			//CryMP end
 		}
 	}
