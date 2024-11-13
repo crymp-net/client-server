@@ -560,12 +560,13 @@ function TeamInstantAction:CheckTimeLimit()
 			end
 		end
 
-		if (not draw) then
+		if (not draw or self.OVERTIME_ACTIVE) then
 			self:OnGameEnd(maxId, 2);
 		else
 			local overtimeTime=3;
 			self.game:AddOvertime(overtimeTime);
 			self.game:SendTextMessage(TextMessageCenter, "@ui_msg_overtime_0", TextMessageToAll, nil, overtimeTime);
+			self.OVERTIME_ACTIVE = true;
 --			self:OnGameEnd(nil, 2);
 		end
 	end
