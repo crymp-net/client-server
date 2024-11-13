@@ -223,11 +223,11 @@ function InstantAction:UpdateTimerSoundAlerts() --CryMP added
 				self.lastTimerAlert=rt;
 
 				local teamId=self.game:GetTeam(g_localActorId);
-				if (time==120) then
+				if (rt==120) then
 					self:PlayRadioAlert("timer2m", teamId);
-				elseif(time==60) then
+				elseif(rt==60) then
 					self:PlayRadioAlert("timer1m", teamId);
-				elseif(time==30) then
+				elseif(rt==30) then
 					self:PlayRadioAlert("timer30s", teamId);		
 				else
 					self:PlayRadioAlert("timer5s", teamId);
