@@ -193,6 +193,9 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_FUNC(EndMusicTheme);
 	SCRIPT_REG_FUNC(PlayPattern);
 	SCRIPT_REG_FUNC(PlayStinger);
+	SCRIPT_REG_FUNC(GetMusicStatus);
+	SCRIPT_REG_FUNC(GetMusicThemes);
+	SCRIPT_REG_FUNC(GetMusicMoods);
 	SCRIPT_REG_TEMPLFUNC(SetDefaultMusicMood, "mood");
 	SCRIPT_REG_TEMPLFUNC(SetMenuMusic, "playMenuMusic, theme, mood");
 	SCRIPT_REG_TEMPLFUNC(SetMusicMood, "mood");
@@ -822,6 +825,71 @@ int ScriptBind_Sound::UpdateWeightedEaxEnvironment(IFunctionHandler *pH, const c
 	pReverbManager->UpdateWeightedReverbEnvironment(preset, weight);
 
 	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::GetMusicStatus(IFunctionHandler* pH)
+{
+	IMusicSystem* pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	SCRIPT_CHECK_PARAMETERS(0);
+	SMusicSystemStatus* pStatus = pMusicSystem->GetStatus();
+	ILog* pLog = gEnv->pLog;
+	assert(pLog);
+	CryLogAlways("--- MusicSystem Status Info ---");
+	CryLogAlways("  Streaming: %s", pStatus->bPlaying ? "Yes" : "No");
+	CryLogAlways("  Theme: %s", pStatus->sTheme.c_str());
+	CryLogAlways("  Mood: %s", pStatus->sMood.c_str());
+	CryLogAlways("  Playing patterns:");
+	for (TPatternStatusVecIt It = pStatus->m_vecPlayingPatterns.begin(); It != pStatus->m_vecPlayingPatterns.end(); ++It)
+	{
+		SPlayingPatternsStatus& PatternStatus = (*It);
+		CryLogAlways("    %s (Layer: %s; Volume: %f)", PatternStatus.sName.c_str(), (PatternStatus.nLayer == MUSICLAYER_MAIN) ? "Main" : ((PatternStatus.nLayer == MUSICLAYER_RHYTHMIC) ? "Rhythmic" : "Incidental"), (float)PatternStatus.fVolume);
+	}
+	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::GetMusicThemes(IFunctionHandler* pH)
+{
+	IMusicSystem* pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	SCRIPT_CHECK_PARAMETERS(0);
+	IStringItVec* pVec = pMusicSystem->GetThemes();
+	if (!pVec)
+		return pH->EndFunction();
+	SmartScriptTable pTable(m_pSS);
+	int i = 1;
+	while (!pVec->IsEnd())
+	{
+		pTable->SetAt(i++, pVec->Next());
+	}
+	pVec->Release();
+	return pH->EndFunction(pTable);
+}
+
+int ScriptBind_Sound::GetMusicMoods(IFunctionHandler* pH)
+{
+	IMusicSystem* pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	SCRIPT_CHECK_PARAMETERS(1);
+	const char* pszTheme;
+	pH->GetParam(1, pszTheme);
+	IStringItVec* pVec = pMusicSystem->GetMoods(pszTheme);
+	if (!pVec)
+		return pH->EndFunction();
+	SmartScriptTable pTable(m_pSS);
+	int i = 1;
+	while (!pVec->IsEnd())
+	{
+		pTable->SetAt(i++, pVec->Next());
+	}
+	pVec->Release();
+	return pH->EndFunction(pTable);
 }
 
 int ScriptBind_Sound::EndMusicTheme(IFunctionHandler *pH)
