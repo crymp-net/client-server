@@ -1064,16 +1064,16 @@ CPPAPI.AddLocalizedLabel("ui_TeamInstantAction", {
 	english_text = "TEAM INSTANT ACTION",
 	languages = {
 		czech = {
-			localized_text = "TÝMOVÁ OKAMŽITÁ AKCE",
+			localized_text = "OKAMŽITÁ AKCE V TÝMECH",
 		},
 		french = {
-			localized_text = "PARTIE IMMEDIATE EN EQUIPE",
+			localized_text = "JEU EN EQUIPE",
 		},
 		german = {
 			localized_text = "TEAM-SOFORTACTION",
 		},
 		hungarian = {
-			localized_text = "AZONNALI AKCIÓ",
+			localized_text = "AZONNALI CSAPAT AKCIÓ",
 		},
 		italian = {
 			localized_text = "INSTANT ACTION A SQUADRE",
@@ -1085,10 +1085,284 @@ CPPAPI.AddLocalizedLabel("ui_TeamInstantAction", {
 			localized_text = "КОМАНДНАЯ СХВАТКА",
 		},
 		spanish = {
-			localized_text = "ACCIÓN INSTANTÁNEA DE EQUIPO", 
+			localized_text = "EQ. ACCIÓN INMEDIATA", 
 		},
 		turkish = {
 			localized_text = "INSTANT ACTION TAKIMI",
 		},
 	},
 })
+
+CPPAPI.AddLocalizedLabel("ui_rules_TeamInstantAction", {  --serverlist, just show english name
+	english_text = "TIAction",
+	languages = {
+        czech = {
+            localized_text = "",
+        },
+        french = {
+            localized_text = "",
+        },
+        german = {
+            localized_text = "",
+        },
+        hungarian = {
+            localized_text = "",
+        },
+        italian = {
+            localized_text = "",
+        },
+        polish = {
+            localized_text = "",
+        },
+        russian = {
+            localized_text = "",
+        },
+        spanish = {
+            localized_text = "",
+        },
+        turkish = {
+            localized_text = "",
+        },
+	},
+})
+
+CPPAPI.AddLocalizedLabel("ui_msg_overtime_0", {
+    english_text = "We need a winner! %1 min overtime!",
+    languages = {
+        czech = {
+            localized_text = "Potřebujeme vítěze! %1 minut prodloužení!",
+        },
+        french = {
+            localized_text = "Nous avons besoin d'un gagnant ! Prolongation de %1 minute !",
+        },
+        german = {
+            localized_text = "Wir brauchen einen Sieger! %1 Minute Verlängerung!",
+        },
+        hungarian = {
+            localized_text = "Kell egy győztes! %1 perc hosszabbítás!",
+        },
+        italian = {
+            localized_text = "Serve un vincitore! %1 minuti di overtime!",
+        },
+        polish = {
+            localized_text = "Potrzebujemy zwycięzcy! %1 minut dogrywki!",
+        },
+        russian = {
+            localized_text = "Нам нужен победитель! %1 минута дополнительного времени!",
+        },
+        spanish = {
+            localized_text = "Necesitamos un ganador! %1 minuto de tiempo extra!",
+        },
+        turkish = {
+            localized_text = "Bir kazanan lazım! %1 dakika uzatma!",
+        },
+    },
+})
+
+--ui_msg_tia_win_0
+--ui_msg_tia_lose_0
+--ui_msg_draw_0
+--ui_msg_ia_win_0
+--ui_msg_ia_lose_0
+
+CPPAPI.AddLocalizedLabel("ui_msg_tia_win_0", {
+    english_text = "YOUR TEAM WON!",
+    languages = {
+        czech = {
+            localized_text = "TVŮJ TÝM VYHRÁL!",
+        },
+        french = {
+            localized_text = "VOTRE ÉQUIPE A GAGNÉ !",
+        },
+        german = {
+            localized_text = "DEIN TEAM HAT GEWONNEN!",
+        },
+        hungarian = {
+            localized_text = "A CSAPATOD NYERT!",
+        },
+        italian = {
+            localized_text = "LA TUA SQUADRA HA VINTO!",
+        },
+        polish = {
+            localized_text = "TWOJA DRUŻYNA WYGRAŁA!",
+        },
+        russian = {
+            localized_text = "ВАША КОМАНДА ВЫИГРАЛА!",
+        },
+        spanish = {
+            localized_text = "TU EQUIPO GANÓ!",
+        },
+        turkish = {
+            localized_text = "TAKIMIN KAZANDI!",
+        },
+    },
+})
+
+CPPAPI.AddLocalizedLabel("ui_msg_draw_0", {
+    english_text = "Game over! No winner!",
+    languages = {
+        czech = {
+            localized_text = "Konec hry! Žádný vítěz!",
+        },
+        french = {
+            localized_text = "Jeu terminé ! Pas de gagnant !",
+        },
+        german = {
+            localized_text = "Spiel vorbei! Kein Gewinner!",
+        },
+        hungarian = {
+            localized_text = "Játék vége! Nincs győztes!",
+        },
+        italian = {
+            localized_text = "Fine del gioco! Nessun vincitore!",
+        },
+        polish = {
+            localized_text = "Koniec gry! Brak zwycięzcy!",
+        },
+        russian = {
+            localized_text = "Игра окончена! Нет победителя!",
+        },
+        spanish = {
+            localized_text = "Fin del juego! No hay ganador.",
+        },
+        turkish = {
+            localized_text = "Oyun bitti! Kazanan yok!",
+        },
+    },
+})
+
+
+CPPAPI.AddLocalizedLabel("ui_msg_tia_lose_0", {
+    english_text = "YOUR TEAM LOST!",
+    languages = {
+        czech = {
+            localized_text = "TVŮJ TÝM PROHRÁL!",
+        },
+        french = {
+            localized_text = "VOTRE ÉQUIPE A PERDU !",
+        },
+        german = {
+            localized_text = "DEIN TEAM HAT VERLOREN!",
+        },
+        hungarian = {
+            localized_text = "A CSAPATOD VESZTETT!",
+        },
+        italian = {
+            localized_text = "LA TUA SQUADRA HA PERSO!",
+        },
+        polish = {
+            localized_text = "TWOJA DRUŻYNA PRZEGRAŁA!",
+        },
+        russian = {
+            localized_text = "ВАША КОМАНДА ПРОИГРАЛА!",
+        },
+        spanish = {
+            localized_text = "TU EQUIPO PERDIÓ!",
+        },
+        turkish = {
+            localized_text = "TAKIMINIZ KAYBETTİ!",
+        },
+    },
+})
+
+CPPAPI.AddLocalizedLabel("ui_msg_ia_win_0", {
+    english_text = "YOU WIN!",
+    languages = {
+        czech = {
+            localized_text = "VYHRÁL JSI!",
+        },
+        french = {
+            localized_text = "VOUS AVEZ GAGNÉ !",
+        },
+        german = {
+            localized_text = "DU HAST GEWONNEN!",
+        },
+        hungarian = {
+            localized_text = "NYERTÉL!",
+        },
+        italian = {
+            localized_text = "HAI VINTO!",
+        },
+        polish = {
+            localized_text = "WYGRAŁEŚ!",
+        },
+        russian = {
+            localized_text = "ВЫ ВЫИГРАЛИ!",
+        },
+        spanish = {
+            localized_text = "HAS GANADO!",
+        },
+        turkish = {
+            localized_text = "KAZANDIN!",
+        },
+    },
+})
+
+CPPAPI.AddLocalizedLabel("ui_msg_ia_lose_0", {
+    english_text = "%1 WINS!",
+    languages = {
+        czech = {
+            localized_text = "%1 VYHRÁL!",
+        },
+        french = {
+            localized_text = "%1 A GAGNÉ !",
+        },
+        german = {
+            localized_text = "%1 HAT GEWONNEN!",
+        },
+        hungarian = {
+            localized_text = "%1 NYERT!",
+        },
+        italian = {
+            localized_text = "%1 HA VINTO!",
+        },
+        polish = {
+            localized_text = "%1 WYGRAŁ!",
+        },
+        russian = {
+            localized_text = "%1 ПОБЕДИЛ!",
+        },
+        spanish = {
+            localized_text = "%1 GANÓ!",
+        },
+        turkish = {
+            localized_text = "%1 KAZANDI!",
+        },
+    },
+})
+
+
+--[[
+CPPAPI.AddLocalizedLabel("template", {
+    english_text = "",
+    languages = {
+        czech = {
+            localized_text = "",
+        },
+        french = {
+            localized_text = "",
+        },
+        german = {
+            localized_text = "",
+        },
+        hungarian = {
+            localized_text = "",
+        },
+        italian = {
+            localized_text = "",
+        },
+        polish = {
+            localized_text = "",
+        },
+        russian = {
+            localized_text = "",
+        },
+        spanish = {
+            localized_text = "",
+        },
+        turkish = {
+            localized_text = "",
+        },
+    },
+})
+]]
