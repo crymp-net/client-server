@@ -40,6 +40,8 @@ TeamInstantAction.BALANCE_ACTION_TIMERID		= 7000;
 TeamInstantAction.SCORE_TEAMKILLS_KEY 		= InstantAction.SCORE_LAST_KEY+1;
 TeamInstantAction.SCORE_SELFKILLS_KEY 		= InstantAction.SCORE_LAST_KEY+2;
 
+TeamInstantAction.TEAMSCORE_VICTORY_POINTS_REMAINING	= 10;
+
 ----------------------------------------------------------------------------------------------------
 TeamInstantAction.teamName={ "tan", "black" };
 --[[
@@ -164,9 +166,9 @@ TeamInstantAction.SoundAlert=
 		tan=
 		{
 			start                           = "mp_korean/nk_commander_kyong_roundstart_01",
-			timer2m							= "mp_korean/nk_commander_2_minute_warning_01",
-			timer1m							= "mp_korean/nk_commander_1_minute_warning_01",
-			timer30s						= "mp_korean/nk_commander_30_second_warning_01",
+			timer2m							= "mp_korean/nk_commander_2_minute_warming_01", --CryMP: both warning and warming sounds exist, but only warming will play..
+			timer1m							= "mp_korean/nk_commander_1_minute_warming_01",
+			timer30s						= "mp_korean/nk_commander_30_second_warming_01",
 			timer5s							= "mp_korean/nk_commander_final_countdown_01",
 			win								= "mp_korean/nk_commander_win_mission",
 			lose							= "mp_korean/nk_commander_fail_mission_01",
@@ -184,6 +186,10 @@ TeamInstantAction.SoundAlert=
 			lose			= "mp_american/us_commander_round_lost_01",
 			almost_lost		= "mp_american/us_commander_round_almost_lost_01",
 		},
+	},
+
+	Sound=
+	{
 	},
 }
 
@@ -207,7 +213,7 @@ Net.Expose {
 		ClClientDisconnect		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },
 		ClClientEnteredGame		= { RELIABLE_UNORDERED, NO_ATTACH, STRING, },	
 		--ClTimerAlert					= { RELIABLE_UNORDERED, NO_ATTACH, INT8 },
-		ClPlaySoundAlert				= { RELIABLE_UNORDERED, NO_ATTACH, STRINGTABLE }, --CryMP
+		ClPlayAlert				= { RELIABLE_UNORDERED, NO_ATTACH, STRINGTABLE, BOOL }, --CryMP
 	},
 	ServerMethods = {
 		RequestRevive		 = { RELIABLE_UNORDERED, NO_ATTACH, ENTITYID, },
@@ -484,6 +490,7 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:CheckScoreLimit(teamId, score)
+
 	local state=self:GetState();
 	if (state and state~="InGame") then
 		return;
@@ -492,18 +499,38 @@ function TeamInstantAction:CheckScoreLimit(teamId, score)
 	local scoreLimit = self.game:GetScoreLimit(); --System.GetCVar("g_scorelimit");
 	local scoreLead = self.game:GetScoreLead(); --System.GetCVar("g_scorelead"); 
 	
-	if ((scoreLimit > 0) and (score >= scoreLimit)) then
-		if ((scoreLead > 1) and self.teamId) then
-			for i,id in pairs(self.teamId) do
-				if(id ~= teamId) then
-					if (self:GetTeamScore(id)+scoreLead > score) then
-						return;
+	if (scoreLimit > 0) then
+		if (score >= scoreLimit) then
+			if (scoreLead > 1 and self.teamId) then
+				for i,id in pairs(self.teamId) do
+					if(id ~= teamId) then
+						if (self:GetTeamScore(id)+scoreLead > score) then
+							return;
+						end
 					end
 				end
 			end
-		end
 		
-		self:OnGameEnd(teamId, 3);
+			self:OnGameEnd(teamId, 3);
+
+		elseif (not self.ALMOST_LOST_ANNOUNCED) then
+
+			if (scoreLimit - self:GetTeamScore(teamId) <= self.TEAMSCORE_VICTORY_POINTS_REMAINING) then
+				local enemyTeamId = teamId == 1 and 2 or 1;
+				local enemyTeamPlayers=self.game:GetTeamPlayers(enemyTeamId);
+				if (enemyTeamPlayers) then
+					for i, enemy in pairs(enemyTeamPlayers) do
+						local channelId = enemy.actor:GetChannel();
+						if (channelId > 0) then
+							self.onClient:ClPlayAlert(channelId, "almost_lost", true);
+						end
+					end
+				end
+
+				self.ALMOST_LOST_ANNOUNCED = true;
+			end
+
+		end
 	end
 end
 
@@ -602,6 +629,7 @@ function TeamInstantAction.Client:OnInit()
 		end
 	end
 	
+	self.START_ANNOUNCEMENT = true;
 	--Sound.SetMasterVolumeScale(1);
 	
 end
@@ -669,6 +697,23 @@ function TeamInstantAction.Server:OnChangeTeam(playerId, teamId)
 	end
 end
 
+----------------------------------------------------------------------------------------------------
+function TeamInstantAction:StartAnnouncement(playerId)
+	if (self:GetState() ~= "InGame") then
+		return;
+	end
+	if (not self.START_ANNOUNCEMENT or playerId ~= g_localActorId) then
+		return;
+	end
+	local ownTeamId=self.game:GetTeam(g_localActorId);
+	if (ownTeamId ~= 0) then
+		local enemyTeamId = ownTeamId == 1 and 2 or 1;
+		if (self.game:GetTeamPlayerCount(enemyTeamId) > 0) then
+			self:PlayRadioAlert("start", ownTeamId);
+		end
+		self.START_ANNOUNCEMENT = false;
+	end
+end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:OnRevive(playerId, pos, rot, teamId)
@@ -684,8 +729,9 @@ function TeamInstantAction.Client:OnRevive(playerId, pos, rot, teamId)
 			player:SetModel(model[1], model[2], model[3], model[4]);
 		end
 	end]]
-end
 
+	self:StartAnnouncement(playerId);
+end
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId, teamId)
@@ -702,6 +748,8 @@ function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId,
 		end
 	end
 	]]
+
+	self:StartAnnouncement(playerId);
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -943,7 +991,8 @@ function TeamInstantAction.Server.PreGame:OnTick()
 	if (self:PlayerCountOk()) then
 		if (not self.starting) then
 			self.starting=true;
-			self.game:ResetGameStartTimer(System.GetCVar("g_roundRestartTime"));
+			--self.game:ResetGameStartTimer(System.GetCVar("g_roundRestartTime"));
+			self.game:ResetGameStartTimer(self.START_TIMER);
 		end
 	elseif (self.starting) then
 		self.starting=false;
@@ -1107,10 +1156,9 @@ function TeamInstantAction.Client:ClVictory(teamId, type)
 end
 
 ----------------------------------------------------------------------------------------------------
---[[  
-function TeamInstantAction.Client:ClTimerAlert(time)
+function TeamInstantAction.Client:ClTimerAlert(time) --CryMP: must be there for PowerStruggle
 	if (not g_localActorId) then return end
-	
+	--[[
 	local teamId=self.game:GetTeam(g_localActorId);
 	if (time==120) then
 		self:PlayRadioAlert("timer2m", teamId);
@@ -1121,15 +1169,19 @@ function TeamInstantAction.Client:ClTimerAlert(time)
 	else
 		self:PlayRadioAlert("timer5s", teamId);
 	end
+	]]
 end
-]]
 
 ----------------------------------------------------------------------------------------------------
-function TeamInstantAction.Client:ClPlaySoundAlert(sound)
+function TeamInstantAction.Client:ClPlayAlert(sound, isRadio)
 	if (not g_localActorId) then return end
 	
 	local teamId=self.game:GetTeam(g_localActorId);
-	self:PlayRadioAlert(sound, teamId);
+	if (isRadio) then
+		self:PlayRadioAlert(sound, teamId);
+	else
+		self:PlaySoundAlert(sound, teamId);
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
