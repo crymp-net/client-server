@@ -57,14 +57,19 @@ PowerStruggle.SoundAlert=
 			turrethit						= "mp_korean/nk_commander_building_under_attack_07",
 			turretdestroyed			= "mp_korean/nk_commander_turret_destroyed_01",
 			hqhit								= "mp_korean/nk_commander_building_under_attack_08",	
-			
-			timer2m							= "mp_korean/nk_commander_2_minute_warming_01",
-			timer1m							= "mp_korean/nk_commander_1_minute_warming_01",
-			timer30s						= "mp_korean/nk_commander_30_second_warming_01",
-			timer5s							= "mp_korean/nk_commander_final_countdown_01",
+
+			hqdamaged							= "mp_korean/nk_commander_hq_damaged_01",	
+			hqdestroyed							= "mp_korean/nk_commander_hq_destroyed_01",
 			
 			win									= "mp_korean/nk_commander_win_mission",
 			lose								= "mp_korean/nk_commander_fail_mission_01",
+
+			start                           = "mp_korean/nk_commander_kyong_roundstart_01",
+			timer2m							= "mp_korean/nk_commander_2_minute_warming_01", --CryMP: both warning and warming sounds exist, but only warming will play..
+			timer1m							= "mp_korean/nk_commander_1_minute_warming_01",
+			timer30s						= "mp_korean/nk_commander_30_second_warming_01",
+			timer5s							= "mp_korean/nk_commander_final_countdown_01",
+			almost_lost						= "mp_korean/nk_commander_round_almost_lost_01",
 		},
 		
 		black=
@@ -106,14 +111,21 @@ PowerStruggle.SoundAlert=
 			turrethit						= "mp_american/us_commander_building_under_attack_07",
 			turretdestroyed			= "mp_american/us_commander_turret_destroyed_01",
 			hqhit								= "mp_american/us_commander_building_under_attack_08",
-			
-			timer2m							= "mp_american/us_commander_mission_2_minute_warning_01",
-			timer1m							= "mp_american/us_commander_mission_1_minute_warning_02",
-			timer30s						= "mp_american/us_commander_mission_30_second_03",
-			timer5s							= "mp_american/us_commander_endgame_countdown_01",
-			
+
+			hqdamaged							= "mp_american/us_commander_hq_damaged_01",	
+			hqdestroyed							= "mp_american/us_commander_hq_destroyed_01",
+				
 			win									= "mp_american/us_commander_round_won_01",
 			lose								= "mp_american/us_commander_round_lost_01",
+
+			start           = "mp_american/us_commander_prophet_roundstart_01",
+			timer2m 		= "mp_american/us_commander_mission_2_minute_warning_01",
+			timer1m 		= "mp_american/us_commander_mission_1_minute_warning_02",
+			timer30s 		= "mp_american/us_commander_mission_30_second_03",
+			timer5s			= "mp_american/us_commander_final_countdown_01",
+			win				= "mp_american/us_commander_round_won_01",
+			lose			= "mp_american/us_commander_round_lost_01",
+			almost_lost		= "mp_american/us_commander_round_almost_lost_01",
 		},
 	},
 	
