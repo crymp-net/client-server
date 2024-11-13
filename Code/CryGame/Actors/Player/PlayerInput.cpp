@@ -1001,7 +1001,7 @@ void CPlayerInput::GetState(SSerializedPlayerInput& input)
 	Quat worldRot = m_pPlayer->GetBaseQuat();
 	input.stance = FigureOutStance();
 
-	if (g_pGameCVars->mp_netSerialisePhysVel)
+	if (g_pGameCVars->mp_netSerializePhysVel)
 	{
 		input.deltaMovement.zero();
 		IPhysicalEntity* pEnt = m_pPlayer->GetEntity()->GetPhysics();
