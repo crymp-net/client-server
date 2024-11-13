@@ -565,7 +565,7 @@ function TeamInstantAction:CheckTimeLimit()
 		else
 			local overtimeTime=3;
 			self.game:AddOvertime(overtimeTime);
-			self.game:SendTextMessage(TextMessageBig, "@ui_msg_overtime_0", TextMessageToAll, nil, overtimeTime);
+			self.game:SendTextMessage(TextMessageCenter, "@ui_msg_overtime_0", TextMessageToAll, nil, overtimeTime);
 --			self:OnGameEnd(nil, 2);
 		end
 	end
@@ -1144,10 +1144,10 @@ function TeamInstantAction.Client:ClVictory(teamId, type)
 	if (teamId and teamId~=0) then
 		local ownTeamId=self.game:GetTeam(g_localActorId);
 		if(ownTeamId == teamId) then
-			self:PlaySoundAlert("win", ownTeamId);
+			self:PlayRadioAlert("win", ownTeamId);
 			self.game:GameOver(1, teamId, g_localActorId);
 		else
-			self:PlaySoundAlert("lose", ownTeamId);
+			self:PlayRadioAlert("lose", ownTeamId);
 			self.game:GameOver(-1, teamId, g_localActorId);
 		end
 	else
