@@ -194,6 +194,8 @@ ScriptBind_Sound::ScriptBind_Sound(IScriptSystem *pSS)
 	SCRIPT_REG_FUNC(PlayPattern);
 	SCRIPT_REG_FUNC(PlayStinger);
 	SCRIPT_REG_FUNC(GetMusicStatus);
+	SCRIPT_REG_FUNC(GetCurrentMood);
+	SCRIPT_REG_FUNC(GetCurrentTheme);
 	SCRIPT_REG_FUNC(GetMusicThemes);
 	SCRIPT_REG_FUNC(GetMusicMoods);
 	SCRIPT_REG_TEMPLFUNC(SetDefaultMusicMood, "mood");
@@ -835,8 +837,6 @@ int ScriptBind_Sound::GetMusicStatus(IFunctionHandler* pH)
 
 	SCRIPT_CHECK_PARAMETERS(0);
 	SMusicSystemStatus* pStatus = pMusicSystem->GetStatus();
-	ILog* pLog = gEnv->pLog;
-	assert(pLog);
 	CryLogAlways("--- MusicSystem Status Info ---");
 	CryLogAlways("  Streaming: %s", pStatus->bPlaying ? "Yes" : "No");
 	CryLogAlways("  Theme: %s", pStatus->sTheme.c_str());
@@ -848,6 +848,32 @@ int ScriptBind_Sound::GetMusicStatus(IFunctionHandler* pH)
 		CryLogAlways("    %s (Layer: %s; Volume: %f)", PatternStatus.sName.c_str(), (PatternStatus.nLayer == MUSICLAYER_MAIN) ? "Main" : ((PatternStatus.nLayer == MUSICLAYER_RHYTHMIC) ? "Rhythmic" : "Incidental"), (float)PatternStatus.fVolume);
 	}
 	return pH->EndFunction();
+}
+
+int ScriptBind_Sound::GetCurrentTheme(IFunctionHandler* pH)
+{
+	IMusicSystem* pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	SMusicSystemStatus* pStatus = pMusicSystem->GetStatus();
+	if (!pStatus)
+		return pH->EndFunction();
+
+	return pH->EndFunction(pStatus->sTheme.c_str());
+}
+
+int ScriptBind_Sound::GetCurrentMood(IFunctionHandler* pH)
+{
+	IMusicSystem* pMusicSystem = gEnv->pMusicSystem;
+	if (!pMusicSystem)
+		return pH->EndFunction();
+
+	SMusicSystemStatus* pStatus = pMusicSystem->GetStatus();
+	if (!pStatus)
+		return pH->EndFunction();
+
+	return pH->EndFunction(pStatus->sMood.c_str());
 }
 
 int ScriptBind_Sound::GetMusicThemes(IFunctionHandler* pH)
