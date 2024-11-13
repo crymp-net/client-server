@@ -31,6 +31,7 @@ History:
 #include "CryGame/Actors/Player/NanoSuit.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/Voting.h"
+#include "CryGame/GameRules.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ISubtitleManager.h"
 #include "CryCommon/CryCore/CryFixedString.h"
@@ -71,7 +72,8 @@ class CHUD :	public CHUDCommon,
 							public CNanoSuit::INanoSuitListener,
 							public IViewSystemListener,
 							public ISubtitleHandler,
-							public IEquipmentManager::IListener
+							public IEquipmentManager::IListener,
+							public CGameRules::SGameRulesListener
 {
 	friend class CFlashMenuObject;
 	friend class CHUDPowerStruggle;
@@ -154,6 +156,12 @@ public:
 	// IFSCommandHandler
 	void HandleFSCommand(const char *strCommand,const char *strArgs);
 	// ~IFSCommandHandler
+
+	// CGameRules::SGameRulesListener
+	void GameOver(int localWinner, int winnerTeam, EntityId id) override;
+	void EnteredGame() {};
+	void EndGameNear(EntityId id) {};
+	// ~CGameRules::SGameRulesListener
 
 	// FS Command Handlers (as we also call a lot of these externally)
 	void OnQuickMenuSpeedPreset();
@@ -424,7 +432,6 @@ public:
 	bool IsPDAActive() const { return m_animPDA.GetVisible(); };
 	bool IsBuyMenuActive() const { return (m_pModalHUD == &m_animBuyMenu); };
 	bool IsScoreboardActive() const;
-	void GameOver(int localWinner, int winnerTeam, EntityId id);
 	ILINE bool HasTACWeapon() { return m_hasTACWeapon; };
 	void SetTACWeapon(bool hasTACWeapon);
 	void SetStealthExposure(float exposure);

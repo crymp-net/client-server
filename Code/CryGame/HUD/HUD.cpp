@@ -336,6 +336,12 @@ CHUD::~CHUD()
 			pSuit->RemoveListener(this);
 	}
 
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+	if (pGameRules)
+	{
+		pGameRules->RemoveGameRulesListener(this);
+	}
+
 	ISubtitleManager* pSubtitleManager = pGF->GetISubtitleManager();
 	if (pSubtitleManager != 0)
 	{
@@ -605,6 +611,8 @@ bool CHUD::Init(IActor* pActor)
 
 	if (gEnv->bMultiplayer)
 	{
+		m_pGameRules->AddGameRulesListener(this);
+
 		if (m_currentGameRules == EHUD_POWERSTRUGGLE)
 		{
 			//CryMP: Let's load PowerStruggle only when needed..
