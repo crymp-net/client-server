@@ -1000,9 +1000,26 @@ void CPlayerInput::GetState(SSerializedPlayerInput& input)
 
 	Quat worldRot = m_pPlayer->GetBaseQuat();
 	input.stance = FigureOutStance();
-	input.deltaMovement = worldRot.GetNormalized() * m_filteredDeltaMovement;
-	// ensure deltaMovement has the right length
-	input.deltaMovement = input.deltaMovement.GetNormalizedSafe(ZERO) * m_filteredDeltaMovement.GetLength();
+
+	if (g_pGameCVars->mp_netSerialisePhysVel)
+	{
+		input.deltaMovement.zero();
+		IPhysicalEntity* pEnt = m_pPlayer->GetEntity()->GetPhysics();
+		pe_status_living psl;
+		if (pEnt && pEnt->GetStatus(&psl))
+		{
+			// Remove the ground velocity
+			input.deltaMovement = (psl.vel - psl.velGround) / g_pGameCVars->mp_netSerializeMaxSpeed;
+			//input.deltaMovement.z = 0.0f;
+		}
+	}
+	else
+	{
+		input.deltaMovement = worldRot.GetNormalized() * m_filteredDeltaMovement;
+		// ensure deltaMovement has the right length
+		input.deltaMovement = input.deltaMovement.GetNormalizedSafe(ZERO) * m_filteredDeltaMovement.GetLength();
+	}
+
 	input.sprint = (((m_actions & ACTION_SPRINT) != 0) && !m_pPlayer->m_stats.bIgnoreSprinting);
 
 	input.leanl = (m_actions & ACTION_LEANLEFT) != 0;
