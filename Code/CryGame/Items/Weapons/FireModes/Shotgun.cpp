@@ -315,7 +315,6 @@ bool CShotgun::Shoot(bool resetAnimation, bool autoreload/* =true */, bool noSou
 	if(zoomedCock)
 		m_pWeapon->GetScheduler()->TimerAction(250, CSchedulerAction<ZoomedCockAction>::Create(this), false);
 
-
 	Vec3 hit = GetProbableHit(WEAPON_HIT_RANGE);
 	Vec3 pos = GetFiringPos(hit);
 	Vec3 fdir = ApplySpread(GetFiringDir(hit, pos), GetSpread());
@@ -330,20 +329,28 @@ bool CShotgun::Shoot(bool resetAnimation, bool autoreload/* =true */, bool noSou
 
 	for (int i = 0; i < m_shotgunparams.pellets; i++)
 	{
-		CProjectile *pAmmo = m_pWeapon->SpawnAmmo(ammo, false);
+		CProjectile* pAmmo = m_pWeapon->SpawnAmmo(ammo, false);
 		if (pAmmo)
 		{
-			dir = ApplySpread(fdir, m_shotgunparams.spread);      
-      int hitTypeId = g_pGame->GetGameRules()->GetHitTypeId(m_fireparams.hit_type.c_str());			
-      
-			pAmmo->SetParams(m_pWeapon->GetOwnerId(), m_pWeapon->GetHostId(), m_pWeapon->GetEntityId(), m_pWeapon->GetFireModeIdx(GetName()),
-				m_shotgunparams.pelletdamage, hitTypeId);
+			// Apply spread for each pellet to get a unique direction.
+			dir = ApplySpread(fdir, m_shotgunparams.spread);
+
+			// Calculate the unique hit position for this pellet.
+			Vec3 individualHit = pos + (dir * WEAPON_HIT_RANGE);
+
+			int hitTypeId = g_pGame->GetGameRules()->GetHitTypeId(m_fireparams.hit_type.c_str());
+			pAmmo->SetParams(m_pWeapon->GetOwnerId(), m_pWeapon->GetHostId(), m_pWeapon->GetEntityId(),
+				m_pWeapon->GetFireModeIdx(GetName()), m_shotgunparams.pelletdamage, hitTypeId);
 			pAmmo->SetSequence(m_pWeapon->GetShootSeqN());
 			pAmmo->SetDestination(m_pWeapon->GetDestination());
 			pAmmo->Launch(pos, dir, vel);
 
-			if ((!m_tracerparams.geometry.empty() || !m_tracerparams.effect.empty()) && (ammoCount==GetClipSize() || (ammoCount%m_tracerparams.frequency==0)))
-				EmitTracer(pos,hit,false);
+			// Emit tracer based on unique hit for each pellet.
+			if ((!m_tracerparams.geometry.empty() || !m_tracerparams.effect.empty()) &&
+				(ammoCount == GetClipSize() || (ammoCount % m_tracerparams.frequency == 0)))
+			{
+				EmitTracer(pos, individualHit, false);
+			}
 
 			m_projectileId = pAmmo->GetEntity()->GetId();
 		}

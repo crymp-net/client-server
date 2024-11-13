@@ -2391,6 +2391,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/equipment/lockpick_kit/lockpick_kit_tp.cgf");
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(-120,0,90));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.04,-0.025,0.04));
 			}
 		}
 		{
@@ -2623,7 +2625,7 @@ void ItemSystem::RegisterXMLData()
 			IItemParamsNode* node_geometry = item.params->InsertChild("geometry");
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
-				node_geometry_thirdperson->SetAttribute("name", "objects/default.cgf");
+				node_geometry_thirdperson->SetAttribute("name", "objects/characters/attachment/squad/base_helmets/squad_nightvisiongoggles.cgf");
 			}
 		}
 
@@ -4148,6 +4150,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/equipment/repair_kit/repair_kit_tp.cgf");
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(-70,0,90));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.1,0,0));
 			}
 			{
 				IItemParamsNode* node_geometry_boneAttachments = node_geometry->InsertChild("boneAttachments");
@@ -14232,8 +14236,8 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
 				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/us/detonator/detonator_tp.cgf");
-				node_geometry_thirdperson->SetAttribute("angles", Vec3(0,-90,90));
-				node_geometry_thirdperson->SetAttribute("position", Vec3(0,0,0));
+				node_geometry_thirdperson->SetAttribute("position", Vec3(-0.08,-0.0806,0.0153));
+				node_geometry_thirdperson->SetAttribute("angles", Vec3(17,-90,180));
 			}
 		}
 		{
@@ -24126,7 +24130,7 @@ void ItemSystem::RegisterXMLData()
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
 						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
-						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1200));
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(280));
 					}
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
@@ -29047,7 +29051,7 @@ void ItemSystem::RegisterXMLData()
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
 						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
-						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(400));
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(280));
 					}
 					{
 						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
@@ -31153,7 +31157,7 @@ void ItemSystem::RegisterXMLData()
 			{
 				IItemParamsNode* node_params_param = node_params->InsertChild("param");
 				node_params_param->SetAttribute("name", "auto_droppable");
-				node_params_param->SetAttribute("value", static_cast<int>(1));
+				node_params_param->SetAttribute("value", static_cast<int>(0));
 			}
 			{
 				IItemParamsNode* node_params_param = node_params->InsertChild("param");
@@ -39020,6 +39024,54 @@ void ItemSystem::RegisterXMLData()
 				node_firemodes_firemode->SetAttribute("name", "Shotgun");
 				node_firemodes_firemode->SetAttribute("type", "Shotgun");
 				{
+					IItemParamsNode* node_firemodes_firemode_tracer = node_firemodes_firemode->InsertChild("tracer");
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometryFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometry");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effectFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standardfp");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effect");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standard");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speed");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "frequency");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_tp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_fp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+				}
+				{
 					IItemParamsNode* node_firemodes_firemode_shotgun = node_firemodes_firemode->InsertChild("shotgun");
 					{
 						IItemParamsNode* node_firemodes_firemode_shotgun_param = node_firemodes_firemode_shotgun->InsertChild("param");
@@ -39055,6 +39107,54 @@ void ItemSystem::RegisterXMLData()
 				IItemParamsNode* node_firemodes_firemode = node_firemodes->InsertChild("firemode");
 				node_firemodes_firemode->SetAttribute("name", "Narrow");
 				node_firemodes_firemode->SetAttribute("type", "Shotgun");
+				{
+					IItemParamsNode* node_firemodes_firemode_tracer = node_firemodes_firemode->InsertChild("tracer");
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometryFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "geometry");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "objects/effects/tracer_standard_new.cgf");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effectFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standardfp");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "effect");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_fx.tracer.standard");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speed");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "speedFP");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(360));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "frequency");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", static_cast<int>(1));
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_tp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+					{
+						IItemParamsNode* node_firemodes_firemode_tracer_param = node_firemodes_firemode_tracer->InsertChild("param");
+						node_firemodes_firemode_tracer_param->SetAttribute("name", "helper_fp");
+						node_firemodes_firemode_tracer_param->SetAttribute("value", "weapon_term");
+					}
+				}
 				{
 					IItemParamsNode* node_firemodes_firemode_shotgun = node_firemodes_firemode->InsertChild("shotgun");
 					{
