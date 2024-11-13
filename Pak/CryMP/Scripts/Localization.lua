@@ -1096,33 +1096,6 @@ CPPAPI.AddLocalizedLabel("ui_TeamInstantAction", {
 CPPAPI.AddLocalizedLabel("ui_rules_TeamInstantAction", {  --serverlist, just show english name
 	english_text = "TIAction",
 	languages = {
-        czech = {
-            localized_text = "",
-        },
-        french = {
-            localized_text = "",
-        },
-        german = {
-            localized_text = "",
-        },
-        hungarian = {
-            localized_text = "",
-        },
-        italian = {
-            localized_text = "",
-        },
-        polish = {
-            localized_text = "",
-        },
-        russian = {
-            localized_text = "",
-        },
-        spanish = {
-            localized_text = "",
-        },
-        turkish = {
-            localized_text = "",
-        },
 	},
 })
 
