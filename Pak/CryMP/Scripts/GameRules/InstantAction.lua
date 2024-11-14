@@ -1868,7 +1868,6 @@ end
 
 ----------------------------------------------------------------------------------------------------
 function InstantAction.Client:ClWorkComplete(entityId, workName)
-	System.LogAlways("Def:$9ClWorkComplete $1($8"..workName.."$1)");
 	local sound;		
 	if (workName=="repair") then
 		sound="sounds/weapons:repairkit:repairkit_successful"
