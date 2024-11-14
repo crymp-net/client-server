@@ -25,6 +25,8 @@ public:
 
 	static const int RADIO_MESSAGE_NUM;
 
+	bool IsExtendedRadio();
+
 	//from IInputEventListener
 	virtual bool	OnInputEvent( const SInputEvent &event );
 	void			OnRadioMessage(int id, EntityId fromId);
@@ -50,8 +52,6 @@ private:
 	bool GetTeamRadioTable(const string& team_name, SmartScriptTable& out_table);
 	int GetExtendedRadioId(int keyId, int groupId);
 	bool GetGroupAndKeyFromExtendedRadioId(int radioId, int& group, int& newId);
-	int GetExtendedRadioId(int keyId, int groupId, SmartScriptTable radioTable);
-	bool IsExtendedRadio();
 };
 
 #endif

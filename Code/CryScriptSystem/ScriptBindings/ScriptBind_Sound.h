@@ -46,6 +46,11 @@ public:
 	int UnregisterWeightedEaxEnvironment(IFunctionHandler *pH, const char *preset);
 	int UpdateSoundMood(IFunctionHandler *pH, const char *mood, float fade, uint32_t fadeTimeMs);
 	int UpdateWeightedEaxEnvironment(IFunctionHandler *pH, const char *preset, float weight);
+	int GetMusicStatus(IFunctionHandler* pH);
+	int GetCurrentTheme(IFunctionHandler* pH);
+	int GetCurrentMood(IFunctionHandler* pH);
+	int GetMusicThemes(IFunctionHandler* pH);
+	int GetMusicMoods(IFunctionHandler* pH);
 
 	// music
 	int EndMusicTheme(IFunctionHandler *pH);

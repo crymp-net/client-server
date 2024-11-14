@@ -57,6 +57,7 @@ History:
 
 #include "HUDVehicleInterface.h"
 #include "HUDPowerStruggle.h"
+#include "HUDTeamInstantAction.h"
 #include "HUDScopes.h"
 #include "HUDCrosshair.h"
 #include "HUDTagNames.h"
@@ -335,6 +336,12 @@ CHUD::~CHUD()
 			pSuit->RemoveListener(this);
 	}
 
+	CGameRules* pGameRules = g_pGame->GetGameRules();
+	if (pGameRules)
+	{
+		pGameRules->RemoveGameRulesListener(this);
+	}
+
 	ISubtitleManager* pSubtitleManager = pGF->GetISubtitleManager();
 	if (pSubtitleManager != 0)
 	{
@@ -373,6 +380,10 @@ void CHUD::MP_ResetBegin()
 {
 	if (m_pHUDPowerStruggle)
 		m_pHUDPowerStruggle->Reset();
+	if (m_pHUDTeamInstantAction)
+		m_pHUDTeamInstantAction->Reset();
+	//if (m_pHUDInstantAction)
+	//	m_pHUDInstantAction->Reset();
 
 	// Close everything that could be opened at this time
 
@@ -596,28 +607,41 @@ bool CHUD::Init(IActor* pActor)
 
 	m_pHUDVehicleInterface = new CHUDVehicleInterface(this, &m_animPlayerStats);
 
+	GameRulesSet();
+
 	if (gEnv->bMultiplayer)
 	{
-		if (m_pGameRules && m_pGameRules->GetTeamCount() > 1)
+		m_pGameRules->AddGameRulesListener(this);
+
+		if (m_currentGameRules == EHUD_POWERSTRUGGLE)
 		{
 			//CryMP: Let's load PowerStruggle only when needed..
 			m_pHUDPowerStruggle = new CHUDPowerStruggle(this, m_pGameRules, &m_animBuyMenu, &m_animHexIcons);
 			m_hudObjectsList.push_back(m_pHUDPowerStruggle);
+		}
+		else if (m_currentGameRules == EHUD_TEAMINSTANTACTION)
+		{
+			m_pHUDTeamInstantAction = new CHUDTeamInstantAction(this);
+			m_hudObjectsList.push_back(m_pHUDTeamInstantAction);
 
+			if (m_pHUDTeamInstantAction)
+				m_pHUDTeamInstantAction->Show(true);
+		}
+		else if (m_currentGameRules == EHUD_INSTANTACTION)
+		{
+			//m_pHUDInstantAction = new CHUDInstantAction(this);
+			//m_hudObjectsList.push_back(m_pHUDInstantAction);
+		}
+
+		if (m_pGameRules->GetTeamCount() > 1)
+		{
 			m_animTeamSelection.Load("Libs/UI/HUD_TeamSelection.gfx", eFD_Center, eFAF_ManualRender | eFAF_ThisHandler);
 			m_animTeamSelection.GetFlashPlayer()->SetVisible(false);
 		}
-		else
-			m_pHUDPowerStruggle = NULL;
 	}
-	else
-		m_pHUDPowerStruggle = NULL;
 
 	m_lastPlayerPPSet = -1;
 	m_buyMenuKeyLog.Clear();
-
-	if (m_pGameRules && m_pGameRules->GetEntity())
-		GameRulesSet(m_pGameRules->GetEntity()->GetClass()->GetName());
 
 	//if wanted, load everything that will be loaded later on
 	if (loadEverything)
@@ -764,6 +788,11 @@ void CHUD::SetHUDColor()
 		SetFlashColor(*iter);
 	}
 
+	if (m_pHUDTeamInstantAction)
+		m_pHUDTeamInstantAction->SetHUDColor();
+	//if (m_pHUDInstantAction)
+	//	m_pHUDInstantAction->SetHUDColor();
+
 	//necessary in new hud design only
 	m_fHealth = -1.0f;
 	UpdateHealth();
@@ -853,18 +882,22 @@ IActor* CHUD::GetSpectatorTarget()
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUD::GameRulesSet(const char* name)
+void CHUD::GameRulesSet()
 {
 	EHUDGAMERULES gameRules = EHUD_SINGLEPLAYER;
 
+	std::string name = m_pGameRules->GetEntity()->GetClass()->GetName();
+
 	if (gEnv->bMultiplayer)
 	{
-		if (!_stricmp(name, "InstantAction"))
+		if (!stricmp(name.c_str(), "InstantAction"))
 			gameRules = EHUD_INSTANTACTION;
-		else if (!_stricmp(name, "PowerStruggle"))
+		else if (!stricmp(name.c_str(), "PowerStruggle"))
 			gameRules = EHUD_POWERSTRUGGLE;
-		else if (!_stricmp(name, "TeamAction"))
+		else if (!stricmp(name.c_str(), "TeamAction"))
 			gameRules = EHUD_TEAMACTION;
+		else if (!stricmp(name.c_str(), "TeamInstantAction"))
+			gameRules = EHUD_TEAMINSTANTACTION;
 	}
 
 	if (m_currentGameRules != gameRules)//unload stuff
@@ -1516,34 +1549,33 @@ void CHUD::HandleFSCommand(const char* szCommand, const char* szArgs)
 	}
 	else if (!strcmp(szCommand, "Autojoin"))
 	{
-		if (m_pGameRules)
+
+		int lt = 0;
+		int ltn = 0;
+		int nteams = m_pGameRules->GetTeamCount();
+		for (int i = 1;i <= nteams;i++)
 		{
-			int lt = 0;
-			int ltn = 0;
-			int nteams = m_pGameRules->GetTeamCount();
-			for (int i = 1;i <= nteams;i++)
+			int n = m_pGameRules->GetTeamPlayerCount(i);
+			if (!lt || ltn > n)
 			{
-				int n = m_pGameRules->GetTeamPlayerCount(i);
-				if (!lt || ltn > n)
-				{
-					lt = i;
-					ltn = n;
-				}
-			}
-
-			if (lt == 0)
-				lt = 1;
-
-			CryFixedStringT<64> cmd("team ");
-			cmd.append(m_pGameRules->GetTeamName(lt));
-			gEnv->pConsole->ExecuteString(cmd.c_str());
-
-			if (GetModalHUD() == &m_animTeamSelection)
-			{
-				m_animTeamSelection.SetVisible(false);
-				SwitchToModalHUD(NULL, false);
+				lt = i;
+				ltn = n;
 			}
 		}
+
+		if (lt == 0)
+			lt = 1;
+
+		CryFixedStringT<64> cmd("team ");
+		cmd.append(m_pGameRules->GetTeamName(lt));
+		gEnv->pConsole->ExecuteString(cmd.c_str());
+
+		if (GetModalHUD() == &m_animTeamSelection)
+		{
+			m_animTeamSelection.SetVisible(false);
+			SwitchToModalHUD(NULL, false);
+		}
+		
 		ShowPDA(false);
 	}
 	else if (!strcmp(szCommand, "Spectate"))
@@ -2719,8 +2751,14 @@ bool CHUD::ShowPDA(bool show, bool buyMenu)
 			return false;
 		}
 
-		if (m_currentGameRules == EHUD_POWERSTRUGGLE)
+		if (m_currentGameRules == EHUD_POWERSTRUGGLE ||
+			m_currentGameRules == EHUD_TEAMINSTANTACTION)
 		{
+			if (m_pHUDTeamInstantAction)
+			{
+				m_pHUDTeamInstantAction->Show(!show);
+			}
+
 			if (!buyMenu && show && m_pModalHUD == NULL)
 			{
 				if (m_pGameRules->GetTeam(m_pClientActor->GetEntityId()) != 0)
@@ -3556,20 +3594,18 @@ void CHUD::OnPostUpdate(float frameTime)
 
 			if (gEnv->bMultiplayer)
 			{
-				if (m_pGameRules)
+				if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ &&
+					m_pGameRules->IsTimeLimited())
 				{
-					if (m_pGameRules->GetCurrentStateId() == 3/*InGame*/ && m_pGameRules->IsTimeLimited())
-					{
-						int time = (int)(m_pGameRules->GetRemainingGameTime());
-
-						int minutes = time / 60;
-						int seconds = time - (minutes * 60);
-						CryFixedStringT<32> msg;
-						msg.Format("%02d:%02d", minutes, seconds);
-						m_animScoreBoard.Invoke("setCountdown", msg.c_str());
-					}
-					else
-						m_animScoreBoard.Invoke("setCountdown", "");
+					const int time = static_cast<int>(m_pGameRules->GetRemainingGameTime());
+					const int minutes = time / 60;
+					const int seconds = time - (minutes * 60);
+					std::string msg = StringTools::Format("%02d:%02d", minutes, seconds);
+					m_animScoreBoard.Invoke("setCountdown", msg.c_str());
+				}
+				else
+				{
+					m_animScoreBoard.Invoke("setCountdown", "");
 				}
 			}
 			m_animScoreBoard.GetFlashPlayer()->Advance(frameTime);
@@ -3694,14 +3730,17 @@ void CHUD::UpdateSpectator(CPlayer* pSpectatorTarget, float frameTime)
 			//CryMP begin
 			const ServerInfo& server = gClient->GetServerConnector()->GetLastServer();
 
-			const std::string text = StringTools::Format("%s (%s:%hu)",
-				server.name.c_str(),
-				server.public_host.c_str(),
-				server.public_port
-			);
+			if (!server.public_host.empty() && server.public_port)
+			{
+				const std::string text = StringTools::Format("%s (%s:%hu)",
+					server.name.c_str(),
+					server.public_host.c_str(),
+					server.public_port
+				);
 
-			SFlashVarValue sArgs[1] = { text.c_str() };
-			m_animSpectate.Invoke("setServerInfo", sArgs, 1);
+				SFlashVarValue sArgs[1] = { text.c_str() };
+				m_animSpectate.Invoke("setServerInfo", sArgs, 1);
+			}
 			//CryMP end
 		}
 	}
@@ -3852,6 +3891,27 @@ void CHUD::RebootHUD()
 	m_animRebootHUD.Invoke("gotoAndPlay", 1);
 	m_fLastReboot = gEnv->pTimer->GetFrameStartTime().GetSeconds();
 	m_bShow = true; // make sure we show the HUD
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::SetTeamDisplay(std::string team)
+{
+	//CryMP: unused
+	/*
+	if (m_animHexIcons.IsLoaded())
+	{
+		if (m_currentGameRules == EHUD_POWERSTRUGGLE)
+		{
+			m_animHexIcons.Invoke("setBackground", team.c_str());
+			m_animHexIcons.Invoke("setFlagIcon", "");
+		}
+		else if (m_currentGameRules != EHUD_SINGLEPLAYER)
+		{
+			m_animHexIcons.Invoke("setFlagIcon", team.c_str());
+			m_animHexIcons.Invoke("setBackground", "");
+		}
+	}*/
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -4930,6 +4990,46 @@ void CHUD::LoadGameRulesHUD(bool load)
 			m_animSpawnCycle.Unload();
 		}
 		break;
+	case EHUD_TEAMINSTANTACTION:
+		if (load)
+		{
+			if (!m_animScoreBoard.IsLoaded())
+			{
+				m_animScoreBoard.Load("Libs/UI/HUD_MultiplayerScoreboard_TDM.gfx");
+				SetFlashColor(&m_animScoreBoard);
+			}
+			if (!m_animChat.IsLoaded())
+			{
+				EnableChatGfx(g_pGameCVars->mp_chatHighResolution > 0);
+			}
+			if (!m_animVoiceChat.IsLoaded())
+				m_animVoiceChat.Load("Libs/UI/HUD_MultiPlayer_VoiceChat.gfx", eFD_Right, eFAF_ThisHandler);
+			if (!m_animBattleLog.IsLoaded())
+				m_animBattleLog.Load("Libs/UI/HUD_MP_Log.gfx", eFD_Left);
+			// This one is on top of others because it displays important
+			// messages, so let's put it at the end of the rendering list
+			if (!m_animMessages.IsLoaded())
+				m_animMessages.Load("Libs/UI/HUD_Messages.gfx");
+			//if (!m_animMPMessages.IsLoaded())
+			//	m_animMPMessages.Load("Libs/UI/HUD_MP_Messages.gfx", eFD_Center, eFAF_Visible);
+
+			if (!m_animRadioButtons.IsLoaded())
+				m_animRadioButtons.Load("Libs/UI/HUD_MP_Radio_Buttons.gfx", eFD_Center, eFAF_ThisHandler | eFAF_SkipBreak);
+		}
+		else
+		{
+			m_animScoreBoard.Unload();
+			if (m_pHUDTextChat)
+				m_pHUDTextChat->Init(0);
+			m_animChat.Unload();
+			m_animVoiceChat.Unload();
+			m_animBattleLog.Unload();
+			m_animMessages.Unload();
+			//m_animMPMessages.Unload();
+			m_pHUDTeamInstantAction->Show(false);
+			//m_pHUDInstantAction->Show(false);
+		}
+		break;
 	case EHUD_TEAMACTION:
 		if (load)
 		{
@@ -5192,6 +5292,89 @@ bool CHUD::ShowWeaponAccessories(bool enable)
 bool CHUD::IsScoreboardActive() const
 {
 	return (m_pHUDScore && m_pHUDScore->m_bShow);
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void CHUD::GameOver(int localWinner, int winnerTeam, EntityId id)
+{
+	if (m_currentGameRules != EHUD_TEAMINSTANTACTION) //only TIA for now
+		return;
+
+	if (m_pHUDTeamInstantAction)
+		m_pHUDTeamInstantAction->UpdateStats();
+	//if (m_pHUDInstantAction)
+	//	m_pHUDInstantAction->UpdateStats();
+
+	const char *message = "@ui_msg_draw_0";
+	const char* param = nullptr;
+
+	EntityId checkId = 0;
+	if (m_pGameRules->IsPlayerActivelyPlaying(m_pClientActor->GetEntityId()))
+		checkId = m_pClientActor->GetEntityId();
+
+	if (m_pGameRules->GetTeamCount() > 1)
+	{
+		if (checkId == 0)	//player is spectating in freelook
+		{
+			if (winnerTeam == 0)
+			{
+				//do nothing, message already set to draw
+			}
+			else
+			{
+				message = "@mp_GameOverWinner";
+				if (winnerTeam == 1)
+				{
+					param = "NK";
+				}
+				else if (winnerTeam == 2)
+				{
+					param = "US";
+				}
+			}
+		}
+		else
+		{
+			int checkTeamId = m_pGameRules->GetTeam(checkId);
+			if (localWinner == 0)
+			{
+				//do nothing, message already set to draw
+			}
+			else if (checkTeamId == winnerTeam)
+			{
+				message = "@ui_msg_tia_win_0";
+			}
+			else
+			{
+				message = "@ui_msg_tia_lose_0";
+			}
+		}
+	}
+	else
+	{
+		if (id)
+		{
+			if (id == checkId)
+			{
+				message = "@ui_msg_ia_win_0";
+			}
+			else
+			{
+				message = "@ui_msg_ia_lose_0";
+				IActor* pWinActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(id);
+				if (pWinActor && pWinActor->GetEntity())
+					param = pWinActor->GetEntity()->GetName();
+			}
+		}
+	}
+
+	const wchar_t* localizedText = L"";
+	localizedText = LocalizeWithParams(message, false, param);
+	m_animScoreBoard.Invoke("setWinText", localizedText);
+
+	//SFlashVarValue args[2] = { localizedText, false };
+	//m_animMPMessages.Invoke("addKillLog", args, 2);
 }
 
 //-----------------------------------------------------------------------------------------------------

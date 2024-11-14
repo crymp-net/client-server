@@ -192,7 +192,7 @@ bool CGameRules::Init(IGameObject* pGameObject)
 		m_pMPTutorial = new CMPTutorial;
 	}
 
-	SAFE_HUD_FUNC(GameRulesSet(GetEntity()->GetClass()->GetName()));
+	SAFE_HUD_FUNC(GameRulesSet());
 
 	if (isMultiplayer && gEnv->bServer)
 		m_pVotingSystem = new CVotingSystem;
@@ -449,7 +449,7 @@ void CGameRules::PostUpdate(float frameTime)
 		}
 		if (int team = m_pVotingSystem->GetTeam())
 		{
-			int team_votes = int(ceilf(GetTeamPlayerCount(team, false) * g_pGame->GetCVars()->sv_votingRatio));
+			int team_votes = int(ceilf(GetTeamPlayerCount(team, false, false) * g_pGame->GetCVars()->sv_votingRatio));
 			if (team_votes && m_pVotingSystem->GetNumTeamVotes() >= team_votes)
 			{
 				EndVoting(true);
@@ -1278,14 +1278,14 @@ EntityId CGameRules::GetPlayer(int idx)
 }
 
 //------------------------------------------------------------------------
-void CGameRules::GetPlayers(TPlayers& players)
+void CGameRules::GetPlayers(TPlayers &players) const
 {
 	players.resize(0);
 	players.reserve(m_channelIds.size());
 
-	for (std::vector<int>::const_iterator it = m_channelIds.begin(); it != m_channelIds.end(); ++it)
+	for (const auto channel : m_channelIds)
 	{
-		CActor* pActor = GetActorByChannelId(*it);
+		CActor *pActor=GetActorByChannelId(channel);
 		if (pActor)
 			players.push_back(pActor->GetEntityId());
 	}
@@ -1301,26 +1301,35 @@ bool CGameRules::IsPlayerInGame(EntityId playerId) const
 }
 
 //------------------------------------------------------------------------
-bool CGameRules::IsPlayerActivelyPlaying(EntityId playerId) const
+bool CGameRules::IsPlayerActivelyPlaying(EntityId playerId, bool mustBeAlive) const
 {
 	if (!gEnv->bMultiplayer)
 		return true;
 
 	// 'actively playing' means they have selected a team / joined the game.
 
-	if (GetTeamCount() == 1)
+	int count = GetTeamCount();
+
+	if (GetTeamCount() > 1)
+	{
+		// in PS/TIA, out of the game if not yet on a team
+		if (!mustBeAlive)
+			return (GetTeam(playerId) != 0);
+
+		CActor* pActor = reinterpret_cast<CActor*>(m_pActorSystem->GetActor(playerId));
+		if (!pActor)
+			return false;
+
+		return (pActor->GetHealth() > 0 && GetTeam(playerId) != 0);
+	}
+	else
 	{
 		CActor* pActor = reinterpret_cast<CActor*>(m_pActorSystem->GetActor(playerId));
 		if (!pActor)
 			return false;
 
 		// in IA, out of the game if spectating when alive
-		return (pActor->GetHealth() >= 0 || pActor->GetSpectatorMode() == CActor::eASM_None);
-	}
-	else
-	{
-		// in PS, out of the game if not yet on a team
-		return (GetTeam(playerId) != 0);
+		return (pActor->GetHealth() > 0 || pActor->GetSpectatorMode() == CActor::eASM_None);
 	}
 }
 
@@ -1508,7 +1517,7 @@ int CGameRules::GetTeamCount() const
 }
 
 //------------------------------------------------------------------------
-int CGameRules::GetTeamPlayerCount(int teamId, bool inGame) const
+int CGameRules::GetTeamPlayerCount(int teamId, bool inGame, bool isActive, EntityId skip) const
 {
 	if (!inGame)
 	{
@@ -1526,13 +1535,28 @@ int CGameRules::GetTeamPlayerCount(int teamId, bool inGame) const
 
 			const TPlayers& players = it->second;
 			for (TPlayers::const_iterator pit = players.begin(); pit != players.end(); ++pit)
-				if (IsPlayerInGame(*pit))
+				if (skip != (*pit) && IsPlayerInGame(*pit) && (!isActive || IsPlayerActivelyPlaying(*pit, true)))
 					++count;
 
 			return count;
 		}
 		return 0;
 	}
+}
+
+//------------------------------------------------------------------------
+// skipPlayerId - newly spawned player, might have not health yet (if respawning in game), but must be considered alive
+int CGameRules::GetTotalAlivePlayerCount( const EntityId skipPlayerId ) const
+{
+	int count=0;
+	for(TPlayerTeamIdMap::const_iterator it=m_playerteams.begin(); it!=m_playerteams.end(); ++it)
+	{
+		const TPlayers &players=it->second;
+		for (TPlayers::const_iterator pit=players.begin(); pit!=players.end(); ++pit)
+			if ( skipPlayerId==(*pit) || IsPlayerActivelyPlaying(*pit, true))
+				++count;
+	}
+	return count;
 }
 
 //------------------------------------------------------------------------
@@ -1549,6 +1573,21 @@ int CGameRules::GetTeamChannelCount(int teamId, bool inGame) const
 	}
 
 	return count;
+}
+
+//------------------------------------------------------------------------
+EntityId CGameRules::GetTeamActivePlayer(int teamId, int idx) const
+{
+	TPlayerTeamIdMap::const_iterator it = m_playerteams.find(teamId);
+	if (it == m_playerteams.end())
+		return 0;
+	int count = 0;
+	const TPlayers& players = it->second;
+	for (TPlayers::const_iterator pit = players.begin(); pit != players.end(); ++pit)
+		if ((IsPlayerActivelyPlaying(*pit, true)))
+			if ((count++) == idx)
+				return (*pit);
+	return 0;
 }
 
 //------------------------------------------------------------------------
@@ -2197,7 +2236,7 @@ void CGameRules::GetSpawnLocations(TSpawnLocations& locations) const
 }
 
 //------------------------------------------------------------------------
-bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, bool ignoreTeam, float zoffset) const
+bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, float zoffset) const
 {
 	IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnLocationId);
 	if (!pSpawn)
@@ -2209,11 +2248,11 @@ bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId
 	int playerTeamId = GetTeam(playerId);
 
 	SEntityProximityQuery query;
-	Vec3	c(pSpawn->GetWorldPos());
+	Vec3 pos2check = pSpawn->GetWorldPos();
 	float l(safeDistance * 1.5f);
 	float safeDistanceSq = safeDistance * safeDistance;
 
-	query.box = AABB(Vec3(c.x - l, c.y - l, c.z - 0.15f), Vec3(c.x + l, c.y + l, c.z + 2.0f));
+	query.box = AABB(Vec3(pos2check.x - l, pos2check.y - l, pos2check.z - 0.15f), Vec3(pos2check.x + l, pos2check.y + l, pos2check.z + 2.0f));
 	query.nEntityFlags = -1;
 	query.pEntityClass = m_pEntitySystem->GetClassRegistry()->FindClass("Player");
 	m_pEntitySystem->QueryProximity(query);
@@ -2229,20 +2268,19 @@ bool CGameRules::IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId
 				continue;
 
 			CActor* pActor = static_cast<CActor*>(m_pActorSystem->GetActor(entityId));
-			if (pActor && pActor->GetSpectatorMode() != 0) // ignore spectators
+			if (pActor == NULL)// || pActor && pActor->GetSpectatorMode()!=0) // ignore spectators
 				continue;
 
 			if (playerTeamId && playerTeamId == GetTeam(entityId)) // ignore team players on team games
 			{
-				if (pActor && (pActor->GetEntity()->GetWorldPos() - c).len2() <= safeDistanceSq) // only if they are not too close
-				{
-					result = false;
-					break;
-				}
-
-				continue;
+				Vec3 otherPos = pActor->GetEntity()->GetWorldPos();
+				if (fabsf(otherPos.z - pos2check.z) > 2.f)
+					continue;
+				if ((otherPos - pos2check).GetLengthSquared2D() > safeDistanceSq)
+					continue;
+				result = false;
+				break;
 			}
-
 			result = false;
 			break;
 		}
@@ -2305,11 +2343,10 @@ bool CGameRules::TestSpawnLocationWithEnvironment(EntityId spawnLocationId, Enti
 }
 
 //------------------------------------------------------------------------
-EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool includeNeutral, EntityId groupId, float minDistToDeath, const Vec3& deathPos, float* pZOffset) const
+EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool includeNeutral, EntityId groupId, float minDistToDeath, const Vec3& deathPos, float* pZOffset, EntityId skipId) const
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
-
-	const TSpawnLocations* locations = 0;
+	const TSpawnLocations* locations = nullptr;
 
 	if (groupId)
 	{
@@ -2329,12 +2366,14 @@ EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool i
 	candidates.resize(0);
 
 	int playerTeamId = GetTeam(playerId);
-	for (TSpawnLocations::const_iterator it = locations->begin(); it != locations->end(); ++it)
+	for (const EntityId locId : *locations)
 	{
-		int teamId = GetTeam(*it);
+		if (skipId == locId)
+			continue;
 
+		const int teamId = GetTeam(locId);
 		if ((ignoreTeam || playerTeamId == teamId) || (!teamId && includeNeutral))
-			candidates.push_back(*it);
+			candidates.push_back(locId);
 	}
 
 	int n = candidates.size();
@@ -2344,12 +2383,20 @@ EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool i
 	int s = Random(n);
 	int i = s;
 
+	float enemyRejectDistSqr = 0.f;
+	if (strcmp(GetEntity()->GetClass()->GetName(), "PowerStruggle"))
+		enemyRejectDistSqr = GetMinEnemyDist();
+
+	enemyRejectDistSqr *= enemyRejectDistSqr;
+
 	float mdtd = minDistToDeath;
 	float zoffset = 0.0f;
-	float safeDistance = 0.82f; // this is 2x the radius of a player collider (capsule/cylinder)
+	float safeDistance = 1.f;//0.82f; // this is 2x the radius of a player collider (capsule/cylinder)
 
-	while (!IsSpawnLocationSafe(playerId, candidates[i], safeDistance, ignoreTeam, zoffset) ||
-		!IsSpawnLocationFarEnough(candidates[i], mdtd, deathPos))
+	while (!IsSpawnLocationSafe(playerId, candidates[i], safeDistance, zoffset) ||
+		!IsSpawnLocationFarEnough(candidates[i], mdtd, deathPos) ||
+		enemyRejectDistSqr > 0.f && GetClosestPlayerDistSqr(candidates[i], playerId) < enemyRejectDistSqr ||
+		IsSpawnUsed(candidates[i]))
 	{
 		++i;
 
@@ -2358,15 +2405,27 @@ EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool i
 
 		if (i == s)
 		{
-			if (mdtd > 0.0f && mdtd == minDistToDeath)// if we have a min distance to death point
+			if (mdtd > 0.f)// if we have a min distance to death point
+			{
 				mdtd *= 0.5f;													// half it and see if it helps
-			else if (mdtd > 0.0f)										// if that didn't help
-				mdtd = 0.0f;													// ignore death point
+				if (mdtd < 2.f)												// if that didn't help
+					mdtd = 0.f;												// ignore death point
+			}
+			else if (enemyRejectDistSqr > .0f)
+			{
+				enemyRejectDistSqr *= (.6f * .6f);			// reduce enemy dist restriction
+				if (enemyRejectDistSqr < 16.f)
+					enemyRejectDistSqr = 0.f;					// ignore enemy if no points found
+			}
 			else if (zoffset == 0.0f)								// nothing worked, so we'll have to resort to height offset
 				zoffset = 2.0f;
 			else
-				return 0;														// can't do anything else, just don't spawn and wait for the situation to clear up
-
+				//kirill: can't find valid point - choose any; bigger Z offset to make sure not pushed under terrain by somebody else
+			{
+				if (pZOffset)
+					*pZOffset = 2.5f;
+				return candidates[Random(n)];
+			}
 			s = Random(n);													// select a random starting point again
 			i = s;
 		}
@@ -2378,15 +2437,222 @@ EntityId CGameRules::GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool i
 	return candidates[i];
 }
 
+//	TIA spawn behavior - the first player on the map, find some "corner point"
+//------------------------------------------------------------------------
+float CGameRules::GetMinEnemyDist() const
+{
+	//	return g_pGameCVars->g_spawnenemydist*g_pGameCVars->g_spawnenemydist;
+	float	maxY = 0.f;
+	float	maxX = 0.f;
+	float minY = GetISystem()->GetI3DEngine()->GetTerrainSize();
+	float minX = minY;
+	int count = GetSpawnLocationCount() - 1;
+	for (; count >= 0; --count)
+	{
+		const IEntity* pEntity = m_pEntitySystem->GetEntity(GetSpawnLocation(count));
+		if (!pEntity)
+			continue;
+		const Vec3 pos(pEntity->GetWorldPos());
+		if (minX > pos.x)
+			minX = pos.x;
+		if (minY > pos.y)
+			minY = pos.y;
+		if (maxX < pos.x)
+			maxX = pos.x;
+		if (maxY < pos.y)
+			maxY = pos.y;
+	}
+	return max(maxX - minX, maxY - minY) / 6.f;
+}
+
+//	TIA spawn behavior - the first player on the map, find some "corner point"
+//------------------------------------------------------------------------
+EntityId CGameRules::GetSpawnLocationTeamFirst() const
+{
+	// find average pos
+	Vec3 avrgPos(ZERO);
+	for (const EntityId locId : m_spawnLocations)
+	{
+		const IEntity* pSpawn = m_pEntitySystem->GetEntity(locId);
+		if (pSpawn)
+		{
+			avrgPos += pSpawn->GetWorldPos();
+		}
+	}
+	avrgPos /= static_cast<float>(m_spawnLocations.size());
+
+	typedef std::map<float, EntityId>	TCandidates;
+	TCandidates candidates;
+	for (const EntityId locId : m_spawnLocations)
+	{
+		const IEntity* pSpawn = m_pEntitySystem->GetEntity(locId);
+		if (pSpawn)
+		{
+			float sqrDist = (avrgPos - pSpawn->GetWorldPos()).GetLengthSquared();
+			candidates.insert(TCandidates::value_type(-sqrDist, locId));
+		}
+	}
+	const int idxLimit = candidates.size() > 5 ? 5 : candidates.size();
+	const int resIdx = Random(idxLimit);
+	TCandidates::iterator result = candidates.begin();
+	std::advance(result, resIdx);
+	return result->second;
+}
+
+//	TIA spawn behavior (player will be respawn on a spawn point next 
+//	to the biggest group of team members) 
+//------------------------------------------------------------------------
+EntityId CGameRules::GetSpawnLocationTeam(EntityId playerId, const Vec3& deathPos) const
+{
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
+
+	const int totalPlayersCount = GetTotalAlivePlayerCount(playerId);
+	const int playerTeamId = GetTeam(playerId);
+	const int playerTeamSize = GetTeamPlayerCount(playerTeamId, false, true, playerId);
+
+	if (totalPlayersCount == 1) //this is the first player on the map
+		return GetSpawnLocationTeamFirst();
+
+	EntityId bestPointId(0);
+	const float safeDistance = 1.f;//0.82f; // this is 2x the radius of a player collider (capsule/cylinder)
+	float minDistToDeathSqr = 400.f; //g_pGameCVars->g_spawndeathdist * g_pGameCVars->g_spawndeathdist
+	int enemyTeamId = GetEnemyTeamId(playerTeamId);
+	// the only player of the team - maximize enemy dist
+	if (playerTeamSize < 2)
+	{
+		float	bestEnemyDist(0);
+		for (const EntityId spawnId : m_spawnLocations)
+		{
+			if (IsSpawnUsed(spawnId))
+				continue;
+
+			const IEntity* pSpawn(m_pEntitySystem->GetEntity(spawnId));
+			const Vec3 spawnPos(pSpawn->GetWorldPos());
+			float	deathDistSqr((spawnPos - deathPos).GetLengthSquared());
+			if (deathDistSqr < minDistToDeathSqr)	// too close to death position
+				continue;
+			if (!IsSpawnLocationSafe(playerId, spawnId, safeDistance, 0.f))
+				continue;
+			float closeDist = GetClosestTeamMateDistSqr(enemyTeamId, spawnPos);
+			if (bestEnemyDist > closeDist)
+				continue;
+
+			bestPointId = spawnId;
+			bestEnemyDist = closeDist;
+		}
+		return bestPointId;
+	}
+	// have teammates in the game already
+	float	bestFriendDist(std::numeric_limits<float>::max());
+	float enemyRejectDistSqr = GetMinEnemyDist();
+
+	enemyRejectDistSqr *= enemyRejectDistSqr;
+
+	for (const EntityId spawnId : m_spawnLocations)
+	{
+		if (IsSpawnUsed(spawnId))
+			continue;
+
+		const IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnId);
+		if (pSpawn)
+		{
+			const Vec3 spawnPos = pSpawn->GetWorldPos();
+			float	deathDistSqr((spawnPos - deathPos).GetLengthSquared());
+			if (deathDistSqr < minDistToDeathSqr)	// too close to death position
+				continue;
+			if (!IsSpawnLocationSafe(playerId, spawnId, safeDistance, 0.f))
+				continue;
+			float closestEnemyDistSqr(GetClosestTeamMateDistSqr(enemyTeamId, spawnPos));
+			if (closestEnemyDistSqr < enemyRejectDistSqr)
+				continue;
+			float closeDist(GetClosestTeamMateDistSqr(playerTeamId, spawnPos, playerId));
+			if (closeDist < .3f)	// too close - skip this point
+				continue;
+			if (bestFriendDist < closeDist)
+				continue;
+			bestPointId = spawnId;
+			bestFriendDist = closeDist;
+		}
+	}
+	return bestPointId;
+}
+
+
+//------------------------------------------------------------------------
+int CGameRules::GetEnemyTeamId(int myTeamId) const
+{
+	for (TPlayerTeamIdMap::const_iterator it = m_playerteams.begin(); it != m_playerteams.end(); ++it)
+	{
+		if (it->first != myTeamId)
+			return it->first;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+float CGameRules::GetClosestPlayerDistSqr(const EntityId spawnLocationId, const EntityId skipId) const
+{
+	float	closestDist(std::numeric_limits<float>::max());
+	IEntity* pSpawn = m_pEntitySystem->GetEntity(spawnLocationId);
+	if (!pSpawn)
+		return closestDist;
+
+	const Vec3& pos(pSpawn->GetWorldPos());
+	CGameRules::TPlayers players;
+	GetPlayers(players);
+	if (players.empty() ||
+		players[0] == skipId && players.size() == 1)
+		return closestDist;
+
+	for (const EntityId id : players)
+	{
+		if (id == skipId)
+			continue;
+
+		const IEntity* pOther = m_pEntitySystem->GetEntity(id);
+		float	squareDist = (pos - pOther->GetWorldPos()).GetLengthSquared();
+		if (closestDist < squareDist)
+			continue;
+		closestDist = squareDist;
+	}
+	return closestDist;
+}
+
+//------------------------------------------------------------------------
+float CGameRules::GetClosestTeamMateDistSqr(int teamId, const Vec3& pos, EntityId skipId) const
+{
+	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
+	float	closestDist(std::numeric_limits<float>::max());
+
+	int idx = 0;
+	EntityId teamMateId;
+	while ((teamMateId = GetTeamActivePlayer(teamId, idx++)) != 0)
+	{
+		if (teamMateId == skipId)
+			continue;
+		if (!IsPlayerActivelyPlaying(teamMateId))
+			continue;
+		const IEntity* pTeamMate = m_pEntitySystem->GetEntity(teamMateId);
+		if (pTeamMate)
+		{
+			float	squareDist = (pos - pTeamMate->GetWorldPos()).GetLengthSquared();
+			if (closestDist < squareDist)
+				continue;
+			closestDist = squareDist;
+		}
+	}
+	return closestDist;
+}
+
 //------------------------------------------------------------------------
 EntityId CGameRules::GetFirstSpawnLocation(int teamId, EntityId groupId) const
 {
 	if (!m_spawnLocations.empty())
 	{
-		for (TSpawnLocations::const_iterator it = m_spawnLocations.begin(); it != m_spawnLocations.end(); ++it)
+		for (const EntityId locId : m_spawnLocations)
 		{
-			if (teamId == GetTeam(*it) && (!groupId || groupId == GetSpawnLocationGroup(*it)))
-				return *it;
+			if (teamId == GetTeam(locId) && (!groupId || groupId == GetSpawnLocationGroup(locId)))
+				return locId;
 		}
 	}
 
@@ -2815,7 +3081,7 @@ void CGameRules::SendTextMessage(ETextMessageType type, const char* msg, unsigne
 //------------------------------------------------------------------------
 bool CGameRules::CanReceiveChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId) const
 {
-	if (sourceId == targetId)
+	/*if (sourceId == targetId)
 		return true;
 
 	bool sspec = !IsPlayerActivelyPlaying(sourceId);
@@ -2838,6 +3104,9 @@ bool CGameRules::CanReceiveChatMessage(EChatMessageType type, EntityId sourceId,
 
 	//CryLog("Allowing msg: source %d, target %d, sspec %d, sdead %d, tspec %d, tdead %d", sourceId, targetId, sspec, sdead, tspec, tdead);
 	return true;
+	*/
+
+	return true; //CryMP: Always true
 }
 
 //------------------------------------------------------------------------
@@ -2877,7 +3146,7 @@ void CGameRules::SendChatMessage(EChatMessageType type, EntityId sourceId, Entit
 	bool sdead = IsDead(sourceId);
 	bool sspec = IsSpectator(sourceId);
 
-	//ChatLog(type, sourceId, targetId, msg); 
+	//ChatLog(type, sourceId, targetId, msg);
 
 	if (gEnv->bServer)
 	{
@@ -2957,9 +3226,18 @@ void CGameRules::ResetGameTime()
 }
 
 //------------------------------------------------------------------------
+void CGameRules::AddOvertime(float overTime)
+{
+	if (overTime > 0.0f)
+		m_endTime.SetSeconds(m_pGameFramework->GetServerTime().GetSeconds() + overTime * 60.0f);
+	GetGameObject()->InvokeRMI(ClSetGameTime(), SetGameTimeParams(m_endTime), eRMI_ToRemoteClients);
+}
+
+
+//------------------------------------------------------------------------
 float CGameRules::GetRemainingGameTime() const
 {
-	return MAX(0, (m_endTime - m_pGameFramework->GetServerTime()).GetSeconds());
+	return MAX(0.0f, (m_endTime - m_pGameFramework->GetServerTime()).GetSeconds());
 }
 
 //------------------------------------------------------------------------
@@ -3636,14 +3914,14 @@ void CGameRules::OnEndGame()
 }
 
 //------------------------------------------------------------------------
-void CGameRules::GameOver(int localWinner)
+void CGameRules::GameOver(int localWinner, int winnerTeam, EntityId id)
 {
 	if (m_rulesListeners.empty() == false)
 	{
 		TGameRulesListenerVec::iterator iter = m_rulesListeners.begin();
 		while (iter != m_rulesListeners.end())
 		{
-			(*iter)->GameOver(localWinner);
+			(*iter)->GameOver(localWinner, winnerTeam, id);
 			++iter;
 		}
 	}
@@ -4127,6 +4405,37 @@ bool CGameRules::OnEndCutScene(IAnimSequence* pSeq)
 	return true;
 }
 
+bool CGameRules::IsSpawnUsedTouch(EntityId spawnId)
+{
+	float curTime = GetISystem()->GetITimer()->GetCurrTime();
+
+	auto it = m_SpawnPointUseTime.find(spawnId);
+	if (it != m_SpawnPointUseTime.end())
+	{
+		float diff = curTime - it->second;
+		it->second = curTime;
+		if (diff > 2.f)
+			return false;
+		return true;
+	}
+	m_SpawnPointUseTime[spawnId] = curTime;
+	return false;
+}
+
+bool CGameRules::IsSpawnUsed(EntityId spawnId) const
+{
+	float curTime = GetISystem()->GetITimer()->GetCurrTime();
+
+	auto it = m_SpawnPointUseTime.find(spawnId);
+	if (it != m_SpawnPointUseTime.end())
+	{
+		float diff = curTime - it->second;
+		if (diff > 2.f)
+			return false;
+		return true;
+	}
+	return false;
+}
 void CGameRules::OnSetActorModel(CActor* pActor, int currTeamId)
 {
 	if (!pActor)
