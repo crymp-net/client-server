@@ -846,8 +846,6 @@ void CHUD::SetRadioButtons(bool active, int buttonNo /* = 0 */, bool extended)
 		}
 	}
 
-	m_currentRadioType = RadioType::Extended_TIA;
-
 	const char* flashCmd = "showRadioButtons";
 	if (m_currentRadioType == RadioType::Extended)
 	{
