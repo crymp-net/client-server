@@ -102,5 +102,6 @@ public:
 	int GetEntityScriptFilePath(IFunctionHandler* pH, const char* entityClass);
 
 	int GetVehicleClasses(IFunctionHandler* pH);
+	int AwakeDefaultObjects(IFunctionHandler* pH);
 	int GetItemClasses(IFunctionHandler* pH);
 };

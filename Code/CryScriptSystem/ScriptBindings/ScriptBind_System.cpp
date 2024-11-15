@@ -138,6 +138,7 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 
 	SCRIPT_REG_FUNC(GetVehicleClasses);
 	SCRIPT_REG_FUNC(GetItemClasses);
+	SCRIPT_REG_FUNC(AwakeDefaultObjects);
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -1846,11 +1847,37 @@ int ScriptBind_System::GetVehicleClasses(IFunctionHandler * pH)
 
 	for (pEntityRegistry->IteratorMoveFirst(); (pClass = pEntityRegistry->IteratorNext()) != nullptr;)
 	{
-		if (pVehicleSystem->IsVehicleClass(pClass->GetName())) {
+		if (pVehicleSystem->IsVehicleClass(pClass->GetName())) 
+		{
 			pObj->SetAt(k++, pClass->GetName());
-
 		}
 	}
 
 	return pH->EndFunction(*pObj);
+}
+
+int ScriptBind_System::AwakeDefaultObjects(IFunctionHandler* pH)
+{
+	IEntityItPtr pIIt = gEnv->pEntitySystem->GetEntityIterator();
+	IEntity* pEntity = nullptr;
+
+	int counter = 0;
+
+	IEntityClass* pDefaultClass = gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass();
+
+	while ((pEntity = pIIt->Next()) != nullptr)
+	{
+		if (pEntity->GetClass() == pDefaultClass)
+		{
+			if (IPhysicalEntity* pPhysics = pEntity->GetPhysics())
+			{
+				pe_action_awake aa;
+				aa.bAwake = 1;
+				pPhysics->Action(&aa);
+				++counter;
+			}
+		}
+	}
+
+	return pH->EndFunction(counter);
 }
