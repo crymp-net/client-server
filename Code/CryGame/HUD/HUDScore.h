@@ -37,8 +37,9 @@ class CHUDScore : public CHUDObject
 		EntityId			m_entityId = 0;
 		bool				m_alive = false;
 		bool				m_spectating = false; //updating during sorting
+		bool				m_prioritizeTeamKills = false;
 
-		ScoreEntry(EntityId id, int kills, int deaths, int ping);
+		ScoreEntry(EntityId id, int kills, int deaths, int ping, int teamKills = 0, int playerScore = 0, bool prioTeamKills = false);
 		bool operator<(const ScoreEntry& entry) const;
 		void UpdateLiveStats();
 	};
