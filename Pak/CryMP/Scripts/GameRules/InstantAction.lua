@@ -101,7 +101,7 @@ Net.Expose {
 };
 
 ----------------------------------------------------------------------------------------------------
-function InstantAction:PlayRadioAlert(alertName, teamId)
+function InstantAction:PlayRadioAlert(alertName)
 	local alert=self.SoundAlert.Radio[alertName];
 	if (alert) then
 		self:QueueVoice(alert, bor(SOUND_LOAD_SYNCHRONOUSLY, SOUND_VOICE), SOUND_SEMANTIC_MP_CHAT);
@@ -152,21 +152,27 @@ function InstantAction:PlayQueueFront()
 	if (not self.voiceQueue) then
 		return;
 	end
-	
 	local front=self.voiceQueue[1];
 	if (front) then
 		local soundId=Sound.Play(front.name, g_Vectors.v000, front.flags, front.semantics);
 		if (soundId) then
-			front.endTime=_time+Sound.GetSoundLength(soundId);
+			local length = Sound.GetSoundLength(soundId);
+			if (length <= 0) then
+				table.remove(self.voiceQueue, 1);	
+				return;
+			end
+
+			front.endTime=_time+length;
 			front.soundId=soundId;
-			
+
 			if (front.gap and front.gap>0) then
 				front.endTime=front.endTime+front.gap;
 			end
 			
 			self.voiceBusy=true;
 		else
-			front.endTime=0;
+			--front.endTime=0;
+			table.remove(self.voiceQueue, 1);	
 		end
 	end
 end

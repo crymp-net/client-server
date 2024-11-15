@@ -228,6 +228,7 @@ Net.Expose {
 
 ----------------------------------------------------------------------------------------------------
 function TeamInstantAction:PlayRadioAlert(alertName, teamId)
+	teamId = tonumber(teamId)
 	local teamName=self.game:GetTeamName(teamId);
 	if (teamName and teamName~="") then
 		local alert=self.SoundAlert.Radio[teamName];
@@ -630,7 +631,6 @@ function TeamInstantAction.Client:OnInit()
 		end
 	end
 	
-	self.START_ANNOUNCEMENT = true;
 	--Sound.SetMasterVolumeScale(1);
 	
 end
@@ -699,21 +699,26 @@ function TeamInstantAction.Server:OnChangeTeam(playerId, teamId)
 end
 
 ----------------------------------------------------------------------------------------------------
-function TeamInstantAction:StartAnnouncement(playerId)
-	if (self:GetState() ~= "InGame") then
+function TeamInstantAction:StartAnnouncement(playerId, teamId)
+	if (playerId ~= g_localActorId) then
 		return;
 	end
-	if (not self.START_ANNOUNCEMENT or playerId ~= g_localActorId) then
+	if (self:GetState() == "PreGame") then
 		return;
 	end
-	local ownTeamId=self.game:GetTeam(g_localActorId);
-	if (ownTeamId ~= 0) then
-		local enemyTeamId = ownTeamId == 1 and 2 or 1;
+	if (self.START_ANNOUNCED) then
+		return;
+	end
+	if (teamId == 0) then
+		return;
+	end
+	Script.SetTimer(1000, function()
+		local enemyTeamId = teamId == 1 and 2 or 1;
 		if (self.game:GetTeamPlayerCount(enemyTeamId) > 0) then
-			self:PlayRadioAlert("start", ownTeamId);
+			self:PlayRadioAlert("start", teamId);
 		end
-		self.START_ANNOUNCEMENT = false;
-	end
+	end);
+	self.START_ANNOUNCED = true;
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -731,7 +736,7 @@ function TeamInstantAction.Client:OnRevive(playerId, pos, rot, teamId)
 		end
 	end]]
 
-	self:StartAnnouncement(playerId);
+	self:StartAnnouncement(playerId, teamId);
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -750,7 +755,7 @@ function TeamInstantAction.Client:OnReviveInVehicle(playerId, vehicleId, seatId,
 	end
 	]]
 
-	self:StartAnnouncement(playerId);
+	self:StartAnnouncement(playerId, teamId);
 end
 
 ----------------------------------------------------------------------------------------------------
