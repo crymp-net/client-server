@@ -2,7 +2,7 @@
 
 Notable changes in each release.
 
-## Unreleased
+## [v22] - 2024-11-16
 ### Resolved issues
 - [#237](https://github.com/crymp-net/client-server/issues/237): Extend mute functionality ([griseraner](https://github.com/griseraner))
 - [#236](https://github.com/crymp-net/client-server/issues/236): NK suits sometimes default suit (US) after connect ([griseraner](https://github.com/griseraner))
@@ -33,9 +33,11 @@ Notable changes in each release.
 - [#83](https://github.com/crymp-net/client-server/issues/83): Add TeamInstantAction gamerules ([griseraner](https://github.com/griseraner))
 - [#80](https://github.com/crymp-net/client-server/issues/80): VTOL lags in First Person while going fast ([griseraner](https://github.com/griseraner))
 - [#62](https://github.com/crymp-net/client-server/issues/62): Lower performance due to broken CryMemoryManager replaced with standard malloc/free ([ccomrade](https://github.com/ccomrade))
+- [#61](https://github.com/crymp-net/client-server/issues/61): Add description of the project to README ([ccomrade](https://github.com/ccomrade))
 - [#52](https://github.com/crymp-net/client-server/issues/52): Crash in FMOD ([ccomrade](https://github.com/ccomrade))
 
 ### Changes
+- [#251](https://github.com/crymp-net/client-server/pull/251): Add changelog generator ([ccomrade](https://github.com/ccomrade))
 - [#250](https://github.com/crymp-net/client-server/pull/250): Previous kill log gfx ([griseraner](https://github.com/griseraner))
 - [#249](https://github.com/crymp-net/client-server/pull/249): System.AwakeDefaultObjects ([griseraner](https://github.com/griseraner))
 - [#248](https://github.com/crymp-net/client-server/pull/248): TIA fixes ([griseraner](https://github.com/griseraner))
