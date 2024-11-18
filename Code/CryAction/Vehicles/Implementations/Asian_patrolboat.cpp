@@ -743,19 +743,19 @@ bool Asian_patrolboat::Init(IGameObject* pGameObject)
 		seat->SetValue("isDriver", true);
 		seat->SetValue("AimPart", "");
 		seat->SetValue("seatGroupIndex", 1);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
@@ -889,15 +889,15 @@ bool Asian_patrolboat::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "Gauss")
+				if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					weapon->SetValue("class", "VehicleGaussMounted");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOACMounted");
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					weapon->SetValue("class", "VehicleMOARMounted");
 				}
@@ -1108,11 +1108,11 @@ bool Asian_patrolboat::Init(IGameObject* pGameObject)
 	this->InitSeatTransitions();
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_patrolboat/asian_patrolboat.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_patrolboat/asian_patrolboat_us.mtl");
 	}

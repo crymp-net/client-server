@@ -685,19 +685,19 @@ bool US_hovercraft::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					weapon->SetValue("class", "");
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					weapon->SetValue("class", "VehicleGaussMounted");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOACMounted");
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					weapon->SetValue("class", "VehicleMOARMounted");
 				}
@@ -900,11 +900,11 @@ bool US_hovercraft::Init(IGameObject* pGameObject)
 	this->InitSeatTransitions();
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/us_hovercraft_b/us_hovercraft_nk.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/us_hovercraft_b/us_hovercraft_b.mtl");
 	}

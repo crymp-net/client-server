@@ -292,7 +292,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 			}
 			body_part->SetValue("Helpers", body_part_helpers);
 			SmartScriptTable body_part_animated(gEnv->pScriptSystem);
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				body_part_animated->SetValue("filename", "Objects/Vehicles/asian_helicopter_low_budget/asian_helicopter_low_budget_flying.cga");
 			}
@@ -320,7 +320,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "LeftWing");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 150.0f);
 		}
@@ -398,7 +398,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "RightWing");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 150.0f);
 		}
@@ -482,7 +482,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "BackRotor");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 150.0f);
 		}
@@ -577,7 +577,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "Rotor");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 200.0f);
 		}
@@ -663,7 +663,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "Hull");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 300.0f);
 		}
@@ -966,7 +966,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable default_state(gEnv->pScriptSystem);
 			default_state->SetValue("name", "default");
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				default_state->SetValue("animation", "helicopter_low_budget_flying_rotate_mainrotor");
 			}
@@ -1012,7 +1012,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable closed_state(gEnv->pScriptSystem);
 			closed_state->SetValue("name", "closed");
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				closed_state->SetValue("animation", "helicopter_low_budget_flying_landinggears_closing");
 			}
@@ -1043,7 +1043,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 			SmartScriptTable closed_state(gEnv->pScriptSystem);
 			closed_state->SetValue("name", "closed");
 			closed_state->SetValue("animation", "helicopter_sidedoors_closing");
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				closed_state->SetValue("sound", "");
 			}
@@ -1073,7 +1073,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 			SmartScriptTable closed_state(gEnv->pScriptSystem);
 			closed_state->SetValue("name", "closed");
 			closed_state->SetValue("animation", "helicopter_cockpit_closing");
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				closed_state->SetValue("sound", "");
 			}
@@ -1102,7 +1102,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable shoot_state(gEnv->pScriptSystem);
 			shoot_state->SetValue("name", "shoot");
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				shoot_state->SetValue("animation", "helicopter_low_budget_flying_MG_fire");
 			}
@@ -1780,19 +1780,19 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 	this->SetAmmoCapacity("helicoptermissile", 28);
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_helicopter/asian_helicopter.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_helicopter/asian_helicopter_us.mtl");
 	}
-	else if (m_paintName == "sp")
+	else if (StringTools::IsEqualNoCase(m_paintName, "sp"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_helicopter/asian_helicopter_sp.mtl");
 	}
-	else if (m_paintName == "lb")
+	else if (StringTools::IsEqualNoCase(m_paintName, "lb"))
 	{
 		this->SetPaintMaterial("Objects/Vehicles/asian_helicopter_low_budget/asian_helicopter.mtl");
 	}
@@ -1828,7 +1828,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 			}
 			action->SetValue("Activations", action_activations);
 			SmartScriptTable action_automaticdoor(gEnv->pScriptSystem);
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				action_automaticdoor->SetValue("animation", "");
 			}
@@ -1851,7 +1851,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 			}
 			action->SetValue("Activations", action_activations);
 			SmartScriptTable action_automaticdoor(gEnv->pScriptSystem);
-			if (m_modName == "LowBudget")
+			if (StringTools::IsEqualNoCase(m_modName, "LowBudget"))
 			{
 				action_automaticdoor->SetValue("animation", "");
 			}
@@ -1884,7 +1884,7 @@ bool Asian_helicopter::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable damagemultiplier(gEnv->pScriptSystem);
 			damagemultiplier->SetValue("damageType", "bullet");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagemultiplier->SetValue("multiplier", 0.005f);
 			}
