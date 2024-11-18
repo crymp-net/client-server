@@ -117,15 +117,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 					shitenTurret_part_animatedjoint_rotation->SetValue("yawSpeed", 75.0f);
 					shitenTurret_part_animatedjoint_rotation->SetValue("worldSpace", 1.0f);
 					SmartScriptTable shitenTurret_part_animatedjoint_rotation_yawlimits(gEnv->pScriptSystem);
-					if (m_modName == "Hardtop")
+					if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(-138.0f);
 					}
-					else if (m_modName == "Hardtop_MP")
+					else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(-138.0f);
 					}
-					else if (m_modName == "Spawntruck")
+					else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(-135.0f);
 					}
@@ -133,15 +133,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(0.0f);
 					}
-					if (m_modName == "Hardtop")
+					if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(138.0f);
 					}
-					else if (m_modName == "Hardtop_MP")
+					else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(138.0f);
 					}
-					else if (m_modName == "Spawntruck")
+					else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 					{
 						shitenTurret_part_animatedjoint_rotation_yawlimits->PushBack(135.0f);
 					}
@@ -281,15 +281,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 				frame_part->SetValue("class", "AnimatedJoint");
 				frame_part->SetValue("component", "");
 				frame_part->SetValue("mass", 0.0f);
-				if (m_modName == "Hardtop")
+				if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 				{
 					frame_part->SetValue("useOption", 2);
 				}
-				else if (m_modName == "Hardtop_MP")
+				else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 				{
 					frame_part->SetValue("useOption", 2);
 				}
-				else if (m_modName == "Spawntruck")
+				else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 				{
 					frame_part->SetValue("useOption", 3);
 				}
@@ -304,7 +304,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 					radar_part->SetValue("class", "AnimatedJoint");
 					radar_part->SetValue("component", "rear");
 					radar_part->SetValue("mass", 80.0f);
-					if (m_modName == "Spawntruck")
+					if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 					{
 						radar_part->SetValue("useOption", 0);
 					}
@@ -2466,31 +2466,31 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("AimPart", "");
 		seat->SetValue("seatGroupIndex", 1);
 		seat->SetValue("transitionAnim", true);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
@@ -2640,19 +2640,19 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					weapon->SetValue("class", "");
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					weapon->SetValue("class", "VehicleGaussMounted");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOACMounted");
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					weapon->SetValue("class", "VehicleMOARMounted");
 				}
@@ -2733,7 +2733,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat1");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_left_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_25_pos");
 		}
@@ -2776,15 +2776,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -2804,7 +2804,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat2");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_left_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_23_pos");
 		}
@@ -2847,15 +2847,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -2875,7 +2875,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat3");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_left_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_21_pos");
 		}
@@ -2918,15 +2918,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -2951,7 +2951,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("AimPart", "");
 		seat->SetValue("seatGroupIndex", 4);
 		seat->SetValue("transitionAnim", true);
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("locked", true);
 		}
@@ -2990,15 +2990,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -3018,7 +3018,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat5");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_right_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_24_pos");
 		}
@@ -3061,15 +3061,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -3089,7 +3089,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat6");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_right_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_22_pos");
 		}
@@ -3132,15 +3132,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -3160,7 +3160,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("name", "backseat7");
 		seat->SetValue("part", "");
 		seat->SetValue("enterHelper", "passenger_back_right_pos");
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("sitHelper", "passenger_20_pos");
 		}
@@ -3203,15 +3203,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -3236,7 +3236,7 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("AimPart", "");
 		seat->SetValue("seatGroupIndex", 5);
 		seat->SetValue("transitionAnim", true);
-		if (m_modName == "Spawntruck")
+		if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat->SetValue("locked", true);
 		}
@@ -3275,15 +3275,15 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 1.0f);
-		if (m_modName == "Hardtop")
+		if (StringTools::IsEqualNoCase(m_modName, "Hardtop"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Hardtop_MP")
+		else if (StringTools::IsEqualNoCase(m_modName, "Hardtop_MP"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
-		else if (m_modName == "Spawntruck")
+		else if (StringTools::IsEqualNoCase(m_modName, "Spawntruck"))
 		{
 			seat_sounds->SetValue("mood", 0.3f);
 		}
@@ -3324,11 +3324,11 @@ bool Asian_truck::Init(IGameObject* pGameObject)
 	}
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_truck_b/asian_truck_b.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_truck_b/us_truck_b.mtl");
 	}

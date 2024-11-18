@@ -61,23 +61,23 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 						cannon_part->SetValue("class", "AnimatedJoint");
 						cannon_part->SetValue("component", "turret");
 						cannon_part->SetValue("mass", 500.0f);
-						if (m_modName == "GaussCannon")
+						if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
-						else if (m_modName == "TACCannon")
+						else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
-						else if (m_modName == "MOAC")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
-						else if (m_modName == "MOAR")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
-						else if (m_modName == "Singularity")
+						else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
@@ -123,23 +123,23 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 						}
 						cannon_part->SetValue("Helpers", cannon_part_helpers);
 						SmartScriptTable cannon_part_animatedjoint(gEnv->pScriptSystem);
-						if (m_modName == "GaussCannon")
+						if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 						{
 							cannon_part_animatedjoint->SetValue("filename", "objects/vehicles/tank_cannon_options/gausscannon.cgf");
 						}
-						else if (m_modName == "TACCannon")
+						else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 						{
 							cannon_part_animatedjoint->SetValue("filename", "objects/vehicles/tank_cannon_options/taccannon.cgf");
 						}
-						else if (m_modName == "MOAC")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_part_animatedjoint->SetValue("filename", "objects/vehicles/tank_cannon_options/moac.cgf");
 						}
-						else if (m_modName == "MOAR")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 						{
 							cannon_part_animatedjoint->SetValue("filename", "objects/vehicles/tank_cannon_options/moar.cgf");
 						}
-						else if (m_modName == "Singularity")
+						else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 						{
 							cannon_part_animatedjoint->SetValue("filename", "objects/vehicles/tank_cannon_options/singularity.cgf");
 						}
@@ -147,23 +147,23 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 						{
 							cannon_part_animatedjoint->SetValue("filename", "");
 						}
-						if (m_modName == "GaussCannon")
+						if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 						{
 							cannon_part_animatedjoint->SetValue("filenameDestroyed", "objects/vehicles/tank_cannon_options/gausscannon_damaged.cgf");
 						}
-						else if (m_modName == "TACCannon")
+						else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 						{
 							cannon_part_animatedjoint->SetValue("filenameDestroyed", "objects/vehicles/tank_cannon_options/taccannon_damaged.cgf");
 						}
-						else if (m_modName == "MOAC")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_part_animatedjoint->SetValue("filenameDestroyed", "objects/vehicles/tank_cannon_options/moac_damaged.cgf");
 						}
-						else if (m_modName == "MOAR")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 						{
 							cannon_part_animatedjoint->SetValue("filenameDestroyed", "objects/vehicles/tank_cannon_options/moar_damaged.cgf");
 						}
-						else if (m_modName == "Singularity")
+						else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 						{
 							cannon_part_animatedjoint->SetValue("filenameDestroyed", "objects/vehicles/tank_cannon_options/singularity_damaged.cgf");
 						}
@@ -665,27 +665,27 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 			{
 				SmartScriptTable driverEnterPos_helper(gEnv->pScriptSystem);
 				driverEnterPos_helper->SetValue("name", "driverEnterPos");
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
-				else if (m_modName == "GaussCannon")
+				else if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
-				else if (m_modName == "TACCannon")
+				else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
-				else if (m_modName == "Singularity")
+				else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 				{
 					driverEnterPos_helper->SetValue("position", Vec3(-3.3520999, -0.38240001, 0.50300002));
 				}
@@ -951,27 +951,27 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "hull");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
-		else if (m_modName == "GaussCannon")
+		else if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
-		else if (m_modName == "TACCannon")
+		else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
-		else if (m_modName == "Singularity")
+		else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 		{
 			component->SetValue("damageMax", 1200.0f);
 		}
@@ -993,27 +993,27 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable damagemultiplier(gEnv->pScriptSystem);
 			damagemultiplier->SetValue("damageType", "explosion");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
-			else if (m_modName == "GaussCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
-			else if (m_modName == "TACCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
-			else if (m_modName == "MOAC")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
-			else if (m_modName == "MOAR")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
-			else if (m_modName == "Singularity")
+			else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 			{
 				damagemultiplier->SetValue("multiplier", 1.5f);
 			}
@@ -1407,27 +1407,27 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 			damagebehavior->SetValue("class", "Explosion");
 			SmartScriptTable damagebehavior_explosion(gEnv->pScriptSystem);
 			damagebehavior_explosion->SetValue("helper", "");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "GaussCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "TACCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "MOAC")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "MOAR")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "Singularity")
+			else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
@@ -1522,27 +1522,27 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 			damagebehavior->SetValue("class", "Explosion");
 			SmartScriptTable damagebehavior_explosion(gEnv->pScriptSystem);
 			damagebehavior_explosion->SetValue("helper", "");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "GaussCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "TACCannon")
+			else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "MOAC")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "MOAR")
+			else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
-			else if (m_modName == "Singularity")
+			else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 			{
 				damagebehavior_explosion->SetValue("damage", 25.0f);
 			}
@@ -2007,23 +2007,23 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "GaussCannon")
+				if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 				{
 					weapon->SetValue("class", "GaussCannon");
 				}
-				else if (m_modName == "TACCannon")
+				else if (StringTools::IsEqualNoCase(m_modName, "TACCannon"))
 				{
 					weapon->SetValue("class", "TACCannon");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOAC");
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					weapon->SetValue("class", "VehicleMOAR");
 				}
-				else if (m_modName == "Singularity")
+				else if (StringTools::IsEqualNoCase(m_modName, "Singularity"))
 				{
 					weapon->SetValue("class", "VehicleSingularity");
 				}
@@ -2042,11 +2042,11 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 					SmartScriptTable fire_action_animations(gEnv->pScriptSystem);
 					{
 						SmartScriptTable cannon_fire_animation(gEnv->pScriptSystem);
-						if (m_modName == "MOAC")
+						if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_fire_animation->SetValue("name", "");
 						}
-						else if (m_modName == "MOAR")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 						{
 							cannon_fire_animation->SetValue("name", "");
 						}
@@ -2229,11 +2229,11 @@ bool Asian_tank::Init(IGameObject* pGameObject)
 	this->SetAmmoCapacity("Tank_singularityprojectile", 4);
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_tank/asian_tank_nk.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_tank/asian_tank_us.mtl");
 	}

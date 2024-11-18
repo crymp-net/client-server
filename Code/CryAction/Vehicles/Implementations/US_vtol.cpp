@@ -428,7 +428,7 @@ bool US_vtol::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "Hull");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 800.0f);
 		}
@@ -1228,7 +1228,7 @@ bool US_vtol::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "VTOL_Ascension")
+				if (StringTools::IsEqualNoCase(m_modName, "VTOL_Ascension"))
 				{
 					weapon->SetValue("class", "APCCannon_AscMod");
 				}
@@ -1255,11 +1255,11 @@ bool US_vtol::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "VTOL_Ascension")
+				if (StringTools::IsEqualNoCase(m_modName, "VTOL_Ascension"))
 				{
 					weapon->SetValue("class", "SideWinder_AscMod");
 				}
-				else if (m_modName == "Unarmed")
+				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					weapon->SetValue("class", "");
 				}
@@ -1357,7 +1357,7 @@ bool US_vtol::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					weapon->SetValue("class", "");
 				}
@@ -1736,11 +1736,11 @@ bool US_vtol::Init(IGameObject* pGameObject)
 	this->SetAmmoCapacity("a2ahomingmissile", 12);
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/us_vtol/us_vtol_nk.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/us_vtol/us_vtol.mtl");
 	}
@@ -1771,7 +1771,7 @@ bool US_vtol::Init(IGameObject* pGameObject)
 			SmartScriptTable action_activations(gEnv->pScriptSystem);
 			{
 				SmartScriptTable activation(gEnv->pScriptSystem);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					activation->SetValue("type", "OnUsed");
 				}
@@ -1792,7 +1792,7 @@ bool US_vtol::Init(IGameObject* pGameObject)
 			SmartScriptTable action_automaticdoor(gEnv->pScriptSystem);
 			action_automaticdoor->SetValue("animation", "passengerDoors");
 			action_automaticdoor->SetValue("timeMax", 1.0f);
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				action_automaticdoor->SetValue("disabled", true);
 			}

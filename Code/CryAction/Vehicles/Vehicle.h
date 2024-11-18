@@ -3,6 +3,7 @@
 #include "CryCommon/CryAction/IVehicleSystem.h"
 
 #include "Library/StlportVector.h"
+#include "Library/StringTools.h"
 
 #include "VehicleAnimation.h"
 #include "VehicleComponent.h"

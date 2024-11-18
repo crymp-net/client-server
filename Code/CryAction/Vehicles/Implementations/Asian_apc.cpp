@@ -61,11 +61,11 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 						cannon_part->SetValue("class", "AnimatedJoint");
 						cannon_part->SetValue("component", "turret");
 						cannon_part->SetValue("mass", 500.0f);
-						if (m_modName == "GaussCannon")
+						if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 						{
 							cannon_part->SetValue("useOption", 1);
 						}
-						else if (m_modName == "MOAC")
+						else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_part->SetValue("useOption", 2);
 						}
@@ -593,7 +593,7 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "hull");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 750.0f);
 		}
@@ -609,7 +609,7 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable damagemultiplier(gEnv->pScriptSystem);
 			damagemultiplier->SetValue("damageType", "explosion");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagemultiplier->SetValue("multiplier", 2.0f);
 			}
@@ -1960,11 +1960,11 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "GaussCannon")
+				if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 				{
 					weapon->SetValue("class", "GaussCannon");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOAC");
 				}
@@ -1983,7 +1983,7 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 					SmartScriptTable fire_action_animations(gEnv->pScriptSystem);
 					{
 						SmartScriptTable cannon_fire_animation(gEnv->pScriptSystem);
-						if (m_modName == "MOAC")
+						if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 						{
 							cannon_fire_animation->SetValue("name", "");
 						}
@@ -2361,11 +2361,11 @@ bool Asian_apc::Init(IGameObject* pGameObject)
 	this->SetAmmoCapacity("towmissile", 6);
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_apc/asian_apc.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_apc/asian_apc_us.mtl");
 	}

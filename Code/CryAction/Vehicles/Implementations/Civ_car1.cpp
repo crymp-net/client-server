@@ -1668,7 +1668,7 @@ bool Civ_car1::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction(gEnv->pScriptSystem);
 			seataction->SetValue("class", "Sound");
 			SmartScriptTable seataction_sound(gEnv->pScriptSystem);
-			if (m_modName == "PoliceCar")
+			if (StringTools::IsEqualNoCase(m_modName, "PoliceCar"))
 			{
 				seataction_sound->SetValue("sound", "sounds/vehicles:civ_car1:police_horn");
 			}
@@ -1794,31 +1794,31 @@ bool Civ_car1::Init(IGameObject* pGameObject)
 	}
 
 	// Paints
-	if (m_paintName == "black")
+	if (StringTools::IsEqualNoCase(m_paintName, "black"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_black.mtl");
 	}
-	else if (m_paintName == "blue")
+	else if (StringTools::IsEqualNoCase(m_paintName, "blue"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_blue.mtl");
 	}
-	else if (m_paintName == "green")
+	else if (StringTools::IsEqualNoCase(m_paintName, "green"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_green.mtl");
 	}
-	else if (m_paintName == "police")
+	else if (StringTools::IsEqualNoCase(m_paintName, "police"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_police.mtl");
 	}
-	else if (m_paintName == "red")
+	else if (StringTools::IsEqualNoCase(m_paintName, "red"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_red.mtl");
 	}
-	else if (m_paintName == "silver")
+	else if (StringTools::IsEqualNoCase(m_paintName, "silver"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_silver.mtl");
 	}
-	else if (m_paintName == "utility")
+	else if (StringTools::IsEqualNoCase(m_paintName, "utility"))
 	{
 		this->SetPaintMaterial("objects/vehicles/civ_car1/civ_car_color_variations_utility.mtl");
 	}

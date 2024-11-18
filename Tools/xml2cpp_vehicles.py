@@ -591,7 +591,8 @@ class VehicleConverter:
 		if mods:
 			statement = 'if'
 			for mod_name, mod_value in mods.items():
-				self._write(f'{statement} (m_modName == "{mod_name}")')
+				check = 'StringTools::IsEqualNoCase'
+				self._write(f'{statement} ({check}(m_modName, "{mod_name}"))')
 				self._begin_block()
 				self._write(f'{prefix}{convert(mod_value)}{suffix}')
 				self._end_block()
@@ -1525,8 +1526,9 @@ class VehicleConverter:
 				first = False
 
 	def _process_paints_paint(self, paint: ET.Element, first: bool):
+		check = 'StringTools::IsEqualNoCase'
 		statement = 'if' if first else 'else if'
-		self._write_value(paint, 'name', f'{statement} (m_paintName == ', ')', self._convert_string)
+		self._write_value(paint, 'name', f'{statement} ({check}(m_paintName, ', '))', self._convert_string)
 		self._begin_block()
 		self._write_value(paint, 'material', 'this->SetPaintMaterial(', ');', self._convert_string)
 		self._end_block()
