@@ -609,8 +609,12 @@ void SCVars::InitCVars(IConsole* pConsole)
 	pConsole->Register("mp_ragdollUnrestricted", &mp_ragdollUnrestricted, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_killMessages", &mp_killMessages, 1, OPTIONAL_SYNC);
 	pConsole->Register("mp_rpgMod", &mp_rpgMod, 0, OPTIONAL_SYNC);
+	pConsole->Register("mp_tiaScoreLimit", &mp_tiaScoreLimit, 300, OPTIONAL_SYNC, "Score before a round restarts. Default is 300, 0 means no score-limit.");
+	pConsole->Register("mp_tiaScoreLead", &mp_tiaScoreLead, 1, OPTIONAL_SYNC, "Score a team has to be ahead of other team once g_scorelimit is reached. Default is 1.");
 	pConsole->Register("mp_aaLockOn", &mp_aaLockOn, 0, OPTIONAL_SYNC, "enables lockon air for AARocketLauncher");
 	pConsole->Register("mp_C4StrengthThrowMult", &mp_C4StrengthThrowMult, 1.0f, OPTIONAL_SYNC, "Strength throw mult for C4s");
+	pConsole->Register("mp_netSerializePhysVel", &mp_netSerializePhysVel, 0, OPTIONAL_SYNC, "Serialize the player physics velocity for more precise speed");
+	pConsole->Register("mp_netSerializeMaxSpeed", &mp_netSerializeMaxSpeed, 9.0f, OPTIONAL_SYNC, "Maximum character speed");
 
 	//CryMP CVars (un-synced)
 	pConsole->Register("mp_newSpectator", &mp_newSpectator, 1, VF_NOT_NET_SYNCED, "");

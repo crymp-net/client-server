@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "CryCommon/CryNetwork/INetwork.h"
 
@@ -242,12 +243,12 @@ public:
   void DoLogin(const char* nick, const char* pwd);
 	void DoLoginProfile(const char* email, const char* pwd, const char* profile);
   void DoLogoff();
-  void AddGameModToList(const char* mod);
   void SwitchToMainScreen();
   void ReadOptions();
   void SaveOptions();
   bool IsLoggingIn()const;
   CGameNetworkProfile* GetProfile()const;
+  void AddGameModToList(std::string displayName, std::string name);
   void OnMenuOpened();
   void OnShowIngameMenu();
   bool IsIngame()const;

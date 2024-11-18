@@ -31,6 +31,7 @@ History:
 #include "CryGame/Actors/Player/NanoSuit.h"
 #include "CryGame/Actors/Player/Player.h"
 #include "CryGame/Voting.h"
+#include "CryGame/GameRules.h"
 #include "CryCommon/CryAction/IViewSystem.h"
 #include "CryCommon/CryAction/ISubtitleManager.h"
 #include "CryCommon/CryCore/CryFixedString.h"
@@ -53,6 +54,7 @@ class CHUDObituary;
 class CHUDTextArea;
 class CHUDVehicleInterface;
 class CHUDPowerStruggle;
+class CHUDTeamInstantAction;
 class CHUDScopes;
 class CHUDCrosshair;
 class CHUDSilhouettes;
@@ -70,7 +72,8 @@ class CHUD :	public CHUDCommon,
 							public CNanoSuit::INanoSuitListener,
 							public IViewSystemListener,
 							public ISubtitleHandler,
-							public IEquipmentManager::IListener
+							public IEquipmentManager::IListener,
+							public CGameRules::SGameRulesListener
 {
 	friend class CFlashMenuObject;
 	friend class CHUDPowerStruggle;
@@ -108,7 +111,7 @@ public:
 	void ResetPostSerElements();
 	void PlayerIdSet(EntityId playerId);
 	void PostSerialize();
-	void GameRulesSet(const char* name);
+	void GameRulesSet();
 	//handle game events
 	void HandleEvent(const SGameObjectEvent &rGameObjectEvent);
 	void WeaponAccessoriesInterface(bool visible, bool force = false);
@@ -153,6 +156,12 @@ public:
 	// IFSCommandHandler
 	void HandleFSCommand(const char *strCommand,const char *strArgs);
 	// ~IFSCommandHandler
+
+	// CGameRules::SGameRulesListener
+	void GameOver(int localWinner, int winnerTeam, EntityId id) override;
+	void EnteredGame() {};
+	void EndGameNear(EntityId id) {};
+	// ~CGameRules::SGameRulesListener
 
 	// FS Command Handlers (as we also call a lot of these externally)
 	void OnQuickMenuSpeedPreset();
@@ -328,6 +337,16 @@ public:
   void SetVotingState(EVotingState state, int timeout, EntityId id, const char* descr);
 
 	//RadioButtons & Chat
+  	enum class RadioType
+	{
+		None,
+		Default,
+		Extended,
+		Extended_TIA,
+	};
+
+	RadioType m_currentRadioType = RadioType::None;
+
 	void SetRadioButtons(bool active, int buttonNo = 0, bool extended = false);
 	void ShowGamepadConnected(bool active);
 	void ObituaryMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, int material, int hit_type);
@@ -341,6 +360,7 @@ public:
 	ILINE CHUDRadar* GetRadar() {return m_pHUDRadar;}
 	ILINE CHUDVehicleInterface* GetVehicleInterface() { return m_pHUDVehicleInterface; }
 	ILINE CHUDPowerStruggle* GetPowerStruggleHUD() { return m_pHUDPowerStruggle; }
+	ILINE CHUDTeamInstantAction* GetTeamInstantActionHUD() { return m_pHUDTeamInstantAction; }
 	ILINE CHUDTextChat* GetMPChat() {return m_pHUDTextChat;}
 	ILINE CHUDScopes* GetScopes() { return m_pHUDScopes; }
 	ILINE CHUDCrosshair* GetCrosshair() { return m_pHUDCrosshair; }
@@ -400,6 +420,8 @@ public:
 	// Some special HUD fx
 	void BreakHUD(int state = 1);  //1 malfunction, 2 dead
 	void RebootHUD();
+
+	void SetTeamDisplay(std::string team);
 
 	//bool ShowPDA(bool bShow, int iTab=-1);
 	ILINE bool ShowBuyMenu(bool show) { return ShowPDA(show, true); }
@@ -541,17 +563,18 @@ private:
 	bool ShowWeaponAccessories(bool enable);
 
 	//member hud objects (sub huds)
-	CHUDRadar							*m_pHUDRadar;
-	CHUDScore							*m_pHUDScore;
-	CHUDTextChat					*m_pHUDTextChat;
-	CHUDObituary					*m_pHUDObituary;
-	CHUDTextArea					*m_pHUDTextArea;
-	CHUDVehicleInterface	*m_pHUDVehicleInterface;
-	CHUDPowerStruggle			*m_pHUDPowerStruggle;
-	CHUDScopes						*m_pHUDScopes;
-	CHUDCrosshair					*m_pHUDCrosshair;
-	CHUDTagNames					*m_pHUDTagNames;
-	CHUDSilhouettes 			*m_pHUDSilhouettes;
+	CHUDRadar							*m_pHUDRadar = nullptr;
+	CHUDScore							*m_pHUDScore = nullptr;
+	CHUDTextChat					*m_pHUDTextChat = nullptr;
+	CHUDObituary					*m_pHUDObituary = nullptr;
+	CHUDTextArea					*m_pHUDTextArea = nullptr;
+	CHUDVehicleInterface	*m_pHUDVehicleInterface = nullptr;
+	CHUDPowerStruggle			*m_pHUDPowerStruggle = nullptr;
+	CHUDTeamInstantAction	* m_pHUDTeamInstantAction = nullptr;
+	CHUDScopes						*m_pHUDScopes = nullptr;
+	CHUDCrosshair					*m_pHUDCrosshair = nullptr;
+	CHUDTagNames					*m_pHUDTagNames = nullptr;
+	CHUDSilhouettes 			*m_pHUDSilhouettes = nullptr;
 
 	bool					m_forceScores;
 

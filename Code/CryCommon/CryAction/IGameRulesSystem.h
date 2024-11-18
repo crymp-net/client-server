@@ -28,7 +28,11 @@ enum ETextMessageType
 	eTextMessageConsole, // console message
 	eTextMessageError, // error message
 	eTextMessageInfo, // info message
-	eTextMessageServer
+	eTextMessageServer,
+	eTextMessageBattleInfo,
+	eTextMessageBattleCurrency,
+	eTextMessageBattleWarning,
+	eTextMessageBattleSystem,
 };
 
 // Summary

@@ -65,6 +65,7 @@ public:
 	int GetSpawnLocationCount(IFunctionHandler* pH);
 	int GetSpawnLocationByIdx(IFunctionHandler* pH, int idx);
 	int GetSpawnLocation(IFunctionHandler* pH, ScriptHandle playerId, bool ignoreTeam, bool includeNeutral);
+	int GetSpawnLocationTeam(IFunctionHandler* pH, ScriptHandle playerId);
 	int GetSpawnLocations(IFunctionHandler* pH);
 	int GetFirstSpawnLocation(IFunctionHandler* pH, int teamId);
 
@@ -128,6 +129,7 @@ public:
 	int ForbiddenAreaWarning(IFunctionHandler* pH, bool active, int timer, ScriptHandle targetId);
 
 	int ResetGameTime(IFunctionHandler* pH);
+	int AddOvertime(IFunctionHandler* pH, float time);
 	int GetRemainingGameTime(IFunctionHandler* pH);
 	int IsTimeLimited(IFunctionHandler* pH);
 
@@ -184,6 +186,8 @@ public:
 	int GetRoundLimit(IFunctionHandler* pH);
 	int GetFragLimit(IFunctionHandler* pH);
 	int GetFragLead(IFunctionHandler* pH);
+	int GetScoreLimit(IFunctionHandler* pH);
+	int GetScoreLead(IFunctionHandler* pH);
 	int GetFriendlyFireRatio(IFunctionHandler* pH);
 	int GetReviveTime(IFunctionHandler* pH);
 	int GetMinPlayerLimit(IFunctionHandler* pH);

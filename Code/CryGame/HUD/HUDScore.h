@@ -27,15 +27,19 @@ class CHUDScore : public CHUDObject
 
 	struct ScoreEntry
 	{
-		int					m_kills;
-		int					m_deaths;
-		int					m_ping;
-		int					m_team;
-		int					m_currentRank;
-		EntityId		m_entityId;
-		bool				m_alive, m_spectating; //updating during sorting
+		int					m_kills = 0;
+		int					m_teamKills = 0;
+		int					m_score = 0;
+		int					m_deaths = 0;
+		int					m_ping = 0;
+		int					m_team = -1;
+		int					m_currentRank = 0;
+		EntityId			m_entityId = 0;
+		bool				m_alive = false;
+		bool				m_spectating = false; //updating during sorting
+		bool				m_prioritizeTeamKills = false;
 
-		ScoreEntry(EntityId id, int kills, int deaths, int ping);
+		ScoreEntry(EntityId id, int kills, int deaths, int ping, int teamKills = 0, int playerScore = 0, bool prioTeamKills = false);
 		bool operator<(const ScoreEntry& entry) const;
 		void UpdateLiveStats();
 	};

@@ -33,6 +33,7 @@ public:
 	
 	void Update(SViewParams &viewParams);
 	void OnExitVehicle();
+	void StopVehicleViewUpdates();
 
 private:
 	
@@ -78,6 +79,10 @@ private:
 	IVehicle *m_pVehicle = nullptr;
 	ICharacterInstance *m_pCharacter = nullptr;
 	float m_fastCameraCorrectionMode = 0.0f;
+
+	//Vehicle view update
+	int m_currentViewUpdateSeatId = 0;
+	EntityId m_currentViewUpdateVehicleId = 0;
 
 protected:
 

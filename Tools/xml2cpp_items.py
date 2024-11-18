@@ -20,9 +20,11 @@ class ItemConverter:
 		self._write('void ItemSystem::RegisterXMLData()')
 		self._write('{')
 
-		for xml_path in sorted(Path(self.path, 'Scripts/Entities/Items/XML/').glob('**/*.xml')):
+		xml_paths = [x.as_posix() for x in Path(self.path, 'Scripts/Entities/Items/XML/').glob('**/*.xml')]
+
+		for xml_path in sorted(xml_paths):
 			xml_tree = ET.parse(xml_path)
-			xml_name = xml_path.relative_to(self.path)
+			xml_name = Path(xml_path).relative_to(self.path).as_posix()
 			self._process_xml(xml_tree, xml_name)
 
 		self._write('}')

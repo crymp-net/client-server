@@ -488,6 +488,9 @@ void CMPHub::SetCurrentFlashScreen(IFlashPlayer* screen, bool ingame)
 			OnShowIngameMenu();
 		}
 	}
+
+	//CryMP: Update creategame list with new modes (called once only)
+	AddGameModToList("@ui_TeamInstantAction", "TeamInstantAction");
 }
 
 void CMPHub::ConnectFailed(EDisconnectionCause cause, const char* description)
@@ -997,12 +1000,15 @@ CGameNetworkProfile* CMPHub::GetProfile()const
 	return m_profile.get();
 }
 
-void CMPHub::AddGameModToList(const char* mod)
+void CMPHub::AddGameModToList(std::string displayName, std::string name)
 {
 	if (m_currentScreen)
 	{
 		//_root.Root.MainMenu.MultiPlayer.ClearGameModeList() - clear
-		m_currentScreen->Invoke1("_root.Root.MainMenu.MultiPlayer.AddGameMode", mod);
+		SFlashVarValue args[2] = { displayName.c_str(), name.c_str() };
+		m_currentScreen->Invoke("AddGameMode", args, 2);
+
+		//m_currentScreen->Invoke1("AddGameMode", mod);
 	}
 }
 
