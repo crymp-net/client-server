@@ -2618,7 +2618,7 @@ void CVehicle::InitHelpers(const CVehicleParams& table, IVehiclePart *pPart)
 		{
 			//<Helper name="exhaust_pos" position="0.56879997,-2.7351,0.62400001" direction="0,-1,0" part="body" />
 
-			if (!helperRef.haveAttr("name") || !helperRef.haveAttr("part"))
+			if (!helperRef.haveAttr("name")) 
 				continue;
 
 			//if (!helperRef.haveAttr("part")) CryMP: commented out
