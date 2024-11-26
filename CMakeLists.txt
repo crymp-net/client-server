@@ -932,6 +932,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CrySystem/StreamEngine.cpp
 	Code/CrySystem/StreamEngine.h
 
+	Code/CrySoundSystem/IAudioDevice.h
 	Code/CrySoundSystem/FmodEx/inc/fmod.h
 	Code/CrySoundSystem/FmodEx/inc/fmod_codec.h
 	Code/CrySoundSystem/FmodEx/inc/fmod_dsp.h
