@@ -1,0 +1,19 @@
+What is the difference between fmodex.dll? and fmodexp.dll?
+
+FMODEX.DLL
+----------
+This DLL is FMOD Ex with all codecs, dsp effects and output modes statically compiled 
+into the dll.
+This means you can use all the features of FMOD without needing extra plugins 
+accompanying your application.  
+The DLL is bigger because of this.
+
+FMODEXP.DLL
+-----------
+This DLL is FMOD Ex with all codecs, dsp units and output modes loaded at run-time
+as dynamic plugins instead of being statically compiled into the dll.  
+Plugins in the plugins/ directory need to be used to support all of FMOD Ex's features.
+Use this if you want a smaller distribution and only need one file format support 
+for example (ie .WAV).
+The DLL is smaller because of this.
+
