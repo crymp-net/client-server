@@ -1,9 +1,9 @@
 #include "StdAfx.h"
-#include <ISystem.h>
-#include <IConsole.h>
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
 #include "SoundSystemCommon.h"
 #include "IAudioDevice.h"
-#include <IReverbManager.h>
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 
 CSoundSystemCommon::CSoundSystemCommon()
 {

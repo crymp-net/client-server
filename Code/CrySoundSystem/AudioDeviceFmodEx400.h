@@ -16,11 +16,11 @@
 #ifndef __AUDIODEVICEFMODEX400_H__
 #define __AUDIODEVICEFMODEX400_H__
 
-#include "ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "SoundSystemCommon.h"
 #include "IAudioDevice.h"
 #include "ISoundBuffer.h"
-//#include <IStreamEngine.h>
+//#include "CryCommon/CrySystem/IStreamEngine.h"
 #include "FmodEx/inc/fmod.hpp"
 //#include "FmodEx/inc/fmod_event.hpp"
 

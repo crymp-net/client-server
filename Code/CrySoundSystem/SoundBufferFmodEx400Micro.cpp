@@ -21,9 +21,9 @@
 #include "AudioDeviceFmodEx400.h"
 #include "SoundSystem.h"
 #include "Sound.h"
-#include "IReverbManager.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 #include "FmodEx/inc/fmod_errors.h"
-#include <CrySizer.h>
+#include "CryCommon/CryCore/CrySizer.h"
 
 //////////////////////////////////////////////////////////////////////////
 #define IS_FMODERROR (m_ExResult != FMOD_OK )

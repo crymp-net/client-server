@@ -18,13 +18,13 @@
 
 #include "StdAfx.h"
 #include "SoundAssetManager.h"
-#include <IRenderer.h>
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "IAudioDevice.h"
 #include "SoundSystem.h" // CSoundSystem should be ISoundSystem
 #include "Sound.h"
-#include "ITimer.h"
-#include <CrySizer.h>
-#include <StlUtils.h>
+#include "CryCommon/CrySystem/ITimer.h"
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CryCore/StlUtils.h"
 
 CSoundAssetManager::CSoundAssetManager(CSoundSystem *pSoundSystem)
 {

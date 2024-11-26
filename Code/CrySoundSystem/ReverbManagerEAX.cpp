@@ -18,7 +18,7 @@
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
 #include "ReverbManagerEAX.h"
-#include "IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "IAudioDevice.h"
 #include "FmodEx/inc/fmod.hpp"
 #include "SoundSystem.h"

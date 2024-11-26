@@ -23,8 +23,8 @@
 #include "Sound.h"
 #include "SoundSystem.h"
 #include "FmodEx/inc/fmod_errors.h"
-#include <CrySizer.h>
-#include <ITimer.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySystem/ITimer.h"
 
 //////////////////////////////////////////////////////////////////////////
 #define IS_FMODERROR (m_ExResult != FMOD_OK )

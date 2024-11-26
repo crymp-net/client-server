@@ -18,12 +18,12 @@
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
 #include <CryThread.h>
-#include <ISystem.h>
-#include <IConsole.h>
-#include <ICryPak.h> 
-#include <CrySizer.h>
-#include <IRenderer.h>
-#include <ITimer.h>
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ICryPak.h" 
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include "IAudioDevice.h"
 #include "AudioDeviceFmodEx400.h"
 #include "SoundBufferFmodEx400.h"
@@ -32,7 +32,7 @@
 #include "PlatformSoundFmodEx400Event.h"
 #include "SoundBufferFmodEx400Micro.h"
 #include "SoundBufferFmodEx400Network.h"
-#include "ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "Sound.h"
 #include "SoundSystem.h"
 #include "FmodEx/inc/fmod_errors.h"
@@ -41,8 +41,8 @@
 #include "FmodEx/inc/fmod_event.hpp"
 #include "FmodEx/inc/fmod_event_net.hpp"
 #include "SoundSystemCommon.h"
-#include "ISoundMoodManager.h"
-#include "IReverbManager.h"
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 //#include "CryMemoryManager_impl.h"
 //static uint32 nSoundMainThreadId = ~0;
 static int32 s_nFileOpenCount = 0; // open file handle counting through FMOD filesystem callback

@@ -13,7 +13,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
+#include "CrySoundSystem/StdAfx.h"
 #include "MusicCVars.h"
 
 CMusicCVars::CMusicCVars()

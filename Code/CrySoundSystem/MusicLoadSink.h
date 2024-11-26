@@ -1,5 +1,5 @@
 #include "IScriptSystem.h"
-#include <StlUtils.h>
+#include "CryCommon/CryCore/StlUtils.h"
 
 #define MUSICLOAD_MODE_BASE					0
 #define MUSICLOAD_MODE_PATTERNS			1

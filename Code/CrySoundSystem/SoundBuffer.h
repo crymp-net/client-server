@@ -19,8 +19,8 @@
 #pragma once
 
 #include "ISoundBuffer.h"
-#include <ISound.h>
-#include <IStreamEngine.h>
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySystem/IStreamEngine.h"
 #include <smartptr.h>
 
 // forward declaration

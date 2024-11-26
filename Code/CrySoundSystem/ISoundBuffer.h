@@ -18,8 +18,8 @@
 #define __ISOUNDBUFFER_H__
 
 // TODO remove this again (DebugOutputstring)
-#include <ISystem.h>			// CryLogAlways
-#include <CrySizer.h>
+#include "CryCommon/CrySystem/ISystem.h"			// CryLogAlways
+#include "CryCommon/CryCore/CrySizer.h"
 #include "CryFixedString.h"
 #include "IAudioDevice.h"
 

@@ -2,10 +2,10 @@
 
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(XENON) && !defined(PS3)// no PS3 and Xenon for now
 
-#include <CrySizer.h>
-#include <ISound.h>
-#include <ISystem.h>
-#include <ICryPak.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "OGGDecoder.h"
 #include "../MusicSystem.h"
 

@@ -207,12 +207,12 @@
 
 
 #include <ILog.h>
-#include <IConsole.h>
-#include <ISound.h>
-#include <ISystem.h>
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySystem/ISystem.h"
 
 #include <Cry_Math.h>
-#include <ICryPak.h>
+#include "CryCommon/CrySystem/ICryPak.h"
 //#include <vector.h>
 
 

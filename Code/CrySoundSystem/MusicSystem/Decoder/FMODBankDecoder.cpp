@@ -1,10 +1,10 @@
 #include "StdAfx.h"
 
-#include <CrySizer.h>
-#include <IMusicSystem.h>
-#include <ISystem.h>
-#include <ICryPak.h>
-#include <ITimer.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
+#include "CryCommon/CrySystem/ITimer.h"
 
 #include <IAudioDevice.h>
 #include "FMODBankDecoder.h"

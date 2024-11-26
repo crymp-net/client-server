@@ -18,7 +18,7 @@
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
 #include "ReverbInstance_FreeVerb.h"
-//#include "IRenderer.h"
+//#include "CryCommon/CryRenderer/IRenderer.h"
 #include "IAudioDevice.h"
 #include "FmodEx/inc/fmod_errors.h"
 

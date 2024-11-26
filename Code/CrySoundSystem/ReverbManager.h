@@ -16,9 +16,9 @@
 #ifndef __REVERBMANAGER_H__
 #define __REVERBMANAGER_H__
 
-#include "IReverbManager.h"
-#include "IEntitySystem.h"
-#include <CrySizer.h>
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryCore/CrySizer.h"
 #pragma once
 
 #include "eax.h"

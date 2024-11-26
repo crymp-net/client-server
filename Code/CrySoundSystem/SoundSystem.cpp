@@ -17,27 +17,27 @@
 
 #include "StdAfx.h"
 //#ifndef _XBOX
-#include <ISystem.h>
-#include <CrySizer.h>
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CryCore/CrySizer.h"
 #include <algorithm>
-#include <IConsole.h>
-#include <ITimer.h>
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include <Cry_Math.h>
 #include <IXml.h>
-#include <Cry_Camera.h>
-#include <IRenderer.h>
-#include "IRenderAuxGeom.h"
-#include "IEntitySystem.h"
+#include "CryCommon/CryMath/Cry_Camera.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 #include "IAudioDevice.h"
 #include "ISoundBuffer.h"
-#include <IReverbManager.h>
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 #include "SoundSystem.h"
 #include "IPlatformSound.h"
 #include "IMusicSystem.h"
 #include "ILocalizationManager.h" //Voice file
 #include "Sound.h"
-#include <I3DEngine.h> //needed to check if the listener is in indoor or outdoor
-#include <ICryPak.h> //needed to check if the listener is in indoor or outdoor
+#include "CryCommon/Cry3DEngine/I3DEngine.h" //needed to check if the listener is in indoor or outdoor
+#include "CryCommon/CrySystem/ICryPak.h" //needed to check if the listener is in indoor or outdoor
 #include <ISerialize.h>
 #include "MoodManager.h"
 #include "StringUtils.h"

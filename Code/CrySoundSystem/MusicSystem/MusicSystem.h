@@ -20,8 +20,8 @@
 #include "../StdAfx.h"
 
 #include <vector>
-#include <IMusicSystem.h>
-#include <ITimer.h>
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include <smartptr.h>
 #include "Pattern/MusicPattern.h"
 #include "RandGen/RandGen.h"

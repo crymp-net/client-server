@@ -18,7 +18,7 @@
 #include "SoundBuffer.h"
 #include "SoundSystem.h"
 #include "Sound.h"
-#include "ITimer.h"
+#include "CryCommon/CrySystem/ITimer.h"
 
 //////////////////////////////////////////////////////////////////////////
 CSoundBuffer::CSoundBuffer(const SSoundBufferProps &Props) : m_Props(Props)

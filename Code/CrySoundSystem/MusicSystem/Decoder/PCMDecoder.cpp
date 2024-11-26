@@ -1,9 +1,9 @@
 #include "StdAfx.h"
 
-#include <CrySizer.h>
-#include <IMusicSystem.h>
-#include <ISystem.h>
-#include <ICryPak.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySoundSystem/IMusicSystem.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "PCMDecoder.h"
 
 #include "TypeInfo_impl.h"

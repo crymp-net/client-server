@@ -5,7 +5,7 @@
 #include "MusicPatternInstance.h"
 #include "MusicPattern.h"
 #include "../Decoder/PatternDecoder.h"
-#include <CrySizer.h>
+#include "CryCommon/CryCore/CrySizer.h"
 
 CMusicPatternInstance::CMusicPatternInstance(CMusicPattern *pPattern)
 {

@@ -17,7 +17,7 @@
 #define __MICROPHONESTREAM_H__
 
 #include "StdAfx.h"
-//#include "ISound.h"
+//#include "CryCommon/CrySoundSystem/ISound.h"
 
 #pragma once
 

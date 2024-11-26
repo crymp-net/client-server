@@ -17,7 +17,7 @@
 #ifndef FILE_CACHE_MANAGER_H_INCLUDED
 #define FILE_CACHE_MANAGER_H_INCLUDED
 
-#include <IStreamEngine.h>
+#include "CryCommon/CrySystem/IStreamEngine.h"
 #include <VectorMap.h>
 #include <CryName.h>
 #include <IJobManager.h>

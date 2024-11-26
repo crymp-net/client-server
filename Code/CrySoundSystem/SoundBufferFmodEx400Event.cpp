@@ -17,13 +17,13 @@
 
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
-#include <ITimer.h>
+#include "CryCommon/CrySystem/ITimer.h"
 #include "SoundBufferFmodEx400Event.h"
 #include "AudioDeviceFmodEx400.h"
 //#include "SoundSystem.h"
 #include "Sound.h"
 #include "FmodEx/inc/fmod_errors.h"
-#include <CrySizer.h>
+#include "CryCommon/CryCore/CrySizer.h"
 
 //////////////////////////////////////////////////////////////////////////
 #define IS_FMODERROR (m_ExResult != FMOD_OK )

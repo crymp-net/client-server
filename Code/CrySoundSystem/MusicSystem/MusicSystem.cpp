@@ -2,12 +2,12 @@
 
 #include <CryThread.h>
 #include "MusicSystem.h"
-#include <CrySizer.h>
-#include <IRenderer.h>
-#include <IAudioDevice.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CrySoundSystem/IAudioDevice.h"
 #include "Decoder/PatternDecoder.h"
 
-#include "IReverbManager.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 
 //44100
 enum {MixBufferSize = 16384};

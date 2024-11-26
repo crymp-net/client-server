@@ -18,7 +18,7 @@
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
 #include "ReverbManagerDSP.h"
-#include "IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "IReverbInstance.h"
 #include "ReverbInstance_FreeVerb.h"
 #include "ReverbInstance_Classic_Reverb.h"

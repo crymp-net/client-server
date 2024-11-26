@@ -14,13 +14,13 @@
 #include "StdAfx.h"
 #include "MoodManager.h"
 #include "Sound.h"
-#include <IRenderer.h>
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include "ISoundBuffer.h"
 #include "ISoundAssetManager.h"
 #include "IAudioDevice.h"
-#include "ITimer.h"
+#include "CryCommon/CrySystem/ITimer.h"
 #include "SoundSystem.h"
-#include "ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 
 #if defined(SOUNDSYSTEM_USE_FMODEX400)
 //#include "FmodEx/inc/fmod_dsp.h"

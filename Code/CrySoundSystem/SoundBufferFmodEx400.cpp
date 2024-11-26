@@ -20,10 +20,10 @@
 #include "SoundBufferFmodEx400.h"
 #include "AudioDeviceFmodEx400.h"
 #include "Sound.h"
-#include "IReverbManager.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 #include "FmodEx/inc/fmod_errors.h"
-#include <CrySizer.h>
-#include "ITimer.h"
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySystem/ITimer.h"
 
 //////////////////////////////////////////////////////////////////////////
 #define IS_FMODERROR (m_ExResult != FMOD_OK )

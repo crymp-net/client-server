@@ -1,10 +1,10 @@
 #include "StdAfx.h"
 #include "FileCacheManager.h"
 #include "SoundCVars.h"
-#include <IRenderer.h>
-#include <IRenderAuxGeom.h>
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "../CrySystem/CustomMemoryHeap.h"
-#include "ISerialize.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "SoundSystem.h"
 #include <IJobManager_JobDelegator.h>
 

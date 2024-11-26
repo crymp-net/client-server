@@ -13,22 +13,22 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "CryCommon/CrySystem/ISystem.h"
 #include "Sound.h"
 #include "IPlatformSound.h"
 #include "IAudioDevice.h"
-#include "IReverbManager.h"
-#include <CrySizer.h>
-#include <Cry_Camera.h>
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CryMath/Cry_Camera.h"
 #include "SoundSystem.h"
-#include <IConsole.h>
-#include <ISystem.h>
-#include <ITimer.h>
-#include <IPhysics.h>
-#include <I3DEngine.h> //needed to check if the listener is in indoor or outdoor
-#include "ISoundMoodManager.h" // getVolumeDB
-#include "IEntitySystem.h"
-#include "ILocalizationManager.h"
-#include <StlUtils.h>
+#include "CryCommon/CrySystem/IConsole.h"
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/CrySystem/ITimer.h"
+#include "CryCommon/CryPhysics/IPhysics.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h" //needed to check if the listener is in indoor or outdoor
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h" // getVolumeDB
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryCore/StlUtils.h"
 
 #pragma warning(disable:4003)	// warning C4003: not enough actual parameters for macro 'CHECK_LOADED'
  

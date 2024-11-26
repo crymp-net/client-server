@@ -22,7 +22,7 @@
 
 #include "platform.h"
 
-#include <IStreamEngine.h>
+#include "CryCommon/CrySystem/IStreamEngine.h"
 
 #include "../../FmodEx/inc/fmod.hpp"
 

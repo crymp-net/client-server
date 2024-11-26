@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "SoundCVars.h"
 #include "SoundSystem.h"
-#include <IReverbManager.h>
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 
 //////////////////////////////////////////////////////////////////////////
 void OnCVarChangedCallback(ICVar* pCVar)

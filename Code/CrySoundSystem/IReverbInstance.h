@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "ISound.h"
-#include "IReverbManager.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CrySoundSystem/IReverbManager.h"
 
 struct IReverbInstance
 {

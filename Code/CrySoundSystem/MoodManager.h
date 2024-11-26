@@ -15,7 +15,7 @@
 #define __SOUND_MOOD_MANAGER__
 #pragma once
 
-#include "ISoundMoodManager.h"
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
 
 #if defined(SOUNDSYSTEM_USE_FMODEX400)
 #include "FmodEx/inc/fmod_event.hpp"

@@ -1,11 +1,11 @@
 #include "StdAfx.h"
 #include "PCMExporterDSP.h"
-#include "ISoundMoodManager.h"
+#include "CryCommon/CrySoundSystem/ISoundMoodManager.h"
 
 #if defined SOUNDSYSTEM_USE_FMODEX400
 	#include <FmodEx/inc/fmod_event.hpp>
 	#include <FmodEx/inc/fmod_dsp.h>
-	#include "ISound.h"
+	#include "CryCommon/CrySoundSystem/ISound.h"
 	#include "IAudioDevice.h"
 	#define IS_FMODERROR (m_ExResult != FMOD_OK ) 
 #endif // SOUNDSYSTEM_USE_FMODEX400

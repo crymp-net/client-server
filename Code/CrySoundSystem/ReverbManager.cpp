@@ -16,15 +16,15 @@
 #include "StdAfx.h"
 
 #include "ReverbManager.h"
-#include "IRenderer.h"
-#include "IRenderAuxGeom.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 #include "IAudioDevice.h"
-#include "IEntitySystem.h"
-#include "ISerialize.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
+#include "CryCommon/CryNetwork/ISerialize.h"
 #include "SoundSystem.h"
 #include "Sound.h"
 
-#include <IPhysics.h>
+#include "CryCommon/CryPhysics/IPhysics.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization
@@ -837,6 +837,8 @@ float CReverbManager::GetEnvironment(ISound *pSound)
 	if (!pSound)
 		return 0.0f;
 
+	return 0.0f; //CryMP: fixme
+	/*
 	SAreaManagerResult Results[10];
 
 	bool bResult = gEnv->pEntitySystem->GetAreaManager()->QueryAreas(pSound->GetPosition(), Results, 10);
@@ -889,6 +891,7 @@ float CReverbManager::GetEnvironment(ISound *pSound)
 	(void)bQuery;
 
 	return fEnvironment;
+	*/
 }
 
 //bool CReverbManager::RegisterPlayer(EntityId PlayerID)

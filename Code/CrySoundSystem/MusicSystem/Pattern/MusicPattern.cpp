@@ -1,8 +1,8 @@
 #include "StdAfx.h"
 
 #include <algorithm>
-#include <CrySizer.h>
-#include <ICryPak.h>
+#include "CryCommon/CryCore/CrySizer.h"
+#include "CryCommon/CrySystem/ICryPak.h"
 #include "MusicPattern.h"
 #include "../MusicSystem.h"
 #include "../Decoder/PCMDecoder.h"

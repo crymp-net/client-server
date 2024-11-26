@@ -16,7 +16,7 @@
 #ifndef __MICROPHONE_H__
 #define __MICROPHONE_H__
 
-#include "ISound.h"
+#include "CryCommon/CrySoundSystem/ISound.h"
 #include "CryThread.h"
 #include "ISoundBuffer.h"
 
