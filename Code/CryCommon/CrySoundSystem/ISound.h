@@ -162,6 +162,32 @@ typedef uint32	tSoundID;
 #define UPDATE_SOUNDS_IN_MS								15
 #define UPDATE_SOUND_AUDIODEVICE_IN_MS		15
 
+//CryMP: Start
+
+enum ESoundLogType
+{
+	eSLT_Message,
+	eSLT_Warning,
+	eSLT_Error,
+	eSLT_Always,
+};
+
+enum ESoundSystemErrorCode
+{
+	eSoundSystemErrorCode_None = 0x00000000,
+	eSoundSystemErrorCode_ProjectNotReady = BIT(0),
+	eSoundSystemErrorCode_SoundCreateFailed = BIT(1),
+	eSoundSystemErrorCode_SoundIDRangeFull = BIT(2),
+	eSoundSystemErrorCode_SoundGotCulled = BIT(3),
+	eSoundSystemErrorCode_SoundNotKnown = BIT(4),
+	eSoundSystemErrorCode_SoundNotRegistered = BIT(5),
+	eSoundSystemErrorCode_SoundFlagsBad = BIT(6),
+	eSoundSystemErrorCode_NotCalledFromMainThread = BIT(7),
+	eSoundSystemErrorCode_Max = BIT(31)
+};
+
+//CryMP: End
+
 //////////////////////////////////////////////////////////////////////
 // Sound Semantics
 //////////////////////////////////////////////////////////////////////
