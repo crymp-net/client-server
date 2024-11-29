@@ -1291,6 +1291,110 @@ CPPAPI.AddLocalizedLabel("ui_msg_ia_lose_0", {
 	},
 })
 
+--------------------------------------------------------------------------------
+-- Usability message (vehicles)
+--------------------------------------------------------------------------------
+
+CPPAPI.AddLocalizedLabel("use_vehicle_locked_by", {
+    english_text = "Locked by %1",
+    languages = {
+        czech = {
+            localized_text = "Uzamčeno uživatelem %1",
+        },
+        french = {
+            localized_text = "Verrouillé par %1",
+        },
+        german = {
+            localized_text = "Gesperrt von %1",
+        },
+        hungarian = {
+            localized_text = "Zárolva általa %1",
+        },
+        italian = {
+            localized_text = "Bloccato da %1",
+        },
+        polish = {
+            localized_text = "Zablokowane przez %1",
+        },
+        russian = {
+            localized_text = "Закрыто %1",
+        },
+        spanish = {
+            localized_text = "Bloqueado por %1",
+        },
+        turkish = {
+            localized_text = "%1 tarafından kilitlendi",
+        },
+    },
+})
+
+CPPAPI.AddLocalizedLabel("use_vehicle_reserved_for", {
+    english_text = "Reserved for %1",
+    languages = {
+        czech = {
+            localized_text = "Vyhrazeno pro %1",
+        },
+        french = {
+            localized_text = "Réservé à %1",
+        },
+        german = {
+            localized_text = "Reserviert für %1",
+        },
+        hungarian = {
+            localized_text = "Fenntartva %1 számára",
+        },
+        italian = {
+            localized_text = "Riservato a %1",
+        },
+        polish = {
+            localized_text = "Zarezerwowane dla %1",
+        },
+        russian = {
+            localized_text = "Зарезервировано %1",
+        },
+        spanish = {
+            localized_text = "Reservado para %1",
+        },
+        turkish = {
+            localized_text = "%1 için ayrıldı",
+        },
+    },
+})
+
+CPPAPI.AddLocalizedLabel("use_vehicle_full", {
+    english_text = "VEHICLE OCCUPIED",
+    languages = {
+        czech = {
+            localized_text = "VOZIDLO OBSAZENO",
+        },
+        french = {
+            localized_text = "VÉHICULE OCCUPÉ",
+        },
+        german = {
+            localized_text = "FAHRZEUG BESETZT",
+        },
+        hungarian = {
+            localized_text = "JÁRMŰ FOGLALT",
+        },
+        italian = {
+            localized_text = "VEICOLO OCCUPATO",
+        },
+        polish = {
+            localized_text = "POJAZD ZAJĘTY",
+        },
+        russian = {
+            localized_text = "МЕСТ НЕТ",
+        },
+        spanish = {
+            localized_text = "VEHÍCULO OCUPADO",
+        },
+        turkish = {
+            localized_text = "ARAÇ DOLU",
+        },
+    },
+})
+
+
 --[[
 CPPAPI.AddLocalizedLabel("template", {
 	english_text = "",
