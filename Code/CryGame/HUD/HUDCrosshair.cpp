@@ -250,7 +250,7 @@ void CHUDCrosshair::UpdateDamageIndicator(CPlayer *pPlayer, float fDeltaTime)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB)
+void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB, bool skipParamATranslation /*false*/)
 {
 	m_bUsable = (usable > 0) ? true : false;
 	m_animCrossHair.Invoke("setUsable", usable);
@@ -258,15 +258,17 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 	{
 		if (paramA)
 		{
-			string paramLocA;
-			string paramLocB;
-			if (paramA[0] != '@')
+			std::string paramLocA;
+			std::string paramLocB;
+			if (paramA[0] != '@' && !skipParamATranslation)
 			{
 				paramLocA = "@";
 				paramLocA.append(paramA);
 			}
 			else
+			{
 				paramLocA = paramA;
+			}
 
 			if (paramB)
 			{
@@ -276,7 +278,9 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 					paramLocB.append(paramB);
 				}
 				else
+				{
 					paramLocB = paramB;
+				}
 			}
 
 			m_animInterActiveIcons.Invoke("setText", m_pHUD->LocalizeWithParams(actionLabel, true, paramLocA.c_str(), paramLocB.c_str()));
@@ -287,17 +291,23 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 		//set icon
 		int icon = stl::find_in_map(m_useIcons, actionLabel, 0);
 		if (!icon && usable)
+		{
 			icon = 1;
+		}
 		if (icon)
 		{
 			m_animInterActiveIcons.SetVisible(true);
 			m_animInterActiveIcons.Invoke("setUseIcon", icon);
 		}
 		else if (m_animInterActiveIcons.GetVisible())
+		{
 			m_animInterActiveIcons.SetVisible(false);
+		}
 	}
 	else if (m_animInterActiveIcons.GetVisible())
+	{
 		m_animInterActiveIcons.SetVisible(false);
+	}
 }
 
 void CHUDCrosshair::HandleUsability(int objId, const char* message)
@@ -310,7 +320,11 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 		textLabel = message;
 	}
 
-	m_pHUD->m_pGameRules->SetLastUsabilityEntityId(objId);
+	CGameRules* pGameRules = m_pHUD->m_pGameRules;
+	CPlayer* pClientPlayer = m_pHUD->m_pClientActor;
+	pGameRules->SetLastUsabilityEntityId(objId);
+
+	const char* param = nullptr;
 
 	if (usable == 1)
 	{
@@ -318,13 +332,55 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 		{
 			textLabel = "@use_vehicle";
 
-			const int pteamId = m_pHUD->m_pGameRules->GetTeam(m_pHUD->m_pClientActor->GetEntityId());
-			const int vteamId = m_pHUD->m_pGameRules->GetTeam(objId);
-
-			if (vteamId && vteamId != pteamId)
+			if (gEnv->bMultiplayer)
 			{
-				usable = 2;
-				textLabel = "@use_vehicle_locked";
+				const int pteamId = pGameRules->GetTeam(pClientPlayer->GetEntityId());
+				const int vteamId = pGameRules->GetTeam(objId);
+
+				if (vteamId && vteamId != pteamId)
+				{
+					usable = 2;
+					textLabel = "@use_vehicle_locked";
+				}
+				else
+				{
+					const TSynchedKey lockedKey = 10;
+					const TSynchedKey reservedKey = 11;
+					//CryMP:
+					//Option to show HUD display "Locked by name" or "Reserved for name" instead of "ENTER VEHICLE"
+					//Server sets SetSynchedEntityValue(vehicleId, 10/11, ownerId);
+					//ownerId can be set to NULL_ENTITY to reset display
+					EntityId lockedId = 0;
+					if (pGameRules->GetSynchedEntityValue(objId, lockedKey, lockedId))
+					{
+						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(lockedId);
+						if (pActor && pActor != pClientPlayer)
+						{
+							usable = 2;
+							textLabel = "@use_vehicle_locked_by";
+							param = pActor->GetEntity()->GetName();
+						}
+					}
+					EntityId reservedId = 0;
+					if (pGameRules->GetSynchedEntityValue(objId, reservedKey, reservedId))
+					{
+						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(reservedId);
+						if (pActor && pActor != pClientPlayer)
+						{
+							usable = 2;
+							textLabel = "@use_vehicle_reserved_for";
+							param = pActor->GetEntity()->GetName();
+						}
+					}
+					if (!lockedId && !reservedId)
+					{
+						if (pVehicle->GetStatus().passengerCount == pVehicle->GetSeatCount())
+						{
+							usable = 2;
+							textLabel = "@use_vehicle_full";
+						}
+					}
+				}
 			}
 		}
 		else if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(objId))
@@ -347,9 +403,13 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 		else
 		{
 			if (gEnv->bMultiplayer && !gotMessage)
+			{
 				usable = 0;
+			}
 			else if (!gotMessage)
+			{
 				textLabel = "@pick_object";
+			}
 		}
 	}
 	else
@@ -357,7 +417,8 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 		textLabel = ""; //turn off text
 	}
 
-	SetUsability(usable, textLabel.c_str(), nullptr);
+	const bool skipParamATranslation = param ? true : false;
+	SetUsability(usable, textLabel.c_str(), param, nullptr, skipParamATranslation);
 }
 
 //-----------------------------------------------------------------------------------------------------

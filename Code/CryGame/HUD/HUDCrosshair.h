@@ -40,7 +40,8 @@ public:
 	// ~CHUDObject
 
 	//use-icon
-	void SetUsability(int usable, const char* actionLabel = NULL, const char* paramA = NULL, const char* paramB = NULL);
+	void SetUsability(int usable, const char* actionLabel = nullptr, const char* paramA = nullptr, 
+		const char* paramB = nullptr, bool skipParamATranslation = false);
 	void HandleUsability(int objId, const char* message);
 	bool GetUsability() const;
 	//show enemy hit in crosshair
