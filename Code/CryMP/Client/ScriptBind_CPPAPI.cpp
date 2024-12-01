@@ -68,8 +68,6 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(LocalizeText, "text");
 	SCRIPT_REG_TEMPLFUNC(AddLocalizedLabel, "name, params");
 
-	SCRIPT_REG_TEMPLFUNC(VehicleNoSeatChangeAndExit, "enable");
-
 	// DrawTools
 	SCRIPT_REG_TEMPLFUNC(DrawText, "posX, posY, xscale, yscale, color1, color2, color3, color4, text");
 	SCRIPT_REG_TEMPLFUNC(DrawImage, "posX, posY, width, height, texturePath");
@@ -577,15 +575,6 @@ int ScriptBind_CPPAPI::AddLocalizedLabel(IFunctionHandler* pH, const char* name,
 	const bool success = localization.Add(std::move(label), keepExisting);
 
 	return pH->EndFunction(success);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-int ScriptBind_CPPAPI::VehicleNoSeatChangeAndExit(IFunctionHandler* pH, bool enable)
-{
-	g_pGameActions->FilterVehicleNoSeatChangeAndExit()->Enable(enable);
-
-	return pH->EndFunction();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
