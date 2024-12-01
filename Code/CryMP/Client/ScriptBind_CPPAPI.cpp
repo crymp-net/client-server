@@ -85,6 +85,12 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_TEMPLFUNC(GetCharacterAttachments, "entityId, characterSlot");
 	SCRIPT_REG_TEMPLFUNC(GetCharacterJoints, "entityId, characterSlot");
 	SCRIPT_REG_TEMPLFUNC(CreateCharacterDecal, "entityId, characterSlot, params");
+
+	//Filters
+	SCRIPT_REG_TEMPLFUNC(EnableActionFilter, "filterName, enable");
+	SCRIPT_REG_TEMPLFUNC(IsActionFilterEnabled, "filterName");
+	SCRIPT_REG_TEMPLFUNC(IsActionFilterAvailable, "filterName");
+	SCRIPT_REG_TEMPLFUNC(CreateActionFilter, "filterName, actions");
 }
 
 ScriptBind_CPPAPI::~ScriptBind_CPPAPI()
@@ -964,4 +970,106 @@ int ScriptBind_CPPAPI::CreateCharacterDecal(IFunctionHandler* pH, ScriptHandle e
 	pCharacter->CreateDecal(decal);
 
 	return pH->EndFunction(true);
+}
+
+int ScriptBind_CPPAPI::EnableActionFilter(IFunctionHandler* pH, const char* name, bool enable)
+{
+	IActionMapManager* pMapManager = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	IActionFilter* pFilter = pMapManager ? pMapManager->GetActionFilter(name) : nullptr;
+	if (pFilter)
+	{
+		pFilter->Enable(enable);
+
+		return pH->EndFunction(true);
+
+	}
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::IsActionFilterEnabled(IFunctionHandler* pH, const char* name)
+{
+	IActionMapManager* pMapManager = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	IActionFilter* pFilter = pMapManager ? pMapManager->GetActionFilter(name) : nullptr;
+	if (pFilter)
+	{
+		return pH->EndFunction(pFilter->Enabled());
+	}
+	return pH->EndFunction();
+}
+
+int ScriptBind_CPPAPI::IsActionFilterAvailable(IFunctionHandler* pH, const char* name)
+{
+	IActionMapManager* pMapManager = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+	IActionFilter* pFilter = pMapManager ? pMapManager->GetActionFilter(name) : nullptr;
+	if (pFilter)
+	{
+		return pH->EndFunction(true);
+	}
+	return pH->EndFunction(false);
+}
+
+int ScriptBind_CPPAPI::CreateActionFilter(IFunctionHandler* pH, const char* name, SmartScriptTable actions)
+{
+	IActionMapManager* pMapManager = gEnv->pGame->GetIGameFramework()->GetIActionMapManager();
+
+	if (pMapManager->GetActionFilter(name))
+	{
+		CryLogWarningAlways("CPPAPI.CreateActionFilter: a filter named `%s` already exsists!", name);
+		return pH->EndFunction();
+	}
+	std::vector<std::string> validActions;
+
+	IScriptTable::Iterator it = actions->BeginIteration();
+	while (actions->MoveNext(it))
+	{
+		if (it.value.GetVarType() == svtString)
+		{
+			const char* actionName = it.value.str;
+			if (actionName && actionName[0] != '\0')
+			{
+				bool found = false;
+				IActionMapIteratorPtr iter = pMapManager->CreateActionMapIterator();
+				while (IActionMap* pMap = iter->Next())
+				{
+					IActionMapBindInfoIteratorPtr pIter = pMap->CreateBindInfoIterator();
+					while (const SActionMapBindInfo* pInfo = pIter->Next())
+					{
+						if (strcmp(pInfo->action, actionName) == 0)
+						{
+							validActions.push_back(actionName);
+							found = true;
+							break;
+						}
+					}
+					if (found)
+						break;
+				}
+				if (!found)
+				{
+					CryLogWarningAlways("CPPAPI.CreateActionFilter: actionName %s not available", actionName);
+				}
+			}
+		}
+		else
+		{
+			CryLogWarningAlways("CPPAPI.CreateActionFilter: table must contain string values only");
+		}
+	}
+	actions->EndIteration(it);
+
+	if (!validActions.empty())
+	{
+		IActionFilter* pFilter = pMapManager->CreateActionFilter(name, EActionFilterType::eAFT_ActionFail);
+		if (pFilter)
+		{
+			for (const auto& action : validActions)
+			{
+				pFilter->Filter(ActionId(action.c_str()));
+			}
+			return pH->EndFunction(true);
+		}
+	}
+
+	CryLogWarningAlways("CPPAPI.CreateActionFilter: no valid actions found in the table");
+	return pH->EndFunction(false);
 }
