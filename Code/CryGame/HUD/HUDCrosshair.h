@@ -42,7 +42,7 @@ public:
 	//use-icon
 	void SetUsability(int usable, const char* actionLabel = nullptr, const char* paramA = nullptr, 
 		const char* paramB = nullptr, bool skipParamATranslation = false);
-	void HandleUsability(int objId, const char* message);
+	void UpdateUsabilityMessage(const EntityId objId, const char* message = "");
 	bool GetUsability() const;
 	//show enemy hit in crosshair
 	void CrosshairHit();
@@ -67,8 +67,6 @@ public:
 	float GetOpacity() const;
 	void Fade(float from, float to, float time);
 	void UpdateOpacity(float frameTime);
-
-	void OnLookatEntityChangeTeam(EntityId entityId);
 
 	ILINE int GetCrosshairType() const { return m_iCrosshair; }
 
@@ -96,13 +94,10 @@ private:
 	CGameFlashAnimation	m_animFriendCross;
 	//the use icons flash asset
 	CGameFlashAnimation m_animInterActiveIcons;
-	//usability flag (can use lookat object)
-	bool m_bUsable = false;
 	// targetted friendly unit
 	int m_iFriendlyTarget = 0;
 	// crosshair type cache value
 	int m_iCrosshair = -1;
-	bool m_setCrosshairInFlash = false;
 	// maps usability strings to icons
 	std::map<string, int> m_useIcons;
 	//hide the use icon in special cases
@@ -116,6 +111,12 @@ private:
 	
 	//CryMP
 	float m_fDamageIndicatorTimer = 0.0f;
+	EntityId m_currentVehicleId = 0;
+	//usability flag (can use lookat object)
+	int m_usable = 0;
+	bool m_setCrosshairInFlash = false;
+	std::string m_lastText = "invalid";
+	int m_lastUsable = -1;
 
 	struct Fading
 	{

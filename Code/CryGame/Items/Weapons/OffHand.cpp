@@ -870,7 +870,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 							(isSocom && pCurrentItem && pCurrentItem->IsDualWield()))
 						{
 							if (pItem->CheckAmmoRestrictions(pPlayer->GetEntityId()))
-								pHUD->GetCrosshair()->SetUsability(true, "@game_take_ammo_from", itemName.c_str());
+								pHUD->GetCrosshair()->SetUsability(1, "@game_take_ammo_from", itemName.c_str());
 							else
 								pHUD->GetCrosshair()->SetUsability(2, "@weapon_ammo_full", itemName.c_str());
 						}
@@ -882,7 +882,7 @@ void COffHand::UpdateCrosshairUsabilityMP()
 								IItem* pExchangedItem = GetExchangeItem(pPlayer);
 								if (pExchangedItem)
 								{
-									pHUD->GetCrosshair()->SetUsability(true, "@game_exchange_weapon",
+									pHUD->GetCrosshair()->SetUsability(1, "@game_exchange_weapon",
 										pExchangedItem->GetEntity()->GetClass()->GetName(), itemName.c_str());
 								}
 								else

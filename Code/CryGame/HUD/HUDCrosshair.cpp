@@ -172,6 +172,21 @@ void CHUDCrosshair::Update(float fDeltaTime)
 
 	if ((!m_pHUD->InSpectatorMode() || pPlayer->IsFpSpectatorTarget())) //CryMP Fp Spec render crosshair
 	{
+		if (m_animInterActiveIcons.GetVisible()) //if the crosshair is invisible, the use icon should be too
+		{
+			if (!m_bHideUseIconTemp)	//hides the icon, when something is already grabbed/being used
+			{
+				if (m_currentVehicleId)
+				{
+					//CryMP: Once the vehicle usability display is active
+					//we need to update it furthermore, incase its team is changed etc
+					UpdateUsabilityMessage(m_currentVehicleId);
+				}
+				m_animInterActiveIcons.GetFlashPlayer()->Advance(fDeltaTime);
+				m_animInterActiveIcons.GetFlashPlayer()->Render();
+			}
+		}
+
 		//also disables the damage indicator
 		if (/*g_pGameCVars->hud_crosshair>0 && m_iCrosshair > 0 &&*/ (g_pGameCVars->g_difficultyLevel < 4 || gEnv->bMultiplayer))
 		{
@@ -182,24 +197,17 @@ void CHUDCrosshair::Update(float fDeltaTime)
 
 				if (m_setCrosshairInFlash)
 				{
-					m_animCrossHair.Invoke("setCrossHair", m_iCrosshair); //Setting these has no effect if flash anim not visible..
-					m_animCrossHair.Invoke("setUsable", m_bUsable);
+					m_animCrossHair.Invoke("setCrossHair", m_iCrosshair);
+					m_animCrossHair.Invoke("setUsable", m_usable);
 					m_setCrosshairInFlash = false;
+
+					//CryLogAlways("$3Updating flash crosshair to %d : m_usable %d", m_iCrosshair, m_usable);
 				}
 
 				/*f32 fColor[4] = { 1,1,0,1 };
 				f32 g_YLine = 130.0f;
 				gEnv->pRenderer->Draw2dLabel(1, g_YLine, 1.3f, fColor, false, "Rendering crosshair: %s", m_animCrossHair.GetVisible() ? "visible" : "invisible");
 				*/
-			}
-		}
-
-		if (m_animInterActiveIcons.GetVisible()) //if the crosshair is invisible, the use icon should be too
-		{
-			if (!m_bHideUseIconTemp)	//hides the icon, when something is already grabbed/being used
-			{
-				m_animInterActiveIcons.GetFlashPlayer()->Advance(fDeltaTime);
-				m_animInterActiveIcons.GetFlashPlayer()->Render();
 			}
 		}
 	}
@@ -252,8 +260,22 @@ void CHUDCrosshair::UpdateDamageIndicator(CPlayer *pPlayer, float fDeltaTime)
 
 void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB, bool skipParamATranslation /*false*/)
 {
-	m_bUsable = (usable > 0) ? true : false;
-	m_animCrossHair.Invoke("setUsable", usable);
+	if (usable < 0) //CryMP: called in CPlayer::Revive
+	{
+		usable = 0;
+		if (m_currentVehicleId)
+		{
+			const EntityId uiCenterId = m_pHUD->m_pClientActor->GetGameObject()->GetWorldQuery()->GetLookAtEntityId();
+			if (uiCenterId)
+			{
+				return; //still have a vehicle in front, don't turn off usability 
+			}
+		}
+	}
+
+	m_usable = usable;
+	m_setCrosshairInFlash = true;
+
 	if (actionLabel)
 	{
 		if (paramA)
@@ -286,7 +308,9 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 			m_animInterActiveIcons.Invoke("setText", m_pHUD->LocalizeWithParams(actionLabel, true, paramLocA.c_str(), paramLocB.c_str()));
 		}
 		else
+		{
 			m_animInterActiveIcons.Invoke("setText", actionLabel);
+		}
 
 		//set icon
 		int icon = stl::find_in_map(m_useIcons, actionLabel, 0);
@@ -310,8 +334,11 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 	}
 }
 
-void CHUDCrosshair::HandleUsability(int objId, const char* message)
+void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* message)
 {
+	IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(objId);
+	m_currentVehicleId = pVehicle ? pVehicle->GetEntityId() : 0;
+
 	int usable = (gEnv->pEntitySystem->GetEntity(objId)) ? 1 : 0;
 	std::string textLabel;
 	const bool gotMessage = (message && strlen(message) != 0);
@@ -322,13 +349,12 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 
 	CGameRules* pGameRules = m_pHUD->m_pGameRules;
 	CPlayer* pClientPlayer = m_pHUD->m_pClientActor;
-	pGameRules->SetLastUsabilityEntityId(objId);
 
 	const char* param = nullptr;
 
 	if (usable == 1)
 	{
-		if (IVehicle* pVehicle = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem()->GetVehicle(objId))
+		if (pVehicle)
 		{
 			textLabel = "@use_vehicle";
 
@@ -354,22 +380,28 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 					if (pGameRules->GetSynchedEntityValue(objId, lockedKey, lockedId))
 					{
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(lockedId);
-						if (pActor && pActor != pClientPlayer)
+						if (pActor)
 						{
-							usable = 2;
-							textLabel = "@use_vehicle_locked_by";
-							param = pActor->GetEntity()->GetName();
+							if (pActor != pClientPlayer)
+							{
+								usable = 2;
+								textLabel = "@use_vehicle_locked_by";
+								param = pActor->GetEntity()->GetName();
+							}
 						}
 					}
 					EntityId reservedId = 0;
 					if (pGameRules->GetSynchedEntityValue(objId, reservedKey, reservedId))
 					{
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(reservedId);
-						if (pActor && pActor != pClientPlayer)
+						if (pActor)
 						{
-							usable = 2;
-							textLabel = "@use_vehicle_reserved_for";
-							param = pActor->GetEntity()->GetName();
+							if (pActor == pClientPlayer)
+							{
+								usable = 2;
+								textLabel = "@use_vehicle_reserved_for";
+								param = pActor->GetEntity()->GetName();
+							}
 						}
 					}
 					if (!lockedId && !reservedId)
@@ -417,15 +449,21 @@ void CHUDCrosshair::HandleUsability(int objId, const char* message)
 		textLabel = ""; //turn off text
 	}
 
-	const bool skipParamATranslation = param ? true : false;
-	SetUsability(usable, textLabel.c_str(), param, nullptr, skipParamATranslation);
+	if (textLabel != m_lastText || usable != m_lastUsable)
+	{
+		const bool skipParamATranslation = param ? true : false;
+		SetUsability(usable, textLabel.c_str(), param, nullptr, skipParamATranslation);
+
+		m_lastText = textLabel;
+		m_lastUsable = usable;
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 bool CHUDCrosshair::GetUsability() const
 {
-	return m_bUsable;
+	return m_usable > 0;
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -456,11 +494,11 @@ void CHUDCrosshair::SetCrosshair(int iCrosshair)
 
 bool CHUDCrosshair::IsFriendlyEntity(IEntity* pEntity)
 {
-	IActor* pClientActor = g_pGame->GetIGameFramework()->GetClientActor();
-	CGameRules* pGameRules = g_pGame->GetGameRules();
-
-	if (!pEntity || !pClientActor || !pGameRules)
+	if (!pEntity)
 		return false;
+
+	CGameRules* pGameRules = m_pHUD->m_pGameRules;
+	CPlayer* pClientPlayer = m_pHUD->m_pClientActor;
 
 	// Less than 2 teams means we are in a FFA based game.
 	if (pGameRules->GetTeamCount() < 2)
@@ -468,7 +506,7 @@ bool CHUDCrosshair::IsFriendlyEntity(IEntity* pEntity)
 
 	bool bFriendly = false;
 
-	int iClientTeam = pGameRules->GetTeam(pClientActor->GetEntityId());
+	int iClientTeam = pGameRules->GetTeam(pClientPlayer->GetEntityId());
 
 	// First, check if entity is a player
 	IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
@@ -494,8 +532,10 @@ bool CHUDCrosshair::IsFriendlyEntity(IEntity* pEntity)
 			bFriendly = true;
 
 			//fix for bad raycast
-			if (pDriver && pDriver == pClientActor)
+			if (pDriver && pDriver == pClientPlayer)
+			{
 				bFriendly = false;
+			}
 		}
 	}
 
@@ -801,17 +841,6 @@ void CHUDCrosshair::UpdateOpacity(float frameTime)
 	}
 
 	SetFlashOpacity(m_fading.opacity);
-}
-
-//------------------------------------------------------------------------
-
-void CHUDCrosshair::OnLookatEntityChangeTeam(EntityId entityId)
-{
-	if (m_bUsable)
-	{
-		SetUsability(0);
-		HandleUsability(entityId, "");
-	}
 }
 
 //------------------------------------------------------------------------
