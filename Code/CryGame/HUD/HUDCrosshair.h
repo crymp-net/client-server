@@ -41,7 +41,7 @@ public:
 
 	//use-icon
 	void SetUsability(int usable, const char* actionLabel = nullptr, const char* paramA = nullptr, 
-		const char* paramB = nullptr, bool skipParamATranslation = false);
+		const char* paramB = nullptr, bool skipParamATranslation = false, bool lockIcon = false);
 	void UpdateUsabilityMessage(const EntityId objId, const char* message = "");
 	bool GetUsability() const;
 	//show enemy hit in crosshair
@@ -117,6 +117,7 @@ private:
 	bool m_setCrosshairInFlash = false;
 	std::string m_lastText = "invalid";
 	int m_lastUsable = -1;
+	bool m_lastLockIcon = false;
 
 	struct Fading
 	{

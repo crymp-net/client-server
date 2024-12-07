@@ -40,6 +40,7 @@ CHUDCrosshair::CHUDCrosshair(CHUD* pHUD)
 	m_useIcons["@grab_enemy"] = 4;	//grab
 	m_useIcons["@grab_object"] = 4;	//grab
 	m_useIcons["@use_ladder"] = 5; //ladder
+	m_useIcons["@lock"] = 6; //lock
 
 	Reset();
 }
@@ -258,7 +259,7 @@ void CHUDCrosshair::UpdateDamageIndicator(CPlayer *pPlayer, float fDeltaTime)
 
 //-----------------------------------------------------------------------------------------------------
 
-void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB, bool skipParamATranslation /*false*/)
+void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char* paramA, const char* paramB, bool skipParamATranslation /*false*/, bool lockIcon /*false*/)
 {
 	if (usable < 0) //CryMP: called in CPlayer::Revive
 	{
@@ -313,10 +314,18 @@ void CHUDCrosshair::SetUsability(int usable, const char* actionLabel, const char
 		}
 
 		//set icon
-		int icon = stl::find_in_map(m_useIcons, actionLabel, 0);
-		if (!icon && usable)
+		int icon = 1;
+		if (lockIcon)
 		{
-			icon = 1;
+			icon = 6;
+		}
+		else
+		{
+			icon = stl::find_in_map(m_useIcons, actionLabel, 0);
+			if (!icon && usable)
+			{
+				icon = 1;
+			}
 		}
 		if (icon)
 		{
@@ -351,6 +360,7 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 	CPlayer* pClientPlayer = m_pHUD->m_pClientActor;
 
 	const char* param = nullptr;
+	bool lockIcon = false;
 
 	if (usable == 1)
 	{
@@ -367,6 +377,7 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 				{
 					usable = 2;
 					textLabel = "@use_vehicle_locked";
+					lockIcon = true;
 				}
 				else
 				{
@@ -382,6 +393,7 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(lockedId);
 						if (pActor)
 						{
+							lockIcon = true;
 							if (pActor != pClientPlayer)
 							{
 								usable = 2;
@@ -396,7 +408,8 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(reservedId);
 						if (pActor)
 						{
-							if (pActor == pClientPlayer)
+							lockIcon = true;
+							if (pActor != pClientPlayer)
 							{
 								usable = 2;
 								textLabel = "@use_vehicle_reserved_for";
@@ -449,13 +462,14 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 		textLabel = ""; //turn off text
 	}
 
-	if (textLabel != m_lastText || usable != m_lastUsable)
+	if (textLabel != m_lastText || usable != m_lastUsable || lockIcon != m_lastLockIcon)
 	{
 		const bool skipParamATranslation = param ? true : false;
-		SetUsability(usable, textLabel.c_str(), param, nullptr, skipParamATranslation);
+		SetUsability(usable, textLabel.c_str(), param, nullptr, skipParamATranslation, lockIcon);
 
 		m_lastText = textLabel;
 		m_lastUsable = usable;
+		m_lastLockIcon = lockIcon;
 	}
 }
 
