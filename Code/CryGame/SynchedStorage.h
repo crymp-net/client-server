@@ -212,6 +212,43 @@ public:
 		return it->second.GetType();
 	}
 
+	void ClearGlobalValue(TSynchedKey key)
+	{
+		std::lock_guard lock(m_mutex);
+
+		auto it = m_globalStorage.find(key);
+		if (it != m_globalStorage.end())
+		{
+			m_globalStorage.erase(it);
+
+			OnGlobalChanged(key, TSynchedValue{});
+		}
+	}
+
+	void ClearEntityValue(EntityId id, TSynchedKey key)
+	{
+		std::lock_guard lock(m_mutex);
+
+		auto entityIt = m_entityStorage.find(id);
+		if (entityIt != m_entityStorage.end())
+		{
+			TStorage& storage = entityIt->second;
+
+			auto keyIt = storage.find(key);
+			if (keyIt != storage.end())
+			{
+				storage.erase(keyIt);
+
+				OnEntityChanged(id, key, TSynchedValue{});
+			}
+
+			if (storage.empty())
+			{
+				m_entityStorage.erase(entityIt);
+			}
+		}
+	}
+
 	virtual void Reset();
 
 	virtual void Dump();
