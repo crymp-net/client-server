@@ -1215,15 +1215,6 @@ protected:
 			Aacannon,
 			Emp,
 		};
-
-		void SetLastUsabilityEntityId(EntityId vehicleId)
-		{
-			m_lastUsabilityEntityId = vehicleId;
-		}
-
-	private:
-
-		EntityId m_lastUsabilityEntityId = 0;
 };
 
 #endif //__GAMERULES_H__

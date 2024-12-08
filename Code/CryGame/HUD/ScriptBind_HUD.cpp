@@ -188,7 +188,7 @@ int CScriptBind_HUD::SetUsability(IFunctionHandler* pH, int objId, const char* m
 	if (!pHUD)
 		return pH->EndFunction();
 
-	pHUD->GetCrosshair()->HandleUsability(objId, message);
+	pHUD->GetCrosshair()->UpdateUsabilityMessage(static_cast<EntityId>(objId), message);
 
 	return pH->EndFunction();
 }
