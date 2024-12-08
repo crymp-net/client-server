@@ -1,4 +1,5 @@
 #include "ServerSynchedStorage.h"
+#include "CryCommon/CryEntitySystem/IEntitySystem.h"
 
 CServerSynchedStorage::SChannel *CServerSynchedStorage::GetChannel(int channelId)
 {
@@ -202,11 +203,28 @@ void CServerSynchedStorage::FullSynch(int channelId, bool reset)
 		AddToGlobalQueueFor(channelId, item.first);
 	}
 
+	ClearNonExistingEntities();
+
 	for (const auto & entityItem : m_entityStorage)
 	{
 		for (const auto & item : entityItem.second)
 		{
 			AddToEntityQueueFor(channelId, entityItem.first, item.first);
+		}
+	}
+}
+
+void CServerSynchedStorage::ClearNonExistingEntities()
+{
+	for (auto it = m_entityStorage.begin(); it != m_entityStorage.end(); )
+	{
+		if (gEnv->pEntitySystem->GetEntity(it->first) == nullptr)
+		{
+			it = m_entityStorage.erase(it);
+		}
+		else
+		{
+			++it;
 		}
 	}
 }
@@ -256,7 +274,7 @@ void CServerSynchedStorage::OnClientDisconnect(int channelId, bool onhold)
 		pChannel->pNetChannel = nullptr;
 	}
 
-	if (onhold)
+	if (pChannel && onhold)
 	{
 		pChannel->onhold = true;
 	}
