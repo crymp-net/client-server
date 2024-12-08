@@ -393,9 +393,9 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(lockedId);
 						if (pActor)
 						{
-							lockIcon = true;
 							if (pActor != pClientPlayer)
 							{
+								lockIcon = true;
 								usable = 2;
 								textLabel = "@use_vehicle_locked_by";
 								param = pActor->GetEntity()->GetName();
@@ -408,9 +408,9 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 						IActor* pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(reservedId);
 						if (pActor)
 						{
-							lockIcon = true;
 							if (pActor != pClientPlayer)
 							{
+								lockIcon = true;
 								usable = 2;
 								textLabel = "@use_vehicle_reserved_for";
 								param = pActor->GetEntity()->GetName();
