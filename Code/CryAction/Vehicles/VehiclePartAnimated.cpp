@@ -831,24 +831,28 @@ void CVehiclePartAnimated::FlagSkeleton(ISkeletonPose* pSkeletonPose)
 //------------------------------------------------------------------------
 void CVehiclePartAnimated::RotationChanged(CVehiclePartAnimatedJoint* pJoint)
 {
+    //CryMP: Fixme? Always enabled now, but might need some culling anyway, let's see
+    /*
 	// craig: cannot drop these changes if the vehicle is on a server
 	bool cull = false;
 	if (gEnv->bClient)
-		cull = m_pVehicle->GetGameObject()->IsProbablyDistant();
+    {
+        cull = m_pVehicle->GetGameObject()->IsProbablyDistant(); //old code, turret rotation not visible if > 100m away
+    }
+    */
 
-	if (m_iRotChangedFrameId != gEnv->pRenderer->GetFrameID() && !cull)
-  {    
-    // force skeleton update for this frame (this is intended, contact Ivo)
-    if (m_pCharInstance)    
-      m_pCharInstance->GetISkeletonPose()->SetForceSkeletonUpdate(1);
+	if (m_iRotChangedFrameId != gEnv->pRenderer->GetFrameID()) // && !cull)
+    {    
+        // force skeleton update for this frame (this is intended, contact Ivo)
+        if (m_pCharInstance)    
+            m_pCharInstance->GetISkeletonPose()->SetForceSkeletonUpdate(1);
 
-    m_iRotChangedFrameId = gEnv->pRenderer->GetFrameID();
+        m_iRotChangedFrameId = gEnv->pRenderer->GetFrameID();
     
-    // require update for the next frame to reset skeleton update
-    m_pVehicle->NeedsUpdate();
-  }
+        // require update for the next frame to reset skeleton update
+        m_pVehicle->NeedsUpdate();
+    }
 }
-
 
 //------------------------------------------------------------------------
 void CVehiclePartAnimated::Update(const float frameTime)
