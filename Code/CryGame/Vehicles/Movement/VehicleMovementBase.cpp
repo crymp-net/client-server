@@ -755,8 +755,6 @@ bool CVehicleMovementBase::StartEngine(EntityId driverId)
 	InitWind();
 
 	m_pVehicle->GetGameObject()->EnableUpdateSlot(m_pVehicle, IVehicle::eVUS_EnginePowered);
-	//CryMP
-	m_pVehicle->GetGameObject()->SetUpdateSlotEnableCondition(m_pVehicle, IVehicle::eVUS_EnginePowered, eUEC_Always);
 
 	return true;
 }

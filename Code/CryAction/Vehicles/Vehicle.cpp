@@ -856,7 +856,7 @@ void CVehicle::PostInit(IGameObject* pGameObject)
 	if (!gEnv->bServer)
 	{
 		pGameObject->SetUpdateSlotEnableCondition(this, eVUS_Always, eUEC_VisibleOrInRangeIgnoreAI);
-		pGameObject->SetUpdateSlotEnableCondition(this, eVUS_EnginePowered, eUEC_VisibleOrInRangeIgnoreAI);
+		pGameObject->SetUpdateSlotEnableCondition(this, eVUS_EnginePowered, eUEC_Always); //CryMP: was eUEC_VisibleOrInRangeIgnoreAI;
 		pGameObject->SetUpdateSlotEnableCondition(this, eVUS_PassengerIn, eUEC_VisibleOrInRangeIgnoreAI);
 	}
 
