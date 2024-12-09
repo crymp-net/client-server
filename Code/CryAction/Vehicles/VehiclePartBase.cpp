@@ -615,13 +615,12 @@ void CVehiclePartBase::Serialize(TSerialize ser, unsigned aspects)
   if (!bSaveGame)
 	{
 		if (aspects & CVehicle::ASPECT_PART_MATRIX)
-		{			
+		{		
 			Quat q;
 			Matrix34 currentTM = GetLocalBaseTM();
 			if (ser.IsWriting())
 				q=Quat(currentTM);
-
-			string tag;
+			
 			ser.Value("rotation", q, 'ori1');
 
 			if (ser.IsReading())

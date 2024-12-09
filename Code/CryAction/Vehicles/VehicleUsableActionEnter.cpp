@@ -103,29 +103,6 @@ bool CVehicleUsableActionEnter::IsSeatAvailable(TVehicleSeatId seatId, EntityId 
 	if (!pSeat->IsFree())
 		return false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	return true;
 }
 

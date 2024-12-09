@@ -3595,7 +3595,9 @@ void CVehicle::RegisterVehicleEventListener(IVehicleEventListener* pEvenListener
 //------------------------------------------------------------------------
 void CVehicle::UnregisterVehicleEventListener(IVehicleEventListener* pEventListener)
 {
-	//stl::member_find_and_erase(m_eventListeners, pEventListener); //CryMP: fixme
+	std::erase_if(m_eventListeners, [pEventListener](const auto& pair) {
+		return pair.first == pEventListener;
+	});	
 }
 
 //------------------------------------------------------------------------
