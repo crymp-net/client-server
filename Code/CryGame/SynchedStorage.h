@@ -216,10 +216,8 @@ public:
 	{
 		std::lock_guard lock(m_mutex);
 
-		auto it = m_globalStorage.find(key);
-		if (it != m_globalStorage.end())
+		if (m_globalStorage.erase(key))
 		{
-			m_globalStorage.erase(it);
 
 			OnGlobalChanged(key, TSynchedValue{});
 		}
@@ -234,10 +232,8 @@ public:
 		{
 			TStorage& storage = entityIt->second;
 
-			auto keyIt = storage.find(key);
-			if (keyIt != storage.end())
+			if (storage.erase(key))
 			{
-				storage.erase(keyIt);
 
 				OnEntityChanged(id, key, TSynchedValue{});
 			}
