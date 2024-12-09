@@ -991,6 +991,7 @@ function VehicleBase:OnActorChangeSeat(passengerId, exiting)
 		g_gameRules:OnLeaveVehicleSeat(self, seat, passengerId, exiting);
 	end
 
+	local passenger = System.GetEntity(passengerId); --CryMP: was missing
 	if (not passenger) then
 		return;
 	end

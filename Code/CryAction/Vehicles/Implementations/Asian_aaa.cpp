@@ -78,7 +78,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 							cannon01_part->SetValue("class", "AnimatedJoint");
 							cannon01_part->SetValue("component", "turret");
 							cannon01_part->SetValue("mass", 0.0f);
-							if (m_modName == "GaussCannon")
+							if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 							{
 								cannon01_part->SetValue("useOption", 1);
 							}
@@ -94,7 +94,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 							cannon02_part->SetValue("class", "AnimatedJoint");
 							cannon02_part->SetValue("component", "turret");
 							cannon02_part->SetValue("mass", 0.0f);
-							if (m_modName == "GaussCannon")
+							if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 							{
 								cannon02_part->SetValue("useOption", 1);
 							}
@@ -110,7 +110,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 							cannon03_part->SetValue("class", "AnimatedJoint");
 							cannon03_part->SetValue("component", "turret");
 							cannon03_part->SetValue("mass", 0.0f);
-							if (m_modName == "GaussCannon")
+							if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 							{
 								cannon03_part->SetValue("useOption", 1);
 							}
@@ -126,7 +126,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 							cannon04_part->SetValue("class", "AnimatedJoint");
 							cannon04_part->SetValue("component", "turret");
 							cannon04_part->SetValue("mass", 0.0f);
-							if (m_modName == "GaussCannon")
+							if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 							{
 								cannon04_part->SetValue("useOption", 1);
 							}
@@ -758,7 +758,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 	{
 		SmartScriptTable component(gEnv->pScriptSystem);
 		component->SetValue("name", "hull");
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			component->SetValue("damageMax", 650.0f);
 		}
@@ -774,7 +774,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 		{
 			SmartScriptTable damagemultiplier(gEnv->pScriptSystem);
 			damagemultiplier->SetValue("damageType", "explosion");
-			if (m_modName == "MP")
+			if (StringTools::IsEqualNoCase(m_modName, "MP"))
 			{
 				damagemultiplier->SetValue("multiplier", 2.0f);
 			}
@@ -1470,7 +1470,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "GaussCannon")
+				if (StringTools::IsEqualNoCase(m_modName, "GaussCannon"))
 				{
 					weapon->SetValue("class", "GaussAAA");
 				}
@@ -1528,7 +1528,7 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "SAM")
+				if (StringTools::IsEqualNoCase(m_modName, "SAM"))
 				{
 					weapon->SetValue("class", "SideWinder");
 				}
@@ -1591,11 +1591,11 @@ bool Asian_aaa::Init(IGameObject* pGameObject)
 	this->SetAmmoCapacity("a2ahomingmissile", 8);
 
 	// Paints
-	if (m_paintName == "nk")
+	if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_aaa/asian_aaa.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/asian_aaa/asian_aaa_us.mtl");
 	}

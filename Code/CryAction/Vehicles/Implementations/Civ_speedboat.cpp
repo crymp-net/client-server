@@ -210,7 +210,7 @@ bool Civ_speedboat::Init(IGameObject* pGameObject)
 			}
 			chassis_part->SetValue("Helpers", chassis_part_helpers);
 			SmartScriptTable chassis_part_animated(gEnv->pScriptSystem);
-			if (m_modName == "Roofed")
+			if (StringTools::IsEqualNoCase(m_modName, "Roofed"))
 			{
 				chassis_part_animated->SetValue("filename", "Objects/Vehicles/speedboat/speedboat.cga");
 			}
@@ -218,7 +218,7 @@ bool Civ_speedboat::Init(IGameObject* pGameObject)
 			{
 				chassis_part_animated->SetValue("filename", "Objects/Vehicles/speedboat/speedboat_asian.cga");
 			}
-			if (m_modName == "Roofed")
+			if (StringTools::IsEqualNoCase(m_modName, "Roofed"))
 			{
 				chassis_part_animated->SetValue("filenameDestroyed", "Objects/Vehicles/speedboat/speedboat_damaged.cga");
 			}

@@ -94,7 +94,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				door_left_front_part->SetValue("class", "AnimatedJoint");
 				door_left_front_part->SetValue("component", "Hull");
 				door_left_front_part->SetValue("mass", 50.0f);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					door_left_front_part->SetValue("useOption", 1);
 				}
@@ -113,7 +113,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				door_right_front_part->SetValue("class", "AnimatedJoint");
 				door_right_front_part->SetValue("component", "Hull");
 				door_right_front_part->SetValue("mass", 50.0f);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					door_right_front_part->SetValue("useOption", 1);
 				}
@@ -132,7 +132,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				door_left_rear_part->SetValue("class", "AnimatedJoint");
 				door_left_rear_part->SetValue("component", "Hull");
 				door_left_rear_part->SetValue("mass", 50.0f);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					door_left_rear_part->SetValue("useOption", 1);
 				}
@@ -151,7 +151,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				door_right_rear_part->SetValue("class", "AnimatedJoint");
 				door_right_rear_part->SetValue("component", "Hull");
 				door_right_rear_part->SetValue("mass", 50.0f);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					door_right_rear_part->SetValue("useOption", 1);
 				}
@@ -170,23 +170,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				roof_part_1_part->SetValue("class", "AnimatedJoint");
 				roof_part_1_part->SetValue("component", "Hull");
 				roof_part_1_part->SetValue("mass", 50.0f);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					roof_part_1_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Unarmed")
+				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					roof_part_1_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					roof_part_1_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					roof_part_1_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					roof_part_1_part->SetValue("useOption", 0);
 				}
@@ -205,23 +205,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				roof_part_2_part->SetValue("class", "AnimatedJoint");
 				roof_part_2_part->SetValue("component", "Hull");
 				roof_part_2_part->SetValue("mass", 50.0f);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					roof_part_2_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Unarmed")
+				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					roof_part_2_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					roof_part_2_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					roof_part_2_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					roof_part_2_part->SetValue("useOption", 0);
 				}
@@ -240,23 +240,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				roof_part_3_part->SetValue("class", "AnimatedJoint");
 				roof_part_3_part->SetValue("component", "Hull");
 				roof_part_3_part->SetValue("mass", 50.0f);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					roof_part_3_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Unarmed")
+				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					roof_part_3_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					roof_part_3_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					roof_part_3_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					roof_part_3_part->SetValue("useOption", 0);
 				}
@@ -275,23 +275,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				roof_part_4_part->SetValue("class", "AnimatedJoint");
 				roof_part_4_part->SetValue("component", "Hull");
 				roof_part_4_part->SetValue("mass", 50.0f);
-				if (m_modName == "MP")
+				if (StringTools::IsEqualNoCase(m_modName, "MP"))
 				{
 					roof_part_4_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Unarmed")
+				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					roof_part_4_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					roof_part_4_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					roof_part_4_part->SetValue("useOption", 0);
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					roof_part_4_part->SetValue("useOption", 0);
 				}
@@ -2356,23 +2356,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		seat->SetValue("seatGroupIndex", 1);
 		seat->SetValue("agVehicleName", "US_ltv");
 		seat->SetValue("transitionAnim", true);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat->SetValue("remotelyUseActionsFromSeat", "");
 		}
@@ -2460,23 +2460,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 0.0f);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
@@ -2548,19 +2548,19 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 			SmartScriptTable seataction_weapons_weapons(gEnv->pScriptSystem);
 			{
 				SmartScriptTable weapon(gEnv->pScriptSystem);
-				if (m_modName == "Unarmed")
+				if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
 					weapon->SetValue("class", "");
 				}
-				else if (m_modName == "Gauss")
+				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
 					weapon->SetValue("class", "VehicleGaussMounted");
 				}
-				else if (m_modName == "MOAC")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 				{
 					weapon->SetValue("class", "VehicleMOACMounted");
 				}
-				else if (m_modName == "MOAR")
+				else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 				{
 					weapon->SetValue("class", "VehicleMOARMounted");
 				}
@@ -2629,23 +2629,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 0.0f);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
@@ -2701,23 +2701,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 0.5f);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
@@ -2773,23 +2773,23 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		seat->SetValue("SeatActions", seat_seatactions);
 		SmartScriptTable seat_sounds(gEnv->pScriptSystem);
 		seat_sounds->SetValue("inout", 0.5f);
-		if (m_modName == "MP")
+		if (StringTools::IsEqualNoCase(m_modName, "MP"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Unarmed")
+		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "Gauss")
+		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAC")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAC"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
-		else if (m_modName == "MOAR")
+		else if (StringTools::IsEqualNoCase(m_modName, "MOAR"))
 		{
 			seat_sounds->SetValue("mood", 0.6f);
 		}
@@ -2832,15 +2832,15 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 	}
 
 	// Paints
-	if (m_paintName == "")
+	if (StringTools::IsEqualNoCase(m_paintName, ""))
 	{
 		this->SetPaintMaterial("objects/vehicles/ltv/asian_ltv.mtl");
 	}
-	else if (m_paintName == "us")
+	else if (StringTools::IsEqualNoCase(m_paintName, "us"))
 	{
 		this->SetPaintMaterial("objects/vehicles/ltv/us_ltv.mtl");
 	}
-	else if (m_paintName == "nk")
+	else if (StringTools::IsEqualNoCase(m_paintName, "nk"))
 	{
 		this->SetPaintMaterial("objects/vehicles/ltv/asian_ltv.mtl");
 	}
