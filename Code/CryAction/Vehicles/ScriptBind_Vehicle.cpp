@@ -51,6 +51,8 @@ ScriptBind_Vehicle::ScriptBind_Vehicle(ISystem* pSystem, IGameFramework* pGameFW
 
 	RegisterGlobal("SOUND_EVENT_ON_PLAY", SOUND_EVENT_ON_START);
 	RegisterGlobal("SOUND_EVENT_ON_STOP", SOUND_EVENT_ON_STOP);
+
+	RegisterGlobal("CRYMP_VEHICLE_SYSTEM", true);
 }
 
 //------------------------------------------------------------------------
