@@ -197,6 +197,11 @@ public:
 
 	bool m_isFiring;//TEMPORARY:firing status on this seat
 
+	void SetAIWeaponId(const EntityId aiWeaponId)
+	{
+		m_aiWeaponId = aiWeaponId;
+	}
+
 protected:
 
 	bool InitSeatActions(const CVehicleParams& seatTable);

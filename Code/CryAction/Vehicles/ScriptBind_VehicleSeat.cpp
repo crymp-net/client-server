@@ -219,7 +219,7 @@ int ScriptBind_VehicleSeat::SetAIWeapon(IFunctionHandler* pH, ScriptHandle weapo
 {
 	if (CVehicleSeat* pVehicleSeat = GetVehicleSeat(pH))
 	{
-		//pVehicleSeat->m_aiWeaponId = (EntityId)weaponHandle.n; //CryMP: Fixme
+		pVehicleSeat->SetAIWeaponId((EntityId)weaponHandle.n);
 		return pH->EndFunction(true);
 	}
 

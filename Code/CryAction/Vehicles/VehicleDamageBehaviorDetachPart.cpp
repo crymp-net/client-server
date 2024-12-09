@@ -202,7 +202,7 @@ void CVehicleDamageBehaviorDetachPart::OnDamageEvent(EVehicleDamageBehaviorEvent
 
 		// copy vehicle's material to new entity (fixes detaching parts from vehicles with different paints),
 		//	or specify the destroyed material if it exists
-	const char* destroyedMaterial = NULL; // m_pVehicle->GetDestroyedMaterial(); //CryMP: Fixme
+		const char* destroyedMaterial = static_cast<CVehicle*>(m_pVehicle)->GetDestroyedMaterial(); 
 		IMaterial* pMaterial = NULL;
 		if(destroyedMaterial && destroyedMaterial[0])
 		{

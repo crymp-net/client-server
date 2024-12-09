@@ -15,6 +15,7 @@ History:
 
 #include "CryCommon/CryAnimation/ICryAnimation.h"
 #include "CryCommon/CryAction/IVehicleSystem.h"
+#include "CryCommon/CryRenderer/IRenderAuxGeom.h"
 
 //#include "CryAction.h"
 #include "Vehicle.h"
@@ -374,8 +375,8 @@ void CVehiclePartTread::SkeletonPostProcess(ICharacterInstance* pCharInstance)
     
     if (VehicleCVars().v_debugdraw == 4)
     { 
-      Vec3 local = GetEntity()->GetWorldTM().GetInverted() * slotTM.GetTranslation();        //CryMP: Fixme
-      //gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(GetEntity()->GetWorldTM() * (local+Vec3((float)sgn(local.x)*0.5f,0.f,0.f)),0.1f,ColorB(0,0,255,255));
+      Vec3 local = GetEntity()->GetWorldTM().GetInverted() * slotTM.GetTranslation();
+      gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(GetEntity()->GetWorldTM() * (local+Vec3((float)sgn(local.x)*0.5f,0.f,0.f)),0.1f,ColorB(0,0,255,255));
     }
   }  
 }

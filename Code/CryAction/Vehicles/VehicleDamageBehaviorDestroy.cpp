@@ -115,8 +115,10 @@ void CVehicleDamageBehaviorDestroy::SetDestroyed(bool isDestroyed, EntityId shoo
 		entityEvent.nParam[2] = (INT_PTR)&val;
 		m_pVehicle->GetEntity()->SendEvent(entityEvent);
     
-		//if (gEnv->pAISystem) //CryMP: Fixme
-	    //gEnv->pAISystem->GetSmartObjectManager()->SetSmartObjectState(m_pVehicle->GetEntity(), "Dead");
+		if (gEnv->pAISystem)
+		{
+			gEnv->pAISystem->SetSmartObjectState(m_pVehicle->GetEntity(), "Dead");
+		}
 
 		m_pVehicle->OnDestroyed();
 	}
