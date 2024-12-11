@@ -133,25 +133,28 @@ enum EVehicleEvent
 	eVE_Hit,
 	eVE_Damaged,
 	eVE_Destroyed,
-  eVE_Repair,
+    eVE_Repair,
 	eVE_PassengerEnter,
 	eVE_PassengerExit,  
 	eVE_PassengerChangeSeat,
-  eVE_SeatFreed,
-  eVE_PreVehicleDeletion,
+    eVE_SeatFreed,
+    eVE_PreVehicleDeletion,
 	eVE_VehicleDeleted,
 	eVE_ToggleDebugView,
-  eVE_ToggleDriverControlledGuns,
-  eVE_Brake,  
-  eVE_Timer,  
-  eVE_EngineStopped,
+    eVE_ToggleDriverControlledGuns,
+    eVE_Brake,  
+    eVE_Timer,  
+    eVE_EngineStopped,
 	eVE_OpenDoors,
 	eVE_CloseDoors,
 	eVE_BlockDoors,
 	eVE_ExtractGears,
 	eVE_RetractGears,
-  eVE_Indestructible,
-  eVE_Last,
+    eVE_Indestructible,
+    eVE_Last,
+    eVE_BeingFlipped, //CryMP: new
+    eVE_Reversing, //CryMP: new
+    eVE_WeaponRemoved, //CryMP: new
 };
 
 
