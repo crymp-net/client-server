@@ -34,7 +34,7 @@ void CVehicleUsableActionFlip::Reset()
 	// Inform the vehicle that the flipping has stopped
 	SVehicleEventParams params;
 	params.bParam = false;
-	//m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params); //CryMP: fixme
+	m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params); 
 	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 	m_timer = 0.f;
 }
@@ -85,7 +85,7 @@ int CVehicleUsableActionFlip::OnEvent(int eventType, SVehicleEventParams& eventP
 					// Inform the vehicle that flipping has started
 					SVehicleEventParams params;
 					params.bParam = true;
-					//m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params); //CryMP: Fixme fsel
+					m_pVehicle->BroadcastVehicleEvent(eVE_BeingFlipped, params);
 					m_pVehicle->NeedsUpdate(IVehicle::eVUF_AwakePhysics);
 				}
 			}

@@ -158,10 +158,10 @@ void CVehicleSeatActionLights::OnVehicleEvent(EVehicleEvent event, const SVehicl
   switch (event)
   {
   case eVE_Brake:
-	//case eVE_Reversing:
+	case eVE_Reversing:
     {
-      if ((event == eVE_Brake && eLA_Brake == m_activation))
-				//|| (event == eVE_Reversing && eLA_Reversing == m_activation)) //CryMP: fixme
+      if ((event == eVE_Brake && eLA_Brake == m_activation)
+				|| (event == eVE_Reversing && eLA_Reversing == m_activation)) 
       {
         bool toggle = true;
 

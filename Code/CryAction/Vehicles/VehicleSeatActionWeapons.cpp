@@ -968,7 +968,6 @@ void CVehicleSeatActionWeapons::OnVehicleEvent(EVehicleEvent event, const SVehic
 			}
 		}
 	}
-	/* CryMP: Fixme
 	else if (event == eVE_WeaponRemoved)
 	{
 		TVehicleWeaponVector::iterator ite = m_weapons.begin();
@@ -990,7 +989,7 @@ void CVehicleSeatActionWeapons::OnVehicleEvent(EVehicleEvent event, const SVehic
 				break;
 			}
 		}
-	}*/
+	}
 }
 
 //------------------------------------------------------------------------
