@@ -69,14 +69,14 @@ int CVehicleUsableActionFlip::OnEvent(int eventType, SVehicleEventParams& eventP
 					{
 						// Standing on its nose or tail
 						// Rotate about the x
-						//m_localAngVel.Set(speed * (float)__fsel(yAxis.z, -1.f, +1.f), 0.f, 0.f);
+						m_localAngVel.Set(speed * (yAxis.z < 0.0f ? -1.0f : 1.0f), 0.f, 0.f);
 					}
 					else
 					{
 						// Rotate about the y (away from the user)
 						const Vec3 centre = physPos.pos + (physPos.BBox[0] + physPos.BBox[1])*0.5f;
 						const Vec3 entityPos = pEntity->GetWorldPos();
-						//m_localAngVel.Set(0.f, speed * (float)__fsel((entityPos-centre).dot(xAxis), +1.f, -1.f), 0.f);
+						m_localAngVel.Set(0.f, speed * ((entityPos - centre).dot(xAxis) < 0.0f ? -1.0f : 1.0f), 0.f);
 					}
 
 					// Start the update
