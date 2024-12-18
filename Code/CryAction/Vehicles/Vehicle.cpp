@@ -368,8 +368,8 @@ bool CVehicle::Init(IGameObject* pGameObject)
 	const char* className = GetEntity()->GetClass()->GetName();
 
 	// load the xml data into the vehicle lua table
-	const static string xmlDef = "Scripts/Entities/Vehicles/def_vehicle.xml";
-	const static string xmlDir = "Scripts/Entities/Vehicles/Implementations/Xml/";
+	const static string xmlDef = "CryMP/Xml/Vehicles/def_vehicle.xml";
+	const static string xmlDir = "CryMP/Xml/Vehicles/Implementations/";
 
 	XmlNodeRef vehicleXmlData = LoadXmlForClass(className, xmlDir);
 

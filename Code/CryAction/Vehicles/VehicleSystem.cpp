@@ -25,8 +25,8 @@ History:
 #include <CryCommon/CrySystem/CryPath.h>
 
 
-const char* gScriptPath = "Scripts/Entities/Vehicles/Implementations/";
-const char* gXmlPath = "Scripts/Entities/Vehicles/Implementations/Xml/";
+const char* gScriptPath = "CryMP/Scripts/Entities/Vehicles/Implementations/";
+const char* gXmlPath = "CryMP/Xml/Vehicles/Implementations/";
 
 
 //------------------------------------------------------------------------
@@ -63,8 +63,8 @@ bool CVehicleSystem::Init()
 //------------------------------------------------------------------------
 void CVehicleSystem::LoadDamageTemplates()
 {
-	m_pDamagesTemplateRegistry->Init("Scripts/Entities/Vehicles/DamagesTemplates/def_vehicledamages.xml",
-		"Scripts/Entities/Vehicles/DamagesTemplates/");
+	m_pDamagesTemplateRegistry->Init("CryMP/Xml/Vehicles/DamagesTemplates/def_vehicledamages.xml",
+		"CryMP/Xml/Vehicles/DamagesTemplates/");
 }
 
 //------------------------------------------------------------------------

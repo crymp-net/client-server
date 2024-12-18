@@ -81,7 +81,7 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 		m_lightType = pType;
 
 		// open the default lights	
-		defaultDataRef = gEnv->pSystem->LoadXmlFile("Scripts/Entities/Vehicles/Lights/DefaultVehicleLights.xml");
+		defaultDataRef = gEnv->pSystem->LoadXmlFile("CryMP/Xml/Vehicles/Lights/DefaultVehicleLights.xml");
 		XmlNodeRef lightDefault;
 		if (defaultDataRef)
 		{

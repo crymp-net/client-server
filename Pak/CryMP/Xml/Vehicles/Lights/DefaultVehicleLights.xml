@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<DefaultVehicleLights>
+ <Lights>
+  <Light type="HeadLightBeam" 
+    fakeLight="1" 
+    material="materials/lightbeams/lightbeam_floodlight.mtl" 
+    texture="textures/lights/flashlight1.dds" 
+    diffuse="1,1,1" 
+    diffuseMult="1.5" 
+    diffuseMult_fp="0.6"
+    radius="12" 
+    frustumAngle="10"
+   />    
+  <Light type="HeadLightFlare" 
+    fakeLight="1" 
+    material="materials/lightbeams/lightglow_white.mtl" 
+    diffuse="1,1,1" 
+    diffuseMult="1" 
+    coronaDistSize="0.002" 
+    coronaDistIntensity="0.06" 
+    coronaScale="10"
+   />    
+  <Light type="Rear" 
+    fakeLight="1" 
+    material="materials/lightbeams/lightglow_red.mtl" 
+    diffuse="1,0,0" 
+    diffuseMult="1.5" 
+    coronaDistSize="0.002" 
+    coronaDistIntensity="0.08" 
+    coronaScale="10"
+   />    
+  <Light type="Brake"
+    fakeLight="1" 
+    material="materials/lightbeams/lightglow_red.mtl" 
+    diffuse="1,0,0" 
+    diffuseMult="1.9" 
+    coronaDistSize="0.002" 
+    coronaDistIntensity="0.08" 
+    coronaScale="10"
+   />    
+  <Light type="Search" 
+    fakeLight="0" 
+    texture="textures/lights/flashlight1.dds"
+    lightFrustumAngle="40"
+    radius="20"
+    directFactor="2"
+    diffuseMult="5"
+    specularMult="1"
+   />    
+  <Light type="HeadLightDynamic" 
+    fakeLight="0" 
+    texture="textures/lights/flashlight1.dds" 
+    lightFrustumAngle="40" 
+    radius="12" 
+    directFactor="2" 
+    diffuseMult="5" 
+    specularMult="1"
+   />    
+ </Lights>
+</DefaultVehicleLights>
