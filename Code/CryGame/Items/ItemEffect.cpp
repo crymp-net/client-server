@@ -512,7 +512,10 @@ unsigned int CItem::AttachLightEx(int slot, unsigned int id, bool attach, bool f
 				IAttachmentManager* pAttachmentManager = pCharacter->GetIAttachmentManager();
 				IAttachment* pAttachment = pAttachmentManager->GetInterfaceByName(info.helper.c_str());
 
-				pAttachment->ClearBinding();
+				if (pAttachment)
+				{
+					pAttachment->ClearBinding();
+				}
 			}
 		}
 		m_effects.erase(it);
