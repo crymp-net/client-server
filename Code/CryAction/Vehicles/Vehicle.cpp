@@ -2863,7 +2863,7 @@ void CVehicle::OnPhysPostStep(const EventPhys* pEvent)
 //------------------------------------------------------------------------
 void CVehicle::OnCollision(EventPhysCollision* pCollision)
 {
-	if (m_status.flipped || m_collisionDisabledTime > 0.0f)
+	if (m_status.flipped > 0.0f || m_collisionDisabledTime > 0.0f)
 		return;
 
 	IEntity* pE1 = gEnv->pEntitySystem->GetEntityFromPhysics(pCollision->pEntity[0]);
