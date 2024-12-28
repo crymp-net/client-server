@@ -154,7 +154,12 @@ void CVehicleMovementVTOL::SetHorizontalMode(float horizontal)
 {
 	if (horizontal > 0.0f)
 	{
-		m_horizontal = horizontal;
+		if (m_horizontal != horizontal)
+		{
+			m_pWingsAnimation->PlaySound(m_wingHorizontalStateId); //CryMP
+
+			m_horizontal = horizontal;
+		}
 
 		m_maxFwdSpeed = m_maxFwdSpeedHorizMode * 0.25f;
 		m_maxFwdSpeed += m_maxFwdSpeedHorizMode * 0.75f * m_horizontal;
@@ -166,7 +171,12 @@ void CVehicleMovementVTOL::SetHorizontalMode(float horizontal)
 	}
 	else
 	{
-		m_horizontal = 0.0f;
+		if (m_horizontal != 0.0f)
+		{
+			m_pWingsAnimation->PlaySound(m_wingVerticalStateId); //CryMP
+
+			m_horizontal = 0.0f;
+		}
 
 		m_maxFwdSpeed = m_maxFwdSpeedHorizMode * 0.25f;
 		m_maxUpSpeed = m_maxUpSpeedHorizMode;

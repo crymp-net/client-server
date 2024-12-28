@@ -589,12 +589,14 @@
   </Animation>
   <Animation name="landingGears" part="hull">
    <States>
-    <State name="closed" animation="vtol_landing_gear_close" sound="Sounds/vehicles:us_vtol:landing_gear_in" isLooped="0" speedDefault="1" speedMin="1" speedMax="1"/>
+    <State name="closed" animation="vtol_landing_gear_close" sound="Sounds/vehicles:us_vtol:landing_gear_out" isLooped="0" speedDefault="1" speedMin="1" speedMax="1"/>
+	<State name="opened" animation="vtol_landing_gear_open" sound="Sounds/vehicles:us_vtol:landing_gear_in" isLooped="0" speedDefault="1" speedMin="1" speedMax="1"/>
    </States>
   </Animation>
   <Animation name="passengerDoors" part="hull">
    <States>
     <State name="closed" animation="vtol_door_close" sound="Sounds/vehicles:us_vtol:backdoor_close" isLooped="0" speedDefault="1" speedMin="1" speedMax="1"/>
+	<State name="opened" animation="vtol_door_open" sound="Sounds/vehicles:us_vtol:backdoor_open" isLooped="0" speedDefault="1" speedMin="1" speedMax="1"/>
    </States>
   </Animation>
   <Animation name="mg_fire" part="hull">

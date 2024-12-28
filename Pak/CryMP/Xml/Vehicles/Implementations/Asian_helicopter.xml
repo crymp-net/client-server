@@ -256,6 +256,12 @@
    </Activations>
    <AutomaticDoor animation="cockpitDoors" timeMax="2" id="idCockpitAction"/>
   </Action>
+	 <Action class="AutomaticDoor">
+		 <Activations>
+			 <Activation type="OnGroundCollision"/>
+		 </Activations>
+		 <AutomaticDoor animation="crane" timeMax="2.5" id="idCraneAnim"/>
+	 </Action>
  </Actions>
  <Seats>
   <Seat name="pilot" part="" enterHelper="pilot_enter_pos_2" sitHelper="passenger02_helper_pos" isDriver="1" isPassengerShielded="1" AimPart="" seatGroupIndex="1" remotelyUseActionsFromSeat="" blurMult="0" id="idSeatPilot">
@@ -498,19 +504,28 @@
   </Animation>
   <Animation name="landingGears" part="body">
    <States>
-    <State name="closed" animation="helicopter_landinggears_closing" sound="sounds/vehicles:asian_helicopter:gear_in" soundHelper="landing_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idLandingGearAnim"/>
+    <State name="closed" animation="helicopter_landinggears_closing" sound="sounds/vehicles:asian_helicopter:gear_out" soundHelper="landing_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idLandingGearAnim"/>
+	<State name="opened" animation="helicopter_landinggears_opening" sound="sounds/vehicles:asian_helicopter:gear_in" soundHelper="landing_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idLandingGearAnim"/>
    </States>
   </Animation>
   <Animation name="passengerDoors" part="body">
    <States>
     <State name="closed" animation="helicopter_sidedoors_closing" sound="sounds/vehicles:asian_helicopter:sidedoor_close" soundHelper="" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idSideDoorAnim"/>
+	<State name="opened" animation="helicopter_sidedoors_opening" sound="sounds/vehicles:asian_helicopter:sidedoor_open" soundHelper="" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idSideDoorAnim"/>
    </States>
   </Animation>
   <Animation name="cockpitDoors" part="body">
    <States>
-    <State name="closed" animation="helicopter_cockpit_closing" sound="sounds/vehicles:asian_helicopter:door_open" soundHelper="cockpitdoors_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idCockpitAnim"/>
+    <State name="closed" animation="helicopter_cockpit_closing" sound="sounds/vehicles:asian_helicopter:door_close" soundHelper="cockpitdoors_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idCockpitAnim"/>
+	<State name="opened" animation="helicopter_cockpit_opening" sound="sounds/vehicles:asian_helicopter:door_open" soundHelper="cockpitdoors_pos" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idCockpitAnim"/>
    </States>
   </Animation>
+    <Animation name="crane" part="body">
+	    <States>
+		    <State name="closed" animation="helicopter_crane_closing" sound="sounds/vehicles:asian_helicopter:crane" soundHelper="" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idCraneAnim"/>
+		    <State name="opened" animation="helicopter_crane_opening" sound="sounds/vehicles:asian_helicopter:crane" soundHelper="" isLooped="0" speedDefault="1" speedMin="1" speedMax="1" id="idCraneAnim"/>
+	    </States>
+    </Animation>
   <Animation name="mg_fire" part="body">
    <States>
     <State name="shoot" animation="helicopter_MG_fire" isLooped="0" isLoopedEx="1" speedDefault="1" speedMin="1" speedMax="1" id="idMGfireAnim"/>
@@ -549,6 +564,7 @@
     <Elem idRef="idSideDoorAnim" name="sound" value=""/>
     <Elem idRef="idCockpitAction" name="animation" value=""/>
     <Elem idRef="idCockpitAnim" name="sound" value=""/>
+	<Elem idRef="idCraneAnim" name="sound" value=""/>
    </Elems>
   </Modification>
  </Modifications>

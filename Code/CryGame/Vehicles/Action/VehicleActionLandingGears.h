@@ -59,6 +59,8 @@ protected:
 	TVehicleAnimStateId m_landingGearOpenedId;
 	TVehicleAnimStateId m_landingGearClosedId;
 
+	TVehicleAnimStateId m_lastStateIdSound = InvalidVehicleAnimStateId;
+
 	IVehiclePart* m_pPartToBlockRotation;
 
 	// Status variables

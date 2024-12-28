@@ -52,6 +52,8 @@ protected:
 	TVehicleAnimStateId m_doorOpenedStateId;
 	TVehicleAnimStateId m_doorClosedStateId;
 
+	TVehicleAnimStateId m_lastStateIdSound = InvalidVehicleAnimStateId;
+
 	float m_timeMax;
 	float m_eventSamplingTime;
 	bool m_isTouchingGroundBase;

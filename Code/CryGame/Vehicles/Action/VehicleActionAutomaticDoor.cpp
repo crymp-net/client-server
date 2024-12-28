@@ -200,11 +200,29 @@ void CVehicleActionAutomaticDoor::Update(const float deltaTime)
 
 	if ((m_timeOnTheGround >= m_timeMax || m_isOpenRequested) && !m_isBlocked)
 	{
-		m_animGoal = DOOR_OPENED;
+		if (m_animGoal != DOOR_OPENED)
+		{
+			m_animGoal = DOOR_OPENED;
+
+			if (m_lastStateIdSound != m_doorOpenedStateId)
+			{
+				m_pDoorAnim->PlaySound(m_doorOpenedStateId);
+				m_lastStateIdSound = m_doorOpenedStateId;
+			}
+		}
 	}
 	else if ((m_timeInTheAir > inTheAirMaxTime && isEnginePowered) && !m_isBlocked)
 	{
-		m_animGoal = DOOR_CLOSED;
+		if (m_animGoal != DOOR_CLOSED)
+		{
+			m_animGoal = DOOR_CLOSED;
+
+			if (m_lastStateIdSound != m_doorClosedStateId)
+			{
+				m_pDoorAnim->PlaySound(m_doorClosedStateId);
+				m_lastStateIdSound = m_doorClosedStateId;
+			}
+		}
 	}
 
 	//if (m_animGoal != m_animTime)

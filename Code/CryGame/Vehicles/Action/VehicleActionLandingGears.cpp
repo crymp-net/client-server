@@ -292,7 +292,15 @@ void CVehicleActionLandingGears::ExtractGears()
 	if (iszero(m_velocityMax) || velLength <= m_velocityMax)
 	{
 		if (m_animGoal != GEARS_EXTRACTED_TIME)
+		{
 			m_timer = 0.0f;
+
+			if (m_lastStateIdSound != m_landingGearClosedId)
+			{
+				m_pLandingGearsAnim->PlaySound(m_landingGearClosedId);
+				m_lastStateIdSound = m_landingGearClosedId;
+			}
+		}
 
 		m_animGoal = GEARS_EXTRACTED_TIME;
 
@@ -313,7 +321,15 @@ void CVehicleActionLandingGears::ExtractGears()
 void CVehicleActionLandingGears::RetractGears()
 {
 	if (m_animGoal != GEARS_RETRACTED_TIME)
+	{
 		m_timer = 0.0f;
+
+		if (m_lastStateIdSound != m_landingGearOpenedId)
+		{
+			m_pLandingGearsAnim->PlaySound(m_landingGearOpenedId);
+			m_lastStateIdSound = m_landingGearOpenedId;
+		}
+	}
 
 	m_animGoal = GEARS_RETRACTED_TIME;
 
