@@ -79,6 +79,8 @@ protected:
 		bool isLooped = false;
 		bool isLoopedEx = false;
 
+		float timeRestartAnim = 0.0f; //CryMP
+
 		TAnimationStateMaterialVector materials;
 	};
 

@@ -4,7 +4,7 @@ Copyright (C), Crytek Studios, 2001-2006.
 -------------------------------------------------------------------------
 $Id$
 $DateTime$
-Description: 
+Description:
 
 -------------------------------------------------------------------------
 History:
@@ -19,7 +19,7 @@ History:
 
 //------------------------------------------------------------------------
 CVehicleAnimation::CVehicleAnimation()
-: m_pPartAnimated(NULL)
+	: m_pPartAnimated(NULL)
 {
 }
 
@@ -70,12 +70,12 @@ bool CVehicleAnimation::ParseState(const CVehicleParams& table, IVehicle* pVehic
 	animState.name = table.getAttr("name");
 	animState.animation = table.getAttr("animation");
 	animState.sound = table.getAttr("sound");
-	animState.pSoundHelper = NULL;
+	animState.pSoundHelper = nullptr;
 
 	if (table.haveAttr("sound"))
 		animState.pSoundHelper = pVehicle->GetHelper(table.getAttr("sound"));
 	else
-		animState.pSoundHelper = NULL;
+		animState.pSoundHelper = nullptr;
 
 	animState.soundId = INVALID_SOUNDID;
 
@@ -85,6 +85,8 @@ bool CVehicleAnimation::ParseState(const CVehicleParams& table, IVehicle* pVehic
 	table.getAttr("isLooped", animState.isLooped);
 	animState.isLoopedEx = false;
 	table.getAttr("isLoopedEx", animState.isLoopedEx);
+
+	table.getAttr("timeRestartAnim", animState.timeRestartAnim);
 
 	if (CVehicleParams materialsTable = table.findChild("Materials"))
 	{
@@ -119,7 +121,7 @@ void CVehicleAnimation::Reset()
 
 		if (IEntity* pEntity = m_pPartAnimated->GetEntity())
 		{
-			for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin(); 
+			for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin();
 				ite != animState.materials.end(); ++ite)
 			{
 				const SAnimationStateMaterial& stateMaterial = *ite;
@@ -152,7 +154,7 @@ bool CVehicleAnimation::StartAnimation()
 
 	SAnimationState& animState = m_animationStates[m_currentStateId];
 
-	if (animState.materials.size() > 0) 
+	if (animState.materials.size() > 0)
 	{
 		m_pPartAnimated->CloneMaterial();
 	}
@@ -169,7 +171,9 @@ bool CVehicleAnimation::StartAnimation()
 			animParams.m_nLayerID = m_layerId;
 
 			if (animState.isLooped)
+			{
 				animParams.m_nFlags |= CA_LOOP_ANIMATION;
+			}
 
 			if (animState.isLoopedEx)
 			{
@@ -177,15 +181,15 @@ bool CVehicleAnimation::StartAnimation()
 				uint32 numAnimsLayer0 = pSkeletonAnim->GetNumAnimsInFIFO(animParams.m_nLayerID);
 				if (numAnimsLayer0)
 				{
-					CAnimation& animation=pSkeletonAnim->GetAnimFromFIFO(animParams.m_nLayerID,numAnimsLayer0-1);
-					if ( animation.m_fAnimTime ==1.0f )
+					CAnimation& animation = pSkeletonAnim->GetAnimFromFIFO(animParams.m_nLayerID, numAnimsLayer0 - 1);
+					if (animation.m_fAnimTime == 1.0f)
 						animation.m_fAnimTime = 0.0f;
 				}
 
 			}
 
 			// cope with empty animation names (for disabling some in certain vehicle modifications)
-			if(animState.animation.empty())
+			if (animState.animation.empty())
 				return false;
 
 			if (!pSkeletonAnim->StartAnimation(animState.animation.c_str(), 0, 0, 0, animParams)) //CryMP: Fixme?
@@ -193,7 +197,7 @@ bool CVehicleAnimation::StartAnimation()
 
 			if (!animState.sound.empty())
 			{
-				IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
+				IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*)pEntity->CreateProxy(ENTITY_PROXY_SOUND);
 				assert(pEntitySoundsProxy);
 
 				int soundFlags = FLAG_SOUND_DEFAULT_3D;
@@ -227,8 +231,6 @@ void CVehicleAnimation::StopAnimation()
 		SetTime(0.0f);
 
 	IEntity* pEntity = m_pPartAnimated->GetEntity();
-	assert(pEntity);
-
 	SAnimationState& animState = m_animationStates[m_currentStateId];
 
 	if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
@@ -236,13 +238,21 @@ void CVehicleAnimation::StopAnimation()
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 		assert(pSkeletonAnim);
 
-		pSkeletonAnim->StopAnimationInLayer(m_layerId,0.0f);
+		pSkeletonAnim->StopAnimationInLayer(m_layerId, 0.0f);
 	}
 
 	if (animState.soundId != INVALID_SOUNDID)
 	{
-		IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
-		assert(pEntitySoundsProxy);
+		IEntitySoundProxy* pEntitySoundsProxy = static_cast<IEntitySoundProxy*>(pEntity->CreateProxy(ENTITY_PROXY_SOUND));
+		if (pEntitySoundsProxy)
+		{
+			pEntitySoundsProxy->StopSound(animState.soundId);
+		}
+		animState.soundId = INVALID_SOUNDID;
+	}
+
+	m_currentAnimIsWaiting = false;
+}
 
 //------------------------------------------------------------------------
 bool CVehicleAnimation::PlaySound(TVehicleAnimStateId stateId)
@@ -313,15 +323,12 @@ bool CVehicleAnimation::ChangeState(TVehicleAnimStateId stateId)
 		if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
 		{
 			ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-			assert(pSkeletonAnim);
-
-			if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
+			if (pSkeletonAnim && pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
 			{
 				CAnimation& anim = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
 				if (anim.m_fAnimTime > 0.0f)
 				{
-				
-					//float speed = pSkeletonAnim->GetLayerUpdateMultiplier(m_layerId) * -1.0f; //CryMP: Fixme
+					//float speed = pSkeletonAnim->GetLayerUpdateMultiplier(m_layerId) * -1.0f; //CryMP: commented
 					//pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, speed);
 				}
 				else
@@ -382,13 +389,19 @@ void CVehicleAnimation::SetSpeed(float speed)
 
 	pSkeletonAnim->SetLayerUpdateMultiplier(m_layerId, max(min(speed, animState.speedMax), animState.speedMin));
 
-	for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin(); 
+	//CryMP
+	if (animState.timeRestartAnim > 0.0f && pSkeletonAnim->GetLayerTime(m_layerId) > animState.timeRestartAnim)
+	{
+		pSkeletonAnim->SetLayerTime(m_layerId, 0.0f);
+	}
+
+	for (TAnimationStateMaterialVector::const_iterator ite = animState.materials.begin();
 		ite != animState.materials.end(); ++ite)
 	{
 		const SAnimationStateMaterial& stateMaterial = *ite;
 
 		IMaterial* pPartMaterial = m_pPartAnimated->GetMaterial();
-		if(pPartMaterial)
+		if (pPartMaterial)
 		{
 			if (IMaterial* pMaterial = FindMaterial(stateMaterial, pPartMaterial))
 			{
@@ -434,21 +447,21 @@ void CVehicleAnimation::ToggleManualUpdate(bool isEnabled)
 	if (m_layerId < 0 || !m_pPartAnimated)
 		return;
 
-	if (ICharacterInstance* pCharInstance = 
+	if (ICharacterInstance* pCharInstance =
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 		assert(pSkeletonAnim);
 
-    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
-    {
-		  CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
-		
-		  if (isEnabled)
-			  animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
-		  else
-			  animation.m_AnimParams.m_nFlags &= ~CA_MANUAL_UPDATE;
-    }
+		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
+		{
+			CAnimation& animation = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+
+			if (isEnabled)
+				animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
+			else
+				animation.m_AnimParams.m_nFlags &= ~CA_MANUAL_UPDATE;
+		}
 	}
 }
 
@@ -458,14 +471,14 @@ float CVehicleAnimation::GetAnimTime(bool raw/*=false*/)
 	if (m_layerId < 0 || !m_pPartAnimated)
 		return 0.0f;
 
-	if (ICharacterInstance* pCharInstance = 
+	if (ICharacterInstance* pCharInstance =
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 		assert(pSkeletonAnim);
-  
+
 		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
-		{    
+		{
 			CAnimation& anim = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
 
 			if (!raw && anim.m_fAnimTime == 0.0f)
@@ -488,45 +501,45 @@ void CVehicleAnimation::SetTime(float time, bool force)
 	if (m_layerId < 0 || !m_pPartAnimated)
 		return;
 
-	if (ICharacterInstance* pCharInstance = 
+	if (ICharacterInstance* pCharInstance =
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 		assert(pSkeletonAnim);
 
-    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
-    {
-		  CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) > 0)
+		{
+			CAnimation& animation = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
 
-      if (force)
-        animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
+			if (force)
+				animation.m_AnimParams.m_nFlags |= CA_MANUAL_UPDATE;
 
-		  if (animation.m_AnimParams.m_nFlags&CA_MANUAL_UPDATE)
-			  animation.m_fAnimTime = time;
+			if (animation.m_AnimParams.m_nFlags & CA_MANUAL_UPDATE)
+				animation.m_fAnimTime = time;
 
-			assert(animation.m_fAnimTime>=0.0f && animation.m_fAnimTime<=1.0f);
+			assert(animation.m_fAnimTime >= 0.0f && animation.m_fAnimTime <= 1.0f);
 
-		  //else
-			  //CryLogAlways("Error: can't use SetTime on a VehicleAnimation that wasn't set for manual updates.");
-    }
+			//else
+				//CryLogAlways("Error: can't use SetTime on a VehicleAnimation that wasn't set for manual updates.");
+		}
 	}
 }
 
 //------------------------------------------------------------------------
 bool CVehicleAnimation::IsUsingManualUpdates()
 {
-	if (ICharacterInstance* pCharInstance = 
+	if (ICharacterInstance* pCharInstance =
 		m_pPartAnimated->GetEntity()->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 		assert(pSkeletonAnim);
 
-    if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
-    {
-      CAnimation& animation= pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
-      if (animation.m_AnimParams.m_nFlags & CA_MANUAL_UPDATE)
-        return true;
-    }
+		if (pSkeletonAnim->GetNumAnimsInFIFO(m_layerId) != 0)
+		{
+			CAnimation& animation = pSkeletonAnim->GetAnimFromFIFO(m_layerId, 0);
+			if (animation.m_AnimParams.m_nFlags & CA_MANUAL_UPDATE)
+				return true;
+		}
 	}
 
 	return false;
