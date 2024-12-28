@@ -244,11 +244,52 @@ void CVehicleAnimation::StopAnimation()
 		IEntitySoundProxy* pEntitySoundsProxy = (IEntitySoundProxy*) pEntity->CreateProxy(ENTITY_PROXY_SOUND);
 		assert(pEntitySoundsProxy);
 
+//------------------------------------------------------------------------
+bool CVehicleAnimation::PlaySound(TVehicleAnimStateId stateId)
+{
+	if (gEnv->pSystem->IsDedicated())
+		return false;
+
+	if (stateId <= InvalidVehicleAnimStateId || stateId > m_animationStates.size())
+		return false;
+
+	SAnimationState& animState = m_animationStates[stateId];
+
+	if (animState.sound.empty())
+		return false;
+
+	IEntity* pEntity = m_pPartAnimated->GetEntity();
+	IEntitySoundProxy* pEntitySoundsProxy = static_cast<IEntitySoundProxy*>(pEntity->CreateProxy(ENTITY_PROXY_SOUND));
+	if (!pEntity || pEntitySoundsProxy)
+		return  false;
+
+	if (animState.soundId != INVALID_SOUNDID)
+	{
 		pEntitySoundsProxy->StopSound(animState.soundId);
 		animState.soundId = INVALID_SOUNDID;
 	}
 
-	m_currentAnimIsWaiting = false;
+	int soundFlags = FLAG_SOUND_DEFAULT_3D;
+	if (animState.isLooped)
+	{
+		soundFlags |= FLAG_SOUND_LOOP;
+	}
+
+	Vec3 pos;
+	if (animState.pSoundHelper)
+	{
+		pos = animState.pSoundHelper->GetVehicleTM().GetTranslation();
+	}
+	else
+	{
+		pos.zero();
+	}
+
+	animState.soundId = pEntitySoundsProxy->PlaySound(animState.sound.c_str(), pos, FORWARD_DIRECTION, soundFlags, eSoundSemantic_Vehicle);
+
+	//CryLogAlways("CVehicleAnimation playing sound %s", animState.sound.c_str());
+
+	return true;
 }
 
 //------------------------------------------------------------------------

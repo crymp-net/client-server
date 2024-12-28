@@ -28,26 +28,30 @@ public:
 	CVehicleAnimation();
 	virtual ~CVehicleAnimation() {}
 
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table);
-	virtual void Reset();
-	virtual void Release() { delete this; }
+	//IVehicleAnimation
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table) override;
+	virtual void Reset() override;
+	virtual void Release() override { delete this; }
 
-	virtual bool StartAnimation();
-	virtual void StopAnimation();
+	virtual bool StartAnimation() override;
+	virtual void StopAnimation() override;
 
-	virtual bool ChangeState(TVehicleAnimStateId stateId);
-	virtual TVehicleAnimStateId GetState();
+	virtual bool ChangeState(TVehicleAnimStateId stateId) override;
+	virtual TVehicleAnimStateId GetState() override;
 
-	virtual string GetStateName(TVehicleAnimStateId stateId);
-	virtual TVehicleAnimStateId GetStateId(const string& name);
+	virtual string GetStateName(TVehicleAnimStateId stateId) override;
+	virtual TVehicleAnimStateId GetStateId(const string& name) override;
 	
-	virtual void SetSpeed(float speed);
+	virtual void SetSpeed(float speed) override;
 
-	virtual void ToggleManualUpdate(bool isEnabled);
-	virtual void SetTime(float time, bool force=false);
+	virtual void ToggleManualUpdate(bool isEnabled) override;
+	virtual void SetTime(float time, bool force=false) override;
 	
-	virtual float GetAnimTime(bool raw=false);
-  virtual bool IsUsingManualUpdates();
+	virtual float GetAnimTime(bool raw=false) override;
+	virtual bool IsUsingManualUpdates() override;
+
+	virtual bool PlaySound(TVehicleAnimStateId stateId) override; //CryMP: Added
+	//IVehicleAnimation
 	
 protected:
 
@@ -64,16 +68,16 @@ protected:
 	{
 		string name;
 		string animation;
-
 		string sound;
-		tSoundID soundId;
-		IVehicleHelper* pSoundHelper;
 
-		float speedDefault;
-		float speedMin;
-		float speedMax;
-		bool isLooped;
-		bool isLoopedEx;
+		tSoundID soundId = 0;
+		IVehicleHelper* pSoundHelper = nullptr;
+
+		float speedDefault = 0.0f;
+		float speedMin = 0.0f;
+		float speedMax = 0.0f;
+		bool isLooped = false;
+		bool isLoopedEx = false;
 
 		TAnimationStateMaterialVector materials;
 	};

@@ -1721,6 +1721,8 @@ struct IVehicleAnimation
   virtual bool IsUsingManualUpdates() = 0;
 	
   virtual void SetTime(float time, bool force=false) = 0;
+
+	virtual bool PlaySound(TVehicleAnimStateId stateId) = 0; //CryMP: Added
 };
 
 struct IVehicleDamagesGroup
