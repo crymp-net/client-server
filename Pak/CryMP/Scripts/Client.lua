@@ -1,18 +1,6 @@
 System.LogAlways("$5[CryMP] Client loaded")
 
 ALLOW_EXPERIMENTAL = true
-GLOBAL_WEATHER_NAMESPACE = 2000
-GLOBAL_WEATHER_ENV_NAMESPACE = 2100
-
-A = function(a, b)
-	if b == nil then b = "" end
-	g_gameRules.game:SetSynchedGlobalValue(GLOBAL_WEATHER_ENV_NAMESPACE + a, tostring(b))
-end
-
-W = function(a, b)
-	if b == nil then b = "" end
-	g_gameRules.game:SetSynchedGlobalValue(GLOBAL_WEATHER_NAMESPACE + a, b)
-end
 
 function InitializeClient()
 	local masters = nil
