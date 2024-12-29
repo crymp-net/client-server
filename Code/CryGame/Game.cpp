@@ -56,6 +56,8 @@
 #include "CryCommon/CryAction/ISaveGame.h"
 #include "CryCommon/CryAction/ILoadGame.h"
 
+#include "CryMP/Client/WeatherSystem.h"
+
 #if defined(CRYSIS_BETA)
 #define CRYSIS_GUID "{CDC82B4A-7540-45A5-B92E-9A7C7033DBF4}"
 #elif defined(SP_DEMO)
@@ -96,7 +98,8 @@ CGame::CGame()
 	m_pServerSynchedStorage(0),
 	m_pClientSynchedStorage(0),
 	m_uiPlayerID(-1),
-	m_pSPAnalyst(0)
+	m_pSPAnalyst(0),
+	m_pWeatherSystem(0)
 {
 	m_pCVars = new SCVars();
 	g_pGameCVars = m_pCVars;
@@ -108,6 +111,8 @@ CGame::CGame()
 	m_pDebugAM = 0;
 	m_pDefaultAM = 0;
 	m_pMultiplayerAM = 0;
+
+	m_pWeatherSystem = new CWeatherSystem();
 
 	GetISystem()->SetIGame(this);
 }
@@ -364,6 +369,7 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 
 		m_pBulletTime->Update();
 		m_pSoundMoods->Update();
+		m_pWeatherSystem->Update(frameTime);
 	}
 
 	m_pFramework->PostUpdate(true, updateFlags);

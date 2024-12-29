@@ -60,6 +60,7 @@ struct SItemStrings;
 class CItemSharedParamsList;
 class CSPAnalyst;
 class CSoundMoods;
+class CWeatherSystem;
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -276,6 +277,8 @@ protected:
 
 	typedef std::map<string, string, stl::less__stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
+
+	CWeatherSystem* m_pWeatherSystem;
 };
 
 extern CGame *g_pGame;
