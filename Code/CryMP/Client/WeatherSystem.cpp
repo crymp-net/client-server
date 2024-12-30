@@ -79,7 +79,7 @@ void CWeatherSystem::Reset() {
 }
 
 void CWeatherSystem::Update(float frameTime) {
-	CServerSynchedStorage *pSSS = g_pGame->GetServerSynchedStorage();
+	CSynchedStorage *pSSS = g_pGame->GetSynchedStorage();
 	if (!pSSS) {
 		return;
 	}
