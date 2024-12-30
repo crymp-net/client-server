@@ -3398,7 +3398,7 @@ void CHUD::OnPostUpdate(float frameTime)
 		//*****************************************************
 		//render flash animation
 
-		if (m_animSpawnCycle.IsLoaded() && !GetModalHUD())
+		if (m_animSpawnCycle.IsLoaded() && !GetModalHUD() && m_pClientActor->GetHealth() <= 0)
 		{
 			m_animSpawnCycle.GetFlashPlayer()->Advance(frameTime);
 			m_animSpawnCycle.GetFlashPlayer()->Render();

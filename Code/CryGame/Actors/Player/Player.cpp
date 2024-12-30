@@ -2064,6 +2064,10 @@ IEntity* CPlayer::LinkToVehicle(EntityId vehicleId)
 
 			ResetOpacity();
 
+			if (CHUD* pHUD = g_pGame->GetHUD())
+			{
+				pHUD->GetCrosshair()->SetUsability(0); //CryMP: immediately hide the usability HUD when entering vehicle
+			}
 		}
 	}
 	else
@@ -3953,7 +3957,7 @@ void CPlayer::Revive(ReasonForRevive reason)
 		if (CHUD* pHUD = g_pGame->GetHUD())
 		{
 			pHUD->BreakHUD(0);
-			pHUD->GetCrosshair()->SetUsability(0);
+			pHUD->GetCrosshair()->SetUsability(-1);
 		}
 
 		if (gEnv->bMultiplayer && IsClient())
@@ -4991,7 +4995,7 @@ void CPlayer::FullSerialize(TSerialize ser)
 	if (m_stats.mountedWeaponID && this == g_pGame->GetIGameFramework()->GetClientActor()) //re-mounting is done in the item
 	{
 		if (g_pGame->GetHUD())
-			g_pGame->GetHUD()->GetCrosshair()->SetUsability(true); //doesn't update after loading
+			g_pGame->GetHUD()->GetCrosshair()->SetUsability(1); //doesn't update after loading
 	}
 
 	ser.Value("parachuteEnabled", m_parachuteEnabled);

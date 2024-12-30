@@ -971,6 +971,8 @@ void Launcher::PatchEngine()
 
 	if (m_dlls.pCry3DEngine)
 	{
+		MemoryPatch::Cry3DEngine::FixGetObjectsByType(m_dlls.pCry3DEngine);
+
 		if (WinAPI::CmdLine::HasArg("-newtod"))
 		{
 			ReplaceTimeOfDay(m_dlls.pCry3DEngine);

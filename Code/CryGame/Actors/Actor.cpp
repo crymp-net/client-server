@@ -2174,6 +2174,16 @@ bool CActor::SetAspectProfile(EEntityAspects aspect, uint8 profile)
 		case eAP_Spectator:
 		case eAP_Alive:
 		{
+			//CryMP: Fix missing weapon after leaving spawntruck
+			if (IsClient() && profile == eAP_Alive && m_currentPhysProfile == eAP_Linked)
+			{
+				CItem* pItem = static_cast<CItem*>(GetCurrentItem());
+				if (!pItem)
+				{
+					SelectLastItem(true, true);
+				}
+			}
+
 			// if we were asleep, we just want to wakeup
 			if (profile == eAP_Alive && (m_currentPhysProfile == eAP_Sleep))
 			{

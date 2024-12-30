@@ -911,15 +911,6 @@ IMPLEMENT_RMI(CGameRules, ClSetTeam)
 		}
 	}
 
-	if (IActor* pClient = m_pGameFramework->GetClientActor())
-	{
-		const EntityId lookAtEntId = pClient->GetGameObject()->GetWorldQuery()->GetLookAtEntityId();
-		if (m_lastUsabilityEntityId == lookAtEntId)
-		{
-			SAFE_HUD_FUNC(GetCrosshair()->OnLookatEntityChangeTeam(params.entityId));
-		}
-	}
-
 	if (isplayer)
 	{
 		ReconfigureVoiceGroups(params.entityId, oldTeam, params.teamId);

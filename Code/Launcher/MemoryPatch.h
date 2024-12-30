@@ -7,6 +7,11 @@ struct CPUInfo;
 
 namespace MemoryPatch
 {
+	namespace Cry3DEngine
+	{
+		void FixGetObjectsByType(void* pCry3DEngine);
+	}
+
 	namespace CryAction
 	{
 		void AllowDX9ImmersiveMultiplayer(void* pCryAction);
