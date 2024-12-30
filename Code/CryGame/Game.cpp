@@ -369,10 +369,10 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 
 		m_pBulletTime->Update();
 		m_pSoundMoods->Update();
-		m_pWeatherSystem->Update(frameTime);
 	}
 
 	m_pFramework->PostUpdate(true, updateFlags);
+	m_pWeatherSystem->Update(frameTime);
 
 	CheckReloadLevel();
 

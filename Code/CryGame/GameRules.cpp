@@ -46,6 +46,7 @@
 
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
+#include "CryMP/Client/WeatherSystem.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;
@@ -96,6 +97,8 @@ CGameRules::~CGameRules()
 	if (m_pGameFramework->GetIViewSystem())
 		m_pGameFramework->GetIViewSystem()->RemoveListener(this);
 	GetGameObject()->ReleaseActions(this);
+
+	g_pGame->GetWeatherSystem()->Reset();
 
 	delete m_pShotValidator;
 	delete m_pRadio;

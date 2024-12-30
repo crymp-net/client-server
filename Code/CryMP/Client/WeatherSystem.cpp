@@ -21,20 +21,23 @@
 #include "DrawTools.h"
 #include "CryGame/GameActions.h"
 #include "CryGame/Actors/Actor.h"
+#include "CryGame/GameRules.h"
 
 #include <map>
 
-static bool						currently_enabled = false;
-static std::map<int, float[3]>	original_weather_values;
-static std::optional<Vec3>		original_wind;
+static bool                          currently_enabled = false;
+static std::map<int, float[3]>       original_weather_values;
+static std::optional<Vec3>           original_wind;
+static std::string                   original_map_name;
+static std::map<int, IStatInstGroup> original_groups;
 
-static std::map<int, string>	active_values;
-static std::set<std::string>	active_effects;
+static std::map<int, string>    active_values;
+static std::set<std::string>    active_effects;
 static std::optional<unsigned>  active_mask;
 
 static constexpr std::array<EERType, 3> static_entities = {
-	eERType_Vegetation,
 	eERType_Brush,
+	eERType_RoadObject_NEW,
 	eERType_Rope
 };
 
@@ -73,14 +76,15 @@ void CWeatherSystem::Reset() {
 	
 	currently_enabled = false;
 	original_weather_values.clear();
-	active_values.clear();
 	original_wind.reset();
+	original_groups.clear();
 	active_effects.clear();
+	active_values.clear();
 }
 
 void CWeatherSystem::Update(float frameTime) {
 	CSynchedStorage *pSSS = g_pGame->GetSynchedStorage();
-	if (!pSSS) {
+	if (!pSSS || !g_pGame->GetGameRules()) {
 		return;
 	}
 
@@ -97,6 +101,7 @@ void CWeatherSystem::Update(float frameTime) {
 	}
 
 	if (m_time - m_lastUpdate >= 1.0f) {
+
 		int changed = 0;
 		ITimeOfDay* pTOD = gEnv->p3DEngine->GetTimeOfDay();
 		if (pTOD) {
@@ -414,6 +419,29 @@ void CWeatherSystem::ApplyLayer(unsigned layer) {
 			node->SetMaterialLayers(node->GetMaterialLayers() | layer);
 		}
 	}
+
+	auto current_map_name = g_pGame->GetIGameFramework()->GetLevelName();
+	if (!current_map_name) {
+		original_groups.clear();
+		return;
+	} else if (current_map_name != original_map_name) {
+		original_map_name = current_map_name;
+		original_groups.clear();
+	}
+	for (int i = 0; i < 65536; i++) {
+		IStatInstGroup group;
+		if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
+			auto original = original_groups.find(i);
+			if (original == original_groups.end()) {
+				original_groups[i] = group;
+			}
+			group.nMaterialLayers = group.nMaterialLayers | layer;
+			if (layer & MTL_LAYER_FROZEN) {
+				group.fBending = 0.0f;
+			}
+			gEnv->p3DEngine->SetStatInstGroup(i, group);
+		}
+	}
 }
 
 void CWeatherSystem::RemoveLayer(unsigned layer) {
@@ -425,6 +453,29 @@ void CWeatherSystem::RemoveLayer(unsigned layer) {
 		count = gEnv->p3DEngine->GetObjectsByType(type, nodes.data());
 		for (auto node : nodes) {
 			node->SetMaterialLayers(node->GetMaterialLayers() & (~layer));
+		}
+	}
+
+	auto current_map_name = g_pGame->GetIGameFramework()->GetLevelName();
+	if (!current_map_name || current_map_name != original_map_name) {
+		original_groups.clear();
+	}
+	else {
+		for (int i = 0; i < 65536; i++) {
+			IStatInstGroup group;
+			if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
+				auto original = original_groups.find(i);
+				if (original != original_groups.end()) {
+					gEnv->p3DEngine->SetStatInstGroup(i, original->second);
+				}
+				else {
+					group.nMaterialLayers = group.nMaterialLayers & (~layer);
+					if (layer & MTL_LAYER_FROZEN) {
+						group.fBending = 1.0f;
+					}
+					gEnv->p3DEngine->SetStatInstGroup(i, group);
+				}
+			}
 		}
 	}
 }
