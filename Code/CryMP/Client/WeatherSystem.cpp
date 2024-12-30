@@ -44,6 +44,9 @@ static constexpr std::array<EERType, 3> static_entities = {
 static const int WEATHER_NAMESPACE		= 2000;
 static const int WEATHER_ENV_NAMESPACE  = 2100;
 
+static std::string GetFrozenGrassName(std::string_view path);
+static std::string GetNormalGrassName(std::string_view path);
+
 enum EWeatherVars {
 	WEATHER_ENABLED,
 	WEATHER_WIND,
@@ -431,13 +434,28 @@ void CWeatherSystem::ApplyLayer(unsigned layer) {
 	for (int i = 0; i < 65536; i++) {
 		IStatInstGroup group;
 		if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
+			// ignore not a real groups
+			if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
+
+			std::string_view sv_name{ group.pStatObj->GetFilePath() };
 			auto original = original_groups.find(i);
 			if (original == original_groups.end()) {
 				original_groups[i] = group;
 			}
 			group.nMaterialLayers = group.nMaterialLayers | layer;
 			if (layer & MTL_LAYER_FROZEN) {
-				group.fBending = 0.0f;
+				// nicegrass and bigpatch need special treatment, so check for those
+				// and if so, replace the underlying cgf model with a new model
+				auto new_name = GetFrozenGrassName(sv_name);
+				if (new_name != sv_name) {
+					group.nMaterialLayers = group.nMaterialLayers & (~MTL_LAYER_FROZEN);
+					strncpy(group.szFileName, new_name.c_str(), sizeof(group.szFileName) - 1);
+					group.pStatObj->SetFilePath(group.szFileName);
+					group.pStatObj->Refresh(FRO_GEOMETRY);
+					group.pMaterial = NULL;
+				} else {
+					group.fBending = 0.0f;
+				}
 			}
 			gEnv->p3DEngine->SetStatInstGroup(i, group);
 		}
@@ -457,24 +475,35 @@ void CWeatherSystem::RemoveLayer(unsigned layer) {
 	}
 
 	auto current_map_name = g_pGame->GetIGameFramework()->GetLevelName();
-	if (!current_map_name || current_map_name != original_map_name) {
+	if (!current_map_name || original_map_name != current_map_name) {
 		original_groups.clear();
 	}
 	else {
 		for (int i = 0; i < 65536; i++) {
 			IStatInstGroup group;
 			if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
+				// ignore not a real groups
+				if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
+
+				std::string_view sv_name{ group.pStatObj->GetFilePath() };
 				auto original = original_groups.find(i);
 				if (original != original_groups.end()) {
-					gEnv->p3DEngine->SetStatInstGroup(i, original->second);
-				}
-				else {
+					group = original->second;
+				} else {
 					group.nMaterialLayers = group.nMaterialLayers & (~layer);
-					if (layer & MTL_LAYER_FROZEN) {
-						group.fBending = 1.0f;
-					}
-					gEnv->p3DEngine->SetStatInstGroup(i, group);
 				}
+
+				if (layer & MTL_LAYER_FROZEN) {
+					auto new_name = GetNormalGrassName(sv_name);
+					if (new_name != sv_name) {
+						strncpy(group.szFileName, new_name.c_str(), sizeof(group.szFileName) - 1);
+						group.pStatObj->SetFilePath(group.szFileName);
+						group.pStatObj->Refresh(FRO_GEOMETRY);
+					}
+				}
+
+				gEnv->p3DEngine->SetStatInstGroup(i, group);
+
 			}
 		}
 	}
@@ -486,4 +515,55 @@ bool CWeatherSystem::IsWet() const {
 
 bool CWeatherSystem::IsFrozen() const {
 	return active_mask && ((*active_mask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
+}
+
+/// Utilities
+
+static std::string GetFrozenGrassName(std::string_view path) {
+	auto pos = path.rfind("/nicegrass");
+	if (pos != std::string::npos) {
+		std::string name;
+		pos += 1;
+		name += path.substr(0, pos);
+		name += "frozen_";
+		name += path.substr(pos);
+		return name;
+	}
+	pos = path.rfind("/bigpatch");
+	if (pos != std::string::npos) {
+		pos = path.rfind("._frozen.cgf");
+		if (pos != std::string::npos) {
+			return std::string{ path };
+		}
+		pos = path.rfind(".cgf");
+		if (pos != std::string::npos) {
+			std::string name;
+			name += path.substr(0, pos);
+			name += "_frozen.cgf";
+			return name;
+		}
+	}
+	return std::string{ path };
+}
+
+static std::string GetNormalGrassName(std::string_view path) {
+	auto pos = path.rfind("/frozen_nicegrass");
+	if (pos != std::string::npos) {
+		std::string name;
+		pos += 1;
+		name += path.substr(0, pos);
+		name += path.substr(pos + 7);
+		return name;
+	}
+	pos = path.rfind("/bigpatch");
+	if (pos != std::string::npos) {
+		pos = path.rfind("_frozen.cgf");
+		if (pos != std::string::npos) {
+			std::string name;
+			name += path.substr(0, pos);
+			name += ".cgf";
+			return name;
+		}
+	}
+	return std::string{ path };
 }
