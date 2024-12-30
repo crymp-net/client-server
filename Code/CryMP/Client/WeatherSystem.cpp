@@ -86,8 +86,8 @@ void CWeatherSystem::Update(float frameTime) {
 
 	m_time += frameTime;
 
-	string b;
-	if (!pSSS->GetGlobalValue(WEATHER_NAMESPACE + WEATHER_ENABLED, b) || b.length() == 0 || b == "0") {
+	bool b;
+	if (!pSSS->GetGlobalValue(WEATHER_NAMESPACE + WEATHER_ENABLED, b) || !b) {
 		if (currently_enabled) {
 			Reset();
 		}
