@@ -159,6 +159,8 @@ public:
 	virtual CWeaponSystem *GetWeaponSystem() { return m_pWeaponSystem; };
 	virtual CItemSharedParamsList *GetItemSharedParamsList() { return m_pItemSharedParamsList; };
 
+	CWeatherSystem* GetWeatherSystem() const { return m_pWeatherSystem; }
+
 	CGameActions&	Actions() const {	return *m_pGameActions;	};
 
 	CGameRules *GetGameRules() const;

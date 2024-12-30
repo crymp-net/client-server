@@ -19,6 +19,7 @@ History:
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CryAction/IGameObject.h"
 #include "CryGame/Actors/Actor.h"
+#include "CryMP/Client/WeatherSystem.h"
 #include "WeaponSystem.h"
 
 #include "Projectile.h"
@@ -597,6 +598,13 @@ void CWeaponSystem::CheckEnvironmentChanges()
 		// next call will leave value unchanged if not found
 		pGameTokenSystem->GetTokenValueAs("weapon.effects.ice", frozenEnvironment);
 		pGameTokenSystem->GetTokenValueAs("weapon.effects.wet", wetEnvironment);
+	}
+
+	CWeatherSystem* pWS = g_pGame->GetWeatherSystem();
+
+	if (pWS) {
+		frozenEnvironment = pWS->IsFrozen();
+		wetEnvironment = pWS->IsWet();
 	}
 
 	if(m_frozenEnvironment!=frozenEnvironment)

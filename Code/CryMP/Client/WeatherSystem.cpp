@@ -24,20 +24,29 @@
 
 #include <map>
 
-static std::map<int, float[3]> original_weather_values;
-static std::map<int, string> current_values;
-static std::optional<Vec3> original_wind;
-static std::set<std::string> active_effects;
-static bool currently_enabled = false;
+static bool						currently_enabled = false;
+static std::map<int, float[3]>	original_weather_values;
+static std::optional<Vec3>		original_wind;
 
-static const int GLOBAL_WEATHER_NAMESPACE = 2000;
-static const int GLOBAL_WEATHER_ENV_NAMESPACE = 2100;
+static std::map<int, string>	active_values;
+static std::set<std::string>	active_effects;
+static std::optional<unsigned>  active_mask;
+
+static constexpr std::array<EERType, 3> static_entities = {
+	eERType_Vegetation,
+	eERType_Brush,
+	eERType_Rope
+};
+
+static const int WEATHER_NAMESPACE		= 2000;
+static const int WEATHER_ENV_NAMESPACE  = 2100;
 
 enum EWeatherVars {
-	GLOBAL_WEATHER_ENABLED,
-	GLOBAL_WEATHER_WIND,
-	GLOBAL_WEATHER_FX,
-	GLOBAL_WEATHER_VAR_COUNT
+	WEATHER_ENABLED,
+	WEATHER_WIND,
+	WEATHER_FX,
+	WEATHER_LAYERS,
+	WEATHER_VAR_COUNT
 };
 
 CWeatherSystem::CWeatherSystem() {
@@ -56,10 +65,15 @@ void CWeatherSystem::Reset() {
 		if (k[0] == '-') SpawnEffect(k.c_str() + 1);
 		else RemoveEffect(k.c_str());
 	}
+
+	if (active_mask) {
+		RemoveLayer(*active_mask);
+		active_mask.reset();
+	}
 	
 	currently_enabled = false;
 	original_weather_values.clear();
-	current_values.clear();
+	active_values.clear();
 	original_wind.reset();
 	active_effects.clear();
 }
@@ -73,7 +87,7 @@ void CWeatherSystem::Update(float frameTime) {
 	m_time += frameTime;
 
 	string b;
-	if (!pSSS->GetGlobalValue(GLOBAL_WEATHER_NAMESPACE + GLOBAL_WEATHER_ENABLED, b) || b.length() == 0 || b == "0") {
+	if (!pSSS->GetGlobalValue(WEATHER_NAMESPACE + WEATHER_ENABLED, b) || b.length() == 0 || b == "0") {
 		if (currently_enabled) {
 			Reset();
 		}
@@ -89,9 +103,9 @@ void CWeatherSystem::Update(float frameTime) {
 			int count = pTOD->GetVariableCount();
 			for (int i = 0; i < count; i++) {
 				string value;
-				auto existing = current_values.find(GLOBAL_WEATHER_ENV_NAMESPACE + i);
-				if (pSSS->GetGlobalValue(GLOBAL_WEATHER_ENV_NAMESPACE + i, value) && value.length() > 0) {
-					if (existing == current_values.end() || existing->second != value) {
+				auto existing = active_values.find(WEATHER_ENV_NAMESPACE + i);
+				if (pSSS->GetGlobalValue(WEATHER_ENV_NAMESPACE + i, value) && value.length() > 0) {
+					if (existing == active_values.end() || existing->second != value) {
 						if (value[0] >= 'a' && value[0] <= 'z') {
 							if (value[0] == 'i') {
 								SetWeatherVariable(i, atof(value.c_str() + 1), true);
@@ -106,25 +120,25 @@ void CWeatherSystem::Update(float frameTime) {
 						} else {
 							SetWeatherVariable(i, atof(value.c_str()), true);
 						}
-						current_values[GLOBAL_WEATHER_ENV_NAMESPACE + i] = value;
+						active_values[WEATHER_ENV_NAMESPACE + i] = value;
 						changed++;
 					}
 				} else {
 					RestoreWeatherVariable(i);
-					if (existing != current_values.end()) {
-						current_values.erase(existing);
+					if (existing != active_values.end()) {
+						active_values.erase(existing);
 						changed++;
 					}
 				}
 			}
-			for (int i = GLOBAL_WEATHER_ENABLED + 1; i < GLOBAL_WEATHER_VAR_COUNT; i++) {
+			for (int i = WEATHER_ENABLED + 1; i < WEATHER_VAR_COUNT; i++) {
 				string value;
 				float f3[3];
-				auto existing = current_values.find(GLOBAL_WEATHER_NAMESPACE + i);
-				if (pSSS->GetGlobalValue(GLOBAL_WEATHER_NAMESPACE + i, value)) {
-					if (existing == current_values.end() || existing->second != value) {
+				auto existing = active_values.find(WEATHER_NAMESPACE + i);
+				if (pSSS->GetGlobalValue(WEATHER_NAMESPACE + i, value)) {
+					if (existing == active_values.end() || existing->second != value) {
 						switch (i) {
-						case GLOBAL_WEATHER_WIND:
+						case WEATHER_WIND:
 							if (value[0] == 'v' && sscanf(value.c_str() + 1, "%f,%f,%f", f3 + 0, f3 + 1, f3 + 2) == 3) {
 								if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
 								gEnv->p3DEngine->SetWind(Vec3(f3[0], f3[1], f3[2]));
@@ -135,12 +149,15 @@ void CWeatherSystem::Update(float frameTime) {
 								if (original_wind) gEnv->p3DEngine->SetWind(*original_wind);
 							}
 							break;
-						case GLOBAL_WEATHER_FX:
+						case WEATHER_FX:
 							SyncEffects(value.c_str());
 							break;
+						case WEATHER_LAYERS:
+							SyncLayers(value.c_str());
+							break;
 						}
-						if (existing != current_values.end() && value.length() == 0) {
-							current_values.erase(existing);
+						if (existing != active_values.end() && value.length() == 0) {
+							active_values.erase(existing);
 						}
 						changed++;
 					}
@@ -356,4 +373,66 @@ void CWeatherSystem::RemoveEffect(const char *eff) {
 	{
 		pEffect->SetEnabled(false);
 	}
+}
+
+void CWeatherSystem::SyncLayers(const char* layers) {
+	std::stringstream ss;
+	std::string layer;
+	ss << layers;
+
+	std::optional<unsigned> mask;
+
+	while ((ss >> layer) && layer.length() > 0) {
+		if (layer == "frozen") {
+			if (!mask) mask.emplace(static_cast<unsigned>(MTL_LAYER_FROZEN));
+			else mask.emplace(*mask | static_cast<unsigned>(MTL_LAYER_FROZEN));
+		}
+		else if (layer == "wet") {
+			if (!mask) mask.emplace(static_cast<unsigned>(MTL_LAYER_WET));
+			else mask.emplace(*mask | static_cast<unsigned>(MTL_LAYER_WET));
+		}
+	}
+
+	if (mask && (!active_mask || *active_mask != *mask)) {
+		if (active_mask) RemoveLayer(*active_mask);
+		ApplyLayer(*mask);
+		active_mask = std::move(mask);
+	} else if(!mask && active_mask) {
+		RemoveLayer(*active_mask);
+		active_mask.reset();
+	}
+}
+
+void CWeatherSystem::ApplyLayer(unsigned layer) {
+	for (auto type : static_entities) {
+		uint32_t count = gEnv->p3DEngine->GetObjectsByType(type, NULL);
+		if (count == 0) continue;
+		std::vector<IRenderNode*> nodes;
+		nodes.resize(count);
+		count = gEnv->p3DEngine->GetObjectsByType(type, nodes.data());
+		for (auto node : nodes) {
+			node->SetMaterialLayers(node->GetMaterialLayers() | layer);
+		}
+	}
+}
+
+void CWeatherSystem::RemoveLayer(unsigned layer) {
+	for (auto type : static_entities) {
+		uint32_t count = gEnv->p3DEngine->GetObjectsByType(type, NULL);
+		if (count == 0) continue;
+		std::vector<IRenderNode*> nodes;
+		nodes.resize(count);
+		count = gEnv->p3DEngine->GetObjectsByType(type, nodes.data());
+		for (auto node : nodes) {
+			node->SetMaterialLayers(node->GetMaterialLayers() & (~layer));
+		}
+	}
+}
+
+bool CWeatherSystem::IsWet() const {
+	return active_mask && ((*active_mask & MTL_LAYER_WET) == MTL_LAYER_WET);
+}
+
+bool CWeatherSystem::IsWet() const {
+	return active_mask && ((*active_mask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
 }

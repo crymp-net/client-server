@@ -13,6 +13,9 @@ public:
 	CWeatherSystem();
 	void Update(float frameTime);
 	void Reset();
+
+	bool IsFrozen() const;
+	bool IsWet() const;
 private:
 	bool SetWeatherVariable(int variableId, float value, bool interpolate = true, bool update = false);
 	bool SetWeatherVariable(int variableId, float x, float y, float z, bool update = false);
@@ -25,6 +28,10 @@ private:
 	void SyncEffects(const char *effects);
 	void SpawnEffect(const char *eff);
 	void RemoveEffect(const char *eff);
+
+	void SyncLayers(const char* layers);
+	void ApplyLayer(unsigned layer);
+	void RemoveLayer(unsigned layer);
 
 	float m_time;
 	float m_lastUpdate;
