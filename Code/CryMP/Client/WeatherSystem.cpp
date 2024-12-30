@@ -433,6 +433,6 @@ bool CWeatherSystem::IsWet() const {
 	return active_mask && ((*active_mask & MTL_LAYER_WET) == MTL_LAYER_WET);
 }
 
-bool CWeatherSystem::IsWet() const {
+bool CWeatherSystem::IsFrozen() const {
 	return active_mask && ((*active_mask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
 }
