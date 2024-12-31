@@ -4270,6 +4270,32 @@ void CGameRules::OnRadioMessage(const SRadioMessageParams& params)
 	m_pRadio->OnRadioMessage(params);
 }
 
+void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
+	// do a ray cast and detect any hits (where player is looking at)
+	IPhysicalEntity* pSkipEnts[10];
+	IEntity* pActorEntity = pPlayer->GetEntity();
+	IMovementController* pMC = pPlayer->GetMovementController();
+	if (pActorEntity && pMC) {
+		SMovementState ms;
+		pMC->GetMovementState(ms);
+
+		Vec3 origin = ms.eyePosition;
+		Vec3 dir = ms.eyeDirection * 2000.0f;
+
+		ray_hit rayhit;
+		pSkipEnts[0] = pActorEntity->GetPhysics();
+
+		if (pSkipEnts[0] != NULL) {
+			int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, 1);
+			if (nHits > 0) {
+				char message[100];
+				sprintf(message, "\n1%d,%9.3f,%9.3f,%9.3f", type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+				SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
+			}
+		}
+	}
+}
+
 void CGameRules::RadioMessageParams::SerializeWith(TSerialize ser)
 {
 	ser.Value("source", sourceId, /* 'eid' */0x00656964);

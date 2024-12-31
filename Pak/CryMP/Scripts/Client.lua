@@ -701,7 +701,7 @@ function InitializeClient()
 			printf(RED .. "[CryMP] Debug mode disabled")
 		end
 	end)
-	
+
 	CPPAPI.AddCCommand("say", function(...)
 		local text = table.concat(arg, " ")
 

@@ -444,6 +444,8 @@ public:
 	void OnRadioMessage(const SRadioMessageParams& params);
 	ILINE CRadio *GetRadio() const { return m_pRadio; }
 
+	void RequestTrackedRadio(CPlayer* pPlayer, int type);
+
 	virtual void OnAction(const ActionId& actionId, int activationMode, float value);
 
 	void ReconfigureVoiceGroups(EntityId id,int old_team,int new_team);

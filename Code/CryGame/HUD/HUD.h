@@ -756,6 +756,7 @@ private:
 	CGameFlashAnimation m_animTrackedRadioMessage;
 
 	std::optional<float> m_nanosuitMenuOpenTime;
+	uint8_t              m_nanosuitOpenMode = 0;
 
 	// HUD objects
 	typedef std::list<CHUDObject *> THUDObjectsList;

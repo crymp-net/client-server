@@ -2273,6 +2273,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				// CryMP: detect radio message tagging
 				if (!m_nanosuitMenuOpenTime) {
 					m_nanosuitMenuOpenTime = gEnv->pTimer->GetCurrTime();
+					m_nanosuitOpenMode = m_pClientActor->GetNanoSuit()->GetMode();
 				}
 
 				m_animQuickMenu.Invoke("showQuickMenu");
@@ -2309,37 +2310,6 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 		else if (&m_animQuickMenu == m_pModalHUD || &m_animQuickMenu == m_pSwitchScoreboardHUD)
 		{
-			// CryMP: detect radio message tagging
-			if (m_nanosuitMenuOpenTime) {
-				float dur = gEnv->pTimer->GetCurrTime() - *m_nanosuitMenuOpenTime;
-				m_nanosuitMenuOpenTime.reset();
-				if (dur < 0.5f && m_pClientActor && gEnv->bMultiplayer && gEnv->bClient) {
-					// do a ray cast and detect any hits (where player is looking at)
-					IPhysicalEntity* pSkipEnts[10];
-					IEntity* pActorEntity = m_pClientActor->GetEntity();
-					IMovementController* pMC = m_pClientActor->GetMovementController();
-					if (pActorEntity && pMC) {
-						SMovementState ms;
-						pMC->GetMovementState(ms);
-
-						Vec3 origin = ms.eyePosition;
-						Vec3 dir = ms.eyeDirection * 2000.0f;
-
-						ray_hit rayhit;
-						pSkipEnts[0] = pActorEntity->GetPhysics();
-
-						if (pSkipEnts[0] != NULL) {
-							int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, 1);
-							if (nHits > 0) {
-								char message[100];
-								sprintf(message, "\n115,%9.3f,%9.3f,%9.3f", rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
-								m_pGameRules->SendChatMessage(eChatToTeam, m_pClientActor->GetEntityId(), m_pClientActor->GetEntityId(), message);
-							}
-						}
-					}
-				}
-			}
-
 			if (m_pClientActor->GetPlayerInput())
 				m_pClientActor->GetPlayerInput()->DisableXI(false);
 
@@ -2371,6 +2341,19 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 			if (!m_bLaunchWS)
 				PlaySound(ESound_SuitMenuDisappear);
+
+			// CryMP: detect radio message tagging
+			if (m_nanosuitMenuOpenTime) {
+				float dur = gEnv->pTimer->GetCurrTime() - *m_nanosuitMenuOpenTime;
+				m_nanosuitMenuOpenTime.reset();
+				if (
+					dur < 0.25f &&
+					gEnv->bMultiplayer && gEnv->bClient &&
+					m_pClientActor && m_pClientActor->GetNanoSuit() && m_pClientActor->GetNanoSuit()->GetMode() == m_nanosuitOpenMode
+					) {
+					m_pGameRules->RequestTrackedRadio(m_pClientActor, 15);
+				}
+			}
 
 			m_bLaunchWS = false;
 		}
