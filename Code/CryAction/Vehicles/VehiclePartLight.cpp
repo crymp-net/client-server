@@ -154,14 +154,26 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 		GET_LIGHT_VALUE_DEF_FLOAT("coronaDistSize", m_light.m_fCoronaDistSizeFactor);
 		GET_LIGHT_VALUE_DEF_FLOAT("coronaScale", m_light.m_fCoronaScale);
 		GET_LIGHT_VALUE_DEF_INT  ("style", m_light.m_nLightStyle);
-		GET_LIGHT_VALUE_DEF_FLOAT("frustumAngle", m_light.m_fLightFrustumAngle);    
+		GET_LIGHT_VALUE_DEF_FLOAT("frustumAngle", m_light.m_fLightFrustumAngle); 
+
+		//CryMP: Fakelight support
+		bool fakeLight = false;
+		GET_LIGHT_VALUE_BOOL("fakeLight", fakeLight);
+
+		if (fakeLight)
+		{
+			m_light.m_Flags |= DLF_FAKE;
+		}
   }
   
   m_light.SetLightColor(ColorF(m_diffuseCol*m_diffuseMult[1], 1.f));
   m_light.m_SpecMult = specularMul / m_diffuseMult[1];
 
-  if (texture[0])
-    m_light.m_pLightImage = gEnv->pRenderer->EF_LoadTexture(texture, 0, 0);
+	if (texture[0])
+	{
+		const int flags = FT_FORCE_CUBEMAP; //CryMP
+		m_light.m_pLightImage = gEnv->pRenderer->EF_LoadTexture(texture, flags, 0);
+	}
 
   if (m_light.m_fLightFrustumAngle && m_light.m_pLightImage && m_light.m_pLightImage->IsTextureLoaded())
 	{

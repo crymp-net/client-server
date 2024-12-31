@@ -26,20 +26,20 @@ public:
 	~CVehiclePartLight();
 
 	// IVehiclePart
-	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo);
-  virtual void PostInit();
-	virtual void Reset();
-	virtual void Release() { CVehiclePartBase::Release(); }
+	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo) override;
+	virtual void PostInit() override;
+	virtual void Reset() override;
+	virtual void Release() override { CVehiclePartBase::Release(); }
 	
-	virtual void OnEvent(const SVehiclePartEvent& event);
+	virtual void OnEvent(const SVehiclePartEvent& event) override;
 
-	virtual void Physicalize() {}
+	virtual void Physicalize() override {}
 
-	virtual void Update(const float frameTime);
+	virtual void Update(const float frameTime) override;
 
-	virtual void Serialize(TSerialize serialize, unsigned aspects);
-	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) {}
-	virtual void GetMemoryStatistics(ICrySizer * s) { s->Add(*this); GetBaseMemoryStatistics(s); }
+	virtual void Serialize(TSerialize serialize, unsigned aspects) override;
+	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) override {}
+	virtual void GetMemoryStatistics(ICrySizer * s)  override { s->Add(*this); GetBaseMemoryStatistics(s); }
 	// ~IVehiclePart
 
 	virtual void ToggleLight(bool enable);
