@@ -60,6 +60,7 @@ struct SItemStrings;
 class CItemSharedParamsList;
 class CSPAnalyst;
 class CSoundMoods;
+class CWeatherSystem;
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -157,6 +158,8 @@ public:
 	virtual CScriptBind_HUD *GetHUDScriptBind() { return m_pScriptBindHUD; }
 	virtual CWeaponSystem *GetWeaponSystem() { return m_pWeaponSystem; };
 	virtual CItemSharedParamsList *GetItemSharedParamsList() { return m_pItemSharedParamsList; };
+
+	CWeatherSystem* GetWeatherSystem() const { return m_pWeatherSystem; }
 
 	CGameActions&	Actions() const {	return *m_pGameActions;	};
 
@@ -276,6 +279,8 @@ protected:
 
 	typedef std::map<string, string, stl::less__stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
+
+	CWeatherSystem* m_pWeatherSystem;
 };
 
 extern CGame *g_pGame;
