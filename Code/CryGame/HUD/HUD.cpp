@@ -550,6 +550,10 @@ bool CHUD::Init(IActor* pActor)
 	m_animHitIndicatorPlayer.Load("Libs/UI/HUD_HitIndicatorPlayer.gfx", eFD_Center, eFAF_Visible);
 	m_animHitIndicatorVehicle.Load("Libs/UI/HUD_HitIndicatorVehicle.gfx", eFD_Center, eFAF_Visible);
 
+	m_animTrackedRadioMessage.Load("Libs/UI/HUD_GrenadeDetect_Friendly.gfx", eFD_Center, eFAF_Visible);
+	if (!m_animTrackedRadioMessage.IsLoaded()) //asset missing so far ..
+		m_animTrackedRadioMessage.Load("Libs/UI/HUD_GrenadeDetect.gfx", eFD_Center, eFAF_Visible);
+
 	// these are delay-loaded elsewhere!!!
 	if (loadEverything)
 	{
@@ -2265,6 +2269,12 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 					return false;
 				/*				if(!m_animQuickMenu.IsLoaded())
 									m_animQuickMenu.Reload();*/
+
+				// CryMP: detect radio message tagging
+				if (!m_nanosuitMenuOpenTime) {
+					m_nanosuitMenuOpenTime = gEnv->pTimer->GetCurrTime();
+				}
+
 				m_animQuickMenu.Invoke("showQuickMenu");
 				m_animQuickMenu.SetVariable("_alpha", 100);
 
@@ -2299,6 +2309,37 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 		}
 		else if (&m_animQuickMenu == m_pModalHUD || &m_animQuickMenu == m_pSwitchScoreboardHUD)
 		{
+			// CryMP: detect radio message tagging
+			if (m_nanosuitMenuOpenTime) {
+				float dur = gEnv->pTimer->GetCurrTime() - *m_nanosuitMenuOpenTime;
+				m_nanosuitMenuOpenTime.reset();
+				if (dur < 0.5f && m_pClientActor && gEnv->bMultiplayer && gEnv->bClient) {
+					// do a ray cast and detect any hits (where player is looking at)
+					IPhysicalEntity* pSkipEnts[10];
+					IEntity* pActorEntity = m_pClientActor->GetEntity();
+					IMovementController* pMC = m_pClientActor->GetMovementController();
+					if (pActorEntity && pMC) {
+						SMovementState ms;
+						pMC->GetMovementState(ms);
+
+						Vec3 origin = ms.eyePosition;
+						Vec3 dir = ms.eyeDirection * 2000.0f;
+
+						ray_hit rayhit;
+						pSkipEnts[0] = pActorEntity->GetPhysics();
+
+						if (pSkipEnts[0] != NULL) {
+							int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, 1);
+							if (nHits > 0) {
+								char message[100];
+								sprintf(message, "\n115,%9.3f,%9.3f,%9.3f", rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+								m_pGameRules->SendChatMessage(eChatToTeam, m_pClientActor->GetEntityId(), m_pClientActor->GetEntityId(), message);
+							}
+						}
+					}
+				}
+			}
+
 			if (m_pClientActor->GetPlayerInput())
 				m_pClientActor->GetPlayerInput()->DisableXI(false);
 
@@ -3371,6 +3412,7 @@ void CHUD::OnPostUpdate(float frameTime)
 
 		// Grenade detector
 		TrackProjectiles(m_pClientActor);
+		TrackRadioMessages(m_pClientActor);
 
 		// Binoculars and Scope
 		if (m_pHUDScopes->IsBinocularsShown())
@@ -3492,6 +3534,11 @@ void CHUD::OnPostUpdate(float frameTime)
 			{
 				m_animMissionObjective.GetFlashPlayer()->Advance(frameTime);
 				m_animMissionObjective.GetFlashPlayer()->Render();
+			}
+			if (m_animTrackedRadioMessage.GetVisible()) //CryMP: tracked radio messages
+			{
+				m_animTrackedRadioMessage.GetFlashPlayer()->Advance(frameTime);
+				m_animTrackedRadioMessage.GetFlashPlayer()->Render();
 			}
 		}
 		else
@@ -4218,6 +4265,20 @@ void CHUD::RemoveTrackedProjectile(EntityId id)
 	stl::find_and_erase(m_trackedProjectiles, id);
 }
 
+// CryMP -----------------------------------------------------------------
+void CHUD::AddTrackedRadioMessage(const SRadioMessageParams& params, float expiry)
+{
+	std::erase_if(m_trackedRadioMessages, [&params](const STrackedRadioMessage& msg) -> bool {
+		return msg.params.sourceId == params.sourceId;
+	});
+	m_trackedRadioMessages.emplace_back(STrackedRadioMessage{
+		.params = params,
+		.expiresAt = gEnv->pTimer->GetCurrTime() + expiry
+	});
+}
+
+//------------------------------------------------------------------------
+
 //-----------------------------------------------------------------------------------------------------
 
 void CHUD::AutoAimLocking(EntityId id)
@@ -4857,6 +4918,7 @@ void CHUD::UnloadSimpleHUDElements(bool unload)
 
 	if (!unload)
 	{
+		m_animTrackedRadioMessage.Reload(); // CryMP: tracked radio messages
 		m_animFriendlyProjectileTracker.Reload();
 		m_animHostileProjectileTracker.Reload();
 		m_animMissionObjective.Reload();
@@ -4869,6 +4931,7 @@ void CHUD::UnloadSimpleHUDElements(bool unload)
 	}
 	else
 	{
+		m_animTrackedRadioMessage.Reload(); // CryMP: tracked radio messages
 		m_animFriendlyProjectileTracker.Unload();
 		m_animHostileProjectileTracker.Unload();
 		m_animMissionObjective.Unload();

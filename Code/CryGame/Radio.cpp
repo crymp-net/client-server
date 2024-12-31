@@ -427,15 +427,15 @@ bool CRadio::OnInputEvent( const SInputEvent &event )
 	return true;
 }
 
-void CRadio::OnRadioMessage(int id, EntityId fromId)
+void CRadio::OnRadioMessage(SRadioMessageParams params)
 {
-	int groupId=id/RADIO_GROUP_SIZE;
-	int keyId=id%RADIO_GROUP_SIZE;
+	int groupId=params.id / RADIO_GROUP_SIZE;
+	int keyId= params.id % RADIO_GROUP_SIZE;
 
 	//CryMP: Extended menu
-	if (id > ((RADIO_GROUP_SIZE * RADIO_GROUPS) - 1))
+	if (params.id > ((RADIO_GROUP_SIZE * RADIO_GROUPS) - 1))
 	{
-		if (!GetGroupAndKeyFromExtendedRadioId(id, groupId, keyId))
+		if (!GetGroupAndKeyFromExtendedRadioId(params.id, groupId, keyId))
 			return;
 	}
 
@@ -457,7 +457,7 @@ void CRadio::OnRadioMessage(int id, EntityId fromId)
 		pLocalizationMan->LocalizeString("@mp_radio", wRadio);
 		pLocalizationMan->LocalizeString(pSoundText, wSoundText);
 
-		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(fromId);
+		IEntity* pEntity = gEnv->pEntitySystem->GetEntity(params.sourceId);
 		if(pEntity)
 		{
 			Vec2i grid=g_pGame->GetHUD()->GetRadar()->GetMapGridPosition(pEntity);
@@ -477,7 +477,7 @@ void CRadio::OnRadioMessage(int id, EntityId fromId)
 
 		CHUDTextChat* pChat = g_pGame->GetHUD()->GetMPChat();
 		if(pChat)
-			pChat->AddChatMessage(fromId, completeMsg.c_str(), 1, true);	// hardcoded to 'same team'
+			pChat->AddChatMessage(params.sourceId, completeMsg.c_str(), 1, true);	// hardcoded to 'same team'
 		//g_pGame->GetGameRules()->OnChatMessage(eChatToTeam, fromId, 0, completeMsg.c_str());
 
 		string sound = pSoundName;
@@ -485,6 +485,11 @@ void CRadio::OnRadioMessage(int id, EntityId fromId)
 		{
 			int rand = Random(variations);
 			sound += string().Format("_0%1d", rand+1);
+		}
+
+		if (params.pos) {
+			params.msg = string{ pSoundText };
+			g_pGame->GetHUD()->AddTrackedRadioMessage(params, 9.0f);
 		}
 
 		PlayVoice(sound.c_str());

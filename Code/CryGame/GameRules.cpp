@@ -749,8 +749,46 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char* msg,
 //------------------------------------------------------------------------
 void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char* msg, bool teamChatOnly)
 {
-	if (sourceId == targetId && (strstr(msg, "!rpc ") == msg || strstr(msg, "!validate ") == msg))
-		return;
+	std::string_view sv{ msg };
+	if (sourceId == targetId) {
+		if (sv.starts_with("!rpc ") || sv.starts_with("!validate")) {
+			return;
+		}
+	} else if (sv.starts_with("\n") && sv.length() >= 2) {
+		bool valid = false;
+		// if message starts with \n, consider it a special broadcast from client rather than a legit chat message
+		// this way we can ensure stuff works everywhere and not only servers where SSM supports it,
+		// also starting the message with \n assures that it stays invisible even for people without client
+		// 
+		// the format for commands is as follows: \n (opcode + '0') Payload, i.e. \n11 for Radio 1
+		std::string payload{ sv.substr(2) };
+		uint8_t opcode = (static_cast<uint8_t>(sv[1]) & 0xFF) - '0';
+		switch (opcode) {
+		case EChatMessageOpcode::eChatOpcodeRadio:
+		{
+			// radio over chat
+			int id;
+			float x, y, z;
+			if (sscanf(payload.c_str(), "%d,%f,%f,%f", &id, &x, &y, &z) == 4) {
+				valid = true;
+				OnRadioMessage(SRadioMessageParams{
+					.id = id,
+					.sourceId = sourceId,
+					.pos = Vec3(x, y, z)
+				});
+			}
+			else if (sscanf(payload.c_str(), "%d", &id) == 1) {
+				valid = true;
+				OnRadioMessage(SRadioMessageParams{
+					.id = id,
+					.sourceId = sourceId,
+				});
+			}
+		}
+		break;
+		}
+		if (valid) return;
+	}
 	//send chat message to hud
 	int teamFaction = 0;
 	if (IActor* pClientActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
@@ -4218,18 +4256,18 @@ void CGameRules::SendRadioMessage(const EntityId sourceId, const int msg)
 	}
 }
 
-void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)
+void CGameRules::OnRadioMessage(const SRadioMessageParams& params)
 {
 	//CryMP: Mute check
 	IVoiceContext* pVoiceContext = gEnv->pGame->GetIGameFramework()->GetNetContext()->GetVoiceContext();
-	const bool muted = pVoiceContext->IsMuted(m_pGameFramework->GetClientActorId(), sourceId);
+	const bool muted = pVoiceContext->IsMuted(m_pGameFramework->GetClientActorId(), params.sourceId);
 	if (muted)
 	{
 		return;
 	}
 
 	//CryLog("[radio] from: %s message: %d",,msg);
-	m_pRadio->OnRadioMessage(msg, sourceId);
+	m_pRadio->OnRadioMessage(params);
 }
 
 void CGameRules::RadioMessageParams::SerializeWith(TSerialize ser)
