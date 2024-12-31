@@ -4289,7 +4289,7 @@ void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
 			int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, 1);
 			if (nHits > 0) {
 				char message[100];
-				sprintf(message, "\n1%d,%9.3f,%9.3f,%9.3f", type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+				sprintf(message, "\n%c%d,%.3f,%.3f,%.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
 				SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
 			}
 		}
