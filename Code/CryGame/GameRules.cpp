@@ -92,13 +92,12 @@ CGameRules::~CGameRules()
 	}
 	g_pGame->DestroyHUD();
 
+	g_pGame->GetWeatherSystem()->Reset(false);
 	g_pGame->GetWeaponSystem()->GetTracerManager().Reset();
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(0);
 	if (m_pGameFramework->GetIViewSystem())
 		m_pGameFramework->GetIViewSystem()->RemoveListener(this);
 	GetGameObject()->ReleaseActions(this);
-
-	g_pGame->GetWeatherSystem()->Reset();
 
 	delete m_pShotValidator;
 	delete m_pRadio;

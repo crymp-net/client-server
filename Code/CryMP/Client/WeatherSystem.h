@@ -12,7 +12,7 @@ class CWeatherSystem {
 public:
 	CWeatherSystem();
 	void Update(float frameTime);
-	void Reset();
+	void Reset(bool deapply = true);
 
 	bool IsFrozen() const;
 	bool IsWet() const;

@@ -130,6 +130,7 @@ CGame::~CGame()
 	SAFE_DELETE(m_pHUD);
 	SAFE_DELETE(m_pSPAnalyst);
 	m_pWeaponSystem->Release();
+	m_pWeatherSystem->Reset();
 	SAFE_DELETE(m_pItemStrings);
 	SAFE_DELETE(m_pItemSharedParamsList);
 	SAFE_DELETE(m_pCVars);

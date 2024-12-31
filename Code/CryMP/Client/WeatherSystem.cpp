@@ -13,28 +13,6 @@
 
 #include "WeatherSystem.h"
 
-static bool                          currently_enabled = false;
-static std::map<int, float[3]>       original_weather_values;
-static std::optional<Vec3>           original_wind;
-static std::string                   original_map_name;
-static std::map<int, IStatInstGroup> original_groups;
-
-static std::map<int, string>    active_values;
-static std::set<std::string>    active_effects;
-static std::optional<unsigned>  active_mask;
-
-static constexpr std::array<EERType, 3> static_entities = {
-	eERType_Brush,
-	eERType_RoadObject_NEW,
-	eERType_Rope
-};
-
-static const int WEATHER_NAMESPACE		= 2000;
-static const int WEATHER_ENV_NAMESPACE  = 2100;
-
-static std::string GetFrozenGrassName(std::string_view path);
-static std::string GetNormalGrassName(std::string_view path);
-
 enum EWeatherVars {
 	WEATHER_ENABLED,
 	WEATHER_WIND,
@@ -43,34 +21,68 @@ enum EWeatherVars {
 	WEATHER_VAR_COUNT
 };
 
+struct SEffectInfo {
+	std::string effect;
+	float scale = 1.0f;
+	unsigned instances = 1;
+	Vec3 dir = Vec3(0.0f, 0.0f, 1.0f);
+	Vec3 pos = Vec3(512.0f, 512.0f, 64.0f);
+};
+
+static bool                          currently_enabled = false;
+static std::map<int, float[3]>       original_weather_values;
+static std::optional<Vec3>           original_wind;
+static std::map<int, IStatInstGroup> original_groups;
+
+static std::map<int, string>                                 active_values;
+static std::set<std::string>                                 active_effects;
+static std::optional<unsigned>                               active_mask;
+static std::map<std::string, std::vector<IParticleEmitter*>> active_emmiters;
+
+static constexpr std::array<EERType, 1> static_entities = {
+	eERType_Brush,
+};
+
+static const int WEATHER_NAMESPACE		= 2000;
+static const int WEATHER_ENV_NAMESPACE  = 2100;
+
+static std::string GetFrozenGrassName(std::string_view path);
+static std::string GetNormalGrassName(std::string_view path);
+static SEffectInfo GetEffectInfo(std::string_view effect);
+
 CWeatherSystem::CWeatherSystem() {
 	original_weather_values.clear();
 	m_time = 0;
 	m_lastUpdate = -1000.0f;
 }
 
-void CWeatherSystem::Reset() {
+void CWeatherSystem::Reset(bool deapply) {
 	RestoreWeather(true);
-	if (original_wind) {
-		gEnv->p3DEngine->SetWind(*original_wind);
-	}
 
-	for (auto& k : active_effects) {
-		if (k[0] == '-') SpawnEffect(k.c_str() + 1);
-		else RemoveEffect(k.c_str());
-	}
+	if (deapply) {
+		if (original_wind) {
+			gEnv->p3DEngine->SetWind(*original_wind);
+		}
 
-	if (active_mask) {
-		RemoveLayer(*active_mask);
-		active_mask.reset();
+		if (active_mask) {
+			RemoveLayer(*active_mask);
+		}
+
+		for (auto& k : active_effects) {
+			if (k[0] == '-') SpawnEffect(k.c_str() + 1);
+			else RemoveEffect(k.c_str());
+		}
 	}
 	
 	currently_enabled = false;
+	original_groups.clear();
 	original_weather_values.clear();
 	original_wind.reset();
-	original_groups.clear();
+
 	active_effects.clear();
+	active_emmiters.clear();
 	active_values.clear();
+	active_mask.reset();
 }
 
 void CWeatherSystem::Update(float frameTime) {
@@ -102,19 +114,17 @@ void CWeatherSystem::Update(float frameTime) {
 				auto existing = active_values.find(WEATHER_ENV_NAMESPACE + i);
 				if (pSSS->GetGlobalValue(WEATHER_ENV_NAMESPACE + i, value) && value.length() > 0) {
 					if (existing == active_values.end() || existing->second != value) {
+						float x, y, z;
 						if (value[0] >= 'a' && value[0] <= 'z') {
-							if (value[0] == 'i') {
-								SetWeatherVariable(i, atof(value.c_str() + 1), true);
-							} else if (value[0] == 'r') {
-								SetWeatherVariable(i, atof(value.c_str() + 1), false);
-							} else if (value[0] == 'v') {
-								float x, y, z;
-								if (sscanf(value.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
-									SetWeatherVariable(i, x, y, z, false);
-								}
+							if (value[0] == 'i' && sscanf(value.c_str() + 1, "%f", &x) == 1) {
+								SetWeatherVariable(i, x, true);
+							} else if (value[0] == 'r' && sscanf(value.c_str() + 1, "%f", &x) == 1) {
+								SetWeatherVariable(i, x, false);
+							} else if (value[0] == 'v' && sscanf(value.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
+								SetWeatherVariable(i, x, y, z, false);
 							}
-						} else {
-							SetWeatherVariable(i, atof(value.c_str()), true);
+						} else if(sscanf(value.c_str(), "%f", &x) == 1){
+							SetWeatherVariable(i, x, true);
 						}
 						active_values[WEATHER_ENV_NAMESPACE + i] = value;
 						changed++;
@@ -127,40 +137,41 @@ void CWeatherSystem::Update(float frameTime) {
 					}
 				}
 			}
-			for (int i = WEATHER_ENABLED + 1; i < WEATHER_VAR_COUNT; i++) {
-				string value;
-				float f3[3];
-				auto existing = active_values.find(WEATHER_NAMESPACE + i);
-				if (pSSS->GetGlobalValue(WEATHER_NAMESPACE + i, value)) {
-					if (existing == active_values.end() || existing->second != value) {
-						switch (i) {
-						case WEATHER_WIND:
-							if (value[0] == 'v' && sscanf(value.c_str() + 1, "%f,%f,%f", f3 + 0, f3 + 1, f3 + 2) == 3) {
-								if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
-								gEnv->p3DEngine->SetWind(Vec3(f3[0], f3[1], f3[2]));
-							} else if (sscanf(value.c_str(), "%f", f3 + 0) == 1) {
-								if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
-								gEnv->p3DEngine->SetWind((*original_wind) * f3[0]);
-							} else {
-								if (original_wind) gEnv->p3DEngine->SetWind(*original_wind);
-							}
-							break;
-						case WEATHER_FX:
-							SyncEffects(value.c_str());
-							break;
-						case WEATHER_LAYERS:
-							SyncLayers(value.c_str());
-							break;
-						}
-						if (existing != active_values.end() && value.length() == 0) {
-							active_values.erase(existing);
-						}
-						changed++;
-					}
-				}
-			}
 			if (changed > 0) {
 				pTOD->Update();
+			}
+			for (int i = WEATHER_ENABLED + 1; i < WEATHER_VAR_COUNT; i++) {
+				float f3[3];
+				string value;
+				auto existing = active_values.find(WEATHER_NAMESPACE + i);
+				pSSS->GetGlobalValue(WEATHER_NAMESPACE + i, value);
+				if (existing == active_values.end() || existing->second != value) {
+					switch (i) {
+					case WEATHER_WIND:
+						if (value.length() > 0 && value[0] == 'v' && sscanf(value.c_str() + 1, "%f,%f,%f", f3 + 0, f3 + 1, f3 + 2) == 3) {
+							if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
+							gEnv->p3DEngine->SetWind(Vec3(f3[0], f3[1], f3[2]));
+						} else if (value.length() > 0 && sscanf(value.c_str(), "%f", f3 + 0) == 1) {
+							if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
+							gEnv->p3DEngine->SetWind((*original_wind) * f3[0]);
+						} else {
+							if (original_wind) {
+								gEnv->p3DEngine->SetWind(*original_wind);
+								original_wind.reset();
+							}
+						}
+						break;
+					case WEATHER_FX:
+						SyncEffects(value.c_str());
+						break;
+					case WEATHER_LAYERS:
+						SyncLayers(value.c_str());
+						break;
+					}
+					if (existing != active_values.end() && value.length() == 0) {
+						active_values.erase(existing);
+					}
+				}
 			}
 		}
 		m_lastUpdate = m_time;
@@ -351,23 +362,51 @@ void CWeatherSystem::SyncEffects(const char* effects) {
 }
 
 void CWeatherSystem::SpawnEffect(const char *eff) {
-	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(eff, "", "Particle.SpawnEffect");
-	if (pEffect)
-	{
-		float scale = 1.0f;
-		ScriptHandle entityId(0);
-		int partId = 0;
+	std::string effect_name{ eff };
+	SEffectInfo info = GetEffectInfo(eff);
 
-		pEffect->SetEnabled(true);
-		pEffect->Spawn(true, IParticleEffect::ParticleLoc(Vec3(512.0f, 512.0f, 64.0f), Vec3(0.0f, 0.0f, 1.0f), scale));
+	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(info.effect.c_str(), "", "Particle.SpawnEffect");
+	if (pEffect) {
+		auto emitters = active_emmiters.find(effect_name);
+		if (emitters != active_emmiters.end()) {
+			for (auto emitter : emitters->second) {
+				emitter->Activate(true);
+			}
+		}
+		else {
+			pEffect->SetEnabled(true);
+			Vec3& pos = info.pos;
+			pos.z = gEnv->p3DEngine->GetTerrainElevation(pos.x, pos.y);
+			for (unsigned i = 0; i < info.instances; i++) {
+				if (i > 0) {
+					pos.x += (((float)rand()) / RAND_MAX) * 4.0f - 2.0f;
+					pos.y += (((float)rand()) / RAND_MAX) * 4.0f - 2.0f;
+				}
+				IParticleEmitter* pEmitter = pEffect->Spawn(true, IParticleEffect::ParticleLoc(pos, info.dir, info.scale));
+				if (pEmitter) {
+					active_emmiters[effect_name].push_back(pEmitter);
+				}
+			}
+		}
 	}
 }
 
 void CWeatherSystem::RemoveEffect(const char *eff) {
-	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(eff, "", "Particle.SpawnEffect");
-	if (pEffect)
-	{
-		pEffect->SetEnabled(false);
+	std::string effect_name{ eff };
+	SEffectInfo info = GetEffectInfo(eff);
+
+	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(info.effect.c_str(), "", "Particle.SpawnEffect");
+	if (pEffect) {
+		auto emitters = active_emmiters.find(effect_name);
+		if (emitters != active_emmiters.end()) {
+			for (auto emitter : emitters->second) {
+				emitter->Activate(false);
+			}
+			active_emmiters.erase(emitters);
+		}
+		else {
+			pEffect->SetEnabled(false);
+		}
 	}
 }
 
@@ -411,18 +450,9 @@ void CWeatherSystem::ApplyLayer(unsigned layer) {
 		}
 	}
 
-	auto current_map_name = g_pGame->GetIGameFramework()->GetLevelName();
-	if (!current_map_name) {
-		original_groups.clear();
-		return;
-	} else if (current_map_name != original_map_name) {
-		original_map_name = current_map_name;
-		original_groups.clear();
-	}
 	for (int i = 0; i < 65536; i++) {
 		IStatInstGroup group;
 		if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
-			// ignore not a real groups
 			if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
 
 			std::string_view sv_name{ group.pStatObj->GetFilePath() };
@@ -438,8 +468,10 @@ void CWeatherSystem::ApplyLayer(unsigned layer) {
 				if (new_name != sv_name) {
 					group.nMaterialLayers = group.nMaterialLayers & (~MTL_LAYER_FROZEN);
 					strncpy(group.szFileName, new_name.c_str(), sizeof(group.szFileName) - 1);
-					group.pStatObj->SetFilePath(group.szFileName);
-					group.pStatObj->Refresh(FRO_GEOMETRY);
+					IStatObj* pClone = group.pStatObj->Clone();
+					pClone->SetFilePath(group.szFileName);
+					pClone->Refresh(FRO_GEOMETRY);
+					group.pStatObj = pClone;
 					group.pMaterial = NULL;
 				} else {
 					group.fBending = 0.0f;
@@ -462,37 +494,40 @@ void CWeatherSystem::RemoveLayer(unsigned layer) {
 		}
 	}
 
-	auto current_map_name = g_pGame->GetIGameFramework()->GetLevelName();
-	if (!current_map_name || original_map_name != current_map_name) {
-		original_groups.clear();
-	}
-	else {
-		for (int i = 0; i < 65536; i++) {
-			IStatInstGroup group;
-			if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
-				// ignore not a real groups
-				if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
+	for (int i = 0; i < 65536; i++) {
+		IStatInstGroup group;
+		if (gEnv->p3DEngine->GetStatInstGroup(i, group)) {
+			if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
 
-				std::string_view sv_name{ group.pStatObj->GetFilePath() };
-				auto original = original_groups.find(i);
-				if (original != original_groups.end()) {
-					group = original->second;
-				} else {
-					group.nMaterialLayers = group.nMaterialLayers & (~layer);
-				}
-
+			std::string_view sv_name{ group.pStatObj->GetFilePath() };
+			auto pStatBefore = group.pStatObj;
+			auto original = original_groups.find(i);
+			if (original != original_groups.end()) {
+				group = original->second;
+				original_groups.erase(original);
+			} else {
+				// this shouldn't ever happen, but just in case it occurs
+				// handle it by replacing original grasses back
+				group.nMaterialLayers = group.nMaterialLayers & (~layer);
 				if (layer & MTL_LAYER_FROZEN) {
 					auto new_name = GetNormalGrassName(sv_name);
 					if (new_name != sv_name) {
 						strncpy(group.szFileName, new_name.c_str(), sizeof(group.szFileName) - 1);
-						group.pStatObj->SetFilePath(group.szFileName);
-						group.pStatObj->Refresh(FRO_GEOMETRY);
+						IStatObj* pClone = group.pStatObj->Clone();
+						pClone->SetFilePath(group.szFileName);
+						pClone->Refresh(FRO_GEOMETRY);
+						group.pStatObj = pClone;
 					}
 				}
-
-				gEnv->p3DEngine->SetStatInstGroup(i, group);
-
 			}
+
+			if (pStatBefore != group.pStatObj) {
+				// if stat object changed (nicegrass handling), force bUseTerrainColor
+				group.bUseTerrainColor = true;
+			}
+
+			gEnv->p3DEngine->SetStatInstGroup(i, group);
+
 		}
 	}
 }
@@ -505,7 +540,9 @@ bool CWeatherSystem::IsFrozen() const {
 	return active_mask && ((*active_mask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
 }
 
-/// Utilities
+//------------------------------------------------------------------------
+// Utility functions
+//------------------------------------------------------------------------
 
 static std::string GetFrozenGrassName(std::string_view path) {
 	auto pos = path.rfind("/nicegrass");
@@ -554,4 +591,56 @@ static std::string GetNormalGrassName(std::string_view path) {
 		}
 	}
 	return std::string{ path };
+}
+
+static SEffectInfo GetEffectInfo(std::string_view effect) {
+	/*
+		Parse effect info from the following format "effect_name;key1=value1;key2=value2;key3=value3..."
+		Valid keys are:
+			x=123.45 (scale)
+			i=123 (instances)
+			p=123.45,123.45,123.45 (position)
+			d=123.45,123.45,123.45 (direction)
+	*/
+	auto pos = effect.find(";");
+	float x, y, z;
+	unsigned u = 1;
+	if (pos == std::string::npos) {
+		return SEffectInfo{
+			.effect = std::string{ effect }
+		};
+	}
+	else {
+		auto effect_name = effect.substr(0, pos);
+		auto tail = effect.substr(pos + 1);
+		SEffectInfo info{
+			.effect = std::string{ effect_name }
+		};
+		do {
+			pos = tail.find(";");
+			auto kv{ tail };
+			if (pos != std::string::npos) {
+				kv = kv.substr(0, pos);
+				tail = tail.substr(pos + 1);
+			}
+			auto eq = kv.find("=");
+			if (eq == std::string::npos) break;
+			auto key = kv.substr(0, eq);
+			std::string value{ kv.substr(eq + 1) };
+
+			if (key == "x" && sscanf(value.c_str(), "%f", &x) == 1) {
+				info.scale = x;
+			}
+			else if (key == "p" && sscanf(value.c_str(), "%f,%f,%f", &x, &y, &z) == 3) {
+				info.pos = Vec3(x, y, z);
+			}
+			else if (key == "d" && sscanf(value.c_str(), "%f,%f,%f", &x, &y, &z) == 3) {
+				info.dir = Vec3(x, y, z);
+			}
+			else if (key == "i" && sscanf(value.c_str(), "%u", &u) == 1) {
+				info.instances = u;
+			}
+		} while (pos != std::string::npos);
+		return info;
+	}
 }
