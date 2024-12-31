@@ -712,30 +712,6 @@ function InitializeClient()
 		end
 	end)
 
-	CPPAPI.AddCCommand("rsay", function(...)
-		local text = table.concat(arg, " ")
-
-		if g_gameRules then
-			local hits = {}
-			local player = g_localActor
-			local source = player.actor:GetHeadPos()
-			local dir = player.actor:GetHeadDir()
-			dir.x = dir.x * 8192
-			dir.y = dir.y * 8192
-			dir.z = dir.z * 8192
-			local n_hits = Physics.RayWorldIntersection(source, dir, 10, ent_all, player.id, nil, hits)
-			if n_hits > 0 then
-				local hit = hits[1]
-				local pos = hit.pos
-				g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, "\n" .. text .. "," .. string.format("%f,%f,%f", pos.x, pos.y, pos.z))
-			else
-				g_gameRules.game:SendChatMessage(ChatToTarget, g_localActor.id, g_localActor.id, "\n" .. text)
-			end
-		else
-			printf(RED .. "Chat is not available")
-		end
-	end)
-
 	CPPAPI.AddCCommand("0", RequestConsoleServerList)
 
 	ObtainStaticID()
