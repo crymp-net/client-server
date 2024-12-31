@@ -4279,19 +4279,30 @@ void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
 		SMovementState ms;
 		pMC->GetMovementState(ms);
 
-		Vec3 origin = ms.eyePosition;
-		Vec3 dir = ms.eyeDirection * 2000.0f;
+		Vec3 origin = gEnv->pRenderer->GetCamera().GetPosition();
+		Vec3 cameraDir = gEnv->pRenderer->GetCamera().GetViewdir();
+
+		Vec3 dir = cameraDir * 2000.0f;
 
 		ray_hit rayhit;
-		pSkipEnts[0] = pActorEntity->GetPhysics();
+		int nSkipEnts = 0;
+		pSkipEnts[nSkipEnts] = pActorEntity->GetPhysics();
+		if (pSkipEnts[nSkipEnts]) nSkipEnts++;
 
-		if (pSkipEnts[0] != NULL) {
-			int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, 1);
-			if (nHits > 0) {
-				char message[100];
-				sprintf(message, "\n%c%d,%.3f,%.3f,%.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
-				SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
+		// if player is on vehicle, exclude the vehicle from raycast as well
+		if (pPlayer->GetLinkedVehicle()) {
+			IEntity* pVehEntity = pPlayer->GetLinkedVehicle()->GetEntity();
+			if (pVehEntity) {
+				pSkipEnts[nSkipEnts] = pVehEntity->GetPhysics();
+				if (pSkipEnts[nSkipEnts]) nSkipEnts++;
 			}
+		}
+
+		int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkipEnts);
+		if (nHits > 0) {
+			char message[100];
+			sprintf(message, "\n%c%d,%.3f,%.3f,%.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+			SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
 		}
 	}
 }
