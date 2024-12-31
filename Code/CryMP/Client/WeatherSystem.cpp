@@ -1,29 +1,17 @@
-#include "WeatherSystem.h"
-#include "CryCommon/CrySystem/ISystem.h"
-#include "CryCommon/CrySystem/ICryPak.h"
-#include "CryCommon/CrySystem/IConsole.h"
-#include "CryCommon/Cry3DEngine/IMaterial.h"
-#include "CryCommon/CryEntitySystem/IEntitySystem.h"
-#include "CryCommon/CryAction/IVehicleSystem.h"
-#include "CryCommon/CryAction/IGameTokens.h"
-#include "CryCommon/CryMath/Cry_Camera.h"
-#include "CryCommon/CrySystem/ILog.h"
-#include "CrySystem/LocalizationManager.h"
-#include "CrySystem/RandomGenerator.h"
-#include "Library/StringTools.h"
-#include "Library/Util.h"
-#include "Library/WinAPI.h"
-
-#include "ScriptBind_CPPAPI.h"
-#include "Client.h"
-#include "ScriptCommands.h"
-#include "ScriptCallbacks.h"
-#include "DrawTools.h"
-#include "CryGame/GameActions.h"
-#include "CryGame/Actors/Actor.h"
-#include "CryGame/GameRules.h"
-
+#include <array>
 #include <map>
+#include <set>
+#include <string>
+#include <string_view>
+#include <sstream>
+#include <vector>
+
+#include "CryCommon/CrySystem/ISystem.h"
+#include "CryCommon/Cry3DEngine/I3DEngine.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
+#include "CryGame/Game.h"
+
+#include "WeatherSystem.h"
 
 static bool                          currently_enabled = false;
 static std::map<int, float[3]>       original_weather_values;
