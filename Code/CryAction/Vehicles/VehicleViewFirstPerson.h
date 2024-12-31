@@ -22,55 +22,69 @@ class CVehicleViewFirstPerson
 	IMPLEMENT_VEHICLEOBJECT;
 public:
 
-  CVehicleViewFirstPerson();
-  ~CVehicleViewFirstPerson() {}
+	CVehicleViewFirstPerson();
+	~CVehicleViewFirstPerson() {}
 
 	// IVehicleView
-	virtual bool Init(CVehicleSeat* pSeat, const CVehicleParams& table);
-  virtual void Reset();
+	virtual bool Init(CVehicleSeat* pSeat, const CVehicleParams& table) override;
+	virtual void Reset() override;
 
-	virtual const char* GetName() { return m_name; }
-	virtual bool IsThirdPerson() { return false; }
+	virtual const char* GetName() override { return m_name; }
+	virtual bool IsThirdPerson() override { return false; }
 
-  virtual void OnStartUsing(EntityId playerId);
-  virtual void OnStopUsing();  
-  
-	virtual void Update(const float frameTime);
-	virtual void UpdateView(SViewParams &viewParams, EntityId playerId = 0);
+	virtual void OnStartUsing(EntityId playerId) override;
+	virtual void OnStopUsing() override;
 
-	void GetMemoryStatistics(ICrySizer * s);
+	virtual void Update(const float frameTime) override;
+	virtual void UpdateView(SViewParams& viewParams, EntityId playerId = 0) override;
+
+	void GetMemoryStatistics(ICrySizer* s) override;
 	// ~IVehicleView
 
 	// IVehicleEventListener
-	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params);
+	virtual void OnVehicleEvent(EVehicleEvent event, const SVehicleEventParams& params) override;
 	// ~IVehicleEventListener
 
 protected:
 
-	Vec3 GetWorldPosGoal();
-	Quat GetWorldRotGoal();
-	Quat GetVehicleRotGoal();
+	struct OpacitySettings
+	{
+		std::string name;
+		float defaultOpacity = 0.0f;
+		float opacity = 0.0f;
+	};
 
-  void HideEntitySlots(IEntity* pEnt, bool hide);
+	Vec3 GetWorldPosGoal() const;
+	Quat GetWorldRotGoal() const;
+	Quat GetVehicleRotGoal() const;
+
+	void HideEntity(IEntity* pEntity, bool hide);
+	void SetSubMtlOpacity(IMaterial* pSubMtl, float opacity);
+	bool GetOpacitySettings(OpacitySettings& settings);
+
+	void HideEntitySlots(IEntity* pEnt, bool hide);
 
 	static const char* m_name;
-	
-  IVehicleHelper* m_pHelper;
-	Vec3 m_offset;  
-  float m_relToHorizon;
-  bool m_hideVehicle; 
-  int m_frameSlot;
 
-  typedef std::multimap<EntityId, int> TSlots;
-  TSlots m_slotFlags;
-  
-	Vec3 m_viewPosition;
-	Quat m_viewRotation;
+	IVehicleHelper* m_pHelper = nullptr;
+	Vec3 m_offset = Vec3(ZERO);
+	float m_relToHorizon = 0.0f;
+	bool m_hideVehicle = false;
+	int m_frameSlot = 0;
 
-	float m_speedPos;
-	float m_speedRot;
+	using TSlots = std::multimap<EntityId, int>;
+	TSlots m_slotFlags;
 
-	EntityId m_passengerId;  
+	Vec3 m_viewPosition = Vec3(ZERO);
+	Quat m_viewRotation = Quat(IDENTITY);
+
+	float m_speedPos = 0.0f;
+	float m_speedRot = 0.0f;
+
+	EntityId m_passengerId = 0;
+
+	std::vector<OpacitySettings> m_opacitySettings;
+
 };
 
 #endif

@@ -21,7 +21,6 @@ History:
 #include "VehicleViewFirstPerson.h"
 #include "VehicleSeat.h"
 
-
 const char* CVehicleViewFirstPerson::m_name = "FirstPerson";
 
 //------------------------------------------------------------------------
@@ -94,16 +93,65 @@ bool CVehicleViewFirstPerson::Init(CVehicleSeat* pSeat, const CVehicleParams& ta
 					m_pVehicle->GetEntity()->SetSlotLocalTM(m_frameSlot, m_pHelper->GetVehicleTM());
 			}
 		}
+
+		// CryMP: Locate the <InteriorParts> node within this <View>
+		CVehicleParams interiorPartsTable = table.findChild("InteriorParts");
+		if (interiorPartsTable)
+		{
+			IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(m_pVehicle->GetEntity()->GetProxy(ENTITY_PROXY_RENDER));
+			if (pRenderProxy)
+			{
+				IMaterial* pMtl = pRenderProxy->GetRenderMaterial(0);
+				if (pMtl)
+				{
+					int childCount = interiorPartsTable.getChildCount();
+					for (int i = 0; i < childCount; ++i)
+					{
+						CVehicleParams interiorPart = interiorPartsTable.getChild(i);
+						float opacity = 1.0f;
+
+						interiorPart.getAttr("opacity", opacity);
+
+						if (const char* name = interiorPart.getAttr("name"))
+						{
+							for (int i = 0; i < pMtl->GetSubMtlCount(); ++i)
+							{
+								IMaterial* pSubMtl = pMtl->GetSubMtl(i);
+								if (pSubMtl && (string(pSubMtl->GetName()).MakeLower() == string(name).MakeLower()))
+								{
+									float defaultOpacity = 1.0f;
+									pSubMtl->SetGetMaterialParamFloat("opacity", defaultOpacity, true);
+
+									OpacitySettings settings;
+									settings.name = pSubMtl->GetName();
+									settings.defaultOpacity = defaultOpacity;
+									settings.opacity = opacity;
+
+									m_opacitySettings.push_back(settings);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+
 	}
 
 	if (m_hideVehicle)
+	{
 		m_hidePlayer = true;
+	}
 
 	m_speedRot = 4.0f;
 	m_speedPos = 60.0f;
 
 	if (pSeat->GetAimPart())
+	{
 		m_speedPos *= 2.0f;
+	}
 
 	if (IVehicleMovement* pMovement = m_pVehicle->GetMovement())
 	{
@@ -125,7 +173,9 @@ void CVehicleViewFirstPerson::Reset()
 	CVehicleViewBase::Reset();
 
 	if (m_hideVehicle)
-		HideEntitySlots(m_pVehicle->GetEntity(), false);
+	{
+		HideEntity(m_pVehicle->GetEntity(), false);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -136,7 +186,7 @@ void CVehicleViewFirstPerson::OnStartUsing(EntityId passengerId)
 	if (m_hideVehicle)
 	{
 		m_slotFlags.clear();
-		HideEntitySlots(m_pVehicle->GetEntity(), true);
+		HideEntity(m_pVehicle->GetEntity(), true);
 	}
 
 	if (m_frameSlot != -1)
@@ -179,7 +229,9 @@ void CVehicleViewFirstPerson::OnStopUsing()
 	m_pVehicle->UnregisterVehicleEventListener(this);
 
 	if (m_hideVehicle)
-		HideEntitySlots(m_pVehicle->GetEntity(), false);
+	{
+		HideEntity(m_pVehicle->GetEntity(), false);
+	}
 
 	if (m_hidePlayer)
 	{
@@ -262,7 +314,7 @@ void CVehicleViewFirstPerson::UpdateView(SViewParams& viewParams, EntityId playe
 }
 
 //------------------------------------------------------------------------
-Vec3 CVehicleViewFirstPerson::GetWorldPosGoal()
+Vec3 CVehicleViewFirstPerson::GetWorldPosGoal() const
 {
 	Vec3 vehiclePos;
 	Quat vehicleRot;
@@ -275,7 +327,6 @@ Vec3 CVehicleViewFirstPerson::GetWorldPosGoal()
 	else
 	{
 		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
-		assert(pActor);
 
 		IEntity* pEntity = pActor->GetEntity();
 
@@ -292,7 +343,7 @@ Vec3 CVehicleViewFirstPerson::GetWorldPosGoal()
 }
 
 //------------------------------------------------------------------------
-Quat CVehicleViewFirstPerson::GetWorldRotGoal()
+Quat CVehicleViewFirstPerson::GetWorldRotGoal() const
 {
 	// now get fitting vehicle world pos/rot
 	Quat vehicleWorldRot = m_pVehicle->GetEntity()->GetWorldRotation();
@@ -317,7 +368,7 @@ Quat CVehicleViewFirstPerson::GetWorldRotGoal()
 }
 
 //------------------------------------------------------------------------
-Quat CVehicleViewFirstPerson::GetVehicleRotGoal()
+Quat CVehicleViewFirstPerson::GetVehicleRotGoal() const
 {
 	Quat vehicleRot;
 
@@ -329,8 +380,6 @@ Quat CVehicleViewFirstPerson::GetVehicleRotGoal()
 	else
 	{
 		IActor* pActor = gEnv->pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_passengerId);
-		assert(pActor);
-
 		if (pActor)
 		{
 			IEntity* pEntity = pActor->GetEntity();
@@ -342,10 +391,67 @@ Quat CVehicleViewFirstPerson::GetVehicleRotGoal()
 }
 
 //------------------------------------------------------------------------
+void CVehicleViewFirstPerson::HideEntity(IEntity *pEntity, bool hide) //CryMP
+{
+	if (m_opacitySettings.size())
+	{
+		IEntityRenderProxy* pRenderProxy = static_cast<IEntityRenderProxy*>(pEntity->GetProxy(ENTITY_PROXY_RENDER));
+		if (pRenderProxy)
+		{
+			IMaterial* pMtl = pRenderProxy->GetRenderMaterial(0);
+			if (pMtl)
+			{
+				for (int i = 0; i < pMtl->GetSubMtlCount(); ++i)
+				{
+					IMaterial* pSubMtl = pMtl->GetSubMtl(i);
+					if (pSubMtl)
+					{
+						OpacitySettings settings;
+						settings.name = pSubMtl->GetName();
+						if (GetOpacitySettings(settings))
+						{
+							const float opacity = hide ? settings.opacity : settings.defaultOpacity;
+							SetSubMtlOpacity(pSubMtl, opacity);
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		HideEntitySlots(pEntity, hide);
+	}
+}
+
+//------------------------------------------------------------------------
+void CVehicleViewFirstPerson::SetSubMtlOpacity(IMaterial* pSubMtl, float opacity)
+{
+	if (!pSubMtl)
+	{
+		return;
+	}
+	pSubMtl->SetGetMaterialParamFloat("opacity", opacity, false);
+}
+
+//------------------------------------------------------------------------
+bool CVehicleViewFirstPerson::GetOpacitySettings(OpacitySettings &settings)
+{
+	for (const auto& data : m_opacitySettings)
+	{
+		if (data.name == settings.name)
+		{
+			settings = data;
+			return true;
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CVehicleViewFirstPerson::HideEntitySlots(IEntity* pEnt, bool hide)
 {
 	IActorSystem* pActorSystem = gEnv->pGame->GetIGameFramework()->GetIActorSystem();
-	assert(pActorSystem);
 
 	if (hide)
 	{
@@ -361,7 +467,9 @@ void CVehicleViewFirstPerson::HideEntitySlots(IEntity* pEnt, bool hide)
 						pCharInstance->SetFlags(pCharInstance->GetFlags() | CS_FLAG_UPDATE_ALWAYS);
 
 						if (ISkeletonPose* pSkeletonPose = pCharInstance->GetISkeletonPose())
+						{
 							pSkeletonPose->SetForceSkeletonUpdate(10);
+						}
 					}
 				}
 
