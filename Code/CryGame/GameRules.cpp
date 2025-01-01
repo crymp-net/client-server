@@ -769,7 +769,7 @@ void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityI
 			// radio over chat
 			int id;
 			float x, y, z;
-			if (sscanf(payload.c_str(), "%d,%f,%f,%f", &id, &x, &y, &z) == 4) {
+			if (type == eChatToTeam && sscanf(payload.c_str(), "%d %f %f %f", &id, &x, &y, &z) == 4) {
 				valid = true;
 				OnRadioMessage(SRadioMessageParams{
 					.id = id,
@@ -777,7 +777,7 @@ void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityI
 					.pos = Vec3(x, y, z)
 				});
 			}
-			else if (sscanf(payload.c_str(), "%d", &id) == 1) {
+			else if (type == eChatToTeam && sscanf(payload.c_str(), "%d", &id) == 1) {
 				valid = true;
 				OnRadioMessage(SRadioMessageParams{
 					.id = id,
@@ -4301,7 +4301,7 @@ void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
 		int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkipEnts);
 		if (nHits > 0) {
 			char message[100];
-			sprintf(message, "\n%c%d,%.3f,%.3f,%.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+			sprintf(message, "\n%c%d %.3f %.3f %.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
 			SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
 		}
 	}
