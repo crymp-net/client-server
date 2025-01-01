@@ -29,54 +29,54 @@ History:
 #define DEFAULT_VEC3 Vec3(0)
 
 //------------------------------------------------------------------------
-CVehiclePartLight::CVehiclePartLight() 
-{  
-  m_typeId = eVPT_Light;
-  m_pMaterial = 0;
-  m_pHelper = 0;
+CVehiclePartLight::CVehiclePartLight()
+{
+	m_typeId = eVPT_Light;
+	m_pMaterial = 0;
+	m_pHelper = 0;
 
-  m_diffuseMult[0] = m_diffuseMult[1] = 1.f;
-  m_diffuseCol.Set(1,1,1);
-  m_enabled = false;
+	m_diffuseMult[0] = m_diffuseMult[1] = 1.f;
+	m_diffuseCol.Set(1, 1, 1);
+	m_enabled = false;
 }
 
 //------------------------------------------------------------------------
 CVehiclePartLight::~CVehiclePartLight()
 {
-  ToggleLight(false);
+	ToggleLight(false);
 }
 
 //------------------------------------------------------------------------
 bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo)
 {
 	if (!CVehiclePartBase::Init(pVehicle, table, parent, initInfo))
-	  return false;
+		return false;
 
-  Vec3 specularCol(1.f, 1.f, 1.f);
-  float specularMul = 1.0f;
-  
-  const char* texture = "";
-    
-  m_light.m_nLightStyle = 0;
-  m_light.m_Origin.Set(0.0f, 0.0f, 0.0f);  
-  m_light.m_fRadius = 5.0f;  
-  m_light.m_fCoronaScale = 1.0f;
-  m_light.m_fCoronaDistIntensityFactor = 1.0f;
-  m_light.m_fCoronaDistSizeFactor = 1.0f;
-  m_light.m_NumCM = -1;
-  m_light.m_AreaLightType = DLAT_POINT;
-  m_light.m_nAreaSampleNumber = 1;
+	Vec3 specularCol(1.f, 1.f, 1.f);
+	float specularMul = 1.0f;
+
+	const char* texture = "";
+
+	m_light.m_nLightStyle = 0;
+	m_light.m_Origin.Set(0.0f, 0.0f, 0.0f);
+	m_light.m_fRadius = 5.0f;
+	m_light.m_fCoronaScale = 1.0f;
+	m_light.m_fCoronaDistIntensityFactor = 1.0f;
+	m_light.m_fCoronaDistSizeFactor = 1.0f;
+	m_light.m_NumCM = -1;
+	m_light.m_AreaLightType = DLAT_POINT;
+	m_light.m_nAreaSampleNumber = 1;
 	m_light.m_nEntityId = m_pVehicle->GetEntityId();
 
-  m_light.m_Flags |= DLF_LIGHTSOURCE;  
+	m_light.m_Flags |= DLF_LIGHTSOURCE;
 	//m_light.m_Flags |= DLF_DEFERRED_LIGHT;
   //m_light.m_Flags |= DLF_THIS_AREA_ONLY;
-  m_light.m_Flags &= ~DLF_DISABLED; 
+	m_light.m_Flags &= ~DLF_DISABLED;
 
 	XmlNodeRef defaultDataRef;
 
-  if (CVehicleParams lightTable = table.findChild("Light"))
-  {
+	if (CVehicleParams lightTable = table.findChild("Light"))
+	{
 		const char* pType = lightTable.getAttr("type");
 		m_lightType = pType;
 
@@ -99,7 +99,7 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 						{
 							lightDefault = tableRef;
 							break;
-						}        
+						}
 					}
 				}
 			}
@@ -135,26 +135,26 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 	lightTable.getAttr(name, var); \
 
 		// read table and overwrite non-default values
-		const char* tex = ""; 
+		const char* tex = "";
 		GET_LIGHT_VALUE_STRING("texture", tex);
 		if (tex[0]) texture = tex;
 
-		const char* mat = ""; 
+		const char* mat = "";
 		GET_LIGHT_VALUE_STRING("material", mat);
 		if (mat[0]) m_pMaterial = gEnv->p3DEngine->GetMaterialManager()->LoadMaterial(mat);
 
-		GET_LIGHT_VALUE_DEF_FLOAT("radius", m_light.m_fRadius);    
-		GET_LIGHT_VALUE_DEF_VEC3 ("diffuse", m_diffuseCol);            
+		GET_LIGHT_VALUE_DEF_FLOAT("radius", m_light.m_fRadius);
+		GET_LIGHT_VALUE_DEF_VEC3("diffuse", m_diffuseCol);
 		GET_LIGHT_VALUE_DEF_FLOAT("diffuseMult", m_diffuseMult[1]);
 		m_diffuseMult[0] = m_diffuseMult[1];
-		GET_LIGHT_VALUE_DEF_FLOAT("diffuseMult_fp", m_diffuseMult[0]);    
-		GET_LIGHT_VALUE_DEF_VEC3 ("specular", specularCol);
+		GET_LIGHT_VALUE_DEF_FLOAT("diffuseMult_fp", m_diffuseMult[0]);
+		GET_LIGHT_VALUE_DEF_VEC3("specular", specularCol);
 		GET_LIGHT_VALUE_DEF_FLOAT("specularMult", specularMul);
 		GET_LIGHT_VALUE_DEF_FLOAT("coronaDistIntensity", m_light.m_fCoronaDistIntensityFactor);
 		GET_LIGHT_VALUE_DEF_FLOAT("coronaDistSize", m_light.m_fCoronaDistSizeFactor);
 		GET_LIGHT_VALUE_DEF_FLOAT("coronaScale", m_light.m_fCoronaScale);
-		GET_LIGHT_VALUE_DEF_INT  ("style", m_light.m_nLightStyle);
-		GET_LIGHT_VALUE_DEF_FLOAT("frustumAngle", m_light.m_fLightFrustumAngle); 
+		GET_LIGHT_VALUE_DEF_INT("style", m_light.m_nLightStyle);
+		GET_LIGHT_VALUE_DEF_FLOAT("frustumAngle", m_light.m_fLightFrustumAngle);
 
 		//CryMP: Fakelight support
 		bool fakeLight = false;
@@ -164,10 +164,10 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 		{
 			m_light.m_Flags |= DLF_FAKE;
 		}
-  }
-  
-  m_light.SetLightColor(ColorF(m_diffuseCol*m_diffuseMult[1], 1.f));
-  m_light.m_SpecMult = specularMul / m_diffuseMult[1];
+	}
+
+	m_light.SetLightColor(ColorF(m_diffuseCol * m_diffuseMult[1], 1.f));
+	m_light.m_SpecMult = specularMul / m_diffuseMult[1];
 
 	if (texture[0])
 	{
@@ -175,21 +175,21 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 		m_light.m_pLightImage = gEnv->pRenderer->EF_LoadTexture(texture, flags, 0);
 	}
 
-  if (m_light.m_fLightFrustumAngle && m_light.m_pLightImage && m_light.m_pLightImage->IsTextureLoaded())
+	if (m_light.m_fLightFrustumAngle && m_light.m_pLightImage && m_light.m_pLightImage->IsTextureLoaded())
 	{
 		m_light.m_Flags |= DLF_PROJECT;
-  }
-  else
-  {
-    if (m_light.m_pLightImage)
-    {
-      m_light.m_pLightImage->Release();
-      m_light.m_pLightImage = 0;
-    }
-    m_light.m_Flags |= DLF_POINT;
-  }
-  
-  m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_Visible);
+	}
+	else
+	{
+		if (m_light.m_pLightImage)
+		{
+			m_light.m_pLightImage->Release();
+			m_light.m_pLightImage = 0;
+		}
+		m_light.m_Flags |= DLF_POINT;
+	}
+
+	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_Visible);
 	return true;
 }
 
@@ -197,90 +197,90 @@ bool CVehiclePartLight::Init(IVehicle* pVehicle, const CVehicleParams& table, IV
 //------------------------------------------------------------------------
 void CVehiclePartLight::PostInit()
 {
-  m_pHelper = m_pVehicle->GetHelper(m_helperPosName.c_str());
+	m_pHelper = m_pVehicle->GetHelper(m_helperPosName.c_str());
 
-  // get Components this Part belongs to. 
-  // currently that's only needed for Lights. 
-  for (int i=0,nComps=m_pVehicle->GetComponentCount(); i<nComps; ++i)
-  {    
-    IVehicleComponent* pComponent = m_pVehicle->GetComponent(i);      
-    
-    for (int j=0,nParts=pComponent->GetPartCount(); j<nParts; ++j)
-    {
-      if (pComponent->GetPart(j) == this)
-      {
-        m_components.push_back(pComponent);
-        break;
-      }
-    }
-  }
-  
-  if (VehicleCVars().v_lights_enable_always)
-    ToggleLight(true);
+	// get Components this Part belongs to. 
+	// currently that's only needed for Lights. 
+	for (int i = 0, nComps = m_pVehicle->GetComponentCount(); i < nComps; ++i)
+	{
+		IVehicleComponent* pComponent = m_pVehicle->GetComponent(i);
+
+		for (int j = 0, nParts = pComponent->GetPartCount(); j < nParts; ++j)
+		{
+			if (pComponent->GetPart(j) == this)
+			{
+				m_components.push_back(pComponent);
+				break;
+			}
+		}
+	}
+
+	if (VehicleCVars().v_lights_enable_always)
+		ToggleLight(true);
 }
 
 //------------------------------------------------------------------------
 void CVehiclePartLight::Reset()
 {
 	CVehiclePartBase::Reset();
-	
-  ToggleLight(false);  
+
+	ToggleLight(false);
 }
 
 
 //------------------------------------------------------------------------
 void CVehiclePartLight::OnEvent(const SVehiclePartEvent& event)
 {
-  if (event.type == eVPE_Damaged)
+	if (event.type == eVPE_Damaged)
 	{
-    if (event.fparam >= 1.0f)
-    { 
-      float dmg = 1.f / max(1.f,(float)m_components.size());
-      m_damageRatio += dmg;
-		  
-      if (m_damageRatio >= 1.f && IsEnabled())
-			  ToggleLight(false);
-    }
+		if (event.fparam >= 1.0f)
+		{
+			float dmg = 1.f / max(1.f, (float)m_components.size());
+			m_damageRatio += dmg;
+
+			if (m_damageRatio >= 1.f && IsEnabled())
+				ToggleLight(false);
+		}
 	}
-  else
-  {
-	  CVehiclePartBase::OnEvent(event);
-  }
+	else
+	{
+		CVehiclePartBase::OnEvent(event);
+	}
 }
 
 //------------------------------------------------------------------------
 void CVehiclePartLight::ToggleLight(bool enable)
 {
 	if (enable && !IsEnabled())
-  {
-    // 0: no lights at all (only intended for debugging etc.)
-    // 1: lights only enabled for the local player
-    // 2: all lights enabled
-    if (VehicleCVars().v_lights == 0
+	{
+		// 0: no lights at all (only intended for debugging etc.)
+		// 1: lights only enabled for the local player
+		// 2: all lights enabled
+		if (VehicleCVars().v_lights == 0
 			|| (VehicleCVars().v_lights == 1 && !m_pVehicle->IsPlayerPassenger()))
-      return;
+			return;
 
 		if (m_pHelper && m_damageRatio < 1.0f)
-		{ 
-      m_slot = GetEntity()->LoadLight(m_slot, &m_light);
+		{
+			m_slot = GetEntity()->LoadLight(m_slot, &m_light);
 
-      if (m_slot != -1 && m_pMaterial)      
-        GetEntity()->SetSlotMaterial(m_slot, m_pMaterial);
+			if (m_slot != -1 && m_pMaterial)
+				GetEntity()->SetSlotMaterial(m_slot, m_pMaterial);
 
-		  UpdateLight(0.f);			
+			UpdateLight(0.f);
 		}
 
-    m_enabled = true;
+		m_enabled = true;
 	}
 	else if (!enable)
-	{ 
-    if (m_slot != -1)
-    {
-      GetEntity()->FreeSlot(m_slot);
-      m_slot = -1;
-    }  
+	{
+		if (m_slot != -1)
+		{
+			GetEntity()->FreeSlot(m_slot);
+			m_slot = -1;
+		}
 
-    m_enabled = false;
+		m_enabled = false;
 	}
 
 }
@@ -288,62 +288,62 @@ void CVehiclePartLight::ToggleLight(bool enable)
 //-----------------------------------------------------------------------
 void CVehiclePartLight::Update(const float frameTime)
 {
-  if (IsEnabled())  
-    UpdateLight(frameTime);
+	if (IsEnabled())
+		UpdateLight(frameTime);
 }
 
 //-----------------------------------------------------------------------
 void CVehiclePartLight::UpdateLight(const float frameTime)
-{ 
-  if (m_slot == -1)
-    return;
+{
+	if (m_slot == -1)
+		return;
 
 	// move to vehicle event change view?
-  if (m_diffuseMult[0] != m_diffuseMult[1])
-  {
-    SEntitySlotInfo info;
-    if (m_pVehicle->GetEntity()->GetSlotInfo(m_slot, info) && info.pLight)
-    {
-      CDLight& light = static_cast<ILightSource*>(info.pLight)->GetLightProperties();
+	if (m_diffuseMult[0] != m_diffuseMult[1])
+	{
+		SEntitySlotInfo info;
+		if (m_pVehicle->GetEntity()->GetSlotInfo(m_slot, info) && info.pLight)
+		{
+			CDLight& light = static_cast<ILightSource*>(info.pLight)->GetLightProperties();
 
-      IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
-      bool localPlayer = (pActor != NULL) && (pActor->GetLinkedVehicle() == m_pVehicle);
+			IActor* pActor = gEnv->pGame->GetIGameFramework()->GetClientActor();
+			bool localPlayer = (pActor != NULL) && (pActor->GetLinkedVehicle() == m_pVehicle);
 
 			IVehicleSeat* pSeat = pActor ? m_pVehicle->GetSeatForPassenger(pActor->GetEntityId()) : NULL;
-			IVehicleView* pView = pSeat? pSeat->GetView(pSeat->GetCurrentView()) : NULL;
-			bool isThirdPersonView = pView? pView->IsThirdPerson() : true;
-      if (localPlayer && !isThirdPersonView)
+			IVehicleView* pView = pSeat ? pSeat->GetView(pSeat->GetCurrentView()) : NULL;
+			bool isThirdPersonView = pView ? pView->IsThirdPerson() : true;
+			if (localPlayer && !isThirdPersonView)
 				light.SetLightColor(ColorF(m_diffuseCol * m_diffuseMult[0], 1.f));
-      else
-				light.SetLightColor(ColorF(m_diffuseCol * m_diffuseMult[1], 1.f));    
-    }
-  }  
+			else
+				light.SetLightColor(ColorF(m_diffuseCol * m_diffuseMult[1], 1.f));
+		}
+	}
 
-  if (m_pHelper)
-  { 
-    const static Matrix33 rot(Matrix33::CreateRotationXYZ(Ang3(0.f, 0.f, DEG2RAD(90.f))));
-    
-    const Matrix34& helperTM = m_pHelper->GetVehicleTM();
-    Matrix34 localTM = Matrix33(helperTM) * rot;
-    localTM.SetTranslation(helperTM.GetTranslation());
+	if (m_pHelper)
+	{
+		const static Matrix33 rot(Matrix33::CreateRotationXYZ(Ang3(0.f, 0.f, DEG2RAD(90.f))));
 
-    GetEntity()->SetSlotLocalTM(m_slot, localTM);  
-  }
+		const Matrix34& helperTM = m_pHelper->GetVehicleTM();
+		Matrix34 localTM = Matrix33(helperTM) * rot;
+		localTM.SetTranslation(helperTM.GetTranslation());
+
+		GetEntity()->SetSlotLocalTM(m_slot, localTM);
+	}
 
 }
 
 //------------------------------------------------------------------------
 void CVehiclePartLight::Serialize(TSerialize ser, unsigned aspects)
 {
-  CVehiclePartBase::Serialize(ser, aspects);
+	CVehiclePartBase::Serialize(ser, aspects);
 
-	if (ser.GetSerializationTarget()!=eST_Network)
+	if (ser.GetSerializationTarget() != eST_Network)
 	{
 		bool isEnabled = IsEnabled();
 		ser.Value("lightEnabled", isEnabled, 'bool');
 
 		if (ser.IsReading())
-		{	
+		{
 			ToggleLight(isEnabled);
 		}
 	}

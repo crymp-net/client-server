@@ -30,7 +30,7 @@ public:
 	virtual void PostInit() override;
 	virtual void Reset() override;
 	virtual void Release() override { CVehiclePartBase::Release(); }
-	
+
 	virtual void OnEvent(const SVehiclePartEvent& event) override;
 
 	virtual void Physicalize() override {}
@@ -39,7 +39,7 @@ public:
 
 	virtual void Serialize(TSerialize serialize, unsigned aspects) override;
 	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) override {}
-	virtual void GetMemoryStatistics(ICrySizer * s)  override { s->Add(*this); GetBaseMemoryStatistics(s); }
+	virtual void GetMemoryStatistics(ICrySizer* s)  override { s->Add(*this); GetBaseMemoryStatistics(s); }
 	// ~IVehiclePart
 
 	virtual void ToggleLight(bool enable);
@@ -48,20 +48,20 @@ public:
 
 protected:
 
-  void UpdateLight(const float frameTime);
-  
+	void UpdateLight(const float frameTime);
+
 	string m_lightType;
-	CDLight m_light;  
-  _smart_ptr<IMaterial> m_pMaterial;
+	CDLight m_light;
+	_smart_ptr<IMaterial> m_pMaterial;
 
-  std::vector<IVehicleComponent*> m_components;
-  
-  IVehicleHelper* m_pHelper;
+	std::vector<IVehicleComponent*> m_components;
 
-  float m_diffuseMult[2];
-  Vec3  m_diffuseCol;
-  
-  bool m_enabled;
+	IVehicleHelper* m_pHelper;
+
+	float m_diffuseMult[2];
+	Vec3  m_diffuseCol;
+
+	bool m_enabled;
 };
 
 #endif
