@@ -759,12 +759,17 @@ void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityI
 		// if message starts with \n, consider it a special broadcast from client rather than a legit chat message
 		// this way we can ensure stuff works everywhere and not only servers where SSM supports it,
 		// also starting the message with \n assures that it stays invisible even for people without client
-		// 
-		// the format for commands is as follows: \n (opcode + '0') Payload, i.e. \n11 for Radio 1
-		std::string payload{ sv.substr(2) };
-		uint8_t opcode = (static_cast<uint8_t>(sv[1]) & 0xFF) - '0';
-		switch (opcode) {
-		case EChatMessageOpcode::eChatOpcodeRadio:
+		//
+		// the format is \nCommandName Params..., i.e. \nradio 15 123.4 123.4 123.4
+		auto command_string = sv.substr(1);
+		auto payload_delimiter = command_string.find(' ');
+		auto command = command_string.substr(0, payload_delimiter);
+		std::string payload;
+
+		if (payload_delimiter != std::string::npos) {
+			payload = command_string.substr(payload_delimiter + 1);
+		}
+		if(command == "radio")
 		{
 			// radio over chat
 			int id;
@@ -784,8 +789,6 @@ void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityI
 					.sourceId = sourceId,
 				});
 			}
-		}
-		break;
 		}
 		if (valid) return;
 	}
@@ -4301,7 +4304,7 @@ void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
 		int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkipEnts);
 		if (nHits > 0) {
 			char message[100];
-			sprintf(message, "\n%c%d %.3f %.3f %.3f", '0' + (char)EChatMessageOpcode::eChatOpcodeRadio, type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+			sprintf(message, "\nradio %d %.3f %.3f %.3f", type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
 			SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
 		}
 	}

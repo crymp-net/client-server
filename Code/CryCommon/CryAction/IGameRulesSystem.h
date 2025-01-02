@@ -41,14 +41,7 @@ enum EChatMessageType
 {
 	eChatToTarget=0, // the message is to be sent to the target entity
 	eChatToTeam, // the message is to be sent to the team of the sender
-	eChatToAll, // the message is to be sent to all client connected
-};
-
-// Summary
-//    Opcodes for special chat messages
-enum EChatMessageOpcode {
-	eChatOpcodeInvalid = 0,
-	eChatOpcodeRadio
+	eChatToAll // the message is to be sent to all client connected
 };
 
 // Summary
