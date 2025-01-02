@@ -2349,6 +2349,7 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 				if (
 					dur < 0.25f &&
 					gEnv->bMultiplayer && gEnv->bClient &&
+					!m_bLaunchWS &&
 					m_pClientActor && m_pClientActor->GetNanoSuit() && m_pClientActor->GetNanoSuit()->GetMode() == m_nanosuitOpenMode
 					) {
 					m_pGameRules->RequestTrackedRadio(m_pClientActor, 15);
