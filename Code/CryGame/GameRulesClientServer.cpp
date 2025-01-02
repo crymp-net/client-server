@@ -849,7 +849,10 @@ IMPLEMENT_RMI(CGameRules, SvRequestRadioMessage)
 
 IMPLEMENT_RMI(CGameRules, ClRadioMessage)
 {
-	OnRadioMessage(params.sourceId, params.msg);
+	OnRadioMessage(SRadioMessageParams{
+		.id = params.msg,
+		.sourceId = params.sourceId
+	});
 	return true;
 }
 

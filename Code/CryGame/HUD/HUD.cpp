@@ -550,6 +550,10 @@ bool CHUD::Init(IActor* pActor)
 	m_animHitIndicatorPlayer.Load("Libs/UI/HUD_HitIndicatorPlayer.gfx", eFD_Center, eFAF_Visible);
 	m_animHitIndicatorVehicle.Load("Libs/UI/HUD_HitIndicatorVehicle.gfx", eFD_Center, eFAF_Visible);
 
+	m_animTrackedRadioMessage.Load("Libs/UI/HUD_GrenadeDetect_Friendly.gfx", eFD_Center, eFAF_Visible);
+	if (!m_animTrackedRadioMessage.IsLoaded()) //asset missing so far ..
+		m_animTrackedRadioMessage.Load("Libs/UI/HUD_GrenadeDetect.gfx", eFD_Center, eFAF_Visible);
+
 	// these are delay-loaded elsewhere!!!
 	if (loadEverything)
 	{
@@ -2265,6 +2269,13 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 					return false;
 				/*				if(!m_animQuickMenu.IsLoaded())
 									m_animQuickMenu.Reload();*/
+
+				// CryMP: detect radio message tagging
+				if (!m_nanosuitMenuOpenTime) {
+					m_nanosuitMenuOpenTime = gEnv->pTimer->GetCurrTime();
+					m_nanosuitOpenMode = m_pClientActor->GetNanoSuit()->GetMode();
+				}
+
 				m_animQuickMenu.Invoke("showQuickMenu");
 				m_animQuickMenu.SetVariable("_alpha", 100);
 
@@ -2330,6 +2341,20 @@ bool CHUD::OnAction(const ActionId& action, int activationMode, float value)
 
 			if (!m_bLaunchWS)
 				PlaySound(ESound_SuitMenuDisappear);
+
+			// CryMP: detect radio message tagging
+			if (m_nanosuitMenuOpenTime) {
+				float dur = gEnv->pTimer->GetCurrTime() - *m_nanosuitMenuOpenTime;
+				m_nanosuitMenuOpenTime.reset();
+				if (
+					dur < 0.25f &&
+					gEnv->bMultiplayer && gEnv->bClient &&
+					!m_bLaunchWS &&
+					m_pClientActor && m_pClientActor->GetNanoSuit() && m_pClientActor->GetNanoSuit()->GetMode() == m_nanosuitOpenMode
+					) {
+					m_pGameRules->RequestTrackedRadio(m_pClientActor, 15);
+				}
+			}
 
 			m_bLaunchWS = false;
 		}
@@ -3371,6 +3396,7 @@ void CHUD::OnPostUpdate(float frameTime)
 
 		// Grenade detector
 		TrackProjectiles(m_pClientActor);
+		TrackRadioMessages(m_pClientActor);
 
 		// Binoculars and Scope
 		if (m_pHUDScopes->IsBinocularsShown())
@@ -3492,6 +3518,11 @@ void CHUD::OnPostUpdate(float frameTime)
 			{
 				m_animMissionObjective.GetFlashPlayer()->Advance(frameTime);
 				m_animMissionObjective.GetFlashPlayer()->Render();
+			}
+			if (m_animTrackedRadioMessage.GetVisible()) //CryMP: tracked radio messages
+			{
+				m_animTrackedRadioMessage.GetFlashPlayer()->Advance(frameTime);
+				m_animTrackedRadioMessage.GetFlashPlayer()->Render();
 			}
 		}
 		else
@@ -4218,6 +4249,20 @@ void CHUD::RemoveTrackedProjectile(EntityId id)
 	stl::find_and_erase(m_trackedProjectiles, id);
 }
 
+// CryMP -----------------------------------------------------------------
+void CHUD::AddTrackedRadioMessage(const SRadioMessageParams& params, float expiry)
+{
+	std::erase_if(m_trackedRadioMessages, [&params](const STrackedRadioMessage& msg) -> bool {
+		return msg.params.sourceId == params.sourceId;
+	});
+	m_trackedRadioMessages.emplace_back(STrackedRadioMessage{
+		.params = params,
+		.expiresAt = gEnv->pTimer->GetCurrTime() + expiry
+	});
+}
+
+//------------------------------------------------------------------------
+
 //-----------------------------------------------------------------------------------------------------
 
 void CHUD::AutoAimLocking(EntityId id)
@@ -4857,6 +4902,7 @@ void CHUD::UnloadSimpleHUDElements(bool unload)
 
 	if (!unload)
 	{
+		m_animTrackedRadioMessage.Reload(); // CryMP: tracked radio messages
 		m_animFriendlyProjectileTracker.Reload();
 		m_animHostileProjectileTracker.Reload();
 		m_animMissionObjective.Reload();
@@ -4869,6 +4915,7 @@ void CHUD::UnloadSimpleHUDElements(bool unload)
 	}
 	else
 	{
+		m_animTrackedRadioMessage.Reload(); // CryMP: tracked radio messages
 		m_animFriendlyProjectileTracker.Unload();
 		m_animHostileProjectileTracker.Unload();
 		m_animMissionObjective.Unload();

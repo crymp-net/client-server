@@ -557,6 +557,143 @@ void CHUD::UpdateProjectileTracker(CGameFlashAnimation &anim, IEntity *pProjecti
 	}
 }
 
+
+void CHUD::TrackRadioMessages(CPlayer* pPlayerActor)
+{
+	//CryMP track projectiles in Fp Spec
+	if (pPlayerActor && pPlayerActor->IsFpSpectator())
+	{
+		pPlayerActor = CPlayer::FromIActor(pPlayerActor->GetSpectatorTargetActor());
+	}
+
+	if (!pPlayerActor)
+		return;
+
+	if (m_trackedRadioMessages.empty())
+	{
+		UpdateRadioMessageTracker(m_animTrackedRadioMessage, {}, m_radioTrackerStatus, ZERO);
+		return;
+	}
+
+	if ((g_pGameCVars->g_difficultyLevel > 3) && !gEnv->bMultiplayer)
+		return;
+
+	if (!m_animTrackedRadioMessage.IsLoaded())
+	{
+		m_animTrackedRadioMessage.Reload();
+		if (!m_animTrackedRadioMessage.IsLoaded()) //asset missing so far ..
+			m_animTrackedRadioMessage.Load("Libs/UI/HUD_GrenadeDetect.gfx", eFD_Center, eFAF_Visible);
+	}
+
+	auto& last = m_trackedRadioMessages.back();
+	const int teamId = m_pGameRules->GetTeam(pPlayerActor->GetEntityId());
+
+	Vec3 player = pPlayerActor->GetEntity()->GetWorldPos();
+	Vec3 screen;
+	std::optional<STrackedRadioMessage> closestMessage;
+
+	float fClosestFriendly = 999999.9f;
+	float fTime = gEnv->pTimer->GetCurrTime();
+
+	std::erase_if(m_trackedRadioMessages, [fTime](const STrackedRadioMessage& msg) -> bool {
+		return fTime > msg.expiresAt;
+	});
+
+	for (const auto msg : m_trackedRadioMessages)
+	{
+		IEntity* pSource = gEnv->pEntitySystem->GetEntity(msg.params.sourceId);
+		if (pSource && msg.params.pos)
+		{
+			Vec3 proj = *msg.params.pos;
+			m_pRenderer->ProjectToScreen(proj.x, proj.y, proj.z, &screen.x, &screen.y, &screen.z);
+
+			if (screen.z > 1.0f)
+			{
+				continue; // ignore tracked messages behind camera
+			}
+
+			const float distSq = (player - proj).len2();
+			const int projTeamId = m_pGameRules->GetTeam(msg.params.sourceId);
+			const bool bIsMyMessage = msg.params.sourceId == pPlayerActor->GetEntityId();
+
+			const bool hostile = (!teamId || teamId != projTeamId) && (msg.params.sourceId != pPlayerActor->GetEntityId());
+
+			if ((distSq < fClosestFriendly || !closestMessage) && !hostile)
+			{
+				closestMessage = msg;
+				fClosestFriendly = distSq;
+			}
+		}
+	}
+
+	UpdateRadioMessageTracker(m_animTrackedRadioMessage, closestMessage, m_radioTrackerStatus, player);
+}
+
+void CHUD::UpdateRadioMessageTracker(CGameFlashAnimation& anim, const std::optional<STrackedRadioMessage>& msg, uint8_t& status, const Vec3& player) {
+	if (msg && msg->params.pos) {
+		Vec3 screen;
+		Vec3 world = *msg->params.pos;
+		m_pRenderer->ProjectToScreen(world.x, world.y, world.z, &screen.x, &screen.y, &screen.z);
+
+		if (!status)
+		{
+			anim.Invoke("showGrenadeDetector");
+			status = 1;
+		}
+		else
+		{
+			if (screen.x < 3.0f)
+			{
+				screen.x = 3.0f;
+				anim.Invoke("morphLeft");
+				status = 2;
+			}
+			else if (screen.x > 97.0f)
+			{
+				screen.x = 97.0f;
+				anim.Invoke("morphRight");
+				status = 2;
+			}
+			else if (status > 1)
+			{
+				anim.Invoke("morphNone");
+				status = 1;
+			}
+		}
+
+		float sx = 0.0f;
+		float sy = 0.0f;
+		float useless = 0.0f;
+
+		GetProjectionScale(&anim, &sx, &sy, &useless);
+
+		float mh = (float)anim.GetFlashPlayer()->GetHeight();
+		float rh = (float)m_pRenderer->GetHeight();
+
+		// Note: 18 is the size of the box (coming from Flash)
+		float boxX = 18.0f * mh / rh;
+		float boxY = 18.0f * mh / rh;
+
+		char strX[32];
+		char strY[32];
+		sprintf(strX, "%f", screen.x * sx - boxX + useless);
+		sprintf(strY, "%f", screen.y * sy - boxY);
+
+		anim.SetVariable("Root.GrenadeDetect._x", strX);
+		anim.SetVariable("Root.GrenadeDetect._y", strY);
+
+		char strDistance[32];
+		sprintf(strDistance, "%.2fM", (world - player).len());
+		anim.Invoke("setDistance", strDistance);
+
+		anim.Invoke("setGrenadeType", msg->params.msg ? msg->params.msg->c_str() : "!!");
+	}
+	else if (status) {
+		anim.Invoke("hideGrenadeDetector");
+		status = 0;
+	}
+}
+
 void CHUD::IndicateDamage(EntityId weaponId, Vec3 direction, bool onVehicle)
 {
 	m_pHUDCrosshair->ShowDamageIndicator(2.0f);

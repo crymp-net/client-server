@@ -10,10 +10,19 @@
 #include "GameActions.h"
 #include "CryCommon/CryInput/IInput.h"
 
+#include <optional>
+
 class CGameRules;
 class SmartScriptTable;
 
-class CRadio:public IInputEventListener
+struct SRadioMessageParams {
+	int id;
+	EntityId sourceId;
+	std::optional<Vec3> pos;
+	std::optional<string> msg;
+};
+
+class CRadio : public IInputEventListener
 {
 public:
 	CRadio(CGameRules*);
@@ -29,7 +38,7 @@ public:
 
 	//from IInputEventListener
 	virtual bool	OnInputEvent( const SInputEvent &event );
-	void			OnRadioMessage(int id, EntityId fromId);
+	void			OnRadioMessage(SRadioMessageParams params);
 	void			CancelRadio();
 	void			SetTeam(const string& name);
 	void			GetMemoryStatistics(ICrySizer * s);
