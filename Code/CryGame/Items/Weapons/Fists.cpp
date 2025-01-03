@@ -21,6 +21,7 @@ History:
 #include "CryCommon/CryAction/IWorldQuery.h"
 #include "CryCommon/CryAction/IGameTokens.h"
 #include "CryGame/GameActions.h"
+#include "CryCommon/CrySystem/ILog.h"
 
 #include "CryGame/HUD/HUD.h"
 
@@ -352,13 +353,54 @@ void CFists::RaiseWeapon(bool raise, bool faster /*= false*/)
 
 				if (bIsClient)
 				{
-					pe_action_impulse impulse;
-					impulse.iApplyTime = 1;
-					impulse.impulse = -state.eyeDirection * 600.0f * g_pGameCVars->mp_wallJump;
-					playerPhysics->Action(&impulse);
+					pe_status_dynamics dynamics;
+					float dt = gEnv->pTimer->GetFrameTime();
+					if (playerPhysics->GetStatus(&dynamics)) {
 
-					//CryMP: Send walljump request to server
-					RequestWeaponRaised(true);
+						float  w = g_pGameCVars->mp_wallJump;
+						float  k = 1.0f;
+						Vec3   i = -state.eyeDirection * 600.0f;
+
+						if (w <= 1.0f) {
+							// if mp_wallJump is <0; 1>, use the multiplier
+							i *= w;
+						}
+
+						Vec3 idt = i * dt;
+						Vec3& v0 = dynamics.v;                  // current velocity
+						Vec3  v1 = v0 + dynamics.a * dt;        // temporary velocity, without impulse
+						Vec3  v2 = v1 + idt;                    // final velocity
+
+						// if mp_wallJump is (1; +inf) and new velocity > mp_wallJump and new velocity > previous velocity
+						// then dampen the impulse such that new velocity is capped at mp_wallJump value
+						if (w > (1.0f + FLT_EPSILON) && v2.len() >= w && v2.len() > v1.len()) {
+							if (v1.len() > w) {
+								k = 0.0f;
+							}
+							else {
+								float A = idt.len2();
+								float B = 2 * v1.Dot(idt);
+								float C = v1.len2() - powf(w, 2.0f);
+								k = (-B + sqrt(B * B - 4 * A * C)) / (2 * A);
+							}
+
+							if (isnan(k)) {
+								// it shouldn't happen, but just in case B^2 - 4AC yields a value below zero, 
+								// making sqrt NaN, assume k to be zero to prevent any random behaviors
+								k = 0.0f;
+							}
+						}
+
+						// v2 = v1 + k * idt;	                // recomputed final velocity
+						// gEnv->pLog->Log("v1: %f -> v2: %f (k: %f, dt: %f)", v1.len(), v2.len(), k, dt);
+
+						pe_action_impulse impulse;
+						impulse.iApplyTime = 1;
+						impulse.impulse = k * i;
+						playerPhysics->Action(&impulse);
+						//CryMP: Send walljump request to server
+						RequestWeaponRaised(true);
+					}
 				}
 
 				pos = state.eyePosition + state.eyeDirection * 0.5f;
