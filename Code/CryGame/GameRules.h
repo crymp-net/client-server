@@ -25,6 +25,7 @@
 #include "Actors/Actor.h"
 #include "SynchedStorage.h"
 #include <queue>
+#include "Radio.h"
 #include "Voting.h"
 #include "ShotValidator.h"
 
@@ -440,8 +441,10 @@ public:
 	virtual void ShowStatus();
 
 	void SendRadioMessage(const EntityId sourceId,const int);
-	void OnRadioMessage(const EntityId sourceId,const int);
+	void OnRadioMessage(const SRadioMessageParams& params);
 	ILINE CRadio *GetRadio() const { return m_pRadio; }
+
+	void RequestTrackedRadio(CPlayer* pPlayer, int type);
 
 	virtual void OnAction(const ActionId& actionId, int activationMode, float value);
 

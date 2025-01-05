@@ -37,7 +37,6 @@ History:
 #include "CryCommon/CryCore/CryFixedString.h"
 
 #include "HUDMissionObjectiveSystem.h"
-
 //-----------------------------------------------------------------------------------------------------
 
 struct ILevel;
@@ -98,6 +97,12 @@ public:
 			s->Add(description);
 		}
 	};
+
+	struct STrackedRadioMessage {
+		SRadioMessageParams params;
+		float expiresAt;
+	};
+
 	typedef std::map<string, SHudObjective> THUDObjectiveList;
 
 	CHUD();
@@ -119,6 +124,8 @@ public:
 
 	void AddTrackedProjectile(EntityId id);
 	void RemoveTrackedProjectile(EntityId id);
+
+	void AddTrackedRadioMessage(const SRadioMessageParams& params, float duration = 5.0f);
 
 	void AutoAimLocking(EntityId id);
 	void AutoAimNoText(EntityId id);
@@ -540,6 +547,9 @@ private:
 	void UpdateProjectileTracker(CGameFlashAnimation &anim, IEntity *pProjectile, uint8 &status, const Vec3 &player);
 	void Targetting(EntityId pTargetEntity, bool bStatic);
 	void UpdateVoiceChat();
+
+	void TrackRadioMessages(CPlayer* pPlayerActor);
+	void UpdateRadioMessageTracker(CGameFlashAnimation& anim, const std::optional<STrackedRadioMessage>& params, uint8_t& status, const Vec3& player);
 	//~HUDInterfaceEffects
 
 	int FillUpMOArray(std::vector<double> *doubleArray, double a, double b, double c, double d, double e, double f, double g, double h);
@@ -743,6 +753,10 @@ private:
 	//CryMP
 	CGameFlashAnimation m_animHitIndicatorPlayer;
 	CGameFlashAnimation m_animHitIndicatorVehicle;
+	CGameFlashAnimation m_animTrackedRadioMessage;
+
+	std::optional<float> m_nanosuitMenuOpenTime;
+	uint8_t              m_nanosuitOpenMode = 0;
 
 	// HUD objects
 	typedef std::list<CHUDObject *> THUDObjectsList;
@@ -888,9 +902,13 @@ private:
 	//list of ammos
 	std::map<string, int> m_hudAmmunition;
 	std::vector<EntityId> m_trackedProjectiles;
+
+	std::vector<STrackedRadioMessage> m_trackedRadioMessages;
 	
 	uint8 m_friendlyTrackerStatus;
 	uint8 m_hostileTrackerStatus;
+
+	uint8_t m_radioTrackerStatus;
 
 	// to prevent localising strings / invoking flash every frame, just check for these changing...
 	int m_prevSpectatorMode;
