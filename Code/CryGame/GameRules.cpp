@@ -4274,6 +4274,9 @@ void CGameRules::OnRadioMessage(const SRadioMessageParams& params)
 }
 
 void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
+	if (!g_pGameCVars->mp_radioTagging) {
+		return;
+	}
 	// do a ray cast and detect any hits (where player is looking at)
 	IPhysicalEntity* pSkipEnts[10];
 	IEntity* pActorEntity = pPlayer->GetEntity();
