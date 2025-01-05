@@ -46,6 +46,7 @@
 
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
+#include "CryMP/Client/WeatherSystem.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;
@@ -91,6 +92,7 @@ CGameRules::~CGameRules()
 	}
 	g_pGame->DestroyHUD();
 
+	g_pGame->GetWeatherSystem()->Reset(false);
 	g_pGame->GetWeaponSystem()->GetTracerManager().Reset();
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(0);
 	if (m_pGameFramework->GetIViewSystem())
