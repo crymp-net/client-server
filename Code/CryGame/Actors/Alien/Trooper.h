@@ -192,6 +192,8 @@ public:
 	void FullSerialize( TSerialize ser );
 
 private:
+	void UpdateEffectsTrooper(const float frameTime);
+
 	void InitHeightVariance(SmartScriptTable &rTable);
 	void Jump();
   void JumpEffect();

@@ -253,45 +253,7 @@ void CTrooper::Update(SEntityUpdateContext& ctx, int updateSlot)
 				m_pGroundEffect->Update();       
 			}
 
-			if (m_pTrailAttachment)
-			{ 
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pTrailAttachment->GetIAttachmentObject();
-				if (pEffectAttachment)
-				{
-					float goalspeed = max(1.f, m_stats.speed - m_params.trailEffectMinSpeed);
-					Interpolate(m_trailSpeedScale, goalspeed, 3.f, frameTime);
-
-					SpawnParams sp;          
-					//if (m_params.trailEffectMaxSpeedSize != 0.f)
-						sp.fSizeScale = max(0.01f, div_min(m_trailSpeedScale,m_params.trailEffectMaxSpeedSize,1.f));
-						//sp.fSizeScale = min(1.f, max(0.01f, m_trailSpeedScale/m_params.trailEffectMaxSpeedSize));
-
-					//if (m_params.trailEffectMaxSpeedCount != 0.f)
-						sp.fCountScale = div_min(m_trailSpeedScale, m_params.trailEffectMaxSpeedCount, 1.f);
-						//sp.fCountScale = min(1.f, m_trailSpeedScale / m_params.trailEffectMaxSpeedCount);
-
-					pEffectAttachment->SetSpawnParams(sp);
-				}
-			}
-
-			if (m_pHealthTrailAttachment)
-			{ 
-				CEffectAttachment* pEffectAttachment = (CEffectAttachment*)m_pHealthTrailAttachment->GetIAttachmentObject();
-				if (pEffectAttachment)
-				{
-					float goal = 1.0f - ((float)GetHealth() / (float)max(1, GetMaxHealth()));
-					Interpolate(m_healthTrailScale, goal, 2.f, frameTime);
-
-					SpawnParams sp;          
-					if (m_params.healthTrailEffectMaxSize != 0.f)
-						sp.fSizeScale = min(1.f, max(0.01f, m_healthTrailScale / m_params.healthTrailEffectMaxSize));
-
-					if (m_params.healthTrailEffectMaxCount != 0.f)
-						sp.fCountScale = 1.0f; // min(1.f, m_healthTrailScale / m_params.healthTrailEffectMaxCount);
-
-					pEffectAttachment->SetSpawnParams(sp);
-				}
-			}
+			UpdateEffectsTrooper(frameTime);
 
 			if (m_searchbeam.active)
 				UpdateSearchBeam(frameTime);
@@ -322,6 +284,43 @@ void CTrooper::Update(SEntityUpdateContext& ctx, int updateSlot)
 
 }
 
+void CTrooper::UpdateEffectsTrooper(const float frameTime)
+{
+	if (!CreatedTrailAttachments())
+		return;
+
+	if (m_pTrailAttachment)
+	{
+		const float goalspeed = max(1.f, m_stats.speed - m_params.trailEffectMinSpeed);
+		Interpolate(m_trailSpeedScale, goalspeed, 3.f, frameTime);
+
+		SpawnParams sp;
+		//if (m_params.trailEffectMaxSpeedSize != 0.f)
+		sp.fSizeScale = max(0.01f, div_min(m_trailSpeedScale, m_params.trailEffectMaxSpeedSize, 1.f));
+		//sp.fSizeScale = min(1.f, max(0.01f, m_trailSpeedScale/m_params.trailEffectMaxSpeedSize));
+
+	//if (m_params.trailEffectMaxSpeedCount != 0.f)
+		sp.fCountScale = div_min(m_trailSpeedScale, m_params.trailEffectMaxSpeedCount, 1.f);
+		//sp.fCountScale = min(1.f, m_trailSpeedScale / m_params.trailEffectMaxSpeedCount);
+
+		m_pTrailAttachment->SetSpawnParams(sp);
+	}
+
+	if (m_pHealthTrailAttachment)
+	{
+		const float goal = 1.0f - ((float)GetHealth() / (float)max(1, GetMaxHealth()));
+		Interpolate(m_healthTrailScale, goal, 2.f, frameTime);
+
+		SpawnParams sp;
+		if (m_params.healthTrailEffectMaxSize != 0.f)
+			sp.fSizeScale = min(1.f, max(0.01f, m_healthTrailScale / m_params.healthTrailEffectMaxSize));
+
+		if (m_params.healthTrailEffectMaxCount != 0.f)
+			sp.fCountScale = 1.0f; // min(1.f, m_healthTrailScale / m_params.healthTrailEffectMaxCount);
+
+		m_pHealthTrailAttachment->SetSpawnParams(sp);
+	}
+}
 
 void CTrooper::UpdateStats(float frameTime)
 {

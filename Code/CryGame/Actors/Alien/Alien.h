@@ -407,6 +407,9 @@ public:
 //	virtual void SetRotation(const Quat &rot,int flags=0);
 	// ~CActor
 
+	bool CreatedTrailAttachments();
+	void UpdateEffects(const float frameTime);
+
 	virtual void ProcessRotation(float frameTime);
 	virtual void ProcessMovement(float frameTime);
 	virtual void ProcessMovement2(float frameTime);
@@ -533,8 +536,8 @@ protected:
 
 	//effects and such
 	IGroundEffect *m_pGroundEffect;  
-  IAttachment* m_pTrailAttachment;
-	IAttachment* m_pHealthTrailAttachment;
+	CEffectAttachment* m_pTrailAttachment = nullptr;
+	CEffectAttachment* m_pHealthTrailAttachment = nullptr;
   float m_trailSpeedScale;
 	float m_healthTrailScale;
   SSearchBeamStats m_searchbeam;
