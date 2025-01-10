@@ -421,6 +421,7 @@ bool GameFramework::PreUpdate(bool haveFocus, unsigned int updateFlags)
 	if (!isGamePaused)
 	{
 		m_pItemSystem->Update(frameTime);
+		m_pVehicleSystem->Update(frameTime);
 		m_pMaterialEffects->Update(frameTime);
 		m_pDialogSystem->Update(frameTime);
 		m_pMusicLogic->Update();

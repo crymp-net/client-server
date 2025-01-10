@@ -114,6 +114,11 @@ public:
 
 	void InitLightDefaults();
 
+	void RetriggerKeyStateNextFrame()
+	{
+		m_retriggerKeyState = true;
+	}
+
 	void GetMemoryStatistics(ICrySizer * s);
 
 private:
@@ -201,6 +206,8 @@ private:
 	CVehicleSeat *m_pInitializingSeat;
 
 	TVehicleUsageEventListenerList m_eventListeners;
+
+	bool m_retriggerKeyState = false;
 };
 
 // Summary:

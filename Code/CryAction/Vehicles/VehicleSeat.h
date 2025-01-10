@@ -30,6 +30,7 @@ class CVehicleSeatActionRotateTurret;
 struct IAnimationGraph;
 struct IAnimationGraphState;
 class CVehicleViewThirdPerson;
+class CVehicleSystem;
 
 #include "CryCommon/CryAction/IVehicleSystem.h"
 #include "CryCommon/CryAction/IMovementController.h"
@@ -223,6 +224,8 @@ protected:
   bool QueueTransition();
 	
 	static IGameFramework* m_pGameFramework;
+
+	CVehicleSystem* m_pVehicleSystem = nullptr;
 
 	CVehicle* m_pVehicle;
 	CVehicleSeatSerializer *m_pSerializer;

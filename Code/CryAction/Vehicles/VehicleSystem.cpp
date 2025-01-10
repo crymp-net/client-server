@@ -15,6 +15,7 @@ History:
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 #include "CryCommon/CryAction/IGameObjectSystem.h"
+#include "CryCommon/CryInput/IInput.h"
 
 #include "Vehicle.h"
 #include "VehiclePartEntity.h"
@@ -552,6 +553,13 @@ void CVehicleSystem::BroadcastVehicleUsageEvent(const EVehicleEvent eventId, con
 //------------------------------------------------------------------------
 void CVehicleSystem::Update(float deltaTime)
 {
+	//CryMP: Workaround
+	if (m_retriggerKeyState)
+	{
+		gEnv->pInput->RetriggerKeyState();
+		m_retriggerKeyState = false;
+	}
+
 	if (VehicleCVars().v_debug_mem > 0)
 	{
 		IRenderer* pRenderer = gEnv->pRenderer;

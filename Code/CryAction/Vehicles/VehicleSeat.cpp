@@ -139,7 +139,7 @@ CVehicleSeat::~CVehicleSeat()
 //------------------------------------------------------------------------
 bool CVehicleSeat::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicleParams& seatTable)
 {
-	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
+	m_pVehicleSystem = static_cast<CVehicleSystem*>(gEnv->pGame->GetIGameFramework()->GetIVehicleSystem());
 
 	if (!m_pGameFramework)
 		m_pGameFramework = gEnv->pGame->GetIGameFramework();
@@ -176,7 +176,7 @@ bool CVehicleSeat::Init(IVehicle* pVehicle, TVehicleSeatId seatId, const CVehicl
 				{
 					if (CVehicleParams viewParamsTable = viewTable.findChild(className.c_str()))
 					{
-						IVehicleView* view = pVehicleSystem->CreateVehicleView(className);
+						IVehicleView* view = m_pVehicleSystem->CreateVehicleView(className);
 						if (view)
 						{
 							if (view->Init(this, viewTable))
@@ -271,9 +271,6 @@ bool CVehicleSeat::InitSeatActions(const CVehicleParams& seatTable)
 		}
 	}
 
-	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
-	assert(pVehicleSystem);
-
 	CVehicleParams seatActionsTable = seatTable.findChild("SeatActions");
 	if (!seatActionsTable)
 		return false;
@@ -288,7 +285,7 @@ bool CVehicleSeat::InitSeatActions(const CVehicleParams& seatTable)
 			string className = seatActionTable.getAttr("class");
 			if (!className.empty())
 			{
-				IVehicleSeatAction* pSeatAction = pVehicleSystem->CreateVehicleSeatAction(className);
+				IVehicleSeatAction* pSeatAction = m_pVehicleSystem->CreateVehicleSeatAction(className);
 				if (pSeatAction && pSeatAction->Init(m_pVehicle, m_seatId, seatActionTable))
 				{
 					// add the seat action to the vector
@@ -765,8 +762,12 @@ bool CVehicleSeat::SitDown()
 		pSeat->EnterRemotely(m_passengerId);
 
 	GivesActorSeatFeatures(true);
+
 	if (pActor->IsClient())
-		gEnv->pInput->RetriggerKeyState();
+	{
+		//gEnv->pInput->RetriggerKeyState();
+		m_pVehicleSystem->RetriggerKeyStateNextFrame(); //CryMP: Workaround
+	}
 
 	// allow lua side of the seat implementation to do its business
 	HSCRIPTFUNCTION scriptFunction(0);
@@ -1127,7 +1128,10 @@ bool CVehicleSeat::StandUp()
 	pActor->LinkToVehicle(0);
 
 	if (pActor->IsClient())
-		gEnv->pInput->RetriggerKeyState();
+	{
+		//gEnv->pInput->RetriggerKeyState();
+		m_pVehicleSystem->RetriggerKeyStateNextFrame(); //CryMP: Workaround
+	}
 
 	// current world transform of passenger
 	// we always want to use the rotational part of this
@@ -3125,10 +3129,7 @@ bool CVehicleSeat::TestExitPosition(IActor* pActor, Vec3& testPos, EntityId* pBl
 //------------------------------------------------------------------------
 IVehicleClient* CVehicleSeat::GetVehicleClient()
 {
-	IVehicleSystem* pVehicleSystem = gEnv->pGame->GetIGameFramework()->GetIVehicleSystem();
-	assert(pVehicleSystem);
-
-	return pVehicleSystem->GetVehicleClient();
+	return m_pVehicleSystem->GetVehicleClient();
 }
 
 //------------------------------------------------------------------------
