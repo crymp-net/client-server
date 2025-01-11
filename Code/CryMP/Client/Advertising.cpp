@@ -10,6 +10,8 @@
 #include "CryCommon/CryAction/IMovementController.h"
 #include "CryCommon/CrySystem/ICryPak.h"
 
+#include "CrySystem/RandomGenerator.h"
+
 #include "CryGame/Actors/Actor.h"
 #include "CryGame/Game.h"
 #include "CryGame/GameCVars.h"
@@ -24,7 +26,6 @@
 
 #include <set>
 #include <string>
-#include <random>
 
 #define AD_CYCLE_MAIN 0
 #define AD_CYCLE_VIEW_CHECK 1
@@ -58,9 +59,6 @@ const std::vector<std::string> knownAdLayersOrdered = {
 static std::set<std::string> knownAdLayers;
 static std::vector<SAdCue> cues;
 
-static std::random_device rd;
-static std::mt19937 rng(rd());
-
 static SAdVec3 toAdVec3(Vec3 vec) {
 	return SAdVec3{
 		.x = vec.x,
@@ -77,7 +75,8 @@ CAdManager::CAdManager() {
 }
 
 void CAdManager::Update(float delta) {
-	if (ADS_ENABLED) {
+	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_GAME);
+	if (ADS_ENABLED && gEnv->bClient && (gEnv->bMultiplayer || gEnv->pSystem->IsDevMode())) {
 		m_time += delta;
 
 		if (!g_pGame->GetGameRules()) {
@@ -174,14 +173,16 @@ void CAdManager::DisplayAds() {
 	}
 
 	std::vector<size_t> shuffle(m_ads.size());
-	std::uniform_int_distribution<std::mt19937::result_type> dist(0, m_ads.size() - 1);
 
 	for (size_t i = 0; i < m_ads.size(); i++) {
 		shuffle[i] = i;
 	}
 
 	for (size_t i = 0; i < m_ads.size(); i++) {
-		std::swap(shuffle[dist(rng)], shuffle[dist(rng)]);
+		std::swap(
+			shuffle[RandomGenerator::GenerateUInt32(0, m_ads.size() - 1)], 
+			shuffle[RandomGenerator::GenerateUInt32(0, m_ads.size() - 1)]
+		);
 	}
 
 	std::map<std::string, SAdVersion*> nodeToAdMappings;
