@@ -11,8 +11,10 @@
 // Request fast graphics card
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef CLIENT_LAUNCHER
 extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
 extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 

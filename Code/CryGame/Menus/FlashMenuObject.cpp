@@ -51,7 +51,7 @@ History:
 #include "CrySystem/HardwareMouse.h"
 #include "CrySystem/LocalizationManager.h"
 
-#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_CLIENT_VERSION_STRING " (" CRYMP_CLIENT_BITS ")"
+#define CRYMP_MOD_TEXT "CryMP Client " CRYMP_VERSION_STRING " (" CRYMP_BITS ")"
 
 //both are defined again in FlashMenuObjectOptions
 static const char* scuiControlCodePrefix = "@cc_"; // "@cc_"; // AlexL 03/04/2007: enable this when keys/controls are fully localized

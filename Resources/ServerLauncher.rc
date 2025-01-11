@@ -1,0 +1,37 @@
+#include <winver.h>
+
+#include "Launcher/Resources.h"
+#include "config.h"
+
+RESOURCE_ICON ICON "ServerIcon.ico"
+
+RESOURCE_MASTERS_TXT RCDATA "../masters.txt"
+
+RESOURCE_INTERNAL_PAK RCDATA CRYMP_INTERNAL_PAK_PATH
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     CRYMP_VERSION, 0, 0, 0
+PRODUCTVERSION  CRYMP_VERSION, 0, 0, 0
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "CompanyName",      "CryMP"
+			VALUE "LegalCopyright",   "(C) 2024 CryMP"
+			VALUE "ProductName",      "CryMP Server"
+			VALUE "ProductVersion",   CRYMP_VERSION_STRING
+			VALUE "FileVersion",      CRYMP_VERSION_STRING
+			VALUE "FileDescription",  "Crysis Multiplayer"
+			VALUE "InternalName",     CRYMP_SERVER_EXE_NAME
+			VALUE "OriginalFilename", CRYMP_SERVER_EXE_NAME ".exe"
+		END
+	END
+
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 1252
+	END
+END

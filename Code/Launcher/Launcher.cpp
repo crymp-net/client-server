@@ -979,7 +979,7 @@ void Launcher::PatchEngine()
 		}
 	}
 
-	const char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_CLIENT_VERSION_STRING;
+	const char* GAME_WINDOW_NAME = "CryMP Client " CRYMP_VERSION_STRING;
 
 	if (m_dlls.pCryRenderD3D9)
 	{
@@ -1097,7 +1097,11 @@ void Launcher::OnEarlyEngineInit(ISystem* pSystem)
 	const std::filesystem::path rootDirPath = std::filesystem::canonical(gEnv->pSystem->GetRootFolder());
 
 	const char* defaultVerbosity = "0";
+#ifdef CLIENT_LAUNCHER
 	const char* defaultLogFileName = "CryMP-Client.log";
+#else
+	const char* defaultLogFileName = "CryMP-Server.log";
+#endif
 	const char* defaultLogPrefix = "";
 
 	const int verbosity = std::atoi(WinAPI::CmdLine::GetArgValue("-verbosity", defaultVerbosity));
@@ -1126,9 +1130,13 @@ void Launcher::OnEarlyEngineInit(ISystem* pSystem)
 
 	const SFileVersion& version = gEnv->pSystem->GetProductVersion();
 
-	logger.LogAlways("Crysis %d.%d.%d.%d " CRYMP_CLIENT_BITS, version[3], version[2], version[1], version[0]);
-	logger.LogAlways("CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS " " CRYMP_CLIENT_BUILD_TYPE);
-	logger.LogAlways("Compiled by " CRYMP_CLIENT_COMPILER);
+	logger.LogAlways("Crysis %d.%d.%d.%d " CRYMP_BITS, version[3], version[2], version[1], version[0]);
+#ifdef CLIENT_LAUNCHER
+	logger.LogAlways("CryMP Client " CRYMP_VERSION_STRING " " CRYMP_BITS " " CRYMP_BUILD_TYPE);
+#else
+	logger.LogAlways("CryMP Server " CRYMP_VERSION_STRING " " CRYMP_BITS " " CRYMP_BUILD_TYPE);
+#endif
+	logger.LogAlways("Compiled by " CRYMP_COMPILER);
 	logger.LogAlways("Copyright (C) 2001-2008 Crytek GmbH");
 	logger.LogAlways("Copyright (C) 2014-2024 CryMP");
 	logger.LogAlways("");
@@ -1146,11 +1154,15 @@ void Launcher::Run()
 {
 	m_params.hInstance = WinAPI::DLL::Get(nullptr);  // EXE handle
 	m_params.pLog = &Logger::GetInstance();
+#ifdef SERVER_LAUNCHER
+	m_params.isDedicatedServer = true;
+#else
 	m_params.isDedicatedServer = WinAPI::CmdLine::HasArg("-dedicated");
+#endif
 
 	this->SetCmdLine();
 
-	if (WinAPI::GetApplicationPath().filename().string().find(CRYMP_CLIENT_EXE_NAME) != 0)
+	if (WinAPI::GetApplicationPath().filename().string().find("CryMP") != 0)
 	{
 		throw StringTools::ErrorFormat("Invalid name of the executable!");
 	}
@@ -1178,11 +1190,13 @@ void Launcher::Run()
 	}
 	else
 	{
+#ifdef CLIENT_LAUNCHER
 		Client client;
 		gClient = &client;
 
 		this->StartEngine();
 
 		gClient->UpdateLoop();
+#endif
 	}
 }
