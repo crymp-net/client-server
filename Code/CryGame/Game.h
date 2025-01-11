@@ -61,6 +61,7 @@ class CItemSharedParamsList;
 class CSPAnalyst;
 class CSoundMoods;
 class CWeatherSystem;
+class CAdManager;
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -160,6 +161,7 @@ public:
 	virtual CItemSharedParamsList *GetItemSharedParamsList() { return m_pItemSharedParamsList; };
 
 	CWeatherSystem* GetWeatherSystem() const { return m_pWeatherSystem; }
+	CAdManager* GetAdManager() const { return m_pAdManager; }
 
 	CGameActions&	Actions() const {	return *m_pGameActions;	};
 
@@ -281,6 +283,7 @@ protected:
 	TLevelMapMap m_mapNames;
 
 	CWeatherSystem* m_pWeatherSystem;
+	CAdManager* m_pAdManager;
 };
 
 extern CGame *g_pGame;

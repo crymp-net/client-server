@@ -276,6 +276,21 @@ void CDebugGun::Shoot(bool bPrimary)
 	if (hits)
 	{
 		pEntity = (IEntity*)rayhit.pCollider->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
+
+		// crymp
+		IRenderNode* pNode = (IRenderNode*)rayhit.pCollider->GetForeignData(PHYS_FOREIGN_ID_STATIC);
+		if (pNode) {
+			CryLog("$3Brush: %s", pNode->GetName());
+			if (pNode->GetMaterial()) {
+				const char* mtlName = pNode->GetMaterial()->GetName();
+				CryLog("$3 Material: %s", mtlName ? mtlName : "<NUL>");
+				for (int i = 0; i < pNode->GetMaterial()->GetSubMtlCount(); i++) {
+					IMaterial* pSubMtl = pNode->GetMaterial()->GetSubMtl(i);
+					mtlName = pSubMtl->GetName();
+					CryLog("$3  Submaterial %d: %s", i, mtlName ? mtlName : "<NUL>");
+				}
+			}
+		}
 	}
 
 	cmd.append(pEntity ? pEntity->GetName() : "0");

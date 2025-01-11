@@ -57,6 +57,7 @@
 #include "CryCommon/CryAction/ILoadGame.h"
 
 #include "CryMP/Client/WeatherSystem.h"
+#include "CryMP/Client/Advertising.h"
 
 #if defined(CRYSIS_BETA)
 #define CRYSIS_GUID "{CDC82B4A-7540-45A5-B92E-9A7C7033DBF4}"
@@ -113,6 +114,7 @@ CGame::CGame()
 	m_pMultiplayerAM = 0;
 
 	m_pWeatherSystem = new CWeatherSystem();
+	m_pAdManager = new CAdManager();
 
 	GetISystem()->SetIGame(this);
 }
@@ -131,6 +133,7 @@ CGame::~CGame()
 	SAFE_DELETE(m_pSPAnalyst);
 	m_pWeaponSystem->Release();
 	m_pWeatherSystem->Reset();
+	m_pAdManager->Reset();
 	SAFE_DELETE(m_pItemStrings);
 	SAFE_DELETE(m_pItemSharedParamsList);
 	SAFE_DELETE(m_pCVars);
@@ -374,6 +377,7 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 
 	m_pFramework->PostUpdate(true, updateFlags);
 	m_pWeatherSystem->Update(frameTime);
+	m_pAdManager->Update(frameTime);
 
 	CheckReloadLevel();
 

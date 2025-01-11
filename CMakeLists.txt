@@ -830,6 +830,8 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Vehicles/VehicleClient.h
 	Code/CryGame/Voting.cpp
 	Code/CryGame/Voting.h
+	Code/CryMP/Client/Advertising.cpp
+	Code/CryMP/Client/Advertising.h
 	Code/CryMP/Client/Client.cpp
 	Code/CryMP/Client/Client.h
 	Code/CryMP/Client/DrawTools.cpp
@@ -1020,8 +1022,7 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	ThirdParty/picosha2.h
 	ThirdParty/tracy/public/TracyClient.cpp
 	${PROJECT_BINARY_DIR}/config.h
-	${PROJECT_BINARY_DIR}/version.h
-)
+	${PROJECT_BINARY_DIR}/version.h)
 
 ################################################################################
 
