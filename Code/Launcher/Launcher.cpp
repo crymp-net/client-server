@@ -1143,7 +1143,7 @@ void Launcher::OnEarlyEngineInit(ISystem* pSystem)
 #endif
 	logger.LogAlways("Compiled by " CRYMP_COMPILER);
 	logger.LogAlways("Copyright (C) 2001-2008 Crytek GmbH");
-	logger.LogAlways("Copyright (C) 2014-2024 CryMP");
+	logger.LogAlways("Copyright (C) 2014-2025 CryMP");
 	logger.LogAlways("");
 
 	logger.SetPrefix(logPrefix);
