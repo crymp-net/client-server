@@ -3,7 +3,7 @@
 #include "Launcher/Resources.h"
 #include "config.h"
 
-RESOURCE_ICON ICON "Icon.ico"
+RESOURCE_ICON ICON "ClientIcon.ico"
 
 RESOURCE_CURSOR_AMBER CURSOR "CursorAmber.cur"
 RESOURCE_CURSOR_BLUE  CURSOR "CursorBlue.cur"
@@ -16,8 +16,8 @@ RESOURCE_MASTERS_TXT RCDATA "../masters.txt"
 RESOURCE_INTERNAL_PAK RCDATA CRYMP_INTERNAL_PAK_PATH
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     CRYMP_CLIENT_VERSION, 0, 0, 0
-PRODUCTVERSION  CRYMP_CLIENT_VERSION, 0, 0, 0
+FILEVERSION     CRYMP_VERSION, 0, 0, 0
+PRODUCTVERSION  CRYMP_VERSION, 0, 0, 0
 FILEOS          VOS__WINDOWS32
 FILETYPE        VFT_APP
 BEGIN
@@ -28,8 +28,8 @@ BEGIN
 			VALUE "CompanyName",      "CryMP"
 			VALUE "LegalCopyright",   "(C) 2024 CryMP"
 			VALUE "ProductName",      "CryMP Client"
-			VALUE "ProductVersion",   CRYMP_CLIENT_VERSION_STRING
-			VALUE "FileVersion",      CRYMP_CLIENT_VERSION_STRING
+			VALUE "ProductVersion",   CRYMP_VERSION_STRING
+			VALUE "FileVersion",      CRYMP_VERSION_STRING
 			VALUE "FileDescription",  "Crysis Multiplayer"
 			VALUE "InternalName",     CRYMP_CLIENT_EXE_NAME
 			VALUE "OriginalFilename", CRYMP_CLIENT_EXE_NAME ".exe"
