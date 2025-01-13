@@ -1064,11 +1064,14 @@ void Launcher::StartEngine()
 	TracyHookEngineProfiler();
 #endif
 
+#ifdef CLIENT_LAUNCHER
 	if (gClient)
 	{
 		gClient->Init(pGameFramework);
 	}
-	else if (gServer)
+#endif
+
+	if (gServer)
 	{
 		gServer->Init(pGameFramework);
 	}
