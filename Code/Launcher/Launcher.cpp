@@ -1034,7 +1034,9 @@ void Launcher::StartEngine()
 		pGameFramework = GameFramework::GetInstance();
 	}
 
+#ifdef CLIENT_LAUNCHER
 	GameWindow::GetInstance().Init();
+#endif
 
 	if (oldAction)
 	{
