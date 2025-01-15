@@ -80,6 +80,38 @@ public:
 
 	bool IsValid() const { return m_xmlNode != NULL; }
 
+	void Dump(int level = 0) const
+	{
+		if (!IsValid())
+		{
+			CryLogAlways("%*s<Invalid Node>", level * 2, "");
+			return;
+		}
+
+		// Print current node's tag
+		CryLogAlways("%*s<%s>", level * 2, "", getTag());
+
+		// Print attributes
+		int attributeCount = m_xmlNode->getNumAttributes();
+		for (int i = 0; i < attributeCount; ++i)
+		{
+			const char* key;
+			const char* value;
+			m_xmlNode->getAttributeByIndex(i, &key, &value);
+			CryLogAlways("%*s  @%s=\"%s\"", level * 2, "", key, value);
+		}
+
+		// Print child nodes recursively
+		int childCount = getChildCount();
+		for (int i = 0; i < childCount; ++i)
+		{
+			getChild(i).Dump(level + 1);
+		}
+
+		// Closing tag
+		CryLogAlways("%*s</%s>", level * 2, "", getTag());
+	}
+
 private:
 	template<typename T>
 	bool GetAttrImpl(const char* name, T& valueOut) const
