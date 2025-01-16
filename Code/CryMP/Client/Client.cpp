@@ -34,6 +34,7 @@
 #include "FFontHooks.h"
 
 #include "config.h"
+#include "version.h"
 
 void Client::InitMasters()
 {
@@ -301,14 +302,19 @@ void Client::HttpGet(const std::string_view& url, std::function<void(HTTPClientR
 
 void Client::HttpRequest(HTTPClientRequest&& request)
 {
-	for (const std::string& master : m_masters)
+	if (request.url.find("/ads") == std::string::npos)
 	{
-		if (Util::StartsWith(request.url, GetMasterServerAPI(master)))
+		// enrich the request if it goes towards the master, but not advertising related
+		for (const std::string& master : m_masters)
 		{
-			request.headers["X-Sfwcl-HWID"] = m_hwid;
-			request.headers["X-Sfwcl-Locale"] = m_locale;
-			request.headers["X-Sfwcl-Tz"] = m_timezone;
-			break;
+			if (Util::StartsWith(request.url, GetMasterServerAPI(master)))
+			{
+				request.headers["X-Sfwcl-HWID"] = m_hwid;
+				request.headers["X-Sfwcl-Locale"] = m_locale;
+				request.headers["X-Sfwcl-Tz"] = m_timezone;
+				request.headers["X-Sfwcl-Ver"] = CRYMP_VERSION_STRING;
+				break;
+			}
 		}
 	}
 

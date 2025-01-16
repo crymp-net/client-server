@@ -92,6 +92,7 @@ class CAdManager {
 	std::map<std::string, SAdMaterialMapping> m_mappings;
 	std::array<float, 4> m_cycles = { -1000.0f, -1000.0f, -1000.0f, -1000.0f };
 
+	float m_idleTime = 0.0f;
 	float m_time = 0.0f;
 	bool m_collectedMappings = false;
 
