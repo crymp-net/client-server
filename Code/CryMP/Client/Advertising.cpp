@@ -480,7 +480,6 @@ void CAdManager::CollectViewership(float delta) {
 	// do not collect ads statistics if the player is idle (most likely afk)
 	// as that would be a waste of ad spend
 	if (m_idleTime > 5.0f) {
-		CryLog("Idle for %f seconds", m_idleTime);
 		return;
 	}
 
