@@ -59,6 +59,9 @@ const std::vector<std::string> knownAdLayersOrdered = {
 static std::set<std::string> knownAdLayers;
 static std::vector<SAdCue> cues;
 
+static Vec3 lastCameraPos;
+static Vec3 lastCameraDir;
+
 static SAdVec3 toAdVec3(Vec3 vec) {
 	return SAdVec3{
 		.x = vec.x,
@@ -88,6 +91,20 @@ void CAdManager::Update(float delta) {
 }
 
 void CAdManager::CycleAds(float delta) {
+	const CCamera& camera = gEnv->pRenderer->GetCamera();
+	const Vec3 cameraPos = camera.GetPosition();
+	const Vec3 cameraDir = camera.GetViewdir();
+
+	if ((cameraPos - lastCameraPos).len2() < 0.001f && (cameraDir - lastCameraDir).len2() < 0.001) {
+		m_idleTime += delta;
+	} else {
+		m_idleTime = 0.0f;
+	}
+
+	lastCameraPos = cameraPos;
+	lastCameraDir = cameraDir;
+
+
 	switch (m_state) {
 	case EAdState::eAS_None:
 		m_state = EAdState::eAS_FetchAds;
@@ -445,8 +462,7 @@ void CAdManager::FetchAdsPak() {
 }
 
 void CAdManager::CollectViewership(float delta) {
-
-	/*
+#ifdef ADS_DEBUGGING
 	for (auto& cue : cues) {
 		IRenderer* pRenderer = gEnv->pRenderer;
 		IRenderAuxGeom* pAuxGeom = pRenderer->GetIRenderAuxGeom();
@@ -458,7 +474,14 @@ void CAdManager::CollectViewership(float delta) {
 			cue.visible ? Vec3(0.0f, 255.0f, 0.0f) : Vec3(255.0f, 0.0f, 0.0f)
 		);
 	}
-	*/
+	cues.clear();
+#endif
+
+	// do not collect ads statistics if the player is idle (most likely afk)
+	// as that would be a waste of ad spend
+	if (m_idleTime > 5.0f) {
+		return;
+	}
 
 	int nSkipEnts = 0;
 	CPlayer* pPlayer = static_cast<CPlayer*>(g_pGame->GetIGameFramework()->GetClientActor());
@@ -467,7 +490,6 @@ void CAdManager::CollectViewership(float delta) {
 	Vec3 cameraDir = gEnv->pRenderer->GetCamera().GetViewdir();
 	ray_hit rayhit;
 
-	cues.clear();
 
 	size_t localEpoch = static_cast<size_t>(time(NULL));
 	std::string serverToken;
@@ -517,6 +539,11 @@ void CAdManager::CollectViewership(float delta) {
 				Vec3 entityDir;
 				float dot = 0.0f;
 
+				// reject any further computation is distance is over 65m
+				if ((pos - origin).len() > 65.0f) {
+					continue;
+				}
+
 				// find out real position and direction
 				if (IPhysicalEntity* pPE = info.node->GetPhysics()) {
 					pe_status_pos p;
@@ -535,31 +562,36 @@ void CAdManager::CollectViewership(float delta) {
 					continue;
 				}
 
+				// compute entity location on player's screen plane
 				gEnv->pRenderer->ProjectToScreen(pos.x, pos.y, pos.z, &screenPos.x, &screenPos.y, &screenPos.z);
 
-				// ignore if not on screen
+				// ignore if the entity is not visible on player's screen
 				if (screenPos.z > 1.0f || screenPos.y < 0.0f || screenPos.x < 0.0f || screenPos.x > 100.0f || screenPos.y > 100.0f) {
 					continue;
 				}
 
+				// compute direction vector towards entity and a cosine of angle between entity rotation and this direction vector
 				Vec3 dir = pos - origin;
 				dot = entityDir * dir.normalized();
 
-				// special treatment for big-boards that are double sided
+				// to prevent the following condition from failing on two-sided bigboards, make sure the value is negative
 				if (dot > 0.1 && strstr(info.node->GetName(), "sign_big_b.cgf")) {
 					dot = -dot;
 				}
 
-				// ignore if too far or not rotated towards player
-				if (dir.len() > 50.0f || dot > -0.1f) {
+				// check whether entity is headed towards player or not, if not (player sees backside of panel), skip
+				// counting ad time on this entity
+				if (dot > -0.1f) {
 					continue;
 				}
 
+#ifdef ADS_DEBUGGING
 				SAdCue cue{
 					.pos = pos,
 					.entityDir = entityDir,
 					.visible = false
 				};
+#endif
 
 				int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir * 2.0f, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkipEnts);
 				if (nHits >= 1 && rayhit.pCollider->GetForeignData(PHYS_FOREIGN_ID_STATIC) == info.node) {
@@ -576,7 +608,9 @@ void CAdManager::CollectViewership(float delta) {
 					});
 				}
 
+#ifdef ADS_DEBUGGING
 				cues.emplace_back(std::move(cue));
+#endif
 			}
 		}
 	}
