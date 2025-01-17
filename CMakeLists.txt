@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 ################################################################################
 
-project(CryMP-Client LANGUAGES C CXX RC)
+project(CryMP LANGUAGES C CXX RC)
 
 ################################################################################
 
@@ -33,6 +33,14 @@ foreach(flags
 )
 	set(${flags} "${${flags}} /INCREMENTAL")
 endforeach()
+
+# C11
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ################################################################################
 
@@ -71,16 +79,12 @@ add_custom_target(GenerateVersion
 	BYPRODUCTS ${PROJECT_BINARY_DIR}/version.h
 )
 
-message(STATUS "Version number: ${CRYMP_CLIENT_VERSION}")
-message(STATUS "Version string: ${CRYMP_CLIENT_VERSION_STRING}")
+message(STATUS "Version number: ${CRYMP_VERSION}")
+message(STATUS "Version string: ${CRYMP_VERSION_STRING}")
 
 ################################################################################
 
-set(CRYMP_CLIENT_EXE "CryMP-Client${BUILD_BITS}")
-
-message(STATUS "Target executable: ${CRYMP_CLIENT_EXE}.exe")
-
-add_executable(${CRYMP_CLIENT_EXE} WIN32
+add_library(Base OBJECT
 	Code/Cry3DEngine/TimeOfDay.cpp
 	Code/Cry3DEngine/TimeOfDay.h
 	Code/CryAction/ActionGame.cpp
@@ -488,6 +492,257 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryCommon/CrySystem/IXml.h
 	Code/CryCommon/CrySystem/TimeValue.h
 	Code/CryCommon/CrySystem/gEnv.h
+	Code/CryMP/Client/Advertising.cpp
+	Code/CryMP/Client/Advertising.h
+	Code/CryMP/Client/Client.cpp
+	Code/CryMP/Client/Client.h
+	Code/CryMP/Client/DrawTools.cpp
+	Code/CryMP/Client/DrawTools.h
+	Code/CryMP/Client/EngineCache.cpp
+	Code/CryMP/Client/EngineCache.h
+	Code/CryMP/Client/FFontHooks.cpp
+	Code/CryMP/Client/FFontHooks.h
+	Code/CryMP/Client/FileCache.cpp
+	Code/CryMP/Client/FileCache.h
+	Code/CryMP/Client/FileDownloader.cpp
+	Code/CryMP/Client/FileDownloader.h
+	Code/CryMP/Client/MapDownloader.cpp
+	Code/CryMP/Client/MapDownloader.h
+	Code/CryMP/Client/MapExtractor.cpp
+	Code/CryMP/Client/MapExtractor.h
+	Code/CryMP/Client/ParticleManager.cpp
+	Code/CryMP/Client/ParticleManager.h
+	Code/CryMP/Client/ScriptBind_CPPAPI.cpp
+	Code/CryMP/Client/ScriptBind_CPPAPI.h
+	Code/CryMP/Client/ScriptCallbacks.cpp
+	Code/CryMP/Client/ScriptCallbacks.h
+	Code/CryMP/Client/ScriptCommands.cpp
+	Code/CryMP/Client/ScriptCommands.h
+	Code/CryMP/Client/ServerBrowser.cpp
+	Code/CryMP/Client/ServerBrowser.h
+	Code/CryMP/Client/ServerConnector.cpp
+	Code/CryMP/Client/ServerConnector.h
+	Code/CryMP/Client/ServerInfo.cpp
+	Code/CryMP/Client/ServerInfo.h
+	Code/CryMP/Client/ServerPAK.cpp
+	Code/CryMP/Client/ServerPAK.h
+	Code/CryMP/Client/SpeedAggregator.cpp
+	Code/CryMP/Client/SpeedAggregator.h
+	Code/CryMP/Client/WeatherSystem.cpp
+	Code/CryMP/Client/WeatherSystem.h
+	Code/CryMP/Common/Executor.cpp
+	Code/CryMP/Common/Executor.h
+	Code/CryMP/Common/GSMasterHook.cpp
+	Code/CryMP/Common/GSMasterHook.h
+	Code/CryMP/Common/HTTP.cpp
+	Code/CryMP/Common/HTTP.h
+	Code/CryMP/Common/HTTPClient.cpp
+	Code/CryMP/Common/HTTPClient.h
+	Code/CryMP/Server/Server.cpp
+	Code/CryMP/Server/Server.h
+	Code/CryScriptSystem/LuaLibs/bitlib.c
+	Code/CryScriptSystem/ScriptBindings/ScriptBindings.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBindings.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.h
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_System.cpp
+	Code/CryScriptSystem/ScriptBindings/ScriptBind_System.h
+	Code/CryScriptSystem/FunctionHandler.cpp
+	Code/CryScriptSystem/FunctionHandler.h
+	Code/CryScriptSystem/ScriptSystem.cpp
+	Code/CryScriptSystem/ScriptSystem.h
+	Code/CryScriptSystem/ScriptTable.cpp
+	Code/CryScriptSystem/ScriptTable.h
+	Code/CryScriptSystem/ScriptTimerManager.cpp
+	Code/CryScriptSystem/ScriptTimerManager.h
+	Code/CryScriptSystem/ScriptUtil.cpp
+	Code/CryScriptSystem/ScriptUtil.h
+	Code/CrySystem/CPUInfo.cpp
+	Code/CrySystem/CPUInfo.h
+	Code/CrySystem/CryLog.cpp
+	Code/CrySystem/CryLog.h
+	Code/CrySystem/CryMemoryManager.cpp
+	Code/CrySystem/CryMemoryManager.h
+	Code/CrySystem/CryPak.cpp
+	Code/CrySystem/CryPak.h
+	Code/CrySystem/GameWindow.cpp
+	Code/CrySystem/GameWindow.h
+	Code/CrySystem/HardwareMouse.cpp
+	Code/CrySystem/HardwareMouse.h
+	Code/CrySystem/LocalizationManager.cpp
+	Code/CrySystem/LocalizationManager.h
+	Code/CrySystem/Logger.cpp
+	Code/CrySystem/Logger.h
+	Code/CrySystem/Pak/FileInZipPak.cpp
+	Code/CrySystem/Pak/FileInZipPak.h
+	Code/CrySystem/Pak/FileOutsidePak.cpp
+	Code/CrySystem/Pak/FileOutsidePak.h
+	Code/CrySystem/Pak/IFileInPak.h
+	Code/CrySystem/Pak/IPak.h
+	Code/CrySystem/Pak/ZipCache.cpp
+	Code/CrySystem/Pak/ZipCache.h
+	Code/CrySystem/Pak/ZipPak.cpp
+	Code/CrySystem/Pak/ZipPak.h
+	Code/CrySystem/RandomGenerator.cpp
+	Code/CrySystem/RandomGenerator.h
+	Code/CrySystem/ResourceList.cpp
+	Code/CrySystem/ResourceList.h
+	Code/CrySystem/StreamEngine.cpp
+	Code/CrySystem/StreamEngine.h
+	Code/Library/CPUID.cpp
+	Code/Library/CPUID.h
+	Code/Library/CrashLogger.cpp
+	Code/Library/CrashLogger.h
+	Code/Library/DigitCount.h
+	Code/Library/PathTools.cpp
+	Code/Library/PathTools.h
+	Code/Library/PathTree.h
+	Code/Library/SlotVector.h
+	Code/Library/StlportMap.h
+	Code/Library/StlportSet.h
+	Code/Library/StlportVector.h
+	Code/Library/StringTools.cpp
+	Code/Library/StringTools.h
+	Code/Library/Util.cpp
+	Code/Library/Util.h
+	Code/Library/WinAPI.cpp
+	Code/Library/WinAPI.h
+	ThirdParty/Lua/src/lapi.c
+	ThirdParty/Lua/src/lapi.h
+	ThirdParty/Lua/src/lauxlib.c
+	ThirdParty/Lua/src/lauxlib.h
+	ThirdParty/Lua/src/lbaselib.c
+	ThirdParty/Lua/src/lcode.c
+	ThirdParty/Lua/src/lcode.h
+	ThirdParty/Lua/src/ldblib.c
+	ThirdParty/Lua/src/ldebug.c
+	ThirdParty/Lua/src/ldebug.h
+	ThirdParty/Lua/src/ldo.c
+	ThirdParty/Lua/src/ldo.h
+	ThirdParty/Lua/src/ldump.c
+	ThirdParty/Lua/src/lfunc.c
+	ThirdParty/Lua/src/lfunc.h
+	ThirdParty/Lua/src/lgc.c
+	ThirdParty/Lua/src/lgc.h
+	ThirdParty/Lua/src/linit.c
+	ThirdParty/Lua/src/liolib.c
+	ThirdParty/Lua/src/llex.c
+	ThirdParty/Lua/src/llex.h
+	ThirdParty/Lua/src/llimits.h
+	ThirdParty/Lua/src/lmathlib.c
+	ThirdParty/Lua/src/lmem.c
+	ThirdParty/Lua/src/lmem.h
+	ThirdParty/Lua/src/loadlib.c
+	ThirdParty/Lua/src/lobject.c
+	ThirdParty/Lua/src/lobject.h
+	ThirdParty/Lua/src/lopcodes.c
+	ThirdParty/Lua/src/lopcodes.h
+	ThirdParty/Lua/src/loslib.c
+	ThirdParty/Lua/src/lparser.c
+	ThirdParty/Lua/src/lparser.h
+	ThirdParty/Lua/src/lstate.c
+	ThirdParty/Lua/src/lstate.h
+	ThirdParty/Lua/src/lstring.c
+	ThirdParty/Lua/src/lstring.h
+	ThirdParty/Lua/src/lstrlib.c
+	ThirdParty/Lua/src/ltable.c
+	ThirdParty/Lua/src/ltable.h
+	ThirdParty/Lua/src/ltablib.c
+	ThirdParty/Lua/src/ltm.c
+	ThirdParty/Lua/src/ltm.h
+	ThirdParty/Lua/src/luaconf.h
+	ThirdParty/Lua/src/lua.h
+	ThirdParty/Lua/src/lualib.h
+	ThirdParty/Lua/src/lundump.c
+	ThirdParty/Lua/src/lundump.h
+	ThirdParty/Lua/src/lvm.c
+	ThirdParty/Lua/src/lvm.h
+	ThirdParty/Lua/src/lzio.c
+	ThirdParty/Lua/src/lzio.h
+	ThirdParty/miniz/miniz.c
+	ThirdParty/miniz/miniz.h
+	ThirdParty/nlohmann/json.hpp
+	ThirdParty/nlohmann/json_fwd.hpp
+	ThirdParty/picosha2.h
+	ThirdParty/tracy/public/TracyClient.cpp
+	${PROJECT_BINARY_DIR}/config.h
+	${PROJECT_BINARY_DIR}/version.h
+)
+
+if(BUILD_BITS EQUAL 64)
+	target_compile_definitions(Base PUBLIC BUILD_64BIT)
+endif()
+
+if(CRYMP_USE_MIMALLOC)
+	target_sources(Base PRIVATE
+		ThirdParty/mimalloc/src/alloc.c
+		ThirdParty/mimalloc/src/alloc-aligned.c
+		ThirdParty/mimalloc/src/alloc-posix.c
+		ThirdParty/mimalloc/src/arena.c
+		ThirdParty/mimalloc/src/bitmap.c
+		ThirdParty/mimalloc/src/heap.c
+		ThirdParty/mimalloc/src/init.c
+		ThirdParty/mimalloc/src/options.c
+		ThirdParty/mimalloc/src/os.c
+		ThirdParty/mimalloc/src/page.c
+		ThirdParty/mimalloc/src/random.c
+		ThirdParty/mimalloc/src/segment.c
+		ThirdParty/mimalloc/src/segment-map.c
+		ThirdParty/mimalloc/src/stats.c
+		ThirdParty/mimalloc/src/prim/prim.c
+	)
+
+	target_include_directories(Base SYSTEM PUBLIC ThirdParty/mimalloc/include)
+endif()
+
+if(CRYMP_TRACY_ENABLED)
+	target_compile_definitions(Base PUBLIC TRACY_ENABLE)
+endif()
+
+target_compile_definitions(Base PUBLIC _CRT_SECURE_NO_WARNINGS)
+
+target_compile_options(Base PUBLIC /W4
+	/wd4018  # Disable - 'token' : signed/unsigned mismatch
+	/wd4100  # Disable - 'identifier' : unreferenced formal parameter
+	/wd4127  # Disable - conditional expression is constant
+	/wd4189  # Disable - 'identifier' : local variable is initialized but not referenced
+	/wd4201  # Disable - nonstandard extension used : nameless struct/union
+	/wd4244  # Disable - 'conversion' : conversion from 'type1' to 'type2', possible loss of data
+	/wd4245  # Disable - 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
+	/wd4267  # Disable - 'var' : conversion from 'size_t' to 'type', possible loss of data
+	/wd4305  # Disable - 'conversion': truncation from 'type1' to 'type2'
+	/wd4456  # Disable - declaration of 'identifier' hides previous local declaration
+	/wd4458  # Disable - declaration of 'identifier' hides class member
+	/wd4702  # Disable - unreachable code
+	/wd5054  # Disable - operator 'operator-name': deprecated between enumerations of different types
+	/w15262  # Enable - implicit fall-through occurs here; are you missing a break statement?
+	/w45263  # Enable - calling 'std::move' on a temporary object prevents copy elision
+)
+
+target_include_directories(Base PUBLIC Code ${PROJECT_BINARY_DIR})
+target_include_directories(Base SYSTEM PUBLIC
+	ThirdParty
+	ThirdParty/Lua/src
+	ThirdParty/miniz
+	ThirdParty/tracy/public
+)
+
+target_link_libraries(Base PUBLIC dbghelp ws2_32 winhttp)
+
+# disable ASLR and unlock memory above 2 GB
+target_link_options(Base PUBLIC /DYNAMICBASE:NO /LARGEADDRESSAWARE)
+
+################################################################################
+
+add_library(CryGame OBJECT
 	Code/CryGame/Actors/Actor.cpp
 	Code/CryGame/Actors/Actor.h
 	Code/CryGame/Actors/Alien/Alien.cpp
@@ -820,109 +1075,19 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/CryGame/Vehicles/VehicleClient.h
 	Code/CryGame/Voting.cpp
 	Code/CryGame/Voting.h
-	Code/CryMP/Client/Client.cpp
-	Code/CryMP/Client/Client.h
-	Code/CryMP/Client/DrawTools.cpp
-	Code/CryMP/Client/DrawTools.h
-	Code/CryMP/Client/EngineCache.cpp
-	Code/CryMP/Client/EngineCache.h
-	Code/CryMP/Client/FFontHooks.cpp
-	Code/CryMP/Client/FFontHooks.h
-	Code/CryMP/Client/FileCache.cpp
-	Code/CryMP/Client/FileCache.h
-	Code/CryMP/Client/FileDownloader.cpp
-	Code/CryMP/Client/FileDownloader.h
-	Code/CryMP/Client/MapDownloader.cpp
-	Code/CryMP/Client/MapDownloader.h
-	Code/CryMP/Client/MapExtractor.cpp
-	Code/CryMP/Client/MapExtractor.h
-	Code/CryMP/Client/ParticleManager.cpp
-	Code/CryMP/Client/ParticleManager.h
-	Code/CryMP/Client/ScriptBind_CPPAPI.cpp
-	Code/CryMP/Client/ScriptBind_CPPAPI.h
-	Code/CryMP/Client/ScriptCallbacks.cpp
-	Code/CryMP/Client/ScriptCallbacks.h
-	Code/CryMP/Client/ScriptCommands.cpp
-	Code/CryMP/Client/ScriptCommands.h
-	Code/CryMP/Client/ServerBrowser.cpp
-	Code/CryMP/Client/ServerBrowser.h
-	Code/CryMP/Client/ServerConnector.cpp
-	Code/CryMP/Client/ServerConnector.h
-	Code/CryMP/Client/ServerInfo.cpp
-	Code/CryMP/Client/ServerInfo.h
-	Code/CryMP/Client/ServerPAK.cpp
-	Code/CryMP/Client/ServerPAK.h
-	Code/CryMP/Client/SpeedAggregator.cpp
-	Code/CryMP/Client/SpeedAggregator.h
-	Code/CryMP/Client/WeatherSystem.cpp
-	Code/CryMP/Client/WeatherSystem.h
-	Code/CryMP/Common/Executor.cpp
-	Code/CryMP/Common/Executor.h
-	Code/CryMP/Common/GSMasterHook.cpp
-	Code/CryMP/Common/GSMasterHook.h
-	Code/CryMP/Common/HTTP.cpp
-	Code/CryMP/Common/HTTP.h
-	Code/CryMP/Common/HTTPClient.cpp
-	Code/CryMP/Common/HTTPClient.h
-	Code/CryMP/Server/Server.cpp
-	Code/CryMP/Server/Server.h
-	Code/CryScriptSystem/LuaLibs/bitlib.c
-	Code/CryScriptSystem/ScriptBindings/ScriptBindings.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBindings.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Movie.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Particle.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Physics.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Script.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_Sound.h
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_System.cpp
-	Code/CryScriptSystem/ScriptBindings/ScriptBind_System.h
-	Code/CryScriptSystem/FunctionHandler.cpp
-	Code/CryScriptSystem/FunctionHandler.h
-	Code/CryScriptSystem/ScriptSystem.cpp
-	Code/CryScriptSystem/ScriptSystem.h
-	Code/CryScriptSystem/ScriptTable.cpp
-	Code/CryScriptSystem/ScriptTable.h
-	Code/CryScriptSystem/ScriptTimerManager.cpp
-	Code/CryScriptSystem/ScriptTimerManager.h
-	Code/CryScriptSystem/ScriptUtil.cpp
-	Code/CryScriptSystem/ScriptUtil.h
-	Code/CrySystem/CPUInfo.cpp
-	Code/CrySystem/CPUInfo.h
-	Code/CrySystem/CryLog.cpp
-	Code/CrySystem/CryLog.h
-	Code/CrySystem/CryMemoryManager.cpp
-	Code/CrySystem/CryMemoryManager.h
-	Code/CrySystem/CryPak.cpp
-	Code/CrySystem/CryPak.h
-	Code/CrySystem/GameWindow.cpp
-	Code/CrySystem/GameWindow.h
-	Code/CrySystem/HardwareMouse.cpp
-	Code/CrySystem/HardwareMouse.h
-	Code/CrySystem/LocalizationManager.cpp
-	Code/CrySystem/LocalizationManager.h
-	Code/CrySystem/Logger.cpp
-	Code/CrySystem/Logger.h
-	Code/CrySystem/Pak/FileInZipPak.cpp
-	Code/CrySystem/Pak/FileInZipPak.h
-	Code/CrySystem/Pak/FileOutsidePak.cpp
-	Code/CrySystem/Pak/FileOutsidePak.h
-	Code/CrySystem/Pak/IFileInPak.h
-	Code/CrySystem/Pak/IPak.h
-	Code/CrySystem/Pak/ZipCache.cpp
-	Code/CrySystem/Pak/ZipCache.h
-	Code/CrySystem/Pak/ZipPak.cpp
-	Code/CrySystem/Pak/ZipPak.h
-	Code/CrySystem/RandomGenerator.cpp
-	Code/CrySystem/RandomGenerator.h
-	Code/CrySystem/ResourceList.cpp
-	Code/CrySystem/ResourceList.h
-	Code/CrySystem/StreamEngine.cpp
-	Code/CrySystem/StreamEngine.h
+)
+
+target_link_libraries(CryGame PUBLIC Base)
+
+################################################################################
+
+set(CRYMP_CLIENT_EXE "CryMP-Client${BUILD_BITS}")
+set(CRYMP_SERVER_EXE "CryMP-Server${BUILD_BITS}")
+
+message(STATUS "Target client executable: ${CRYMP_CLIENT_EXE}.exe")
+message(STATUS "Target server executable: ${CRYMP_SERVER_EXE}.exe")
+
+add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Launcher/Launcher.cpp
 	Code/Launcher/Launcher.h
 	Code/Launcher/Main.cpp
@@ -931,113 +1096,33 @@ add_executable(${CRYMP_CLIENT_EXE} WIN32
 	Code/Launcher/Resources.h
 	Code/Launcher/StartupTime.cpp
 	Code/Launcher/StartupTime.h
-	Code/Library/CPUID.cpp
-	Code/Library/CPUID.h
-	Code/Library/CrashLogger.cpp
-	Code/Library/CrashLogger.h
-	Code/Library/DigitCount.h
-	Code/Library/PathTools.cpp
-	Code/Library/PathTools.h
-	Code/Library/PathTree.h
-	Code/Library/SlotVector.h
-	Code/Library/StlportMap.h
-	Code/Library/StlportSet.h
-	Code/Library/StlportVector.h
-	Code/Library/StringTools.cpp
-	Code/Library/StringTools.h
-	Code/Library/Util.cpp
-	Code/Library/Util.h
-	Code/Library/WinAPI.cpp
-	Code/Library/WinAPI.h
+	Resources/ClientLauncher.rc
 	Resources/Launcher.manifest
-	Resources/Launcher.rc
-	ThirdParty/Lua/src/lapi.c
-	ThirdParty/Lua/src/lapi.h
-	ThirdParty/Lua/src/lauxlib.c
-	ThirdParty/Lua/src/lauxlib.h
-	ThirdParty/Lua/src/lbaselib.c
-	ThirdParty/Lua/src/lcode.c
-	ThirdParty/Lua/src/lcode.h
-	ThirdParty/Lua/src/ldblib.c
-	ThirdParty/Lua/src/ldebug.c
-	ThirdParty/Lua/src/ldebug.h
-	ThirdParty/Lua/src/ldo.c
-	ThirdParty/Lua/src/ldo.h
-	ThirdParty/Lua/src/ldump.c
-	ThirdParty/Lua/src/lfunc.c
-	ThirdParty/Lua/src/lfunc.h
-	ThirdParty/Lua/src/lgc.c
-	ThirdParty/Lua/src/lgc.h
-	ThirdParty/Lua/src/linit.c
-	ThirdParty/Lua/src/liolib.c
-	ThirdParty/Lua/src/llex.c
-	ThirdParty/Lua/src/llex.h
-	ThirdParty/Lua/src/llimits.h
-	ThirdParty/Lua/src/lmathlib.c
-	ThirdParty/Lua/src/lmem.c
-	ThirdParty/Lua/src/lmem.h
-	ThirdParty/Lua/src/loadlib.c
-	ThirdParty/Lua/src/lobject.c
-	ThirdParty/Lua/src/lobject.h
-	ThirdParty/Lua/src/lopcodes.c
-	ThirdParty/Lua/src/lopcodes.h
-	ThirdParty/Lua/src/loslib.c
-	ThirdParty/Lua/src/lparser.c
-	ThirdParty/Lua/src/lparser.h
-	ThirdParty/Lua/src/lstate.c
-	ThirdParty/Lua/src/lstate.h
-	ThirdParty/Lua/src/lstring.c
-	ThirdParty/Lua/src/lstring.h
-	ThirdParty/Lua/src/lstrlib.c
-	ThirdParty/Lua/src/ltable.c
-	ThirdParty/Lua/src/ltable.h
-	ThirdParty/Lua/src/ltablib.c
-	ThirdParty/Lua/src/ltm.c
-	ThirdParty/Lua/src/ltm.h
-	ThirdParty/Lua/src/luaconf.h
-	ThirdParty/Lua/src/lua.h
-	ThirdParty/Lua/src/lualib.h
-	ThirdParty/Lua/src/lundump.c
-	ThirdParty/Lua/src/lundump.h
-	ThirdParty/Lua/src/lvm.c
-	ThirdParty/Lua/src/lvm.h
-	ThirdParty/Lua/src/lzio.c
-	ThirdParty/Lua/src/lzio.h
-	ThirdParty/miniz/miniz.c
-	ThirdParty/miniz/miniz.h
-	ThirdParty/nlohmann/json.hpp
-	ThirdParty/nlohmann/json_fwd.hpp
-	ThirdParty/picosha2.h
-	ThirdParty/tracy/public/TracyClient.cpp
-	${PROJECT_BINARY_DIR}/config.h
-	${PROJECT_BINARY_DIR}/version.h
 )
 
-################################################################################
+add_executable(${CRYMP_SERVER_EXE} WIN32
+	Code/Launcher/Launcher.cpp
+	Code/Launcher/Launcher.h
+	Code/Launcher/Main.cpp
+	Code/Launcher/MemoryPatch.cpp
+	Code/Launcher/MemoryPatch.h
+	Code/Launcher/Resources.h
+	Code/Launcher/StartupTime.cpp
+	Code/Launcher/StartupTime.h
+	Resources/ServerLauncher.rc
+	Resources/Launcher.manifest
+)
 
-if(CRYMP_USE_MIMALLOC)
-	add_library(mimalloc STATIC
-		ThirdParty/mimalloc/src/alloc.c
-		ThirdParty/mimalloc/src/alloc-aligned.c
-		ThirdParty/mimalloc/src/alloc-posix.c
-		ThirdParty/mimalloc/src/arena.c
-		ThirdParty/mimalloc/src/bitmap.c
-		ThirdParty/mimalloc/src/heap.c
-		ThirdParty/mimalloc/src/init.c
-		ThirdParty/mimalloc/src/options.c
-		ThirdParty/mimalloc/src/os.c
-		ThirdParty/mimalloc/src/page.c
-		ThirdParty/mimalloc/src/random.c
-		ThirdParty/mimalloc/src/segment.c
-		ThirdParty/mimalloc/src/segment-map.c
-		ThirdParty/mimalloc/src/stats.c
-		ThirdParty/mimalloc/src/prim/prim.c
-	)
+target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE Base CryGame)
+target_link_libraries(${CRYMP_SERVER_EXE} PRIVATE Base CryGame)
 
-	set_property(TARGET mimalloc PROPERTY C_STANDARD 11)
-	target_include_directories(mimalloc SYSTEM PUBLIC ThirdParty/mimalloc/include)
+# use these only in Launcher code to avoid recompiling everything for each exe
+target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE CLIENT_LAUNCHER)
+target_compile_definitions(${CRYMP_SERVER_EXE} PRIVATE SERVER_LAUNCHER)
 
-	target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE mimalloc)
+if(CRYMP_CONSOLE_APP)
+	set_target_properties(${CRYMP_CLIENT_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
+	set_target_properties(${CRYMP_SERVER_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
 ################################################################################
@@ -1048,6 +1133,7 @@ set(CRYMP_INTERNAL_PAK_PATH ${PROJECT_BINARY_DIR}/Pak.zip)
 file(GLOB_RECURSE CRYMP_INTERNAL_PAK_DEPENDENCIES LIST_DIRECTORIES true CONFIGURE_DEPENDS Pak/*)
 list(INSERT CRYMP_INTERNAL_PAK_DEPENDENCIES 0 ${PROJECT_SOURCE_DIR}/Pak)
 
+# build internal pak
 add_custom_command(
 	OUTPUT ${CRYMP_INTERNAL_PAK_PATH}
 	DEPENDS ${CRYMP_INTERNAL_PAK_DEPENDENCIES}
@@ -1059,67 +1145,30 @@ add_custom_command(
 ################################################################################
 
 set(CRYMP_CLIENT_RESOURCES
+	${PROJECT_SOURCE_DIR}/Code/Launcher/Resources.h
+	${PROJECT_SOURCE_DIR}/Resources/ClientIcon.ico
 	${PROJECT_SOURCE_DIR}/Resources/CursorAmber.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorBlue.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorGreen.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorRed.cur
 	${PROJECT_SOURCE_DIR}/Resources/CursorWhite.cur
-	${PROJECT_SOURCE_DIR}/Resources/Icon.ico
 	${PROJECT_SOURCE_DIR}/masters.txt
+	${PROJECT_BINARY_DIR}/config.h
+	${PROJECT_BINARY_DIR}/version.h
 	${CRYMP_INTERNAL_PAK_PATH}
 )
 
-set_source_files_properties(Resources/Launcher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")
-
-################################################################################
-
-set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD 20)
-set_property(TARGET ${CRYMP_CLIENT_EXE} PROPERTY CXX_STANDARD_REQUIRED ON)
-
-if(BUILD_BITS EQUAL 64)
-	target_compile_definitions(${CRYMP_CLIENT_EXE} PUBLIC BUILD_64BIT)
-endif()
-
-if(CRYMP_TRACY_ENABLED)
-	target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE TRACY_ENABLE)
-endif()
-
-if(CRYMP_CONSOLE_APP)
-	set_target_properties(${CRYMP_CLIENT_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
-endif()
-
-target_compile_definitions(${CRYMP_CLIENT_EXE} PRIVATE _CRT_SECURE_NO_WARNINGS)
-
-target_compile_options(${CRYMP_CLIENT_EXE} PRIVATE /W4
-	/wd4018  # Disable - 'token' : signed/unsigned mismatch
-	/wd4100  # Disable - 'identifier' : unreferenced formal parameter
-	/wd4127  # Disable - conditional expression is constant
-	/wd4189  # Disable - 'identifier' : local variable is initialized but not referenced
-	/wd4201  # Disable - nonstandard extension used : nameless struct/union
-	/wd4244  # Disable - 'conversion' : conversion from 'type1' to 'type2', possible loss of data
-	/wd4245  # Disable - 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
-	/wd4267  # Disable - 'var' : conversion from 'size_t' to 'type', possible loss of data
-	/wd4305  # Disable - 'conversion': truncation from 'type1' to 'type2'
-	/wd4456  # Disable - declaration of 'identifier' hides previous local declaration
-	/wd4458  # Disable - declaration of 'identifier' hides class member
-	/wd4702  # Disable - unreachable code
-	/wd5054  # Disable - operator 'operator-name': deprecated between enumerations of different types
-	/w15262  # Enable - implicit fall-through occurs here; are you missing a break statement?
-	/w45263  # Enable - calling 'std::move' on a temporary object prevents copy elision
+set(CRYMP_SERVER_RESOURCES
+	${PROJECT_SOURCE_DIR}/Code/Launcher/Resources.h
+	${PROJECT_SOURCE_DIR}/Resources/ServerIcon.ico
+	${PROJECT_SOURCE_DIR}/masters.txt
+	${PROJECT_BINARY_DIR}/config.h
+	${PROJECT_BINARY_DIR}/version.h
+	${CRYMP_INTERNAL_PAK_PATH}
 )
 
-target_include_directories(${CRYMP_CLIENT_EXE} PRIVATE Code ${PROJECT_BINARY_DIR})
-target_include_directories(${CRYMP_CLIENT_EXE} SYSTEM PRIVATE
-	ThirdParty
-	ThirdParty/Lua/src
-	ThirdParty/miniz
-	ThirdParty/tracy/public
-)
-
-target_link_libraries(${CRYMP_CLIENT_EXE} PRIVATE dbghelp ws2_32 winhttp)
-
-# prevent modern MSVC from enabling ASLR and unlock memory above 2 GB
-target_link_options(${CRYMP_CLIENT_EXE} PRIVATE /DYNAMICBASE:NO /LARGEADDRESSAWARE)
+set_source_files_properties(Resources/ClientLauncher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_CLIENT_RESOURCES}")
+set_source_files_properties(Resources/ServerLauncher.rc PROPERTIES OBJECT_DEPENDS "${CRYMP_SERVER_RESOURCES}")
 
 ################################################################################
 

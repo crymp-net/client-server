@@ -365,7 +365,7 @@ static void DumpCommandLine(std::FILE* file)
 static void WriteDumpHeader(std::FILE* file)
 {
 	std::fprintf(file, "================================ CRASH DETECTED ================================\n");
-	std::fprintf(file, "%s\n", "CryMP Client " CRYMP_CLIENT_VERSION_STRING " " CRYMP_CLIENT_BITS " " CRYMP_CLIENT_BUILD_TYPE);
+	std::fprintf(file, "%s\n", "CryMP Client " CRYMP_VERSION_STRING " " CRYMP_BITS " " CRYMP_BUILD_TYPE);
 	std::fflush(file);
 }
 

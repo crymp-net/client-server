@@ -47,6 +47,7 @@
 #include "CryMP/Client/Client.h"
 #include "CryMP/Client/ScriptCallbacks.h"
 #include "CryMP/Client/WeatherSystem.h"
+#include "CryMP/Client/Advertising.h"
 
 int CGameRules::s_invulnID = 0;
 int CGameRules::s_barbWireID = 0;
@@ -93,6 +94,7 @@ CGameRules::~CGameRules()
 	g_pGame->DestroyHUD();
 
 	g_pGame->GetWeatherSystem()->Reset(false);
+	g_pGame->GetAdManager()->Reset(false);
 	g_pGame->GetWeaponSystem()->GetTracerManager().Reset();
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(0);
 	if (m_pGameFramework->GetIViewSystem())
@@ -749,8 +751,49 @@ void CGameRules::OnTextMessage(ETextMessageType type, const char* msg,
 //------------------------------------------------------------------------
 void CGameRules::OnChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char* msg, bool teamChatOnly)
 {
-	if (sourceId == targetId && (strstr(msg, "!rpc ") == msg || strstr(msg, "!validate ") == msg))
-		return;
+	std::string_view sv{ msg };
+	if (sourceId == targetId) {
+		if (sv.starts_with("!rpc ") || sv.starts_with("!validate")) {
+			return;
+		}
+	} else if (sv.starts_with("\n") && sv.length() >= 2) {
+		bool valid = false;
+		// if message starts with \n, consider it a special broadcast from client rather than a legit chat message
+		// this way we can ensure stuff works everywhere and not only servers where SSM supports it,
+		// also starting the message with \n assures that it stays invisible even for people without client
+		//
+		// the format is \nCommandName Params..., i.e. \nradio 15 123.4 123.4 123.4
+		auto command_string = sv.substr(1);
+		auto payload_delimiter = command_string.find(' ');
+		auto command = command_string.substr(0, payload_delimiter);
+		std::string payload;
+
+		if (payload_delimiter != std::string::npos) {
+			payload = command_string.substr(payload_delimiter + 1);
+		}
+		if(command == "radio")
+		{
+			// radio over chat
+			int id;
+			float x, y, z;
+			if (type == eChatToTeam && sscanf(payload.c_str(), "%d %f %f %f", &id, &x, &y, &z) == 4) {
+				valid = true;
+				OnRadioMessage(SRadioMessageParams{
+					.id = id,
+					.sourceId = sourceId,
+					.pos = Vec3(x, y, z)
+				});
+			}
+			else if (type == eChatToTeam && sscanf(payload.c_str(), "%d", &id) == 1) {
+				valid = true;
+				OnRadioMessage(SRadioMessageParams{
+					.id = id,
+					.sourceId = sourceId,
+				});
+			}
+		}
+		if (valid) return;
+	}
 	//send chat message to hud
 	int teamFaction = 0;
 	if (IActor* pClientActor = gEnv->pGame->GetIGameFramework()->GetClientActor())
@@ -4218,18 +4261,58 @@ void CGameRules::SendRadioMessage(const EntityId sourceId, const int msg)
 	}
 }
 
-void CGameRules::OnRadioMessage(const EntityId sourceId, const int msg)
+void CGameRules::OnRadioMessage(const SRadioMessageParams& params)
 {
 	//CryMP: Mute check
 	IVoiceContext* pVoiceContext = gEnv->pGame->GetIGameFramework()->GetNetContext()->GetVoiceContext();
-	const bool muted = pVoiceContext->IsMuted(m_pGameFramework->GetClientActorId(), sourceId);
+	const bool muted = pVoiceContext->IsMuted(m_pGameFramework->GetClientActorId(), params.sourceId);
 	if (muted)
 	{
 		return;
 	}
 
 	//CryLog("[radio] from: %s message: %d",,msg);
-	m_pRadio->OnRadioMessage(msg, sourceId);
+	m_pRadio->OnRadioMessage(params);
+}
+
+void CGameRules::RequestTrackedRadio(CPlayer* pPlayer, int type) {
+	if (!g_pGameCVars->mp_radioTagging) {
+		return;
+	}
+	// do a ray cast and detect any hits (where player is looking at)
+	IPhysicalEntity* pSkipEnts[10];
+	IEntity* pActorEntity = pPlayer->GetEntity();
+	IMovementController* pMC = pPlayer->GetMovementController();
+	if (pActorEntity && pMC) {
+		SMovementState ms;
+		pMC->GetMovementState(ms);
+
+		Vec3 origin = gEnv->pRenderer->GetCamera().GetPosition();
+		Vec3 cameraDir = gEnv->pRenderer->GetCamera().GetViewdir();
+
+		Vec3 dir = cameraDir * 2000.0f;
+
+		ray_hit rayhit;
+		int nSkipEnts = 0;
+		pSkipEnts[nSkipEnts] = pActorEntity->GetPhysics();
+		if (pSkipEnts[nSkipEnts]) nSkipEnts++;
+
+		// if player is on vehicle, exclude the vehicle from raycast as well
+		if (pPlayer->GetLinkedVehicle()) {
+			IEntity* pVehEntity = pPlayer->GetLinkedVehicle()->GetEntity();
+			if (pVehEntity) {
+				pSkipEnts[nSkipEnts] = pVehEntity->GetPhysics();
+				if (pSkipEnts[nSkipEnts]) nSkipEnts++;
+			}
+		}
+
+		int nHits = gEnv->pPhysicalWorld->RayWorldIntersection(origin, dir, ent_all, rwi_stop_at_pierceable | rwi_colltype_any, &rayhit, 1, pSkipEnts, nSkipEnts);
+		if (nHits > 0) {
+			char message[100];
+			sprintf(message, "\nradio %d %.3f %.3f %.3f", type, rayhit.pt.x, rayhit.pt.y, rayhit.pt.z);
+			SendChatMessage(eChatToTeam, pPlayer->GetEntityId(), pPlayer->GetEntityId(), message);
+		}
+	}
 }
 
 void CGameRules::RadioMessageParams::SerializeWith(TSerialize ser)
