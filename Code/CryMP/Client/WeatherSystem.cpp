@@ -10,79 +10,59 @@
 #include "CryCommon/Cry3DEngine/I3DEngine.h"
 #include "CryCommon/CryRenderer/IRenderer.h"
 #include "CryGame/Game.h"
+#include "Library/WinAPI.h"
 
 #include "WeatherSystem.h"
 
-enum EWeatherVars {
-	WEATHER_ENABLED,
-	WEATHER_WIND,
-	WEATHER_FX,
-	WEATHER_LAYERS,
-	WEATHER_VAR_COUNT
-};
+bool CWeatherSystem::tod_hooked = false;
 
-struct SEffectInfo {
-	std::string effect;
-	float scale = 1.0f;
-	unsigned instances = 1;
-	Vec3 dir = Vec3(0.0f, 0.0f, 1.0f);
-	Vec3 pos = Vec3(512.0f, 512.0f, 64.0f);
-};
-
-static bool                          currently_enabled = false;
-static std::map<int, float[3]>       original_weather_values;
-static std::optional<Vec3>           original_wind;
-static std::map<int, IStatInstGroup> original_groups;
-
-static std::map<int, string>                                 active_values;
-static std::set<std::string>                                 active_effects;
-static std::optional<unsigned>                               active_mask;
-static std::map<std::string, std::vector<IParticleEmitter*>> active_emmiters;
-
-static constexpr std::array<EERType, 1> static_entities = {
-	eERType_Brush,
-};
-
-static const int WEATHER_NAMESPACE		= 2000;
-static const int WEATHER_ENV_NAMESPACE  = 2100;
-
-static std::string GetFrozenGrassName(std::string_view path);
-static std::string GetNormalGrassName(std::string_view path);
-static SEffectInfo GetEffectInfo(std::string_view effect);
+typedef void (ITimeOfDay::* ITODUpdate)(bool, bool);
+static ITODUpdate pTODUpdate = nullptr;
 
 CWeatherSystem::CWeatherSystem() {
-	original_weather_values.clear();
+	m_originalWeatherValues.clear();
 	m_time = 0;
 	m_lastUpdate = -1000.0f;
+
+	if (!tod_hooked) {
+		ITimeOfDay* pTOD = gEnv->p3DEngine->GetTimeOfDay();
+		void** pTODVtable = *reinterpret_cast<void***>(pTOD);
+
+		auto update = &CWeatherSystem::TODUpdate;
+		pTODUpdate = *reinterpret_cast<ITODUpdate*>(pTODVtable + 9);
+
+		WinAPI::FillMem(&pTODVtable[9], &reinterpret_cast<void*&>(update), sizeof(void*));
+		tod_hooked = true;
+	}
 }
 
 void CWeatherSystem::Reset(bool deapply) {
 	RestoreWeather(true);
 
 	if (deapply) {
-		if (original_wind) {
-			gEnv->p3DEngine->SetWind(*original_wind);
+		if (m_originalWind) {
+			gEnv->p3DEngine->SetWind(*m_originalWind);
 		}
 
-		if (active_mask) {
-			RemoveLayer(*active_mask);
+		if (m_activeMask) {
+			RemoveLayer(*m_activeMask);
 		}
 
-		for (auto& k : active_effects) {
+		for (auto& k : m_activeEffects) {
 			if (k[0] == '-') SpawnEffect(k.c_str() + 1);
 			else RemoveEffect(k.c_str());
 		}
 	}
 	
-	currently_enabled = false;
-	original_groups.clear();
-	original_weather_values.clear();
-	original_wind.reset();
+	m_enabled = false;
+	m_originalGroups.clear();
+	m_originalWeatherValues.clear();
+	m_originalWind.reset();
 
-	active_effects.clear();
-	active_emmiters.clear();
-	active_values.clear();
-	active_mask.reset();
+	m_activeEffects.clear();
+	m_activeEmitters.clear();
+	m_activeValues.clear();
+	m_activeMask.reset();
 }
 
 void CWeatherSystem::Update(float frameTime) {
@@ -95,12 +75,12 @@ void CWeatherSystem::Update(float frameTime) {
 
 	bool b;
 	if (!pSSS->GetGlobalValue(WEATHER_NAMESPACE + WEATHER_ENABLED, b) || !b) {
-		if (currently_enabled) {
+		if (m_enabled) {
 			Reset();
 		}
 		return;
 	} else {
-		currently_enabled = true;
+		m_enabled = true;
 	}
 
 	if (m_time - m_lastUpdate >= 1.0f) {
@@ -111,9 +91,9 @@ void CWeatherSystem::Update(float frameTime) {
 			int count = pTOD->GetVariableCount();
 			for (int i = 0; i < count; i++) {
 				string value;
-				auto existing = active_values.find(WEATHER_ENV_NAMESPACE + i);
+				auto existing = m_activeValues.find(WEATHER_ENV_NAMESPACE + i);
 				if (pSSS->GetGlobalValue(WEATHER_ENV_NAMESPACE + i, value) && value.length() > 0) {
-					if (existing == active_values.end() || existing->second != value) {
+					if (existing == m_activeValues.end() || existing->second != value) {
 						float x, y, z;
 						if (value[0] >= 'a' && value[0] <= 'z') {
 							if (value[0] == 'i' && sscanf(value.c_str() + 1, "%f", &x) == 1) {
@@ -126,13 +106,13 @@ void CWeatherSystem::Update(float frameTime) {
 						} else if(sscanf(value.c_str(), "%f", &x) == 1){
 							SetWeatherVariable(i, x, true);
 						}
-						active_values[WEATHER_ENV_NAMESPACE + i] = value;
+						m_activeValues[WEATHER_ENV_NAMESPACE + i] = value;
 						changed++;
 					}
 				} else {
 					RestoreWeatherVariable(i);
-					if (existing != active_values.end()) {
-						active_values.erase(existing);
+					if (existing != m_activeValues.end()) {
+						m_activeValues.erase(existing);
 						changed++;
 					}
 				}
@@ -143,21 +123,21 @@ void CWeatherSystem::Update(float frameTime) {
 			for (int i = WEATHER_ENABLED + 1; i < WEATHER_VAR_COUNT; i++) {
 				float f3[3];
 				string value;
-				auto existing = active_values.find(WEATHER_NAMESPACE + i);
+				auto existing = m_activeValues.find(WEATHER_NAMESPACE + i);
 				pSSS->GetGlobalValue(WEATHER_NAMESPACE + i, value);
-				if (existing == active_values.end() || existing->second != value) {
+				if (existing == m_activeValues.end() || existing->second != value) {
 					switch (i) {
 					case WEATHER_WIND:
 						if (value.length() > 0 && value[0] == 'v' && sscanf(value.c_str() + 1, "%f,%f,%f", f3 + 0, f3 + 1, f3 + 2) == 3) {
-							if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
+							if (!m_originalWind) m_originalWind = gEnv->p3DEngine->GetWind(AABB(), false);
 							gEnv->p3DEngine->SetWind(Vec3(f3[0], f3[1], f3[2]));
 						} else if (value.length() > 0 && sscanf(value.c_str(), "%f", f3 + 0) == 1) {
-							if (!original_wind) original_wind = gEnv->p3DEngine->GetWind(AABB(), false);
-							gEnv->p3DEngine->SetWind((*original_wind) * f3[0]);
+							if (!m_originalWind) m_originalWind = gEnv->p3DEngine->GetWind(AABB(), false);
+							gEnv->p3DEngine->SetWind((*m_originalWind) * f3[0]);
 						} else {
-							if (original_wind) {
-								gEnv->p3DEngine->SetWind(*original_wind);
-								original_wind.reset();
+							if (m_originalWind) {
+								gEnv->p3DEngine->SetWind(*m_originalWind);
+								m_originalWind.reset();
 							}
 						}
 						break;
@@ -168,8 +148,8 @@ void CWeatherSystem::Update(float frameTime) {
 						SyncLayers(value.c_str());
 						break;
 					}
-					if (existing != active_values.end() && value.length() == 0) {
-						active_values.erase(existing);
+					if (existing != m_activeValues.end() && value.length() == 0) {
+						m_activeValues.erase(existing);
 					}
 				}
 			}
@@ -183,11 +163,11 @@ bool CWeatherSystem::SetWeatherVariable(int variableId, float value, bool interp
 	if (pTOD) {
 		ITimeOfDay::SVariableInfo info;
 		if (pTOD->GetVariableInfo(variableId, info)) {
-			auto existing = original_weather_values.find(variableId);
+			auto existing = m_originalWeatherValues.find(variableId);
 			float fMin = info.fValue[1];
 			float fMax = info.fValue[2];
-			if (existing == original_weather_values.end()) {
-				memcpy(original_weather_values[variableId], info.fValue, sizeof(info.fValue));
+			if (existing == m_originalWeatherValues.end()) {
+				memcpy(m_originalWeatherValues[variableId], info.fValue, sizeof(info.fValue));
 			}
 			else {
 				fMin = existing->second[1];
@@ -213,9 +193,9 @@ bool CWeatherSystem::SetWeatherVariable(int variableId, float x, float y, float 
 	if (pTOD) {
 		ITimeOfDay::SVariableInfo info;
 		if (pTOD->GetVariableInfo(variableId, info)) {
-			auto existing = original_weather_values.find(variableId);
-			if (existing == original_weather_values.end()) {
-				memcpy(original_weather_values[variableId], info.fValue, sizeof(info.fValue));
+			auto existing = m_originalWeatherValues.find(variableId);
+			if (existing == m_originalWeatherValues.end()) {
+				memcpy(m_originalWeatherValues[variableId], info.fValue, sizeof(info.fValue));
 			}
 			info.fValue[0] = x;
 			info.fValue[1] = y;
@@ -250,8 +230,8 @@ std::optional<WeatherVariable> CWeatherSystem::GetWeatherVariableRange(int varia
 	if (pTOD) {
 		ITimeOfDay::SVariableInfo info;
 		if (pTOD->GetVariableInfo(variableId, info)) {
-			auto existing = original_weather_values.find(variableId);
-			if (existing != original_weather_values.end()) {
+			auto existing = m_originalWeatherValues.find(variableId);
+			if (existing != m_originalWeatherValues.end()) {
 				return WeatherVariable{
 					.value = -1.0,
 					.min = existing->second[1],
@@ -273,10 +253,10 @@ bool CWeatherSystem::RestoreWeatherVariable(int variableId, bool update) {
 	if (pTOD) {
 		ITimeOfDay::SVariableInfo info;
 		if (pTOD->GetVariableInfo(variableId, info)) {
-			auto existing = original_weather_values.find(variableId);
-			if (existing != original_weather_values.end()) {
-				memcpy(info.fValue, original_weather_values[variableId], sizeof(info.fValue));
-				original_weather_values.erase(existing);
+			auto existing = m_originalWeatherValues.find(variableId);
+			if (existing != m_originalWeatherValues.end()) {
+				memcpy(info.fValue, m_originalWeatherValues[variableId], sizeof(info.fValue));
+				m_originalWeatherValues.erase(existing);
 			}
 			pTOD->SetVariableValue(variableId, info.fValue);
 			if (update) {
@@ -292,13 +272,13 @@ bool CWeatherSystem::RestoreWeather(bool update) {
 	ITimeOfDay* pTOD = gEnv->p3DEngine->GetTimeOfDay();
 	if (pTOD) {
 		ITimeOfDay::SVariableInfo info;
-		for (auto& [variableId, value] : original_weather_values) {
+		for (auto& [variableId, value] : m_originalWeatherValues) {
 			if (pTOD->GetVariableInfo(variableId, info)) {
 				memcpy(info.fValue, value, sizeof(info.fValue));
 				pTOD->SetVariableValue(variableId, info.fValue);
 			}
 		}
-		original_weather_values.clear();
+		m_originalWeatherValues.clear();
 		if (update) {
 			pTOD->Update();
 		}
@@ -333,10 +313,10 @@ void CWeatherSystem::SyncEffects(const char* effects) {
 	}
 
 	for (auto& k : effects_now) {
-		if (!active_effects.contains(k)) to_add.insert(k);
+		if (!m_activeEffects.contains(k)) to_add.insert(k);
 	}
 
-	for (auto& k : active_effects) {
+	for (auto& k : m_activeEffects) {
 		if (!effects_now.contains(k)) to_remove.insert(k);
 	}
 
@@ -358,7 +338,7 @@ void CWeatherSystem::SyncEffects(const char* effects) {
 		}
 	}
 
-	active_effects = effects_now;
+	m_activeEffects = effects_now;
 }
 
 void CWeatherSystem::SpawnEffect(const char *eff) {
@@ -367,8 +347,8 @@ void CWeatherSystem::SpawnEffect(const char *eff) {
 
 	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(info.effect.c_str(), "", "Particle.SpawnEffect");
 	if (pEffect) {
-		auto emitters = active_emmiters.find(effect_name);
-		if (emitters != active_emmiters.end()) {
+		auto emitters = m_activeEmitters.find(effect_name);
+		if (emitters != m_activeEmitters.end()) {
 			for (auto emitter : emitters->second) {
 				emitter->Activate(true);
 			}
@@ -384,7 +364,7 @@ void CWeatherSystem::SpawnEffect(const char *eff) {
 				}
 				IParticleEmitter* pEmitter = pEffect->Spawn(true, IParticleEffect::ParticleLoc(pos, info.dir, info.scale));
 				if (pEmitter) {
-					active_emmiters[effect_name].push_back(pEmitter);
+					m_activeEmitters[effect_name].push_back(pEmitter);
 				}
 			}
 		}
@@ -397,12 +377,12 @@ void CWeatherSystem::RemoveEffect(const char *eff) {
 
 	IParticleEffect* pEffect = gEnv->p3DEngine->FindParticleEffect(info.effect.c_str(), "", "Particle.SpawnEffect");
 	if (pEffect) {
-		auto emitters = active_emmiters.find(effect_name);
-		if (emitters != active_emmiters.end()) {
+		auto emitters = m_activeEmitters.find(effect_name);
+		if (emitters != m_activeEmitters.end()) {
 			for (auto emitter : emitters->second) {
 				emitter->Activate(false);
 			}
-			active_emmiters.erase(emitters);
+			m_activeEmitters.erase(emitters);
 		}
 		else {
 			pEffect->SetEnabled(false);
@@ -428,13 +408,13 @@ void CWeatherSystem::SyncLayers(const char* layers) {
 		}
 	}
 
-	if (mask && (!active_mask || *active_mask != *mask)) {
-		if (active_mask) RemoveLayer(*active_mask);
+	if (mask && (!m_activeMask || *m_activeMask != *mask)) {
+		if (m_activeMask) RemoveLayer(*m_activeMask);
 		ApplyLayer(*mask);
-		active_mask = std::move(mask);
-	} else if(!mask && active_mask) {
-		RemoveLayer(*active_mask);
-		active_mask.reset();
+		m_activeMask = std::move(mask);
+	} else if(!mask && m_activeMask) {
+		RemoveLayer(*m_activeMask);
+		m_activeMask.reset();
 	}
 }
 
@@ -456,9 +436,9 @@ void CWeatherSystem::ApplyLayer(unsigned layer) {
 			if (!group.szFileName || strlen(group.szFileName) == 0 || !group.pStatObj) continue;
 
 			std::string_view sv_name{ group.pStatObj->GetFilePath() };
-			auto original = original_groups.find(i);
-			if (original == original_groups.end()) {
-				original_groups[i] = group;
+			auto original = m_originalGroups.find(i);
+			if (original == m_originalGroups.end()) {
+				m_originalGroups[i] = group;
 			}
 			group.nMaterialLayers = group.nMaterialLayers | layer;
 			if (layer & MTL_LAYER_FROZEN) {
@@ -501,10 +481,10 @@ void CWeatherSystem::RemoveLayer(unsigned layer) {
 
 			std::string_view sv_name{ group.pStatObj->GetFilePath() };
 			auto pStatBefore = group.pStatObj;
-			auto original = original_groups.find(i);
-			if (original != original_groups.end()) {
+			auto original = m_originalGroups.find(i);
+			if (original != m_originalGroups.end()) {
 				group = original->second;
-				original_groups.erase(original);
+				m_originalGroups.erase(original);
 			} else {
 				// this shouldn't ever happen, but just in case it occurs
 				// handle it by replacing original grasses back
@@ -533,18 +513,57 @@ void CWeatherSystem::RemoveLayer(unsigned layer) {
 }
 
 bool CWeatherSystem::IsWet() const {
-	return active_mask && ((*active_mask & MTL_LAYER_WET) == MTL_LAYER_WET);
+	return m_activeMask && ((*m_activeMask & MTL_LAYER_WET) == MTL_LAYER_WET);
 }
 
 bool CWeatherSystem::IsFrozen() const {
-	return active_mask && ((*active_mask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
+	return m_activeMask && ((*m_activeMask & MTL_LAYER_FROZEN) == MTL_LAYER_FROZEN);
+}
+
+
+//------------------------------------------------------------------------
+// Hook functions
+//------------------------------------------------------------------------
+void CWeatherSystem::TODUpdate(bool interpolate, bool force) {
+	// ! use self in the entiriety of this function
+	// as this here refers to the ITimeOfDay instance !
+	CWeatherSystem* self = g_pGame->GetWeatherSystem();
+
+	// call the original update
+	ITimeOfDay* pTOD = reinterpret_cast<ITimeOfDay*>(this);
+	(pTOD->*pTODUpdate)(interpolate, force);
+
+	// weather system by default is only able to force values for
+	// float values, not for color splines, therefore do some
+	// extra handling here for at least the sky & fog color
+	//
+	// assume that values specified by the server/user are multipliers
+	// as otherwise setting these would be really cumbersome given that
+	// i.e. sky color is orange in morning, but blue during the day
+	if (interpolate) {
+		// sky color (TOD implementation basically just sets IEngine3D's sky color)
+		ITimeOfDay::SVariableInfo info;
+		float x, y, z;
+		auto it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 6);
+		if (it != self->m_activeValues.end() && it->second.length() > 0 && it->second[0] == 'v' && sscanf(it->second.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
+			gEnv->p3DEngine->SetSkyColor(
+				gEnv->p3DEngine->GetSkyColor().CompMul(Vec3(x, y, z))
+			);
+		}
+		it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 8);
+		if (it != self->m_activeValues.end() && it->second.length() > 0 && it->second[0] == 'v' && sscanf(it->second.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
+			gEnv->p3DEngine->SetFogColor(
+				gEnv->p3DEngine->GetFogColor().CompMul(Vec3(x, y, z))
+			);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
 // Utility functions
 //------------------------------------------------------------------------
 
-static std::string GetFrozenGrassName(std::string_view path) {
+std::string CWeatherSystem::GetFrozenGrassName(std::string_view path) {
 	auto pos = path.rfind("/nicegrass");
 	if (pos != std::string::npos) {
 		std::string name;
@@ -571,7 +590,7 @@ static std::string GetFrozenGrassName(std::string_view path) {
 	return std::string{ path };
 }
 
-static std::string GetNormalGrassName(std::string_view path) {
+std::string CWeatherSystem::GetNormalGrassName(std::string_view path) {
 	auto pos = path.rfind("/frozen_nicegrass");
 	if (pos != std::string::npos) {
 		std::string name;
@@ -593,7 +612,7 @@ static std::string GetNormalGrassName(std::string_view path) {
 	return std::string{ path };
 }
 
-static SEffectInfo GetEffectInfo(std::string_view effect) {
+CWeatherSystem::SEffectInfo CWeatherSystem::GetEffectInfo(std::string_view effect) {
 	/*
 		Parse effect info from the following format "effect_name;key1=value1;key2=value2;key3=value3..."
 		Valid keys are:
