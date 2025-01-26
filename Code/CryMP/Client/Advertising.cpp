@@ -348,7 +348,7 @@ IMaterial* CAdManager::FindMaterial(const SAdGroup& group, const SAdVersion& ver
 	IMaterialManager* pMatMan(gEnv->p3DEngine->GetMaterialManager());
 	IMaterial* pNM(pMatMan->FindMaterial(name.c_str()));
 	if (!pNM) {
-		IMaterial* pMatSrc(pMatMan->LoadMaterial("Materials/Presets/MaterialTypes/clean/mat_metal_brushed", false, true));
+		IMaterial* pMatSrc(pMatMan->LoadMaterial("Materials/Presets/MaterialTypes/clean/mat_wood", false, true));
 		if (pMatSrc)
 		{
 			IMaterial* pMatDst(pMatMan->CreateMaterial(name.c_str(), pMatSrc->GetFlags() | MTL_FLAG_NON_REMOVABLE));
@@ -358,7 +358,7 @@ IMaterial* CAdManager::FindMaterial(const SAdGroup& group, const SAdVersion& ver
 
 				SInputShaderResources isr(si.m_pShaderResources);
 				isr.m_Textures[EFTT_DIFFUSE].m_Name = version.path.c_str();
-				isr.m_GlowAmount = 0.75f;
+				isr.m_GlowAmount = 0.4f;
 
 				SShaderItem siDst(gEnv->pRenderer->EF_LoadShaderItem(si.m_pShader->GetName(), true, EF_FORCE_RELOAD, &isr, si.m_pShader->GetGenerationMask()));
 				pMatDst->AssignShaderItem(siDst);
@@ -433,7 +433,7 @@ void CAdManager::FetchAds() {
 				  m_state = EAdState::eAS_Error;
 				}
 			} else {
-				 CryLogAlways("$4Failed to retrieve ads: %d", result.code);
+				 CryLogWarning("$4Failed to retrieve ads: %d", result.code);
 				 m_cycles[AD_CYCLE_ERROR] = m_time;
 				 m_state = EAdState::eAS_Error;
 			}

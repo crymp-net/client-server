@@ -541,15 +541,26 @@ void CWeatherSystem::TODUpdate(bool interpolate, bool force) {
 	// as otherwise setting these would be really cumbersome given that
 	// i.e. sky color is orange in morning, but blue during the day
 	if (interpolate) {
-		// sky color (TOD implementation basically just sets IEngine3D's sky color)
 		ITimeOfDay::SVariableInfo info;
 		float x, y, z;
-		auto it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 6);
+
+		// 2103 = Sun color
+		auto it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 3);
+		if (it != self->m_activeValues.end() && it->second.length() > 0 && it->second[0] == 'v' && sscanf(it->second.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
+			gEnv->p3DEngine->SetSunColor(
+				gEnv->p3DEngine->GetSunColor().CompMul(Vec3(x, y, z))
+			);
+		}
+
+		// 2106 = Sky color
+		it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 6);
 		if (it != self->m_activeValues.end() && it->second.length() > 0 && it->second[0] == 'v' && sscanf(it->second.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
 			gEnv->p3DEngine->SetSkyColor(
 				gEnv->p3DEngine->GetSkyColor().CompMul(Vec3(x, y, z))
 			);
 		}
+
+		// 2108 = Fog color
 		it = self->m_activeValues.find(WEATHER_ENV_NAMESPACE + 8);
 		if (it != self->m_activeValues.end() && it->second.length() > 0 && it->second[0] == 'v' && sscanf(it->second.c_str() + 1, "%f,%f,%f", &x, &y, &z) == 3) {
 			gEnv->p3DEngine->SetFogColor(
