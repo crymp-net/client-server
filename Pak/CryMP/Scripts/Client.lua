@@ -388,6 +388,7 @@ function InitializeClient()
 			activeProfile.static = profile
 			localState.STATIC_ID = profile.id
 			localState.STATIC_HASH = profile.token
+			_L.CPPAPI.SetProfile("static", profile.id, profile.token)
 		end)
 		:Catch(function(error)
 			printf(RED .. "[CryMP] " .. error)
@@ -428,6 +429,7 @@ function InitializeClient()
 							display = display,
 							master = authHost
 						}
+						_L.CPPAPI.SetProfile(profileType, id, token)
 						resolve(activeProfile[profileType])
 					end
 				end)

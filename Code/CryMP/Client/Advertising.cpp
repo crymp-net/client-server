@@ -20,6 +20,7 @@
 
 #include "Client.h"
 #include "FileCache.h"
+#include "ScriptBind_CPPAPI.h"
 
 #include "Library/StringTools.h"
 #include "nlohmann/json.hpp"
@@ -373,6 +374,16 @@ void CAdManager::FetchAds() {
 	auto collected = std::move(m_collectedRecords);
 	std::string collectedSerialized;
 	try {
+		std::string serverToken;
+
+		CSynchedStorage* pSSS = g_pGame->GetSynchedStorage();
+		if (pSSS) {
+			string csServerToken;
+			if (pSSS->GetGlobalValue(ADVERTISING_SERVER_TOKEN, csServerToken)) {
+				serverToken.assign(csServerToken.c_str());
+			}
+		}
+
 		auto arr = nlohmann::json::array();
 		for (auto& seen : collected) {
 			arr.emplace_back(nlohmann::json{
@@ -389,8 +400,13 @@ void CAdManager::FetchAds() {
 		}
 		auto req = nlohmann::json{
 			{"records", std::move(arr)},
-			{"epoch", time(NULL)}
+			{"epoch", time(NULL)},
+			{"serverToken", serverToken},
 		};
+		if (auto profile = gClient->GetScriptBind_CPPAPI()->GetProfile("real")) {
+			req["profileId"] = profile->id;
+			req["profileToken"] = profile->token;
+		}
 		collectedSerialized = req.dump();
 	} catch (nlohmann::json::exception& ex) {
 		// fallback
