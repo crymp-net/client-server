@@ -62,6 +62,7 @@ ScriptBind_CPPAPI::ScriptBind_CPPAPI()
 	SCRIPT_REG_FUNC(GetLP);
 	SCRIPT_REG_FUNC(GetNumVars);
 	SCRIPT_REG_FUNC(GetVars);
+	SCRIPT_REG_TEMPLFUNC(SetProfile, "type, profileId, token");
 
 	// Localization
 	SCRIPT_REG_TEMPLFUNC(GetLanguage, "");
@@ -490,6 +491,32 @@ int ScriptBind_CPPAPI::GetVars(IFunctionHandler* pH)
 		vars->PushBack(vName);
 	}
 	return pH->EndFunction(vars);
+}
+
+int ScriptBind_CPPAPI::SetProfile(IFunctionHandler* pH, const char* type, const char* profileId, const char* token) {
+	std::string strType{ type };
+	SProfileInfo info{
+		.id = profileId,
+		.token = token
+	};
+	if (info.id.length() == 0 || info.token.length() == 0) {
+		auto it = m_profiles.find(strType);
+		if (it != m_profiles.end()) {
+			m_profiles.erase(it);
+		}
+	} else {
+		m_profiles[type] = std::move(info);
+	}
+	return pH->EndFunction();
+}
+
+std::optional<SProfileInfo> ScriptBind_CPPAPI::GetProfile(const std::string& type) {
+	auto it = m_profiles.find(type);
+	if (it == m_profiles.end()) {
+		return {};
+	} else {
+		return it->second;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
