@@ -675,23 +675,28 @@ class VehicleConverter:
 
 	def _load_mods(self, mods: ET.Element):
 		for mod in mods:
-			assert mod.tag == 'Modification'
 			mod_name = mod.attrib['name']
 			if 'parent' in mod.attrib:
 				parent_name = mod.attrib['parent']
-				mod.extend(mods.findall(f'./Modification[@name="{parent_name}"]/Elems'))
-			for elems in mod:
-				assert elems.tag == 'Elems'
-				for elem in elems:
-					assert elem.tag == 'Elem'
-					elem_ref = elem.attrib['idRef']
-					elem_name = elem.attrib['name']
-					elem_value = elem.attrib['value']
-					if elem_ref not in self.mods:
-						self.mods[elem_ref] = {}
-					if elem_name not in self.mods[elem_ref]:
-						self.mods[elem_ref][elem_name] = {}
-					self.mods[elem_ref][elem_name][mod_name] = elem_value
+				for parent in mods.findall(f'./Modification[@name="{parent_name}"]'):
+					assert 'parent' not in parent.attrib
+					self._add_mod(parent, mod_name)
+			self._add_mod(mod, mod_name)
+
+	def _add_mod(self, mod: ET.Element, mod_name: str):
+		assert mod.tag == 'Modification'
+		for elems in mod:
+			assert elems.tag == 'Elems'
+			for elem in elems:
+				assert elem.tag == 'Elem'
+				elem_ref = elem.attrib['idRef']
+				elem_name = elem.attrib['name']
+				elem_value = elem.attrib['value']
+				if elem_ref not in self.mods:
+					self.mods[elem_ref] = {}
+				if elem_name not in self.mods[elem_ref]:
+					self.mods[elem_ref][elem_name] = {}
+				self.mods[elem_ref][elem_name][mod_name] = elem_value
 
 	################################################################################
 	# Physics

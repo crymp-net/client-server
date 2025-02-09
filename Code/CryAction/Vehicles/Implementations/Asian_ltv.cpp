@@ -176,7 +176,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
-					roof_part_1_part->SetValue("useOption", 0);
+					roof_part_1_part->SetValue("useOption", 1);
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
@@ -211,7 +211,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
-					roof_part_2_part->SetValue("useOption", 0);
+					roof_part_2_part->SetValue("useOption", 1);
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
@@ -246,7 +246,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
-					roof_part_3_part->SetValue("useOption", 0);
+					roof_part_3_part->SetValue("useOption", 1);
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
@@ -281,7 +281,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 				{
-					roof_part_4_part->SetValue("useOption", 0);
+					roof_part_4_part->SetValue("useOption", 1);
 				}
 				else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 				{
@@ -2466,7 +2466,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
-			seat_sounds->SetValue("mood", 0.6f);
+			seat_sounds->SetValue("mood", 0.0f);
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
@@ -2635,7 +2635,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
-			seat_sounds->SetValue("mood", 0.6f);
+			seat_sounds->SetValue("mood", 0.0f);
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
@@ -2707,7 +2707,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
-			seat_sounds->SetValue("mood", 0.6f);
+			seat_sounds->SetValue("mood", 0.0f);
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
@@ -2779,7 +2779,7 @@ bool Asian_ltv::Init(IGameObject* pGameObject)
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Unarmed"))
 		{
-			seat_sounds->SetValue("mood", 0.6f);
+			seat_sounds->SetValue("mood", 0.0f);
 		}
 		else if (StringTools::IsEqualNoCase(m_modName, "Gauss"))
 		{
