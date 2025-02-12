@@ -1618,7 +1618,7 @@ void COffHand::FinishAction(EOffHandActions eOHA)
 			m_mainHand = static_cast<CItem*>(GetOwnerActor()->GetCurrentItem());
 			m_mainHandWeapon = static_cast<CWeapon*>(m_mainHand ? m_mainHand->GetIWeapon() : NULL);
 		}
-		SetCurrentFireMode(m_lastFireModeId);
+		SetCurrentFireModeLocal(m_lastFireModeId);
 		float timeDelay = 0.1f;
 		if (!m_mainHand)
 		{
