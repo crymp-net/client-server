@@ -1977,8 +1977,28 @@ void CWeapon::SetCurrentFireMode(int idx)
 {
 	if (m_firemodes.empty())
 		return;
-
+	
 	GetGameObject()->SetAspectProfile(ASPECT_FIREMODE, idx);
+}
+
+//------------------------------------------------------------------------
+void CWeapon::SetCurrentFireModeLocal(int idx)
+{
+	if (m_firemodes.empty())
+		return;
+
+	if (m_fm)
+		m_fm->Activate(false);
+
+	if (idx >= m_firemodes.size())
+		m_fm = 0;
+	else
+		m_fm = m_firemodes[idx];
+
+	if (m_fm)
+	{
+		m_fm->Activate(true);
+	}
 }
 
 //------------------------------------------------------------------------
