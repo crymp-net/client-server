@@ -8218,3 +8218,67 @@ void CPlayer::UpdateModelChangeInVehicle()
 		SetVehicleRelinkUpdateId(0);
 	}
 }
+void CPlayer::OnObjectEvent(ObjectEvent evnt, IEntity* pObject)
+{
+	if (!pObject)
+		return;
+
+	const EntityId objectId = pObject->GetId();
+
+	IPhysicalEntity* pObjectPhysics = pObject->GetPhysics();
+	if (!pObjectPhysics)
+		return;
+
+	pe_action_awake awake;
+	awake.bAwake = 1;
+
+	pObjectPhysics->Action(&awake);
+
+	if (evnt == ObjectEvent::GRAB)
+	{
+		SetHeldObjectId(objectId);
+	}
+	else
+	{
+		SetHeldObjectId(0);
+		PlayAnimation("combat_plantUB_c4_01", 1.0f, false, true, 1);
+	}
+}
+
+void CPlayer::PlayAnimation(const char* animationName, float speed /*= 1.0f*/, bool loop /*= false*/, bool noBlend /*= false*/, int layerID /*= 0*/)
+{
+	// Get the character instance from the player's entity
+	ICharacterInstance* pCharInstance = GetEntity()->GetCharacter(0); // Assuming the first character slot
+	if (!pCharInstance)
+	{
+		return;
+	}
+
+	// Get the skeleton animation interface
+	ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
+	if (!pSkeletonAnim)
+	{
+		return;
+	}
+
+	// Prepare animation parameters
+	CryCharAnimationParams params;
+	float blend = noBlend ? 0.0f : 0.125f; // Default blend time
+	params.m_fTransTime = blend;
+	params.m_fLayerBlendIn = 0.0f; // No layer blending for simplicity
+	params.m_nLayerID = layerID; // Layer ID for this animation
+	params.m_nFlags = loop ? CA_LOOP_ANIMATION : 0; // Set looping if needed
+
+	// Ensure the animation name is valid
+	const char* fixedResourceName = animationName; // Modify or preprocess the name if needed
+	if (!fixedResourceName || strlen(fixedResourceName) == 0)
+	{
+		return;
+	}
+
+	// Start the animation
+	if (!pSkeletonAnim->StartAnimation(fixedResourceName, nullptr, nullptr, nullptr, params))
+	{
+	}
+}
+

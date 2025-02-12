@@ -1092,7 +1092,7 @@ public:
 	virtual void	SetStance(EStance stance);
 	virtual void	StanceChanged(EStance lastStance, EStance newStance) {};
 	virtual bool	TrySetStance(EStance stance); // Shared between humans and aliens.
-	  //
+	//
 
 	IAnimationGraphState* GetAnimationGraphState();
 	IAnimatedCharacter* GetAnimatedCharacter() const { return m_pAnimatedCharacter; };
@@ -1216,7 +1216,7 @@ protected:
 
 	float m_frozenAmount; // internal amount. used to leave authority over frozen state at game
 
-	  // ScreenEffects-related variables
+	// ScreenEffects-related variables
 	CScreenEffects* m_screenEffects;
 
 	// Weapon Attachment manager
@@ -1275,9 +1275,9 @@ public:
 		return m_currentPhysProfile;
 	}
 
-//////////////////////////////////////////////////////////////////////////////////
-//CryMP
-//////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	//CryMP
+	//////////////////////////////////////////////////////////////////////////////////
 public:
 
 	bool IsPlayerClass() const
@@ -1354,6 +1354,14 @@ public:
 	{
 		return m_vehicleRelinkUpdateId;
 	}
+
+	enum class ObjectEvent
+	{
+		GRAB,
+		THROW
+	};
+
+	virtual void OnObjectEvent(ObjectEvent evnt, IEntity* pObject) {};
 
 private:
 

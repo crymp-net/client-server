@@ -4241,7 +4241,7 @@ IMPLEMENT_RMI(CActor, ClPickUp)
 			IEntity* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
 			if (pObject)
 			{
-				SetHeldObjectId(params.itemId);
+				OnObjectEvent(ObjectEvent::GRAB, pObject);
 			}
 		}
 		return true;
