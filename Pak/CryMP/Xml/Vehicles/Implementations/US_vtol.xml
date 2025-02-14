@@ -353,6 +353,14 @@
     </View>
     <View class="FirstPerson" canRotate="0" rotationBoundsActionMult="0">
      <FirstPerson helper="pilot_eye_pos" hideVehicle="1"/>
+        <InteriorParts>
+			<Interior name="glass" opacity="0"/>
+			<Interior name="interior" opacity="0"/>
+			<Interior name="cockpit" opacity="0"/>
+			<Interior name="metal" opacity="0"/>
+	        <Interior name="entity" opacity="0"/>
+			<Interior name="main" opacity="0"/>
+        </InteriorParts>
     </View>
     <View class="ActionThirdPerson" canRotate="0">
      <ActionThirdPerson cameraPosOffset="0,0,0" cameraAimOffset="0,0,0" lagSpeed="6" velocityMult="0.0099999998,0,0.001"/>
