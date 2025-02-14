@@ -280,6 +280,7 @@ bool CVehicleAnimation::PlaySound(TVehicleAnimStateId stateId)
 		{
 			ISound* pSound = pEntitySoundsProxy->GetSound(state.soundId);
 			if (pSound && pSound->IsPlaying())
+			{
 				return false;
 			}
 			else
