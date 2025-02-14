@@ -494,7 +494,7 @@
  <Animations>
   <Animation name="rotor" part="body">
    <States>
-    <State name="default" animation="helicopter_rotate_mainrotor" sound="sounds/vehicles:asian_helicopter:rotor" soundHelper="rotorSmokeOut" isLooped="1" speedDefault="0" speedMin="0" speedMax="1" id="idRotorAnim">
+    <State name="default" animation="helicopter_rotate_mainrotor" sound="sounds/vehicles:asian_helicopter:rotor" soundHelper="rotorSmokeOut" timeRestartAnim = "0.2" isLooped="1" speedDefault="0" speedMin="0" speedMax="1" id="idRotorAnim">
      <Materials>
       <Material name="rotorblades" setting="opacity" invertValue="1"/>
       <Material name="motion_blur" setting="opacity" invertValue="0"/>

@@ -236,9 +236,10 @@ void CVehicleAnimation::StopAnimation()
 	if (ICharacterInstance* pCharInstance = pEntity->GetCharacter(m_pPartAnimated->GetSlot()))
 	{
 		ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
-		assert(pSkeletonAnim);
-
-		pSkeletonAnim->StopAnimationInLayer(m_layerId, 0.0f);
+		if (pSkeletonAnim && animState.timeRestartAnim <= 0.0f)
+		{
+			pSkeletonAnim->StopAnimationInLayer(m_layerId, 0.0f);
+		}
 	}
 
 	if (animState.soundId != INVALID_SOUNDID)
@@ -270,13 +271,22 @@ bool CVehicleAnimation::PlaySound(TVehicleAnimStateId stateId)
 
 	IEntity* pEntity = m_pPartAnimated->GetEntity();
 	IEntitySoundProxy* pEntitySoundsProxy = static_cast<IEntitySoundProxy*>(pEntity->CreateProxy(ENTITY_PROXY_SOUND));
-	if (!pEntity || pEntitySoundsProxy)
+	if (!pEntity || !pEntitySoundsProxy)
 		return  false;
 
-	if (animState.soundId != INVALID_SOUNDID)
+	for (SAnimationState& state : m_animationStates)
 	{
-		pEntitySoundsProxy->StopSound(animState.soundId);
-		animState.soundId = INVALID_SOUNDID;
+		if (state.soundId != INVALID_SOUNDID)
+		{
+			ISound* pSound = pEntitySoundsProxy->GetSound(state.soundId);
+			if (pSound && pSound->IsPlaying())
+				return false;
+			}
+			else
+			{
+				state.soundId = INVALID_SOUNDID;
+			}
+		}
 	}
 
 	int soundFlags = FLAG_SOUND_DEFAULT_3D;
