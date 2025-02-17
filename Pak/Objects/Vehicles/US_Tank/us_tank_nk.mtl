@@ -1,0 +1,236 @@
+<Material MtlFlags="256">
+ <SubMaterials>
+  <Material Name="us_tank_armor_plate" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_skirt_armor_plate_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_skirt_armor_plate_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="22" TileV="7"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="us_tank_boxes_cans" MtlFlags="128" Shader="Metal" GenMask="268443648" SurfaceType="" Diffuse="0.423529,0.423529,0.423529" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="1" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_boxes_cans_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_boxes_cans_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/vehicles/us_tank/us_tank_boxes_cans_ddn.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.17900001" AnisotropicShape="0.25"/>
+  </Material>
+  <Material Name="us_tank_turret" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_turret_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_turret_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="25" TileV="25"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="us_tank_treads" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="" Diffuse="0.44705901,0.44705901,0.44705901" Specular="0.152941,0.152941,0.16078401" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_track.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_track_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Bumpmap" File="objects/vehicles/us_tank/us_tank_track_ddn.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="us_tank_grills" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.45882401,0.45882401,0.45882401" Specular="0.384314,0.40784299,0.40392199" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_grill.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_grill_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="25" TileV="25"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="us_tank_chassis" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.49019599,0.49019599,0.49019599" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_chassis_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_chassis_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="25" TileV="25"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="us_tank_wheels" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="" Diffuse="0.50196099,0.50588202,0.52548999" Specular="0.152941,0.152941,0.152941" Emissive="0,0,0" Shininess="50" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_wheel.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_wheel_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/vehicles/us_tank/us_tank_wheel_ddn.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="us_tank_doors_additionals" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.38039199,0.38039199,0.38039199" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_doors_additionals.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_doors_additionals_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="25" TileV="25"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="us_tank_reactive_armor" MtlFlags="128" Shader="Metal" GenMask="268443648" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_reactive_armor_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_reactive_armor_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/vehicles/us_tank/us_tank_reactive_armor_ddn.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="5" TileV="5"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.17900001" AnisotropicShape="0.25"/>
+  </Material>
+  <Material Name="hull_proxy" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="mat_metal" Diffuse="1,0.40000001,0" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="0.47">
+   <Textures />
+  </Material>
+  <Material Name="proxy_decal" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="mat_metal" Diffuse="0,0,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="0.34999999">
+   <Textures />
+  </Material>
+  <Material Name="us_tank_decals" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="0.48627499,0.48627499,0.48627499" Specular="0.20784301,0.20784301,0.20784301" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="us_tank_shiten" MtlFlags="128" Shader="Metal" GenMask="268443648" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.61960799,0.66666698,0.65490198" Emissive="0,0,0" Shininess="1" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/weapons/asian/shi_ten/texture/shi_ten.tif" Filter="0">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/weapons/asian/shi_ten/texture/shi_ten_spec.tif" Filter="0">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/weapons/asian/shi_ten/texture/shi_ten_ddn.tif" Filter="0">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.25600001" AnisotropicShape="0.79900002"/>
+  </Material>
+  <Material Name="us_tank_cage" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.55686301,0.55686301,0.55686301" Specular="0.41568601,0.41568601,0.41568601" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_turret_cage.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_turret_cage_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="25" TileV="25"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.229" Glossiness="0.75"/>
+  </Material>
+  <Material Name="shiten_handles" MtlFlags="128" Shader="Metal" GenMask="268443664" SurfaceType="" Diffuse="0.49411801,0.49411801,0.49411801" Specular="0.384314,0.384314,0.384314" Emissive="0,0,0" Shininess="1" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/weapons/asian/shi_ten/texture/shiten_handles.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/weapons/asian/shi_ten/texture/shiten_handles_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/weapons/asian/shi_ten/shiten_handles_ddn.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Environment" File="objects/weapons/us/socom/socom_env.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.17" AnisotropicShape="0.89099997" ReflectionAmount="0.119" FresnelBias="0.109" FresnelScale="1"/>
+  </Material>
+  <Material Name="shiten_tripod" MtlFlags="128" Shader="Metal" GenMask="268443648" SurfaceType="" Diffuse="0.45882401,0.45882401,0.45882401" Specular="1,1,1" Emissive="0,0,0" Shininess="1" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/weapons/asian/shi_ten/texture/tripod.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/weapons/asian/shi_ten/texture/tripod_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/weapons/asian/shi_ten/texture/tripod_ddn.tif" Amount="50">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.20100001" AnisotropicShape="0.37200001"/>
+  </Material>
+  <Material Name="us_tank_damaged" MtlFlags="128" Shader="Illum" GenMask="268435456" SurfaceType="" Diffuse="0.52548999,0.52548999,0.52548999" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_damage.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="SubMtl18" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="SubMtl19" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="SubMtl20" MtlFlags="128" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="SubMtl21" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="SubMtl22" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="searchlight" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="mat_metal" Diffuse="1,1,1" Specular="1.88,1.88,1.88" Emissive="0,0,0" Shininess="10.4" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/weapons/asian/shi_ten/texture/searchlight.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/weapons/asian/shi_ten/texture/searchlight.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams Displacement="0.025" AmbientMultiplier="1"/>
+</Material>
