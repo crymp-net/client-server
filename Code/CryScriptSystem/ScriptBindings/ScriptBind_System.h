@@ -104,4 +104,7 @@ public:
 	int GetVehicleClasses(IFunctionHandler* pH);
 	int AwakeDefaultObjects(IFunctionHandler* pH);
 	int GetItemClasses(IFunctionHandler* pH);
+	int GetCountOfClass(IFunctionHandler* pH, const char* EntityClass);
+	int GetEntityIdByNumId(IFunctionHandler* pH, int entityId);
+	int RemoveEntitiesByClass(IFunctionHandler* pH, const char* EntityClass);
 };
