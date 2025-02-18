@@ -32,14 +32,14 @@ public:
 
 	// IVehiclePart
 	virtual bool Init(IVehicle* pVehicle, const CVehicleParams& table, IVehiclePart* parent, CVehicle::SPartInitInfo& initInfo);
-  virtual void InitGeometry();
-  virtual void Reset();
+	virtual void InitGeometry();
+	virtual void Reset();
 	virtual void Release();
 
 	virtual void OnEvent(const SVehiclePartEvent& event);
 
-	virtual bool ChangeState(EVehiclePartState state, int flags=0);
-		
+	virtual bool ChangeState(EVehiclePartState state, int flags = 0);
+
 	virtual void Physicalize();
 
 	virtual const Matrix34& GetLocalTM(bool relativeToParentPart);
@@ -50,32 +50,36 @@ public:
 
 	virtual void Serialize(TSerialize serialize, unsigned aspects);
 	virtual void RegisterSerializer(IGameObjectExtension* gameObjectExt) {}
-  virtual int GetType(){ return m_typeId; }
-	virtual void GetMemoryStatistics(ICrySizer * s);
+	virtual int GetType() { return m_typeId; }
+	virtual void GetMemoryStatistics(ICrySizer* s);
 	// ~IVehiclePart
 
-  virtual void SetUVSpeed(float wheelSpeed);
-  
-  void SkeletonPostProcess(ICharacterInstance* pCharInstance);
-      
-protected:  
+	void SkeletonPostProcess(ICharacterInstance* pCharInstance);
+
+	void UpdateU();
+
+protected:
 
 	void SetDamageRatio(float value);
 
-  _smart_ptr<ICharacterInstance> m_pCharInstance;  		
-	int m_lastWheelIndex;
-	float m_uvRateMax;
-		
-	float m_lastWheelW;
-  float m_lastUpdate;
-	
-  _smart_ptr<IMaterial> m_pMaterial;
+	_smart_ptr<ICharacterInstance> m_pCharInstance = nullptr;
+	int m_lastWheelIndex = 0;
+
+	float m_uvSpeedMultiplier = 0.0f;
+
+	bool m_forceSetU = false;
+	float m_wantedU = 0.0f;
+	float m_currentU = 0.0f;
+
+	float m_wheelSpeedSmooth = 0.0f;
+
+	_smart_ptr<IMaterial> m_pMaterial;
 	_smart_ptr<IRenderShaderResources> m_pShaderResources;
 
 	struct SWheelInfo
 	{
 		int slot;
-		int jointId;    
+		int jointId;
 		CVehiclePartSubPartWheel* pWheel;
 	};
 
