@@ -112,4 +112,5 @@ public:
 protected:
 	void OnGlobalChanged(TSynchedKey key, const TSynchedValue & value) override;
 	void OnEntityChanged(EntityId entityId, TSynchedKey key, const TSynchedValue & value) override;
+	void ClearNonExistingEntities();
 };
