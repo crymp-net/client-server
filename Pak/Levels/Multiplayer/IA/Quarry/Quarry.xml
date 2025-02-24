@@ -1,0 +1,8 @@
+<MetaData>
+   <MiniMap Filename="Quarry.dds" startX="1225.113159" startY="957.254517" endX="1589.113159" endY="1321.254517" mapRadius="50"/>
+   <Gamerules MP1="InstantAction" MP2="TeamInstantAction"/>
+   <LoadingScreens screen1="Quarry_Loading.dds"/>
+   <HeaderText text="Quarry"/>
+   <DescriptionText text="@Loading_screen_info_quarry"/>
+   <Display Name="Quarry"/>
+</MetaData>
