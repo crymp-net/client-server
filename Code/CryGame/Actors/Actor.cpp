@@ -3561,6 +3561,7 @@ IMPLEMENT_RMI(CActor, SvRequestPickUpItem)
 				{
 					m_pGameFramework->GetNetContext()->DelegateAuthority(params.itemId, pNetChannel);
 					SetHeldObjectId(params.itemId);
+					OnObjectEvent(ObjectEvent::GRAB);
 
 					GetGameObject()->InvokeRMIWithDependentObject(CActor::ClPickUp(), CActor::PickItemParams(params.itemId, false, false), eRMI_ToAllClients | eRMI_NoLocalCalls, params.itemId);
 				}
@@ -4241,7 +4242,8 @@ IMPLEMENT_RMI(CActor, ClPickUp)
 			IEntity* pObject = gEnv->pEntitySystem->GetEntity(params.itemId);
 			if (pObject)
 			{
-				OnObjectEvent(ObjectEvent::GRAB, pObject);
+				SetHeldObjectId(params.itemId);
+				OnObjectEvent(ObjectEvent::GRAB);
 			}
 		}
 		return true;

@@ -1258,7 +1258,8 @@ protected:
 	int				m_teamId;
 	EntityId	m_lastItemId;
 
-	EntityId m_HoldingObjectId = (EntityId)0;
+	EntityId m_heldObjectId = (EntityId)0;
+	EntityId m_heldCloneObjectId = (EntityId)0;
 
 public:
 	// Can occur only when we're not zooming out
@@ -1292,8 +1293,11 @@ public:
 	virtual bool IsFpSpectatorTarget() const { return false; }
 	virtual bool IsTpSpectatorTarget() const { return false; }
 
-	EntityId GetHeldObjectId() const { return m_HoldingObjectId; }
-	void SetHeldObjectId(EntityId objectId) { m_HoldingObjectId = objectId; }
+	EntityId GetHeldObjectId() const { return m_heldObjectId; }
+	void SetHeldObjectId(EntityId objectId) { m_heldObjectId = objectId; }
+
+	EntityId GetHeldCloneObjectId() const { return m_heldCloneObjectId; }
+	void SetHeldCloneObjectId(EntityId objectId) { m_heldCloneObjectId = objectId; }
 
 	void SaveNick(const std::string_view& name);
 
@@ -1361,7 +1365,7 @@ public:
 		THROW
 	};
 
-	virtual void OnObjectEvent(ObjectEvent evnt, IEntity* pObject) {};
+	virtual void OnObjectEvent(ObjectEvent evnt) {};
 
 private:
 

@@ -8218,8 +8218,10 @@ void CPlayer::UpdateModelChangeInVehicle()
 		SetVehicleRelinkUpdateId(0);
 	}
 }
-void CPlayer::OnObjectEvent(ObjectEvent evnt, IEntity* pObject)
+
+void CPlayer::OnObjectEvent(ObjectEvent evnt)
 {
+	IEntity* pObject = gEnv->pEntitySystem->GetEntity(GetHeldObjectId());
 	if (!pObject)
 		return;
 
@@ -8231,30 +8233,34 @@ void CPlayer::OnObjectEvent(ObjectEvent evnt, IEntity* pObject)
 
 	pe_action_awake awake;
 	awake.bAwake = 1;
-
 	pObjectPhysics->Action(&awake);
 
 	if (evnt == ObjectEvent::GRAB)
 	{
-		SetHeldObjectId(objectId);
+		COffHand* pOffHand = static_cast<COffHand*>(GetItemByClass(CItem::sOffHandClass));
+		if (pOffHand)
+		{
+			pOffHand->PickUpObject_MP(this, objectId);
+		}
 	}
 	else
 	{
-		SetHeldObjectId(0);
-		PlayAnimation("combat_plantUB_c4_01", 1.0f, false, true, 1);
+		COffHand* pOffHand = static_cast<COffHand*>(GetItemByClass(CItem::sOffHandClass));
+		if (pOffHand)
+		{
+			pOffHand->ThrowObject_MP(this, objectId);
+		}
 	}
 }
 
 void CPlayer::PlayAnimation(const char* animationName, float speed /*= 1.0f*/, bool loop /*= false*/, bool noBlend /*= false*/, int layerID /*= 0*/)
 {
-	// Get the character instance from the player's entity
-	ICharacterInstance* pCharInstance = GetEntity()->GetCharacter(0); // Assuming the first character slot
+	ICharacterInstance* pCharInstance = GetEntity()->GetCharacter(0);
 	if (!pCharInstance)
 	{
 		return;
 	}
 
-	// Get the skeleton animation interface
 	ISkeletonAnim* pSkeletonAnim = pCharInstance->GetISkeletonAnim();
 	if (!pSkeletonAnim)
 	{
@@ -8269,16 +8275,14 @@ void CPlayer::PlayAnimation(const char* animationName, float speed /*= 1.0f*/, b
 	params.m_nLayerID = layerID; // Layer ID for this animation
 	params.m_nFlags = loop ? CA_LOOP_ANIMATION : 0; // Set looping if needed
 
-	// Ensure the animation name is valid
-	const char* fixedResourceName = animationName; // Modify or preprocess the name if needed
+	const char* fixedResourceName = animationName;
 	if (!fixedResourceName || strlen(fixedResourceName) == 0)
 	{
 		return;
 	}
 
 	// Start the animation
-	if (!pSkeletonAnim->StartAnimation(fixedResourceName, nullptr, nullptr, nullptr, params))
+	if (pSkeletonAnim->StartAnimation(fixedResourceName, nullptr, nullptr, nullptr, params))
 	{
 	}
 }
-

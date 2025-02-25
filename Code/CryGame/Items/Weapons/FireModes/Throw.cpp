@@ -301,9 +301,10 @@ void CThrow::DoThrow()
 	}
 	m_forceNextThrow = false;
 
-	if (CActor *owner = m_pWeapon->GetOwnerActor())
+	if (CPlayer * pPlayer = CPlayer::FromActor(m_pWeapon->GetOwnerActor()))
 	{
-		CPlayer *pPlayer = (CPlayer *)owner;
+		pPlayer->OnObjectEvent(CActor::ObjectEvent::THROW);
+
 		if(CNanoSuit *pSuit = pPlayer->GetNanoSuit())
 		{
 			ENanoMode curMode = pSuit->GetMode();
