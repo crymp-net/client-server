@@ -1186,6 +1186,39 @@ void CPlayer::UpdateParachuteIK()
 	}
 }
 
+void CPlayer::UpdateHeldObjectIK()
+{
+	const EntityId objectId = GetHeldObjectId();
+	IEntity* pObject = objectId ? gEnv->pEntitySystem->GetEntity(objectId) : nullptr;
+	if (pObject)
+	{
+		SMovementState info;
+		IMovementController* pMC = GetMovementController();
+		pMC->GetMovementState(info);
+
+		// Use the player's eye direction to adjust the object position
+		Vec3 eyePos = info.eyePosition;
+		Vec3 eyeDir = info.eyeDirection.GetNormalized(); // Eye direction in world space
+
+		QuatT rootBoneWorldRot = GetAnimatedCharacter()->GetAnimLocation();
+		Vec3 worldPos = rootBoneWorldRot.t; // Extracts the world position
+		Vec3 forwardDir = rootBoneWorldRot.q.GetColumn1();
+
+		// Calculate the object position based on eye direction
+		Vec3 objectPos = pObject->GetWorldPos(); //worldPos + forwardDir * 2.5f; // Place the object 1 unit in front of the eyes
+		//objectPos.z -= 0.2f;
+
+		// Adjust the hand positions around the object
+		Vec3 handOffset = eyeDir.Cross(Vec3(0, 0, 1)).GetNormalized() * 0.3f; // Offset for left and right
+		Vec3 leftHandTarget = objectPos - handOffset;
+		Vec3 rightHandTarget = objectPos + handOffset;
+
+		// Set inverse kinematics for the hands
+		SetIKPos("leftArm", leftHandTarget, 1);
+		SetIKPos("rightArm", rightHandTarget, 1);
+	}
+}
+
 void CPlayer::UpdateParachuteMorph(float frameTime)
 {
 	const bool open = m_stats.inFreefall.Value() == 2;
@@ -5378,6 +5411,7 @@ void CPlayer::ProcessBonesRotation(ICharacterInstance* pCharacter, float frameTi
 	else
 	{
 		UpdateParachuteIK();
+		UpdateHeldObjectIK();
 	}
 
 	CActor::ProcessBonesRotation(pCharacter, frameTime);

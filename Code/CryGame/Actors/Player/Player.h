@@ -637,6 +637,7 @@ public:
 
 	void UpdateParachute(float frameTime);
 	void UpdateParachuteIK();
+	void UpdateHeldObjectIK();
 	void UpdateParachuteMorph(float frameTime);
 	void ChangeParachuteState(int8 newState);
 	void DeployParachute(bool show, bool sound);
