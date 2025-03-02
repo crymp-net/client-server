@@ -159,7 +159,7 @@ void CDebugGun::Update(SEntityUpdateContext& ctx, int update)
 				pe_status_dynamics status;
 				if (pPhysEnt->GetStatus(&status))
 				{
-					if (status.mass > 0.f)
+					//if (status.mass > 0.f)
 						pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "%.1f kg", status.mass);
 
 					pRenderer->Draw2dLabel(x, y += dy, font, drawColor, false, "pe_type: %i", pPhysEnt->GetType());
