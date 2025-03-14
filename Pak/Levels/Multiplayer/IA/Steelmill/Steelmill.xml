@@ -1,0 +1,8 @@
+<MetaData>
+   <MiniMap Filename="Steelmill.dds" startX="833.717896" startY="968.881836" endX="1637.717896" endY="1772.881836" mapRadius="50"/>
+   <Gamerules MP1="InstantAction" MP2="TeamInstantAction"/>
+   <LoadingScreens screen1="Steelmill_Loading.dds"/>
+   <HeaderText text="Steel Mill"/>
+   <DescriptionText text="@Loading_screen_info_steelmill"/>
+   <Display Name="Steel Mill"/>
+</MetaData>
