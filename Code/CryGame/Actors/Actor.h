@@ -1259,7 +1259,7 @@ protected:
 	EntityId	m_lastItemId;
 
 	EntityId m_heldObjectId = (EntityId)0;
-	EntityId m_heldCloneObjectId = (EntityId)0;
+	float m_heldObjectMass = 0.0f;
 
 public:
 	// Can occur only when we're not zooming out
@@ -1296,14 +1296,19 @@ public:
 	EntityId GetHeldObjectId() const { return m_heldObjectId; }
 	void SetHeldObjectId(EntityId objectId) { m_heldObjectId = objectId; }
 
-	EntityId GetHeldCloneObjectId() const { return m_heldCloneObjectId; }
-	void SetHeldCloneObjectId(EntityId objectId) { m_heldCloneObjectId = objectId; }
+	float GetHeldObjectMass() const { return m_heldObjectMass; }
+	void SetHeldObjectMass(float mass)
+	{
+		m_heldObjectMass = mass; 
+	}
 
 	void SaveNick(const std::string_view& name);
 
 	bool IsGhostPit();
 
-	IAttachment* CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName);
+	IAttachment* CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName,
+		const Vec3& offsetPosition = Vec3(ZERO),
+		const Quat& offsetRotation = Quat(IDENTITY));
 
 	void HideAllAttachments(int characterSlot, bool hide, bool hideShadow);
 	void HideAttachment(int characterSlot, const char* attachmentName, bool hide, bool hideShadow);
