@@ -887,6 +887,15 @@ void CActor::SetActorModel()
 		CreateBoneAttachment(EntitySlot::CHARACTER, "alt_weapon_bone01", "left_item_attachment");
 		CreateBoneAttachment(EntitySlot::CHARACTER, "weapon_bone", "laser_attachment");
 
+		//CryMP specific:
+		if (gEnv->bMultiplayer && GetActorClass() == ActorType::CPlayer)
+		{
+			Vec3 positionOffset(0.007f, -0.065f, 0.025f);
+			Quat rotationOffset = Quat(IDENTITY); 
+
+			CreateBoneAttachment(EntitySlot::CHARACTER, "alt_weapon_bone01", "left_hand_grenade_attachment", positionOffset, rotationOffset);
+		}
+
 		// Additional attachments if defined
 		CallCreateAttachments();
 	}
@@ -4406,10 +4415,11 @@ bool CActor::IsGhostPit()
 	return false;
 }
 
-IAttachment* CActor::CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName)
+IAttachment* CActor::CreateBoneAttachment(int characterSlot, const char* boneName, const char* attachmentName,
+	const Vec3& offsetPosition /*= Vec3(ZERO)*/,
+	const Quat& offsetRotation /*= Quat(IDENTITY)*/)
 {
 	ICharacterInstance* pCharacter = GetEntity()->GetCharacter(characterSlot);
-
 	if (!pCharacter)
 	{
 		return nullptr;
@@ -4417,13 +4427,24 @@ IAttachment* CActor::CreateBoneAttachment(int characterSlot, const char* boneNam
 
 	IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
 	IAttachment* pIAttachment = pIAttachmentManager->GetInterfaceByName(attachmentName);
+
 	if (!pIAttachment)
 	{
 		pIAttachment = pIAttachmentManager->CreateAttachment(attachmentName, CA_BONE, boneName);
+		if (pIAttachment)
+		{
+			// Apply the provided offset immediately after creation
+			if (!offsetPosition.IsZero() || !offsetRotation.IsIdentity())
+			{
+				QuatT offset(offsetRotation, offsetPosition);
+				pIAttachment->SetAttRelativeDefault(offset);
+			}
+		}
 	}
 
 	return pIAttachment;
 }
+
 
 void CActor::HideAllAttachments(int characterSlot, bool hide, bool hideShadow)
 {
