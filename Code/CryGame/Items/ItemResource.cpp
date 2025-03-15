@@ -437,7 +437,10 @@ bool CItem::SetGeometry(int slot, const ItemString& name, const Vec3& poffset, c
 
 			CreateAttachmentHelpers(slot);
 
-			SetDefaultIdleAnimation(slot, g_pItemStrings->idle);
+			if (GetEntity()->GetClass() != sOffHandClass) //CryMP: Fix wrong object position after switching from 3rd to 1st person
+			{
+				SetDefaultIdleAnimation(slot, g_pItemStrings->idle);
+			}
 		}
 
 		if (slot == eIGS_FirstPerson)

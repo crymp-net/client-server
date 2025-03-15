@@ -1076,7 +1076,9 @@ void CItem::SetHand(int hand)
 	}
 
 	if (result)
+	{
 		PlayAction(m_idleAnimation[eIGS_FirstPerson], 0, true, (eIPAF_Default | eIPAF_NoBlend) & ~eIPAF_Owner);
+	}
 }
 
 //------------------------------------------------------------------------

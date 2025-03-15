@@ -2700,6 +2700,14 @@ void ItemSystem::RegisterXMLData()
 				node_geometry_aux1->SetAttribute("name", "objects/weapons/us/smoke grenade/smoke_grenade_tp.cgf");
 			}
 			{
+				IItemParamsNode* node_geometry_aux2 = node_geometry->InsertChild("ownerloop");
+				node_geometry_aux2->SetAttribute("name", "objects/weapons/us/Flashbang/Flashbang.cgf");
+			}
+			{
+				IItemParamsNode* node_geometry_aux3 = node_geometry->InsertChild("owner");
+				node_geometry_aux3->SetAttribute("name", "objects/weapons/us/emp_grenade/emp_grenade.cgf");
+			}
+			{
 				IItemParamsNode* node_geometry_boneAttachments = node_geometry->InsertChild("boneAttachments");
 				{
 					IItemParamsNode* node_geometry_boneAttachments_attachment = node_geometry_boneAttachments->InsertChild("attachment");

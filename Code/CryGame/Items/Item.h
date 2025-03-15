@@ -25,6 +25,7 @@
 #include "CryCommon/CryAction/IActionMapManager.h"
 #include "CryCommon/CryAnimation/CryCharAnimationParams.h"
 #include "CryCommon/CrySoundSystem/ISound.h"
+#include "CryCommon/CryRenderer/IRenderer.h"
 #include <map>
 #include <list>
 
@@ -1398,7 +1399,39 @@ public:
 	{
 		m_stats.selected = false;
 	}
-};
 
+	template<class... Args>
+	void DrawLog(const char* msg, Args... args)
+	{
+		int index = 1;
+		IItemSystem* pItemSystem = gEnv->pGame->GetIGameFramework()->GetIItemSystem();
+		int k = 1;
+
+		IEntitySystem* pES = gEnv->pEntitySystem;
+		IEntityItPtr pIt = pES->GetEntityIterator();
+		while (!pIt->IsEnd())
+		{
+			if (IEntity* pEnt = pIt->Next())
+			{
+				if (IItem* pItem = pItemSystem->GetItem(pEnt->GetId()))
+				{
+					if (!pItem->GetOwnerId())
+						continue;
+
+					if (pItem == this)
+					{
+						index = k;
+						break;
+					}
+					++k;
+				}
+			}
+		}
+
+		f32 fColor[4] = { 1,1,0,1 };
+		f32 g_YLine = 60.0f + (k * 13.f);
+		gEnv->pRenderer->Draw2dLabel(1, g_YLine, 1.0f, fColor, false, msg, args...);
+	}
+};
 
 #endif //__ITEM_H__

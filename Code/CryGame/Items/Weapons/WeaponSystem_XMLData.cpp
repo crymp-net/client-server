@@ -6409,11 +6409,11 @@ void CWeaponSystem::RegisterXMLData()
 			IItemParamsNode* node_geometry = node->InsertChild("geometry");
 			{
 				IItemParamsNode* node_geometry_firstperson = node_geometry->InsertChild("firstperson");
-				node_geometry_firstperson->SetAttribute("name", "objects/weapons/us/Transceiver/Transceiver_tp.cgf");
+				node_geometry_firstperson->SetAttribute("name", "objects/weapons/us/emp_grenade/emp_grenade.cgf");
 			}
 			{
 				IItemParamsNode* node_geometry_thirdperson = node_geometry->InsertChild("thirdperson");
-				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/us/Transceiver/Transceiver_tp.cgf");
+				node_geometry_thirdperson->SetAttribute("name", "objects/weapons/us/emp_grenade/emp_grenade.cgf");
 			}
 		}
 		{
