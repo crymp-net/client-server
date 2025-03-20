@@ -1217,6 +1217,95 @@ void CPlayer::UpdateHeldObjectIK()
 		SetIKPos("leftArm", leftHandTarget, 1);
 		SetIKPos("rightArm", rightHandTarget, 1);
 	}
+void CPlayer::UpdateHeldObjectIK()
+{
+	const EntityId objectId = GetHeldObjectId();
+	IEntity* pObject = objectId ? gEnv->pEntitySystem->GetEntity(objectId) : nullptr;
+	if (pObject)
+	{
+		SMovementState info;
+		IMovementController* pMC = GetMovementController();
+		pMC->GetMovementState(info);
+
+		Vec3 eyePos = info.eyePosition;
+		Vec3 eyeDir = info.eyeDirection.GetNormalized();
+
+		QuatT rootBoneWorldRot = GetAnimatedCharacter()->GetAnimLocation();
+		Vec3 worldPos = rootBoneWorldRot.t;
+		Vec3 forwardDir = rootBoneWorldRot.q.GetColumn1();
+
+		// Get object position using center of mass
+		Vec3 objectPos;
+		IPhysicalEntity* pent = pObject->GetPhysics();
+		pe_status_dynamics sd;
+		if (pent && pent->GetStatus(&sd))
+		{
+			objectPos = sd.centerOfMass;
+		}
+		else
+		{
+			objectPos = pObject->GetPos(); // Fallback to entity position if no physics
+		}
+
+		// Get object orientation
+		Quat objectRot = pObject->GetRotation();
+		Vec3 objectRight = objectRot.GetColumn0(); // Right vector of the object
+
+		// Adjust rayOffset based on object size using entity bounds
+		float rayOffset = 0.4f;
+		AABB bbox;
+		pObject->GetLocalBounds(bbox);
+		float objectWidth = (bbox.max.x - bbox.min.x);
+		rayOffset = objectWidth * 0.6f; // Start ray wider for large objects
+
+		float rayLength = 0.5f;
+
+		Vec3 leftRayOrigin = objectPos - (objectRight * rayOffset);
+		Vec3 rightRayOrigin = objectPos + (objectRight * rayOffset);
+
+		// Perform raycasts directly to the held object
+		ray_hit leftHit, rightHit;
+		bool leftRayHit = false;
+		bool rightRayHit = false;
+
+		if (pent)
+		{
+			leftRayHit = gEnv->pPhysicalWorld->RayTraceEntity(
+				pent, leftRayOrigin, objectRight * rayLength, &leftHit);
+
+			rightRayHit = gEnv->pPhysicalWorld->RayTraceEntity(
+				pent, rightRayOrigin, -objectRight * rayLength, &rightHit);
+		}
+
+		// Update hand targets based on ray hits
+		Vec3 leftHandTarget = leftRayHit ? leftHit.pt : (objectPos - objectRight * rayOffset);
+		Vec3 rightHandTarget = rightRayHit ? rightHit.pt : (objectPos + objectRight * rayOffset);
+
+		// Set inverse kinematics for the hands
+		SetIKPos("leftArm", leftHandTarget, 1);
+		SetIKPos("rightArm", rightHandTarget, 1);
+
+		// Debug drawing
+		IRenderAuxGeom* pAuxGeom = gEnv->pRenderer->GetIRenderAuxGeom();
+		if (pAuxGeom)
+		{
+			ColorB leftColor(255, 0, 0, 255);
+			ColorB rightColor(0, 0, 255, 255);
+			ColorB objectColor(0, 255, 0, 255);
+
+			float handSphereSize = 0.05f;
+			float objectSphereSize = 0.2f;
+
+			// Draw spheres for targets and object
+			pAuxGeom->DrawSphere(leftHandTarget, handSphereSize, leftColor);
+			pAuxGeom->DrawSphere(rightHandTarget, handSphereSize, rightColor);
+			pAuxGeom->DrawSphere(objectPos, objectSphereSize, objectColor);
+
+			// Draw raycast lines
+			pAuxGeom->DrawLine(leftRayOrigin, leftColor, leftRayOrigin + objectRight * rayLength, leftColor, 1.5f);
+			pAuxGeom->DrawLine(rightRayOrigin, rightColor, rightRayOrigin - objectRight * rayLength, rightColor, 1.5f);
+		}
+	}
 }
 
 void CPlayer::UpdateParachuteMorph(float frameTime)
@@ -1636,7 +1725,9 @@ void CPlayer::PrePhysicsUpdate()
 			}
 
 			if (m_linkStats.CanDoIK() || (gEnv->bMultiplayer && GetLinkedVehicle()))
+			{
 				SetIK(frameMovementParams);
+			}
 		}
 	}
 
@@ -1715,7 +1806,7 @@ void CPlayer::SetIK(const SActorFrameMovementParams& frameMovementParams)
 				lookIKBlends[3] = 0.10f;		// neck
 				lookIKBlends[4] = 0.85f;		// head   // 0.60f
 
-				pSkeletonPose->SetLookIK(true, /*gf_PI*0.7f*/ DEG2RAD(80), frameMovementParams.lookTarget, 0);
+				pSkeletonPose->SetLookIK(true, /*gf_PI*0.7f*/ DEG2RAD(120), frameMovementParams.lookTarget, 0);
 			}
 			else
 			{
