@@ -589,7 +589,7 @@ bool Client::OnRemove(IEntity *pEntity)
 
 void Client::OnEvent(IEntity *pEntity, SEntityEvent & event)
 {
-	if (gEnv->bServer)
+	if (gEnv->bServer || !gEnv->bMultiplayer)
 		return;
 
 	if (event.event == ENTITY_EVENT_START_GAME)
@@ -625,13 +625,12 @@ void Client::SynchWithPhysicsPosition(IEntity* pEntity)
 
 		if (dist > 0.5f)
 		{
-			CryLogAlways("%s [%s] physics mismatch! Distance: %.2f",
+			CryLog("%s [%s] synching object position (Distance: %.2f)",
 				pEntity->GetClass()->GetName(),
 				pEntity->GetName(),
 				dist
 			);
 
-			CryLogAlways("Waking up physics for entity [%s]...", pEntity->GetName());
 			pe_action_awake awake;
 			awake.bAwake = 1;
 			pPhysEnt->Action(&awake);
