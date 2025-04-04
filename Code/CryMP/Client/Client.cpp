@@ -636,5 +636,4 @@ void Client::SynchWithPhysicsPosition(IEntity* pEntity)
 			pPhysEnt->Action(&awake);
 		}
 	}
-
 }
