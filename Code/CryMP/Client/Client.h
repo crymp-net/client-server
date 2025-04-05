@@ -202,6 +202,15 @@ public:
 	{
 		return m_lastSpawnId;
 	}
+
+private:
+
+	enum Timers
+	{
+		PHYSICS_POS_SYNC = 7777,
+	};
+
+	void SynchWithPhysicsPosition(IEntity* pEntity);
 };
 
 ///////////////////////

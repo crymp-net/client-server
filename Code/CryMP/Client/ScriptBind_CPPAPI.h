@@ -1,9 +1,18 @@
 #pragma once
+#include <optional>
+#include <map>
+#include <string>
 
 #include "CryCommon/CryScriptSystem/IScriptSystem.h"
 
+struct SProfileInfo {
+	std::string id;
+	std::string token;
+};
+
 class ScriptBind_CPPAPI : public CScriptableBase
 {
+	std::map<std::string, SProfileInfo> m_profiles;
 public:
 	ScriptBind_CPPAPI();
 	~ScriptBind_CPPAPI();
@@ -34,6 +43,9 @@ public:
 	int GetLP(IFunctionHandler* pH);
 	int GetNumVars(IFunctionHandler* pH);
 	int GetVars(IFunctionHandler* pH);
+
+	int SetProfile(IFunctionHandler* pH, const char *type, const char* profileId, const char *token);
+	std::optional<SProfileInfo> GetProfile(const std::string& type);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Localization

@@ -135,10 +135,12 @@ ScriptBind_System::ScriptBind_System(IScriptSystem *pSS)
 	SCRIPT_REG_TEMPLFUNC(GetVehiclesByClass, "class");
 	SCRIPT_REG_TEMPLFUNC(IsClassValid, "class");
 	SCRIPT_REG_TEMPLFUNC(GetEntityScriptFilePath, "class");
-
 	SCRIPT_REG_FUNC(GetVehicleClasses);
 	SCRIPT_REG_FUNC(GetItemClasses);
 	SCRIPT_REG_FUNC(AwakeDefaultObjects);
+	SCRIPT_REG_TEMPLFUNC(GetCountOfClass, "class");
+	SCRIPT_REG_TEMPLFUNC(GetEntityIdByNumId, "numId");
+	SCRIPT_REG_TEMPLFUNC(RemoveEntitiesByClass, "entclass");
 }
 
 int ScriptBind_System::LoadFont(IFunctionHandler *pH)
@@ -1880,4 +1882,67 @@ int ScriptBind_System::AwakeDefaultObjects(IFunctionHandler* pH)
 	}
 
 	return pH->EndFunction(counter);
+}
+
+int ScriptBind_System::GetCountOfClass(IFunctionHandler* pH, const char* EntityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(EntityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+
+	IEntityItPtr pIIt = gEnv->pEntitySystem->GetEntityIterator();
+	IEntity* pEntity = nullptr;
+	int k = 1;
+
+	pIIt->MoveFirst();
+
+	while (pEntity = pIIt->Next())
+	{
+		IEntityClass* entClass = pEntity->GetClass();
+		if (entClass == pClass)
+		{
+			++k;
+		}
+	}
+
+	return pH->EndFunction(k);
+}
+
+int ScriptBind_System::GetEntityIdByNumId(IFunctionHandler* pH, int entityId)
+{
+	IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityId);
+	if (pEntity)
+		return pH->EndFunction(ScriptHandle(pEntity->GetId()));
+
+	return pH->EndFunction();
+}
+
+int ScriptBind_System::RemoveEntitiesByClass(IFunctionHandler* pH, const char* EntityClass)
+{
+	IEntityClass* pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(EntityClass);
+	if (!pClass)
+	{
+		return pH->EndFunction();
+	}
+
+	IEntityItPtr pIIt = gEnv->pEntitySystem->GetEntityIterator();
+	IEntity* pEntity = nullptr;
+	int k = 1;
+
+	pIIt->MoveFirst();
+
+	while (pEntity = pIIt->Next())
+	{
+		auto* entClass = pEntity->GetClass();
+		if (entClass == pClass)
+		{
+			pEntity->ClearFlags(ENTITY_FLAG_UNREMOVABLE);
+			gEnv->pEntitySystem->RemoveEntity(pEntity->GetId(), true);
+			++k;
+		}
+	}
+
+	return pH->EndFunction(k);
 }

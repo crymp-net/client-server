@@ -1,0 +1,8 @@
+<MetaData>
+<MiniMap Filename="Hawaii.tga" startX="382.663971" startY="323.684174" endX="582.663940" endY="523.684204"/>
+<Gamerules MP1="InstantAction" MP2="TeamInstantAction"/>
+<LoadingScreens screen1="Hawaii_Loading.dds"/>
+<HeaderText text="Hawaii"/>
+<DescriptionText text="Instant Action Map by ExeQtor"/>
+<Display Name="Hawaii"/>
+</MetaData>
