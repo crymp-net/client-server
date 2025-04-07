@@ -1419,13 +1419,6 @@ if(CRYMP_CONSOLE_APP)
 	set_target_properties(${CRYMP_SERVER_EXE} PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
-# TODO: remove
-if(BUILD_BITS EQUAL 64)
-	target_sources(${CRYMP_CLIENT_EXE} PRIVATE ThirdParty/dsoal/msvc64.def)
-else()
-	target_sources(${CRYMP_CLIENT_EXE} PRIVATE ThirdParty/dsoal/msvc.def)
-endif()
-
 ################################################################################
 
 set(CRYMP_INTERNAL_PAK_PATH ${PROJECT_BINARY_DIR}/Pak.zip)
