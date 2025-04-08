@@ -1382,6 +1382,8 @@ message(STATUS "Target client executable: ${CRYMP_CLIENT_EXE}.exe")
 message(STATUS "Target server executable: ${CRYMP_SERVER_EXE}.exe")
 
 add_executable(${CRYMP_CLIENT_EXE} WIN32
+	Code/Launcher/DsoalDeployer.cpp
+	Code/Launcher/DsoalDeployer.h
 	Code/Launcher/Launcher.cpp
 	Code/Launcher/Launcher.h
 	Code/Launcher/Main.cpp
