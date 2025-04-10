@@ -893,7 +893,7 @@ HRESULT STDMETHODCALLTYPE DSound8OAL::Initialize(const GUID *deviceId) noexcept
         return DSERR_NODRIVER;
 
     GUID devid{};
-    HRESULT hr{ds_GetDeviceID(*deviceId, devid)};
+    HRESULT hr{GetDeviceID(*deviceId, devid)};
     if(FAILED(hr)) return hr;
 
     auto shared = SharedDevice::GetById(devid);

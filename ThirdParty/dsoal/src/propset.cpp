@@ -196,7 +196,7 @@ HRESULT DSPROPERTY_DescriptionW(void *pPropData, ULONG cbPropData, ULONG *pcbRet
 
     auto com = ComWrapper{};
     auto devid = GUID{};
-    ds_GetDeviceID(ppd->DeviceId, devid);
+    GetDeviceID(ppd->DeviceId, devid);
 
     auto device = GetMMDevice(com, eRender, devid);
     if(!device)

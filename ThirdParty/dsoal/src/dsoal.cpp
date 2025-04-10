@@ -289,8 +289,8 @@ ComPtr<IMMDevice> GetMMDevice(ComWrapper&, EDataFlow flow, const GUID &id)
 }
 #undef PREFIX
 
-#define PREFIX "ds_GetDeviceID "
-HRESULT WINAPI ds_GetDeviceID(const GUID &guidSrc, GUID &guidDst) noexcept
+#define PREFIX "GetDeviceID "
+HRESULT WINAPI GetDeviceID(const GUID &guidSrc, GUID &guidDst) noexcept
 {
     ERole role{};
     EDataFlow flow{eRender};
@@ -746,7 +746,7 @@ HRESULT WINAPI DSOAL_GetDeviceID(const GUID *guidSrc, GUID *guidDst) noexcept
     if(!guidSrc || !guidDst)
         return DSERR_INVALIDPARAM;
 
-    return ds_GetDeviceID(*guidSrc, *guidDst);
+    return GetDeviceID(*guidSrc, *guidDst);
 }
 #undef PREFIX
 

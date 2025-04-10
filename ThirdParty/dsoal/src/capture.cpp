@@ -952,7 +952,7 @@ HRESULT STDMETHODCALLTYPE DSCapture::Initialize(const GUID *guid) noexcept
         return DSERR_NODRIVER;
 
     auto devguid = GUID{};
-    if(const auto hr = ds_GetDeviceID(*guid, devguid); FAILED(hr))
+    if(const auto hr = GetDeviceID(*guid, devguid); FAILED(hr))
         return hr;
 
     mDeviceName = std::invoke([&devguid]() -> std::string
