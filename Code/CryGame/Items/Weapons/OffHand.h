@@ -143,6 +143,8 @@ public:
 
 	void	SelectGrabType(IEntity* pEntity);
 
+	Matrix34 GetHoldOffset(IEntity* pEntity);
+
 	bool EvaluateStateTransition(int requestedAction, int activationMode, int inputMethod);
 	bool PreExecuteAction(int requestedAction, int activationMode, bool forceSelect = false);
 	void CancelAction();

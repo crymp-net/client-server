@@ -2517,8 +2517,8 @@ void COffHand::SelectGrabType(IEntity* pEntity)
 	{
 		// iterate over the grab types and see if this object supports one
 		m_grabType = GRAB_TYPE_ONE_HANDED;
-		const TGrabTypes::const_iterator end = m_grabTypes.end();
-		for (TGrabTypes::const_iterator i = m_grabTypes.begin(); i != end; ++i, ++m_grabType)
+
+		for (const auto& grabType : m_grabTypes)
 		{
 			SEntitySlotInfo slotInfo;
 			for (int n = 0; n < pEntity->GetSlotCount(); n++)
@@ -2532,14 +2532,9 @@ void COffHand::SelectGrabType(IEntity* pEntity)
 					//Iterate two times (normal helper name, and composed one)
 					for (int j = 0;j < 2;j++)
 					{
-						string helper;
-						helper.clear();
-						if (j == 0)
-						{
-							helper.append(slotInfo.pStatObj->GetGeoName());helper.append("_");helper.append((*i).helper.c_str());
-						}
-						else
-							helper.append((*i).helper.c_str());
+						std::string helper = (j == 0) ?
+							std::string(slotInfo.pStatObj->GetGeoName()) + "_" + std::string(grabType.helper.c_str()) :
+							std::string(grabType.helper.c_str());
 
 						//It is already a subobject, we have to search in the parent
 						if (slotInfo.pStatObj->GetParentObject())
@@ -2601,6 +2596,72 @@ void COffHand::SelectGrabType(IEntity* pEntity)
 		m_hasHelper = false;
 		m_grabType = GRAB_TYPE_TWO_HANDED;
 	}
+}
+
+//=========================================================================================
+Matrix34 COffHand::GetHoldOffset(IEntity* pEntity)
+{
+	Matrix34 holdOffset(IDENTITY);
+
+	CActor* pActor = GetOwnerActor();
+	if (!pActor || !pEntity)
+		return holdOffset;
+
+	for (const auto& grabType : m_grabTypes)
+	{
+		for (int n = 0; n < pEntity->GetSlotCount(); ++n)
+		{
+			if (!pEntity->IsSlotValid(n))
+				continue;
+
+			SEntitySlotInfo slotInfo;
+			if (!pEntity->GetSlotInfo(n, slotInfo) || !(pEntity->GetSlotFlags(n) & ENTITY_SLOT_RENDER))
+				continue;
+
+			if (slotInfo.pStatObj)
+			{
+				for (int j = 0; j < 2; ++j)
+				{
+					std::string helper = (j == 0) ?
+						std::string(slotInfo.pStatObj->GetGeoName()) + "_" + std::string(grabType.helper.c_str()) :
+						std::string(grabType.helper.c_str());
+
+					IStatObj* parentObj = slotInfo.pStatObj->GetParentObject();
+					IStatObj::SSubObject* pSubObj = parentObj ?
+						parentObj->FindSubObject(helper.c_str()) :
+						slotInfo.pStatObj->FindSubObject(helper.c_str());
+
+					if (pSubObj)
+					{
+						//CryLogAlways("GetHoldOffset: Found helper %s", helper.c_str());
+						holdOffset = pSubObj->tm;
+						holdOffset.OrthonormalizeFast();
+						holdOffset.InvertFast();
+						return holdOffset;
+					}
+				}
+			}
+			else if (slotInfo.pCharacter)
+			{
+				IAttachmentManager* pAM = slotInfo.pCharacter->GetIAttachmentManager();
+				if (pAM)
+				{
+					IAttachment* pAttachment = pAM->GetInterfaceByName(grabType.helper.c_str());
+					if (pAttachment)
+					{
+						holdOffset = Matrix34(pAttachment->GetAttAbsoluteDefault().q);
+						holdOffset.SetTranslation(pAttachment->GetAttAbsoluteDefault().t);
+						holdOffset.OrthonormalizeFast();
+						holdOffset.InvertFast();
+						return holdOffset;
+					}
+				}
+			}
+		}
+	}
+
+	holdOffset.SetIdentity();
+	return holdOffset;
 }
 
 //========================================================================================================
