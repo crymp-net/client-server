@@ -1,0 +1,12 @@
+<MetaData>
+   <MiniMap Filename="Armada.dds" startX="1311.626221" startY="1092.297241" endX="1823.626221" endY="1604.297241" mapRadius="20"
+	Filename1="Armada.dds" startX1="1311.626221" startY1="1092.297241" endX1="1823.626221" endY1="1604.297241" mapRadius1="20"
+	Filename2="Armada2.dds" startX2="1311.626221" startY2="1092.297241" endX2="1823.626221" endY2="1604.297241" mapRadius2="20"
+	Filename3="Armada3.dds" startX3="1311.626221" startY3="1092.297241" endX3="1823.626221" endY3="1604.297241" mapRadius3="20"
+	Filename4="Armada4.dds" startX4="1311.626221" startY4="1092.297241" endX4="1823.626221" endY4="1604.297241" mapRadius4="20"/>
+   <Gamerules MP1="InstantAction" MP2="TeamInstantAction"/>
+   <LoadingScreens screen1="Armada_Loading.dds"/>
+   <HeaderText text="Armada"/>
+   <DescriptionText text="@Loading_screen_info_armada"/>
+   <Display Name="Armada"/>
+</MetaData>

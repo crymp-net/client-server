@@ -589,4 +589,51 @@ bool Client::OnRemove(IEntity *pEntity)
 
 void Client::OnEvent(IEntity *pEntity, SEntityEvent & event)
 {
+	if (gEnv->bServer || !gEnv->bMultiplayer)
+		return;
+
+	if (event.event == ENTITY_EVENT_START_GAME)
+	{
+		IPhysicalEntity* pPhysEnt = pEntity->GetPhysics();
+		if (!pPhysEnt)
+			return;
+
+		pEntity->SetTimer(Timers::PHYSICS_POS_SYNC, 1000.f);
+	}
+	else if (event.event == ENTITY_EVENT_TIMER)
+	{
+		if (event.nParam[0] == Timers::PHYSICS_POS_SYNC)
+		{
+			SynchWithPhysicsPosition(pEntity);
+		}
+	}
+}
+
+void Client::SynchWithPhysicsPosition(IEntity* pEntity)
+{
+	IPhysicalEntity* pPhysEnt = pEntity ? pEntity->GetPhysics() : nullptr;
+	if (!pPhysEnt)
+		return;
+
+	pe_status_pos status;
+	if (pPhysEnt->GetStatus(&status))
+	{
+		const Vec3 physicsPos = status.pos;
+		const Vec3 worldPos = pEntity->GetWorldPos();
+
+		const float dist = worldPos.GetDistance(physicsPos);
+
+		if (dist > 0.5f)
+		{
+			CryLog("%s [%s] synching object position (Distance: %.2f)",
+				pEntity->GetClass()->GetName(),
+				pEntity->GetName(),
+				dist
+			);
+
+			pe_action_awake awake;
+			awake.bAwake = 1;
+			pPhysEnt->Action(&awake);
+		}
+	}
 }

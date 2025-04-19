@@ -482,6 +482,14 @@ public:
 		return g_pGame->GetSynchedStorage()->GetGlobalValueType(key);
 	}
 
+	void ClearSynchedGlobalValue(TSynchedKey key)
+	{
+		if (!g_pGame->GetSynchedStorage())
+			return;
+
+		g_pGame->GetSynchedStorage()->ClearGlobalValue(key);
+	}
+
 	template<typename T>
 	void SetSynchedEntityValue(EntityId id, TSynchedKey key, const T &value)
 	{
@@ -497,6 +505,14 @@ public:
 	int GetSynchedEntityValueType(EntityId id, TSynchedKey key) const
 	{
 		return g_pGame->GetSynchedStorage()->GetEntityValueType(id, key);
+	}
+
+	void ClearSynchedEntityValue(EntityId id, TSynchedKey key)
+	{
+		if (!g_pGame->GetSynchedStorage())
+			return;
+
+		g_pGame->GetSynchedStorage()->ClearEntityValue(id, key);
 	}
 
 	void ResetSynchedStorage()

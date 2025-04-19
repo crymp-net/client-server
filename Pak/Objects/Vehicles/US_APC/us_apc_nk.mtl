@@ -1,0 +1,149 @@
+<Material MtlFlags="256">
+ <SubMaterials>
+  <Material Name="US_APC_wheel" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="" Diffuse="0.50588202,0.50588202,0.50588202" Specular="0.29411799,0.29411799,0.29411799" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_wheel.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_wheel_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/vehicles/us_apc/us_apc_wheel_ddn.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="US_APC_cabel" MtlFlags="128" Shader="Metal" GenMask="268439552" SurfaceType="" Diffuse="0.513726,0.513726,0.513726" Specular="0.40000001,0.40000001,0.40000001" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_wire.tif">
+     <TexMod TileV="2"/>
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_wire_spec.tif">
+     <TexMod TileV="2"/>
+    </Texture>
+    <Texture Map="Bumpmap" File="objects/vehicles/us_apc/us_apc_wire_ddn.tif">
+     <TexMod TileV="2"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.31400001" Glossiness="0.75"/>
+  </Material>
+  <Material Name="US_APC_interior" MtlFlags="128" Shader="Illum" GenMask="268435456" SurfaceType="" Diffuse="0.588,0.588,0.588" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_interiour.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="US_APC_tread" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="" Diffuse="0.49803901,0.49803901,0.49803901" Specular="0.2,0.2,0.2" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_track.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_track_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Bumpmap" File="objects/vehicles/us_tank/us_tank_track_ddn.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="US_APC_turret" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.588,0.588,0.588" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_turret_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_turret_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="22" TileV="22"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.31400001" Glossiness="0.75"/>
+  </Material>
+  <Material Name="US_APC_chass" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.50588202,0.50588202,0.50588202" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_chass_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_chass_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="22" TileV="22"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.31400001" Glossiness="0.75"/>
+  </Material>
+  <Material Name="US_APC_armor_stripe" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.49019599,0.49019599,0.49019599" Specular="0.16470601,0.16470601,0.16470601" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_reactive_armor_stripe_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_reactive_armor_stripe_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Normalmap" File="objects/vehicles/us_apc/us_apc_reactive_armor_stripe_ddn.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="3" TileV="2"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.31400001" Glossiness="0.75"/>
+  </Material>
+  <Material Name="US_APC_skirt_armors" MtlFlags="128" Shader="Metal" GenMask="268435456" SurfaceType="" Diffuse="0.50980401,0.50980401,0.50980401" Specular="0.65882403,0.72941202,0.77647102" Emissive="0,0,0" Shininess="3" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_apc/us_apc_skirt_armors_asian.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_apc/us_apc_skirt_armors_asian_spec.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Detail" File="objects/vehicles/ltv/detailmap.dds">
+     <TexMod TileU="15" TileV="8"/>
+    </Texture>
+   </Textures>
+   <PublicParams SpecularMultiplier="0.31400001" Glossiness="0.75"/>
+  </Material>
+  <Material Name="hull_proxy" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="mat_metal" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="proxy_decal" MtlFlags="1152" Shader="Nodraw" GenMask="0" SurfaceType="mat_metal" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures />
+  </Material>
+  <Material Name="damaged" MtlFlags="128" Shader="Illum" GenMask="268435456" SurfaceType="mat_metal" Diffuse="0.3921569,0.3921569,0.3921569" Specular="0.094117656,0.094117656,0.094117656" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_damage.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+  </Material>
+  <Material Name="cannons" MtlFlags="128" Shader="Illum" GenMask="268435472" SurfaceType="" Diffuse="0.50980401,0.50980401,0.50980401" Specular="0.196078,0.196078,0.196078" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/vehicles/us_tank/us_tank_cannons.tif">
+     <TexMod />
+    </Texture>
+    <Texture Map="Specular" File="objects/vehicles/us_tank/us_tank_cannons_spec.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+   <MaterialLayers />
+  </Material>
+  <Material Name="mount" MtlFlags="128" Shader="Illum" GenMask="268435456" SurfaceType="" Diffuse="0.54901999,0.54901999,0.54901999" Specular="0.156863,0.156863,0.156863" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/Vehicles/US_Tank/weapon_mount.tif">
+     <TexMod />
+    </Texture>
+   </Textures>
+   <PublicParams AmbientMultiplier="1"/>
+   <MaterialLayers />
+  </Material>
+ </SubMaterials>
+ <PublicParams AmbientMultiplier="1"/>
+</Material>

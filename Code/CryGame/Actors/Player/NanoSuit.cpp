@@ -136,6 +136,13 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 		}
 
 		pAttachment = pMan->GetInterfaceByName("helmet");
+
+		//CryMP: Fix for NK nanosuit, which doesn't have "helmet" attachment
+		if (!pAttachment && slotInfo.pCharacter->GetFacialInstance() == nullptr)
+		{
+			pAttachment = pMan->GetInterfaceByName("head");
+		}
+
 		if (pAttachment)
 		{
 			IAttachmentObject* pAttachmentObj = pAttachment->GetIAttachmentObject();
@@ -144,9 +151,13 @@ bool CNanoSuit::AssignNanoMaterialToEntity(IEntity* pEntity, CNanoSuit::SNanoMat
 				// TODO: maybe reduce just to pAttachmentObj->SetMaterial...
 				ICharacterInstance* pCharInstance = pAttachmentObj->GetICharacterInstance();
 				if (pCharInstance)
+				{
 					pCharInstance->SetMaterial(pNanoMat->helmet);
+				}
 				else
+				{
 					pAttachmentObj->SetMaterial(pNanoMat->helmet);
+				}
 			}
 		}
 
