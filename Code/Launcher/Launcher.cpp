@@ -578,8 +578,9 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 
 	unsigned char dtorCode[] = {
 		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x48, 0x8B, 0xCB,                                            // mov rcx, rbx
 		0xFF, 0xD0,                                                  // call rax
-		0x90, 0x90, 0x90, 0x90                                       // nop...
+		0x90                                                         // nop
 	};
 
 	unsigned char getHDRMultiplierCode[] = {
@@ -590,13 +591,25 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 		0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90         // nop...
 	};
 
+	unsigned char getHDRMultiplierCode2[] = {
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0xFF, 0xD0,                                                  // call rax
+		0x0F, 0x29, 0xB4, 0x24, 0x80, 0x00, 0x00, 0x00,              // movaps xmmword ptr ss:[rsp+0x80], xmm6
+		0x0F, 0x28, 0xF0,                                            // movaps xmm6, xmm0
+		0x33, 0xF6,                                                  // xor esi, esi
+		0x41, 0x39, 0xB4, 0x24, 0x80, 0x00, 0x00, 0x00,              // cmp dword ptr ds:[r12+0x80], esi
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90                           // nop...
+	};
+
 	std::memcpy(&ctorCode[2], &ctorFunc, 8);
 	std::memcpy(&dtorCode[2], &dtorFunc, 8);
 	std::memcpy(&getHDRMultiplierCode[2], &getHDRMultiplierFunc, 8);
+	std::memcpy(&getHDRMultiplierCode2[2], &getHDRMultiplierFunc, 8);
 
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFB81A), ctorCode, sizeof(ctorCode));
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xFC505), dtorCode, sizeof(dtorCode));
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xF38CC), getHDRMultiplierCode, sizeof(getHDRMultiplierCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0x11E2C1), getHDRMultiplierCode2, sizeof(getHDRMultiplierCode2));
 #else
 	unsigned char ctorCode[] = {
 		0xB8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0x0
@@ -624,13 +637,25 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 		0x90, 0x90, 0x90, 0x90               // nop...
 	};
 
+	unsigned char getHDRMultiplierCode2[] = {
+		0x55,                                // push ebp
+		0x89, 0x5C, 0x24, 0x0C,              // mov dword ptr ss:[esp+0xC], ebx
+		0xB8, 0x00, 0x00, 0x00, 0x00,        // mov eax, 0x0
+		0xFF, 0xD0,                          // call eax
+		0xD9, 0x5C, 0x24, 0xFC,              // fstp dword ptr ss:[esp-0x4], st(0)
+		0xF3, 0x0F, 0x10, 0x44, 0x24, 0xFC,  // movss xmm0, dword ptr ss:[esp-0x4]
+		0x90, 0x90, 0x90, 0x90               // nop...
+	};
+
 	std::memcpy(&ctorCode[1], &ctorFunc, 4);
 	std::memcpy(&dtorCode[1], &dtorFunc, 4);
 	std::memcpy(&getHDRMultiplierCode[1], &getHDRMultiplierFunc, 4);
+	std::memcpy(&getHDRMultiplierCode2[6], &getHDRMultiplierFunc, 4);
 
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBE70B), ctorCode, sizeof(ctorCode));
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xBF0D6), dtorCode, sizeof(dtorCode));
 	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xB8D7D), getHDRMultiplierCode, sizeof(getHDRMultiplierCode));
+	WinAPI::FillMem(WinAPI::RVA(pCry3DEngine, 0xDC5B6), getHDRMultiplierCode2, sizeof(getHDRMultiplierCode2));
 #endif
 }
 
@@ -973,7 +998,7 @@ void Launcher::PatchEngine()
 	{
 		MemoryPatch::Cry3DEngine::FixGetObjectsByType(m_dlls.pCry3DEngine);
 
-		if (WinAPI::CmdLine::HasArg("-newtod"))
+		if (!WinAPI::CmdLine::HasArg("-oldtod"))
 		{
 			ReplaceTimeOfDay(m_dlls.pCry3DEngine);
 		}
