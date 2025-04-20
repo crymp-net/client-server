@@ -578,8 +578,9 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 
 	unsigned char dtorCode[] = {
 		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0x0
+		0x48, 0x8B, 0xCB,                                            // mov rcx, rbx
 		0xFF, 0xD0,                                                  // call rax
-		0x90, 0x90, 0x90, 0x90                                       // nop...
+		0x90                                                         // nop
 	};
 
 	unsigned char getHDRMultiplierCode[] = {
