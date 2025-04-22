@@ -7,6 +7,7 @@
 #include "Cry3DEngine/TimeOfDay.h"
 #include "CryAction/GameFramework.h"
 #include "CryCommon/CryAction/IGameFramework.h"
+#include "CryCommon/CryNetwork/INetworkService.h"
 #include "CryCommon/CrySystem/FrameProfiler.h"
 #include "CryCommon/CrySystem/gEnv.h"
 #include "CryCommon/CrySystem/IConsole.h"
@@ -659,6 +660,37 @@ static void ReplaceTimeOfDay(void* pCry3DEngine)
 #endif
 }
 
+struct DummyCNetwork
+{
+	static inline INetworkServicePtr (DummyCNetwork::*s_pOriginalGetService)(const char* name);
+
+	INetworkServicePtr GetService(const char* name)
+	{
+		// log every access to the GameSpy service
+		// we want to eventually get rid of GameSpy completely
+		CryLogWarningAlways("INetwork::GetService(\"%s\")", name);
+
+		return (this->*s_pOriginalGetService)(name);
+	}
+};
+
+static void HookNetworkGetService(void* pCryNetwork)
+{
+	void** pCNetworkVTable = static_cast<void**>(WinAPI::RVA(pCryNetwork,
+#ifdef BUILD_64BIT
+		0x19BEE8
+#else
+		0xC0C90
+#endif
+	));
+
+	std::memcpy(&DummyCNetwork::s_pOriginalGetService, &pCNetworkVTable[7], sizeof(void*));
+
+	// vtable hook
+	auto pNewGetService = &DummyCNetwork::GetService;
+	WinAPI::FillMem(&pCNetworkVTable[7], &reinterpret_cast<void*&>(pNewGetService), sizeof(void*));
+}
+
 static void EnableHiddenProfilerSubsystems(ISystem* pSystem)
 {
 	struct Subsystem
@@ -966,6 +998,9 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixLanServerBrowser(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::RemoveGameSpyAvailableCheck(m_dlls.pCryNetwork);
+
+		HookNetworkGetService(m_dlls.pCryNetwork);
 	}
 
 	if (m_dlls.pCrySystem)

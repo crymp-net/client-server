@@ -254,6 +254,46 @@ void MemoryPatch::CryNetwork::FixLanServerBrowser(void* pCryNetwork)
 #endif
 }
 
+/**
+ * Removes pointless GameSpy master server availability check.
+ */
+void MemoryPatch::CryNetwork::RemoveGameSpyAvailableCheck(void* pCryNetwork)
+{
+#ifdef BUILD_64BIT
+	char* gameName = static_cast<char*>(pCryNetwork) + 0x1FCE50;
+	int* gsAvailable = static_cast<int*>(pCryNetwork) + (0x1FCE48 / sizeof(int));
+#else
+	char* gameName = static_cast<char*>(pCryNetwork) + 0xF17C0;
+	int* gsAvailable = static_cast<int*>(pCryNetwork) + (0xF17BC / sizeof(int));
+#endif
+
+	std::strcpy(gameName, "crysis");
+	*gsAvailable = 1;
+
+#ifdef BUILD_64BIT
+	const unsigned char code[] = {
+		0xC7, 0x43, 0x28, 0x01, 0x00, 0x00, 0x00,  // mov dword ptr ds:[rbx+0x28], 0x1
+		0xC7, 0x43, 0x2C, 0x00, 0x00, 0x00, 0x00,  // mov dword ptr ds:[rbx+0x2C], 0x0
+	};
+#else
+	const unsigned char code[] = {
+		0x83, 0xC4, 0x0C,                          // add esp, 0xC
+		0xC7, 0x47, 0x14, 0x01, 0x00, 0x00, 0x00,  // mov dword ptr ds:[edi+0x14], 0x1
+		0xC7, 0x47, 0x18, 0x00, 0x00, 0x00, 0x00,  // mov dword ptr ds:[edi+0x18], 0x0
+	};
+#endif
+
+#ifdef BUILD_64BIT
+	FillNop(pCryNetwork, 0xF3C5E, 0x5);
+	FillNop(pCryNetwork, 0xF3C8E, 0x8B);
+	FillMem(pCryNetwork, 0xF3C8E, &code, sizeof(code));
+#else
+	FillNop(pCryNetwork, 0x586EC, 0x5);
+	FillNop(pCryNetwork, 0x5871A, 0x96);
+	FillMem(pCryNetwork, 0x5871A, &code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryRenderD3D9
 ////////////////////////////////////////////////////////////////////////////////

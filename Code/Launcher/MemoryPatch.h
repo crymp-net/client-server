@@ -32,6 +32,7 @@ namespace MemoryPatch
 		void FixFileCheckCrash(void* pCryNetwork);
 		void FixInternetConnect(void* pCryNetwork);
 		void FixLanServerBrowser(void* pCryNetwork);
+		void RemoveGameSpyAvailableCheck(void* pCryNetwork);
 	}
 
 	namespace CryRenderD3D9
