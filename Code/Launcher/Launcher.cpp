@@ -998,6 +998,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryNetwork::FixFileCheckCrash(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixLanServerBrowser(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::RemoveGameSpyAvailableCheck(m_dlls.pCryNetwork);
 
 		HookNetworkGetService(m_dlls.pCryNetwork);
 	}
