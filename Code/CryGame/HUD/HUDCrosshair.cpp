@@ -420,7 +420,7 @@ void CHUDCrosshair::UpdateUsabilityMessage(const EntityId objId, const char* mes
 					}
 					if (!lockedId && !reservedId)
 					{
-						if (pVehicle->GetStatus().passengerCount == pVehicle->GetSeatCount())
+						if (pVehicle->GetStatus().passengerCount == static_cast<int>(pVehicle->GetSeatCount()))
 						{
 							usable = 2;
 							textLabel = "@use_vehicle_full";
