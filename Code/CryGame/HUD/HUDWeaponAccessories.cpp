@@ -240,11 +240,8 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 
 			if (!attachments.empty())
 			{
-				static const std::vector<std::string> specialHelpers = {
-					"magazine", "attachment_front", "energy_source_helper", "shell_grenade"
-				};
-
-				const bool isSpecial = std::find(specialHelpers.begin(), specialHelpers.end(), helper.name.c_str()) != specialHelpers.end();
+				const bool isSpecial = helper.name == "magazine" || helper.name == "attachment_front"
+					|| helper.name == "energy_source_helper" || helper.name == "shell_grenade";
 
 				if (!isSpecial)
 				{
