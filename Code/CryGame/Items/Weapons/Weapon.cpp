@@ -2601,13 +2601,13 @@ bool CWeapon::HasAttachmentAtHelper(const char* helper)
 }
 
 
-void CWeapon::GetAttachmentsAtHelper(const char* helper, std::vector<std::string>& rAttachments)
+std::vector<std::string> CWeapon::GetAttachmentsAtHelper(const char* helper)
 {
+	std::vector<std::string> attachments;
 	if (CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
 	{
 		if (IInventory* pInventory = pPlayer->GetInventory())
 		{
-			rAttachments.clear();
 			const int itemCount = pInventory->GetCount();
 
 			for (int i = 0; i < itemCount; ++i)
@@ -2619,13 +2619,15 @@ void CWeapon::GetAttachmentsAtHelper(const char* helper, std::vector<std::string
 					{
 						if (strcmp(accessoryParams->attach_helper.c_str(), helper) == 0)
 						{
-							rAttachments.emplace_back(pItem->GetEntity()->GetClass()->GetName());
+							attachments.emplace_back(pItem->GetEntity()->GetClass()->GetName());
 						}
 					}
 				}
 			}
 		}
 	}
+
+	return attachments;
 }
 
 void CWeapon::IncrementViewmode()

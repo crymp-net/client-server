@@ -232,8 +232,7 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 			}
 
 			// Get available attachments
-			std::vector<std::string> attachments;
-			pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str(), attachments);
+			std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
 
 			int selectedIndex = 0;
 			int count = 0;

@@ -3077,8 +3077,7 @@ bool CHUD::WeaponHasAttachments()
 
 			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
 			{
-				std::vector<std::string> attachments;
-				pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str(), attachments);
+				std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
 				int iCount = 0;
 				if (attachments.size() > 0)
 				{
