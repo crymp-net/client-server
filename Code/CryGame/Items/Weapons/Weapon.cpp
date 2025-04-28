@@ -2562,68 +2562,72 @@ void CWeapon::OnDestroyed()
 
 bool CWeapon::HasAttachmentAtHelper(const char* helper)
 {
-	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (pPlayer)
+	if (CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
 	{
-		IInventory* pInventory = pPlayer->GetInventory();
-		if (pInventory)
+		if (IInventory* pInventory = pPlayer->GetInventory())
 		{
-			for (TAccessoryMap::iterator it = m_accessories.begin(); it != m_accessories.end(); it++)
+			for (const auto& accessoryPair : m_accessories)
 			{
-				SAccessoryParams* params = GetAccessoryParams(it->first);
-				if (params && !strcmp(params->attach_helper.c_str(), helper))
+				if (SAccessoryParams* params = GetAccessoryParams(accessoryPair.first))
 				{
-					// found a child item that can be used
-					return true;
-				}
-			}
-			for (int i = 0; i < pInventory->GetCount(); i++)
-			{
-				EntityId id = pInventory->GetItem(i);
-				IItem* cur = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(id);
-
-				if (cur)
-				{
-					SAccessoryParams* invAccessory = GetAccessoryParams(ItemString(cur->GetEntity()->GetClass()->GetName()));
-					if (invAccessory && !strcmp(invAccessory->attach_helper.c_str(), helper))
+					if (strcmp(params->attach_helper.c_str(), helper) == 0)
 					{
-						// found an accessory in the inventory that can be used
+						// found a child item that can be used
 						return true;
 					}
 				}
 			}
 
-
-		}
-	}
-	return false;
-}
-
-void CWeapon::GetAttachmentsAtHelper(const char* helper, std::vector<string>& rAttachments)
-{
-	CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor());
-	if (pPlayer)
-	{
-		IInventory* pInventory = pPlayer->GetInventory();
-		if (pInventory)
-		{
-			rAttachments.clear();
-			for (int i = 0; i < pInventory->GetCount(); i++)
+			const int itemCount = pInventory->GetCount();
+			for (int i = 0; i < itemCount; ++i)
 			{
-				EntityId id = pInventory->GetItem(i);
-				IItem* cur = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(id);
-
-				if (cur)
+				const EntityId id = pInventory->GetItem(i);
+				if (IItem* cur = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(id))
 				{
-					SAccessoryParams* invAccessory = GetAccessoryParams(ItemString(cur->GetEntity()->GetClass()->GetName()));
-					if (invAccessory && !strcmp(invAccessory->attach_helper.c_str(), helper))
+					if (SAccessoryParams* invAccessory = GetAccessoryParams(ItemString(cur->GetEntity()->GetClass()->GetName())))
 					{
-						rAttachments.push_back(cur->GetEntity()->GetClass()->GetName());
+						if (strcmp(invAccessory->attach_helper.c_str(), helper) == 0)
+						{
+							// found an accessory in the inventory that can be used
+							return true;
+						}
 					}
 				}
 			}
 		}
 	}
+
+	return false;
+}
+
+
+std::vector<std::string> CWeapon::GetAttachmentsAtHelper(const char* helper)
+{
+	std::vector<std::string> attachments;
+	if (CPlayer* pPlayer = static_cast<CPlayer*>(gEnv->pGame->GetIGameFramework()->GetClientActor()))
+	{
+		if (IInventory* pInventory = pPlayer->GetInventory())
+		{
+			const int itemCount = pInventory->GetCount();
+
+			for (int i = 0; i < itemCount; ++i)
+			{
+				const EntityId id = pInventory->GetItem(i);
+				if (IItem* pItem = gEnv->pGame->GetIGameFramework()->GetIItemSystem()->GetItem(id))
+				{
+					if (SAccessoryParams* accessoryParams = GetAccessoryParams(ItemString(pItem->GetEntity()->GetClass()->GetName())))
+					{
+						if (strcmp(accessoryParams->attach_helper.c_str(), helper) == 0)
+						{
+							attachments.emplace_back(pItem->GetEntity()->GetClass()->GetName());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return attachments;
 }
 
 void CWeapon::IncrementViewmode()
