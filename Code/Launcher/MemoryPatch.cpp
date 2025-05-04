@@ -77,6 +77,71 @@ void MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(void* pCryAction)
 #endif
 }
 
+/**
+ * Used to fix the GameWarning format string vulnerability.
+ */
+void MemoryPatch::CryAction::HookGameWarning(void* pCryAction, void (*handler)(const char* format, ...))
+{
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0
+		0xff, 0xe0,                                                  // jmp rax
+		0x90,                                                        // nop
+		0x90,                                                        // nop
+		0x90,                                                        // nop
+	};
+
+	std::memcpy(&code[2], &handler, 8);
+#else
+	unsigned char code[] = {
+		0xb8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0
+		0xff, 0xe0,                    // jmp eax
+		0x90,                          // nop
+		0x90,                          // nop
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[1], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryAction, 0x4230, &code, sizeof(code));
+#else
+	FillMem(pCryAction, 0xd9c0, &code, sizeof(code));
+#endif
+}
+
+/**
+ * Used to fix the CryWarning format string vulnerability.
+ */
+void MemoryPatch::CryAction::HookCryWarning(void* pCryAction, void (*handler)(int, int, const char* format, ...))
+{
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0
+		0xff, 0xe0,                                                  // jmp rax
+	};
+
+	std::memcpy(&code[2], &handler, 8);
+#else
+	unsigned char code[] = {
+		0xb8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0
+		0xff, 0xe0,                    // jmp eax
+		0x90,                          // nop
+		0x90,                          // nop
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[1], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryAction, 0x1000, &code, sizeof(code));
+#else
+	FillMem(pCryAction, 0x3240, &code, sizeof(code));
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CryAISystem
 ////////////////////////////////////////////////////////////////////////////////
@@ -291,6 +356,35 @@ void MemoryPatch::CryNetwork::RemoveGameSpyAvailableCheck(void* pCryNetwork)
 	FillNop(pCryNetwork, 0x586EC, 0x5);
 	FillNop(pCryNetwork, 0x5871A, 0x96);
 	FillMem(pCryNetwork, 0x5871A, &code, sizeof(code));
+#endif
+}
+
+/**
+ * Used to fix the CryWarning format string vulnerability.
+ */
+void MemoryPatch::CryNetwork::HookCryWarning(void* pCryNetwork, void (*handler)(int, int, const char* format, ...))
+{
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0
+		0xff, 0xe0,                                                  // jmp rax
+	};
+
+	std::memcpy(&code[2], &handler, 8);
+#else
+	unsigned char code[] = {
+		0xb8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0
+		0xff, 0xe0,                    // jmp eax
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[1], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCryNetwork, 0x24490, &code, sizeof(code));
+#else
+	FillMem(pCryNetwork, 0xcba2, &code, sizeof(code));
 #endif
 }
 
@@ -839,6 +933,37 @@ void MemoryPatch::CrySystem::EnableServerPhysicsThread(void* pCrySystem)
 	FillNop(pCrySystem, 0x36CD6, 0x11);
 #else
 	FillNop(pCrySystem, 0x4CBC1, 0xD);
+#endif
+}
+
+/**
+ * Used to fix the CryWarning format string vulnerability.
+ */
+void MemoryPatch::CrySystem::HookCryWarning(void* pCrySystem, void (*handler)(int, int, const char* format, ...))
+{
+#ifdef BUILD_64BIT
+	unsigned char code[] = {
+		0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, 0
+		0xff, 0xe0,                                                  // jmp rax
+	};
+
+	std::memcpy(&code[2], &handler, 8);
+#else
+	unsigned char code[] = {
+		0xb8, 0x00, 0x00, 0x00, 0x00,  // mov eax, 0
+		0xff, 0xe0,                    // jmp eax
+		0x90,                          // nop
+		0x90,                          // nop
+		0x90,                          // nop
+	};
+
+	std::memcpy(&code[1], &handler, 4);
+#endif
+
+#ifdef BUILD_64BIT
+	FillMem(pCrySystem, 0x16e0, &code, sizeof(code));
+#else
+	FillMem(pCrySystem, 0x3980, &code, sizeof(code));
 #endif
 }
 
