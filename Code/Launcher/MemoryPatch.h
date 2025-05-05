@@ -17,6 +17,8 @@ namespace MemoryPatch
 		void AllowDX9ImmersiveMultiplayer(void* pCryAction);
 		void DisableBreakLog(void* pCryAction);
 		void DisableTimeOfDayLengthLowerLimit(void* pCryAction);
+		void HookGameWarning(void* pCryAction, void (*handler)(const char* format, ...));
+		void HookCryWarning(void* pCryAction, void (*handler)(int, int, const char* format, ...));
 	}
 
 	namespace CryAISystem
@@ -33,6 +35,7 @@ namespace MemoryPatch
 		void FixInternetConnect(void* pCryNetwork);
 		void FixLanServerBrowser(void* pCryNetwork);
 		void RemoveGameSpyAvailableCheck(void* pCryNetwork);
+		void HookCryWarning(void* pCryNetwork, void (*handler)(int, int, const char* format, ...));
 	}
 
 	namespace CryRenderD3D9
@@ -97,6 +100,7 @@ namespace MemoryPatch
 		void RemoveSecuROM(void* pCrySystem);
 		void UnhandledExceptions(void* pCrySystem);
 		void EnableServerPhysicsThread(void* pCrySystem);
+		void HookCryWarning(void* pCrySystem, void (*handler)(int, int, const char* format, ...));
 	}
 
 	namespace FMODEx
