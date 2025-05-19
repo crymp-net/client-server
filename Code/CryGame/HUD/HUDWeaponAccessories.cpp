@@ -212,72 +212,78 @@ bool CHUD::UpdateWeaponAccessoriesScreen()
 			if (!pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
 				continue;
 
+			const std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
+			if (attachments.empty())
+				continue;
+
+			const bool isSpecial = helper.name == "magazine" ||
+				helper.name == "attachment_front" ||
+				helper.name == "energy_source_helper" ||
+				helper.name == "shell_grenade";
+
+			int potentialButtons = 0;
+
+			if (!isSpecial)
 			{
-				// marcok: make sure the vars are correctly mapped
-				SFlashVarValue args[3] = { helper.name.c_str(), "", "" };
-				m_animWeaponAccessories.Invoke("addSlotButton", args, 3);
+				++potentialButtons; // NoAttachment
 			}
 
-			// Setup position variables
+			for (const auto& attachment : attachments)
+			{
+				if (attachment != "GrenadeShell")
+				{
+					++potentialButtons;
+				}
+			}
+			
+			if (potentialButtons < 2)
+				continue;
+
+			SFlashVarValue args1[3] = { helper.name.c_str(), "", "" };
+			m_animWeaponAccessories.Invoke("addSlotButton", args1, 3);
+
 			std::string control = "Root.slot_" + std::string(helper.name.c_str());
 			std::string token = "hud.WS" + std::string(helper.name.c_str());
 			m_animWeaponAccessories.AddVariable(control.c_str(), "_x", (token + "X").c_str(), 1.0f, 0.0f);
 			m_animWeaponAccessories.AddVariable(control.c_str(), "_y", (token + "Y").c_str(), 1.0f, 0.0f);
 
-			// Get current attachment
 			std::string curAttach;
 			if (const char* szCurAttach = pCurrentWeapon->CurrentAttachment(helper.name))
-			{
 				curAttach = szCurAttach;
-			}
-
-			// Get available attachments
-			std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
 
 			int selectedIndex = 0;
 			int count = 0;
 
-			if (!attachments.empty())
+			if (!isSpecial)
 			{
-				const bool isSpecial = helper.name == "magazine" || helper.name == "attachment_front"
-					|| helper.name == "energy_source_helper" || helper.name == "shell_grenade";
-
-				if (!isSpecial)
-				{
-					bool isTop = (helper.name == "attachment_top");
-					SFlashVarValue args[3] = {
-						helper.name.c_str(),
-						isTop ? "@IronSight" : "@NoAttachment",
-						"NoAttachment"
-					};
-					m_animWeaponAccessories.Invoke("addSlotButton", args, 3);
-					++count;
-				}
-
-				if (!(helper.name == "magazine" && attachments.size() == 1))
-				{
-					for (const auto& attachment : attachments)
-					{
-						if (attachment == "GrenadeShell")
-							continue;
-
-						std::string displayName = "@" + attachment;
-						SFlashVarValue args[3] = { helper.name.c_str(), displayName.c_str(), attachment.c_str() };
-						m_animWeaponAccessories.Invoke("addSlotButton", args, 3);
-
-						if (curAttach == attachment)
-							selectedIndex = count;
-
-						hasAttachments = true;
-						++count;
-					}
-				}
+				bool isTop = (helper.name == "attachment_top");
+				SFlashVarValue args2[3] = {
+					helper.name.c_str(),
+					isTop ? "@IronSight" : "@NoAttachment",
+					"NoAttachment"
+				};
+				m_animWeaponAccessories.Invoke("addSlotButton", args2, 3);
+				++count;
 			}
-			
+
+			for (const auto& attachment : attachments)
 			{
-				SFlashVarValue args[2] = { helper.name.c_str(), selectedIndex };
-				m_animWeaponAccessories.Invoke("selectSlotButton", args, 2);
+				if (attachment == "GrenadeShell")
+					continue;
+
+				std::string displayName = "@" + attachment;
+				SFlashVarValue args3[3] = { helper.name.c_str(), displayName.c_str(), attachment.c_str() };
+				m_animWeaponAccessories.Invoke("addSlotButton", args3, 3);
+
+				if (curAttach == attachment)
+					selectedIndex = count;
+
+				hasAttachments = true;
+				++count;
 			}
+
+			SFlashVarValue selectArgs[2] = { helper.name.c_str(), selectedIndex };
+			m_animWeaponAccessories.Invoke("selectSlotButton", selectArgs, 2);
 		}
 	}
 
