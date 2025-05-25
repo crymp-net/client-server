@@ -4771,10 +4771,7 @@ void CHUD::StartPlayerFallAndPlay()
 
 bool CHUD::IsInputAssisted()
 {
-	if (gEnv->pInput)
-		return gEnv->pInput->HasInputDeviceOfType(eIDT_Gamepad) && gEnv->pTimer->GetCurrTime() - m_lastNonAssistedInput > g_pGameCVars->aim_assistRestrictionTimeout;
-	else
-		return false;
+	return false;
 }
 
 //-----------------------------------------------------------------------------------------------------
