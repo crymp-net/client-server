@@ -694,7 +694,7 @@ struct DummyCNetwork
 	{
 		// log every access to the GameSpy service
 		// we want to eventually get rid of GameSpy completely
-		CryLogWarningAlways("INetwork::GetService(\"%s\")", name);
+		CryLogWarning("INetwork::GetService(\"%s\")", name);
 
 		return (this->*s_pOriginalGetService)(name);
 	}
