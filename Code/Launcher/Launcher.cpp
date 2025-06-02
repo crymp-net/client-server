@@ -85,6 +85,32 @@ static void OnD3D10Info(MemoryPatch::CryRenderD3D10::AdapterInfo* info)
 	LogBytes("D3D10 Adapter: Shared system memory = ", info->shared_system_memory);
 }
 
+static void OnCryWarning(int, int, const char* format, ...)
+{
+	// the original buffer size
+	char buffer[4096];
+
+	va_list args;
+	va_start(args, format);
+	StringTools::FormatToV(buffer, sizeof(buffer), format, args);
+	va_end(args);
+
+	CryLogWarning("%s", buffer);
+}
+
+static void OnGameWarning(const char* format, ...)
+{
+	// the original buffer size
+	char buffer[4096];
+
+	va_list args;
+	va_start(args, format);
+	StringTools::FormatToV(buffer, sizeof(buffer), format, args);
+	va_end(args);
+
+	CryLogWarning("%s", buffer);
+}
+
 static void EarlyEngineInitHook(ISystem* pSystem, IConsole* pConsole, ISystemUserCallback* pUserCallback)
 {
 	gEnv = pSystem->GetGlobalEnvironment();
@@ -668,7 +694,7 @@ struct DummyCNetwork
 	{
 		// log every access to the GameSpy service
 		// we want to eventually get rid of GameSpy completely
-		CryLogWarningAlways("INetwork::GetService(\"%s\")", name);
+		CryLogWarning("INetwork::GetService(\"%s\")", name);
 
 		return (this->*s_pOriginalGetService)(name);
 	}
@@ -983,6 +1009,8 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryAction::AllowDX9ImmersiveMultiplayer(m_dlls.pCryAction);
 		MemoryPatch::CryAction::DisableBreakLog(m_dlls.pCryAction);
 		MemoryPatch::CryAction::DisableTimeOfDayLengthLowerLimit(m_dlls.pCryAction);
+		MemoryPatch::CryAction::HookCryWarning(m_dlls.pCryAction, &OnCryWarning);
+		MemoryPatch::CryAction::HookGameWarning(m_dlls.pCryAction, &OnGameWarning);
 	}
 
 	if (m_dlls.pCryAISystem)
@@ -999,6 +1027,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CryNetwork::FixInternetConnect(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::FixLanServerBrowser(m_dlls.pCryNetwork);
 		MemoryPatch::CryNetwork::RemoveGameSpyAvailableCheck(m_dlls.pCryNetwork);
+		MemoryPatch::CryNetwork::HookCryWarning(m_dlls.pCryNetwork, &OnCryWarning);
 
 		HookNetworkGetService(m_dlls.pCryNetwork);
 	}
@@ -1015,6 +1044,7 @@ void Launcher::PatchEngine()
 		MemoryPatch::CrySystem::RemoveSecuROM(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::UnhandledExceptions(m_dlls.pCrySystem);
 		MemoryPatch::CrySystem::EnableServerPhysicsThread(m_dlls.pCrySystem);
+		MemoryPatch::CrySystem::HookCryWarning(m_dlls.pCrySystem, &OnCryWarning);
 
 		if (!WinAPI::CmdLine::HasArg("-oldss"))
 		{

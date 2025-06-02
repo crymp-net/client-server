@@ -3063,42 +3063,48 @@ void CHUD::GetProjectionScale(CGameFlashAnimation* pGameFlashAnimation, float* p
 
 bool CHUD::WeaponHasAttachments()
 {
-	bool bWeaponHasAttachments = false;
-
 	CWeapon* pCurrentWeapon = GetCurrentWeapon();
-	if (pCurrentWeapon)
-	{
-		const CItem::THelperVector& helpers = pCurrentWeapon->GetAttachmentHelpers();
-		for (int iHelper = 0; iHelper < helpers.size(); iHelper++)
-		{
-			CItem::SAttachmentHelper helper = helpers[iHelper];
-			if (helper.slot != CItem::eIGS_FirstPerson)
-				continue;
+	if (!pCurrentWeapon)
+		return false;
 
-			if (pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
+	const auto& helpers = pCurrentWeapon->GetAttachmentHelpers();
+	for (const auto& helper : helpers)
+	{
+		if (helper.slot != CItem::eIGS_FirstPerson)
+			continue;
+
+		if (!pCurrentWeapon->HasAttachmentAtHelper(helper.name.c_str()))
+			continue;
+
+		const std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
+		if (attachments.empty())
+			continue;
+
+		const bool isSpecial = helper.name == "magazine" ||
+			helper.name == "attachment_front" ||
+			helper.name == "energy_source_helper" ||
+			helper.name == "shell_grenade";
+
+		int potentialButtons = 0;
+
+		if (!isSpecial)
+		{
+			++potentialButtons; // NoAttachment
+		}
+
+		for (const auto& attachment : attachments)
+		{
+			if (attachment != "GrenadeShell")
 			{
-				std::vector<std::string> attachments = pCurrentWeapon->GetAttachmentsAtHelper(helper.name.c_str());
-				int iCount = 0;
-				if (attachments.size() > 0)
-				{
-					if (helper.name != "magazine" &&
-					    helper.name != "attachment_front" &&
-					    helper.name != "energy_source_helper" &&
-					    helper.name != "shell_grenade")
-					{
-						++iCount;
-					}
-					for (int iAttachment = 0; iAttachment < attachments.size(); iAttachment++)
-					{
-						bWeaponHasAttachments = bWeaponHasAttachments || iCount > 0;
-						++iCount;
-					}
-				}
+				++potentialButtons;
 			}
 		}
+
+		if (potentialButtons >= 2)
+			return true;
 	}
 
-	return bWeaponHasAttachments;
+	return false;
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -4765,10 +4771,7 @@ void CHUD::StartPlayerFallAndPlay()
 
 bool CHUD::IsInputAssisted()
 {
-	if (gEnv->pInput)
-		return gEnv->pInput->HasInputDeviceOfType(eIDT_Gamepad) && gEnv->pTimer->GetCurrTime() - m_lastNonAssistedInput > g_pGameCVars->aim_assistRestrictionTimeout;
-	else
-		return false;
+	return false;
 }
 
 //-----------------------------------------------------------------------------------------------------
