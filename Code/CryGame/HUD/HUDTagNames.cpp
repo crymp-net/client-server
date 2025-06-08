@@ -688,7 +688,6 @@ void CHUDTagNames::FillNameTag(
 	ColorF tagColor,
 	bool friendly
 ) {
-	IActor* pLocalActor = g_pGame->GetIGameFramework()->GetClientActor();
 	CActor* pActor = static_cast<CActor*>(iActor);
 	if(iActor != NULL && g_pGameCVars->mp_healthBars ) {
 		nameTag.healthBars = /*!friendly &&*/ NeedsHealthBar(pActor);
