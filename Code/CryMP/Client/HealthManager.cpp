@@ -58,6 +58,6 @@ int CHealthManager::GetHealth(IActor* iActor) {
 	return health;
 }
 
-void CHealthManager::Reset() {
-
+void CHealthManager::Reset(bool quit) {
+	m_lastHealth.clear();
 }

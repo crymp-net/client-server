@@ -136,7 +136,7 @@ CGame::~CGame()
 	m_pWeaponSystem->Release();
 	m_pWeatherSystem->Reset();
 	m_pAdManager->Reset();
-	m_pHealthManager->Reset();
+	SAFE_DELETE(m_pHealthManager);
 	SAFE_DELETE(m_pItemStrings);
 	SAFE_DELETE(m_pItemSharedParamsList);
 	SAFE_DELETE(m_pCVars);

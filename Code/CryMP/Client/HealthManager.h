@@ -12,5 +12,5 @@ public:
 	~CHealthManager();
 	bool IsActive();
 	int GetHealth(IActor* pActor);
-	void Reset();
+	void Reset(bool quit = true);
 };

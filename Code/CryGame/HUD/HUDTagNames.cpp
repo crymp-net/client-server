@@ -35,8 +35,8 @@ History:
 #define COLOR_FRIEND	ColorF(0.0353f,0.6235f,0.9137f)
 #define COLOR_TAGGED	ColorF(0.6f, 0.8f, 0.196078f)
 
-#define COLOR_ARMOR     ColorF(0.0f, 0.0f, 1.0f, 1.0f)
-#define COLOR_HEALTH    ColorF(0.0f, 1.0f, 0.0f, 1.0f)
+#define COLOR_ARMOR     ColorF(0.35f, 0.85f, 1.0f, 1.0f)
+#define COLOR_HEALTH    ColorF(0.7f, 0.95f, 0.4f, 1.0f)
 #define COLOR_VEHICLE_HEALTH    ColorF(1.0f, 1.0f, 0.0f, 1.0f)
 
 #define MAX_HEALTH_BARS 10
