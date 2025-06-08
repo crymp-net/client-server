@@ -33,23 +33,29 @@ bool CHealthManager::IsActive() {
 
 int CHealthManager::GetHealth(IActor* iActor) {
 	int health = 0;
+	float fHealth = 0.0f;
 	CSynchedStorage* pSSS = g_pGame->GetSynchedStorage();
 	CActor* pActor = static_cast<CActor*>(iActor);
 	IActor* pLocalActor = g_pGame->GetIGameFramework()->GetClientActor();
 
 	if (pLocalActor == pActor) {
-		CryLogAlways("Local");
-		return pActor->GetHealth();
+		health = pActor->GetHealth();
 	} else if (pActor->GetHealth() <= 0) {
-		CryLogAlways("Dead");
-		return 0;
+		health = 0;
 	} else if (pSSS && pSSS->GetEntityValue(iActor->GetEntityId(), HEALTH_KEY, health)) {
-		CryLogAlways("Health: %d", health);
-		return health;
+		health = health;
+	} else if (pSSS && pSSS->GetEntityValue(iActor->GetEntityId(), HEALTH_KEY, fHealth)) {
+		health = (int)fHealth;
 	} else {
-		CryLogAlways("Bad fallback");
-		return 100;
+		auto it = m_lastHealth.find(iActor);
+		if (it != m_lastHealth.end()) {
+			health = it->second;
+		} else {
+			health = 100;
+		}
 	}
+	m_lastHealth[iActor] = health;
+	return health;
 }
 
 void CHealthManager::Reset() {

@@ -690,11 +690,16 @@ void CHUDTagNames::FillNameTag(
 ) {
 	IActor* pLocalActor = g_pGame->GetIGameFramework()->GetClientActor();
 	CActor* pActor = static_cast<CActor*>(iActor);
-	if(iActor != NULL /* && g_pGameCVars->mp_healthBars */) {
-		nameTag.healthBars = NeedsHealthBar(pActor); // && !friendly;
+	if(iActor != NULL && g_pGameCVars->mp_healthBars) {
+		nameTag.healthBars = !friendly && NeedsHealthBar(pActor);
 		nameTag.vehicle = false;
 		nameTag.armor = pActor->GetArmor() / (float)pActor->GetMaxArmor();
-		nameTag.health = g_pGame->GetHealthManager()->GetHealth(pActor);
+		if (nameTag.healthBars) {
+			int health = g_pGame->GetHealthManager()->GetHealth(pActor);
+			nameTag.health = health / (float)pActor->GetMaxHealth();
+		} else {
+			nameTag.health = 1.0f;
+		}
 	} else {
 		nameTag.healthBars = false;
 		nameTag.vehicle = false;
