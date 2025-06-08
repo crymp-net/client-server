@@ -28,6 +28,7 @@
 #include "Library/StringTools.h"
 #include "Library/WinAPI.h"
 
+#include "DsoalDeployer.h"
 #include "Launcher.h"
 #include "MemoryPatch.h"
 #include "Resources.h"
@@ -1094,6 +1095,13 @@ void Launcher::PatchEngine()
 	if (m_dlls.pFmodEx)
 	{
 		MemoryPatch::FMODEx::Fix64BitHeapAddressTruncation(m_dlls.pFmodEx);
+
+#ifdef CLIENT_LAUNCHER
+		if (!WinAPI::CmdLine::HasArg("-nodsoal"))
+		{
+			DsoalDeployer::Init(m_dlls.pFmodEx);
+		}
+#endif
 	}
 }
 
